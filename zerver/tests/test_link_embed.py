@@ -52,6 +52,7 @@ class OembedTestCase(ZulipTestCase):
         data = get_oembed_data(url)
         self.assertIsInstance(data, dict)
         self.assertIn('title', data)
+        assert data is not None  # allow mypy to infer data is indexable
         self.assertEqual(data['title'], response_data['title'])
 
     @mock.patch('pyoembed.requests.get')

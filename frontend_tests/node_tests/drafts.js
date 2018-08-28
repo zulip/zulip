@@ -1,6 +1,5 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-set_global('window', {});
 
 zrequire('localstorage');
 zrequire('drafts');
@@ -72,8 +71,14 @@ var draft_2 = {
     type: "private",
     content: "Test Private Message",
 };
+var short_msg = {
+    stream: "stream",
+    subject: "topic",
+    type: "stream",
+    content: "a",
+};
 
-(function test_draft_model() {
+run_test('draft_model', () => {
     var draft_model = drafts.draft_model;
     var ls = localstorage();
 
@@ -123,9 +128,9 @@ var draft_2 = {
 
         assert.deepEqual(ls.get("drafts"), {});
     }());
-}());
+});
 
-(function test_snapshot_message() {
+run_test('snapshot_message', () => {
     function stub_draft(draft) {
         global.compose_state.get_message_type = function () {
             return draft.type;
@@ -153,11 +158,14 @@ var draft_2 = {
     stub_draft(draft_2);
     assert.deepEqual(drafts.snapshot_message(), draft_2);
 
+    stub_draft(short_msg);
+    assert.deepEqual(drafts.snapshot_message(), undefined);
+
     stub_draft({});
     assert.equal(drafts.snapshot_message(), undefined);
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     var message_content = $("#compose-textarea");
     message_content.focusout = function (f) {
         assert.equal(f, drafts.update_draft);
@@ -173,9 +181,9 @@ var draft_2 = {
     };
 
     drafts.initialize();
-}());
+});
 
-(function test_remove_old_drafts() {
+run_test('remove_old_drafts', () => {
     var draft_3 = {
         stream: "stream",
         subject: "topic",
@@ -199,9 +207,9 @@ var draft_2 = {
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
-}());
+});
 
-(function test_format_drafts() {
+run_test('format_drafts', () => {
     draft_1.updatedAt = new Date(1549958107000).getTime();      // 2/12/2019 07:55:07 AM (UTC+0)
     draft_2.updatedAt = new Date(1549958107000).setDate(-1);
     var draft_3 = {
@@ -292,4 +300,4 @@ var draft_2 = {
 
     drafts.setup_page();
     timerender.render_now = stub_render_now;
-}());
+});

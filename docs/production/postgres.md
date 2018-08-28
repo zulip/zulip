@@ -16,11 +16,11 @@ override that configuration).
 If you want to use a remote Postgresql database, you should configure
 the information about the connection with the server. You need a user
 called "zulip" in your database server. You can configure these
-options in /etc/zulip/settings.py (the below descriptions are from the
+options in `/etc/zulip/settings.py` (the below descriptions are from the
 Postgresql documentation):
 
-* REMOTE_POSTGRES_HOST: Name or IP address of the remote host
-* REMOTE_POSTGRES_SSLMODE: SSL Mode used to connect to the server,
+* `REMOTE_POSTGRES_HOST`: Name or IP address of the remote host
+* `REMOTE_POSTGRES_SSLMODE`: SSL Mode used to connect to the server,
   different options you can use are:
   * disable: I don't care about security, and I don't want to pay the
     overhead of encryption.

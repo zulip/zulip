@@ -23,6 +23,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                                                 config_data=ujson.dumps({'foo': 'bar'}))
 
     def test_pm_to_embedded_bot(self) -> None:
+        assert self.bot_profile is not None
         self.send_personal_message(self.user_profile.email, self.bot_profile.email,
                                    content="help")
         last_message = self.get_last_message()
@@ -36,6 +37,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(display_recipient[0]['email'], self.user_profile.email)   # type: ignore
 
     def test_stream_message_to_embedded_bot(self) -> None:
+        assert self.bot_profile is not None
         self.send_stream_message(self.user_profile.email, "Denmark",
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")
@@ -53,6 +55,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "foo")
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
+        assert self.bot_profile is not None
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize',
                    create=True) as mock_initialize:
             self.send_stream_message(self.user_profile.email, "Denmark",
@@ -61,6 +64,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             mock_initialize.assert_called_once()
 
     def test_embedded_bot_quit_exception(self) -> None:
+        assert self.bot_profile is not None
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
                    side_effect=EmbeddedBotQuitException("I'm quitting!")):
             with patch('logging.warning') as mock_logging:

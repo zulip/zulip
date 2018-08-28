@@ -77,7 +77,7 @@ Socket.prototype = {
         request.error = error;
         this._save_request(request);
 
-        if (! this._can_send()) {
+        if (!this._can_send()) {
             this._try_to_reconnect({reason: 'cant_send'});
             return;
         }
@@ -207,42 +207,38 @@ Socket.prototype = {
             // Notify listeners that we've finished the websocket handshake
             $(document).trigger($.Event('websocket_postopen.zulip', {}));
 
-            // We can only authenticate after the DOM has loaded because we need
-            // the CSRF token
-            $(function () {
-                var request = that._make_request('auth');
-                request.msg = {csrf_token: csrf_token,
-                               queue_id: page_params.queue_id,
-                               status_inquiries: _.keys(that._requests)};
-                request.success = function (resp) {
-                    that._is_authenticated = true;
-                    that._is_reconnecting = false;
-                    that._reconnect_initiation_time = null;
-                    that._connection_failures = 0;
-                    var resend_queue = [];
-                    _.each(resp.status_inquiries, function (status, id) {
-                        if (status.status === 'complete') {
-                            that._process_response(id, status.response);
-                        } else if (status.status === 'received') {
-                            that._update_request_state(id, 'sent');
-                        } else if (status.status === 'not_received') {
-                            resend_queue.push(id);
-                        }
-                    });
-                    resend_queue.sort(that._req_id_sorter);
-                    _.each(resend_queue, function (id) {
-                        that._resend(id);
-                    });
-                };
-                request.error = function (type, resp) {
-                    blueslip.info("Could not authenticate with server: " + resp.msg);
-                    that._connection_failures += 1;
-                    that._try_to_reconnect({reason: 'auth_fail',
-                                            wait_time: that._reconnect_wait_time()});
-                };
-                that._save_request(request);
-                that._do_send(request);
-            });
+            var request = that._make_request('auth');
+            request.msg = {csrf_token: csrf_token,
+                           queue_id: page_params.queue_id,
+                           status_inquiries: _.keys(that._requests)};
+            request.success = function (resp) {
+                that._is_authenticated = true;
+                that._is_reconnecting = false;
+                that._reconnect_initiation_time = null;
+                that._connection_failures = 0;
+                var resend_queue = [];
+                _.each(resp.status_inquiries, function (status, id) {
+                    if (status.status === 'complete') {
+                        that._process_response(id, status.response);
+                    } else if (status.status === 'received') {
+                        that._update_request_state(id, 'sent');
+                    } else if (status.status === 'not_received') {
+                        resend_queue.push(id);
+                    }
+                });
+                resend_queue.sort(that._req_id_sorter);
+                _.each(resend_queue, function (id) {
+                    that._resend(id);
+                });
+            };
+            request.error = function (type, resp) {
+                blueslip.info("Could not authenticate with server: " + resp.msg);
+                that._connection_failures += 1;
+                that._try_to_reconnect({reason: 'auth_fail',
+                                        wait_time: that._reconnect_wait_time()});
+            };
+            that._save_request(request);
+            that._do_send(request);
         };
 
         sockjs.onmessage = function Socket__sockjs_onmessage(event) {
@@ -287,7 +283,7 @@ Socket.prototype = {
             // immediately reconnect when the page is refreshing
             return 30;
         }
-        return Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
+        return Math.min(90, Math.exp(this._connection_failures / 2)) * 1000;
     },
 
     _try_to_reconnect: function Socket__try_to_reconnect(opts) {
@@ -411,3 +407,4 @@ return Socket;
 if (typeof module !== 'undefined') {
     module.exports = Socket;
 }
+window.Socket = Socket;

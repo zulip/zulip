@@ -27,15 +27,15 @@ exports.new_user_input = true;
 var huddle_timestamps = new Dict();
 
 exports.update_scrollbar = (function () {
-    var $user_presences = $("#user_presences");
+    var $buddy_list_wrapper = $("#buddy_list_wrapper");
     var $group_pms = $("#group-pms");
 
     return {
         users: function () {
-            if (!$user_presences.length) {
-                $user_presences = $("#user_presences");
+            if (!$buddy_list_wrapper.length) {
+                $buddy_list_wrapper = $("#buddy_list_wrapper");
             }
-            ui.update_scrollbar($user_presences);
+            ui.update_scrollbar($buddy_list_wrapper);
         },
         group_pms: function () {
             if (!$group_pms.length) {
@@ -122,7 +122,7 @@ exports.process_loaded_messages = function (messages) {
         if (huddle_string) {
             var old_timestamp = huddle_timestamps.get(huddle_string);
 
-            if (!old_timestamp || (old_timestamp < message.timestamp)) {
+            if (!old_timestamp || old_timestamp < message.timestamp) {
                 huddle_timestamps.set(huddle_string, message.timestamp);
                 need_resize = true;
             }
@@ -218,7 +218,6 @@ exports.insert_user_into_list = function (user_id) {
     buddy_list.insert_or_move({
         key: user_id,
         item: info,
-        compare_function: buddy_data.compare_function,
     });
 
     exports.update_scrollbar.users();
@@ -235,15 +234,15 @@ exports.build_user_sidebar = function () {
 
     var filter_text = exports.get_filter_text();
 
-    var user_info = buddy_data.get_items(filter_text);
+    var user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({
-        items: user_info,
+        keys: user_ids,
     });
 
     resize.resize_page_components();
 
-    return user_info; // for testing
+    return user_ids; // for testing
 };
 
 function do_update_users_for_search() {
@@ -277,7 +276,7 @@ exports.update_huddles = function () {
         return {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
-            href: narrow.huddle_with_uri(huddle),
+            href: hash_util.huddle_with_uri(huddle),
             fraction_present: exports.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
         };
@@ -296,13 +295,13 @@ exports.update_huddles = function () {
 };
 
 function focus_ping(want_redraw) {
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
     }
     channel.post({
         url: '/json/users/me/presence',
-        data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
+        data: {status: exports.has_focus ? exports.ACTIVE : exports.IDLE,
                ping_only: !want_redraw,
                new_user_input: exports.new_user_input},
         idempotent: true,
@@ -365,6 +364,8 @@ exports.initialize = function () {
     exports.build_user_sidebar();
     exports.update_huddles();
 
+    buddy_list.start_scroll_handler();
+
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);
@@ -375,7 +376,7 @@ exports.initialize = function () {
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 
-    ui.set_up_scrollbar($("#user_presences"));
+    ui.set_up_scrollbar($("#buddy_list_wrapper"));
     ui.set_up_scrollbar($("#group-pms"));
 };
 
@@ -496,3 +497,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = activity;
 }
+window.activity = activity;

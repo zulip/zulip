@@ -25,6 +25,10 @@ urls = [
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'var/node-coverage/lcov-report'),
                 'show_indexes': True}),
+    url(r'^casper/(?P<path>.*)$',
+        serve, {'document_root':
+                os.path.join(settings.DEPLOY_ROOT, 'var/casper'),
+                'show_indexes': True}),
     url(r'^docs/(?P<path>.*)$',
         serve, {'document_root':
                 os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')}),

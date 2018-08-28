@@ -105,7 +105,9 @@ exports.update_stream_color = function (sub, color, opts) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
-    tab_bar.colorize_tab_bar();
+    if (!page_params.search_pills_enabled) {
+        tab_bar.colorize_tab_bar();
+    }
 };
 
 function picker_do_change_color(color) {
@@ -137,7 +139,7 @@ exports.sidebar_popover_colorpicker_options_full = {
 };
 
 var lightness_threshold;
-$(function () {
+exports.initialize = function () {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
     var label_color = 0x33;
@@ -146,7 +148,7 @@ $(function () {
 
     // Compute midpoint lightness between that and white (100).
     lightness_threshold = (lightness + 100) / 2;
-});
+};
 
 // From a background color (in format "#fff" or "#ffffff")
 // pick a CSS class (or empty string) to determine the
@@ -179,8 +181,8 @@ exports.get_color_class = _.memoize(function (color) {
 
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
-    for (i=0; i<3; i += 1) {
-        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
+    for (i = 0; i < 3; i += 1) {
+        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i + 1], 16));
     }
 
     // Compute perceived lightness as CIE L*.
@@ -189,7 +191,7 @@ exports.get_color_class = _.memoize(function (color) {
 
     // Determine if we're past the midpoint between the
     // dark and light label lightness.
-    return (lightness < lightness_threshold) ? 'dark_background' : '';
+    return lightness < lightness_threshold ? 'dark_background' : '';
 });
 
 return exports;
@@ -198,3 +200,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_color;
 }
+window.stream_color = stream_color;

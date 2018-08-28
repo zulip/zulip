@@ -18,14 +18,6 @@ itself for static content).
 In development, `tools/run-dev.py` fills the role of nginx. Static files
 are in your git checkout under `static`, and are served unminified.
 
-## Nginx secures traffic with [SSL](../production/install.html)
-
-If you visit your Zulip server in your browser and discover that your
-traffic isn't being properly encrypted, an [nginx misconfiguration][nginx-config] is the
-likely culprit.
-
-[nginx-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/sites-available/zulip-enterprise
-
 ## Static files are [served directly][served-directly] by Nginx
 
 [served-directly]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
@@ -96,7 +88,7 @@ Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
 Our example is a REST API endpoint. It's a PUT to `/users`.
 
-With the exception of Webhooks (which we do not usually control the
+With the exception of incoming webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
@@ -162,7 +154,7 @@ mind. They are used extensively by the web client, and use POST.
 You can see them in
 [zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
 
-### Webhook integrations may not be RESTful
+### Incoming webhook integrations may not be RESTful
 
 Zulip endpoints that are called by other services for integrations have
 to conform to the service's request format. They are likely to use

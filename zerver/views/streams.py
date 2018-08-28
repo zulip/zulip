@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.request import REQ, has_request_variables
@@ -30,7 +31,7 @@ from zerver.lib.validator import check_string, check_int, check_list, check_dict
     check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
-    get_system_bot, get_user
+    get_system_bot, get_active_user
 
 from collections import defaultdict
 import ujson
@@ -49,7 +50,7 @@ class PrincipalError(JsonableError):
 
 def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile:
     try:
-        return get_user(principal, agent.realm)
+        return get_active_user(principal, agent.realm)
     except UserProfile.DoesNotExist:
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
@@ -135,7 +136,8 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
                           stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name,
+                                                     allow_realm_admin=True)
     do_remove_default_stream(stream)
     return json_success()
 
@@ -246,6 +248,7 @@ def remove_subscriptions_backend(
 
     result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[str]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
+                                                          request.client,
                                                           acting_user=user_profile)
 
     for (subscriber, removed_stream) in removed:
@@ -256,36 +259,19 @@ def remove_subscriptions_backend(
     return json_success(result)
 
 def you_were_just_subscribed_message(acting_user: UserProfile,
-                                     stream_names: Set[str],
-                                     private_stream_names: Set[str]) -> str:
-
-    # stream_names is the list of streams for which we should send notifications.
-    #
-    # We only use private_stream_names to see which of those names
-    # are private; it can possibly be a superset of stream_names due to the way the
-    # calling code is structured.
-
+                                     stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
-
-    msg = "Hi there!  We thought you'd like to know that %s just subscribed you to " % (
-        acting_user.full_name,)
-
     if len(subscriptions) == 1:
-        invite_only = subscriptions[0] in private_stream_names
-        msg += "the%s stream #**%s**." % (" **invite-only**" if invite_only else "",
-                                          subscriptions[0])
-    else:
-        msg += "the following streams: \n\n"
-        for stream_name in subscriptions:
-            invite_only = stream_name in private_stream_names
-            msg += "* #**%s**%s\n" % (stream_name,
-                                      " (**invite-only**)" if invite_only else "")
+        return _("Hi there! @**%(full_name)s** just subscribed you to the stream #**%(stream_name)s**." %
+                 {"full_name": acting_user.full_name,
+                  "stream_name": subscriptions[0]})
 
-    public_stream_names = stream_names - private_stream_names
-    if public_stream_names:
-        msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-
-    return msg
+    message = _("Hi there! @**%(full_name)s** just subscribed you to the following streams:" %
+                {"full_name": acting_user.full_name})
+    message += "\n\n"
+    for stream_name in subscriptions:
+        message += "* #**%s**\n" % (stream_name,)
+    return message
 
 @require_non_guest_user
 @has_request_variables
@@ -294,6 +280,7 @@ def add_subscriptions_backend(
         streams_raw: Iterable[Mapping[str, str]]=REQ(
             "subscriptions", validator=check_list(check_dict([('name', check_string)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
+        is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[str]=REQ(validator=check_list(check_string), default=[]),
@@ -307,6 +294,7 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
+        stream_dict_copy["is_announcement_only"] = is_announcement_only
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 
@@ -324,7 +312,9 @@ def add_subscriptions_backend(
 
     if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
+            return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
+        if not user_profile.can_subscribe_other_users():
+            return json_error(_("Your account is too new to modify other users' subscriptions."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])
@@ -346,7 +336,6 @@ def add_subscriptions_backend(
     bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
 
     newly_created_stream_names = {s.name for s in created_streams}
-    private_stream_names = {s.name for s in streams if s.invite_only}
 
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
@@ -370,7 +359,6 @@ def add_subscriptions_backend(
             msg = you_were_just_subscribed_message(
                 acting_user=user_profile,
                 stream_names=notify_stream_names,
-                private_stream_names=private_stream_names
             )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
@@ -521,6 +509,7 @@ def update_subscription_properties_backend(
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
                            "push_notifications": check_bool,
+                           "email_notifications": check_bool,
                            "pin_to_top": check_bool}
     response_data = []
 

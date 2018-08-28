@@ -35,7 +35,7 @@ exports.open = function ($process) {
 
     $("[data-process]").hide();
 
-    var should_show_notifications = (
+    var should_show_notifications =
         // notifications *basically* don't work on any mobile platforms, so don't
         // event show the banners. This prevents trying to access things that
         // don't exist like `Notification.permission`.
@@ -44,7 +44,7 @@ exports.open = function ($process) {
         !notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
         notifications.permission_state() !== "denied"
-    );
+    ;
 
     if (localstorage.supported()) {
         // if the user said to never show banner on this computer again, it will
@@ -95,3 +95,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = panels;
 }
+window.panels = panels;

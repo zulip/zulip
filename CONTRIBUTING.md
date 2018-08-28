@@ -58,20 +58,20 @@ to help.
   [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html),
   paying special attention to the community norms. If you'd like, introduce
   yourself in
-  [#new members](https://chat.zulip.org/#narrow/stream/new.20members), using
+  [#new members](https://chat.zulip.org/#narrow/stream/95-new-members), using
   your name as the topic. Bonus: tell us about your first impressions of
   Zulip, and anything that felt confusing/broken as you started using the
   product.
 * Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
 * [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
   getting help in
-  [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
+  [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
   if you run into any troubles.
 * Read the
   [Zulip guide to Git](https://zulip.readthedocs.io/en/latest/git/index.html)
   and do the Git tutorial (coming soon) if you are unfamiliar with Git,
   getting help in
-  [#git help](https://chat.zulip.org/#narrow/stream/git.20help) if you run
+  [#git help](https://chat.zulip.org/#narrow/stream/44-git-help) if you run
   into any troubles.
 * Sign the
   [Dropbox Contributor License Agreement](https://opensource.dropbox.com/cla/).
@@ -88,9 +88,9 @@ on.
   or
   [bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue)
   development, check the respective links for open issues, or post in
-  [#mobile](https://chat.zulip.org/#narrow/stream/mobile),
-  [#electron](https://chat.zulip.org/#narrow/stream/electron), or
-  [#bots](https://chat.zulip.org/#narrow/stream/bots).
+  [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile),
+  [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop), or
+  [#integration](https://chat.zulip.org/#narrow/stream/127-integrations).
 * For the main server and web repository, start by looking through issues
   with the label
   [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue").
@@ -101,7 +101,7 @@ on.
   click on some of the `area:` labels to see all the issues related to your
   areas of interest.
 * If the lists of issues are overwhelming, post in
-  [#new members](https://chat.zulip.org/#narrow/stream/new.20members) with a
+  [#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with a
   bit about your background and interests, and we'll help you out. The most
   important thing to say is whether you're looking for a backend (Python),
   frontend (JavaScript), mobile (React Native), desktop (Electron),
@@ -111,7 +111,7 @@ on.
 We also welcome suggestions of features that you feel would be valuable or
 changes that you feel would make Zulip a better open source project. If you
 have a new feature you'd like to add, we recommend you start by posting in
-[#new members](https://chat.zulip.org/#narrow/stream/new.20members) with the
+[#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with the
 feature idea and the problem that you're hoping to solve.
 
 Other notes:
@@ -119,8 +119,10 @@ Other notes:
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
 * The full list of issues looking for a contributor can be found with the
+  [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+  and
   [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-  label.
+  labels.
 * For most new contributors, there's a lot to learn while making your first
   pull request. It's OK if it takes you a while; that's normal! You'll be
   able to work a lot faster as you build experience.
@@ -132,6 +134,12 @@ the issue thread. [Zulipbot](https://github.com/zulip/zulipbot) is a GitHub
 workflow bot; it will assign you to the issue and label the issue as "in
 progress". Some additional notes:
 
+* You can only claim issues with the
+  [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+  or
+  [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+  labels. Zulipbot will give you an error if you try to claim an issue
+  without one of those labels.
 * You're encouraged to ask questions on how to best implement or debug your
   changes -- the Zulip maintainers are excited to answer questions to help
   you stay unblocked and working efficiently. You can ask questions on
@@ -186,9 +194,9 @@ bugs, feel free to just open an issue on the relevant project on GitHub.
 
 If you have a feature request or are not yet sure what the underlying bug
 is, the best place to post issues is
-[#issues](https://chat.zulip.org/#narrow/stream/issues) (or
-[#mobile](https://chat.zulip.org/#narrow/stream/mobile) or
-[#electron](https://chat.zulip.org/#narrow/stream/electron)) on the
+[#issues](https://chat.zulip.org/#narrow/stream/9-issues) (or
+[#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) or
+[#desktop](https://chat.zulip.org/#narrow/stream/16-desktop)) on the
 [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html).
 This allows us to interactively figure out what is going on, let you know if
 a similar issue has already been opened, and collect any other information

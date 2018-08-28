@@ -55,12 +55,12 @@ You might be interested in:
   [companies](https://zulipchat.com/for/companies/), or Zulip for
   [working groups and part time communities](https://zulipchat.com/for/working-groups-and-communities/).
 
-* **Running a Zulip server**. Setting up a server takes just a couple of
-  minutes. Zulip runs on Ubuntu 16.04 Xenial and Ubuntu 14.04 Trusty. The
-  installation process is
+* **Running a Zulip server**. Setting up a server takes just a couple
+  of minutes. Zulip runs on Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial,
+  Ubuntu 14.04 Trusty, and Debian 9 Stretch. The installation process is
   [documented here](https://zulip.readthedocs.io/en/stable/prod.html).
-  Commercial support is available; see <https://zulipchat.com/plans> for
-  details.
+  Commercial support is available; see <https://zulipchat.com/plans>
+  for details.
 
 * **Using Zulip without setting up a server**. <https://zulipchat.com> offers
   free and commercial hosting.

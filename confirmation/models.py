@@ -16,7 +16,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, \
     UserProfile, Realm

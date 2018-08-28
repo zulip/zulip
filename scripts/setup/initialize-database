@@ -35,11 +35,11 @@ cd "$THIS_DIR/../.."
 if ! ./manage.py initialize_voyager_db; then
     set +x
     echo
-    echo -e "\033[32mPopulating default database failed."
+    echo -e '\033[32mPopulating default database failed.'
     echo "After you fix the problem, you will need to do the following before rerunning this:"
     echo "  * supervisorctl stop all # to stop all services that might be accessing the database"
     echo "  * scripts/setup/postgres-init-db # run as root to drop and re-create the database"
-    echo -e "\033[0m"
+    echo -e '\033[0m'
     exit 1
 fi
 

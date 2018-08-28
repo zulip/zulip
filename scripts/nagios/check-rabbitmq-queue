@@ -53,9 +53,11 @@ warn_about = ", ".join(warn_queues)
 now = int(time.time())
 now_struct = time.gmtime(now)
 
-# While we are sending digest emails, at 11am each weekday, the mail queues can
-# get backed up; don't alert on those.
-if not set(warn_queues) - set(("missedmessage_emails", "digest_emails")) and \
+# While we are sending digest emails, at 11am each weekday, the mail
+# queues can get backed up; don't alert on those.  Additionally,
+# certain workers (slow_queries and digest_emails) have a polling
+# algorithm that means it's normal for them to accumulate items.
+if not set(warn_queues) - set(("missedmessage_emails", "digest_emails", "slow_queries")) and \
         now_struct.tm_hour == 15 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (

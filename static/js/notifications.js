@@ -46,13 +46,11 @@ if (window.webkitNotifications) {
 
 
 function browser_desktop_notifications_on() {
-    return (notifications_api &&
+    return notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             /webkit/i.test(navigator.userAgent) &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0) ||
-        // window.bridge is the desktop client
-        (window.bridge !== undefined);
+            notifications_api.checkPermission() === 0;
 }
 
 function cancel_notification_object(notification_object) {
@@ -83,12 +81,6 @@ exports.initialize = function () {
         window_has_focus = false;
     });
 
-    if (window.bridge !== undefined) {
-        supports_sound = true;
-
-        return;
-    }
-
     var audio = $("<audio>");
     if (audio[0].canPlayType === undefined) {
         supports_sound = false;
@@ -118,20 +110,6 @@ exports.permission_state = function () {
     return window.Notification.permission;
 };
 
-// For web pages, the initial favicon is the same as the favicon we
-// set for no unread messages and the initial page title is the same
-// as the page title we set for no unread messages.  However, for the
-// macOS app, the dock icon does not get its badge updated on initial
-// page load.  If the badge icon was wrong right before a reload and
-// we actually have no unread messages then we will never execute
-// bridge.updateCount() until the unread count changes.  Therefore,
-// we ensure that bridge.updateCount is always run at least once to
-// synchronize it with the page title.  This can be done before the
-// DOM is loaded.
-if (window.bridge !== undefined) {
-    window.bridge.updateCount(0);
-}
-
 var new_message_count = 0;
 
 exports.update_title_count = function (count) {
@@ -143,7 +121,7 @@ exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
     var n;
 
-    var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
+    var new_title = (new_message_count ? "(" + new_message_count + ") " : "")
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
         + "Zulip";
@@ -161,24 +139,16 @@ exports.redraw_title = function () {
             // Make sure we're working with a number, as a defensive programming
             // measure.  And we don't have images above 99, so display those as
             // 'infinite'.
-            n = (+new_message_count);
+            n = +new_message_count;
             if (n > 99) {
                 n = 'infinite';
             }
 
-            current_favicon = previous_favicon = '/static/images/favicon/favicon-'+n+'.png';
+            current_favicon = previous_favicon = '/static/images/favicon/favicon-' + n + '.png';
         } else {
             current_favicon = previous_favicon = '/static/favicon.ico?v=2';
         }
         favicon.set(current_favicon);
-    }
-
-    // window.bridge is for the legacy QT desktop app; we'll likely
-    // remove this code soon.
-    if (window.bridge !== undefined) {
-        // We don't use 'n' because we want the exact count. The bridge handles
-        // which icon to show.
-        window.bridge.updateCount(new_message_count);
     }
 
     // Notify the current desktop app's UI about the new unread count.
@@ -210,10 +180,8 @@ function flash_pms() {
     }
 }
 
-exports.update_pm_count = function (new_pm_count) {
-    if (window.bridge !== undefined && window.bridge.updatePMCount !== undefined) {
-        window.bridge.updatePMCount(new_pm_count);
-    }
+exports.update_pm_count = function () {
+    // TODO: Add a `window.electron_bridge.updatePMCount(new_pm_count);` call?
     if (!flashing) {
         flashing = true;
         flash_pms();
@@ -301,6 +269,7 @@ function process_notification(notification) {
             notification_source = 'stream';
         }
     }
+    blueslip.debug("Desktop notification from source " + notification_source);
 
     if (content.length > 150) {
         // Truncate content at a word boundary
@@ -313,7 +282,7 @@ function process_notification(notification) {
         content += " [...]";
     }
 
-    if (window.bridge === undefined && notice_memory[key] !== undefined) {
+    if (notice_memory[key] !== undefined) {
         msg_count = notice_memory[key].msg_count + 1;
         title = msg_count + " messages from " + title;
         notification_object = notice_memory[key].obj;
@@ -346,7 +315,7 @@ function process_notification(notification) {
         ];
     }
 
-    if (window.bridge === undefined && notification.webkit_notify === true) {
+    if (notification.webkit_notify === true) {
         var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(icon_url, title, content, message.id),
@@ -387,9 +356,6 @@ function process_notification(notification) {
         });
     } else if (notification.webkit_notify === false) {
         in_browser_notify(message, title, content, raw_operators, opts);
-    } else {
-        // Shunt the message along to the desktop client
-        window.bridge.desktopNotification(title, content, notification_source);
     }
 }
 
@@ -427,12 +393,12 @@ exports.message_is_notifiable = function (message) {
 
     // Messages to muted streams that don't mention us specifically
     // are not notifiable.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         !stream_data.in_home_view(message.stream_id)) {
         return false;
     }
 
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         muting.is_topic_muted(message.stream, message.subject)) {
         return false;
     }
@@ -445,14 +411,14 @@ exports.message_is_notifiable = function (message) {
 function should_send_desktop_notification(message) {
     // For streams, send if desktop notifications are enabled for this
     // stream.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         stream_data.receives_desktop_notifications(message.stream)) {
         return true;
     }
 
     // For PMs and @-mentions, send if desktop notifications are
     // enabled.
-    if ((message.type === "private") &&
+    if (message.type === "private" &&
         page_params.enable_desktop_notifications) {
         return true;
     }
@@ -474,13 +440,13 @@ function should_send_desktop_notification(message) {
 
 function should_send_audible_notification(message) {
     // For streams, ding if sounds are enabled for this stream.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         stream_data.receives_audible_notifications(message.stream)) {
         return true;
     }
 
     // For PMs and @-mentions, ding if sounds are enabled.
-    if ((message.type === "private") && page_params.enable_sounds) {
+    if (message.type === "private" && page_params.enable_sounds) {
         return true;
     }
 
@@ -497,11 +463,9 @@ function should_send_audible_notification(message) {
 }
 
 exports.granted_desktop_notifications_permission = function () {
-    return (notifications_api &&
+    return notifications_api &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0) ||
-        // window.bridge is the legacy desktop app
-        (window.bridge !== undefined);
+            notifications_api.checkPermission() === 0;
 };
 
 
@@ -531,11 +495,7 @@ exports.received_messages = function (messages) {
             }
         }
         if (should_send_audible_notification(message) && supports_sound) {
-            if (window.bridge !== undefined) {
-                window.bridge.bell();
-            } else {
-                $("#notifications-area").find("audio")[0].play();
-            }
+            $("#notifications-area").find("audio")[0].play();
         }
     });
 };
@@ -629,15 +589,6 @@ exports.clear_compose_notifications = function () {
     $('#out-of-view-notification').hide();
 };
 
-$(function () {
-    // Shim for Cocoa WebScript exporting top-level JS
-    // objects instead of window.foo objects
-    if (typeof(bridge) !== 'undefined' && window.bridge === undefined) {
-        window.bridge = bridge;
-    }
-
-});
-
 exports.reify_message_id = function (opts) {
     var old_id = opts.old_id;
     var new_id = opts.new_id;
@@ -691,3 +642,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = notifications;
 }
+window.notifications = notifications;

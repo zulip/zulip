@@ -4,6 +4,7 @@ zrequire('narrow_state');
 zrequire('people');
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+set_global('i18n', global.stub_i18n);
 
 zrequire('narrow');
 
@@ -14,7 +15,19 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
-(function test_stream_topic() {
+var alice = {
+    email: 'alice@example.com',
+    user_id: 23,
+    full_name: 'Alice Smith',
+};
+
+var ray = {
+    email: 'ray@example.com',
+    user_id: 22,
+    full_name: 'Raymond',
+};
+
+run_test('stream_topic', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
 
     set_global('current_msg_list', {
@@ -43,44 +56,35 @@ function set_filter(operators) {
         topic: 'Topic1',
     });
 
-}());
+});
 
-(function test_uris() {
-    var ray = {
-        email: 'ray@example.com',
-        user_id: 22,
-        full_name: 'Raymond',
-    };
+run_test('uris', () => {
     people.add(ray);
-
-    var alice = {
-        email: 'alice@example.com',
-        user_id: 23,
-        full_name: 'Alice Smith',
-    };
     people.add(alice);
 
-    var uri = narrow.pm_with_uri(ray.email);
+    var uri = hash_util.pm_with_uri(ray.email);
     assert.equal(uri, '#narrow/pm-with/22-ray');
 
-    uri = narrow.huddle_with_uri("22,23");
+    uri = hash_util.huddle_with_uri("22,23");
     assert.equal(uri, '#narrow/pm-with/22,23-group');
 
-    uri = narrow.by_sender_uri(ray.email);
+    uri = hash_util.by_sender_uri(ray.email);
     assert.equal(uri, '#narrow/sender/22-ray');
 
     var emails = global.hash_util.decode_operand('pm-with', '22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
-}());
+});
 
-(function test_show_empty_narrow_message() {
+run_test('show_empty_narrow_message', () => {
 
     var hide_id;
     var show_id;
+    var attr_id;
     set_global('$', (id) => {
         return {
             hide: () => {hide_id = id;},
             show: () => {show_id = id;},
+            attr: () => {attr_id = id;},
         };
     });
 
@@ -88,6 +92,7 @@ function set_filter(operators) {
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_narrow_message');
+    assert.equal(attr_id, '#left_bar_compose_reply_button_big');
 
     // for non-existent or private stream
     set_filter([['stream', 'Foo']]);
@@ -122,10 +127,16 @@ function set_filter(operators) {
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#no_unread_narrow_message');
 
+    set_filter([['pm-with', ['Yo']]]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#non_existing_user');
+
+    people.add_in_realm(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_multi_private_message');
+    assert.equal(show_id, '#non_existing_users');
 
     set_filter([['pm-with', 'alice@example.com']]);
     narrow.show_empty_narrow_message();
@@ -151,4 +162,4 @@ function set_filter(operators) {
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_search_narrow_message');
-}());
+});

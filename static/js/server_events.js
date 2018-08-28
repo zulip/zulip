@@ -19,7 +19,8 @@ exports.suspect_offline = false;
 
 function get_events_success(events) {
     var messages = [];
-    var messages_to_update = [];
+    var update_message_events = [];
+    var post_message_events = [];
     var new_pointer;
 
     var clean_event = function clean_event(event) {
@@ -69,7 +70,13 @@ function get_events_success(events) {
             break;
 
         case 'update_message':
-            messages_to_update.push(event);
+            update_message_events.push(event);
+            break;
+
+        case 'delete_message':
+        case 'submessage':
+        case 'update_message_flags':
+            post_message_events.push(event);
             break;
 
         default:
@@ -112,13 +119,13 @@ function get_events_success(events) {
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
     }
 
-    if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
+    if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
         home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
     }
 
-    if (messages_to_update.length !== 0) {
+    if (update_message_events.length !== 0) {
         try {
-            message_events.update_messages(messages_to_update);
+            message_events.update_messages(update_message_events);
         } catch (ex3) {
             blueslip.error('Failed to update messages\n' +
                            blueslip.exception_msg(ex3),
@@ -126,12 +133,19 @@ function get_events_success(events) {
                            ex3.stack);
         }
     }
+
+    // We do things like updating message flags and deleting messages last,
+    // to avoid ordering issues that are caused by batch handling of
+    // messages above.
+    _.each(post_message_events, function (event) {
+        server_events_dispatch.dispatch_normal_event(event);
+    });
 }
 
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         return;
     }
 
@@ -185,8 +199,8 @@ function get_events(options) {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
-                if ((xhr.status === 400) &&
-                    (JSON.parse(xhr.responseText).code === 'BAD_EVENT_QUEUE_ID')) {
+                if (xhr.status === 400 &&
+                    JSON.parse(xhr.responseText).code === 'BAD_EVENT_QUEUE_ID') {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
@@ -216,8 +230,8 @@ function get_events(options) {
                                undefined,
                                ex.stack);
             }
-            var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
-            get_events_timeout = setTimeout(get_events, retry_sec*1000);
+            var retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
+            get_events_timeout = setTimeout(get_events, retry_sec * 1000);
         },
     });
 }
@@ -247,7 +261,7 @@ exports.home_view_loaded = function home_view_loaded() {
 var watchdog_time = $.now();
 exports.check_for_unsuspend = function () {
     var new_time = $.now();
-    if ((new_time - watchdog_time) > 20000) { // 20 seconds.
+    if (new_time - watchdog_time > 20000) { // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
         // exception in one of the event handlers
         watchdog_time = new_time;
@@ -296,3 +310,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = server_events;
 }
+window.server_events = server_events;

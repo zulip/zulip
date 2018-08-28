@@ -1,37 +1,21 @@
 # Change your language
 
-By default, the Zulip UI is displayed in English.  However, Zulip has
-full support for internationalization, and the UI has been translated
-into many other languages.  You can see the Zulip UI in other
-languages temporarily by modifying the URLs using the appropriate
-language code, e.g. `/ru/` for Russian.
+Zulip has been translated or partially translated into a number of different
+languages. You can see which languages Zulip supports, and help add support
+for new languages on **[Transifex](https://www.transifex.com/zulip/zulip/)**.
 
-Additionally, you can change the default language in the Zulip UI for
-your Zulip account using the following procedure.
+If your entire organization speaks a language other than English, an administrator can
+[set the default language][change-org-lang] for new users joining the organization.
 
-!!! warn ""
-    **Warning**: Because for languages, only some of the strings in
-    the Zulip UI have been translated, you may still see English words
-    interspersed throughout Zulip.
+[change-org-lang]: change-the-default-language-for-your-organization
 
 {settings_tab|display-settings}
 
-2. Next to the **Default language** heading, select the **[Change]** link.
+2. Under **Language Settings**, click the button next to **Default language**.
 
-3. After clicking the **[Change]** link, a modal window will appear with all
-foreign languages that Zulip supports along with their percentages of
-translation support. Select your desired language from the window.
+3. Click on a language.
 
-4. Once you select a language, the modal window will close. Zulip will be
-displayed in the language of your choice after you reload the page.
+4. Click **Reload**.
 
 !!! tip ""
-    You can help translate parts of Zulip by signing up for an account
-    at **[Transifex](https://www.transifex.com/zulip/zulip/)**.
-
-!!! tip ""
-
-    If your entire organization speaks a language other than English, an administrator can
-    [set the default language for new users joining the organization][change-org-lang]
-
-[change-org-lang]: change-the-default-language-for-your-organization
+    You can always send and read messages in any language.

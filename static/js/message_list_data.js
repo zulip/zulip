@@ -37,6 +37,63 @@ MessageListData.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    select_idx: function () {
+        if (this._selected_id === -1) {
+            return;
+        }
+        var ids = _.pluck(this._items, 'id');
+
+        var i = ids.indexOf(this._selected_id);
+        if (i === -1) {
+            return;
+        }
+        return i;
+    },
+
+    prev: function () {
+        var i = this.select_idx();
+
+        if (i === undefined) {
+            return;
+        }
+
+        if (i === 0) {
+            return;
+        }
+
+        return this._items[i - 1].id;
+    },
+
+    next: function () {
+        var i = this.select_idx();
+
+        if (i === undefined) {
+            return;
+        }
+
+        if (i + 1 >= this._items.length) {
+            return;
+        }
+
+        return this._items[i + 1].id;
+    },
+
+    is_at_end: function () {
+        if (this._selected_id === -1) {
+            return false;
+        }
+
+        var n = this._items.length;
+
+        if (n === 0) {
+            return false;
+        }
+
+        var last_msg = this._items[n - 1];
+
+        return last_msg.id === this._selected_id;
+    },
+
     nth_most_recent_id: function (n) {
         var i = this._items.length - n;
         if (i < 0) {
@@ -136,7 +193,7 @@ MessageListData.prototype = {
 
     update_user_full_name: function (user_id, full_name) {
         _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
+            if (item.sender_id && item.sender_id === user_id) {
                 item.sender_full_name = full_name;
             }
         });
@@ -148,7 +205,7 @@ MessageListData.prototype = {
         // especially if we want to optimize this with some kind of
         // hash that maps sender_id -> messages.
         _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
+            if (item.sender_id && item.sender_id === user_id) {
                 item.small_avatar_url = avatar_url;
             }
         });
@@ -156,14 +213,14 @@ MessageListData.prototype = {
 
     update_stream_name: function (stream_id, new_stream_name) {
         _.each(this._items, function (item) {
-            if (item.stream_id && (item.stream_id === stream_id)) {
+            if (item.stream_id && item.stream_id === stream_id) {
                 item.display_recipient = new_stream_name;
                 item.stream = new_stream_name;
             }
         });
     },
 
-    triage_messages: function (messages) {
+    add_messages: function (messages) {
         var self = this;
         var top_messages = [];
         var bottom_messages = [];
@@ -197,15 +254,32 @@ MessageListData.prototype = {
             });
         }
 
-        return {
+        if (interior_messages.length > 0) {
+            interior_messages = self.add_anywhere(interior_messages);
+        }
+
+        if (top_messages.length > 0) {
+            top_messages = self.prepend(top_messages);
+        }
+
+        if (bottom_messages.length > 0) {
+            bottom_messages = self.append(bottom_messages);
+        }
+
+        var info = {
             top_messages: top_messages,
             bottom_messages: bottom_messages,
             interior_messages: interior_messages,
         };
+
+        return info;
     },
 
-    add: function (messages) {
-        // Caller should have already filtered
+    add_anywhere: function (messages) {
+        // Caller should have already filtered messages.
+        // This should be used internally when we have
+        // "interior" messages to add and can't optimize
+        // things by only doing prepend or only doing append.
         var viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);
@@ -215,6 +289,7 @@ MessageListData.prototype = {
             this._items = viewable_messages.concat(this._items);
 
         } else {
+            viewable_messages = messages;
             this._items = messages.concat(this._items);
         }
 
@@ -470,8 +545,8 @@ MessageListData.prototype = {
             var prev = self._next_nonlocal_message(self._items, index,
                                                    function (idx) { return idx - 1; });
 
-            if ((next !== undefined && current_message.id > next.id) ||
-                (prev !== undefined && current_message.id < prev.id)) {
+            if (next !== undefined && current_message.id > next.id ||
+                prev !== undefined && current_message.id < prev.id) {
                 blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
                 self._items.sort(message_sort_func);
                 if (self.muting_enabled) {
@@ -496,3 +571,5 @@ MessageListData.prototype = {
 if (typeof module !== 'undefined') {
     module.exports = MessageListData;
 }
+
+window.MessageListData = MessageListData;

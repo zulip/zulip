@@ -11,7 +11,7 @@ def get_json_filename(locale: str) -> str:
 def get_locales() -> List[str]:
     tracked_files = check_output(['git', 'ls-files', 'static/locale'])
     tracked_files = tracked_files.decode().split()
-    regex = re.compile('static/locale/(\w+)/LC_MESSAGES/django.po')
+    regex = re.compile(r'static/locale/(\w+)/LC_MESSAGES/django.po')
     locales = ['en']
     for tracked_file in tracked_files:
         matched = regex.search(tracked_file)
@@ -20,7 +20,7 @@ def get_locales() -> List[str]:
 
     return locales
 
-def get_translation_info(resource_path: str) -> Dict[str, int]:
+def get_translation_stats(resource_path: str) -> Dict[str, int]:
     with open(resource_path) as raw_resource_file:
         raw_info = json.load(raw_resource_file)
 
@@ -28,18 +28,18 @@ def get_translation_info(resource_path: str) -> Dict[str, int]:
     not_translated = len([i for i in raw_info.items() if i[1] == ''])
     return {'total': total, 'not_translated': not_translated}
 
-translation_info = {}  # type: Dict[str, Dict[str, int]]
+translation_stats = {}  # type: Dict[str, Dict[str, int]]
 locale_paths = []  # List[str]
 for locale in get_locales():
     path = get_json_filename(locale)
     if os.path.exists(path):
-        info = get_translation_info(path)
-        translation_info.update({locale: info})
+        stats = get_translation_stats(path)
+        translation_stats.update({locale: stats})
         locale_paths.append(path)
 
-resource_file_path = os.path.join('static', 'locale', 'mobile_info.json')
-with open(resource_file_path, 'w') as f:
-    json.dump(translation_info, f, indent=2, sort_keys=True)
+stats_path = os.path.join('static', 'locale', 'mobile_info.json')
+with open(stats_path, 'w') as f:
+    json.dump(translation_stats, f, indent=2, sort_keys=True)
     f.write('\n')
 
-print("Mobile resource file created at: " + resource_file_path)
+print("Mobile stats file created at: " + stats_path)

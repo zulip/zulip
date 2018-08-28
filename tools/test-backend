@@ -9,6 +9,7 @@ import sys
 import subprocess
 import ujson
 import httplib2
+import httpretty
 import requests
 
 # check for the venv
@@ -27,9 +28,12 @@ target_fully_covered = {path for target in [
     # zerver/ and zerver/lib/ are important core files
     'zerver/*.py',
     'zerver/lib/*.py',
+    # stripe.py handles billing
+    'zilencer/lib/stripe.py',
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',
+    'zilencer/tests/*.py',
     # As a project, we require 100% test coverage in the views files.
     'zerver/views/*.py',
     'zproject/backends.py',
@@ -49,22 +53,17 @@ not_yet_fully_covered = {
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     'analytics/views.py',
     # Major lib files should have 100% coverage
-    'zerver/lib/actions.py',
     'zerver/lib/addressee.py',
     'zerver/lib/bugdown/__init__.py',
     'zerver/lib/cache.py',
     'zerver/lib/cache_helpers.py',
-    'zerver/lib/create_user.py',
-    'zerver/lib/exceptions.py',
     'zerver/lib/i18n.py',
     'zerver/lib/notifications.py',
     'zerver/lib/send_email.py',
-    'zerver/lib/upload.py',
     # Other lib files that ideally would coverage, but aren't sorted
     'zerver/__init__.py',
     'zerver/filters.py',
     'zerver/middleware.py',
-    'zerver/storage.py',
     'zerver/lib/bot_lib.py',
     'zerver/lib/camo.py',
     'zerver/lib/debug.py',
@@ -77,51 +76,47 @@ not_yet_fully_covered = {
     'zerver/lib/html_diff.py',
     'zerver/lib/import_realm.py',
     'zerver/lib/logging_util.py',
-    'zerver/lib/migrate.py',
     'zerver/lib/outgoing_webhook.py',
     'zerver/lib/parallel.py',
     'zerver/lib/profile.py',
     'zerver/lib/queue.py',
     'zerver/lib/rate_limiter.py',
-    'zerver/lib/slack_data_to_zulip_data.py',
     'zerver/lib/sqlalchemy_utils.py',
+    'zerver/lib/storage.py',
     'zerver/lib/str_utils.py',
     'zerver/lib/stream_recipient.py',
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',
     'zerver/lib/utils.py',
+    'zerver/lib/zephyr.py',
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
-    'zerver/lib/statistics.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/lib/api_test_helpers.py',
+    # Data import files
+    'zerver/data_import/slack.py',
+    'zerver/data_import/gitter.py',
+    'zerver/data_import/import_util.py',
     # Webhook integrations with incomplete coverage
-    'zerver/webhooks/basecamp/view.py',
     'zerver/webhooks/beanstalk/view.py',
     'zerver/webhooks/bitbucket2/view.py',
     'zerver/webhooks/freshdesk/view.py',
-    'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/github/view.py',
+    'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/gitlab/view.py',
-    'zerver/webhooks/gogs/view.py',
     'zerver/webhooks/greenhouse/view.py',
     'zerver/webhooks/hellosign/view.py',
     'zerver/webhooks/ifttt/view.py',
     'zerver/webhooks/jira/view.py',
     'zerver/webhooks/librato/view.py',
-    'zerver/webhooks/newrelic/view.py',
-    'zerver/webhooks/pingdom/view.py',
     'zerver/webhooks/pivotal/view.py',
     'zerver/webhooks/semaphore/view.py',
     'zerver/webhooks/solano/view.py',
-    'zerver/webhooks/stripe/view.py',
     'zerver/webhooks/taiga/view.py',
     'zerver/webhooks/teamcity/view.py',
-    'zerver/webhooks/transifex/view.py',
     'zerver/webhooks/travis/view.py',
-    'zerver/webhooks/updown/view.py',
     'zerver/webhooks/zapier/view.py',
 }
 
@@ -148,14 +143,26 @@ def block_internet():
     # type: () -> None
     # We are blocking internet currently by assuming mostly any test would use
     # httplib2 to access internet.
-    def internet_guard(*args, **kwargs):
-        # type: (*Any, **Any) -> NoReturn
+    requests_orig = requests.request
+
+    def internet_guard_requests(*args: Any, **kwargs: Any) -> Any:
+        if httpretty.is_enabled():
+            return requests_orig(*args, **kwargs)
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
 
-    httplib2.Http.request = internet_guard
-    requests.request = internet_guard
+    requests.request = internet_guard_requests
+
+    http2lib_request_orig = httplib2.Http.request
+
+    def internet_guard_httplib2(*args: Any, **kwargs: Any) -> Any:
+        if httpretty.is_enabled():
+            return http2lib_request_orig(*args, **kwargs)
+        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
+                        "More details and advice are available here:"
+                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
+    httplib2.Http.request = internet_guard_httplib2
 
 if __name__ == "__main__":
     block_internet()
@@ -167,7 +174,7 @@ if __name__ == "__main__":
     os.environ["http_proxy"] = ""
     os.environ["https_proxy"] = ""
 
-    from zerver.lib.test_fixtures import is_template_database_current
+    from zerver.lib.test_fixtures import run_generate_fixtures_if_required
 
     from tools.lib.test_script import (
         get_provisioning_status,
@@ -236,7 +243,7 @@ if __name__ == "__main__":
                         default=False,
                         help=("Run the tests which failed the last time "
                               "test-backend was run.  Implies --nonfatal-errors."))
-    parser.add_argument('args', nargs=argparse.REMAINDER)
+    parser.add_argument('args', nargs='*')
 
     options = parser.parse_args()
     args = options.args
@@ -309,9 +316,12 @@ if __name__ == "__main__":
     full_suite = len(args) == 0
 
     if len(args) == 0:
-        suites = ["zerver.tests",
-                  "zerver.webhooks",
-                  "analytics.tests"]
+        suites = [
+            "zerver.tests",
+            "zerver.webhooks",
+            "analytics.tests",
+            "zilencer.tests",
+        ]
     else:
         suites = args
 
@@ -340,10 +350,7 @@ if __name__ == "__main__":
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    if options.generate_fixtures or not is_template_database_current():
-        generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
-        generate_fixtures_command.append('--force')
-        subprocess.call(generate_fixtures_command)
+    run_generate_fixtures_if_required(options.generate_fixtures)
 
     subprocess.check_call(['tools/webpack', '--test'])
 

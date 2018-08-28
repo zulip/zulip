@@ -9,10 +9,8 @@
             </div>
             <div id="compose_buttons">
                 <span class="new_message_button">
-                    <a class="drafts-link no-style" href="#drafts" title="{{ _('Drafts') }} (d)">
-                        <button type="button" class="button small rounded compose_drafts_button">
-                            <span>{{ _('Drafts') }}</span>
-                        </button>
+                    <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{ _('Drafts') }} (d)">
+                        {{ _('Drafts') }}
                     </a>
                     <span class="alert-draft pull-left">{{ _('Saved as draft') }}</span>
                 </span>
@@ -44,7 +42,7 @@
         <div class="message_comp compose-content">
             <div class="alert" id="compose-send-status">
                 <span class="compose-send-status-close">&times;</span>
-                <p id="compose-error-msg"></p>
+                <span id="compose-error-msg"></span>
             </div>
             <div id="compose_invite_users" class="alert home-error-bar"></div>
             <div id="compose-all-everyone" class="alert home-error-bar"></div>
@@ -61,10 +59,10 @@
                             <div class="message_header_colorblock message_header_stream left_part"></div>
                             <div class="right_part">
                                 <span id="compose-lock-icon">
-                                    <i class="icon-vector-lock" title="{{ _('This is an invite-only stream') }}"></i>
+                                    <i class="fa fa-lock" title="{{ _('This is a private stream') }}" aria-hidden="true"></i>
                                 </span>
                                 <input type="text" class="recipient_box" name="stream" id="stream" maxlength="30" value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}" />
-                                <i class="icon-vector-narrow icon-vector-small"></i>
+                                <i class="fa fa-angle-right" aria-hidden="true"></i>
                                 <input type="text" class="recipient_box" name="subject" id="subject" maxlength="60" value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}" />
                             </div>
                         </div>
@@ -75,14 +73,14 @@
                             <div class="right_part">
                                 <div class="pm_recipient">
                                     <div class="pill-container" data-before="{{ _('You and') }}">
-                                        <div class="input" contenteditable="true" id="private_message_recipient" name="recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                        <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <div class="messagebox" colspan="2">
-                                <textarea class="new_message_textarea" name="content" id='compose-textarea' value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                            <div class="messagebox">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                                 <div class="scrolling_list" id="preview_message_area" style="display:none;">
                                     <div id="markdown_preview_spinner"></div>
                                     <div id="preview_content"></div>
@@ -90,12 +88,12 @@
                                 <div class="drag"></div>
                                 <div id="below-compose-content">
                                     <input type="file" id="file_input" class="notvisible pull-left" multiple />
-                                    <a class="message-control-button icon-vector-smile" id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
-                                    <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
-                                    <a class="message-control-button icon-vector-paper-clip notdisplayed" id="attach_files" href="#" title="{{ _('Attach files') }}"></a> {% if jitsi_server_url %}
-                                    <a class="message-control-button fa fa-video-camera" id="video_link" href="#" title="{{ _('Add video call') }}"></a> {% endif %}
-                                    <a id="undo_markdown_preview" class="message-control-button icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
-                                    <a id="markdown_preview" class="message-control-button icon-vector-eye-open" title="{{ _('Preview') }}"></a>
+                                    <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
+                                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
+                                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files" href="#" title="{{ _('Attach files') }}"></a> {% if jitsi_server_url %}
+                                    <a class="message-control-button fa fa-video-camera" aria-hidden="true" id="video_link" href="#" title="{{ _('Add video call') }}"></a> {% endif %}
+                                    <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{ _('Write') }}"></a>
+                                    <a id="markdown_preview" class="message-control-button fa fa-eye" aria-hidden="true" title="{{ _('Preview') }}"></a>
                                     <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                                     <span id="sending-indicator"></span>
                                     <div id="send_controls" class="new-style">

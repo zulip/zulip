@@ -6,7 +6,7 @@ import sys
 import argparse
 import subprocess
 
-import lister
+from zulint import lister
 from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,9 +16,7 @@ sys.path.append(os.path.dirname(TOOLS_DIR))
 from lib.test_script import get_provisioning_status
 
 exclude = """
-docs/conf.py
-zproject/settings.py
-zproject/test_settings.py
+stubs/
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
@@ -30,14 +28,14 @@ parser.add_argument('--quick', action='store_true',
                     help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
                     help="check only modified files")
+parser.add_argument('-d', '--daemon', action='store_true',
+                    help="Start and run the mypy fine-grained incremental daemon")
 parser.add_argument('--scripts-only', action='store_true',
                     help="only check extensionless python scripts")
 parser.add_argument('-a', '--all', action='store_true',
                     help="check all files, bypassing the default exclude list")
 parser.add_argument('--force', action="store_true",
                     help="run tests despite possible provisioning problems")
-parser.add_argument('--linecoverage-report', action='store_true',
-                    help="emit a coverage report under var/")
 args = parser.parse_args()
 
 if not args.force:
@@ -47,13 +45,15 @@ if not args.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
+command_name = "mypy" if not args.daemon else "dmypy"
+
 # Use zulip-py3-venv's mypy if it's available.
 VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", command_name)
 if os.path.exists(MYPY_VENV_PATH):
     mypy_command = MYPY_VENV_PATH
 else:
-    mypy_command = "mypy"
+    mypy_command = command_name
 
 if args.version:
     print("mypy command:", mypy_command)
@@ -76,20 +76,13 @@ if not python_files and not pyi_files:
     sys.exit(0)
 
 extra_args = []
-if args.linecoverage_report:
-    extra_args.append("--linecoverage-report")
-    extra_args.append("var/linecoverage-report")
 if args.quick:
     extra_args.append("--quick")
 
-rc = subprocess.call([mypy_command] + extra_args + python_files + pyi_files)
-
-if args.linecoverage_report:
-    # Move the coverage report to where codecov will look for it.
-    try:
-        os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
-    except OSError:
-        # maybe mypy crashed; exit with its error code
-        pass
+mypy_args = extra_args + python_files + pyi_files
+if args.daemon:
+    rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
+else:
+    rc = subprocess.call([mypy_command] + mypy_args)
 
 sys.exit(rc)

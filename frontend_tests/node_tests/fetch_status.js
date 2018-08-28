@@ -30,7 +30,7 @@ function has_not_found_newest() {
     assert.equal(fetch_status.has_found_newest(), false);
 }
 
-(function test_basics() {
+run_test('basics', () => {
     reset();
 
     fetch_status.start_initial_narrow();
@@ -119,4 +119,4 @@ function has_not_found_newest() {
 
     can_load_older();
     blocked_newer();
-}());
+});

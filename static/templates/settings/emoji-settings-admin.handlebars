@@ -1,22 +1,24 @@
-<div id="emoji-settings" data-name="emoji-settings" class="settings-section {{#if can_admin_emojis}}can-edit{{/if}}">
+<div id="emoji-settings" data-name="emoji-settings" class="settings-section {{#if can_add_emojis}}can-edit{{/if}}">
     <div class="emoji-settings-tip-container">
+        {{#unless is_guest}}
         {{partial "emoji-settings-tip"}}
+        {{/unless}}
     </div>
-    <form class="form-horizontal admin-emoji-form {{#unless can_admin_emojis}}hide{{/unless}}">
+    <form class="form-horizontal admin-emoji-form {{#unless can_add_emojis}}hide{{/unless}}">
         <div class="add-new-emoji-box grey-box">
             <div class="new-emoji-form">
                 <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>
                 <div class="alert" id="admin-emoji-status"></div>
                 <div class="inline-block">
                     <label for="emoji_name">{{t "Emoji name" }}</label>
-                    <input type="text" name="name" id="emoji_name" placeholder="{{t 'new_emoji' }}" />
+                    <input type="text" name="name" id="emoji_name" placeholder="{{t 'leafy green vegetable' }}" />
                 </div>
                 <div class="inline-block">
                     <span id="emoji-file-name"></span>
                     <input type="file" name="emoji_file_input" class="notvisible"
-                      id="emoji_file_input" value="{{t 'Upload emoji' }}"/>
+                      id="emoji_file_input" value="{{t 'Upload image or GIF' }}"/>
                     <button class="button white rounded display-none" id="emoji_image_clear_button">{{t "Clear emoji image" }}</button>
-                    <button class="button rounded" id="emoji_upload_button">{{t "Upload emoji" }}</button>
+                    <button class="button rounded" id="emoji_upload_button">{{t "Upload image or GIF" }}</button>
                 </div>
                 <button id="admin_emoji_submit" type="submit" class="button rounded sea-green">
                     {{t 'Add emoji' }}

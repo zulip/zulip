@@ -3,7 +3,7 @@
 
 define apt::pin(
   $ensure          = present,
-  $explanation     = "${::caller_module_name}: ${name}",
+  $explanation     = "${caller_module_name}: ${name}",
   $order           = '',
   $packages        = '*',
   $priority        = 0,

@@ -5,10 +5,10 @@ zrequire('components');
 
 var noop = function () {};
 
-var LEFT_KEY = { which: 37, preventDefault: noop };
-var RIGHT_KEY = { which: 39, preventDefault: noop };
+var LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation:noop };
+var RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation:noop };
 
-(function test_basics() {
+run_test('basics', () => {
     var keydown_f;
     var click_f;
     var tabs = [];
@@ -32,10 +32,6 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
         self.removeClass = function (c) {
             var tokens = self.class.trim().split(/ +/);
             self.class = _.without(tokens, c).join(' ');
-        };
-
-        self.click = function () {
-            click_f.call(this);
         };
 
         self.data = function (name) {
@@ -164,8 +160,12 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
     assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
     assert.equal(widget.value(), 'translated: Message formatting');
 
+    // Go to same tab twice and make sure we get callback.
     callback_args = undefined;
+    widget.goto('markdown-help');
+    assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
 
+    callback_args = undefined;
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);
     assert.equal(focused_tab, 2);
     assert.equal(tabs[0].class, 'first');
@@ -197,4 +197,4 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
 
     click_f.call(tabs[1]);
     assert.equal(widget.value(), 'translated: Message formatting');
-}());
+});

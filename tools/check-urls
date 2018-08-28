@@ -12,8 +12,8 @@ def check_urls():
                  'analytics/urls.py',
                  'zilencer/urls.py']
 
-    pattern_1 = "\s+\[?url\(.+,\s*'.+'\s*,\s*.*\)"
-    pattern_2 = '\s+\[?url\(.+,\s*".+"\s*,\s*.*\)'
+    pattern_1 = r"\s+\[?url\(.+,\s*'.+'\s*,\s*.*\)"
+    pattern_2 = r'\s+\[?url\(.+,\s*".+"\s*,\s*.*\)'
 
     for url_file in url_files:
         with open(url_file) as f:

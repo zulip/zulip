@@ -1,9 +1,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import argparse
 import subprocess
 
-from .printer import print_err, colors
+from zulint.printer import print_err, colors
 
 from typing import Any, Dict, List
 
@@ -31,13 +32,13 @@ def suppress_line(line: str) -> bool:
             return True
     return False
 
-def check_pyflakes(options, by_lang):
-    # type: (Any, Dict[str, List[str]]) -> bool
-    if len(by_lang['py']) == 0:
+def check_pyflakes(files, options):
+    # type: (List[str], argparse.Namespace) -> bool
+    if len(files) == 0:
         return False
     failed = False
     color = next(colors)
-    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
+    pyflakes = subprocess.Popen(['pyflakes'] + files,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
     assert pyflakes.stdout is not None  # Implied by use of subprocess.PIPE

@@ -2,11 +2,28 @@ var emoji = (function () {
 
 var exports = {};
 
+// `emojis_by_name` is the central data source that is supposed to be
+// used by every widget in the webapp for gathering data for displaying
+// emojis. Emoji picker uses this data to derive data for its own use.
+exports.emojis_by_name = {};
+
 exports.emojis = [];
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
-exports.emojis_by_name = {};
 exports.default_emoji_aliases = {};
+
+// Unfortunately, this list does not currently match on
+// alias names like party_popper, simple_smile, and
+// hammer_and_wrench. But thumbs_up sorts to the top
+// for some other reason.
+exports.frequently_used_emojis_list = [
+    '1f44d',    // +1
+    '1f389',    // tada
+    '1f642',    // slight_smile
+    '2764',     // heart
+    '1f6e0',    // working_on_it
+    '1f419',    // octopus
+];
 
 var default_emojis = [];
 
@@ -16,18 +33,6 @@ var zulip_emoji = {
     emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
     is_realm_emoji: true,
     deactivated: false,
-};
-
-// Emoticons, and which emoji they should become (without colons). Duplicate
-// emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
-// and `templates/zerver/help/enable-emoticon-translations.md`.
-exports.EMOTICON_CONVERSIONS = {
-    ':)': 'smiley',
-    '(:': 'smiley',
-    ':(': 'slightly_frowning_face',
-    '<3': 'heart',
-    ':|': 'expressionless',
-    ':/': 'confused',
 };
 
 exports.update_emojis = function update_emojis(realm_emojis) {
@@ -60,10 +65,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.all_realm_emojis.zulip = zulip_emoji;
     exports.active_realm_emojis.zulip = zulip_emoji;
 
-    exports.emojis_by_name = {};
-    _.each(default_emojis, function (emoji) {
-        exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
-    });
+    exports.build_emoji_data(exports.active_realm_emojis);
 };
 
 exports.initialize = function initialize() {
@@ -82,10 +84,54 @@ exports.initialize = function initialize() {
 
     exports.update_emojis(page_params.realm_emoji);
 
-    // Load the sprite image in the background so that the browser
-    // can cache it for later use.
+    var emojiset = page_params.emojiset;
+    if (page_params.emojiset === 'text') {
+        // If the current emojiset is `text`, then we fallback to the
+        // `google` emojiset on the backend (see zerver/views/home.py)
+        // for displaying emojis in emoji picker and composebox
+        // typeahead. This logic ensures that we do sprite sheet
+        // prefetching for that case.
+        emojiset = 'google';
+    }
+    // Load the sprite image and octopus image in the background, so
+    // that the browser will cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_64.png';
+    sprite.src = '/static/generated/emoji/sheet-' + emojiset + '-64.png';
+    var octopus_image = new Image();
+    octopus_image.src = '/static/generated/emoji/images-' + emojiset + '-64/1f419.png';
+};
+
+exports.build_emoji_data = function (realm_emojis) {
+    exports.emojis_by_name = {};
+    var emoji_dict;
+    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+        emoji_dict = {
+            name: realm_emoji_name,
+            aliases: [realm_emoji_name],
+            is_realm_emoji: true,
+            url: realm_emoji.emoji_url,
+            has_reacted: false,
+        };
+        exports.emojis_by_name[realm_emoji_name] = emoji_dict;
+    });
+
+    _.each(emoji_codes.emoji_catalog, function (codepoints) {
+        _.each(codepoints, function (codepoint) {
+            if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
+                var emoji_name = emoji_codes.codepoint_to_name[codepoint];
+                if (!exports.emojis_by_name.hasOwnProperty(emoji_name)) {
+                    emoji_dict = {
+                        name: emoji_name,
+                        aliases: emoji.default_emoji_aliases[codepoint],
+                        is_realm_emoji: false,
+                        emoji_code: codepoint,
+                        has_reacted: false,
+                    };
+                    exports.emojis_by_name[emoji_name] = emoji_dict;
+                }
+            }
+        });
+    });
 };
 
 exports.build_emoji_upload_widget = function () {
@@ -148,9 +194,9 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
         return match;
     };
 
-    for (var emoticon in exports.EMOTICON_CONVERSIONS) {
-        if (exports.EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
-            replacement_text = ':' + exports.EMOTICON_CONVERSIONS[emoticon] + ':';
+    for (var emoticon in emoji_codes.emoticon_conversions) {
+        if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
+            replacement_text = emoji_codes.emoticon_conversions[emoticon];
             var emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
             translated = translated.replace(emoticon_regex, emoticon_replacer);
         }
@@ -164,3 +210,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = emoji;
 }
+window.emoji = emoji;

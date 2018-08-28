@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, \
 
 import ujson
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
@@ -17,9 +18,12 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, 
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
+from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.upload import upload_backend
+from zerver.lib.users import add_service
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
+from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, clear_database, \
@@ -124,6 +128,10 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
+        # Get consistent data for backend tests.
+        if options["test_suite"]:
+            random.seed(0)
+
         if options["delete"]:
             # Start by clearing all the data in our database
             clear_database()
@@ -132,19 +140,19 @@ class Command(BaseCommand):
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
+                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=True,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
-                    string_id="zephyr", name="MIT", restricted_to_domain=True,
+                    string_id="zephyr", name="MIT", emails_restricted_to_domains=True,
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
-                    string_id="lear", name="Lear & Co.", restricted_to_domain=False,
+                    string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
                     invite_required=False, org_type=Realm.CORPORATE)
 
             # Create test Users (UserProfiles are automatically created,
@@ -203,65 +211,94 @@ class Command(BaseCommand):
             create_users(zulip_realm, zulip_webhook_bots,
                          bot_type=UserProfile.INCOMING_WEBHOOK_BOT, bot_owner=zoe)
             aaron = get_user("AARON@zulip.com", zulip_realm)
+
             zulip_outgoing_bots = [
                 ("Outgoing Webhook", "outgoing-webhook@zulip.com")
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
-            # TODO: Clean up this initial bot creation code
-            Service.objects.create(
-                name="test",
-                user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
-                base_url="http://127.0.0.1:5002/bots/followup",
-                token="abcd1234",
-                interface=1)
+            outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
+            add_service("outgoing-webhook", user_profile=outgoing_webhook, interface=Service.GENERIC,
+                        base_url="http://127.0.0.1:5002", token=generate_api_key())
+
+            # Add the realm internl bots to each realm.
+            create_if_missing_realm_internal_bots()
 
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
-                "Verona": {"description": "A city in Italy",
-                           "invite_only": False, "is_web_public": False},
-                "Denmark": {"description": "A Scandinavian country",
-                            "invite_only": False, "is_web_public": False},
-                "Scotland": {"description": "Located in the United Kingdom",
-                             "invite_only": False, "is_web_public": False},
-                "Venice": {"description": "A northeastern Italian city",
-                           "invite_only": False, "is_web_public": False},
-                "Rome": {"description": "Yet another Italian city",
-                         "invite_only": False, "is_web_public": True}
+                "Verona": {"description": "A city in Italy"},
+                "Denmark": {"description": "A Scandinavian country"},
+                "Scotland": {"description": "Located in the United Kingdom"},
+                "Venice": {"description": "A northeastern Italian city"},
+                "Rome": {"description": "Yet another Italian city", "is_web_public": True}
             }  # type: Dict[str, Dict[str, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list]  # type: List[int]
+
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
-            # of users).
+            # of users). For the test suite, we have a fixed list of
+            # subscriptions to make sure test data is consistent
+            # across platforms.
+
+            subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient]]
+            profiles = UserProfile.objects.select_related().filter(
+                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
+
+            if options["test_suite"]:
+                subscriptions_map = {
+                    'AARON@zulip.com': ['Verona'],
+                    'cordelia@zulip.com': ['Verona'],
+                    'hamlet@zulip.com': ['Verona', 'Denmark'],
+                    'iago@zulip.com': ['Verona', 'Denmark', 'Scotland'],
+                    'othello@zulip.com': ['Verona', 'Denmark', 'Scotland'],
+                    'prospero@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice'],
+                    'ZOE@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice', 'Rome'],
+                    'polonius@zulip.com': ['Verona'],
+                }
+
+                for profile in profiles:
+                    if profile.email not in subscriptions_map:
+                        raise Exception('Subscriptions not listed for user %s' % (profile.email,))
+
+                    for stream_name in subscriptions_map[profile.email]:
+                        stream = Stream.objects.get(name=stream_name)
+                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+                        subscriptions_list.append((profile, r))
+            else:
+                for i, profile in enumerate(profiles):
+                    # Subscribe to some streams.
+                    for type_id in recipient_streams[:int(len(recipient_streams) *
+                                                          float(i)/len(profiles)) + 1]:
+                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
+                        subscriptions_list.append((profile, r))
+
             subscriptions_to_add = []  # type: List[Subscription]
             event_time = timezone_now()
             all_subscription_logs = []  # type: (List[RealmAuditLog])
-            profiles = UserProfile.objects.select_related().filter(
-                is_bot=False, is_guest=False).order_by("email")  # type: Sequence[UserProfile]
-            for i, profile in enumerate(profiles):
-                # Subscribe to some streams.
-                for type_id in recipient_streams[:int(len(recipient_streams) *
-                                                      float(i)/len(profiles)) + 1]:
-                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                    s = Subscription(
-                        recipient=r,
-                        user_profile=profile,
-                        color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
 
-                    subscriptions_to_add.append(s)
+            i = 0
+            for profile, recipient in subscriptions_list:
+                i += 1
+                color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+                s = Subscription(
+                    recipient=recipient,
+                    user_profile=profile,
+                    color=color)
 
-                    log = RealmAuditLog(realm=profile.realm,
-                                        modified_user=profile,
-                                        modified_stream_id=type_id,
-                                        event_last_message_id=0,
-                                        event_type='subscription_created',
-                                        event_time=event_time)
-                    all_subscription_logs.append(log)
+                subscriptions_to_add.append(s)
+
+                log = RealmAuditLog(realm=profile.realm,
+                                    modified_user=profile,
+                                    modified_stream_id=recipient.type_id,
+                                    event_last_message_id=0,
+                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                                    event_time=event_time)
+                all_subscription_logs.append(log)
 
             Subscription.objects.bulk_create(subscriptions_to_add)
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
@@ -289,6 +326,8 @@ class Command(BaseCommand):
             favorite_website = try_add_realm_custom_profile_field(zulip_realm, "GitHub profile",
                                                                   CustomProfileField.URL,
                                                                   hint="Or your personal blog's URL")
+            mentor = try_add_realm_custom_profile_field(zulip_realm, "Mentor",
+                                                        CustomProfileField.USER)
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)
@@ -299,6 +338,7 @@ class Command(BaseCommand):
                 {"id": favorite_editor.id, "value": "emacs"},
                 {"id": birthday.id, "value": "2000-1-1"},
                 {"id": favorite_website.id, "value": "https://github.com/zulip/zulip"},
+                {"id": mentor.id, "value": [hamlet.id]},
             ])
             do_update_user_custom_profile_data(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
@@ -307,6 +347,7 @@ class Command(BaseCommand):
                 {"id": favorite_editor.id, "value": "vim"},
                 {"id": birthday.id, "value": "1900-1-1"},
                 {"id": favorite_website.id, "value": "https://blog.zulig.org"},
+                {"id": mentor.id, "value": [iago.id]},
             ])
         else:
             zulip_realm = get_realm("zulip")
@@ -396,24 +437,15 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_dict = {
-                    "devel": {"description": "For developing",
-                              "invite_only": False, "is_web_public": False},
-                    "all": {"description": "For everything",
-                            "invite_only": False, "is_web_public": False},
-                    "announce": {"description": "For announcements",
-                                 "invite_only": False, "is_web_public": False},
-                    "design": {"description": "For design",
-                               "invite_only": False, "is_web_public": False},
-                    "support": {"description": "For support",
-                                "invite_only": False, "is_web_public": False},
-                    "social": {"description": "For socializing",
-                               "invite_only": False, "is_web_public": False},
-                    "test": {"description": "For testing",
-                             "invite_only": False, "is_web_public": False},
-                    "errors": {"description": "For errors",
-                               "invite_only": False, "is_web_public": False},
-                    "sales": {"description": "For sales discussion",
-                              "invite_only": False, "is_web_public": False}
+                    "devel": {"description": "For developing"},
+                    "all": {"description": "For everything"},
+                    "announce": {"description": "For announcements", 'is_announcement_only': True},
+                    "design": {"description": "For design"},
+                    "support": {"description": "For support"},
+                    "social": {"description": "For socializing"},
+                    "test": {"description": "For testing"},
+                    "errors": {"description": "For errors"},
+                    "sales": {"description": "For sales discussion"}
                 }  # type: Dict[str, Dict[str, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
@@ -430,8 +462,6 @@ class Command(BaseCommand):
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
-                        "invite_only": False,
-                        "is_web_public": False,
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
@@ -464,7 +494,7 @@ class Command(BaseCommand):
                                             modified_user=profile,
                                             modified_stream=stream,
                                             event_last_message_id=0,
-                                            event_type='subscription_created',
+                                            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                             event_time=event_time)
                         all_subscription_logs.append(log)
                 Subscription.objects.bulk_create(subscriptions_to_add)
@@ -497,6 +527,11 @@ class Command(BaseCommand):
                         pointer=user['pointer'])
 
             create_user_groups()
+
+            if not options["test_suite"]:
+                # We populate the analytics database here for
+                # development purpose only
+                call_command('populate_analytics_db')
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]

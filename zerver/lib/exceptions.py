@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Type
+from mypy_extensions import NoReturn
 
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
@@ -15,13 +16,13 @@ class AbstractEnum(Enum):
     # Override all the `Enum` methods that use `_value_`.
 
     def __repr__(self) -> str:
-        return str(self)
+        return str(self)  # nocoverage
 
     def value(self) -> None:
-        assert False
+        raise AssertionError("Not implemented")
 
-    def __reduce_ex__(self, proto: int) -> None:
-        assert False
+    def __reduce_ex__(self, proto: int) -> NoReturn:
+        raise AssertionError("Not implemented")
 
 class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
@@ -33,6 +34,7 @@ class ErrorCode(AbstractEnum):
     MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
+    UNEXPECTED_WEBHOOK_EVENT_TYPE = ()
     BAD_EVENT_QUEUE_ID = ()
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
@@ -41,7 +43,7 @@ class ErrorCode(AbstractEnum):
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
 
-    This class can be invoked in several ways.
+    This class can be invoked in a couple ways.
 
      * Easiest, but completely machine-unreadable:
 
@@ -51,16 +53,6 @@ class JsonableError(Exception):
        so translation is required.  Because the text will vary depending
        on the user's language, it's not possible for code to distinguish
        this error from others in a non-buggy way.
-
-     * Partially machine-readable, with an error code:
-
-         raise JsonableError(_("No such widget: {}").format(widget_name),
-                             ErrorCode.NO_SUCH_WIDGET)
-
-       Now the error's `code` attribute can be used, both in server
-       and client code, to identify this type of error.  The data
-       (here, the widget name) is still embedded inside a translated
-       string, and can't be accessed by code.
 
      * Fully machine-readable, with an error code and structured data:
 
@@ -77,13 +69,13 @@ class JsonableError(Exception):
 
          raise NoSuchWidgetError(widget_name)
 
-       Now both server and client code see a `widget_name` attribute.
+       Now both server and client code see a `widget_name` attribute
+       and an error code.
 
     Subclasses may also override `http_status_code`.
     '''
 
-    # Override this in subclasses, or just pass a `code` argument
-    # to the JsonableError constructor.
+    # Override this in subclasses, as needed.
     code = ErrorCode.BAD_REQUEST  # type: ErrorCode
 
     # Override this in subclasses if providing structured data.
@@ -93,10 +85,7 @@ class JsonableError(Exception):
     # like 403 or 404.
     http_status_code = 400  # type: int
 
-    def __init__(self, msg: str, code: Optional[ErrorCode]=None) -> None:
-        if code is not None:
-            self.code = code
-
+    def __init__(self, msg: str) -> None:
         # `_msg` is an implementation detail of `JsonableError` itself.
         self._msg = msg  # type: str
 
@@ -151,3 +140,6 @@ class StreamDoesNotExistError(JsonableError):
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
         super().__init__(msg)
+
+class BugdownRenderingException(Exception):
+    pass

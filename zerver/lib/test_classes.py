@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
                     Sized, Tuple, Union)
 
+from django.apps import apps
+from django.db.migrations.state import StateApps
 from django.urls import resolve
 from django.conf import settings
 from django.test import TestCase
@@ -10,11 +12,15 @@ from django.test.client import (
 )
 from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
+from django.db.migrations.executor import MigrationExecutor
+from django.db import connection
 from django.db.utils import IntegrityError
+from django.http import HttpRequest
 
+from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
-from zerver.views.users import add_service
+from zerver.lib.users import get_api_key
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
@@ -33,7 +39,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     get_stream,
-    get_user,
+    get_client,
     get_user,
     get_realm,
     Client,
@@ -45,9 +51,9 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-
 from zilencer.models import get_remote_server_by_uuid
-
+from zerver.decorator import do_two_factor_login
+from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 import base64
 import mock
@@ -84,6 +90,11 @@ class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
     maxDiff = None  # type: Optional[int]
 
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
+
     '''
     WRAPPER_COMMENT:
 
@@ -98,6 +109,7 @@ class ZulipTestCase(TestCase):
     '''
     DEFAULT_SUBDOMAIN = "zulip"
     DEFAULT_REALM = Realm.objects.get(string_id='zulip')
+    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
     def set_http_host(self, kwargs: Dict[str, Any]) -> None:
         if 'subdomain' in kwargs:
@@ -285,6 +297,20 @@ class ZulipTestCase(TestCase):
             self.assertFalse(self.client.login(username=email, password=password,
                                                realm=realm))
 
+    def login_2fa(self, user_profile: UserProfile) -> None:
+        """
+        We need this function to call request.session.save().
+        do_two_factor_login doesn't save session; in normal request-response
+        cycle this doesn't matter because middleware will save the session
+        when it finds it dirty; however,in tests we will have to do that
+        explicitly.
+        """
+        request = HttpRequest()
+        request.session = self.client.session
+        request.user = user_profile
+        do_two_factor_login(request, user_profile)
+        request.session.save()
+
     def logout(self) -> None:
         self.client.logout()
 
@@ -299,7 +325,8 @@ class ZulipTestCase(TestCase):
             realm_subdomain: Optional[str]="zuliptest",
             from_confirmation: Optional[str]='', full_name: Optional[str]=None,
             timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: Optional[List[str]]=[], **kwargs: Any) -> HttpResponse:
+            default_stream_groups: Optional[List[str]]=[],
+            source_realm: Optional[str]='', **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
@@ -320,6 +347,7 @@ class ZulipTestCase(TestCase):
             'terms': True,
             'from_confirmation': from_confirmation,
             'default_stream_group': default_stream_groups,
+            'source_realm': source_realm,
         }
         if realm_in_root_domain is not None:
             payload['realm_in_root_domain'] = realm_in_root_domain
@@ -330,7 +358,7 @@ class ZulipTestCase(TestCase):
         from django.core.mail import outbox
         if url_pattern is None:
             # This is a bit of a crude heuristic, but good enough for most tests.
-            url_pattern = settings.EXTERNAL_HOST + "(\S+)>"
+            url_pattern = settings.EXTERNAL_HOST + r"(\S+)>"
         for message in reversed(outbox):
             if email_address in message.to:
                 return re.search(url_pattern, message.body).groups()[0]
@@ -347,7 +375,8 @@ class ZulipTestCase(TestCase):
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
-                api_key = get_user(identifier, get_realm(realm)).api_key
+                user = get_user(identifier, get_realm(realm))
+                api_key = get_api_key(user)
             API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
@@ -562,8 +591,9 @@ class ZulipTestCase(TestCase):
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
+        client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream])
+        bulk_remove_subscriptions([user_profile], [stream], client)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email: str, streams: Iterable[str],
@@ -619,8 +649,15 @@ class ZulipTestCase(TestCase):
         with \
                 self.settings(ERROR_BOT=None), \
                 mock.patch('zerver.lib.bugdown.timeout', side_effect=KeyError('foo')), \
-                mock.patch('zerver.lib.bugdown.log_bugdown_error'):
+                mock.patch('zerver.lib.bugdown.bugdown_logger'):
             yield
+
+    def create_default_device(self, user_profile: UserProfile,
+                              number: str="+12223334444") -> None:
+        phone_device = PhoneDevice(user=user_profile, name='default',
+                                   confirmed=True, number=number,
+                                   key='abcd', method='sms')
+        phone_device.save()
 
 class WebhookTestCase(ZulipTestCase):
     """
@@ -676,7 +713,7 @@ class WebhookTestCase(ZulipTestCase):
     def build_webhook_url(self, *args: Any, **kwargs: Any) -> str:
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = self.test_user.api_key
+            api_key = get_api_key(self.test_user)
             url = self.URL_TEMPLATE.format(api_key=api_key,
                                            stream=self.STREAM_NAME)
         else:
@@ -708,3 +745,39 @@ class WebhookTestCase(ZulipTestCase):
     def do_test_message(self, msg: Message, expected_message: Optional[str]) -> None:
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)
+
+class MigrationsTestCase(ZulipTestCase):
+    """
+    Test class for database migrations inspired by this blog post:
+       https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
+    Documented at https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html
+    """
+    @property
+    def app(self) -> str:
+        return apps.get_containing_app_config(type(self).__module__).name
+
+    migrate_from = None  # type: Optional[str]
+    migrate_to = None  # type: Optional[str]
+
+    def setUp(self) -> None:
+        assert self.migrate_from and self.migrate_to, \
+            "TestCase '{}' must define migrate_from and migrate_to properties".format(type(self).__name__)
+        migrate_from = [(self.app, self.migrate_from)]  # type: List[Tuple[str, str]]
+        migrate_to = [(self.app, self.migrate_to)]  # type: List[Tuple[str, str]]
+        executor = MigrationExecutor(connection)
+        old_apps = executor.loader.project_state(migrate_from).apps
+
+        # Reverse to the original migration
+        executor.migrate(migrate_from)
+
+        self.setUpBeforeMigration(old_apps)
+
+        # Run the migration to test
+        executor = MigrationExecutor(connection)
+        executor.loader.build_graph()  # reload.
+        executor.migrate(migrate_to)
+
+        self.apps = executor.loader.project_state(migrate_to).apps
+
+    def setUpBeforeMigration(self, apps: StateApps) -> None:
+        pass  # nocoverage

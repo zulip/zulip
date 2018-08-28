@@ -8,7 +8,7 @@ import re
 import importlib
 from zerver.lib.actions import internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message
-from zerver.models import UserProfile, get_user
+from zerver.models import UserProfile, get_active_user
 from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
     is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
 from zerver.lib.bot_config import get_bot_config, ConfigError
@@ -84,7 +84,7 @@ class EmbeddedBotHandler:
         recipients = ','.join(message['to']).split(',')
 
         if len(message['to']) == 1:
-            recipient_user = get_user(recipients[0], self.user_profile.realm)
+            recipient_user = get_active_user(recipients[0], self.user_profile.realm)
             internal_send_private_message(self.user_profile.realm, self.user_profile,
                                           recipient_user, message['content'])
         else:

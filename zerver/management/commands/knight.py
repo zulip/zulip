@@ -28,6 +28,7 @@ ONLY perform this on customer request from an authorized person.
                             dest='permission',
                             action="store",
                             default='administer',
+                            choices=['administer', 'api_super_user', ],
                             help='Permission to grant/remove.')
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to knight")

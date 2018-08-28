@@ -36,7 +36,7 @@ set_global('settings_account', {
 set_global('message_live_update', {
 });
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 
 var me = {
     email: 'me@example.com',
@@ -53,7 +53,7 @@ function initialize() {
 
 initialize();
 
-(function test_updates() {
+run_test('updates', () => {
     var person;
 
     var isaac = {
@@ -129,16 +129,14 @@ initialize();
     person = people.get_by_email(me.email);
     assert(person.timezone);
 
-    var error_msg;
-    global.blueslip.error = function (error_message_arg) {
-        error_msg = error_message_arg;
-    };
-
+    blueslip.set_test_data('error', 'Got update_person event for unexpected user 29');
+    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 29');
     assert(!user_events.update_person({user_id: 29, full_name: 'Sir Isaac Newton'}));
-    assert.equal(error_msg, "Got update_person event for unexpected user 29");
+    assert.equal(blueslip.get_test_logs('error').length, 2);
+    blueslip.clear_test_data();
 
     me.profile_data = {};
     user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value'}});
     person = people.get_by_email(me.email);
     assert.equal(person.profile_data[3], 'Value');
-}());
+});

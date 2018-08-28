@@ -36,12 +36,15 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
+    var avatar_url = people.small_avatar_url_for_person(user);
+
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
     var item = {
         display_value: user.full_name,
         user_id: user.user_id,
         email: user.email,
+        img_src: avatar_url,
     };
 
     return item;
@@ -54,11 +57,13 @@ exports.get_email_from_item = function (item) {
 exports.append_person = function (opts) {
     var person = opts.person;
     var pill_widget = opts.pill_widget;
+    var avatar_url = people.small_avatar_url_for_person(person);
 
     pill_widget.appendValidatedData({
         display_value: person.full_name,
         user_id: person.user_id,
         email: person.email,
+        img_src: avatar_url,
     });
     if (pill_widget.clear_text !== undefined) {
         pill_widget.clear_text();
@@ -82,9 +87,60 @@ exports.typeahead_source = function (pill_widget) {
     return items;
 };
 
+exports.append_user = function (user, pills) {
+    if (user) {
+        exports.append_person({
+            pill_widget: pills,
+            person: user,
+        });
+    } else {
+        blueslip.warn('Undefined user in function append_user');
+    }
+};
+
+exports.create_pills = function (pill_container) {
+    var pills = input_pill.create({
+        container: pill_container,
+        create_item_from_text: exports.create_item_from_email,
+        get_text_from_item: exports.get_email_from_item,
+    });
+    return pills;
+};
+
+exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
+    input.typeahead({
+        items: 5,
+        fixed: true,
+        dropup: true,
+        source: function () {
+            return exports.typeahead_source(pills);
+        },
+        highlighter: function (item) {
+            return typeahead_helper.render_person(item);
+        },
+        matcher: function (item) {
+            var query = this.query.toLowerCase();
+            query = query.replace(/\u00A0/g, String.fromCharCode(32));
+            return item.email.toLowerCase().indexOf(query) !== -1
+                    || item.full_name.toLowerCase().indexOf(query) !== -1;
+        },
+        sorter: function (matches) {
+            return typeahead_helper.sort_recipientbox_typeahead(
+                this.query, matches, "");
+        },
+        updater: function (user) {
+            exports.append_user(user, pills);
+            input.focus();
+            update_func();
+        },
+        stopAdvance: true,
+    });
+};
+
 return exports;
 }());
 
 if (typeof module !== 'undefined') {
     module.exports = user_pill;
 }
+window.user_pill = user_pill;

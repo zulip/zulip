@@ -1,13 +1,10 @@
 from __future__ import absolute_import
 
 import os
+import re
 import sys
-import hmac
-import time
-import base64
-from hashlib import sha1
-from six.moves.urllib.parse import urlparse, parse_qs
-from typing import Any, AnyStr, Dict, List, Optional, Text, Union
+from six.moves.urllib.parse import urlparse
+from typing import Any, Text, Tuple, Optional
 
 if False:
     from thumbor.context import Context
@@ -34,53 +31,20 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key):
-    # type: (str) -> Optional[Text]
+def get_secret(key, default_value=None, development_only=False):
+    # type: (str, Optional[Any], bool) -> Optional[Any]
+    if development_only and PRODUCTION:
+        return default_value
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
-    return None
+    return default_value
 
 THUMBOR_EXTERNAL_TYPE = 'external'
 THUMBOR_S3_TYPE = 's3'
 THUMBOR_LOCAL_FILE_TYPE = 'local_file'
 
-def force_text(s, encoding='utf-8'):
-    # type: (Union[Text, bytes], str) -> Text
-    """converts a string to a text string"""
-    if isinstance(s, Text):
-        return s
-    elif isinstance(s, bytes):
-        return s.decode(encoding)
-    else:
-        raise TypeError("force_text expects a string type")
-
-def get_sign_hash(raw, key):
-    # type: (Text, Text) -> Text
-    hashed = hmac.new(key.encode('utf-8'), raw.encode('utf-8'), sha1)
-    return base64.b64encode(hashed.digest()).decode()
-
-def get_url_params(url):
-    # type: (Text) -> Dict[str, Any]
-    data = parse_qs(urlparse(url).query)
-    return {k: v[0] for k, v in data.items() if v}
-
-def sign_is_valid(url, context):
-    # type: (str, Context) -> bool
-    size = '{0}x{1}'.format(context.request.width, context.request.height)
-    data = parse_qs(urlparse(url).query)
-    source_type = data.get('source_type', [''])[0]
-    sign = data.get('sign', [''])[0]
-    if not source_type or not sign:
-        return False
-    url_path = url.rsplit('?', 1)[0]
-    if url_path.startswith('files/'):
-        url_path = url_path.split('/', 1)[1]
-    raw = u'_'.join([
-        force_text(url_path),
-        force_text(size),
-        force_text(source_type),
-    ])
-    secret_key = get_secret('thumbor_key')
-    if secret_key is None or sign != get_sign_hash(raw, secret_key):
-        return False
-    return True
+def separate_url_and_source_type(url):
+    # type: (Text) -> Tuple[Text, Text]
+    THUMBNAIL_URL_PATT = re.compile('^(?P<actual_url>.+)/source_type/(?P<source_type>.+)')
+    matches = THUMBNAIL_URL_PATT.match(url)
+    return (matches.group('source_type'), matches.group('actual_url'))

@@ -15,8 +15,6 @@ set_global('popovers', {
 });
 
 zrequire('hash_util');
-zrequire('hashchange');
-zrequire('narrow');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 zrequire('people');
@@ -43,25 +41,21 @@ global.people.add_in_realm(bob);
 global.people.add_in_realm(me);
 global.people.initialize_current_user(me.user_id);
 
-(function test_get_conversation_li() {
-    var test_conversation = 'foo@example.com,bar@example.com';
-    blueslip.set_test_data('warn', 'Unknown conversation: ' + test_conversation);
-    blueslip.set_test_data('warn', 'Unknown emails: ' + test_conversation); // people.js
+run_test('get_conversation_li', () => {
+    var test_conversation = 'foo@example.com,bar@example.com'; // people.js
     pm_list.get_conversation_li(test_conversation);
-    assert.equal(blueslip.get_test_logs('warn').length, 2);
-    blueslip.clear_test_data();
-}());
+});
 
-(function test_close() {
+run_test('close', () => {
     var collapsed;
     $('ul.expanded_private_messages').remove = function () {
         collapsed = true;
     };
     pm_list.close();
     assert(collapsed);
-}());
+});
 
-(function test_build_private_messages_list() {
+run_test('build_private_messages_list', () => {
     var active_conversation_1 = "alice@zulip.com,bob@zulip.com";
     var active_conversation_2 = 'me@zulip.com,alice@zulip.com';
     var max_conversations = 5;
@@ -120,9 +114,9 @@ global.people.initialize_current_user(me.user_id);
     expected_data.want_show_more_messages_links = false;
     pm_list._build_private_messages_list(active_conversation_2, max_conversations);
     assert.deepEqual(template_data, expected_data);
-}());
+});
 
-(function test_expand_and_update_private_messages() {
+run_test('expand_and_update_private_messages', () => {
     var collapsed;
     $('ul.expanded_private_messages').remove = function () {
         collapsed = true;
@@ -222,9 +216,9 @@ global.people.initialize_current_user(me.user_id);
     narrow_state.active = function () { return false; };
     pm_list.update_private_messages();
 
-}());
+});
 
-(function test_update_dom_with_unread_counts() {
+run_test('update_dom_with_unread_counts', () => {
     var total_value = $.create('total-value-stub');
     var total_count = $.create('total-count-stub');
     var private_li = $("#global_filters > li[data-name='private']");
@@ -289,4 +283,4 @@ global.people.initialize_current_user(me.user_id);
     assert(toggle_button_set);
     assert.equal(child_value.text(), '');
     assert.equal(total_value.text(), '');
-}());
+});

@@ -5,89 +5,67 @@
 {{ render_bundle('landing-page') }}
 {% endblock %}
 
-{% block portico_content %}
+{% block content %}
 
-{% include 'zerver/gradients.html' %}
-{% include 'zerver/landing_nav.html' %}
+<div class="app portico-page">
 
-<div class="portico-landing">
-    <div class="main">
-        {% if error_message %}
-        <div class="alert alert-danger">
-            {{ error_message }}
-        </div>
-        {% else %}
-        <div class="pricing-model">
-            <div class="padded-content">
-                <div class="pricing-container">
-                    <div class="block">
-                        <div class="plan-title responsive-title">
-                            Zulip Cloud subscription for {{ realm_name }}
-                        </div>
-                        {% if payment_method_added %}
-                        <div class="alert alert-info">
-                            The card has been saved successfully.
-                        </div>
+    {% include 'zerver/billing_nav.html' %}
+
+    {{ render_bundle('translations') }}
+
+    <div class="portico-landing billing-upgrade-page">
+        <div class="hero small-hero"></div>
+
+        <div class="page-content">
+            <div class="main">
+
+                {% if error_message %}
+                <div class="alert alert-danger" id="error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+
+                <h1>{{ _("Billing") }}</h1>
+                {% if admin_access %}
+                <ul class="nav nav-tabs" id="billing-tabs">
+                    <li class="active"><a href="#overview">Overview</a></li>
+                    <li><a href="#payment-method">Payment Method</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="overview">
+                        <p>Your current plan is <strong>{{ plan_name }}</strong></p>
+                        <p>You are paying for <strong>{{ seat_count }} users</strong>.</p>
+                        <p>Your plan will renew on <strong>{{ renewal_date }}</strong> for <strong>${{ renewal_amount }}</strong>.</p>
+                        {% if prorated_charges %}
+                        <p>You have <strong>${{ prorated_charges }}</strong> in prorated charges that will be added to your next bill.</p>
+                        {% elif prorated_credits %}
+                        <p>You have <strong>${{ prorated_credits }}</strong> in prorated credits that will be automatically applied to your next bill.</p>
                         {% endif %}
-                        {% if num_cards %}
-                        <div class="alert alert-info">
-                            {% if num_cards > 1 %}
-                            You have {{ num_cards }} saved cards.
-                            {% else %}
-                            You have one saved card.
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                        <div class="price-box" tabindex="-1">
-                            <div class="text-content">
-                                <h2>Premium</h2>
-                                <div class="description">
-                                    Make Zulip your home
-                                </div>
-                                <hr />
-                                <ul class="feature-list">
-                                    <li>Full search history</li>
-                                    <li>File storage up to 10 GB per user</li>
-                                    <li>Full access to enterprise features like Google and GitHub OAuth</li>
-                                    <li>Priority commercial support</li>
-                                    <li>Funds the Zulip open source project</li>
-                                </ul>
-                            </div>
-                            <div class="bottom">
-                                <div class="text-content">
-                                    <div class="">
-                                        <div class="price">8</div>
-                                        <div class="details">
-                                            per active user, per month
-                                            <br />
-                                            "$80/year billed annually"
-                                        </div>
-                                    </div>
-                                    <form method="post">
-                                        {{ csrf_input }}
-                                        <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                            data-key="{{ publishable_key }}"
-                                            data-image="/static/images/logo/zulip-icon-128x128.png"
-                                            data-name="Zulip"
-                                            data-description="Zulip Cloud Premium"
-                                            data-panel-label="Save card"
-                                            {% if num_cards %}
-                                            data-label="Add another card"
-                                            {% else %}
-                                            data-label="Add card"
-                                            {% endif %}
-                                            data-email="{{ email }}"
-                                            data-locale="auto">
-                                        </script>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                    <div class="tab-pane" id="payment-method">
+                        <p>Your current payment method is <strong>{{ payment_method }}</strong>.</p>
                     </div>
                 </div>
+
+                <div class="support-link">
+                    <p>Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> for billing history or to make changes to your subscription.</p>
+                </div>
+
+                <script>
+                $('#billing-tabs a').click(function (e) {
+                    e.preventDefault();
+                    $(this).tab('show');
+                })
+                </script>
+                {% else %}
+                <p>
+                    You must be an organization administrator or a
+                    billing administrator to view this page.
+                </p>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

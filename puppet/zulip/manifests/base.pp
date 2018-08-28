@@ -1,10 +1,3 @@
-# TODO: Move this to a proper types file
-define safepackage ( $ensure = present ) {
-  if !defined(Package[$title]) {
-    package { $title: ensure => $ensure }
-  }
-}
-
 class zulip::base {
   include apt
   $base_packages = [
@@ -23,6 +16,8 @@ class zulip::base {
     'moreutils',
     # Required for using HTTPS in apt repositories.
     'apt-transport-https',
+    # Needed for the cron jobs installed by puppet
+    'cron',
   ]
   package { $base_packages: ensure => 'installed' }
 
@@ -98,18 +93,18 @@ class zulip::base {
     group  => 'zulip',
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
-    ensure => 'file',
+    ensure  => 'file',
     require => File['/etc/zulip'],
-    mode   => '0644',
-    owner  => 'zulip',
-    group  => 'zulip',
+    mode    => '0644',
+    owner   => 'zulip',
+    group   => 'zulip',
   }
   file { '/etc/zulip/zulip-secrets.conf':
-    ensure => 'file',
+    ensure  => 'file',
     require => File['/etc/zulip'],
-    mode   => '0640',
-    owner  => 'zulip',
-    group  => 'zulip',
+    mode    => '0640',
+    owner   => 'zulip',
+    group   => 'zulip',
   }
 
   file { '/etc/security/limits.conf':

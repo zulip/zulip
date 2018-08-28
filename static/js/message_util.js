@@ -13,7 +13,7 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
         return;
     }
 
-    opts = _.extend({messages_are_new: false, delay_render: false}, opts);
+    opts = _.extend({messages_are_new: false}, opts);
 
     loading.destroy_indicator($('#page_loading_indicator'));
     $('#first_run_message').remove();
@@ -28,3 +28,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_util;
 }
+window.message_util = message_util;

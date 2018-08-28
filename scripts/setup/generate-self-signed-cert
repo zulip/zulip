@@ -33,11 +33,11 @@ set -x
 KEYFILE=/etc/ssl/private/zulip.key
 CERTFILE=/etc/ssl/certs/zulip.combined-chain.crt
 
-if [ -n "$EXISTS_OK" ] && [ -e "$KEYFILE" -a -e "$CERTFILE" ]; then
+if [ -n "$EXISTS_OK" ] && [ -e "$KEYFILE" ] && [ -e "$CERTFILE" ]; then
     exit 0
 fi
 
-if [ -z "$FORCE" ] && [ -e "$KEYFILE" -o -e "$CERTFILE" ]; then
+if [ -z "$FORCE" ] && { [ -e "$KEYFILE" ] || [ -e "$CERTFILE" ]; }; then
     echo "$0: certificate and/or key already exists; use --force to overwrite." >&2
     exit 1
 fi

@@ -10,8 +10,9 @@ from typing import Any, Dict, Optional, List
 import markdown
 
 import zerver.lib.api_test_helpers
+from zerver.lib.openapi import get_openapi_fixture
 
-MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+?)\s*\))?\}')
+MACRO_REGEXP = re.compile(r'\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}')
 CODE_EXAMPLE_REGEX = re.compile(r'\# \{code_example\|\s*(.+?)\s*\}')
 
 PYTHON_CLIENT_CONFIG = """
@@ -138,8 +139,12 @@ class APICodeExamplesPreprocessor(Preprocessor):
     def render_fixture(self, function: str, name: Optional[str]=None) -> List[str]:
         fixture = []
 
-        if name:
-            fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function][name]
+        # We assume that if the function we're rendering starts with a slash
+        # it's a path in the endpoint and therefore it uses the new OpenAPI
+        # format.
+        if function.startswith('/'):
+            path, method = function.rsplit(':', 1)
+            fixture_dict = get_openapi_fixture(path, method, name)
         else:
             fixture_dict = zerver.lib.api_test_helpers.FIXTURES[function]
 

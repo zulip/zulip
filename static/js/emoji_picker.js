@@ -10,16 +10,8 @@ var APPROX_WIDTH = 255;
 // The functionalities for reacting to a message with an emoji
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
-exports.emoji_collection = {};
 exports.complete_emoji_catalog = [];
-exports.frequently_used_emojis_list = [
-    '1f44d',    // thumbs_up
-    '1f389',    // party_popper
-    '1f642',    // simple_smile
-    '2764',     // heart
-    '1f6e0',    // hammer_and_wrench
-    '1f419',    // octopus
-];
+
 var current_message_emoji_popover_elem;
 var emoji_catalog_last_coordinates = {
     section: 0,
@@ -34,11 +26,11 @@ var section_head_offsets = [];
 function get_all_emoji_categories() {
     return [
         { name: "Popular", icon: "fa-thumbs-o-up" },
-        { name: "People", icon: "fa-smile-o" },
-        { name: "Nature", icon: "fa-leaf" },
-        { name: "Foods", icon: "fa-cutlery" },
-        { name: "Activity", icon: "fa-soccer-ball-o" },
-        { name: "Places", icon: "fa-car" },
+        { name: "Smileys & People", icon: "fa-smile-o" },
+        { name: "Animals & Nature", icon: "fa-leaf" },
+        { name: "Food & Drink", icon: "fa-cutlery" },
+        { name: "Activities", icon: "fa-soccer-ball-o" },
+        { name: "Travel & Places", icon: "fa-car" },
         { name: "Objects", icon: "fa-lightbulb-o" },
         { name: "Symbols", icon: "fa-hashtag" },
         { name: "Custom", icon: "fa-cog" },
@@ -103,18 +95,10 @@ function show_emoji_catalog() {
 }
 
 exports.generate_emoji_picker_data = function (realm_emojis) {
-    exports.emoji_collection = {};
     exports.complete_emoji_catalog = {};
     exports.complete_emoji_catalog.Custom = [];
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
-        exports.emoji_collection[realm_emoji_name] = {
-            name: realm_emoji_name,
-            aliases: [realm_emoji_name],
-            is_realm_emoji: true,
-            url: realm_emoji.emoji_url,
-            has_reacted: false,
-        };
-        exports.complete_emoji_catalog.Custom.push(exports.emoji_collection[realm_emoji_name]);
+        exports.complete_emoji_catalog.Custom.push(emoji.emojis_by_name[realm_emoji_name]);
     });
 
     _.each(emoji_codes.emoji_catalog, function (codepoints, category) {
@@ -122,16 +106,10 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
         _.each(codepoints, function (codepoint) {
             if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
                 var emoji_name = emoji_codes.codepoint_to_name[codepoint];
-                if (!exports.emoji_collection.hasOwnProperty(emoji_name)) {
-                    exports.emoji_collection[emoji_name] = {
-                        name: emoji_name,
-                        aliases: emoji.default_emoji_aliases[codepoint],
-                        is_realm_emoji: false,
-                        css_class: codepoint,
-                        has_reacted: false,
-                    };
+                if (emoji.emojis_by_name.hasOwnProperty(emoji_name) &&
+                    emoji.emojis_by_name[emoji_name].is_realm_emoji !== true) {
                     exports.complete_emoji_catalog[category].push(
-                        exports.emoji_collection[emoji_name]
+                        emoji.emojis_by_name[emoji_name]
                     );
                 }
             }
@@ -139,11 +117,11 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     });
 
     exports.complete_emoji_catalog.Popular = [];
-    _.each(exports.frequently_used_emojis_list, function (codepoint) {
+    _.each(emoji.frequently_used_emojis_list, function (codepoint) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             var emoji_name = emoji_codes.codepoint_to_name[codepoint];
-            if (exports.emoji_collection.hasOwnProperty(emoji_name)) {
-                exports.complete_emoji_catalog.Popular.push(exports.emoji_collection[emoji_name]);
+            if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {
+                exports.complete_emoji_catalog.Popular.push(emoji.emojis_by_name[emoji_name]);
             }
         }
     });
@@ -166,7 +144,7 @@ var generate_emoji_picker_content = function (id) {
     if (id !== undefined) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
-    _.each(exports.emoji_collection, function (emoji_dict) {
+    _.each(emoji.emojis_by_name, function (emoji_dict) {
         emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
             return _.contains(emojis_used, alias);
         });
@@ -274,7 +252,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
     }
     var user_id = page_params.user_id;
     var reaction = _.find(message.reactions, function (reaction) {
-        return (reaction.user.id === user_id) && (_.contains(aliases, reaction.emoji_name));
+        return reaction.user.id === user_id && _.contains(aliases, reaction.emoji_name);
     });
     if (reaction) {
         return reaction.emoji_name;
@@ -322,7 +300,7 @@ exports.toggle_selected_emoji = function () {
 };
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
-    return (number_to_round - (number_to_round % multiple));
+    return number_to_round - number_to_round % multiple;
 }
 
 function reset_emoji_showcase() {
@@ -334,7 +312,7 @@ function update_emoji_showcase($focused_emoji) {
     // of converting emoji names like :100:, :1234: etc to number.
     var focused_emoji_name = $focused_emoji.attr("data-emoji-name");
     var canonical_name = emoji.get_canonical_name(focused_emoji_name);
-    var focused_emoji_dict = exports.emoji_collection[canonical_name];
+    var focused_emoji_dict = emoji.emojis_by_name[canonical_name];
 
     var emoji_dict = _.extend({}, focused_emoji_dict, {
         name: focused_emoji_name.replace(/_/g, ' '),
@@ -392,7 +370,7 @@ function get_next_emoji_coordinates(move_by) {
                 var prev_multiple = round_off_to_previous_multiple(max_len, 6);
                 next_index =  prev_multiple + current_index;
                 next_index = next_index >= max_len
-                    ? (prev_multiple + current_index - 6)
+                    ? prev_multiple + current_index - 6
                     : next_index;
             }
         }
@@ -445,7 +423,7 @@ exports.navigate = function (event_name) {
         var filter_text = $(".emoji-popover-filter").val();
         var is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
         if (event_name === "down_arrow" ||
-           (is_cursor_at_end && event_name === "right_arrow")) {
+           is_cursor_at_end && event_name === "right_arrow") {
             selected_emoji.focus();
             if (current_section === 0 && current_index < 6) {
                 $(".emoji-popover-emoji-map").scrollTop(0);
@@ -459,8 +437,8 @@ exports.navigate = function (event_name) {
             return true;
         }
         return false;
-    } else if ((current_section === 0 && current_index < 6 && event_name === 'up_arrow') ||
-               (current_section === 0 && current_index === 0 && event_name === 'left_arrow')) {
+    } else if (current_section === 0 && current_index < 6 && event_name === 'up_arrow' ||
+               current_section === 0 && current_index === 0 && event_name === 'left_arrow') {
         if (selected_emoji) {
             // In this case, we're move up into the reaction
             // filter. Here, we override the default browser
@@ -548,7 +526,7 @@ exports.emoji_select_tab = function (elt) {
     var elt_height = elt.height();
     var currently_selected = "";
     section_head_offsets.forEach(function (o) {
-        if (scrolltop + elt_height/2 >= o.position_y) {
+        if (scrolltop + elt_height / 2 >= o.position_y) {
             currently_selected = o.section;
         }
     });
@@ -563,7 +541,7 @@ exports.emoji_select_tab = function (elt) {
     }
     if (currently_selected) {
         $('.emoji-popover-tab-item.active').removeClass('active');
-        $('.emoji-popover-tab-item[data-tab-name="'+currently_selected+'"]').addClass('active');
+        $('.emoji-popover-tab-item[data-tab-name="' + currently_selected + '"]').addClass('active');
     }
 };
 
@@ -736,3 +714,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = emoji_picker;
 }
+window.emoji_picker = emoji_picker;

@@ -1,8 +1,9 @@
+zrequire('unread');
 zrequire('topic_data');
 
 set_global('channel', {});
 
-(function test_basics() {
+run_test('basics', () => {
     var stream_id = 55;
 
     topic_data.add_message({
@@ -58,9 +59,9 @@ set_global('channel', {});
     topic_data.remove_message({
         stream_id: 9999999,
     });
-}());
+});
 
-(function test_server_history() {
+run_test('server_history', () => {
     var stream_id = 66;
 
     topic_data.add_message({
@@ -124,11 +125,66 @@ set_global('channel', {});
     ]);
     history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
-}());
+});
 
+run_test('test_unread_logic', () => {
+    var stream_id = 77;
 
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 201,
+        topic_name: 'toPic1',
+    });
 
-(function test_server_history_end_to_end() {
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 45,
+        topic_name: 'topic2',
+    });
+
+    var history = topic_data.get_recent_names(stream_id);
+    assert.deepEqual(history, ['toPic1', 'topic2']);
+
+    const msgs = [
+        { id: 150, subject: 'TOPIC2' }, // will be ignored
+        { id: 61, subject: 'unread1' },
+        { id: 60, subject: 'unread1' },
+        { id: 20, subject: 'UNREAD2' },
+    ];
+
+    _.each(msgs, (msg) => {
+        msg.type = 'stream';
+        msg.stream_id = stream_id;
+        msg.unread = true;
+    });
+
+    unread.process_loaded_messages(msgs);
+
+    history = topic_data.get_recent_names(stream_id);
+    assert.deepEqual(history, ['toPic1', 'unread1', 'topic2', 'UNREAD2']);
+});
+
+run_test('test_stream_has_topics', () => {
+    var stream_id = 88;
+
+    assert.equal(topic_data.stream_has_topics(stream_id), false);
+
+    topic_data.find_or_create(stream_id);
+
+    // This was a bug before--just creating a bucket does not
+    // mean we have actual topics.
+    assert.equal(topic_data.stream_has_topics(stream_id), false);
+
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 888,
+        topic_name: 'whatever',
+    });
+
+    assert.equal(topic_data.stream_has_topics(stream_id), true);
+});
+
+run_test('server_history_end_to_end', () => {
     topic_data.reset();
 
     var stream_id = 99;
@@ -158,4 +214,4 @@ set_global('channel', {});
 
     var history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
-}());
+});

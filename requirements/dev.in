@@ -11,13 +11,16 @@ moto==1.3.3
 Twisted==18.4.0
 
 # Needed for documentation links test
-Scrapy==1.5.0
+Scrapy==1.5.1
 
 # Needed to compute test coverage
 coverage==4.5.1
 
 # fake for LDAP testing
 fakeldap==0.6.1
+
+# For testing mock http requests
+httpretty==0.9.5
 
 # For sorting imports
 isort==4.3.4
@@ -26,7 +29,7 @@ isort==4.3.4
 pycodestyle==2.4.0
 
 # Needed to run pyflakes linter
-pyflakes==1.6.0
+pyflakes==2.0.0
 
 # Needed to run tests in parallel
 tblib==1.3.2

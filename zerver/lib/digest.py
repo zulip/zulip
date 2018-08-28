@@ -10,9 +10,9 @@ from django.template import loader
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.notifications import build_message_list, encode_stream, \
-    one_click_unsubscribe_link
+from zerver.lib.notifications import build_message_list, one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
+from zerver.lib.url_encoding import encode_stream
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
     Realm
@@ -67,7 +67,7 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
     if timezone_now().weekday() != VALID_DIGEST_DAY:
         return
 
-    for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+    for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
         if not should_process_digest(realm.string_id):
             continue
 
@@ -146,7 +146,7 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
 def gather_new_users(user_profile: UserProfile, threshold: datetime.datetime) -> Tuple[int, List[str]]:
     # Gather information on users in the realm who have recently
     # joined.
-    if user_profile.realm.is_zephyr_mirror_realm:
+    if not user_profile.can_access_all_realm_members():
         new_users = []  # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(

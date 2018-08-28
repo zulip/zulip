@@ -1,10 +1,8 @@
-set_global('page_params', {
+var _page_params = {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+', 'emoji'],
-});
+};
 
-set_global('feature_flags', {
-    alert_words: true,
-});
+set_global('page_params', _page_params);
 
 zrequire('people');
 zrequire('alert_words');
@@ -75,7 +73,7 @@ const message_with_emoji = {
     alerted: true,
 };
 
-(function test_notifications() {
+run_test('notifications', () => {
     assert(!alert_words.notifies(regular_message));
     assert(!alert_words.notifies(own_message));
     assert(alert_words.notifies(other_message));
@@ -85,9 +83,9 @@ const message_with_emoji = {
     assert(alert_words.notifies(unsafe_word_message));
     assert(alert_words.notifies(alert_domain_message));
     assert(alert_words.notifies(message_with_emoji));
-}());
+});
 
-(function test_munging() {
+run_test('munging', () => {
     let saved_content = regular_message.content;
     alert_words.process_message(regular_message);
     assert.equal(saved_content, regular_message.content);
@@ -118,4 +116,4 @@ const message_with_emoji = {
 
     alert_words.process_message(message_with_emoji);
     assert.equal(message_with_emoji.content, `<p>I <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title="heart"> <span class='alert-word'>emoji</span>!</p>`);
-}());
+});

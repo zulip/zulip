@@ -27,7 +27,7 @@ curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|update-message|example}
+{generate_code_example(python)|/messages/{message_id}:patch|example}
 
 </div>
 
@@ -67,7 +67,7 @@ You only have permission to edit a message if:
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|update-message.md}
+{generate_api_arguments_table|zulip.yaml|/messages/{message_id}:patch}
 
 ## Response
 
@@ -75,9 +75,9 @@ You only have permission to edit a message if:
 
 A typical successful JSON response may look like:
 
-{generate_code_example|update-message|fixture}
+{generate_code_example|/messages/{message_id}:patch|fixture(200)}
 
 A typical JSON response for when one doesn't have the permission to
 edit a particular message:
 
-{generate_code_example|update-message-edit-permission-error|fixture}
+{generate_code_example|/messages/{message_id}:patch|fixture(400)}

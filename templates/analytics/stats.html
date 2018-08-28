@@ -1,7 +1,7 @@
 {% extends "zerver/base.html" %}
 
 {% block page_params %}
-<script type="text/javascript">
+<script>
     var page_params = {{ page_params|safe }};
 </script>
 {% endblock %}
@@ -19,7 +19,7 @@
     <div class="page-content">
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
-            <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_realm_name }}{% endtrans %}</h1>
+            <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_name }}{% endtrans %}</h1>
 
             <div class="left">
                 <div class="chart-container">
@@ -54,7 +54,7 @@
                         </div>
                         <div class="buttons">
                             <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-                            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                            <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
                             <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
                             <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
                             <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
@@ -74,7 +74,7 @@
                         <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
                         <div class="buttons">
                             <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-                            <button class="button selected" type="button" data-user="realm">{{ _("Everyone") }}</button>
+                            <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
                             <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
                             <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
                             <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
@@ -85,13 +85,22 @@
 
                 <div class="chart-container">
                     <h1>{{ _("Active users") }}</h1>
+                    <div class="button-container">
+                        <div class="buttons button-active-users">
+                            <button class="button" type="button" id="1day_actives_button">{{ _("Daily actives") }}</button>
+                            <button class="button" type="button" id="15day_actives_button">{{ _("15 day actives") }}</button>
+                            <button class="button" type="button" id="all_time_actives_button">{{ _("Total users") }}</button>
+                        </div>
+                    </div>
                     <div id="id_number_of_users">
                         <div class="spinner"></div>
                     </div>
                     <div id="users_hover_info" class="number-stat">
                         <span id="users_hover_date"></span>
                         <b id="users_hover_humans">{{ _("Users") }}: </b>
-                        <span id="users_hover_humans_value"></span>
+                        <span id="users_hover_1day_value"></span>
+                        <span id="users_hover_15day_value"></span>
+                        <span id="users_hover_all_time_value"></span>
                     </div>
                 </div>
             </div>

@@ -22,6 +22,8 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     encode_email_address,
+    ensure_stream,
+    decode_email_address,
 )
 from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
@@ -46,6 +48,39 @@ from io import StringIO
 from django.conf import settings
 
 from typing import Any, Callable, Dict, Mapping, Union, Optional
+
+class TestEncodeDecode(ZulipTestCase):
+    def test_encode_decode(self) -> None:
+        realm = get_realm('zulip')
+        stream_name = 'dev. help'
+        stream = ensure_stream(realm, stream_name)
+        email_address = encode_email_address(stream)
+        self.assertTrue(email_address.startswith('dev%0046%0032help'))
+        self.assertTrue(email_address.endswith('@testserver'))
+        tup = decode_email_address(email_address)
+        assert tup is not None
+        (decoded_stream_name, token) = tup
+        self.assertEqual(decoded_stream_name, stream_name)
+        self.assertEqual(token, stream.email_token)
+
+        email_address = email_address.replace('+', '.')
+        tup = decode_email_address(email_address)
+        assert tup is not None
+        (decoded_stream_name, token) = tup
+        self.assertEqual(decoded_stream_name, stream_name)
+        self.assertEqual(token, stream.email_token)
+
+        email_address = email_address.replace('@testserver', '@zulip.org')
+        self.assertEqual(decode_email_address(email_address), None)
+
+        with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
+            tup = decode_email_address(email_address)
+            assert tup is not None
+            (decoded_stream_name, token) = tup
+            self.assertEqual(decoded_stream_name, stream_name)
+            self.assertEqual(token, stream.email_token)
+
+        self.assertEqual(decode_email_address('bogus'), None)
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:

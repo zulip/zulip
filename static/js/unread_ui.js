@@ -38,7 +38,7 @@ exports.set_count_toggle_button = function (elem, count) {
             return elem.stop(true, true).hide();
         }
         return elem.hide(500);
-    } else if ((count > 0) && (count < 1000)) {
+    } else if (count > 0 && count < 1000) {
         elem.show(500);
         return elem.text(count);
     }
@@ -87,8 +87,8 @@ function consider_bankruptcy() {
     }
 
     var now = new XDate(true).getTime() / 1000;
-    if ((page_params.unread_msgs.count > 500) &&
-            (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
+    if (page_params.unread_msgs.count > 500 &&
+            now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
         var rendered_modal = templates.render('bankruptcy_modal', {
             unread_count: page_params.unread_msgs.count});
         $('#bankruptcy-unread-count').html(rendered_modal);
@@ -98,7 +98,7 @@ function consider_bankruptcy() {
     }
 }
 
-function _initialize() {
+exports.initialize = function () {
     // No matter how the bankruptcy modal is closed, show unread counts after.
     $("#bankruptcy").on("hide", function () {
         unread_ui.enable();
@@ -108,15 +108,12 @@ function _initialize() {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
-        $(this).after($("<div>").addClass("alert alert-info settings_committed")
-            .text(i18n.t("Bringing you to your latest messages…")));
+        $('#bankruptcy-loader').css('margin', '0 auto');
+        loading.make_indicator($('#bankruptcy-loader'),
+                               {text: i18n.t('Marking all messages as read…')});
     });
 
     consider_bankruptcy();
-}
-
-exports.initialize = function () {
-    i18n.ensure_i18n(_initialize);
 };
 
 return exports;
@@ -124,3 +121,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = unread_ui;
 }
+window.unread_ui = unread_ui;

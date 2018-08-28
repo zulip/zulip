@@ -9,15 +9,19 @@ import subprocess
 import os
 import sys
 import logging
+import time
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
 
@@ -60,6 +64,10 @@ if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
                        deploy_path])
 
+# Setup the thumbor venv
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-thumbor-venv"),
+                       deploy_path])
+
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
                        deploy_path])
@@ -92,6 +100,8 @@ usermessage_index_migrations = [
     "[ ] 0095_index_unread_user_messages",
     "[ ] 0098_index_has_alert_word_user_messages",
     "[ ] 0099_index_wildcard_mentioned_user_messages",
+    "[ ] 0177_user_message_add_and_index_is_private_flag",
+    "[ ] 0180_usermessage_add_active_mobile_push_notification",
 ]
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves
@@ -100,12 +110,13 @@ migrations_needed = False
 if not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
-                                                preexec_fn=su_to_zulip)
+                                                preexec_fn=su_to_zulip).decode("utf-8")
     need_create_large_indexes = False
-    for ln in migrations_output.split(b"\n"):
-        if ln.strip().startswith(b"[ ]"):
+    for ln in migrations_output.split("\n"):
+        line_str = ln.strip()
+        if line_str.startswith("[ ]"):
             migrations_needed = True
-            if ln.strip() in usermessage_index_migrations:
+            if line_str in usermessage_index_migrations:
                 need_create_large_indexes = True
     if need_create_large_indexes:
         logging.info("Creating some expensive indexes before starting downtime.")
@@ -117,13 +128,19 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
+core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
+worker_services = ["zulip-workers:*"]
+# Stop and start thumbor service only if thumbor is installed.
+if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+    core_server_services.append("zulip-thumbor")
+
 if not args.skip_puppet or migrations_needed:
     # By default, we shut down the service to apply migrations and
     # puppet changes, to minimize risk of issues due to inconsistent
     # state.
     logging.info("Stopping Zulip...")
-    subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
-                           "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["supervisorctl", "stop"] + core_server_services + worker_services,
+                          preexec_fn=su_to_zulip)
 
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")
@@ -138,10 +155,6 @@ subprocess.check_call(["./manage.py", "create_realm_internal_bots"], preexec_fn=
 
 logging.info("Restarting Zulip...")
 subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
-
-if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
-    subprocess.check_call(["supervisorctl", "start", "process-fts-updates"], preexec_fn=su_to_zulip)
-
 logging.info("Upgrade complete!")
 
 subprocess.check_call(["./scripts/purge-old-deployments"])

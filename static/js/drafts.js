@@ -64,9 +64,9 @@ var draft_model = (function () {
 exports.draft_model = draft_model;
 
 exports.snapshot_message = function () {
-    if (!compose_state.composing() || (compose_state.message_content() === "")) {
+    if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
-        // message, don't try to snapshot.
+        // message or the message is shorter than 2 characters long, don't try to snapshot.
         return;
     }
 
@@ -126,11 +126,11 @@ exports.restore_draft = function (draft_id) {
     }
 
     var draft_copy = _.extend({}, draft);
-    if ((draft_copy.type === "stream" &&
+    if (draft_copy.type === "stream" &&
          draft_copy.stream.length > 0 &&
-             draft_copy.subject.length > 0) ||
-                 (draft_copy.type === "private" &&
-                  draft_copy.reply_to.length > 0)) {
+             draft_copy.subject.length > 0 ||
+                 draft_copy.type === "private" &&
+                  draft_copy.reply_to.length > 0) {
         draft_copy = _.extend({replying_to_message: draft_copy},
                               draft_copy);
     }
@@ -207,7 +207,7 @@ exports.setup_page = function (callback) {
             data_array.push([id, data[id]]);
         });
         var data_sorted = data_array.sort(function (draft_a,draft_b) {
-            return draft_a[1].updatedAt-draft_b[1].updatedAt;
+            return draft_a[1].updatedAt - draft_b[1].updatedAt;
         });
         _.each(data_sorted, function (data_element) {
             var draft = data_element[1];
@@ -222,7 +222,7 @@ exports.setup_page = function (callback) {
                 // In case there is no stream for the draft, we need a
                 // single space char for proper rendering of the stream label
                 var space_string = new Handlebars.SafeString("&nbsp;");
-                var stream = (draft.stream.length > 0 ? draft.stream : space_string);
+                var stream = draft.stream.length > 0 ? draft.stream : space_string;
                 var draft_topic = draft.subject.length === 0 ?
                     compose.empty_topic_placeholder() : draft.subject;
 
@@ -276,7 +276,7 @@ exports.setup_page = function (callback) {
         return drafts;
     }
 
-    function _populate_and_fill() {
+    function populate_and_fill() {
         $('#drafts_table').empty();
         var drafts = format_drafts(draft_model.get());
         var rendered = templates.render('draft_table_body',{
@@ -293,12 +293,6 @@ exports.setup_page = function (callback) {
         }
 
         setup_event_handlers();
-    }
-
-    function populate_and_fill() {
-        i18n.ensure_i18n(function () {
-            _populate_and_fill();
-        });
     }
 
     remove_old_drafts();
@@ -320,7 +314,7 @@ function drafts_initialize_focus(event_name) {
 
     var draft_element;
     if (event_name === "up_arrow") {
-        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length-1] + '"]');
+        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]');
     } else if (event_name === "down_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
     }
@@ -416,7 +410,7 @@ exports.drafts_handle_events = function (e, event_key) {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
             exports.restore_draft(focused_draft);
         } else {
-            var first_draft = draft_id_arrow[draft_id_arrow.length-1];
+            var first_draft = draft_id_arrow[draft_id_arrow.length - 1];
             exports.restore_draft(first_draft);
         }
     }
@@ -435,7 +429,7 @@ exports.launch = function () {
         var draft_list = drafts.draft_model.get();
         var draft_id_list = Object.getOwnPropertyNames(draft_list);
         if (draft_id_list.length > 0) {
-            var last_draft = draft_id_list[draft_id_list.length-1];
+            var last_draft = draft_id_list[draft_id_list.length - 1];
             var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
             var focus_element = last_draft_element[0].children[0];
             focus_element.focus();
@@ -458,3 +452,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = drafts;
 }
+window.drafts = drafts;

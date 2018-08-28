@@ -7,6 +7,7 @@ import logging
 import os
 import pwd
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -15,7 +16,7 @@ import json
 import uuid
 
 if False:
-    from typing import Sequence, Set, Any
+    from typing import Sequence, Set, Any, Dict, List
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -153,7 +154,7 @@ def release_deployment_lock():
 def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
-    print("+ %s" % (" ".join(args)))
+    print("+ %s" % (" ".join(map(shlex.quote, args)),))
 
     if kwargs.get('shell'):
         # With shell=True we can only pass string to Popen
@@ -163,7 +164,8 @@ def run(args, **kwargs):
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args)) +
+        print(WHITEONRED + "Error running a subcommand of %s: %s" %
+              (sys.argv[0], " ".join(map(shlex.quote, args))) +
               ENDC)
         print(WHITEONRED + "Actual error output for the subcommand is just above this." +
               ENDC)
@@ -265,7 +267,7 @@ def generate_sha1sum_emoji(zulip_path):
     ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
     sha = hashlib.sha1()
 
-    filenames = ['emoji_map.json', 'build_emoji', 'emoji_setup_utils.py']
+    filenames = ['emoji_map.json', 'build_emoji', 'emoji_setup_utils.py', 'emoji_names.py']
 
     for filename in filenames:
         file_path = os.path.join(ZULIP_EMOJI_DIR, filename)
@@ -303,3 +305,57 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
     for directory in dirs_to_keep:
         if verbose:
             print("Keeping used %s: %s" % (dir_type, directory))
+
+def parse_lsb_release():
+    # type: () -> Dict[str, str]
+    distro_info = {}
+    try:
+        # For performance reasons, we read /etc/lsb-release directly,
+        # rather than using the lsb_release command; this saves ~50ms
+        # in several places in provisioning and the installer
+        with open('/etc/lsb-release', 'r') as fp:
+            data = [line.strip().split('=') for line in fp]
+        for k, v in data:
+            if k not in ['DISTRIB_CODENAME', 'DISTRIB_ID']:
+                # We only return to the caller the values that we get
+                # from lsb_release in the exception code path.
+                continue
+            distro_info[k] = v
+    except FileNotFoundError:
+        # Unfortunately, Debian stretch doesn't yet have an
+        # /etc/lsb-release, so we instead fetch the pieces of data
+        # that we use from the `lsb_release` command directly.
+        vendor = subprocess_text_output(["lsb_release", "-is"])
+        codename = subprocess_text_output(["lsb_release", "-cs"])
+        distro_info = dict(
+            DISTRIB_CODENAME=codename,
+            DISTRIB_ID=vendor
+        )
+    return distro_info
+
+def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
+    # type: (List[str], str, bool, List[str]) -> bool
+    # Check whether the files or package_versions passed as arguments
+    # changed compared to the last execution.
+    sha1sum = hashlib.sha1()
+    for path in paths:
+        with open(path, 'rb') as file_to_hash:
+            sha1sum.update(file_to_hash.read())
+
+    # The ouput of tools like build_pygments_data depends
+    # on the version of some pip packages as well.
+    for package_version in package_versions:
+        sha1sum.update(package_version.encode("utf-8"))
+
+    hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+    new_hash = sha1sum.hexdigest()
+    with open(hash_path, 'a+') as hash_file:
+        hash_file.seek(0)
+        last_hash = hash_file.read()
+
+        if is_force or (new_hash != last_hash):
+            hash_file.seek(0)
+            hash_file.truncate()
+            hash_file.write(new_hash)
+            return True
+    return False

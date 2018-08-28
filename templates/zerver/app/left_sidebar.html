@@ -5,19 +5,19 @@
             <li data-name="home" class="global-filter active-filter home-link" title="{{ _('All messages') }} (Esc)">
                 <a href="#">
                     <span class="filter-icon">
-                        <i class="icon-vector-home"></i>
+                        <i class="fa fa-home" aria-hidden="true"></i>
                     </span>
                     <span class="hover-underline">{{ _('All messages') }}</span>
                     <span class="count">
                         <span class="value"></span>
                     </span>
                 </a>
-                <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>
+                <span class="arrow stream-sidebar-arrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
             </li>
             <li data-name="private" class="global-filter" title="{{ _('Private messages') }} (P)">
                 <a href="#narrow/is/private">
                     <span class="filter-icon">
-                        <i class="icon-vector-envelope"></i>
+                        <i class="fa fa-envelope" aria-hidden="true"></i>
                     </span>
                     <span class="hover-underline">{{ _('Private messages') }}</span>
                     <span class="count">
@@ -28,15 +28,18 @@
             <li data-name="starred" class="global-filter">
                 <a href="#narrow/is/starred">
                     <span class="filter-icon">
-                        <i class="icon-vector-star"></i>
+                        <i class="fa fa-star" aria-hidden="true"></i>
                     </span>
                     <span class="hover-underline">{{ _('Starred messages') }}</span>
+                    <span class="count">
+                        <span class="value"></span>
+                    </span>
                 </a>
             </li>
             <li data-name="mentioned" class="global-filter">
                 <a href="#narrow/is/mentioned">
                     <span class="filter-icon">
-                        <i class="fa fa-at"></i>
+                        <i class="fa fa-at" aria-hidden="true"></i>
                     </span>
                     <span class="hover-underline">{{ _('Mentions') }}</span>
                     <span class="count">
@@ -47,17 +50,17 @@
         </ul>
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Subscribed streams') }}">{{ _('STREAMS') }}</h4>
-                <i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
-                <i id="streams_filter_icon" class='icon-vector-search' data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
+                <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
+                <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
             </div>
             <div id="topics_header">
-                <a href="" class="show-all-streams"> <i class="icon-vector-chevron-left"></i>{{ _('All streams') }}</a>
+                <a href="" class="show-all-streams"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{ _('All streams') }}</a>
             </div>
             <div id="stream-filters-container" class="scrolling_list">
                 <div class="input-append notdisplayed">
                     <input class="stream-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
-                        <i class="icon-vector-remove"></i>
+                        <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
                 <ul id="stream_filters" class="filters"></ul>

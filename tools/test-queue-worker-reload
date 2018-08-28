@@ -86,7 +86,7 @@ if __name__ == '__main__':
     logfile.seek(0)
 
     print("Attempting to modify a file")
-    subprocess.call(['touch', 'zerver/lib/actions.py'])
+    os.utime('zerver/lib/actions.py')
     failed = check_worker_launch(logfile_name)
 
     run_dev.send_signal(signal.SIGINT)

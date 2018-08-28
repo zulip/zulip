@@ -81,14 +81,6 @@ Files: static/audio/zulip.*
 Copyright: 2011 Vidsyn
 License: CC-0-1.0
 
-Files: static/third/thirdparty-fonts.css
-Copyright: 2012-2013 Dave Gandy
-License: Expat
-
-Files: static/third/fontawesome/*
-Copyright: 2012-2013 Dave Gandy
-License: SIL-OFL-1.1
-
 Files: static/third/bootstrap/bootstrap-btn.css
 Copyright: 2011-2014 Twitter, Inc
 License: Expat
@@ -136,18 +128,10 @@ Files: static/third/jquery-filedrop/jquery.filedrop.js
 Copyright: Resopollution
 License: Expat
 
-Files: static/third/jquery-form/jquery.form.js
-Copyright: M. Alsup
-License: Expat or GPL-2.0
-
 Files: static/third/jquery-idle/jquery.idle.js
 Copyright: 2011-2013 Henrique Boaventura
 License: Expat
 Comment: The software has been modified.
-
-Files: static/third/jquery-throttle-debounce/*
-Copyright: 2010 "Cowboy" Ben Alman
-License: Expat or GPL
 
 Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
@@ -157,10 +141,6 @@ Files: static/third/sockjs/sockjs-0.3.4.js
 Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
 License: Expat and public-domain
-
-Files: static/third/sorttable/sorttable.js
-Copyright: 2007 Stuart Langridge
-License: X11
 
 Files: static/third/sourcesans/*
 Copyright: 2010, 2012, 2014 Adobe Systems Incorporated

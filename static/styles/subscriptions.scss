@@ -79,10 +79,6 @@
     text-align: left;
 }
 
-#create_or_filter_stream_row > .subscription_table_elem {
-    text-align: left;
-}
-
 .subscription_header {
     min-height: 47px;
 }
@@ -190,25 +186,7 @@
     border: 1px solid hsl(0, 0%, 68%);
 }
 
-.sub_arrow {
-    float: right;
-    line-height: 47px;
-    padding: 0 15px 0 0;
-}
-
-#create_or_filter_stream_row td {
-    background-color: hsl(0, 0%, 95%);
-    border-color: hsl(0, 0%, 73%);
-    border-bottom: 1px solid hsl(0, 0%, 73%);
-}
-
-#create_or_filter_stream_row input[type="text"] {
-    width: 220px;
-    margin: 5px 0 20px 38px;
-}
-
 form#add_new_subscription {
-    float: right;
     margin: 0;
 }
 
@@ -246,7 +224,7 @@ form#add_new_subscription {
 
 .sub_settings_title {
     line-height: 30px;
-    margin: 10px 0;
+    margin: 10px 0 0 0;
     font-size: 16px;
 }
 
@@ -425,7 +403,7 @@ form#add_new_subscription {
 }
 
 .subscriptions-header .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile .icon-vector-chevron-left {
+#settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0px);
     opacity: 0;
@@ -440,7 +418,7 @@ form#add_new_subscription {
 }
 
 .subscriptions-header.slide-left .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile.slide-left .icon-vector-chevron-left {
+#settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
     transform: translate(-0px, 0px);
     opacity: 1;
 }
@@ -508,6 +486,8 @@ form#add_new_subscription {
 .subscriptions-container .left .search-container {
     padding: 6px 8px;
     border-bottom: 1px solid hsl(0, 0%, 86%);
+    display: flex;
+    justify-content: space-between;
 }
 
 .subscriptions-container .right .display-type {
@@ -517,11 +497,11 @@ form#add_new_subscription {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-.subscriptions-container .display-type.preview:after {
+.subscriptions-container .display-type.preview::after {
     content: "Preview";
 }
 
-.subscriptions-container .display-type.preferences:after {
+.subscriptions-container .display-type.preferences::after {
     content: "Preferences";
 }
 
@@ -586,6 +566,10 @@ form#add_new_subscription {
 }
 
 .stream-creation-body #make-invite-only .radio {
+    margin: 5px;
+}
+
+.stream-creation-body #make-invite-only .grey-box .checkbox {
     margin: 5px;
 }
 
@@ -680,7 +664,7 @@ form#add_new_subscription {
     font-size: 1.1em;
 }
 
-.stream-row .icon .icon-vector-lock {
+.stream-row .icon .fa-lock {
     font-size: 1.4em;
 }
 
@@ -738,8 +722,8 @@ form#add_new_subscription {
     line-height: 1.5;
 }
 
-#subscription_overlay .stream-description .stream-description-editable:empty:after,
-.stream-row .sub-info-box .description:empty:after {
+#subscription_overlay .stream-description .stream-description-editable:empty::after,
+.stream-row .sub-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
     color: hsl(0, 0%, 66%);
@@ -882,7 +866,7 @@ form#add_new_subscription {
     transition: all 0.3s ease;
 }
 
-#subscription_overlay .editable:empty:before {
+#subscription_overlay .editable:empty::before {
     content: "\f040";
     font-family: "FontAwesome";
     font-size: 0.8rem;
@@ -952,23 +936,35 @@ form#add_new_subscription {
     display: block;
 }
 
+#stream_privacy_modal ul.grey-box {
+    border-style: none;
+}
+
+#stream_privacy_modal ul.grey-box li,
 #subscription_overlay ul.grey-box li {
     border-bottom: 1px solid hsl(0, 0%, 86%);
     padding: 5px 0px;
+}
+
+#stream_privacy_modal ul.grey-box li input[type=checkbox] {
+    margin-top: 4px;
 }
 
 #subscription_overlay ul.grey-box li input[type=checkbox] {
     margin-top: 0px;
 }
 
+#stream_privacy_modal ul.grey-box li:last-of-type,
 #subscription_overlay ul.grey-box li:last-of-type {
     border-bottom: none;
 }
 
+#stream_privacy_modal ul.grey-box li .sp-replacer,
 #subscription_overlay ul.grey-box li .sp-replacer {
     box-shadow: none;
 }
 
+#stream_privacy_modal ul.grey-box li input[type=radio],
 #subscription_overlay ul.grey-box li input[type=radio] {
     margin-right: 5px;
 }

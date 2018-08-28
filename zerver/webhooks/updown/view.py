@@ -10,7 +10,8 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.models import Client, UserProfile
 
 SUBJECT_TEMPLATE = "{service_url}"
@@ -77,4 +78,4 @@ def get_event_type(event: Dict[str, Any]) -> str:
         event_type = event_type_match.group(1)
         if event_type in EVENT_TYPE_BODY_MAPPER:
             return event_type
-    raise JsonableError(_('Unsupported Updown event type: %s') % (event['event'],))
+    raise UnexpectedWebhookEventType('Updown', event['event'])

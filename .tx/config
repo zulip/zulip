@@ -14,7 +14,7 @@ source_lang = en
 type = KEYVALUEJSON
 file_filter = static/locale/<lang>/translations.json
 
-[zulip.messages]
+[zulip.mobile]
 source_file = static/locale/en/mobile.json
 source_lang = en
 type = KEYVALUEJSON

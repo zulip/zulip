@@ -5,3 +5,7 @@ trusty:
 xenial:
   base_image: buildpack-deps:xenial-scm
   extra_packages: virtualenv postgresql-9.5
+
+bionic:
+  base_image: buildpack-deps:bionic-scm
+  extra_packages: postgresql-10

@@ -1,7 +1,8 @@
 
 import os
+import shutil
 import subprocess
-from scripts.lib.zulip_tools import run, ENDC, WARNING
+from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,7 +36,14 @@ VENV_DEPENDENCIES = [
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
+    "libssl-dev",           # Needed to build pycurl and other libraries
 ]
+
+codename = parse_lsb_release()["DISTRIB_CODENAME"]
+
+if codename != "trusty":
+    # Workaround for the fact that trusty has a different package name here.
+    VENV_DEPENDENCIES.append("virtualenv")
 
 THUMBOR_VENV_DEPENDENCIES = [
     "libcurl4-openssl-dev",
@@ -149,6 +157,9 @@ def try_to_copy_venv(venv_path, new_packages):
                                                     source=source_venv_path,
                                                     target=venv_path).split()
         try:
+            # TODO: We can probably remove this in a few months, now
+            # that we can expect that virtualenv-clone is present in
+            # all of our recent virtualenvs.
             run(cmd)
         except Exception:
             # Virtualenv-clone is not installed. Install it and try running
@@ -194,7 +205,7 @@ def create_log_entry(target_log, parent, copied_packages, new_packages):
 def copy_parent_log(source_log, target_log):
     # type: (str, str) -> None
     if os.path.exists(source_log):
-        run('cp {} {}'.format(source_log, target_log).split())
+        shutil.copyfile(source_log, target_log)
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -230,7 +241,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
         do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
-        run(["touch", success_stamp])
+        open(success_stamp, 'w').close()
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
@@ -240,6 +251,13 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
+
+def add_cert_to_pipconf():
+    # type: () -> None
+    conffile = os.path.expanduser("~/.pip/pip.conf")
+    confdir = os.path.expanduser("~/.pip/")
+    os.makedirs(confdir, exist_ok=True)
+    run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # type: (str, str, List[str]) -> None
@@ -260,6 +278,11 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Switch current Python context to the virtualenv.
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
+
+    # use custom certificate if needed
+    if os.environ.get('CUSTOM_CA_CERTIFICATES'):
+        print("Configuring pip to use custom CA certificates...")
+        add_cert_to_pipconf()
 
     try:
         install_venv_deps(requirements_file)

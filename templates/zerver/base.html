@@ -20,17 +20,22 @@
 
         {% block page_params %}
         {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
-        <script type="text/javascript">
+        <script>
         var page_params = {debug_mode: false};
         </script>
         {% endblock %}
+        <!-- This is a temporary block to enable webpack transition
+        This allows pages requiring common files via webpack to override
+        this block -->
+        {% block commonjs %}
         {{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce)) }}
+        {% endblock %}
         {% block customhead %}
         {% endblock %}
 
-        <!-- this is required because we want to put a custom head in
+        {# this is required because we want to put a custom head in
         `zerver/portico.html` that isn't overwritten like the
-        `customhead` -->
+        `customhead` #}
         {% block porticocustomhead %}
         {% endblock %}
     </head>

@@ -26,9 +26,18 @@ from typing import Any, Dict, List, Optional
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from zerver.lib.str_utils import force_bytes
 import base64
 import struct
+from typing import Union
+
+def force_bytes(s: Union[str, bytes], encoding: str='utf-8') -> bytes:
+    """converts a string to binary string"""
+    if isinstance(s, bytes):
+        return s
+    elif isinstance(s, str):
+        return s.encode(encoding)
+    else:
+        raise TypeError("force_bytes expects a string type")
 
 # Some DER encoding stuff. Bleh. This is because the ccache contains a
 # DER-encoded krb5 Ticket structure, whereas Webathena deserializes

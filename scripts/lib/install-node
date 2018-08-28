@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 ZULIP_PATH="$(dirname "$0")/../.."
 ZULIP_SRV="/srv"
@@ -8,7 +8,7 @@ if [ "$TRAVIS" ] ; then
 fi
 YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
 node_version=8.11.1
-yarn_version=1.5.1
+yarn_version=1.7.0
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
@@ -16,34 +16,37 @@ yarn_version=1.5.1
 export HOME=/root
 
 current_node_version="none"
-if hash node 2>/dev/null; then
+if node_wrapper_path="$(command -v node)"; then
     current_node_version="$(node --version)"
 fi
 
-if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ]; then
+if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
     echo "Node version $node_version and yarn version $yarn_version are already installed."
     exit 0
 fi
 
-if [ "$current_node_version" != "v$node_version" ]; then
+if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
     export NVM_DIR=/usr/local/nvm
     if ! [ -e "$NVM_DIR/nvm.sh" ]; then
-        wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+        wget_opts=(-nv)
+        if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
+            wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
+        fi
+        wget "${wget_opts[@]}" -O- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
     fi
 
+    # shellcheck source=/dev/null
     source "$NVM_DIR/nvm.sh"
     nvm install "$node_version" && nvm alias default "$node_version"
-    export NODE_BIN="$(nvm which default)"
+    NODE_BIN="$(nvm which default)"
 
     # Fix messed-up uid=500 and group write bits produced by nvm
-    n=$(which node)
-    n=${n%/bin/node}
+    n=${NODE_BIN%/bin/node}
     chown -R root:root "$n"
     chmod -R go-w "$n"
 
-    # Install node wrapper to /usr/local/bin
-    cp "$ZULIP_PATH/scripts/setup/node-wrapper" /usr/local/bin/node
-    sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
+    # Install node symlink to /usr/local/bin
+    ln -nsf "$NODE_BIN" /usr/local/bin/node
 fi
 
 # Work around the fact that apparently sudo doesn't clear the HOME

@@ -28,7 +28,9 @@ set_global('narrow_state', {});
 set_global('pm_list', {});
 set_global('resize', {});
 set_global('server_events', {});
-set_global('stream_list', {});
+set_global('stream_list', {
+    maybe_scroll_narrow_into_view: () => {},
+});
 
 muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;
@@ -43,14 +45,16 @@ function stub_message_view(list) {
 function make_home_msg_list() {
     var table_name = 'whatever';
     var filter = new Filter();
-    var opts = {};
 
-    var list = new message_list.MessageList(table_name, filter, opts);
+    var list = new message_list.MessageList({
+        table_name: table_name,
+        filter: filter,
+    });
     return list;
 }
 
 function make_all_list() {
-    return new message_list.MessageList();
+    return new message_list.MessageList({});
 }
 
 function reset_lists() {
@@ -239,7 +243,7 @@ function test_backfill_idle(idle_config) {
     });
 }
 
-(function test_initialize() {
+run_test('initialize', () => {
     reset_lists();
 
     var step1 = initial_fetch_step();
@@ -254,7 +258,7 @@ function test_backfill_idle(idle_config) {
     var idle_config = step2.finish();
 
     test_backfill_idle(idle_config);
-}());
+});
 
 
 function simulate_narrow() {
@@ -267,16 +271,16 @@ function simulate_narrow() {
         return 'operators-stub';
     };
 
-    var msg_list = new message_list.MessageList(
-        'zfilt',
-        filter
-    );
+    var msg_list = new message_list.MessageList({
+        table_name: 'zfilt',
+        filter: filter,
+    });
     set_global('current_msg_list', msg_list);
 
     return msg_list;
 }
 
-(function test_loading_newer() {
+run_test('loading_newer', () => {
     function test_dup_new_fetch(msg_list) {
         assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
         message_fetch.maybe_load_newer_messages({
@@ -376,4 +380,4 @@ function simulate_narrow() {
 
     }());
 
-}());
+});

@@ -9,6 +9,18 @@ Contents:
 
 ## Installing directly on Ubuntu or Debian
 
+If you'd like to install a Zulip development environment on a computer
+that's running one of:
+
+* Ubuntu 18.04 Bionic, 16.04 Xenial, 14.04 Trusty, or
+* Debian 9 Stretch
+
+You can just run the Zulip provision script on your machine.
+
+**Warning**: there is no supported uninstallation process with this
+method.  If you want that, use the Vagrant environment, where you can
+just do `vagrant destroy` to clean up the development environment.
+
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
@@ -18,20 +30,12 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
-If you'd like to install a Zulip development environment on a computer
-that's already running Ubuntu 16.04 Xenial, Ubuntu 14.04 Trusty, or
-Debian 9 Stretch, you can do that by just running:
-
 ```
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
 ./tools/run-dev.py  # starts the development server
 ```
-
-Note that there is no supported uninstallation process without Vagrant
-(with Vagrant, you can just do `vagrant destroy` to clean up the
-development environment).
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
@@ -40,29 +44,16 @@ ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing manually on Linux
 
+We recommend one of the other installation methods, since we test
+those continuously.  But if you know what you're doing and really want
+to install everything manually, these instructions should work.
+
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
 * [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
 * [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
 * [Fedora/CentOS common steps](#common-to-fedora-centos-instructions)
 * [Steps for all systems](#all-systems)
-
-If you really want to install everything manually, the below instructions
-should work.
-
-Install the following non-Python dependencies:
- * libffi-dev — needed for some Python extensions
- * postgresql 9.1 or later — our database (client, server, headers)
- * nodejs 0.10 (and yarn)
- * memcached (and headers)
- * rabbitmq-server
- * libldap2-dev
- * python3-dev
- * python-dev
- * python-virtualenv
- * redis-server — rate limiting
- * tsearch-extras — better text search
- * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
 ### On Debian or Ubuntu systems:
 
@@ -80,8 +71,10 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev \
-    python-dev python-virtualenv hunspell-en-us nodejs \
-    nodejs-legacy git yui-compressor puppet gettext postgresql
+    python-dev python-virtualenv hunspell-en-us git \
+    yui-compressor puppet gettext postgresql \
+    libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev \
+    libcurl4-openssl-dev
 
 # If using Ubuntu, install PGroonga from its PPA
 sudo add-apt-repository -ys ppa:groonga/ppa
@@ -98,7 +91,7 @@ sudo apt-get install postgresql-10-pgroonga
 # If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
 
 # Next, install Zulip's tsearch-extras postgresql extension
-# If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
+# If on Ubuntu LTS, you can use the Zulip PPA for tsearch-extras:
 cd zulip
 sudo apt-add-repository -ys ppa:tabbott/zulip
 sudo apt-get update
@@ -110,22 +103,7 @@ sudo apt-get install postgresql-9.5-tsearch-extras
 sudo apt-get install postgresql-10-tsearch-extras
 
 
-# Otherwise, you can download a .deb directly
-# If on 12.04 or wheezy:
-wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
-sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
-
-# If on 14.04:
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
-sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
-
-# If on 15.04 or jessie:
-wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
-sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
-
-# If on 16.04
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.4_amd64.deb
-sudo dpkg -i postgresql-9.5-tsearch-extras_0.4_amd64.deb
+# For Debian, you can download a .deb from packagecloud:
 
 # If on Stretch
 wget --content-disposition \
@@ -138,7 +116,8 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty or 16.04 Xenial):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04
+     Trusty, 16.04 Xenial, or 18.04 Bionic):
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
@@ -156,7 +135,7 @@ sudo apt-get update
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
-    hunspell-en-us nodejs nodejs-legacy git yui-compressor \
+    hunspell-en-us git yui-compressor \
     puppet gettext tsearch-extras
 ```
 
@@ -179,7 +158,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
     postgresql-devel postgresql libmemcached-devel freetype-devel \
-    nodejs yuicompressor closure-compiler gettext
+    yuicompressor closure-compiler gettext
 ```
 
 Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
@@ -221,7 +200,7 @@ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noa
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
     libmemcached-devel wget python-pip openssl-devel freetype-devel \
-    libjpeg-turbo-devel zlib-devel nodejs yuicompressor \
+    libjpeg-turbo-devel zlib-devel yuicompressor \
     closure-compiler gettext
 
 # We need these packages to compile tsearch-extras
@@ -262,7 +241,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached node libmemcached py-Pillow py-cryptography py-cffi
+    memcached libmemcached py-Pillow py-cryptography py-cffi
 
 # Get tsearch_extras and build it (using a modified version which
 # aliases int4 on OpenBSD):
@@ -371,14 +350,14 @@ sudo mkdir /srv/zulip-emoji-cache
 sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/setup/emoji/build_emoji
 ./tools/inline-email-css
-./tools/generate-custom-icon-webfont
+./tools/setup/generate-custom-icon-webfont
 ./tools/setup/build_pygments_data
 ./tools/setup/generate_zulip_bots_static_files
 ./scripts/setup/generate_secrets.py --development
 if [ $(uname) = "OpenBSD" ]; then
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
 else
-    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.*/tsearch_data/
+    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/*/tsearch_data/
 fi
 ./scripts/setup/configure-rabbitmq
 ./tools/setup/postgres-init-dev-db

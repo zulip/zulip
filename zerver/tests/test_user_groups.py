@@ -5,7 +5,14 @@ import ujson
 import django
 import mock
 
+from zerver.lib.actions import (
+    ensure_stream,
+)
+
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    most_recent_usermessage,
+)
 from zerver.lib.user_groups import (
     check_add_user_to_user_group,
     check_remove_user_from_user_group,
@@ -110,6 +117,27 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.all(), 2)
 
+    def test_user_group_get(self) -> None:
+        # Test success
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        result = self.client_get('/json/user_groups')
+        self.assert_json_success(result)
+        self.assert_length(result.json()['user_groups'], UserGroup.objects.filter(realm=user_profile.realm).count())
+
+    def test_user_group_create_by_guest_user(self) -> None:
+        guest_user = self.example_user('polonius')
+
+        # Guest users can't create user group
+        self.login(guest_user.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_error(result, "Not allowed for guest users")
+
     def test_user_group_update(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -162,6 +190,42 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['description'], 'Description successfully updated.')
 
+    def test_user_group_update_by_guest_user(self) -> None:
+        hamlet = self.example_user('hamlet')
+        guest_user = self.example_user('polonius')
+        self.login(hamlet.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id, guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+
+        # Guest user can't edit any detail of an user group
+        self.login(guest_user.email)
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting team',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_error(result, "Not allowed for guest users")
+
+    def test_user_group_update_to_already_existing_name(self) -> None:
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
+        realm = get_realm('zulip')
+        support_user_group = create_user_group('support', [hamlet], realm)
+        marketing_user_group = create_user_group('marketing', [hamlet], realm)
+
+        params = {
+            'name': marketing_user_group.name,
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(support_user_group.id), info=params)
+        self.assert_json_error(
+            result, "User group '{}' already exists.".format(marketing_user_group.name))
+
     def test_user_group_delete(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -210,6 +274,24 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroup.objects.count(), 1)
         self.assertEqual(UserGroupMembership.objects.count(), 2)
+
+    def test_user_group_delete_by_guest_user(self) -> None:
+        hamlet = self.example_user('hamlet')
+        guest_user = self.example_user('polonius')
+        self.login(hamlet.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id, guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+
+        # Guest users can't delete any user group(not even those of which they are a member)
+        self.login(guest_user.email)
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_error(result, "Not allowed for guest users")
 
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user('hamlet')
@@ -313,3 +395,54 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assertEqual(UserGroupMembership.objects.count(), 3)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assertEqual(len(members), 1)
+
+    def test_mentions(self) -> None:
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        zoe = self.example_user('ZOE')
+
+        realm = cordelia.realm
+
+        group_name = 'support'
+        stream_name = 'Dev Help'
+
+        content_with_group_mention = 'hey @*support* can you help us with this?'
+
+        ensure_stream(realm, stream_name)
+
+        all_users = {cordelia, hamlet, othello, zoe}
+        support_team = {hamlet, zoe}
+        sender = cordelia
+        other_users = all_users - support_team
+
+        for user in all_users:
+            self.subscribe(user, stream_name)
+
+        create_user_group(
+            name=group_name,
+            members=list(support_team),
+            realm=realm,
+        )
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content=content_with_group_mention,
+        )
+
+        with mock.patch('logging.info'):
+            result = self.api_post(sender.email, "/json/messages", payload)
+
+        self.assert_json_success(result)
+
+        for user in support_team:
+            um = most_recent_usermessage(user)
+            self.assertTrue(um.flags.mentioned)
+
+        for user in other_users:
+            um = most_recent_usermessage(user)
+            self.assertFalse(um.flags.mentioned)

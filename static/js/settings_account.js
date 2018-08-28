@@ -53,20 +53,44 @@ function settings_change_success(message) {
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
+function update_user_custom_profile_fields(fields, method) {
+    if (method === undefined) {
+        blueslip.error("Undefined method in update_user_custom_profile_fields");
+    }
+    var spinner = $("#custom-field-status").expectOne();
+    loading.make_indicator(spinner, {text: 'Saving ...'});
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data",
+                                   {data: JSON.stringify(fields)}, spinner);
+}
+
 exports.add_custom_profile_fields_to_settings = function () {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    $("#account-settings .custom-profile-fields-form").html("");
+    if (page_params.custom_profile_fields.length > 0) {
+        $("#account-settings #custom-field-header").show();
+    } else {
+        $("#account-settings #custom-field-header").hide();
+    }
+
     var all_custom_fields = page_params.custom_profile_fields;
+    var field_types = page_params.custom_profile_field_types;
 
     all_custom_fields.forEach(function (field) {
-        var field_type = settings_profile_fields.field_type_id_to_string(field.type);
+        var field_type = field.type;
         var type;
         var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field_type === "Long text";
-        var is_choice_field = field_type === "Choice";
+        var is_long_text = field_type === field_types.LONG_TEXT.id;
+        var is_choice_field = field_type === field_types.CHOICE.id;
+        var is_user_field = field_type === field_types.USER.id;
+        var is_date_field = field_type === field_types.DATE.id;
         var field_choices = [];
 
-        if (field_type === "Long text" || field_type === "Short text") {
+        if (is_long_text || field_type === field_types.SHORT_TEXT.id) {
             type = "text";
-        } else if (field_type === "Choice") {
+        } else if (is_choice_field) {
             type = "choice";
             var field_choice_dict = JSON.parse(field.field_data);
             for (var choice in field_choice_dict) {
@@ -78,14 +102,20 @@ exports.add_custom_profile_fields_to_settings = function () {
                     };
                 }
             }
-        } else if (field_type === "Date") {
+        } else if (is_date_field) {
             type = "date";
-        } else if (field_type === "URL") {
+        } else if (field_type === field_types.URL.id) {
             type = "url";
+        } else if (is_user_field) {
+            if (value) {
+                value = JSON.parse(value);
+            }
+            type = "user";
         } else {
             blueslip.error("Undefined field type.");
         }
-        if (value === undefined) {
+
+        if (value === undefined || value === null) {
             // If user has not set value for field.
             value = "";
         }
@@ -96,10 +126,43 @@ exports.add_custom_profile_fields_to_settings = function () {
             field_value: value,
             is_long_text_field: is_long_text,
             is_choice_field: is_choice_field,
+            is_user_field: is_user_field,
+            is_date_field: is_date_field,
             field_choices: field_choices,
         });
         $("#account-settings .custom-profile-fields-form").append(html);
+
+        if (is_user_field) {
+            var pill_container = $('.custom_user_field[data-field-id="' + field.id + '"] .pill-container').expectOne();
+            var pills = user_pill.create_pills(pill_container);
+
+            function update_custom_user_field() {
+                var fields = [];
+                var user_ids = user_pill.get_user_ids(pills);
+                if (user_ids.length < 1) {
+                    fields.push(field.id);
+                    update_user_custom_profile_fields(fields, channel.del);
+                } else {
+                    fields.push({id: field.id, value: user_ids});
+                    update_user_custom_profile_fields(fields, channel.patch);
+                }
+            }
+            if (value !== undefined && value.length > 0) {
+                value.forEach(function (user_id) {
+                    var user = people.get_person_from_user_id(user_id);
+                    user_pill.append_user(user, pills);
+                });
+            }
+            var input = pill_container.children('.input');
+            user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
+            pills.onPillRemove(function () {
+                update_custom_user_field();
+            });
+        }
     });
+    $(".custom_user_field .datepicker").flatpickr({
+        altInput: true,
+        altFormat: "F j, Y"});
 };
 
 exports.set_up = function () {
@@ -123,23 +186,32 @@ exports.set_up = function () {
 
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
-    $("#get_api_key_box form").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr) {
-            var result = JSON.parse(xhr.responseText);
-            var settings_status = $('#account-settings-status').expectOne();
 
-            $("#get_api_key_password").val("");
-            $("#api_key_value").text(result.api_key);
-            $("#show_api_key_box").show();
-            $("#get_api_key_box").hide();
-            settings_status.hide();
-        },
-        error: function (xhr) {
-            ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
-            $("#show_api_key_box").hide();
-            $("#get_api_key_box").show();
-        },
+    $("#get_api_key_button").on("click", function (e) {
+        var data = {};
+        e.preventDefault();
+        e.stopPropagation();
+
+        data.password = $("#get_api_key_password").val();
+        channel.post({
+            url: '/json/fetch_api_key',
+            dataType: 'json',
+            data: data,
+            success: function (data) {
+                var settings_status = $('#account-settings-status').expectOne();
+
+                $("#get_api_key_password").val("");
+                $("#api_key_value").text(data.api_key);
+                $("#show_api_key_box").show();
+                $("#get_api_key_box").hide();
+                settings_status.hide();
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
+                $("#show_api_key_box").hide();
+                $("#get_api_key_box").show();
+            },
+        });
     });
 
     $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
@@ -156,10 +228,9 @@ exports.set_up = function () {
     });
 
     $("#download_zuliprc").on("click", function () {
-        $(this).attr("href", settings_bots.generate_zuliprc_uri(
-            people.my_current_email(),
-            $("#api_key_value").text()
-        ));
+        var data = settings_bots.generate_zuliprc_content(people.my_current_email(),
+                                                          $("#api_key_value").text());
+        $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
     });
 
     function clear_password_change() {
@@ -323,20 +394,33 @@ exports.set_up = function () {
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
         $("#deactivate_self_modal").modal("show");
     });
 
-    $(".custom_user_field_value").on('change', function (e) {
+    $('#settings_page').on('click', '.custom_user_field .remove_date', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var field = $(e.target).closest('.custom_user_field').expectOne();
+        var field_id = parseInt($(field).attr("data-field-id"), 10);
+        field.find(".custom_user_field_value").val("");
+        update_user_custom_profile_fields([field_id], channel.del);
+    });
+
+    $('#settings_page').on('change', '.custom_user_field_value', function (e) {
         var fields = [];
         var value = $(this).val();
-        fields.push({id: parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10),
-                     value: value});
-        var spinner = $("#custom-field-status").expectOne();
-        loading.make_indicator(spinner, {text: 'Saving ...'});
-        settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
-                                       {data: JSON.stringify(fields)}, spinner);
+        var field_id = parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10);
+        if (value) {
+            fields.push({id: field_id, value: value});
+            update_user_custom_profile_fields(fields, channel.patch);
+        } else {
+            fields.push(field_id);
+            update_user_custom_profile_fields(fields, channel.del);
+        }
     });
 
     $("#do_deactivate_self_button").on('click',function () {
@@ -363,13 +447,21 @@ exports.set_up = function () {
         }, 5000);
     });
 
+    $("#show_my_user_profile_modal").on('click', function (e) {
+        overlays.close_overlay("settings");
+        var user = people.get_person_from_user_id(people.my_current_user_id());
+        setTimeout(function () {
+            popovers.show_user_profile(e.target, user);
+        }, 100);
+    });
+
 
     function upload_avatar(file_input) {
         var form_data = new FormData();
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
-            form_data.append('file-'+i, file);
+            form_data.append('file-' + i, file);
         });
 
         $("#user-avatar-source").hide();
@@ -413,3 +505,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_account;
 }
+window.settings_account = settings_account;

@@ -7,7 +7,7 @@ import os
 import re
 import traceback
 
-from .printer import print_err, colors
+from zulint.printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
@@ -97,10 +97,10 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         if (max_length is not None and line_length > max_length and
             '# type' not in line and 'test' not in fn and 'example' not in fn and
             # Don't throw errors for markdown format URLs
-            not re.search("^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            not re.search(r"^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
             # Don't throw errors for URLs in code comments
-            not re.search("[#].*http.*", line) and
-            not re.search("`\{\{ api_url \}\}[^`]+`", line) and
+            not re.search(r"[#].*http.*", line) and
+            not re.search(r"`\{\{ api_url \}\}[^`]+`", line) and
                 "# ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             failed = True
@@ -138,7 +138,7 @@ def build_custom_checkers(by_lang):
     # 'exclude_line': 'set([(<path>, <line>), ...])' - excludes all lines matching <line> in the file <path> from linting.
     # 'include_only': 'set([<path>, ...])' - includes only those files where <path> is a substring of the filepath.
     trailing_whitespace_rule = {
-        'pattern': '\s+$',
+        'pattern': r'\s+$',
         'strip': '\n',
         'description': 'Fix trailing whitespace'
     }
@@ -160,11 +160,11 @@ def build_custom_checkers(by_lang):
          'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
          'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
     ]  # type: RuleList
-    markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
+    markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != r'\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
         # This rule finds one space trailing a non-space, three or more trailing spaces, and
         # spaces on an empty line.
-        {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
+        {'pattern': r'((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
          'strip': '\n',
          'description': 'Fix trailing whitespace'},
         {'pattern': '^#+[A-Za-z0-9]',
@@ -174,22 +174,25 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['###some heading', '#another heading']},
     ]  # type: RuleList
     js_rules = cast(RuleList, [
-        {'pattern': '[^_]function\(',
+        {'pattern': r'[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
-        {'pattern': '.*blueslip.warning\(.*',
+        {'pattern': r'.*blueslip.warning\(.*',
          'description': 'The module blueslip has no function warning, try using blueslip.warn'},
         {'pattern': '[)]{$',
          'description': 'Missing space between ) and {'},
-        {'pattern': 'i18n\.t\([^)]+[^,\{\)]$',
+        {'pattern': r'i18n\.t\([^)]+[^,\{\)]$',
          'description': 'i18n string should not be a multiline string'},
-        {'pattern': 'i18n\.t\([\'\"].+?[\'\"]\s*\+',
+        {'pattern': r'''i18n\.t\(['"].+?['"]\s*\+''',
          'description': 'Do not concatenate arguments within i18n.t()'},
-        {'pattern': 'i18n\.t\(.+\).*\+',
+        {'pattern': r'i18n\.t\(.+\).*\+',
          'description': 'Do not concatenate i18n strings'},
-        {'pattern': '\+.*i18n\.t\(.+\)',
+        {'pattern': r'\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
+        {'pattern': '[.]includes[(]',
+         'exclude': ['frontend_tests/'],
+         'description': '.includes() is incompatible with Internet Explorer. Use .indexOf() !== -1 instead.'},
         {'pattern': '[.]html[(]',
-         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|[$]error|[$][(]"<p>"[)])',
+         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',
          'exclude': ['static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
                      'frontend_tests/'],
          'description': 'Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.'},
@@ -208,7 +211,7 @@ def build_custom_checkers(by_lang):
          'description': 'Write JS else statements on same line as }'},
         {'pattern': '^else if',
          'description': 'Write JS else statements on same line as }'},
-        {'pattern': 'const\s',
+        {'pattern': r'const\s',
          'exclude': set(['frontend_tests/zjsunit',
                          'frontend_tests/node_tests',
                          'static/js/portico',
@@ -220,24 +223,25 @@ def build_custom_checkers(by_lang):
                          'frontend_tests/casper_lib/common.js',
                          'frontend_tests/node_tests',
                          'static/js/debug.js',
-                         'tools/generate-custom-icon-webfont']),
+                         'tools/setup/generate-custom-icon-webfont']),
          'description': 'console.log and similar should not be used in webapp'},
-        {'pattern': '[.]text\(["\'][a-zA-Z]',
-         'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization'},
-        {'pattern': 'compose_error\(["\']',
+        {'pattern': r'''[.]text\(["'][a-zA-Z]''',
+         'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization',
+         'exclude': set(['frontend_tests/node_tests/'])},
+        {'pattern': r'''compose_error\(["']''',
          'description': 'Argument to compose_error should be a literal string enclosed '
                         'by i18n.t()'},
-        {'pattern': 'ui.report_success\(',
+        {'pattern': r'ui.report_success\(',
          'description': 'Deprecated function, use ui_report.success.'},
-        {'pattern': 'report.success\(["\']',
+        {'pattern': r'''report.success\(["']''',
          'description': 'Argument to report_success should be a literal string enclosed '
                         'by i18n.t()'},
-        {'pattern': 'ui.report_error\(',
+        {'pattern': r'ui.report_error\(',
          'description': 'Deprecated function, use ui_report.error.'},
-        {'pattern': 'report.error\(["\']',
+        {'pattern': r'''report.error\(["']''',
          'description': 'Argument to report_error should be a literal string enclosed '
                         'by i18n.t()'},
-        {'pattern': '\$\(document\)\.ready\(',
+        {'pattern': r'\$\(document\)\.ready\(',
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
          'bad_lines': ['$(document).ready(function () {foo();}']},
@@ -278,11 +282,11 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/tests', 'zerver/lib/create_user.py']),
          'good_lines': ['user_profile.save(update_fields=["pointer"])'],
          'bad_lines': ['user_profile.save()']},
-        {'pattern': '^[^"]*"[^"]*"%\(',
+        {'pattern': r'^[^"]*"[^"]*"%\(',
          'description': 'Missing space around "%"',
          'good_lines': ['"%s" % ("foo")', '"%s" % (foo)'],
          'bad_lines': ['"%s"%("foo")', '"%s"%(foo)']},
-        {'pattern': "^[^']*'[^']*'%\(",
+        {'pattern': r"^[^']*'[^']*'%\(",
          'description': 'Missing space around "%"',
          'good_lines': ["'%s' % ('foo')", "'%s' % (foo)"],
          'bad_lines': ["'%s'%('foo')", "'%s'%(foo)"]},
@@ -295,15 +299,15 @@ def build_custom_checkers(by_lang):
          'description': 'Missing whitespace after "="',
          'good_lines': ['a = b', '5 == 6'],
          'bad_lines': ['a =b', 'asdf =42']},
-        {'pattern': '":\w[^"]*$',
+        {'pattern': r'":\w[^"]*$',
          'description': 'Missing whitespace after ":"',
          'good_lines': ['"foo": bar', '"some:string:with:colons"'],
          'bad_lines': ['"foo":bar', '"foo":1']},
-        {'pattern': "':\w[^']*$",
+        {'pattern': r"':\w[^']*$",
          'description': 'Missing whitespace after ":"',
          'good_lines': ["'foo': bar", "'some:string:with:colons'"],
          'bad_lines': ["'foo':bar", "'foo':1"]},
-        {'pattern': "^\s+#\w",
+        {'pattern': r"^\s+#\w",
          'strip': '\n',
          'exclude': set(['tools/droplets/create.py']),
          'description': 'Missing whitespace after "#"',
@@ -351,14 +355,14 @@ def build_custom_checkers(by_lang):
         # This next check could have false positives, but it seems pretty
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
-        {'pattern': ' % [a-zA-Z0-9_."\']*\)?$',
+        {'pattern': r''' % [a-zA-Z0-9_."']*\)?$''',
          'exclude_line': set([
              ('tools/tests/test_template_parser.py', '{% foo'),
          ]),
          'description': 'Used % comprehension without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)'],
          'bad_lines': ['"foo %s bar" % "baz"']},
-        {'pattern': '.*%s.* % \([a-zA-Z0-9_."\']*\)$',
+        {'pattern': r'''.*%s.* % \([a-zA-Z0-9_."']*\)$''',
          'description': 'Used % comprehension without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)"'],
          'bad_lines': ['"foo %s bar" % ("baz")']},
@@ -382,16 +386,16 @@ def build_custom_checkers(by_lang):
          'description': 'We prefer user_id over userid.',
          'good_lines': ['id = alice.user_id'],
          'bad_lines': ['id = alice.userid']},
-        {'pattern': 'json_success\({}\)',
+        {'pattern': r'json_success\({}\)',
          'description': 'Use json_success() to return nothing',
          'good_lines': ['return json_success()'],
          'bad_lines': ['return json_success({})']},
-        {'pattern': '\Wjson_error\(_\(?\w+\)',
+        {'pattern': r'\Wjson_error\(_\(?\w+\)',
          'exclude': set(['zerver/tests']),
          'description': 'Argument to json_error should be a literal string enclosed by _()',
          'good_lines': ['return json_error(_("string"))'],
          'bad_lines': ['return json_error(_variable)', 'return json_error(_(variable))']},
-        {'pattern': '\Wjson_error\([\'"].+[),]$',
+        {'pattern': r'''\Wjson_error\(['"].+[),]$''',
          'exclude': set(['zerver/tests']),
          'exclude_line': set([
              # We don't want this string tagged for translation.
@@ -399,15 +403,15 @@ def build_custom_checkers(by_lang):
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
-        {'pattern': '\WJsonableError\(_\(?\w.+\)',
+        {'pattern': r'\WJsonableError\(_\(?\w.+\)',
          'exclude': set(['zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': '\WJsonableError\(["\'].+\)',
+        {'pattern': r'''\WJsonableError\(["'].+\)''',
          'exclude': set(['zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
+        {'pattern': r'''([a-zA-Z0-9_]+)=REQ\(['"]\1['"]''',
          'description': 'REQ\'s first argument already defaults to parameter name'},
-        {'pattern': 'self\.client\.(get|post|patch|put|delete)',
+        {'pattern': r'self\.client\.(get|post|patch|put|delete)',
          'description': \
          '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
@@ -416,6 +420,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r]Message.objects.get',
          'exclude': set(["zerver/tests",
                          "zerver/lib/onboarding.py",
+                         "zerver/lib/import_realm.py",
                          "zilencer/management/commands/add_mock_conversation.py",
                          "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
@@ -449,6 +454,7 @@ def build_custom_checkers(by_lang):
              'zerver/migrations/0041_create_attachments_for_old_messages.py',
              'zerver/migrations/0060_move_avatars_to_be_uid_based.py',
              'zerver/migrations/0104_fix_unreads.py',
+             'pgroonga/migrations/0002_html_escape_subject.py',
          ]),
          'description': "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md",
          },
@@ -457,7 +463,7 @@ def build_custom_checkers(by_lang):
          'description': "Don't use datetime in backend code.\n"
          "See https://zulip.readthedocs.io/en/latest/contributing/code-style.html#naive-datetime-objects",
          },
-        {'pattern': 'render_to_response\(',
+        {'pattern': r'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
          },
         {'pattern': 'from os.path',
@@ -466,16 +472,16 @@ def build_custom_checkers(by_lang):
         {'pattern': 'import os.path',
          'description': "Use import os instead of import os.path",
          },
-        {'pattern': '(logging|logger)\.warn\W',
+        {'pattern': r'(logging|logger)\.warn\W',
          'description': "Logger.warn is a deprecated alias for Logger.warning; Use 'warning' instead of 'warn'.",
          'good_lines': ["logging.warning('I am a warning.')", "logger.warning('warning')"],
          'bad_lines': ["logging.warn('I am a warning.')", "logger.warn('warning')"]},
-        {'pattern': '\.pk',
+        {'pattern': r'\.pk',
          'exclude_pattern': '[.]_meta[.]pk',
          'description': "Use `id` instead of `pk`.",
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
-        {'pattern': '^[ ]*# type: \(',
+        {'pattern': r'^[ ]*# type: \(',
          'exclude': set([
              # These directories, especially scripts/ and puppet/,
              # have tools that need to run before a Zulip environment
@@ -494,7 +500,7 @@ def build_custom_checkers(by_lang):
          ]),
          'description': 'Comment-style function type annotation. Use Python3 style annotations instead.',
          },
-        {'pattern': ' = models[.].*null=True.*\)  # type: (?!Optional)',
+        {'pattern': r' = models[.].*null=True.*\)  # type: (?!Optional)',
          'include_only': {"zerver/models.py"},
          'description': 'Model variable with null=true not annotated as Optional.',
          'good_lines': ['desc = models.TextField(null=True)  # type: Optional[Text]',
@@ -504,7 +510,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['desc = models.CharField(null=True)  # type: Text',
                        'stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Stream'],
          },
-        {'pattern': ' = models[.](?!NullBoolean).*\)  # type: Optional',  # Optional tag, except NullBoolean(Field)
+        {'pattern': r' = models[.](?!NullBoolean).*\)  # type: Optional',  # Optional tag, except NullBoolean(Field)
          'exclude_pattern': 'null=True',
          'include_only': {"zerver/models.py"},
          'description': 'Model variable annotated with Optional but variable does not have null=true.',
@@ -515,12 +521,12 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['desc = models.TextField()  # type: Optional[Text]',
                        'stream = models.ForeignKey(Stream, on_delete=CASCADE)  # type: Optional[Stream]'],
          },
-        {'pattern': '[\s([]Text([^\s\w]|$)',
+        {'pattern': r'[\s([]Text([^\s\w]|$)',
          'exclude': set([
              # We are likely to want to keep these dirs Python 2+3 compatible,
              # since the plan includes extracting them to a separate project eventually.
              'tools/lib',
-             'tools/linter_lib',
+             'tools/zulint',
              # TODO: Update our migrations from Text->str.
              'zerver/migrations/',
              # thumbor is (currently) python2 only
@@ -544,11 +550,11 @@ def build_custom_checkers(by_lang):
          ]), },
     ]) + whitespace_rules[0:1]
     css_rules = cast(RuleList, [
-        {'pattern': 'calc\([^+]+\+[^+]+\)',
+        {'pattern': r'calc\([^+]+\+[^+]+\)',
          'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
          'good_lines': ["width: calc(20% - -14px);"],
          'bad_lines': ["width: calc(20% + 14px);"]},
-        {'pattern': '^[^:]*:\S[^:]*;$',
+        {'pattern': r'^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS",
          'good_lines': ["background-color: white;", "text-size: 16px;"],
          'bad_lines': ["background-color:white;", "text-size:16px;"]},
@@ -562,11 +568,11 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['background: url(https://example.com/image.png);']},
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
-         'exclude': set(['static/third/thirdparty-fonts.css']),
+         'exclude': set(['static/third/fontawesome-legacy.css']),
          'strip': '\n',
          'good_lines': ["    color: white;", "color: white;"],
          'bad_lines': ["  color: white;"]},
-        {'pattern': '{\w',
+        {'pattern': r'{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline).",
          'good_lines': ["{\n"],
          'bad_lines': ["{color: LightGoldenRodYellow;"]},
@@ -584,9 +590,9 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["border-width: thick;", "border: thick solid black;"]},
     ]) + whitespace_rules + comma_whitespace_rule
     prose_style_rules = cast(RuleList, [
-        {'pattern': '[^\/\#\-\"]([jJ]avascript)',  # exclude usage in hrefs/divs
+        {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
-        {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]',  # exclude usage in hrefs/divs
+        {'pattern': r'''[^\/\-\."'\_\=\>]([gG]ithub)[^\.\-\_"\<]''',  # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
         {'pattern': '[oO]rganisation',  # exclude usage in hrefs/divs
          'description': "Organization is spelled with a z",
@@ -595,9 +601,11 @@ def build_custom_checkers(by_lang):
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',
          'description': "The S in Terms of Service is capitalized"},
+        {'pattern': '[^-_]botserver(?!rc)|bot server',
+         'description': "Use Botserver instead of botserver or bot server."},
     ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
-        {'pattern': 'placeholder="[^{#](?:(?!\.com).)+$',
+        {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
                           ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')],
@@ -617,28 +625,29 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<button aria-label="foo"></button>']},
         {'pattern': 'script src="http',
          'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
-         'exclude': set(["templates/zilencer/billing.html"]),
+         'exclude': set(["templates/zilencer/billing.html", "templates/zerver/hello.html",
+                         "templates/zilencer/upgrade.html"]),
          'good_lines': ["{{ render_bundle('landing-page') }}"],
          'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
         {'pattern': "title='[^{]",
          'description': "`title` value should be translatable.",
          'good_lines': ['<link rel="author" title="{{ _(\'About these documents\') }}" />'],
          'bad_lines': ["<p title='foo'></p>"]},
-        {'pattern': 'title="[^{\:]',
+        {'pattern': r'title="[^{\:]',
          'exclude_line': set([
              ('templates/zerver/app/markdown_help.html',
               '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
          'exclude': set(["templates/zerver/emails"]),
          'description': "`title` value should be translatable."},
-        {'pattern': '\Walt=["\'][^{"\']',
+        {'pattern': r'''\Walt=["'][^{"']''',
          'description': "alt argument should be enclosed by _() or it should be an empty string.",
          'exclude': set(['static/templates/settings/display-settings.handlebars',
                          'templates/zerver/app/keyboard_shortcuts.html',
                          'templates/zerver/app/markdown_help.html']),
          'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
          'bad_lines': ['<img alt="Foo Image" />']},
-        {'pattern': '\Walt=["\']{{ ?["\']',
+        {'pattern': r'''\Walt=["']{{ ?["']''',
          'description': "alt argument should be enclosed by _().",
          'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />'],
          'bad_lines': ['<img alt="{{ " />']},
@@ -687,6 +696,7 @@ def build_custom_checkers(by_lang):
 
              # Inline styling for an svg; could be moved to CSS files?
              'templates/zerver/landing_nav.html',
+             'templates/zerver/billing_nav.html',
              'templates/zerver/app/home.html',
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
@@ -701,8 +711,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/register.html',
              'templates/zerver/accounts_send_confirm.html',
              'templates/zerver/integrations/index.html',
-             'templates/zerver/help/main.html',
-             'templates/zerver/api/main.html',
+             'templates/zerver/documentation_main.html',
              'templates/analytics/realm_summary_table.html',
              'templates/corporate/zephyr.html',
              'templates/corporate/zephyr-mirror.html',
@@ -715,11 +724,11 @@ def build_custom_checkers(by_lang):
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
         {'pattern': '{{ t ("|\')',
          'description': 'There should be no spaces before the "t" in a translation tag.'},
-        {'pattern': "{{t '.*' }}[\.\?!]",
+        {'pattern': r"{{t '.*' }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
-        {'pattern': '{{t ".*" }}[\.\?!]',
+        {'pattern': r'{{t ".*" }}[\.\?!]',
          'description': "Period should be part of the translatable string."},
-        {'pattern': "{{/tr}}[\.\?!]",
+        {'pattern': r"{{/tr}}[\.\?!]",
          'description': "Period should be part of the translatable string."},
         {'pattern': '{{t ("|\') ',
          'description': 'Translatable strings should not have leading spaces.'},
@@ -729,9 +738,9 @@ def build_custom_checkers(by_lang):
          'description': 'Translatable strings should not have trailing spaces.'},
     ]
     jinja2_rules = html_rules + [
-        {'pattern': "{% endtrans %}[\.\?!]",
+        {'pattern': r"{% endtrans %}[\.\?!]",
          'description': "Period should be part of the translatable string."},
-        {'pattern': "{{ _(.+) }}[\.\?!]",
+        {'pattern': r"{{ _(.+) }}[\.\?!]",
          'description': "Period should be part of the translatable string."},
     ]
     json_rules = [
@@ -747,19 +756,19 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
-        {'pattern': ':[\"\[\{]',
+        {'pattern': r':["\[\{]',
          'exclude': set(['zerver/webhooks/', 'zerver/tests/fixtures/']),
          'description': 'Require space after : in JSON'},
     ]  # type: RuleList
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
-        {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',
+        {'pattern': r'\[(?P<url>[^\]]+)\]\((?P=url)\)',
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
          'exclude': ['docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'],
          'include_only': set(['docs/']),
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },
-        {'pattern': '\][(][^#h]',
+        {'pattern': r'\][(][^#h]',
          'include_only': set(['README.md', 'CONTRIBUTING.md']),
          'description': "Use absolute links from docs served by GitHub",
          },
@@ -767,7 +776,9 @@ def build_custom_checkers(by_lang):
     help_markdown_rules = markdown_rules + [
         {'pattern': '[a-z][.][A-Z]',
          'description': "Likely missing space after end of sentence"},
-        {'pattern': '[rR]ealm',
+        {'pattern': r'\b[rR]ealm[s]?\b',
+         'good_lines': ['Organization', 'deactivate_realm', 'realm_filter'],
+         'bad_lines': ['Users are in a realm', 'Realm is the best model'],
          'description': "Realms are referred to as Organizations in user-facing docs."},
     ]
     txt_rules = whitespace_rules

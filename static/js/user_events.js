@@ -43,6 +43,7 @@ exports.update_person = function update(person) {
 
     if (_.has(person, 'is_admin')) {
         person_obj.is_admin = person.is_admin;
+        settings_users.update_user_data(person.user_id, person);
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.is_admin = person.is_admin;
@@ -79,3 +80,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = user_events;
 }
+window.user_events = user_events;

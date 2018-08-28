@@ -16,17 +16,17 @@ exports.initialize_pill = function () {
 };
 
 exports.initialize = function () {
-    exports.my_pill = exports.initialize_pill();
+    exports.widget = exports.initialize_pill();
 };
 
 exports.clear = function () {
-    exports.my_pill.clear();
+    exports.widget.clear();
 };
 
 exports.set_from_typeahead = function (person) {
     // We expect person to be an object returned from people.js.
     user_pill.append_person({
-        pill_widget: exports.my_pill,
+        pill_widget: exports.widget,
         person: person,
     });
 };
@@ -34,11 +34,11 @@ exports.set_from_typeahead = function (person) {
 exports.set_from_emails = function (value) {
     // value is something like "alice@example.com,bob@example.com"
     exports.clear();
-    exports.my_pill.appendValue(value);
+    exports.widget.appendValue(value);
 };
 
 exports.get_user_ids = function () {
-    return user_pill.get_user_ids(exports.my_pill);
+    return user_pill.get_user_ids(exports.widget);
 };
 
 exports.get_emails = function () {
@@ -51,7 +51,7 @@ exports.get_emails = function () {
 };
 
 exports.get_typeahead_items = function () {
-    return user_pill.typeahead_source(exports.my_pill);
+    return user_pill.typeahead_source(exports.widget);
 };
 
 return exports;
@@ -60,3 +60,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_pm_pill;
 }
+window.compose_pm_pill = compose_pm_pill;

@@ -93,7 +93,7 @@ exports.update = function () {
     // covering up a label that already exists).
     var header_height = $(current_label).find('.message_header').safeOuterHeight();
     if (floating_recipient_bar_bottom <=
-        (current_label.offset().top + header_height)) {
+        current_label.offset().top + header_height) {
         // hide floating_recipient_bar and use .temp-show-date to force display
         // of the recipient_row_date belonging to the current recipient_bar
         $('.recipient_row_date', current_label).addClass('temp-show-date');
@@ -111,3 +111,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = floating_recipient_bar;
 }
+window.floating_recipient_bar = floating_recipient_bar;

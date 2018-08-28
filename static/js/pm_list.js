@@ -34,9 +34,8 @@ function set_count(count) {
 
 exports.get_conversation_li = function (conversation) {
     // conversation is something like "foo@example.com,bar@example.com"
-    var user_ids_string = people.emails_strings_to_user_ids_string(conversation);
+    var user_ids_string = people.reply_to_to_user_ids_string(conversation);
     if (!user_ids_string) {
-        blueslip.warn('Unknown conversation: ' + conversation);
         return;
     }
     return exports.get_li_for_user_ids_string(user_ids_string);
@@ -97,8 +96,8 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 
         var num_unread = unread.num_unread_for_person(user_ids_string);
 
-        var always_visible = (idx < max_private_messages) || (num_unread > 0)
-            || (user_ids_string === active_conversation);
+        var always_visible = idx < max_private_messages || num_unread > 0
+            || user_ids_string === active_conversation;
 
         if (!always_visible) {
             if (!zoomed_in) {
@@ -112,7 +111,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(reply_to),
+            url: hash_util.pm_with_uri(reply_to),
         };
         display_messages.push(display_message);
     });
@@ -155,7 +154,7 @@ exports.rebuild_recent = function (active_conversation) {
 exports.update_private_messages = function () {
     exports._build_private_messages_list();
 
-    if (! narrow_state.active()) {
+    if (!narrow_state.active()) {
         return;
     }
 
@@ -219,3 +218,4 @@ if (typeof module !== 'undefined') {
     module.exports = pm_list;
 }
 
+window.pm_list = pm_list;

@@ -32,6 +32,7 @@ exports.handle = function (opts) {
 
         if (handled) {
             e.preventDefault();
+            e.stopPropagation();
         }
     });
 };
@@ -42,3 +43,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = keydown_util;
 }
+window.keydown_util = keydown_util;

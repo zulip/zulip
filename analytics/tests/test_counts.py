@@ -540,6 +540,49 @@ class TestCountStats(AnalyticsTestCase):
             user_profile=user, start=self.TIME_ZERO-start_offset,
             end=self.TIME_ZERO-end_offset)
 
+    def test_1day_actives(self) -> None:
+        stat = COUNT_STATS['1day_actives::day']
+        self.current_property = stat.property
+
+        _1day = 1*self.DAY - UserActivityInterval.MIN_INTERVAL_LENGTH
+
+        # Outside time range, should not appear. Also tests upper boundary.
+        user1 = self.create_user()
+        self.create_interval(user1, _1day + self.DAY, _1day + timedelta(seconds=1))
+        self.create_interval(user1, timedelta(0), -self.HOUR)
+
+        # On lower boundary, should appear
+        user2 = self.create_user()
+        self.create_interval(user2, _1day + self.DAY, _1day)
+
+        # Multiple intervals, including one outside boundary
+        user3 = self.create_user()
+        self.create_interval(user3, 2*self.DAY, 1*self.DAY)
+        self.create_interval(user3, 20*self.HOUR, 19*self.HOUR)
+        self.create_interval(user3, 20*self.MINUTE, 19*self.MINUTE)
+
+        # Intervals crossing boundary
+        user4 = self.create_user()
+        self.create_interval(user4, 1.5*self.DAY, 0.5*self.DAY)
+        user5 = self.create_user()
+        self.create_interval(user5, self.MINUTE, -self.MINUTE)
+
+        # Interval subsuming time range
+        user6 = self.create_user()
+        self.create_interval(user6, 2*self.DAY, -2*self.DAY)
+
+        # Second realm
+        user7 = self.create_user(realm=self.second_realm)
+        self.create_interval(user7, 20*self.MINUTE, 19*self.MINUTE)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[1, user2], [1, user3], [1, user4], [1, user5], [1, user6], [1, user7]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[5, self.default_realm], [1, self.second_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[6]])
+        self.assertTableState(StreamCount, [], [])
+
     def test_15day_actives(self) -> None:
         stat = COUNT_STATS['15day_actives::day']
         self.current_property = stat.property
@@ -853,49 +896,49 @@ class TestActiveUsersAudit(AnalyticsTestCase):
             event_time=self.TIME_ZERO - hours_offset*self.HOUR)
 
     def test_user_deactivated_in_future(self) -> None:
-        self.add_event('user_created', 1)
-        self.add_event('user_deactivated', 0)
+        self.add_event(RealmAuditLog.USER_CREATED, 1)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 0)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup'], [['false']])
 
     def test_user_reactivated_in_future(self) -> None:
-        self.add_event('user_deactivated', 1)
-        self.add_event('user_reactivated', 0)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
+        self.add_event(RealmAuditLog.USER_REACTIVATED, 0)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, [], [])
 
     def test_user_active_then_deactivated_same_day(self) -> None:
-        self.add_event('user_created', 1)
-        self.add_event('user_deactivated', .5)
+        self.add_event(RealmAuditLog.USER_CREATED, 1)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, .5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, [], [])
 
     def test_user_unactive_then_activated_same_day(self) -> None:
-        self.add_event('user_deactivated', 1)
-        self.add_event('user_reactivated', .5)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
+        self.add_event(RealmAuditLog.USER_REACTIVATED, .5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup'], [['false']])
 
     # Arguably these next two tests are duplicates of the _in_future tests, but are
     # a guard against future refactorings where they may no longer be duplicates
     def test_user_active_then_deactivated_with_day_gap(self) -> None:
-        self.add_event('user_created', 2)
-        self.add_event('user_deactivated', 1)
+        self.add_event(RealmAuditLog.USER_CREATED, 2)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 1)
         process_count_stat(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup', 'end_time'],
                               [['false', self.TIME_ZERO - self.DAY]])
 
     def test_user_deactivated_then_reactivated_with_day_gap(self) -> None:
-        self.add_event('user_deactivated', 2)
-        self.add_event('user_reactivated', 1)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 2)
+        self.add_event(RealmAuditLog.USER_REACTIVATED, 1)
         process_count_stat(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup'], [['false']])
 
     def test_event_types(self) -> None:
-        self.add_event('user_created', 4)
-        self.add_event('user_deactivated', 3)
-        self.add_event('user_activated', 2)
-        self.add_event('user_reactivated', 1)
+        self.add_event(RealmAuditLog.USER_CREATED, 4)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, 3)
+        self.add_event(RealmAuditLog.USER_ACTIVATED, 2)
+        self.add_event(RealmAuditLog.USER_REACTIVATED, 1)
         for i in range(4):
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO - i*self.DAY)
         self.assertTableState(UserCount, ['subgroup', 'end_time'],
@@ -910,7 +953,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         user3 = self.create_user(realm=second_realm)
         user4 = self.create_user(realm=second_realm, is_bot=True)
         for user in [user1, user2, user3, user4]:
-            self.add_event('user_created', 1, user=user)
+            self.add_event(RealmAuditLog.USER_CREATED, 1, user=user)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup', 'user'],
                               [['false', user1], ['false', user2], ['false', user3], ['true', user4]])
@@ -928,7 +971,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     # CountStat.HOUR from CountStat.DAY, this will fail, while many of the
     # tests above will not.
     def test_update_from_two_days_ago(self) -> None:
-        self.add_event('user_created', 2)
+        self.add_event(RealmAuditLog.USER_CREATED, 2)
         process_count_stat(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup', 'end_time'],
                               [['false', self.TIME_ZERO], ['false', self.TIME_ZERO-self.DAY]])
@@ -944,14 +987,14 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         self.assertTableState(UserCount, [], [])
 
     def test_max_audit_entry_is_unrelated(self) -> None:
-        self.add_event('user_created', 1)
+        self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event('unrelated', .5)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup'], [['false']])
 
     # Simultaneous related audit entries should not be allowed, and so not testing for that.
     def test_simultaneous_unrelated_audit_entry(self) -> None:
-        self.add_event('user_created', 1)
+        self.add_event(RealmAuditLog.USER_CREATED, 1)
         self.add_event('unrelated', 1)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['subgroup'], [['false']])
@@ -960,10 +1003,10 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         user1 = self.create_user()
         user2 = self.create_user()
         user3 = self.create_user()
-        self.add_event('user_created', .5, user=user1)
-        self.add_event('user_created', .5, user=user2)
-        self.add_event('user_created', 1, user=user3)
-        self.add_event('user_deactivated', .5, user=user3)
+        self.add_event(RealmAuditLog.USER_CREATED, .5, user=user1)
+        self.add_event(RealmAuditLog.USER_CREATED, .5, user=user2)
+        self.add_event(RealmAuditLog.USER_CREATED, 1, user=user3)
+        self.add_event(RealmAuditLog.USER_DEACTIVATED, .5, user=user3)
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, ['user', 'subgroup'],
                               [[user1, 'false'], [user2, 'false']])

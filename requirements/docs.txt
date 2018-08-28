@@ -7,7 +7,7 @@
 #
 # For details, see requirements/README.md .
 #
-alabaster==0.7.10
+alabaster==0.7.11
 babel==2.5.3
 certifi==2017.11.5        # via requests
 chardet==3.0.4            # via requests
@@ -25,8 +25,8 @@ recommonmark==0.4.0
 requests==2.18.4          # via sphinx
 six==1.11.0               # via packaging, sphinx
 snowballstemmer==1.2.1
-sphinx-rtd-theme==0.3.1
-sphinx==1.7.4
+sphinx-rtd-theme==0.4.1
+sphinx==1.7.6
 sphinxcontrib-websupport==1.0.1  # via sphinx
 typing==3.6.4
 urllib3==1.22             # via requests

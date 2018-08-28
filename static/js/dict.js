@@ -41,7 +41,7 @@ Dict.from = function Dict_from(obj, opts) {
  * passed to the Dict constructor.
  */
 Dict.from_array = function Dict_from_array(xs, opts) {
-    if (! (xs instanceof Array)) {
+    if (!(xs instanceof Array)) {
         throw new TypeError("Argument is not an array");
     }
 
@@ -141,3 +141,4 @@ Dict.prototype = {
 if (typeof module !== 'undefined') {
     module.exports = Dict;
 }
+window.Dict = Dict;

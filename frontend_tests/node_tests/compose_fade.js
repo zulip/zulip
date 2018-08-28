@@ -31,7 +31,7 @@ people.add_in_realm(alice);
 people.add_in_realm(bob);
 
 
-(function test_set_focused_recipient() {
+run_test('set_focused_recipient', () => {
     var sub = {
         stream_id: 101,
         name: 'social',
@@ -77,4 +77,4 @@ people.add_in_realm(bob);
     };
     assert(!compose_fade.should_fade_message(good_msg));
     assert(compose_fade.should_fade_message(bad_msg));
-}());
+});

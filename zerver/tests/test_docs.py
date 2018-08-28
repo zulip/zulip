@@ -78,8 +78,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/', 'The Zulip API')
         self._test('/api/api-keys', 'you can use its email and API key')
         self._test('/api/installation-instructions', 'No download required!')
-        self._test('/api/private-message', 'steal away your hearts')
-        self._test('/api/stream-message', 'rotten in the state of Denmark')
+        self._test('/api/send-message', 'steal away your hearts')
         self._test('/api/render-message', '**foo**')
         self._test('/api/get-all-streams', 'include_public')
         self._test('/api/get-stream-id', 'The name of the stream to retrieve the ID for.')
@@ -100,7 +99,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'productive group chat', landing_missing_strings=["Login"])
-        self._test('/why-zulip/', 'all stakeholders can see and')
+        self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
@@ -175,12 +174,12 @@ class HelpTest(ZulipTestCase):
         self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
 
     def test_html_settings_links_help_docs(self) -> None:
-        result = self.client_get('/help/change-the-date-and-time-format')
-        self.assertIn('click <a href="/#settings/display-settings">Display settings</a>', str(result.content))
+        result = self.client_get('/help/change-the-time-format')
+        self.assertIn('Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get('/help/change-the-date-and-time-format',
+            result = self.client_get('/help/change-the-time-format',
                                      subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn('<strong>Display settings</strong>', str(result.content))

@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
                 ('state', models.PositiveSmallIntegerField()),
                 ('last_modified', models.DateTimeField(auto_now=True)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
     ]

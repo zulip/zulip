@@ -117,7 +117,7 @@ casper.then(function () {
 casper.then(function () {
     casper.click('*[title="Narrow to your private messages with Cordelia Lear"]');
 });
-casper.waitUntilVisible('#tab_list li.private_message', function () {
+casper.waitUntilVisible('li[data-user-ids-string="3"].expanded_private_message.active-sub-filter', function () {
     casper.page.sendEvent('keypress', 'c');
 });
 

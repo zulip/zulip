@@ -1,0 +1,1345 @@
+# This file contains the API definitions for the Zulip REST API.
+#
+# For details on the OpenAPI specification, see http://swagger.io/specification
+#
+# Our own documentation lives at
+#
+#   https://zulip.readthedocs.io/en/latest/subsystems/openapi-api-docs.html
+#
+
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: Zulip REST API
+  description: Powerful open source group chat
+  contact:
+    url: https://zulipchat.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+- url: 'https://your.zulip.server/api/v1'
+
+#######################
+# Endpoint definitions
+#######################
+paths:
+  /events:
+    get:
+      description: Receive new events from
+        [a registered event queue](/api/register-queue).
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via
+          `POST /api/v1/register`
+          (see [Register a queue](/api/register-queue)).
+        schema:
+          type: string
+        example: 1375801870:2942
+      - name: last_event_id
+        in: query
+        description: The highest event ID in this queue that you've received
+          and wish to acknowledge. See the [code for `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py)
+          in the [zulip Python module](https://github.com/zulip/python-zulip-api)
+          for an example implementation of correctly processing each event
+          exactly once.
+        schema:
+          type: integer
+        example: -1
+      - name: dont_block
+        in: query
+        description: Set to `true` if the client is requesting a nonblocking
+          reply. If not specified, the request will block until either a new
+          event is available or a few minutes have passed, in which case the
+          server will send the client a heartbeat event.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    events:
+                      type: array
+                      description: An array of `event` objects (possibly
+                        zero-length if `dont_block` is set) of events with
+                        IDs newer than `last_event_id`. Event IDs are
+                        guaranted to be increasing, but they are not
+                        guaranteed to be consecutive.
+                - example:
+                    {
+                        "events": [
+                            {
+                                "id": 0,
+                                "message": {
+                                    "avatar_url": "https://url/for/othello-bots/avatar",
+                                    "client": "website",
+                                    "content": "Something is rotten in the state of Denmark.",
+                                    "content_type": "text/x-markdown",
+                                    "display_recipient": "Denmark",
+                                    "id": 12345678,
+                                    "recipient_id": 12314,
+                                    "sender_email": "othello-bot@example.com",
+                                    "sender_full_name": "Othello Bot",
+                                    "sender_id": 13215,
+                                    "sender_realm_str": "example",
+                                    "sender_short_name": "othello-bot",
+                                    "subject": "Castle",
+                                    "subject_links": [],
+                                    "timestamp": 1375978403,
+                                    "type": "stream"
+                                },
+                                "type": "message"
+                            },
+                            {
+                                "id": 1,
+                                "message": {
+                                    "avatar_url": "https://url/for/othello-bots/avatar",
+                                    "client": "website",
+                                    "content": "I come not, friends, to steal away your hearts.",
+                                    "content_type": "text/x-markdown",
+                                    "display_recipient": [
+                                        {
+                                            "email": "hamlet@example.com",
+                                            "full_name": "Hamlet of Denmark",
+                                            "id": 31572,
+                                            "short_name": "hamlet"
+                                        }
+                                    ],
+                                    "id": 12345679,
+                                    "recipient_id": 18391,
+                                    "sender_email": "othello-bot@example.com",
+                                    "sender_full_name": "Othello Bot",
+                                    "sender_id": 13215,
+                                    "sender_realm_str": "example",
+                                    "sender_short_name": "othello-bot",
+                                    "subject": "",
+                                    "subject_links": [],
+                                    "timestamp": 1375978404,
+                                    "type": "private"
+                                },
+                                "type": "message"
+                            }
+                        ],
+                        "msg": "",
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadEventQueueIdError'
+    delete:
+      description: Delete a previously registered queue.
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via
+          `POST /api/v1/register`(see [Register a queue](/api/register-queue).
+        schema:
+          type: string
+        example: 1375801870:2942
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadEventQueueIdError'
+  /get_stream_id:
+    get:
+      description: Get the unique ID of a given stream.
+      parameters:
+      - name: stream
+        in: query
+        description: The name of the stream to retrieve the ID for.
+        schema:
+          type: string
+        example: Denmark
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    stream_id:
+                      type: integer
+                      description: The ID of the given stream.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "stream_id": 15
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream name 'nonexistent'",
+                        "result": "error"
+                    }
+  /messages:
+    post:
+      description: Send a message.
+      parameters:
+      - name: type
+        in: query
+        description: The type of message to be sent. `private` for a private
+          message and `stream` for a stream message.
+        schema:
+          type: string
+          enum:
+          - private
+          - stream
+        example: private
+        required: true
+      - name: to
+        in: query
+        description: The destination stream, or a CSV/JSON-encoded list
+          containing the usernames (emails) of the recipients.
+        schema:
+          type: string
+        example: aaron@zulip.com, iago@zulip.com
+        required: true
+      - name: subject
+        in: query
+        description: The topic of the message. Only required if `type` is
+          `stream`, ignored otherwise. Maximum length of 60 characters.
+        schema:
+          type: string
+          default:
+        example: Castle
+      - name: content
+        in: query
+        description: The content of the message. Maximum message size of
+          10000 bytes.
+        schema:
+          type: string
+        example: Hello
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    id:
+                      type: integer
+                      description: The ID assigned to the message sent.
+                - example:
+                    {
+                        "msg": "",
+                        "id": 42,
+                        "result": "success"
+                    }
+        '400_non_existing_stream':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonExistingStreamError'
+        '400_non_existing_user':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid email 'eeshan@zulip.com'",
+                        "result": "error"
+                    }
+  /messages/{message_id}:
+    patch:
+      description: Edit a message that has already been sent.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message that you wish to edit/update.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: subject
+        in: query
+        description: The topic of the message. Only required for stream
+          messages. Maximum length of 60 characters.
+        schema:
+          type: string
+          default:
+        example: Castle
+      - name: propagate_mode
+        in: query
+        description: "Which message(s) should be edited: just the one
+          indicated in `message_id`, messages in the same topic that had been
+          sent after this one, or all of them."
+        schema:
+          type: string
+          enum:
+          - change_one
+          - change_later
+          - change_all
+          default: change_one
+        example: change_all
+      - name: content
+        in: query
+        description: The content of the message. Maximum message size of 10000
+          bytes.
+        schema:
+          type: string
+        example: Hello
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - properties:
+                    msg:
+                      enum:
+                      - Your organization has turned off message editing
+                      - You don't have permission to edit this message
+                      - The time limit for editing this message has past
+                      - Nothing to change
+                      - Topic can't be empty
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to edit this message",
+                        "result": "error"
+                    }
+  /messages/render:
+    post:
+      description: Render a message to HTML.
+      parameters:
+      - name: content
+        in: query
+        description: The content of the message.
+        schema:
+          type: string
+        example: '**foo**'
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    rendered:
+                      type: string
+                      description: The rendered HTML.
+                - example:
+                    {
+                        "msg": "",
+                        "rendered": "<p><strong>foo</strong></p>",
+                        "result": "success"
+                    }
+  /user_uploads:
+    post:
+      description: Upload a single file and get the corresponding URI.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                filename:
+                  type: string
+                  format: binary
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    uri:
+                      type: string
+                      description: The URI of the uploaded file.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt"
+                    }
+  /users:
+    get:
+      description: Retrieve all users in a realm.
+      parameters:
+      - name: client_gravatar
+        in: query
+        description: The `client_gravatar` field is set to `true` if clients
+          can compute their own gravatars.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    members:
+                      type: array
+                      description: A list of `member` objects, each containing
+                        details of a user in the realm (like their email, name,
+                        avatar, user type...).
+                - example:
+                    {
+                        "members": [
+                            {
+                                "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
+                                "bot_type": null,
+                                "email": "AARON@zulip.com",
+                                "full_name": "aaron",
+                                "is_active": true,
+                                "is_admin": false,
+                                "is_bot": false,
+                                "user_id": 1
+                            },
+                            {
+                                "avatar_url": "https://secure.gravatar.com/avatar/77c3871a68c8d70356156029fd0a4999?d=identicon&version=1",
+                                "bot_type": null,
+                                "email": "cordelia@zulip.com",
+                                "full_name": "Cordelia Lear",
+                                "is_active": true,
+                                "is_admin": false,
+                                "is_bot": false,
+                                "user_id": 3
+                            },
+                            {
+                                "avatar_url": "https://secure.gravatar.com/avatar/0cbf08f3a355995fa2ec542246e35123?d=identicon&version=1",
+                                "bot_type": null,
+                                "email": "newbie@zulip.com",
+                                "full_name": "New User",
+                                "is_active": true,
+                                "is_admin": false,
+                                "is_bot": false,
+                                "user_id": 24
+                            }
+                        ],
+                        "msg": "",
+                        "result": "success"
+                    }
+    post:
+      description: Create a new user in a realm.
+      parameters:
+      - name: email
+        in: query
+        description: The email address of the new user.
+        schema:
+          type: string
+        example: newbie@zulip.com
+        required: true
+      - name: password
+        in: query
+        description: The password of the new user.
+        schema:
+          type: string
+        example: abdec@7982
+        required: true
+      - name: full_name
+        in: query
+        description: The full name of the new user.
+        schema:
+          type: string
+        example: John Smith
+        required: true
+      - name: short_name
+        in: query
+        description: The short name of the new user.
+        schema:
+          type: string
+        example: jsmith
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Email 'newbie@zulip.com' already in use",
+                        "result": "error"
+                    }
+  /users/me/{stream_id}/topics:
+    get:
+      description: Get all the topics in a specific stream.
+      parameters:
+      - name: stream_id
+        in: path
+        description: The unique ID of the stream.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    topics:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          max_id:
+                            description:
+                              The ID of the last message sent to the topic.
+                            type: number
+                          name:
+                            description: The name of the topic.
+                            type: string
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "topics": [
+                            {
+                                "max_id": 26,
+                                "name": "Denmark3"
+                            },
+                            {
+                                "max_id": 23,
+                                "name": "Denmark1"
+                            },
+                            {
+                                "max_id": 6,
+                                "name": "Denmark2"
+                            }
+                        ]
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error"
+                    }
+  /users/me/subscriptions:
+    post:
+      description: Subscribe one or more users to one or more streams.
+      parameters:
+      - name: subscriptions
+        in: query
+        description: "A list of dictionaries, where each dictionary contains
+          key/value pairs specifying a particular stream to subscribe to.
+          **Note**: This argument is called `streams` and not `subscriptions`
+          in our Python API."
+        schema:
+          type: array
+          items:
+            type: object
+        example: [{"name": "Verona"}]
+        required: true
+      - name: invite_only
+        in: query
+        description: A boolean specifying whether the streams specified in
+          `subscriptions` are invite-only or not.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: announce
+        in: query
+        description: If `announce` is `True` and one of the streams specified
+          in `subscriptions` has to be created (i.e. doesn't exist to begin
+          with), an announcement will be made notifying that a new stream was
+          created.
+        schema:
+          type: boolean
+        example: true
+      - name: principals
+        in: query
+        description: A list of email addresses of the users that will be
+          subscribed to the streams specified in the `subscriptions` argument.
+          If not provided, then the requesting user/bot is subscribed.
+        schema:
+          type: array
+          items:
+            type: string
+          default: []
+        example: ['ZOE@zulip.com']
+      - name: authorization_errors_fatal
+        in: query
+        description: A boolean specifying whether authorization errors (such
+          as when the requesting user is not authorized to access a private
+          stream) should be considered fatal or not. When `True`, an
+          authorization error is reported as such. When set to `False`, the
+          returned JSON payload indicates that there was an authorization
+          error, but the response is still considered a successful one.
+        schema:
+          type: boolean
+          default: true
+        example: false
+      security:
+      - basicAuth: []
+      responses:
+        '200_without_principals':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {},
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {
+                            "iago@zulip.com": [
+                                "new stream"
+                            ]
+                        }
+                    }
+        '200_already_subscribed':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {
+                            "newbie@zulip.com": [
+                                "new stream"
+                            ]
+                        },
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {}
+                    }
+        '400_unauthorized_errors_fatal_true':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "msg": "Unable to access stream (private_stream).",
+                        "result": "error"
+                    }
+        '400_unauthorized_errors_fatal_false':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {},
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {},
+                        "unauthorized": [
+                            "private_stream"
+                        ]
+                    }
+    delete:
+      description: Unsubscribe yourself or other users from one or more
+        streams.
+      parameters:
+      - name: subscriptions
+        in: query
+        description: A list of stream names to unsubscribe from. This argument
+          is called `streams` in our Python API.
+        schema:
+          type: array
+          items:
+            type: string
+        example: ['Verona', 'Denmark']
+        required: true
+      - name: principals
+        in: query
+        description: A list of email addresses of the users that will be
+          unsubscribed from the streams specified in the `subscriptions`
+          argument. If not provided, then the requesting user/bot is
+          unsubscribed.
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+        example: ['ZOE@zulip.com']
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    not_subscribed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams that the
+                        user is already unsubscribed from, and hence doesn't
+                        need to be unsubscribed.
+                    removed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams which were
+                        unsubscribed from as a result of the query.
+                - example:
+                    {
+                        "msg": "",
+                        "not_subscribed": [],
+                        "removed": [
+                            "new stream"
+                        ],
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NonExistingStreamError'
+  /users/me/subscriptions/muted_topics:
+    patch:
+      description: Toggle muting for a specific topic the user is subscribed
+        to.
+      parameters:
+      - name: stream
+        in: query_function
+        description: The name of the stream in which to mute the topic.
+        schema:
+          type: string
+        example: Verona
+        required: true
+      - name: topic
+        in: query
+        description: The topic to (un)mute. Note that the request will succeed
+          regardless of whether any messages have been sent to the
+          specified topic.
+        schema:
+          type: string
+        example: dinner
+        required: true
+      - name: op
+        in: query
+        description: Whether to mute (`add`) or unmute (`remove`) the provided
+          topic.
+        schema:
+          type: string
+          enum:
+          - add
+          - remove
+        example: add
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400_topic_already_muted':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsonError'
+                  - example:
+                      {
+                          "msg": "Topic already muted",
+                          "result": "error"
+                      }
+        '400_topic_not_muted':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsonError'
+                  - example:
+                      {
+                          "msg": "Topic is not muted",
+                          "result": "error"
+                      }
+  /realm/filters:
+    post:
+      description: Establish patterns in the messages that should be
+        automatically linkified.
+      parameters:
+      - name: pattern
+        in: query
+        description: The [Python regular
+          expression](https://docs.python.org/3/howto/regex.html) that
+          should trigger the linkifier.
+        schema:
+          type: string
+        example: '#(?P<id>[0-9]+)'
+        required: true
+      - name: url_format_string
+        in: query
+        description: The URL used for the link. If you used named groups for
+          the `pattern`, you can insert their content here with
+          `%(name_of_the_capturing_group)s`.
+        schema:
+          type: string
+        example: https://github.com/zulip/zulip/issues/%(id)s
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    id:
+                      type: integer
+                      description: The numeric ID assigned to this filter.
+                - example:
+                    {
+                        "id": 42,
+                        "result": "success",
+                        "msg": ""
+                    }
+  /register:
+    post:
+      description: This powerful endpoint can be used to register a Zulip
+        "event queue" (subscribed to certain types of "events", or updates to
+        the messages and other Zulip data the current user has access to), as
+        well as to fetch the current state of that data.
+      parameters:
+      - name: apply_markdown
+        in: query
+        description: Set to `true` if you would like the content to be
+          rendered in HTML format (by default, the API returns the raw text
+          that the user entered)
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: client_gravatar
+        in: query
+        description: The `client_gravatar` field is set to `true` if clients
+          can compute their own gravatars.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: event_types
+        in: query
+        description: "A JSON-encoded array indicating which types of events
+          you're interested in. Values that you might find useful include:
+          <br/> <br/>
+          * **message** (messages), <br/>
+          * **subscription** (changes in your subscriptions), <br/>
+          * **realm_user** (changes in the list of users in your realm)
+          <br/> <br/>
+          If you do not specify this argument, you will receive all events,
+          and have to filter out the events not relevant to your client in
+          your client code. For most applications, one is only interested in
+          messages, so one specifies: `event_types=['message']`"
+        schema:
+          type: string
+        example: event_types=['message']
+      - name: all_public_streams
+        in: query
+        description: Set to `True` if you would like to receive events that
+          occur within all public streams.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: include_subscribers
+        in: query
+        description: Set to `True` if you would like to receive events that
+          include the subscribers for each stream.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: fetch_event_types
+        in: query
+        description: Same as the `event_types` argument except that the values
+          in `fetch_event_types` are used to fetch initial data. If
+          `fetch_event_types` is not provided, `event_types` is used and if
+          `event_types` is not provided, this argument defaults to `None`.
+        schema:
+          type: string
+        example: event_types=['message']
+      - name: narrow
+        in: query
+        description: A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events for. For instance, to
+          receive events for the stream `Denmark`, you would specify
+          `narrow=['stream', 'Denmark']`. Another example is
+          `narrow=['is', 'private']` for private messages.
+        schema:
+          type: string
+          default: narrow=[]
+        example: narrow=['stream', 'Denmark']
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    queue_id:
+                      type: string
+                      description: The ID of the queue that has been allocated
+                        for your client.
+                    last_event_id:
+                      type: integer
+                      description: The initial value of `last_event_id` to
+                        pass to `GET /api/v1/events`.
+                - example:
+                    {
+                        "last_event_id": -1,
+                        "msg": "",
+                        "queue_id": "1517975029:0",
+                        "realm_emoji": {
+                            "1": {
+                                "author": {
+                                    "email": "iago@zulip.com",
+                                    "full_name": "Iago",
+                                    "id": 5
+                                },
+                                "deactivated": false,
+                                "id": "1",
+                                "name": "green_tick",
+                                "source_url": "/user_avatars/1/emoji/images/1.png"
+                            }
+                        },
+                        "result": "success"
+                    }
+  /server_settings:
+    get:
+      description: Fetch global settings for the Zulip server.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    authentication_methods:
+                      type: object
+                      description: Each key-value pair in the object indicates
+                        whether the authentication method is enabled on this
+                        server.
+                    zulip_version:
+                      type: string
+                      description: The version of Zulip running in the server.
+                    push_notifications_enabled:
+                      type: boolean
+                      description: Whether mobile/push notifications are
+                        enabled.
+                    email_auth_enabled:
+                      type: boolean
+                      description: Setting for allowing users authenticate with
+                        an email-password combination.
+                    require_email_format_usernames:
+                      type: boolean
+                      description: Whether usernames should have an email
+                        address format. This is important if your server has
+                        [LDAP authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-ldap)
+                        enabled with a username and password combination.
+                    realm_uri:
+                      type: string
+                      description: The organization's URI.
+                    realm_name:
+                      type: string
+                      description: The realm's name.
+                    realm_icon:
+                      type: string
+                      description: The URI of the organization's icon (usually
+                        a logo).
+                    realm_description:
+                      type: string
+                      description: HTML description of the organization, as
+                        configured by the
+                        [organization profile](/help/create-your-organization-profile).
+                - example:
+                    {
+                        "realm_uri": "http://localhost:9991",
+                        "push_notifications_enabled": false,
+                        "msg": "",
+                        "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
+                        "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
+                        "email_auth_enabled": true,
+                        "zulip_version": "1.9.0-rc1+git",
+                        "realm_name": "Zulip Dev",
+                        "authentication_methods": {
+                            "github": true,
+                            "ldap": false,
+                            "password": true,
+                            "remoteuser": false,
+                            "email": true,
+                            "google": true,
+                            "dev": true
+                        },
+                        "result": "success",
+                        "require_email_format_usernames": true
+                    }
+  /streams:
+    get:
+      description: Get all streams that the user has access to.
+      parameters:
+      - name: include_public
+        in: query
+        description: Include all public streams.
+        schema:
+          type: boolean
+          default: true
+        example: false
+      - name: include_subscribed
+        in: query
+        description: Include all streams that the user is subscribed to.
+        schema:
+          type: boolean
+          default: true
+        example: false
+      - name: include_all_active
+        in: query
+        description: Include all active streams. The user must have
+          administrative privileges to use this parameter.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: include_default
+        in: query
+        description: Include all default streams for the user's realm.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    streams:
+                      type: array
+                      items:
+                        type: object
+                      description: A list of `stream` objects, which contain a
+                        `description`, a `name`, their `stream_id` and whether
+                        they are `invite_only` or not.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "streams": [
+                            {
+                                "description": "A Scandinavian country",
+                                "invite_only": false,
+                                "name": "Denmark",
+                                "stream_id": 1
+                            },
+                            {
+                                "description": "Yet another Italian city",
+                                "invite_only": false,
+                                "name": "Rome",
+                                "stream_id": 2
+                            },
+                            {
+                                "description": "Located in the United Kingdom",
+                                "invite_only": false,
+                                "name": "Scotland",
+                                "stream_id": 3
+                            },
+                            {
+                                "description": "A northeastern Italian city",
+                                "invite_only": false,
+                                "name": "Venice",
+                                "stream_id": 4
+                            },
+                            {
+                                "description": "A city in Italy",
+                                "invite_only": false,
+                                "name": "Verona",
+                                "stream_id": 5
+                            },
+                            {
+                                "description": "New stream for testing",
+                                "invite_only": false,
+                                "name": "new stream",
+                                "stream_id": 6
+                            }
+                        ]
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "User not authorized for this query",
+                        "result": "error"
+                    }
+  /typing:
+    post:
+      description: Send an event indicating that the user has started or
+        stopped typing on their client.
+      parameters:
+      - name: op
+        in: query
+        description: Whether the user has started (`start`) or stopped (`stop`)
+          to type.
+        schema:
+          type: string
+          enum:
+          - start
+          - stop
+        example: start
+        required: true
+      - name: notification_to
+        in: query
+        description: The recipients of the message being typed, in the same format used by the
+          send_message API.  Typing notifications are only supported for private messages,
+          so this should be a JSON-encoded list of email addresses of the message's recipients.
+        schema:
+          type: array
+          items:
+            type: string
+        example: ["iago@zulip.com", "polonius@zulip.com"]
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+components:
+  #######################
+  # Security definitions
+  #######################
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic authentication, with the user's email as the
+        username, and the API key as the password. The API key can be fetched
+        using the `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+
+  schemas:
+    JsonResponse:
+      type: object
+      properties:
+        result:
+          type: string
+    JsonSuccess:
+      allOf:
+      - $ref: '#/components/schemas/JsonResponse'
+      - required:
+        - result
+        - msg
+      - properties:
+          result:
+            enum:
+            - success
+          msg:
+            type: string
+      - example:
+          {
+            "msg": "",
+            "result": "success"
+          }
+    JsonError:
+      allOf:
+      - $ref: '#/components/schemas/JsonResponse'
+      - required:
+        - result
+        - msg
+      - properties:
+          result:
+            enum:
+            - error
+          msg:
+            type: string
+    CodedError:
+      allOf:
+      - $ref: '#/components/schemas/JsonError'
+      - properties:
+          code:
+            type: string
+            description: A string that identifies the error.
+    BadEventQueueIdError:
+      allOf:
+      - $ref: '#/components/schemas/CodedError'
+      - properties:
+          queue_id:
+            type: string
+            description: The string that identifies the invalid event queue.
+      - example:
+          {
+              "code": "BAD_EVENT_QUEUE_ID",
+              "msg": "Bad event queue id: 1518820930:1",
+              "queue_id": "1518820930:1",
+              "result": "error"
+          }
+    NonExistingStreamError:
+      allOf:
+        - $ref: '#/components/schemas/CodedError'
+        - properties:
+            stream:
+              type: string
+              description: The name of the stream that could not be
+                found.
+        - example:
+            {
+                "code": "STREAM_DOES_NOT_EXIST",
+                "msg": "Stream 'nonexistent_stream' does not exist",
+                "result": "error",
+                "stream": "nonexistent_stream"
+            }
+    AddSubscriptionsResponse:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          subscribed:
+            type: object
+            description: A dictionary where the key is the email address of
+              the user/bot and the value is a list of the names of the streams
+              that were subscribed to as a result of the query.
+          already_subscribed:
+            type: object
+            description: A dictionary where the key is the email address of
+              the user/bot and the value is a list of the names of the streams
+              that the user/bot is already subscribed to.
+          unauthorized:
+            type: array
+            items:
+              type: string
+            description: A list of names of streams that the requesting
+              user/bot was not authorized to subscribe to.
+
+  ###################
+  # Shared responses
+  ###################
+  responses:
+    SimpleSuccess:
+      description: Success.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JsonSuccess'

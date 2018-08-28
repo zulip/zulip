@@ -15,7 +15,7 @@ from analytics.models import Anomaly, BaseCount, \
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, \
+from zerver.models import Message, Realm, \
     Stream, UserActivityInterval, UserProfile, models
 
 ## Logging setup ##
@@ -513,6 +513,9 @@ count_stats_ = [
     # User Activity stats
     # Stats that measure user activity in the UserActivityInterval sense.
 
+    CountStat('1day_actives::day',
+              sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
+              CountStat.DAY, interval=timedelta(days=1)-UserActivityInterval.MIN_INTERVAL_LENGTH),
     CountStat('15day_actives::day',
               sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-UserActivityInterval.MIN_INTERVAL_LENGTH),

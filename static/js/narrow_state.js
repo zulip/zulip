@@ -12,16 +12,20 @@ exports.set_current_filter = function (filter) {
     current_filter = filter;
 };
 
-exports.get_current_filter = function () {
-    return current_filter;
-};
-
 exports.active = function () {
     return current_filter !== undefined;
 };
 
 exports.filter = function () {
     return current_filter;
+};
+
+exports.is_reading_mode = function () {
+    if (current_filter === undefined) {
+        return true;
+    }
+
+    return current_filter.is_reading_mode();
 };
 
 exports.operators = function () {
@@ -89,7 +93,10 @@ exports.set_compose_defaults = function () {
     }
 
     if (single.has('pm-with')) {
-        opts.private_message_recipient = single.get('pm-with');
+        var private_message_recipient = single.get('pm-with');
+        if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(','))) {
+            opts.private_message_recipient = private_message_recipient;
+        }
     }
     return opts;
 };
@@ -164,16 +171,25 @@ exports.pm_string = function () {
         return;
     }
 
-    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+    var user_ids_string = people.reply_to_to_user_ids_string(emails_string);
 
     return user_ids_string;
 };
 
 exports.get_first_unread_info = function () {
-    if ((current_filter === undefined) || !current_filter.can_apply_locally()) {
-        // we expect our callers to make sure a "local" narrow
-        // makes sense (and we don't yet support the all-messages view)
+    if (current_filter === undefined) {
+        // we don't yet support the all-messages view
         blueslip.error('unexpected call to get_first_unread_info');
+        return {
+            flavor: 'cannot_compute',
+        };
+    }
+
+    if (!current_filter.can_apply_locally()) {
+        // For things like search queries, where the server has info
+        // that the client isn't privvy to, we need to wait for the
+        // server to give us a definitive list of messages before
+        // deciding where we'll move the selection.
         return {
             flavor: 'cannot_compute',
         };
@@ -261,6 +277,10 @@ exports._possible_unread_message_ids = function () {
         return unread.get_all_msg_ids();
     }
 
+    if (current_filter.can_apply_locally()) {
+        return unread.get_all_msg_ids();
+    }
+
     return;
 };
 
@@ -270,8 +290,8 @@ exports.narrowed_to_pms = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return (current_filter.has_operator("pm-with") ||
-            current_filter.has_operand("is", "private"));
+    return current_filter.has_operator("pm-with") ||
+            current_filter.has_operand("is", "private");
 };
 
 exports.narrowed_by_pm_reply = function () {
@@ -279,8 +299,8 @@ exports.narrowed_by_pm_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 1 &&
-            current_filter.has_operator('pm-with'));
+    return operators.length === 1 &&
+            current_filter.has_operator('pm-with');
 };
 
 exports.narrowed_by_topic_reply = function () {
@@ -288,16 +308,16 @@ exports.narrowed_by_topic_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 2 &&
+    return operators.length === 2 &&
             current_filter.operands("stream").length === 1 &&
-            current_filter.operands("topic").length === 1);
+            current_filter.operands("topic").length === 1;
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/subject pair
 exports.narrowed_by_reply = function () {
-    return (exports.narrowed_by_pm_reply() ||
-            exports.narrowed_by_topic_reply());
+    return exports.narrowed_by_pm_reply() ||
+            exports.narrowed_by_topic_reply();
 };
 
 exports.narrowed_by_stream_reply = function () {
@@ -305,25 +325,25 @@ exports.narrowed_by_stream_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 1 &&
-            current_filter.operands("stream").length === 1);
+    return operators.length === 1 &&
+            current_filter.operands("stream").length === 1;
 };
 
 exports.narrowed_to_topic = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return (current_filter.has_operator("stream") &&
-            current_filter.has_operator("topic"));
+    return current_filter.has_operator("stream") &&
+            current_filter.has_operator("topic");
 };
 
 exports.narrowed_to_search = function () {
-    return (current_filter !== undefined) && current_filter.is_search();
+    return current_filter !== undefined && current_filter.is_search();
 };
 
 exports.muting_enabled = function () {
-    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms());
+    return !exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
+            !exports.narrowed_to_pms();
 };
 
 exports.is_for_stream_id = function (stream_id) {
@@ -336,7 +356,7 @@ exports.is_for_stream_id = function (stream_id) {
         return false;
     }
 
-    return (stream_id === narrow_stream_id);
+    return stream_id === narrow_stream_id;
 };
 
 return exports;
@@ -345,3 +365,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = narrow_state;
 }
+window.narrow_state = narrow_state;

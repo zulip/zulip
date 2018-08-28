@@ -8,5 +8,3 @@ conversations and new users, while you were away.
 
 2. Select the **Send digest emails when I'm away** option under the
 **Other notification settings** section.
-
-{!save-changes.md!} notification settings.

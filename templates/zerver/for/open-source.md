@@ -18,18 +18,10 @@ meetups, hackathons, conference committees, and more. If you’re not sure
 whether your organization qualifies, send us an email at
 support@zulipchat.com.
 
-### Scale to thousands of users
-
-For those running Zulip at home, we’ve done a lot of work to ensure that
-drive-by members of the community don’t consume too many disk or CPU
-resources. A Zulip server with 1000 active members and 10000 inactive
-members takes about as many resources as a Zulip server with 1000 active
-members.
-
 ### Join without an invitation
 
 Allow anyone to
-[join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
+[join without an invitation](/help/manage-who-can-join-and-invite).
 You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
 in your readme document.
 
@@ -40,10 +32,10 @@ Allow (or require) users to
 email address.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
-### Quality data export
+### Import from Slack or Gitter
 
-Our high quality export and import tools ensure you can always move from
-[zulipchat.com](https://zulipchat.com) hosting to your own servers.
+Import your existing organization from [Slack](/help/import-from-slack) or
+[Gitter](/help/import-from-gitter).
 
 ### Syntax highlighting
 
@@ -75,6 +67,21 @@ any time.
 Get events from GitHub, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
+
+### Quality data export
+
+Our high quality [export](/help/export-your-organization) and
+[import](https://zulip.readthedocs.io/en/latest/production/export-and-import.html)
+tools ensure you can always move from
+[zulipchat.com](https://zulipchat.com) hosting to your own servers.
+
+### Scale to thousands of users
+
+For those running Zulip at home, we’ve done a lot of work to ensure that
+drive-by members of the community don’t consume too many disk or CPU
+resources. A Zulip server with 1000 active members and 10000 inactive
+members takes about as many resources as a Zulip server with 1000 active
+members.
 
 ### Free and open source
 

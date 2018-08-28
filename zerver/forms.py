@@ -25,14 +25,17 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user, UserProfile, get_realm, email_to_domain, \
-    email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError
-from zproject.backends import email_auth_enabled
+    email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError, \
+    EmailContainsPlusError
+from zproject.backends import email_auth_enabled, email_belongs_to_ldap
 
 import logging
 import re
 import DNS
 
 from typing import Any, Callable, List, Optional, Dict
+from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
+from two_factor.utils import totp_digits
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -156,6 +159,8 @@ class HomepageForm(forms.Form):
                       string_id=realm.string_id, email=email))
         except DisposableEmailError:
             raise ValidationError(_("Please use your real email address."))
+        except EmailContainsPlusError:
+            raise ValidationError(_("Email addresses containing + are not allowed in this organization."))
 
         validate_email_for_realm(realm, email)
 
@@ -178,6 +183,14 @@ class LoggingSetPasswordForm(SetPasswordForm):
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            commit=commit)
         return self.user
+
+def generate_password_reset_url(user_profile: UserProfile,
+                                token_generator: PasswordResetTokenGenerator) -> str:
+    token = token_generator.make_token(user_profile)
+    uid = urlsafe_base64_encode(force_bytes(user_profile.id)).decode('ascii')
+    endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
+                       kwargs=dict(uidb64=uid, token=token))
+    return "{}{}".format(user_profile.realm.uri, endpoint)
 
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
@@ -209,6 +222,15 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return
+        if email_belongs_to_ldap(realm, email):
+            # TODO: Ideally, we'd provide a user-facing error here
+            # about the fact that they aren't allowed to have a
+            # password in the Zulip server and should change it in LDAP.
+            logging.info("Password reset not allowed for user in LDAP domain")
+            return
+        if realm.deactivated:
+            logging.info("Realm is deactivated")
+            return
 
         user = None  # type: Optional[UserProfile]
         try:
@@ -221,26 +243,26 @@ class ZulipPasswordResetForm(PasswordResetForm):
             'realm_uri': realm.uri,
         }
 
-        if user is not None:
-            token = token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.id)).decode('ascii')
-            endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
-                               kwargs=dict(uidb64=uid, token=token))
+        if user is not None and not user.is_active:
+            context['user_deactivated'] = True
+            user = None
 
-            context['no_account_in_realm'] = False
-            context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
+        if user is not None:
+            context['active_account_in_realm'] = True
+            context['reset_url'] = generate_password_reset_url(user, token_generator)
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
-                       from_address=FromAddress.NOREPLY, context=context)
+                       from_address=FromAddress.tokenized_no_reply_address(),
+                       context=context)
         else:
-            context['no_account_in_realm'] = True
-            accounts = UserProfile.objects.filter(email__iexact=email)
-            if accounts:
-                context['accounts'] = accounts
-                context['multiple_accounts'] = accounts.count() != 1
+            context['active_account_in_realm'] = False
+            active_accounts_in_other_realms = UserProfile.objects.filter(email__iexact=email, is_active=True)
+            if active_accounts_in_other_realms:
+                context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
             send_email('zerver/emails/password_reset', to_email=email,
                        from_name="Zulip Account Security",
-                       from_address=FromAddress.NOREPLY, context=context)
+                       from_address=FromAddress.tokenized_no_reply_address(),
+                       context=context)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
@@ -292,6 +314,16 @@ class OurAuthenticationForm(AuthenticationForm):
         happy with this form.
         """
         return field_name
+
+class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
+    """
+    We add this form to update the widget of otp_token. The default
+    widget is an input element whose type is a number, which doesn't
+    stylistically match our theme.
+    """
+    otp_token = forms.IntegerField(label=_("Token"), min_value=1,
+                                   max_value=int('9' * totp_digits()),
+                                   widget=forms.TextInput)
 
 class MultiEmailField(forms.Field):
     def to_python(self, emails: str) -> List[str]:

@@ -46,6 +46,10 @@ function make_id_set() {
         return ids.keys();
     };
 
+    self.max = function () {
+        return _.max(ids.keys());
+    };
+
     self.is_empty = function () {
         return ids.is_empty();
     };
@@ -98,6 +102,10 @@ function make_bucketer(options) {
 
     self.each = function (callback) {
         key_to_bucket.each(callback);
+    };
+
+    self.keys = function () {
+        return key_to_bucket.keys();
     };
 
     return self;
@@ -302,6 +310,33 @@ exports.unread_topic_counter = (function () {
         });
 
         return res;
+    };
+
+    self.get_missing_topics = function (opts) {
+        var stream_id = opts.stream_id;
+        var topic_dict = opts.topic_dict;
+
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+        if (!per_stream_bucketer) {
+            return [];
+        }
+
+        var topic_names = per_stream_bucketer.keys();
+
+        topic_names = _.reject(topic_names, function (topic_name) {
+            return topic_dict.has(topic_name);
+        });
+
+        var result = _.map(topic_names, function (topic_name) {
+            var msgs = per_stream_bucketer.get_bucket(topic_name);
+
+            return {
+                pretty_name: topic_name,
+                message_id: msgs.max(),
+            };
+        });
+
+        return result;
     };
 
     self.get_stream_count = function (stream_id) {
@@ -545,6 +580,10 @@ exports.get_all_msg_ids = function () {
     return util.sorted_ids(ids);
 };
 
+exports.get_missing_topics = function (opts) {
+    return exports.unread_topic_counter.get_missing_topics(opts);
+};
+
 exports.get_msg_ids_for_starred = function () {
     // This is here for API consistency sake--we never
     // have unread starred messages.  (Some day we may ironically
@@ -584,3 +623,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = unread;
 }
+window.unread = unread;

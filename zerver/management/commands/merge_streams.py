@@ -65,7 +65,8 @@ class Command(ZulipBaseCommand):
         if len(subs_to_deactivate) > 0:
             print("Deactivating %s subscriptions" % (len(subs_to_deactivate),))
             bulk_remove_subscriptions([sub.user_profile for sub in subs_to_deactivate],
-                                      [stream_to_destroy])
+                                      [stream_to_destroy],
+                                      self.get_client())
         do_deactivate_stream(stream_to_destroy)
         if len(users_to_activate) > 0:
             print("Adding %s subscriptions" % (len(users_to_activate),))

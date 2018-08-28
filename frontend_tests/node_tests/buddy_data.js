@@ -1,3 +1,6 @@
+const _page_params = {};
+
+set_global('page_params', _page_params);
 zrequire('people');
 zrequire('presence');
 zrequire('util');
@@ -8,9 +11,8 @@ zrequire('buddy_data');
 // here.
 
 
-set_global('page_params', {});
 
-(function make_people() {
+run_test('make_people', () => {
     _.each(_.range(1000, 2000), (i) => {
         const person = {
             user_id: i,
@@ -19,9 +21,9 @@ set_global('page_params', {});
         };
         people.add_in_realm(person);
     });
-}());
+});
 
-(function activate_people() {
+run_test('activate_people', () => {
     const server_time = 9999;
     const info = {
         website: {
@@ -39,9 +41,9 @@ set_global('page_params', {});
     _.each(_.range(1400, 1700), (user_id) => {
         presence.set_user_status(user_id, {}, server_time);
     });
-}());
+});
 
-(function test_user_ids() {
+run_test('user_ids', () => {
     var user_ids;
 
     // Even though we have 1000 users, we only get the 400 active
@@ -73,4 +75,4 @@ set_global('page_params', {});
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
     assert.equal(user_ids.length, 700);
-}());
+});

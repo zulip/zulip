@@ -1,6 +1,7 @@
 # Library code for use in management commands
 
 import sys
+import time
 
 from argparse import ArgumentParser
 from django.conf import settings
@@ -8,7 +9,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from typing import Any, Dict, Optional, List
 
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, UserProfile, Client, get_client
 
 def is_integer_string(val: str) -> bool:
     try:
@@ -28,6 +29,10 @@ def check_config() -> None:
             pass
 
         raise CommandError("Error: You must set %s in /etc/zulip/settings.py." % (setting_name,))
+
+def sleep_forever() -> None:
+    while True:  # nocoverage
+        time.sleep(10**9)
 
 class ZulipBaseCommand(BaseCommand):
     def add_realm_args(self, parser: ArgumentParser, required: bool=False,
@@ -120,3 +125,7 @@ You can use the command list_realms to find ID of the realms in this server."""
                                "to specify which one to modify.")
         except UserProfile.DoesNotExist:
             raise CommandError("This Zulip server does not contain a user with email '%s'" % (email,))
+
+    def get_client(self) -> Client:
+        """Returns a Zulip Client object to be used for things done in management commands"""
+        return get_client("ZulipServer")

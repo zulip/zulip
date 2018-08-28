@@ -5,10 +5,6 @@ zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {
-    emojis_by_name: {
-        alien: '1f47d',
-        smile: '1f604',
-    },
     all_realm_emojis: {
         991: {
             id: '991',
@@ -49,9 +45,7 @@ set_global('emoji', {
     },
 });
 
-set_global('blueslip', {
-    warn: function () {},
-});
+set_global('blueslip', global.make_zblueslip());
 
 set_global('page_params', {user_id: 5});
 
@@ -122,7 +116,7 @@ set_global('current_msg_list', {
     },
 });
 
-(function test_open_reactions_popover() {
+run_test('open_reactions_popover', () => {
     $('.selected-row').set_find_results('.actions_hover', $('.target-action'));
     $('.selected-row').set_find_results('.reaction_button', $('.target-reaction'));
 
@@ -147,11 +141,14 @@ set_global('current_msg_list', {
 
     assert(reactions.open_reactions_popover());
     assert(called);
-}());
+});
 
-(function test_basics() {
+run_test('basics', () => {
+    blueslip.set_test_data('warn', 'Unknown user_id 8888 in reaction for message 1001');
+    blueslip.set_test_data('warn', 'Unknown user_id 9999 in reaction for message 1001');
     var result = reactions.get_message_reactions(message);
-
+    assert.equal(blueslip.get_test_logs('warn').length, 2);
+    blueslip.clear_test_data();
     assert(reactions.current_user_has_reacted_to_emoji(message, '1f604', 'unicode_emoji'));
     assert(!reactions.current_user_has_reacted_to_emoji(message, '1f626', 'unicode_emoji'));
 
@@ -195,9 +192,9 @@ set_global('current_msg_list', {
         },
     ];
     assert.deepEqual(result, expected_result);
-}());
+});
 
-(function test_sending() {
+run_test('sending', () => {
     var message_id = 1001; // see above for setup
     var emoji_name = 'smile'; // should be a current reaction
 
@@ -220,10 +217,13 @@ set_global('current_msg_list', {
         args.success();
 
         // similarly, we only exercise the failure codepath
-        global.channel.xhr_error_message = function () {};
+        // Since this path calls blueslip.warn, we need to handle it.
+        blueslip.set_test_data('warn', 'XHR Error Message.');
+        global.channel.xhr_error_message = function () {return 'XHR Error Message.';};
         args.error();
+        assert.equal(blueslip.get_test_logs('warn').length, 1);
+        blueslip.clear_test_data();
     });
-
     emoji_name = 'alien'; // not set yet
     global.with_stub(function (stub) {
         global.channel.post = stub.f;
@@ -267,20 +267,16 @@ set_global('current_msg_list', {
         });
     });
 
-    var orig_func = global.blueslip.warn;
-    var error_msg;
-    global.blueslip.warn = function (msg) {
-        error_msg = msg;
-    };
     emoji_name = 'unknown-emoji';   // Test sending an emoji unknown to frontend.
+    blueslip.set_test_data('warn', 'Bad emoji name: ' + emoji_name);
     reactions.toggle_emoji_reaction(message_id, emoji_name);
-    assert.equal(error_msg, 'Bad emoji name: ' + emoji_name);
-    global.blueslip.warn = orig_func;
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
     reactions.add_reaction = orig_add_reaction;
     reactions.remove_reaction = orig_remove_reaction;
-}());
+});
 
-(function test_set_reaction_count() {
+run_test('set_reaction_count', () => {
     var count_element = $.create('count-stub');
     var reaction_element = $.create('reaction-stub');
 
@@ -289,9 +285,9 @@ set_global('current_msg_list', {
     reactions.set_reaction_count(reaction_element, 5);
 
     assert.equal(count_element.text(), '5');
-}());
+});
 
-(function test_get_reaction_section() {
+run_test('get_reaction_section', () => {
     var message_table = $.create('.message_table');
     var message_row = $.create('some-message-row');
     var message_reactions = $.create('our-reactions-section');
@@ -302,9 +298,9 @@ set_global('current_msg_list', {
     var section = reactions.get_reaction_section(555);
 
     assert.equal(section, message_reactions);
-}());
+});
 
-(function test_add_and_remove_reaction() {
+run_test('add_and_remove_reaction', () => {
     // Insert 8ball for Alice.
     var alice_event = {
         message_id: 1001,
@@ -473,7 +469,11 @@ set_global('current_msg_list', {
     reactions.add_reaction(alice_event);
 
     assert(reaction_element.hasClass('reacted'));
+    blueslip.set_test_data('warn', 'Unknown user_id 8888 in reaction for message 1001');
+    blueslip.set_test_data('warn', 'Unknown user_id 9999 in reaction for message 1001');
     var result = reactions.get_message_reactions(message);
+    assert.equal(blueslip.get_test_logs('warn').length, 2);
+    blueslip.clear_test_data();
     var realm_emoji_data = _.filter(result, function (v) {
         return v.emoji_name === 'realm_emoji';
     })[0];
@@ -485,9 +485,9 @@ set_global('current_msg_list', {
     reactions.remove_reaction(alice_event);
     assert(!reaction_element.hasClass('reacted'));
 
-}());
+});
 
-(function test_with_view_stubs() {
+run_test('with_view_stubs', () => {
     // This function tests reaction events by mocking out calls to
     // the view.
 
@@ -646,18 +646,14 @@ set_global('current_msg_list', {
         ],
     });
 
-}());
+});
 
-(function test_error_handling() {
-    var error_msg;
-
+run_test('error_handling', () => {
     global.message_store.get = function () {
         return;
     };
 
-    global.blueslip.error = function (msg) {
-        error_msg = msg;
-    };
+    blueslip.set_test_data('error', 'reactions: Bad message id: 55');
 
     var bogus_event  = {
         message_id: 55,
@@ -672,18 +668,18 @@ set_global('current_msg_list', {
     var original_func = reactions.current_user_has_reacted_to_emoji;
     reactions.current_user_has_reacted_to_emoji = function () { return true; };
     reactions.toggle_emoji_reaction(55, bogus_event.emoji_name);
-    assert.equal(error_msg, 'reactions: Bad message id: 55');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
     reactions.current_user_has_reacted_to_emoji = original_func;
+    blueslip.clear_test_data();
 
-    error_msg = undefined;
     reactions.add_reaction(bogus_event);
-    assert.equal(error_msg, undefined);
+    assert.equal(blueslip.get_test_logs('error').length, 0);
 
     reactions.remove_reaction(bogus_event);
-    assert.equal(error_msg, undefined);
-}());
+    assert.equal(blueslip.get_test_logs('error').length, 0);
+});
 
-(function test_local_reaction_id() {
+run_test('local_reaction_id', () => {
     var reaction_info = {
         reaction_type: 'unicode_emoji',
         emoji_name: 'thumbs_up',
@@ -694,9 +690,9 @@ set_global('current_msg_list', {
 
     var reverse_info = reactions.get_reaction_info(local_id);
     assert.deepEqual(reverse_info, reaction_info);
-}());
+});
 
-(function test_process_reaction_click() {
+run_test('process_reaction_click', () => {
     var message_id = 1001;
     var expected_reaction_info = {
         reaction_type: 'unicode_emoji',
@@ -728,4 +724,4 @@ set_global('current_msg_list', {
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, expected_reaction_info);
     });
-}());
+});

@@ -18,7 +18,7 @@ exports.make_event_store = (selector) => {
     var child_on_functions = new Dict();
 
     function generic_event(event_name, arg) {
-        if (typeof(arg) === 'function') {
+        if (typeof arg === 'function') {
             on_functions.set(event_name, arg);
         } else {
             var handler = on_functions.get(event_name);
@@ -35,11 +35,13 @@ exports.make_event_store = (selector) => {
 
         get_on_handler: function (name, child_selector) {
             var funcs = self.get_on_handlers(name, child_selector);
+            var handler_name = name + ' with ' + child_selector;
             if (funcs.length === 0) {
-                throw Error('Could not find handler for ' + name);
+                throw Error('Could not find handler for ' + handler_name);
             }
             if (funcs.length > 1) {
-                throw Error('Found too many handlers for ' + name);
+                var remedy = "\nMaybe clear zjquery between tests?";
+                throw Error('Found too many handlers for ' + handler_name + remedy);
             }
             return funcs[0];
         },
@@ -94,8 +96,8 @@ exports.make_event_store = (selector) => {
                 event_name = arguments[0];
                 sel = arguments[1];
                 handler = arguments[2];
-                assert.equal(typeof(sel), 'string', 'String selectors expected here.');
-                assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+                assert.equal(typeof sel, 'string', 'String selectors expected here.');
+                assert.equal(typeof handler, 'function', 'An handler function expected here.');
                 var child_on = child_on_functions.setdefault(sel, new Dict());
                 funcs = child_on.setdefault(event_name, []);
                 funcs.push(handler);
@@ -127,6 +129,7 @@ exports.make_new_elem = function (selector, opts) {
     var html = 'never-been-set';
     var text = 'never-been-set';
     var value;
+    var css;
     var shown = false;
     var focused = false;
     var find_results = new Dict();
@@ -162,8 +165,10 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event('click', arg);
             return self;
         },
-        css: noop,
         data: noop,
+        delay: function () {
+            return self;
+        },
         debug: function () {
             return {
                 value: value,
@@ -171,7 +176,12 @@ exports.make_new_elem = function (selector, opts) {
                 selector: selector,
             };
         },
-        empty: noop,
+        empty: function (arg) {
+            if (arg === undefined) {
+                find_results.clear();
+            }
+            return self;
+        },
         eq: function () {
             return self;
         },
@@ -193,6 +203,14 @@ exports.make_new_elem = function (selector, opts) {
         focus: function () {
             focused = true;
             return self;
+        },
+        focusin: function () {
+            focused = true;
+            return self;
+        },
+        focusout: function () {
+            focused = false;
+            return ;
         },
         get: function (idx) {
             // We have some legacy code that does $('foo').get(0).
@@ -322,6 +340,13 @@ exports.make_new_elem = function (selector, opts) {
             value = arguments[0];
             return self;
         },
+        css: function () {
+            if (arguments.length === 0) {
+                return css || {};
+            }
+            css = arguments[0];
+            return self;
+        },
         visible: function () {
             return shown;
         },
@@ -401,15 +426,15 @@ exports.make_zjquery = function (opts) {
         }
 
         var valid_selector =
-            ('<#.'.indexOf(selector[0]) >= 0) ||
-            (selector === 'window-stub') ||
-            (selector === 'document-stub') ||
-            (selector === 'body') ||
-            (selector === 'html') ||
-            (selector.location) ||
-            (selector.indexOf('#') >= 0) ||
-            (selector.indexOf('.') >= 0) ||
-            (selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('['));
+            '<#.'.indexOf(selector[0]) >= 0 ||
+            selector === 'window-stub' ||
+            selector === 'document-stub' ||
+            selector === 'body' ||
+            selector === 'html' ||
+            selector.location ||
+            selector.indexOf('#') >= 0 ||
+            selector.indexOf('.') >= 0 ||
+            selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('[');
 
         assert(valid_selector,
                'Invalid selector: ' + selector +
@@ -464,6 +489,10 @@ exports.make_zjquery = function (opts) {
     };
 
     zjquery.fn = fn;
+
+    zjquery.clear_all_elements = function () {
+        elems = {};
+    };
 
     return zjquery;
 };

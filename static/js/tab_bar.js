@@ -29,20 +29,20 @@ function make_tab_data() {
     }
 
     function in_all() {
-        return (filter !== undefined &&
+        return filter !== undefined &&
                (filtered_to_non_home_view_stream() ||
-                filter.has_operand("in", "all")));
+                filter.has_operand("in", "all"));
     }
 
     if (in_all()) {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
-                           hashchange.operators_to_hash([page_params.narrow[0]]),
+                           hash_util.operators_to_hash([page_params.narrow[0]]),
                            page_params.narrow_stream, 'stream'));
         if (page_params.narrow_topic !== undefined) {
             tabs.push(make_tab("Topic " + page_params.narrow_topic,
-                               hashchange.operators_to_hash(page_params.narrow),
+                               hash_util.operators_to_hash(page_params.narrow),
                                null));
         }
     }
@@ -51,7 +51,7 @@ function make_tab_data() {
         var stream;
         var ops = narrow_state.operators();
         // Second breadcrumb item
-        var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
+        var hashed = hash_util.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
             stream = filter.operands("stream")[0];
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
@@ -64,7 +64,7 @@ function make_tab_data() {
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
                 var names = _.map(emails, function (email) {
-                    if (! people.get_by_email(email)) {
+                    if (!people.get_by_email(email)) {
                         return email;
                     }
                     return people.get_by_email(email).full_name;
@@ -103,7 +103,7 @@ function make_tab_data() {
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
             var subject = filter.operands("topic")[0];
-            hashed = hashchange.operators_to_hash(ops.slice(0, 2));
+            hashed = hash_util.operators_to_hash(ops.slice(0, 2));
 
             tabs.push(make_tab(subject, hashed, null));
         }
@@ -165,7 +165,7 @@ function build_tab_bar() {
     tab_bar.removeClass('notdisplayed');
 }
 
-$(function () {
+exports.initialize = function () {
     $(document).on('narrow_activated.zulip', function () {
         build_tab_bar();
     });
@@ -174,7 +174,7 @@ $(function () {
     });
 
     build_tab_bar();
-});
+};
 
 return exports;
 
@@ -183,3 +183,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = tab_bar;
 }
+window.tab_bar = tab_bar;

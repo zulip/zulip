@@ -158,7 +158,7 @@ casper.then(function () {
     casper.click("li[data-section='emoji-settings']");
     casper.waitUntilVisible('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
-            name: 'mouseface',
+            name: 'new mouse face',
             emoji_file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, true);
     });
@@ -171,16 +171,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('tr#emoji_mouseface', function () {
-        casper.test.assertSelectorHasText('tr#emoji_mouseface .emoji_name', 'mouseface');
-        casper.test.assertExists('tr#emoji_mouseface img');
-        casper.click('tr#emoji_mouseface button.delete');
+    casper.waitUntilVisible('tr#emoji_new_mouse_face', function () {
+        casper.test.assertSelectorHasText('tr#emoji_new_mouse_face .emoji_name', 'new mouse face');
+        casper.test.assertExists('tr#emoji_new_mouse_face img');
+        casper.click('tr#emoji_new_mouse_face button.delete');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('tr#emoji_mouseface', function () {
-        casper.test.assertDoesntExist('tr#emoji_mouseface');
+    casper.waitWhileVisible('tr#emoji_new_mouse_face', function () {
+        casper.test.assertDoesntExist('tr#emoji_new_mouse_face');
     });
 });
 
@@ -299,7 +299,7 @@ function select_from_suggestions(item) {
         casper.evaluate(function (item) {
             var tah = $('.create_default_stream').data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
+                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
         }, {item: item});
@@ -320,21 +320,21 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
+    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
-        casper.click('.default_stream_row[id='+stream_name+'] button.remove-default-stream');
+    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
+        casper.click('.default_stream_row[id=' + stream_name + '] button.remove-default-stream');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertDoesntExist('.default_stream_row[id='+stream_name+']');
+    casper.waitWhileVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertDoesntExist('.default_stream_row[id=' + stream_name + ']');
     });
 });
 
@@ -391,29 +391,11 @@ casper.then(function () {
     });
 });
 
-function submit_org_authentication_change() {
-    casper.click('form.org-authentications-form button.button');
-}
-
 // Test authentication methods setting
 casper.then(function () {
     casper.click("li[data-section='auth-methods']");
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
-        casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
-        submit_org_authentication_change();
-    });
-});
-
-// Test setting was activated--default is checked
-casper.then(function () {
-    // Scroll to bottom so that casper snapshots show the auth methods table
-    this.scrollToBottom();
-    // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
-        casper.test.assertEval(function () {
-            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
-        });
+    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
+        casper.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
     });
 });
 
@@ -423,23 +405,12 @@ casper.then(function () {
     casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#organization"]');
+    casper.click("li[data-section='auth-methods']");
 
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
+    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
         // Test Setting was saved
         casper.test.assertEval(function () {
-            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
-        });
-    });
-});
-
-// Deactivate setting--default is checked
-casper.then(function () {
-    casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
-    submit_org_authentication_change();
-    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
-        casper.test.assertEval(function () {
-            return document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked;
+            return !document.querySelector(".method_row[data-method='Google'] input[type='checkbox']").checked;
         });
     });
 });

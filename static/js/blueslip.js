@@ -96,8 +96,23 @@ exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
+// Format error stacks using the ErrorStackParser
+// external library
+function getErrorStack(stack) {
+    var ex = new Error();
+    ex.stack = stack;
+    return ErrorStackParser
+        .parse(ex)
+        .map(function (stackFrame) {
+            return stackFrame.lineNumber
+            + ': ' + stackFrame.fileName
+            + ' | ' + stackFrame.functionName;
+        }).join('\n');
+}
+
 var reported_errors = {};
 var last_report_attempt = {};
+
 function report_error(msg, stack, opts) {
     opts = _.extend({show_ui_msg: false}, opts);
 
@@ -108,6 +123,7 @@ function report_error(msg, stack, opts) {
     if (page_params.debug_mode) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
+        stack = getErrorStack(stack);
         exports.display_errors_on_screen(msg, stack);
     }
 
@@ -140,10 +156,10 @@ function report_error(msg, stack, opts) {
         timeout:  3*1000,
         success:  function () {
             reported_errors[key] = true;
-            if (opts.show_ui_msg && ui !== undefined) {
+            if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
-                // 1) The ui module or something it requires might
+                // 1) The ui_report module or something it requires might
                 //    not have been compiled or initialized yet.
                 // 2) The DOM might not be ready yet and so fetching
                 //    the #home-error div might fail.
@@ -168,7 +184,7 @@ function report_error(msg, stack, opts) {
             }
         },
         error: function () {
-            if (opts.show_ui_msg && ui !== undefined) {
+            if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message("Oops.  It seems something has gone wrong. " +
                                   "Please try reloading the page.",
                                   $("#home-error"), "alert-error");
@@ -439,3 +455,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = blueslip;
 }
+window.blueslip = blueslip;

@@ -9,20 +9,10 @@ exports.display_checkmark = function ($elem) {
     $(check_mark).css("width", "13px");
 };
 
-exports.strings = {};
-function _initialize() {
-    exports.strings = {
-        success: i18n.t("Saved"),
-        failure: i18n.t("Save failed"),
-        saving: i18n.t("Saving"),
-    };
-
-    settings_bots.setup_bot_creation_policy_values();
-    settings_org.setup_time_limit_dropdown_values();
-}
-
-exports.initialize = function () {
-    i18n.ensure_i18n(_initialize);
+exports.strings = {
+    success: i18n.t("Saved"),
+    failure: i18n.t("Save failed"),
+    saving: i18n.t("Saving"),
 };
 
 // Generic function for informing users about changes to the settings
@@ -79,10 +69,10 @@ exports.do_settings_change = function (request_method, url, data, status_element
 // * disable_on_uncheck is boolean, true if sub setting should be disabled
 //   when main setting unchecked.
 exports.disable_sub_setting_onchange = function (is_checked, sub_setting_id, disable_on_uncheck) {
-    if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
+    if (is_checked && disable_on_uncheck || !is_checked && !disable_on_uncheck) {
         $("#" + sub_setting_id).attr("disabled", false);
         $("#" + sub_setting_id + "_label").parent().removeClass("control-label-disabled");
-    } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
+    } else if (is_checked && !disable_on_uncheck || !is_checked && disable_on_uncheck) {
         $("#" + sub_setting_id).attr("disabled", "disabled");
         $("#" + sub_setting_id + "_label").parent().addClass("control-label-disabled");
     }
@@ -94,3 +84,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_ui;
 }
+window.settings_ui = settings_ui;

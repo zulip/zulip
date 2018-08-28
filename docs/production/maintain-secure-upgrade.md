@@ -39,11 +39,18 @@ up. Upgrading will result in some brief downtime for the service, which should b
 under 30 seconds unless there is an expensive transition involved. Unless you
 have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
+(Note that there are
+[separate instructions for upgrading Zulip if you're using Docker][docker-upgrade].)
+
+[docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container
+
+### Upgrading the distro
+
 Note that upgrading an existing Zulip production server from Ubuntu
-14.04 Trusty to Ubuntu 16.04 Xenial will require significant manual
-intervention on your part to migrate the data in the database from
-Postgres 9.3 to Postgres 9.5.  Contributions on testing and
-documenting this process are welcome!
+14.04 Trusty to Ubuntu 16.04 Xenial (or 16.04 Xenial to 18.04 Bionic)
+will require significant manual intervention on your part to migrate
+the data in the database from Postgres 9.3 to Postgres 9.5.
+Contributions on testing and documenting this process are welcome!
 
 ### Preserving local changes to configuration files
 
@@ -93,13 +100,13 @@ If required, you can update your settings by editing `/etc/zulip/settings.py`
 and then run `/home/zulip/deployments/current/scripts/restart-server` to
 restart the server.
 
-### Applying Ubuntu system updates
+### Applying system updates
 
 The Zulip upgrade script will automatically run `apt-get update` and
 then `apt-get upgrade`, to make sure you have any new versions of
 dependencies (this will also update system packages).  We assume that
-you will install Ubuntu security updates regularly, according to your
-usual security practices for an Ubuntu server.
+you will install security updates from `apt` regularly, according to
+your usual security practices for a production server.
 
 If you'd like to minimize downtime when installing a Zulip server
 upgrade, you may want to do an `apt-get upgrade` (and then restart the
@@ -124,6 +131,29 @@ supervisorctl start all
 [1] If this happens to you, just stop the Zulip server, restart
 postgres, and then start the Zulip server again, and you'll be back in
 business.
+
+#### Disabling unattended upgrades
+
+**Important**: We recommend that you
+[disable Ubuntu's unattended-upgrades][disable-unattended-upgrades],
+and instead install apt upgrades manually.  With unattended upgrades
+enabled, the moment a new Postgres release is published, your Zulip
+server will have its postgres server upgraded (and thus restarted).
+
+When one of the services Zulip depends on (postgres, memcached, redis,
+rabbitmq) is restarted, that services will disconnect everything using
+them (like the Zulip server), and every operation that Zulip does
+which uses that service will throw an exception (and send you an error
+report email).  These apparently "random errors" can be confusing and
+might cause you to worry incorrectly about the stability of the Zulip
+software, which in fact the problem is that Ubuntu automatically
+upgraded and then restarted key Zulip dependencies.
+
+Instead, we recommend installing updates for these services manually,
+and then restarting the Zulip server with
+`/home/zulip/deployments/current/scripts/restart-server` afterwards.
+
+[disable-unattended-upgrades]: https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/
 
 ### API and your Zulip URL
 
@@ -153,27 +183,39 @@ precise configuration.
 
 ## Upgrading from a git repository
 
-Starting with version 1.4, the Zulip server supports upgrading to a
-commit in Git.  You can configure the `git` repository that you'd like
-to use by adding a section like this to `/etc/zulip/zulip.conf`; by
-default it uses the main `zulip` repository (shown below).
+Zulip supports upgrading a production installation to any commit in
+Git, which is great for running pre-release versions or maintaining a
+small fork.  If you're using Zulip 1.7 or newer, you can just run the
+command:
+
+```
+# Upgrade to a tagged release
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
+# Upgrade to a branch or other Git ref
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
+```
+
+and Zulip will automatically fetch the relevant Git commit and upgrade
+to the that version of Zulip.
+
+By default, this uses the main upstream Zulip server repository
+(example below), but you can configure any other Git repository by
+adding a section like this to `/etc/zulip/zulip.conf`:
 
 ```
 [deployment]
 git_repo_url = https://github.com/zulip/zulip.git
 ```
 
-Once that is done (and assuming the currently installed version of
-Zulip is 1.7 or newer), you can do deployments by running as root:
-
-```
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git <branch>
-```
-
-and Zulip will automatically fetch the relevant branch from the
-specified repository to a directory under `/home/zulip/deployments`
-(where release tarball are unpacked), build the compiled static assets
-from source, and switches to the new version.
+**Systems with limited RAM**: If you are running a minimal Zulip
+  server with 2GB of RAM or less, the upgrade can fail due to the
+  system running out of RAM running both the Zulip server and Zulip's
+  static asset build process (`tools/minify-js`, which calls
+  `webpack`, is usually the step that fails).  If you encounter this,
+  you can run `supervisorctl stop all` to shut down the Zulip server
+  while you run the upgrade (this will, of course, add some downtime,
+  which is part of we already recommend more RAM for organizations of
+  more than a few people).
 
 ### Upgrading using Git from Zulip 1.6 and older
 
@@ -226,15 +268,16 @@ email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
-If you are interested in backups because you are moving from one Zulip
-server to another server and can't transfer a full postgres dump
-(which is definitely the simplest approach), our draft
-[conversion and export design document](../subsystems/conversion.html) may help.
-The tool is well designed, and was tested carefully with dozens of
-realms in mid-2016; but it's not integrated into Zulip's regular
-testing process, and thus it is worth asking on the Zulip developers
-mailing list whether it needs any minor updates to do things like
-export newly added tables.
+Zulip also has a [data export and import tool][export-import], which
+is useful for migrating data between Zulip Cloud and other Zulip
+servers, as well as various auditing purposes.  The big advantage of
+the `postgres` layer backups over the export/import process is that
+it's structurally very unlikely for the `postgres` process to ever
+develop bugs.  The export tool's advantage is that the export is more
+human-readable and easier to parse, and doesn't have the requirement
+that the same set of Zulip organizations exist on the two servers.
+
+[export-import]: ../production/export-and-import.html
 
 ### Restore from backups
 

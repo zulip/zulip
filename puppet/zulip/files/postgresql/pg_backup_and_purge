@@ -2,22 +2,24 @@
 
 import sys
 import glob
+import shlex
 import subprocess
 import sys
 import logging
 import dateutil.parser
 import pytz
+import time
 from datetime import datetime, timedelta
 if False:
     from typing import Dict, List
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-def run(args, dry_run=False):
-    # type: (List[str], bool) -> str
+def run(args: List[str], dry_run: bool=False) -> str:
     if dry_run:
-        print("Would have run: " + " ".join(args))
+        print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
 
     p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -27,10 +29,13 @@ def run(args, dry_run=False):
         logger.error("Could not invoke %s\nstdout: %s\nstderror: %s"
                      % (args[0], stdout, stderr))
         sys.exit(1)
-    return stdout
+    return stdout.decode()
 
-# Only run if we're the master
-if run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip() != 'f':
+recovery_val = run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip()
+# Assertion to check that we're extracting the value correctly.
+assert recovery_val in ['t', 'f']
+if recovery_val == 't':
+    # Only run if we're the master
     sys.exit(0)
 
 pg_data_paths = glob.glob('/var/lib/postgresql/*/main')

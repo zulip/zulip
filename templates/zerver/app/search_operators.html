@@ -41,10 +41,10 @@
                 <td class="definition">{{ _('Narrow to just message ID') }} <span class="operator_value">id</span></td>
             </tr>
             <tr>
-                <tr>
-                    <td class="operator">is:alerted</td>
-                    <td class="definition">{{ _('Narrow to messages with alert words.') }}</td>
-                </tr>
+                <td class="operator">is:alerted</td>
+                <td class="definition">{{ _('Narrow to messages with alert words.') }}</td>
+            </tr>
+            <tr>
                 <td class="operator">is:mentioned</td>
                 <td class="definition">{{ _('Narrow to messages that mention you.') }}</td>
             </tr>
@@ -81,28 +81,33 @@
                 <td class="definition">{% trans %}Exclude messages with topic <span class="operator_value">topic</span>{% endtrans %}</td>
             </tr>
         </table>
-        {% trans %}
-        <p>You can use any combination of these search operators in a single query. For example:</p>
+
+        <p>{% trans %}You can use any combination of these search operators in a single query. Consider the following example:{% endtrans %}</p>
+
+        {% set placeholder_stream = _("streamname") %}
+        {% set placeholder_email = _("user@example.com") %}
+        {% set placeholder_keyword = _("keyword") %}
 
         <p>
             &nbsp;
             <span class="operator">
-                stream:<span class="operator_value">streamname</span>
-                sender:<span class="operator_value">user@example.com</span>
-                <span class="operator_value">keyword</span>
+                stream:<span class="operator_value">{{ placeholder_email }}</span>
+                sender:<span class="operator_value">{{ placeholder_email }}</span>
+                <span class="operator_value">{{ placeholder_keyword }}</span>
             </span>
         </p>
 
         <p>
-            would search for messages sent by
-            <span class="operator_value">user@example.com</span>
+            {% trans %}
+            That query would search for messages sent by
+            <span class="operator_value">{{ placeholder_email }}</span>
             to stream
-            <span class="operator_value">streamname</span>
+            <span class="operator_value">{{ placeholder_stream }}</span>
             containing the keyword
-            <span class="operator_value">keyword</span>.
+            <span class="operator_value">{{ placeholder_keyword }}</span>.
+            {% endtrans %}
         </p>
-        {% endtrans %}
         <hr/>
-        <a href="/help/search-for-messages#search-operators" target="_blank">Detailed search operators documentation</a>
+        <a href="/help/search-for-messages#search-operators" target="_blank">{% trans %}Detailed search operators documentation{% endtrans %}</a>
     </div>
 </div>

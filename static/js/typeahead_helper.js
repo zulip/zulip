@@ -119,6 +119,14 @@ exports.render_user_group = function (user_group) {
     return html;
 };
 
+exports.render_person_or_user_group = function (item) {
+    if (user_groups.is_user_group(item)) {
+        return typeahead_helper.render_user_group(item);
+    }
+
+    return typeahead_helper.render_person(item);
+};
+
 exports.render_stream = function (stream) {
     var desc = stream.description;
     var short_desc = desc.substring(0, 35);
@@ -152,6 +160,22 @@ exports.render_emoji = function (item) {
     }
     return exports.render_typeahead_item(args);
 };
+
+// manipulate prefix_sort to select popular emojis first
+// This is kinda a hack and so probably not our long-term solution.
+function emoji_prefix_sort(query, objs, get_item) {
+    var prefix_sort = util.prefix_sort(query, objs, get_item);
+    var popular_emoji_matches = [];
+    var other_emoji_matches = [];
+    prefix_sort.matches.forEach(function (obj) {
+        if (emoji.frequently_used_emojis_list.indexOf(obj.codepoint) !== -1) {
+            popular_emoji_matches.push(obj);
+        } else {
+            other_emoji_matches.push(obj);
+        }
+    });
+    return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
+}
 
 exports.sorter = function (query, objs, get_item) {
     var results = util.prefix_sort(query, objs, get_item);
@@ -307,7 +331,7 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
 
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
-    var results = util.emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    var results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
 
@@ -364,9 +388,30 @@ exports.sort_recipientbox_typeahead = function (query, matches, current_stream) 
     return exports.sort_recipients(matches, query, current_stream);
 };
 
+exports.sort_people_and_user_groups = function (query, matches) {
+    var users = [];
+    var groups = [];
+    _.each(matches, function (match) {
+        if (user_groups.is_user_group(match)) {
+            groups.push(match);
+        } else {
+            users.push(match);
+        }
+    });
+
+    var recipients = typeahead_helper.sort_recipients(
+        users,
+        query,
+        compose_state.stream_name(),
+        compose_state.subject(),
+        groups);
+    return recipients;
+};
+
 return exports;
 
 }());
 if (typeof module !== 'undefined') {
     module.exports = typeahead_helper;
 }
+window.typeahead_helper = typeahead_helper;

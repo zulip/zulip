@@ -5,9 +5,13 @@ from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
+
 from zerver.decorator import statsd_increment
-from zerver.lib.send_email import send_future_email, FromAddress
+from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.send_email import send_future_email, FromAddress
+from zerver.lib.url_encoding import pm_narrow_url, stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
     ScheduledEmail,
@@ -25,11 +29,11 @@ from zerver.models import (
 
 from datetime import timedelta, datetime
 from email.utils import formataddr
+from lxml.cssselect import CSSSelector
 import lxml.html
 import re
 import subprocess
 import ujson
-import urllib
 from collections import defaultdict
 import pytz
 
@@ -41,33 +45,6 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
     return create_confirmation_link(user_profile, user_profile.realm.host,
                                     Confirmation.UNSUBSCRIBE,
                                     url_args = {'email_type': email_type})
-
-def hash_util_encode(string: str) -> str:
-    # Do the same encoding operation as hash_util.encodeHashComponent on the
-    # frontend.
-    # `safe` has a default value of "/", but we want those encoded, too.
-    return urllib.parse.quote(
-        string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
-
-def encode_stream(stream_id: int, stream_name: str) -> str:
-    # We encode streams for urls as something like 99-Verona.
-    stream_name = stream_name.replace(' ', '-')
-    return str(stream_id) + '-' + hash_util_encode(stream_name)
-
-def pm_narrow_url(realm: Realm, participants: List[str]) -> str:
-    participants.sort()
-    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
-    return base_url + hash_util_encode(",".join(participants))
-
-def stream_narrow_url(realm: Realm, stream: Stream) -> str:
-    base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return base_url + encode_stream(stream.id, stream.name)
-
-def topic_narrow_url(realm: Realm, stream: Stream, topic: str) -> str:
-    base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return "%s%s/topic/%s" % (base_url,
-                              encode_stream(stream.id, stream.name),
-                              hash_util_encode(topic))
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.
@@ -115,10 +92,14 @@ def relative_to_full_url(base_url: str, content: str) -> str:
     return content
 
 def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
-    def make_emoji_img_elem(emoji_span_elem: Any) -> Dict[str, Any]:
+    def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get('class')
-        match = re.search('emoji-(?P<emoji_code>\S+)', classes)
+        match = re.search(r'emoji-(?P<emoji_code>\S+)', classes)
+        # re.search is capable of returning None,
+        # but since the parent function should only be called with a valid css element
+        # we assert that it does not.
+        assert match is not None
         emoji_code = match.group('emoji_code')
         emoji_name = emoji_span_elem.get('title')
         alt_code = emoji_span_elem.text
@@ -270,7 +251,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
 
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
-                                                missed_messages: List[Message],
+                                                missed_messages: List[Dict[str, Any]],
                                                 message_count: int) -> None:
     """
     Send a reminder email to a user if she's missed some PMs by being offline.
@@ -281,15 +262,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     from the email.
 
     `user_profile` is the user to send the reminder to
-    `missed_messages` is a list of Message objects to remind about they should
-                      all have the same recipient and subject
+    `missed_messages` is a list of dictionaries to Message objects and other data
+                      for a group of messages that share a recipient (and topic)
     """
     from zerver.context_processors import common_context
     # Disabled missedmessage emails internally
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg.recipient_id, msg.subject) for msg in missed_messages)
+    recipients = set((msg['message'].recipient_id, msg['message'].subject) for msg in missed_messages)
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and subject %r' %
@@ -301,10 +282,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     context.update({
         'name': user_profile.full_name,
         'message_count': message_count,
-        'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
         'show_message_content': user_profile.message_content_in_email_notifications,
+    })
+
+    triggers = list(message['trigger'] for message in missed_messages)
+    unique_triggers = set(triggers)
+    context.update({
+        'mention': 'mentioned' in unique_triggers,
+        'mention_count': triggers.count('mentioned'),
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -322,15 +309,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
 
     from zerver.lib.email_mirror import create_missed_message_address
-    reply_to_address = create_missed_message_address(user_profile, missed_messages[0])
+    reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
     if reply_to_address == FromAddress.NOREPLY:
         reply_to_name = None
     else:
         reply_to_name = "Zulip"
 
-    senders = list(set(m.sender for m in missed_messages))
-    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
-        display_recipient = get_display_recipient(missed_messages[0].recipient)
+    senders = list(set(m['message'].sender for m in missed_messages))
+    if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
+        display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)
         # Make sure that this is a list of strings, not a string.
         assert not isinstance(display_recipient, str)
         other_recipients = [r['full_name'] for r in display_recipient
@@ -347,17 +334,18 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             huddle_display_name = "%s, and %s others" % (
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
-    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
+    elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
-    else:
+    elif context['mention']:
         # Keep only the senders who actually mentioned the user
-        #
-        # TODO: When we add wildcard mentions that send emails, add
-        # them to the filter here.
-        senders = list(set(m.sender for m in missed_messages if
-                           UserMessage.objects.filter(message=m, user_profile=user_profile,
-                                                      flags=UserMessage.flags.mentioned).exists()))
-        context.update({'at_mention': True})
+        senders = list(set(m['message'].sender for m in missed_messages
+                           if m['trigger'] == 'mentioned'))
+        # TODO: When we add wildcard mentions that send emails, we
+        # should make sure the right logic applies here.
+    elif ('stream_email_notify' in unique_triggers):
+        context.update({'stream_email_notify': True})
+    else:
+        raise AssertionError("Invalid messages!")
 
     # If message content is disabled, then flush all information we pass to email.
     if not user_profile.message_content_in_email_notifications:
@@ -370,7 +358,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
     else:
         context.update({
-            'messages': build_message_list(user_profile, missed_messages),
+            'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
         })
@@ -404,7 +392,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
 def handle_missedmessage_emails(user_profile_id: int,
                                 missed_email_events: Iterable[Dict[str, Any]]) -> None:
-    message_ids = [event.get('message_id') for event in missed_email_events]
+    message_ids = {event.get('message_id'): event.get('trigger') for event in missed_email_events}
 
     user_profile = get_user_profile_by_id(user_profile_id)
     if not receives_offline_email_notifications(user_profile):
@@ -436,11 +424,26 @@ def handle_missedmessage_emails(user_profile_id: int,
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.is_stream_message():
-            msg_list.extend(get_context_for_message(msg))
+            context_messages = get_context_for_message(msg)
+            filtered_context_messages = bulk_access_messages(user_profile, context_messages)
+            msg_list.extend(filtered_context_messages)
+
+    # Sort emails by least recently-active discussion.
+    recipient_subjects = []  # type: List[Tuple[Tuple[int, str], int]]
+    for recipient_subject, msg_list in messages_by_recipient_subject.items():
+        max_message_id = max(msg_list, key=lambda msg: msg.id).id
+        recipient_subjects.append((recipient_subject, max_message_id))
+
+    recipient_subjects = sorted(recipient_subjects, key=lambda x: x[1])
 
     # Send an email per recipient subject pair
-    for recipient_subject, msg_list in messages_by_recipient_subject.items():
-        unique_messages = {m.id: m for m in msg_list}
+    for recipient_subject, ignored_max_id in recipient_subjects:
+        unique_messages = {}
+        for m in messages_by_recipient_subject[recipient_subject]:
+            unique_messages[m.id] = dict(
+                message=m,
+                trigger=message_ids.get(m.id)
+            )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),
@@ -462,6 +465,8 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int]=None) -> None
 
 def log_digest_event(msg: str) -> None:
     import logging
+    import time
+    logging.Formatter.converter = time.gmtime
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
@@ -484,7 +489,7 @@ def followup_day2_email_delay(user: UserProfile) -> timedelta:
     # or comes in while they are dealing with their inbox.
     return timedelta(days=days_to_delay, hours=-1)
 
-def enqueue_welcome_emails(user: UserProfile) -> None:
+def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> None:
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule
@@ -498,13 +503,16 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     context = common_context(user)
     context.update({
         'unsubscribe_link': unsubscribe_link,
-        'organization_setup_advice_link':
-        user.realm.uri + '/help/getting-your-organization-started-with-zulip',
-        'getting_started_with_zulip_link':
-        user.realm.uri + '/help/getting-started-with-zulip',
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
-        'is_realm_admin': user.is_realm_admin,
     })
+    if user.is_realm_admin:
+        context['user_role_group'] = _('admins')
+        context['getting_started_link'] = (user.realm.uri +
+                                           '/help/getting-your-organization-started-with-zulip')
+    else:
+        context['user_role_group'] = _('members')
+        context['getting_started_link'] = user.realm.uri + '/help/getting-started-with-zulip'
+
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context)

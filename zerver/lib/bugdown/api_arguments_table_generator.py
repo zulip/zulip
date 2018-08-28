@@ -2,16 +2,20 @@ import re
 import os
 import ujson
 
+from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from zerver.lib.openapi import get_openapi_parameters
 from typing import Any, Dict, Optional, List
 import markdown
 
-REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+?)\s*\}')
+REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]={}) -> None:
+    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
+        if configs is None:
+            configs = {}
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
         }
@@ -36,35 +40,50 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 loc = lines.index(line)
                 match = REGEXP.search(line)
 
-                if match:
-                    json_filename = match.group(1)
-                    doc_filename = match.group(2)
-                    json_filename = os.path.expanduser(json_filename)
-                    if not os.path.isabs(json_filename):
-                        json_filename = os.path.normpath(os.path.join(self.base_path, json_filename))
-                    try:
-                        with open(json_filename, 'r') as fp:
-                            json_obj = ujson.loads(fp.read())
-                            arguments = json_obj[doc_filename]
-                            text = self.render_table(arguments)
-                    except Exception as e:
-                        print('Warning: could not find file {}. Ignoring '
-                              'statement. Error: {}'.format(json_filename, e))
-                        # If the file cannot be opened, just substitute an empty line
-                        # in place of the macro include line
-                        lines[loc] = REGEXP.sub('', line)
-                        break
+                if not match:
+                    continue
 
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = REGEXP.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding] + text + [following]
-                    lines = lines[:loc] + text + lines[loc+1:]
-                    break
+                filename = match.group(1)
+                doc_name = match.group(2)
+                filename = os.path.expanduser(filename)
+
+                is_openapi_format = filename.endswith('.yaml')
+
+                if not os.path.isabs(filename):
+                    parent_dir = self.base_path
+                    filename = os.path.normpath(os.path.join(parent_dir, filename))
+
+                if is_openapi_format:
+                    endpoint, method = doc_name.rsplit(':', 1)
+                    arguments = []  # type: List[Dict[str, Any]]
+
+                    try:
+                        arguments = get_openapi_parameters(endpoint, method)
+                    except KeyError as e:
+                        # Don't raise an exception if the "parameters"
+                        # field is missing; we assume that's because the
+                        # endpoint doesn't accept any parameters
+                        if e.args != ('parameters',):
+                            raise e
+                else:
+                    with open(filename, 'r') as fp:
+                        json_obj = ujson.load(fp)
+                        arguments = json_obj[doc_name]
+
+                if arguments:
+                    text = self.render_table(arguments)
+                else:
+                    text = ['This endpoint does not consume any arguments.']
+                # The line that contains the directive to include the macro
+                # may be preceded or followed by text or tags, in that case
+                # we need to make sure that any preceding or following text
+                # stays the same.
+                line_split = REGEXP.split(line, maxsplit=0)
+                preceding = line_split[0]
+                following = line_split[-1]
+                text = [preceding] + text + [following]
+                lines = lines[:loc] + text + lines[loc+1:]
+                break
             else:
                 done = True
         return lines
@@ -97,11 +116,27 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         md_engine = markdown.Markdown(extensions=[])
 
         for argument in arguments:
+            description = argument['description']
+
+            oneof = ['`' + item + '`'
+                     for item in argument.get('schema', {}).get('enum', [])]
+            if oneof:
+                description += '\nMust be one of: {}.'.format(', '.join(oneof))
+
+            default = argument.get('schema', {}).get('default')
+            if default is not None:
+                description += '\nDefaults to `{}`.'.format(ujson.dumps(default))
+
+            # TODO: Swagger allows indicating where the argument goes
+            # (path, querystring, form data...). A column in the table should
+            # be added for this.
             table.append(tr.format(
-                argument=argument['argument'],
-                example=argument['example'],
-                required=argument['required'],
-                description=md_engine.convert(argument['description']),
+                argument=argument.get('argument') or argument.get('name'),
+                # Show this as JSON to avoid changing the quoting style, which
+                # may cause problems with JSON encoding.
+                example=escape_html(ujson.dumps(argument['example'])),
+                required='Yes' if argument.get('required') else 'No',
+                description=md_engine.convert(description),
             ))
 
         table.append("</tbody>")

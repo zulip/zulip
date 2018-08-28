@@ -185,6 +185,9 @@ html {
 
 .header {
     background-color: #fff;
+    position: fixed;
+    width: 100%;
+    top: 0;
 }
 
 .header .top-links a,
@@ -222,7 +225,8 @@ html {
 }
 
 .register-account .terms-of-service .input-group {
-    margin: 0px 30px 10px 32px;
+    width: 330px;
+    margin: 0 auto 10px;
 }
 
 .register-account .terms-of-service .text-error {
@@ -296,6 +300,11 @@ html {
     margin-top: 25px;
 }
 
+.register-page .register-form .bottom-text {
+    font-size: 1.2rem;
+    margin-top: 40px;
+}
+
 .new-style .alert:not(.alert-info) {
     padding: 0;
     margin-bottom: 0;
@@ -307,7 +316,6 @@ html {
 
     border: none;
     color: hsl(0, 44%, 54%);
-
 }
 
 .new-style .right-side .alert {
@@ -566,7 +574,6 @@ html {
     z-index: -1;
 
     border-bottom: 2px solid hsl(0, 0%, 86%);
-
 }
 
 .portico-page .or span {
@@ -611,7 +618,7 @@ button.login-google-button {
     background-image: url(/static/images/landing-page/logos/google-icon.png);
 }
 
-.github-wrapper:before {
+.github-wrapper::before {
     content: "\f09b";
     position: absolute;
 
@@ -960,4 +967,17 @@ button.login-google-button {
     height: 30px;
     margin-top: -10px;
     top: 5px;
+}
+
+#source_realm_select_section {
+    position: relative;
+    top: 15px;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+#source_realm_select {
+    font-size: 1.2rem;
+    height: 45px;
+    width: 325px;
 }

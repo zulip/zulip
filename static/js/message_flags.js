@@ -70,14 +70,22 @@ exports.send_read = (function () {
 }());
 
 exports.save_collapsed = function (message) {
-    send_flag_update(message, 'collapsed', true);
+    send_flag_update(message, 'collapsed', 'add');
 };
 
 exports.save_uncollapsed = function (message) {
-    send_flag_update(message, 'collapsed', true);
+    send_flag_update(message, 'collapsed', 'remove');
 };
 
-exports.toggle_starred = function (message) {
+// This updates the state of the starred flag in local data
+// structures, and triggers a UI rerender.
+exports.update_starred_flag = function (message_id, new_value) {
+    var message = message_store.get(message_id);
+    message.starred = new_value;
+    ui.update_starred_view(message_id, new_value);
+};
+
+exports.toggle_starred_and_update_server = function (message) {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -89,12 +97,14 @@ exports.toggle_starred = function (message) {
     message.starred = !message.starred;
 
     unread_ops.notify_server_message_read(message);
-    ui.update_starred(message);
+    ui.update_starred_view(message.id, message.starred);
 
     if (message.starred) {
         send_flag_update(message, 'starred', 'add');
+        starred_messages.add([message.id]);
     } else {
         send_flag_update(message, 'starred', 'remove');
+        starred_messages.remove([message.id]);
     }
 };
 
@@ -104,3 +114,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_flags;
 }
+window.message_flags = message_flags;

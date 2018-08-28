@@ -90,6 +90,20 @@ class AdminNotifyHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         report = {}  # type: Dict[str, Any]
 
+        # This parameter determines whether Zulip should attempt to
+        # send Zulip messages containing the error report.  If there's
+        # syntax that makes the markdown processor throw an exception,
+        # we really don't want to send that syntax into a new Zulip
+        # message in exception handler (that's the stuff of which
+        # recursive exception loops are made).
+        #
+        # We initialize is_bugdown_rendering_exception to `True` to
+        # prevent the infinite loop of zulip messages by ERROR_BOT if
+        # the outer try block here throws an exception before we have
+        # a chance to check the exception for whether it comes from
+        # bugdown.
+        is_bugdown_rendering_exception = True
+
         try:
             report['node'] = platform.node()
             report['host'] = platform.node()
@@ -99,6 +113,8 @@ class AdminNotifyHandler(logging.Handler):
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
+                from zerver.lib.exceptions import BugdownRenderingException
+                is_bugdown_rendering_exception = record.msg.startswith('Exception in Markdown parser')
             else:
                 stack_trace = 'No stack trace available'
                 message = record.getMessage()
@@ -107,6 +123,7 @@ class AdminNotifyHandler(logging.Handler):
                     # seem to result in super-long messages
                     stack_trace = message
                     message = message.split('\n')[0]
+                is_bugdown_rendering_exception = False
             report['stack_trace'] = stack_trace
             report['message'] = message
 
@@ -133,7 +150,7 @@ class AdminNotifyHandler(logging.Handler):
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
                 from zerver.lib.error_notify import notify_server_error
-                notify_server_error(report)
+                notify_server_error(report, is_bugdown_rendering_exception)
             else:
                 queue_json_publish('error_reports', dict(
                     type = "server",

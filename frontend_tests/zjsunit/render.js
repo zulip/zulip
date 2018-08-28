@@ -14,16 +14,6 @@ exports.init = function () {
     Handlebars.templates = {};
 };
 
-exports.make_sure_all_templates_have_been_compiled = function () {
-    var files = exports.template_finder.get_all();
-
-    _.each(files, function (file) {
-        if (!Handlebars.templates[file.name]) {
-            throw "The file " + file.url + " has no test coverage.";
-        }
-    });
-};
-
 exports.render_template = function (name, args) {
     exports.compile_template(name);
     return global.templates.render(name, args);

@@ -42,6 +42,21 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Zulip analytics for", result)
 
+    def test_stats_for_installation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/stats/installation')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+
+        result = self.client_get('/stats/installation')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Zulip analytics for", result)
+
 class TestGetChartData(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm('zulip')
@@ -77,6 +92,10 @@ class TestGetChartData(ZulipTestCase):
     def test_number_of_humans(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, ['false'], [])
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
@@ -85,7 +104,7 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'human': self.data(100)},
+            'everyone': {'_1day': self.data(100), '_15day': self.data(100), 'all_time': self.data(100)},
             'display_order': None,
             'result': 'success',
         })
@@ -101,7 +120,7 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_hour],
             'frequency': CountStat.HOUR,
-            'realm': {'bot': self.data(100), 'human': self.data(101)},
+            'everyone': {'bot': self.data(100), 'human': self.data(101)},
             'user': {'bot': self.data(0), 'human': self.data(200)},
             'display_order': None,
             'result': 'success',
@@ -119,8 +138,8 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'Public streams': self.data(100), 'Private streams': self.data(0),
-                      'Private messages': self.data(101), 'Group private messages': self.data(0)},
+            'everyone': {'Public streams': self.data(100), 'Private streams': self.data(0),
+                         'Private messages': self.data(101), 'Group private messages': self.data(0)},
             'user': {'Public streams': self.data(200), 'Private streams': self.data(201),
                      'Private messages': self.data(0), 'Group private messages': self.data(0)},
             'display_order': ['Private messages', 'Public streams', 'Private streams', 'Group private messages'],
@@ -143,8 +162,8 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'client 4': self.data(100), 'client 3': self.data(101),
-                      'client 2': self.data(102)},
+            'everyone': {'client 4': self.data(100), 'client 3': self.data(101),
+                         'client 2': self.data(102)},
             'user': {'client 3': self.data(200), 'client 1': self.data(201)},
             'display_order': ['client 1', 'client 2', 'client 3', 'client 4'],
             'result': 'success',
@@ -158,7 +177,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {'human': [0]})
+        self.assertEqual(data['everyone'], {"_1day": [0], "_15day": [0], "all_time": [0]})
         self.assertFalse('user' in data)
 
         FillState.objects.create(
@@ -168,7 +187,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_over_time'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {'human': [0], 'bot': [0]})
+        self.assertEqual(data['everyone'], {'human': [0], 'bot': [0]})
         self.assertEqual(data['user'], {'human': [0], 'bot': [0]})
 
         FillState.objects.create(
@@ -178,7 +197,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_by_message_type'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {
+        self.assertEqual(data['everyone'], {
             'Public streams': [0], 'Private streams': [0],
             'Private messages': [0], 'Group private messages': [0]})
         self.assertEqual(data['user'], {
@@ -192,12 +211,16 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_by_client'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {})
+        self.assertEqual(data['everyone'], {})
         self.assertEqual(data['user'], {})
 
     def test_start_and_end(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, ['false'], [])
         end_time_timestamps = [datetime_to_timestamp(dt) for dt in self.end_times_day]
 
         # valid start and end
@@ -208,7 +231,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], end_time_timestamps[1:3])
-        self.assertEqual(data['realm'], {'human': [0, 100]})
+        self.assertEqual(data['everyone'], {'_1day': [0, 100], '_15day': [0, 100], 'all_time': [0, 100]})
 
         # start later then end
         result = self.client_get('/json/analytics/chart_data',
@@ -220,6 +243,10 @@ class TestGetChartData(ZulipTestCase):
     def test_min_length(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, ['false'], [])
         # test min_length is too short to change anything
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans',
@@ -227,7 +254,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in self.end_times_day])
-        self.assertEqual(data['realm'], {'human': self.data(100)})
+        self.assertEqual(data['everyone'], {'_1day': self.data(100), '_15day': self.data(100), 'all_time': self.data(100)})
         # test min_length larger than filled data
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans',
@@ -236,7 +263,7 @@ class TestGetChartData(ZulipTestCase):
         data = result.json()
         end_times = [ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)]
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in end_times])
-        self.assertEqual(data['realm'], {'human': [0]+self.data(100)})
+        self.assertEqual(data['everyone'], {'_1day': [0]+self.data(100), '_15day': [0]+self.data(100), 'all_time': [0]+self.data(100)})
 
     def test_non_existent_chart(self) -> None:
         result = self.client_get('/json/analytics/chart_data',
@@ -273,6 +300,24 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
 
+    def test_get_chart_data_for_installation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/json/analytics/chart_data/installation',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_error(result, "Must be an server administrator", 400)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+        stat = COUNT_STATS['realm_active_humans::day']
+        self.insert_data(stat, [None], [])
+
+        result = self.client_get('/json/analytics/chart_data/installation',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_success(result)
+
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is
     # the only function that uses it at the moment
@@ -293,7 +338,7 @@ class TestGetChartDataHelpers(ZulipTestCase):
         self.assertEqual(sort_by_totals(value_arrays), ['a', 'b', 'c', 'd'])
 
     def test_sort_client_labels(self) -> None:
-        data = {'realm': {'a': [16], 'c': [15], 'b': [14], 'e': [13], 'd': [12], 'h': [11]},
+        data = {'everyone': {'a': [16], 'c': [15], 'b': [14], 'e': [13], 'd': [12], 'h': [11]},
                 'user': {'a': [6], 'b': [5], 'd': [4], 'e': [3], 'f': [2], 'g': [1]}}
         self.assertEqual(sort_client_labels(data), ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
 

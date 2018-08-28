@@ -6,6 +6,19 @@ var meta = {
     loaded: false,
 };
 
+exports.can_add_emoji = function () {
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    // for normal users, we depend on the setting
+    return !page_params.realm_add_emoji_by_admins_only;
+};
+
 function can_admin_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
@@ -51,8 +64,9 @@ exports.populate_emoji = function (emoji_data) {
         if (data.deactivated !== true) {
             emoji_table.append(templates.render('admin_emoji_list', {
                 emoji: {
-                    name: data.name, source_url: data.source_url,
-                    display_url: data.source_url,
+                    name: data.name,
+                    display_name: data.name.replace(/_/g, ' '),
+                    source_url: data.source_url,
                     author: data.author || '',
                     can_admin_emoji: can_admin_emoji(data),
                 },
@@ -133,3 +147,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_emoji;
 }
+window.settings_emoji = settings_emoji;

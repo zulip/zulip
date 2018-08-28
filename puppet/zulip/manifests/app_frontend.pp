@@ -3,13 +3,15 @@ class zulip::app_frontend {
   include zulip::app_frontend_base
   include zulip::app_frontend_once
 
+  $nginx_http_only = zulipconf('application_server', 'http_only', undef)
+  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', undef)
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,
     require => Package['nginx-full'],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/nginx/sites-available/zulip-enterprise',
+    content => template('zulip/nginx/zulip-enterprise.template.erb'),
     notify  => Service['nginx'],
   }
   file { '/etc/logrotate.d/zulip':

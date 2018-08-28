@@ -31,10 +31,10 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
+    if (msg_type === 'stream' && opts.stream && !opts.subject) {
         return 'subject';
-    } else if ((msg_type === 'stream' && opts.stream)
-               || (msg_type === 'private' && opts.private_message_recipient)) {
+    } else if (msg_type === 'stream' && opts.stream
+               || msg_type === 'private' && opts.private_message_recipient) {
         if (opts.trigger === "new topic button") {
             return 'subject';
         }
@@ -160,7 +160,7 @@ exports.maybe_scroll_up_selected_message = function () {
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
-        message_viewport.user_initiated_animate_scroll(cover+5);
+        message_viewport.user_initiated_animate_scroll(cover + 5);
     }
 };
 
@@ -181,18 +181,18 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return (compose_state.get_message_type() === msg_type) &&
-            ((msg_type === "stream" &&
+    return compose_state.get_message_type() === msg_type &&
+            (msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.subject()) ||
-             (msg_type === "private" &&
-              opts.private_message_recipient === compose_state.recipient()));
+              opts.subject === compose_state.subject() ||
+             msg_type === "private" &&
+              opts.private_message_recipient === compose_state.recipient());
 }
 
 exports.start = function (msg_type, opts) {
     exports.autosize_message_content();
 
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         return;
     }
     notifications.clear_compose_notifications();
@@ -202,9 +202,9 @@ exports.start = function (msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic button
     // or sidebar stream actions (in stream popover), do not assume that we know what
     // the message's topic or PM recipient should be.
-    if ((opts.trigger === "compose_hotkey") ||
-        (opts.trigger === "new topic button") ||
-        (opts.trigger === "sidebar stream actions")) {
+    if (opts.trigger === "compose_hotkey" ||
+        opts.trigger === "new topic button" ||
+        opts.trigger === "sidebar stream actions") {
         opts.subject = '';
         opts.private_message_recipient = '';
     }
@@ -275,12 +275,12 @@ exports.respond_to_message = function (opts) {
             compose.nonexistent_stream_reply_error();
             return;
         }
-        var current_filter = narrow_state.get_current_filter();
+        var current_filter = narrow_state.filter();
         var first_term = current_filter.operators()[0];
         var first_operator = first_term.operator;
         var first_operand = first_term.operand;
 
-        if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+        if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
             compose.nonexistent_stream_reply_error();
             return;
         }
@@ -391,9 +391,9 @@ exports.quote_and_reply = function (opts) {
         idempotent: true,
         success: function (data) {
             if (textarea.val() === "") {
-                textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                textarea.val("```quote\n" + data.raw_content + "\n```\n");
             } else {
-                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content + "\n```\n");
             }
             $("#compose-textarea").trigger("autosize.resize");
         },
@@ -422,6 +422,12 @@ exports.on_narrow = function (opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
+        opts = fill_in_opts_from_current_narrowed_view('private', opts);
+        // Do not open compose box if triggered by search and invalid recipient
+        // is present.
+        if (opts.trigger === "search" && !opts.private_message_recipient) {
+            return;
+        }
         exports.start('private');
         return;
     }
@@ -438,3 +444,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_actions;
 }
+window.compose_actions = compose_actions;

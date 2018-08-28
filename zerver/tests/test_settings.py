@@ -2,12 +2,15 @@
 import ujson
 
 from django.http import HttpResponse
+from django.test import override_settings
 from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import MockLDAP
+from zerver.lib.users import get_all_api_keys
 from zerver.models import get_realm, get_user, UserProfile
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -118,7 +121,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(email)
         realm = get_realm("zulip")
         realm.disallow_disposable_email_addresses = True
-        realm.restricted_to_domain = False
+        realm.emails_restricted_to_domains = False
         realm.save()
 
         json_result = self.client_patch("/json/settings",
@@ -150,6 +153,64 @@ class ChangeSettingsTest(ZulipTestCase):
             ))
         self.assert_json_error(result, "Wrong password!")
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'),
+                       AUTH_LDAP_BIND_PASSWORD='',
+                       AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com')
+    def test_change_password_ldap_backend(self) -> None:
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'ldappassword',
+                'fn': ['New LDAP fullname']
+            }
+        }
+
+        self.login(self.example_email("hamlet"))
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com",
+                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ))
+            self.assert_json_error(result, "Your Zulip password is managed in LDAP")
+
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password='ldappassword',
+                    new_password="ignored",
+                ))
+            self.assert_json_error(result, "Your Zulip password is managed in LDAP")
+
+        with self.settings(LDAP_APPEND_DOMAIN="example.com",
+                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ))
+            self.assert_json_success(result)
+
+        with self.settings(LDAP_APPEND_DOMAIN=None,
+                           AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ))
+            self.assert_json_error(result, "Your Zulip password is managed in LDAP")
+
     def test_changing_nothing_returns_error(self) -> None:
         """
         We need to supply at least one non-empty parameter
@@ -165,7 +226,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         test_changes = dict(
             default_language = 'de',
-            emojiset = 'apple',
+            emojiset = 'google',
             timezone = 'US/Mountain',
         )  # type: Dict[str, Any]
 
@@ -200,16 +261,37 @@ class ChangeSettingsTest(ZulipTestCase):
         for setting in user_settings:
             self.do_test_change_user_display_setting(setting)
 
+    def do_change_emojiset(self, emojiset: str) -> HttpResponse:
+        email = self.example_email('hamlet')
+        self.login(email)
+        data = {'emojiset': ujson.dumps(emojiset)}
+        result = self.client_patch("/json/settings/display", data)
+        return result
+
+    def test_emojiset(self) -> None:
+        """Test banned emojisets are not accepted."""
+        banned_emojisets = ['apple', 'emojione', 'twitter']
+        valid_emojisets = ['google', 'text']
+
+        for emojiset in banned_emojisets:
+            result = self.do_change_emojiset(emojiset)
+            self.assert_json_error(result, "Invalid emojiset '%s'" % (emojiset))
+
+        for emojiset in valid_emojisets:
+            result = self.do_change_emojiset(emojiset)
+            self.assert_json_success(result)
+
 
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
         self.login(email)
-        old_api_key = user.api_key
+        old_api_keys = get_all_api_keys(user)
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = result.json()['api_key']
-        self.assertNotEqual(old_api_key, new_api_key)
+        self.assertNotIn(new_api_key, old_api_keys)
         user = self.example_user('hamlet')
-        self.assertEqual(new_api_key, user.api_key)
+        current_api_keys = get_all_api_keys(user)
+        self.assertIn(new_api_key, current_api_keys)

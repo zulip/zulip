@@ -108,10 +108,6 @@ Some titles have been shortened for organizational purposes.
 
 [The Mighty Dictionary, by Brandon Rhodes (PyCon 2010)]: http://pyvideo.org/pycon-us-2010/the-mighty-dictionary-55.html
 
-*Tutorial* - [Code Like a Pythonista: Idiomatic Python][]
-
-[Code Like a Pythonista: Idiomatic Python]: http://python.net/~goodger/projects/pycon/2007/idiomatic/handout.html
-
 *Article* - [Static types in Python, oh my(py)!][]
 
 [Static types in Python, oh my(py)!]: http://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy

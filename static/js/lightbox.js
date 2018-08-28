@@ -15,7 +15,7 @@ function render_lightbox_list_images(preview_source) {
 
         images.forEach(function (img) {
             var src = img.getAttribute("src");
-            var className = preview_source.match(src) ? "image selected" : "image";
+            var className = preview_source === src ? "image selected" : "image";
 
             var node = $("<div></div>", {
                 class: className,
@@ -98,8 +98,9 @@ exports.open = function (image, options) {
     var payload;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
-    if (asset_map[$image.attr("src")]) {
-        payload = asset_map[$image.attr("src")];
+    var $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
+    if (asset_map[$image_source]) {
+        payload = asset_map[$image_source];
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
     } else {
         var $parent = $image.parent();
@@ -114,7 +115,12 @@ exports.open = function (image, options) {
             $source = $parent.attr("data-id");
         } else {
             $type = "image";
-            $source = $image.attr("src");
+            // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
+            if ($image.attr("data-src-fullsize")) {
+                $source = $image.attr("data-src-fullsize");
+            } else {
+                $source = $image.attr("src");
+            }
         }
         var message = message_store.get($message.attr("zid"));
         if (message === undefined) {
@@ -128,7 +134,7 @@ exports.open = function (image, options) {
             source: $source,
         };
 
-        asset_map[payload.preview] = payload;
+        asset_map[$source] = payload;
     }
 
     if (payload.type.match("-video")) {
@@ -209,7 +215,7 @@ exports.next = function () {
 };
 
 // this is a block of events that are required for the lightbox to work.
-$(function () {
+exports.initialize = function () {
     $("#main_div").on("click", ".message_inline_image a", function (e) {
         var $img = $(this).find("img");
 
@@ -292,7 +298,7 @@ $(function () {
             overlays.close_overlay("lightbox");
         }
     });
-});
+};
 
 return exports;
 }());
@@ -300,3 +306,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = lightbox;
 }
+window.lightbox = lightbox;

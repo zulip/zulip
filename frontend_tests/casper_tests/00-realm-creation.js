@@ -10,14 +10,14 @@ casper.start('http://' + host + '/new/');
 
 casper.then(function () {
     // Submit the email for realm creation
-    this.waitUntilVisible('form[action^="/new/"]', function () {
-        this.fill('form[action^="/new/"]', {
+    this.waitUntilVisible('form[name="email_form"]', function () {
+        this.fill('form[name="email_form"]', {
             email: email,
         }, true);
     });
     // Make sure confirmation email is send
-    this.waitWhileVisible('form[action^="/new/"]', function () {
-        var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
+    this.waitWhileVisible('form[name="email_form"]', function () {
+        var regex = new RegExp('^http://[^/]+/accounts/new/send_confirm/' + email);
         this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });
 });

@@ -4,7 +4,6 @@
 
 
 import os
-import subprocess
 import argparse
 import sys
 
@@ -14,6 +13,7 @@ import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from scripts.lib.node_cache import setup_node_modules
+from scripts.lib.zulip_tools import run
 
 # check for the venv
 from lib import sanity_check
@@ -30,54 +30,45 @@ prev_deploy = args.prev_deploy
 os.chdir(settings.DEPLOY_ROOT)
 
 # Redirect child processes' output to a log file (most recent run only).
-subprocess.check_call(["mkdir", "-p", "var/log"])
+run(["mkdir", "-p", "var/log"])
 fp = open('var/log/update-prod-static.log', 'w')
 
 # Install node packages
 setup_node_modules(production=True, stdout=fp, stderr=fp)
 
 # Build emoji
-subprocess.check_call(['./tools/setup/emoji/build_emoji'],
-                      stdout=fp, stderr=fp)
+run(['./tools/setup/emoji/build_emoji'], stdout=fp, stderr=fp)
 
 # Inline CSS in emails
-subprocess.check_call(['./tools/inline-email-css'],
-                      stdout=fp, stderr=fp)
+run(['./tools/inline-email-css'], stdout=fp, stderr=fp)
 
 # Copy over static files from the zulip_bots package
-subprocess.check_call(['./tools/setup/generate_zulip_bots_static_files'],
-                      stdout=fp, stderr=fp)
+run(['./tools/setup/generate_zulip_bots_static_files'], stdout=fp, stderr=fp)
 
 # Generate custom icon webfont
-subprocess.check_call(['./tools/generate-custom-icon-webfont'],
-                      stdout=fp, stderr=fp)
+run(['./tools/setup/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
 
 # Build pygment data
-subprocess.check_call(['./tools/setup/build_pygments_data'],
-                      stdout=fp, stderr=fp)
+run(['./tools/setup/build_pygments_data'], stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.
-subprocess.check_call(['./tools/minify-js'] +
-                      (['--prev-deploy', prev_deploy] if prev_deploy else []),
-                      stdout=fp, stderr=fp)
+run(['./tools/minify-js'] + (['--prev-deploy', prev_deploy] if prev_deploy else []),
+    stdout=fp, stderr=fp)
 
 # Copy the KaTeX files outside node_modules
-subprocess.check_call(['mkdir', '-p',
-                       os.path.join(settings.STATIC_ROOT,
-                                    'node_modules/katex/dist/')],
-                      stdout=fp, stderr=fp)
+run(['mkdir', '-p', os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/')],
+    stdout=fp, stderr=fp)
 
-subprocess.check_call(['cp', 'node_modules/katex/dist/katex.css',
-                       os.path.join(settings.STATIC_ROOT,
-                                    'node_modules/katex/dist/')],
-                      stdout=fp, stderr=fp)
+run(['cp', 'node_modules/katex/dist/katex.css',
+     os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/')],
+    stdout=fp, stderr=fp)
 
-subprocess.check_call(['cp', '-R', 'node_modules/katex/dist/fonts',
-                       os.path.join(settings.STATIC_ROOT,
-                                    'node_modules/katex/dist/fonts')],
-                      stdout=fp, stderr=fp)
+run(['cp', '-R', 'node_modules/katex/dist/fonts',
+     os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/fonts')],
+    stdout=fp, stderr=fp)
 
 CSS_FILES = [
+    'node_modules/simplebar/dist/simplebar.css',
     'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
     'node_modules/flatpickr/dist/flatpickr.css',
     'node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.css',
@@ -85,35 +76,34 @@ CSS_FILES = [
 
 # Copy CSS files in node_modules to prod-static/serve
 for css_file in CSS_FILES:
-    subprocess.check_call(['cp', '--parents', css_file, settings.STATIC_ROOT])
+    run(['cp', '--parents', css_file, settings.STATIC_ROOT])
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
-subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
-                       '--noinput', '-i', 'assets', '-i' 'node_modules'],
-                      stdout=fp, stderr=fp)
+run(['./manage.py', 'collectstatic', '--no-default-ignore',
+     '--noinput', '-i', 'assets', '-i' 'node_modules', '-i', 'styles', '-i', 'templates'],
+    stdout=fp, stderr=fp)
+
 if not settings.PRODUCTION:
     # When building a release tarball, we need to move staticfiles.json
-    subprocess.check_call(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
-                          stdout=fp, stderr=fp)
+    run(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
+        stdout=fp, stderr=fp)
 
 # Compile translation strings to generate `.mo` files.
-subprocess.check_call(['./manage.py', 'compilemessages'],
-                      stdout=fp, stderr=fp)
+run(['./manage.py', 'compilemessages'], stdout=fp, stderr=fp)
 
 # Move the source maps out of the serve/ directory and into their
 # proper place.
-subprocess.check_call(['rm', '-rf', 'prod-static/source-map'],
-                      stdout=fp, stderr=fp)
-subprocess.check_call(['mkdir', '-p', 'prod-static'],  # Needed if PRODUCTION
-                      stdout=fp, stderr=fp)
-subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
-                       'prod-static/source-map'],
-                      stdout=fp, stderr=fp)
+run(['rm', '-rf', 'prod-static/source-map'], stdout=fp, stderr=fp)
+
+# Needed if PRODUCTION
+run(['mkdir', '-p', 'prod-static'], stdout=fp, stderr=fp)
+
+run(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map'],
+    stdout=fp, stderr=fp)
 
 # Move language_options.json to the production release
-subprocess.check_call(['cp', '-aT', 'static/locale',
-                       os.path.join(settings.STATIC_ROOT, 'locale')],
-                      stdout=fp, stderr=fp)
+run(['cp', '-aT', 'static/locale', os.path.join(settings.STATIC_ROOT, 'locale')],
+    stdout=fp, stderr=fp)
 
 # Generate /team page markdown for authors
 authors_cmd = ['./tools/update-authors-json']
@@ -121,6 +111,6 @@ if os.environ.get("TRAVIS"):
     authors_cmd.append("--use-fixture")
 if args.authors_not_required:
     authors_cmd.append("--not-required")
-subprocess.check_call(authors_cmd, stdout=fp, stderr=fp)
+run(authors_cmd, stdout=fp, stderr=fp)
 
 fp.close()

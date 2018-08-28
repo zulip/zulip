@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import re
 from typing import Any, Dict, Iterable
 import logging
@@ -124,7 +125,7 @@ class TemplateTestCase(ZulipTestCase):
 
         # Since static/generated/bots/ is searched by Jinja2 for templates,
         # it mistakes logo files under that directory for templates.
-        bot_logos_regexp = re.compile('\w+\/logo\.(svg|png)$')
+        bot_logos_regexp = re.compile(r'\w+\/logo\.(svg|png)$')
 
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html',
                                                                      'zerver/terms.html',
@@ -171,6 +172,8 @@ class TemplateTestCase(ZulipTestCase):
         email = user_profile.email
 
         context = dict(
+            sidebar_index="zerver/help/include/sidebar_index.md",
+            doc_root="/help/",
             article="zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,
@@ -197,6 +200,8 @@ class TemplateTestCase(ZulipTestCase):
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            cloud_annual_price=80,
+            seat_count=8,
         )
 
         context.update(kwargs)
@@ -212,6 +217,37 @@ class TemplateTestCase(ZulipTestCase):
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
                          'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+
+    def test_encoded_unicode_decimals_in_markdown_template(self) -> None:
+        template = get_template("tests/test_unicode_decimals.html")
+        context = {'unescape_rendered_html': False}
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         'header<p>&#123;&#125;</p>footer')
+
+        context = {'unescape_rendered_html': True}
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         'header<p>{}</p>footer')
+
+    def test_markdown_nested_code_blocks(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_nested_code_blocks.md"
+        }
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        expected = ('header<h1id="this-is-a-heading">Thisisaheading.</h1><ol>'
+                    '<li><p>Alistitemwithanindentedcodeblock:</p><divclass="codehilite">'
+                    '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
+                    '<divclass="codehilite"><pre><span></span>'
+                    'non-indentedcodeblockwithmultiplelines</pre></div>footer')
+        self.assertEqual(content_sans_whitespace, expected)
 
     def test_custom_tos_template(self) -> None:
         response = self.client_get("/terms/")
@@ -241,3 +277,11 @@ class TemplateTestCase(ZulipTestCase):
             response = self.client_get('/privacy/')
         self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
         self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.join(current_dir, '..', '..',
+                                'templates/zerver/tests/markdown/test_markdown.md')
+        with self.settings(PRIVACY_POLICY=abs_path):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)

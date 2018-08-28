@@ -560,17 +560,18 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                'client_gravatar': ujson.dumps(client_gravatar),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
+               'user_profile_id': user_profile.id,
                'user_client': user_client.name,
                'narrow': ujson.dumps(narrow),
+               'secret': settings.SHARED_SECRET,
                'lifespan_secs': queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
 
         try:
-            resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
-                                       auth=requests.auth.HTTPBasicAuth(
-                                           user_profile.email, user_profile.api_key),
-                                       params=req)
+            resp = requests_client.post(settings.TORNADO_SERVER +
+                                        '/api/v1/events/internal',
+                                        data=req)
         except requests.adapters.ConnectionError:
             logging.error('Tornado server does not seem to be running, check %s '
                           'and %s for more information.' %
@@ -587,14 +588,16 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[Any, Any]]:
     if settings.TORNADO_SERVER:
-        resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
-                                   auth=requests.auth.HTTPBasicAuth(
-                                       user_profile.email, user_profile.api_key),
-                                   params={'queue_id': queue_id,
-                                           'last_event_id': last_event_id,
-                                           'dont_block': 'true',
-                                           'client': 'internal'})
-
+        post_data = {
+            'queue_id': queue_id,
+            'last_event_id': last_event_id,
+            'dont_block': 'true',
+            'user_profile_id': user_profile.id,
+            'secret': settings.SHARED_SECRET,
+            'client': 'internal'
+        }  # type: Dict[str, Any]
+        resp = requests_client.post(settings.TORNADO_SERVER + '/api/v1/events/internal',
+                                    data=post_data)
         resp.raise_for_status()
 
         return extract_json_response(resp)['events']
@@ -645,6 +648,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         private_message = event['message']['type'] == 'private'
         # stream_push_notify is set in process_message_event.
         stream_push_notify = event.get('stream_push_notify', False)
+        stream_email_notify = event.get('stream_email_notify', False)
 
         stream_name = None
         if not private_message:
@@ -662,8 +666,8 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
             email_notified = event.get("email_notified", False),
         )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
-                                    stream_push_notify, stream_name, always_push_notify, idle,
-                                    already_notified)
+                                    stream_push_notify, stream_email_notify, stream_name,
+                                    always_push_notify, idle, already_notified)
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
     # If a user has no message-receiving event queues, they've got no open zulip
@@ -674,7 +678,8 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
     return off_zulip
 
 def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_message: bool,
-                                mentioned: bool, stream_push_notify: bool, stream_name: Optional[str],
+                                mentioned: bool, stream_push_notify: bool,
+                                stream_email_notify: bool, stream_name: Optional[str],
                                 always_push_notify: bool, idle: bool,
                                 already_notified: Dict[str, bool]) -> Dict[str, bool]:
     """This function has a complete unit test suite in
@@ -694,16 +699,24 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
             raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
         if not already_notified.get("push_notified"):
-            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+            queue_json_publish("missedmessage_mobile_notifications", notice)
             notified['push_notified'] = True
 
     # Send missed_message emails if a private message or a
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if idle and (private_message or mentioned):
-        # We require RabbitMQ to do this, as we can't call the email handler
-        # from the Tornado process. So if there's no rabbitmq support do nothing
+    if idle and (private_message or mentioned or stream_email_notify):
+        notice = build_offline_notification(user_profile_id, message_id)
+        if private_message:
+            notice['trigger'] = 'private_message'
+        elif mentioned:
+            notice['trigger'] = 'mentioned'
+        elif stream_email_notify:
+            notice['trigger'] = 'stream_email_notify'
+        else:
+            raise AssertionError("Unknown notification trigger!")
+        notice['stream_name'] = stream_name
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
             notified['email_notified'] = True
@@ -787,17 +800,19 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags and 'read' not in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
+        stream_email_notify = user_data.get('stream_email_notify', False)
 
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
-        if private_message or mentioned or stream_push_notify:
+        if private_message or mentioned or stream_push_notify or stream_email_notify:
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
             always_push_notify = user_data.get('always_push_notify', False)
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
-                                                 mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle, {})
+                                                 mentioned, stream_push_notify, stream_email_notify,
+                                                 stream_name, always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
+            result['stream_email_notify'] = stream_email_notify
             extra_user_data[user_profile_id] = result
 
     for client_data in send_to_clients.values():
@@ -861,6 +876,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
     mention_user_ids = set(event_template.get('mention_user_ids', []))
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
+    stream_email_user_ids = set(event_template.get('stream_email_user_ids', []))
     push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
 
     stream_name = event_template.get('stream_name')
@@ -881,6 +897,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
             mention_user_ids=mention_user_ids,
             presence_idle_user_ids=presence_idle_user_ids,
             stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
             push_notify_user_ids=push_notify_user_ids,
         )
 
@@ -895,6 +912,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    mention_user_ids: Set[int],
                                                    presence_idle_user_ids: Set[int],
                                                    stream_push_user_ids: Set[int],
+                                                   stream_email_user_ids: Set[int],
                                                    push_notify_user_ids: Set[int]) -> None:
     private_message = (stream_name is None)
 
@@ -910,8 +928,9 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         return
 
     stream_push_notify = (user_profile_id in stream_push_user_ids)
+    stream_email_notify = (user_profile_id in stream_email_user_ids)
 
-    if stream_push_notify:
+    if stream_push_notify or stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -933,6 +952,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         private_message=private_message,
         mentioned=mentioned,
         stream_push_notify=stream_push_notify,
+        stream_email_notify=stream_email_notify,
         stream_name=stream_name,
         always_push_notify=always_push_notify,
         idle=idle,

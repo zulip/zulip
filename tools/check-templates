@@ -10,7 +10,7 @@ import logging
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import lister
+from zulint import lister
 from typing import cast, Callable, Dict, Iterable, List
 
 EXCLUDED_FILES = [
@@ -55,6 +55,7 @@ def check_html_templates(templates, all_dups):
         IGNORE_IDS = [
             'api-example-tabs',
             'errors',
+            'error-message-box',
             'email',
             'messages',
             'registration',
@@ -66,6 +67,13 @@ def check_html_templates(templates, all_dups):
             'send_confirm',
             'register',
             'footer',
+            # Temporary while we have searchbox forked
+            'search_exit',
+            'search_query',
+            'tab_bar',
+            'search_arrows',
+            'searchbox_form',
+            'searchbox',
         ]
         bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
                         if (ids not in IGNORE_IDS) and len(fns) > 1}

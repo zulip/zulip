@@ -6,7 +6,8 @@ import zilencer.views
 from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns = [
-    url(r'^billing/$', zilencer.views.add_payment_method),
+    url(r'^billing/$', zilencer.views.billing_home, name='zilencer.views.billing_home'),
+    url(r'^upgrade/$', zilencer.views.initial_upgrade, name='zilencer.views.initial_upgrade'),
 ]  # type: Any
 
 # Zilencer views following the REST API style

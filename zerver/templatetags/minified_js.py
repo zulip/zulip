@@ -2,9 +2,8 @@ from typing import Any, Dict
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template import Library, Node, TemplateSyntaxError
+from django.template import Library, Node
 
-from django.template.base import Parser, Token
 
 register = Library()
 
@@ -25,7 +24,6 @@ class MinifiedJSNode(Node):
         else:
             scripts = [settings.JS_SPECS[self.sourcefile]['output_filename']]
         script_urls = [staticfiles_storage.url(script) for script in scripts]
-        script_tags = [('<script type="text/javascript" nonce="%s"'
-                       ' src="%s" charset="utf-8"></script>') % (self.csp_nonce, url)
+        script_tags = ['<script nonce="%s" src="%s"></script>' % (self.csp_nonce, url)
                        for url in script_urls]
         return '\n'.join(script_tags)

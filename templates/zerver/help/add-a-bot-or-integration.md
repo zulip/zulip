@@ -51,7 +51,7 @@ You can create three types of bots:
   to this Endpoint URL.
   Choose this type if you want to:
     * make Zulip post messages to a URL.
-    * deploy Zulip's [botserver](https://github.com/zulip/python-zulip-api/tree/master/zulip_botserver).
+    * deploy Zulip's [Botserver](/api/deploying-bots).
       *This is the default way of deploying bots used in production.*
 
 ## Add an integration

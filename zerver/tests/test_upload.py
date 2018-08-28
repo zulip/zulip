@@ -16,21 +16,27 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     POSTRequestMock,
     use_s3_backend,
+    queries_captured,
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_file, delete_message_image, LocalUploadBackend, \
+    upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError, get_realm_for_filename
+    resize_emoji, BadImageError, get_realm_for_filename, \
+    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, \
+    exif_rotate
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
-    RealmDomain, get_realm, get_system_bot
+    RealmDomain, RealmEmoji, get_realm, get_system_bot, \
+    validate_attachment_request
 from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
+from zerver.lib.create_user import copy_user_settings
 from zerver.lib.request import JsonableError
+from zerver.lib.users import get_api_key
 from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
@@ -110,7 +116,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(uri + "?api_key=" + "invalid")
         self.assertEqual(response.status_code, 400)
 
-        response = self.client_get(uri + "?api_key=" + user_profile.api_key)
+        response = self.client_get(uri + "?api_key=" + get_api_key(user_profile))
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
@@ -202,12 +208,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
-
-    def test_download_non_existent_file(self) -> None:
-        self.login(self.example_email("hamlet"))
-        response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('File not found', str(response.content))
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
@@ -525,43 +525,170 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_in_response("You are not authorized to view this file.", response)
 
     def test_file_download_authorization_invite_only(self) -> None:
-        subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
-        realm = get_realm("zulip")
-        for email in subscribed_users:
-            self.subscribe(get_user(email, realm), "test-subscribe")
+        user = self.example_user("hamlet")
+        subscribed_emails = [user.email, self.example_email("cordelia")]
+        unsubscribed_emails = [self.example_email("othello"), self.example_email("prospero")]
+        stream_name = "test-subscribe"
+        self.make_stream(stream_name, realm=user.realm, invite_only=True, history_public_to_subscribers=False)
 
-        # Make the stream private
-        stream = Stream.objects.get(name='test-subscribe')
-        stream.invite_only = True
-        stream.save()
+        for email in subscribed_emails:
+            self.subscribe(get_user(email, user.realm), stream_name)
 
-        self.login(self.example_email("hamlet"))
+        self.login(user.email)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "test-subscribe", body, "test")
+        self.send_stream_message(user.email, stream_name, body, "test")
         self.logout()
 
-        # Subscribed user should be able to view file
-        for user in subscribed_users:
-            self.login(user)
+        # Owner user should be able to view file
+        self.login(user.email)
+        with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 5)
+
+        # Subscribed user who recieved the message should be able to view file
+        self.login(subscribed_emails[1])
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 6)
+
+        def assert_cannot_access_file(user_email: str) -> None:
+            response = self.api_get(user_email, uri)
+            self.assertEqual(response.status_code, 403)
+            self.assert_in_response("You are not authorized to view this file.", response)
+
+        late_subscribed_user = self.example_user("aaron")
+        self.subscribe(late_subscribed_user, stream_name)
+        assert_cannot_access_file(late_subscribed_user.email)
+
+        # Unsubscribed user should not be able to view file
+        for unsubscribed_user in unsubscribed_emails:
+            assert_cannot_access_file(unsubscribed_user)
+
+    def test_file_download_authorization_invite_only_with_shared_history(self) -> None:
+        user = self.example_user("hamlet")
+        subscribed_emails = [user.email, self.example_email("polonius")]
+        unsubscribed_emails = [self.example_email("othello"), self.example_email("prospero")]
+        stream_name = "test-subscribe"
+        self.make_stream(stream_name, realm=user.realm, invite_only=True, history_public_to_subscribers=True)
+
+        for email in subscribed_emails:
+            self.subscribe(get_user(email, user.realm), stream_name)
+
+        self.login(user.email)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        uri = result.json()['uri']
+        fp_path_id = re.sub('/user_uploads/', '', uri)
+        body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
+        self.send_stream_message(user.email, stream_name, body, "test")
+        self.logout()
+
+        # Add aaron as a subscribed after the message was sent
+        late_subscribed_user = self.example_user("aaron")
+        self.subscribe(late_subscribed_user, stream_name)
+        subscribed_emails.append(late_subscribed_user.email)
+
+        # Owner user should be able to view file
+        self.login(user.email)
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 5)
+
+        # Originally subscribed user should be able to view file
+        self.login(subscribed_emails[1])
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 6)
+
+        # Subscribed user who did not receive the message should also be able to view file
+        self.login(late_subscribed_user.email)
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        # It takes a few extra queries to verify access because of shared history.
+        self.assertEqual(len(queries), 9)
+
+        def assert_cannot_access_file(user_email: str) -> None:
+            self.login(user_email)
+            with queries_captured() as queries:
+                response = self.client_get(uri)
+            self.assertEqual(response.status_code, 403)
+            # It takes a few extra queries to verify lack of access with shared history.
+            self.assertEqual(len(queries), 8)
+            self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
         # Unsubscribed user should not be able to view file
-        for user in unsubscribed_users:
-            self.login(user)
+        for unsubscribed_user in unsubscribed_emails:
+            assert_cannot_access_file(unsubscribed_user)
+
+    def test_multiple_message_attachment_file_download(self) -> None:
+        hamlet = self.example_user("hamlet")
+        for i in range(0, 5):
+            stream_name = "test-subscribe %s" % (i,)
+            self.make_stream(stream_name, realm=hamlet.realm, invite_only=True, history_public_to_subscribers=True)
+            self.subscribe(hamlet, stream_name)
+
+        self.login(hamlet.email)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        uri = result.json()['uri']
+        fp_path_id = re.sub('/user_uploads/', '', uri)
+        for i in range(20):
+            body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
+            self.send_stream_message(self.example_email("hamlet"), "test-subscribe %s" % (i % 5,), body, "test")
+        self.logout()
+
+        user = self.example_user("aaron")
+        self.login(user.email)
+        with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-            self.logout()
+        self.assertEqual(len(queries), 8)
+
+        self.subscribe(user, "test-subscribe 1")
+        self.subscribe(user, "test-subscribe 2")
+
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        # If we were accidentally one query per message, this would be 20+
+        self.assertEqual(len(queries), 9)
+
+        with queries_captured() as queries:
+            self.assertTrue(validate_attachment_request(user, fp_path_id))
+        self.assertEqual(len(queries), 6)
+
+        self.logout()
 
     def test_file_download_authorization_public(self) -> None:
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
@@ -623,6 +750,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def tearDown(self) -> None:
         destroy_uploads()
+
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
@@ -726,12 +854,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
-            self.assertEqual(redirect_url, avatar_url(cordelia) + '&foo=bar')
+            self.assertEqual(redirect_url, str(avatar_url(cordelia)) + '&foo=bar')
 
         with self.settings(ENABLE_GRAVATAR=False):
             response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
-            self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
     def test_get_user_avatar(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -741,11 +869,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
         response = self.client_get("/avatar/%s?foo=bar" % (cordelia.id))
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
         response = self.client_get("/avatar/")
         self.assertEqual(response.status_code, 404)
@@ -758,11 +886,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com/medium?foo=bar")
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia, True) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
         response = self.client_get("/avatar/%s/medium?foo=bar" % (cordelia.id,))
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia, True) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
     def test_non_valid_user_avatar(self) -> None:
 
@@ -803,6 +931,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
+            # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
+            with mock.patch('zerver.lib.upload.write_local_file') as mock_write_local_file:
+                zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+                self.assertFalse(mock_write_local_file.called)
+
             # Confirm that ensure_medium_avatar_url works to recreate
             # medium size avatars from the original if needed
             os.remove(medium_avatar_disk_path)
@@ -813,6 +946,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             # Verify whether the avatar_version gets incremented with every new upload
             self.assertEqual(user_profile.avatar_version, version)
             version += 1
+
+    def test_copy_avatar_image(self) -> None:
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        source_user_profile = self.example_user('hamlet')
+        target_user_profile = self.example_user('iago')
+
+        copy_user_settings(source_user_profile, target_user_profile)
+
+        source_path_id = avatar_disk_path(source_user_profile)
+        target_path_id = avatar_disk_path(target_user_profile)
+        self.assertNotEqual(source_path_id, target_path_id)
+        self.assertEqual(open(source_path_id, "rb").read(), open(target_path_id, "rb").read())
+
+        source_original_path_id = avatar_disk_path(source_user_profile, original=True)
+        target_original_path_id = avatar_disk_path(target_user_profile, original=True)
+        self.assertEqual(open(source_original_path_id, "rb").read(), open(target_original_path_id, "rb").read())
+
+        source_medium_path_id = avatar_disk_path(source_user_profile, medium=True)
+        target_medium_path_id = avatar_disk_path(target_user_profile, medium=True)
+        self.assertEqual(open(source_medium_path_id, "rb").read(), open(target_medium_path_id, "rb").read())
 
     def test_invalid_avatars(self) -> None:
         """
@@ -858,23 +1014,24 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
 
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
+    # While testing GIF resizing, we can't test if the final GIF has the same
+    # number of frames as the original one because PIL drops duplicate frames
+    # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        animated_unequal_img_data = open(get_test_image_file('animated_unequal_img.gif').name, 'rb').read()
-        with self.assertRaises(JsonableError):
-            resize_emoji(animated_unequal_img_data)
+        animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
+        resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
 
-        # Test for large image (128x128)
-        animated_large_img_data = open(get_test_image_file('animated_large_img.gif').name, 'rb').read()
-        with self.assertRaises(JsonableError):
-            resize_emoji(animated_large_img_data)
-
-        # Test for no resize case
-        animated_img_data = open(get_test_image_file('animated_img.gif').name, 'rb').read()
-        self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
+        # Test for large animated image (128x128)
+        animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+        resized_img_data = resize_emoji(animated_large_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
 
         # Test corrupt image exception
-        corrupted_img_data = open(get_test_image_file('corrupt.gif').name, 'rb').read()
+        corrupted_img_data = get_test_image_file('corrupt.gif').read()
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
@@ -1039,8 +1196,44 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         self.assertTrue(delete_message_image(path_id))
 
+    def test_emoji_upload_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), open(file_path + ".original", "rb").read())
+
+        resized_image = Image.open(open(file_path, "rb"))
+        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
+        self.assertEqual(expected_size, resized_image.size)
+
+    def test_get_emoji_url_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+        expected_url = "/user_avatars/{emoji_path}".format(emoji_path=emoji_path)
+        self.assertEqual(expected_url, url)
+
     def tearDown(self) -> None:
         destroy_uploads()
+
 
 class S3Test(ZulipTestCase):
 
@@ -1067,6 +1260,19 @@ class S3Test(ZulipTestCase):
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
+    def test_file_upload_s3_with_undefined_content_type(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+
+    @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
@@ -1076,6 +1282,10 @@ class S3Test(ZulipTestCase):
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
+
+    @use_s3_backend
+    def test_message_image_delete_when_file_doesnt_exist(self) -> None:
+        self.assertEqual(False, delete_message_image('non-existant-file'))
 
     @use_s3_backend
     def test_file_upload_authed(self) -> None:
@@ -1137,6 +1347,52 @@ class S3Test(ZulipTestCase):
         self.assertEqual(medium_image_key.key, medium_path_id)
 
     @use_s3_backend
+    def test_copy_avatar_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        source_user_profile = self.example_user('hamlet')
+        target_user_profile = self.example_user('othello')
+
+        copy_user_settings(source_user_profile, target_user_profile)
+
+        source_path_id = user_avatar_path(source_user_profile)
+        target_path_id = user_avatar_path(target_user_profile)
+        self.assertNotEqual(source_path_id, target_path_id)
+
+        source_image_key = bucket.get_key(source_path_id)
+        target_image_key = bucket.get_key(target_path_id)
+        self.assertEqual(target_image_key.key, target_path_id)
+        self.assertEqual(source_image_key.content_type, target_image_key.content_type)
+        source_image_data = source_image_key.get_contents_as_string()
+        target_image_data = target_image_key.get_contents_as_string()
+        self.assertEqual(source_image_data, target_image_data)
+
+        source_original_image_path_id = source_path_id + ".original"
+        target_original_image_path_id = target_path_id + ".original"
+        target_original_image_key = bucket.get_key(target_original_image_path_id)
+        self.assertEqual(target_original_image_key.key, target_original_image_path_id)
+        source_original_image_key = bucket.get_key(source_original_image_path_id)
+        self.assertEqual(source_original_image_key.content_type, target_original_image_key.content_type)
+        source_image_data = source_original_image_key.get_contents_as_string()
+        target_image_data = target_original_image_key.get_contents_as_string()
+        self.assertEqual(source_image_data, target_image_data)
+
+        target_medium_path_id = target_path_id + "-medium.png"
+        source_medium_path_id = source_path_id + "-medium.png"
+        source_medium_image_key = bucket.get_key(source_medium_path_id)
+        target_medium_image_key = bucket.get_key(target_medium_path_id)
+        self.assertEqual(target_medium_image_key.key, target_medium_path_id)
+        self.assertEqual(source_medium_image_key.content_type, target_medium_image_key.content_type)
+        source_medium_image_data = source_medium_image_key.get_contents_as_string()
+        target_medium_image_data = target_medium_image_key.get_contents_as_string()
+        self.assertEqual(source_medium_image_data, target_medium_image_data)
+
+    @use_s3_backend
     def test_get_realm_for_filename(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
@@ -1145,6 +1401,64 @@ class S3Test(ZulipTestCase):
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
+
+    @use_s3_backend
+    def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
+        self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
+
+    @use_s3_backend
+    def test_upload_realm_icon_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
+        original_key = bucket.get_key(original_path_id)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
+        resized_data = bucket.get_key(resized_path_id).read()
+        resized_image = Image.open(io.BytesIO(resized_data)).size
+        self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+
+    @use_s3_backend
+    def test_upload_emoji_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        emoji_name = "emoji.png"
+        zerver.lib.upload.upload_backend.upload_emoji_image(image_file, emoji_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=emoji_name,
+        )
+        original_key = bucket.get_key(emoji_path + ".original")
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_data = bucket.get_key(emoji_path).read()
+        resized_image = Image.open(io.BytesIO(resized_data))
+        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
+
+    @use_s3_backend
+    def test_get_emoji_url(self) -> None:
+        emoji_name = "emoji.png"
+        realm_id = 1
+        bucket = settings.S3_AVATAR_BUCKET
+        path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
+
+        url = zerver.lib.upload.upload_backend.get_emoji_url('emoji.png', realm_id)
+
+        expected_url = "https://{bucket}.s3.amazonaws.com/{path}".format(bucket=bucket, path=path)
+        self.assertEqual(expected_url, url)
+
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
@@ -1165,4 +1479,58 @@ class SanitizeNameTests(TestCase):
         self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
         self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
         self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name(u'~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+
+
+class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
+    def setUp(self) -> None:
+        self.realm = get_realm("zulip")
+        self.user_profile = self.example_user('hamlet')
+
+    def test_currently_used_upload_space(self) -> None:
+        self.assertEqual(0, currently_used_upload_space(self.realm))
+
+        data = b'zulip!'
+        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        self.assertEqual(len(data), currently_used_upload_space(self.realm))
+
+        data2 = b'more-data!'
+        upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
+        self.assertEqual(len(data) + len(data2), currently_used_upload_space(self.realm))
+
+class ExifRotateTests(TestCase):
+    def test_image_do_not_rotate(self) -> None:
+        # Image does not have _getexif method.
+        img_data = get_test_image_file('img.png').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
+        # Image with no exif data.
+        img_data = get_test_image_file('img_no_exif.jpg').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
+        # Orientation of the image is 1.
+        img_data = get_test_image_file('img.jpg').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
+    def test_image_rotate(self) -> None:
+        with mock.patch('PIL.Image.Image.rotate') as rotate:
+            img_data = get_test_image_file('img_orientation_3.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(180, expand=True)
+
+            img_data = get_test_image_file('img_orientation_6.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(270, expand=True)
+
+            img_data = get_test_image_file('img_orientation_8.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(90, expand=True)

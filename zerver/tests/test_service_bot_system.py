@@ -67,16 +67,47 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(event_dict, expected)
 
+    def test_spurious_mentions(self) -> None:
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        # If outgoing_bot is not in mentioned_user_ids,
+        # we will skip over it.  This tests an anomaly
+        # of the code that our query for bots can include
+        # bots that may not actually be mentioned, and it's
+        # easiest to just filter them in get_service_bot_events.
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[
+                (outgoing_bot.id, outgoing_bot.bot_type),
+            ],
+            active_user_ids={outgoing_bot.id},
+            mentioned_user_ids=set(),
+            recipient_type=Recipient.STREAM,
+        )
+
+        self.assertEqual(len(event_dict), 0)
+
     def test_service_events_for_stream_mentions(self) -> None:
         sender = self.example_user('hamlet')
         assert(not sender.is_bot)
 
         outgoing_bot = self._get_outgoing_bot()
 
+        cordelia = self.example_user('cordelia')
+
+        red_herring_bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+
         event_dict = get_service_bot_events(
             sender=sender,
             service_bot_tuples=[
                 (outgoing_bot.id, outgoing_bot.bot_type),
+                (red_herring_bot.id, UserProfile.OUTGOING_WEBHOOK_BOT),
             ],
             active_user_ids=set(),
             mentioned_user_ids={outgoing_bot.id},
@@ -90,6 +121,53 @@ class TestServiceBotBasics(ZulipTestCase):
         )
 
         self.assertEqual(event_dict, expected)
+
+    def test_service_events_for_private_mentions(self) -> None:
+        """Service bots should not get access to mentions if they aren't a
+        direct recipient."""
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[
+                (outgoing_bot.id, outgoing_bot.bot_type),
+            ],
+            active_user_ids=set(),
+            mentioned_user_ids={outgoing_bot.id},
+            recipient_type=Recipient.PERSONAL,
+        )
+
+        self.assertEqual(len(event_dict), 0)
+
+    def test_service_events_with_unexpected_bot_type(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+        wrong_bot_type = UserProfile.INCOMING_WEBHOOK_BOT
+        bot.bot_type = wrong_bot_type
+        bot.save()
+
+        with mock.patch('logging.error') as log_mock:
+            event_dict = get_service_bot_events(
+                sender=hamlet,
+                service_bot_tuples=[
+                    (bot.id, wrong_bot_type),
+                ],
+                active_user_ids=set(),
+                mentioned_user_ids={bot.id},
+                recipient_type=Recipient.PERSONAL,
+            )
+
+        self.assertEqual(len(event_dict), 0)
+        arg = log_mock.call_args_list[0][0][0]
+        self.assertIn('Unexpected bot_type', arg)
 
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:

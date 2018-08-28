@@ -1,18 +1,19 @@
-zrequire('people');
-zrequire('bot_data');
+var _settings_bots = {
+    render_bots: () => {},
+};
 
-set_global('$', () => {
-    return {trigger: () => {}};
-});
-set_global('document', null);
-
-const page_params = {
+const _page_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0'},
                  {email: 'outgoingwebhook@zulip.com', user_id: 314, full_name: "Outgoing webhook",
                   services: [{base_url: "http://foo.com", interface: 1}]}],
     is_admin: false,
 };
-set_global('page_params', page_params);
+
+set_global('page_params', _page_params);
+set_global('settings_bots', _settings_bots);
+
+zrequire('people');
+zrequire('bot_data');
 
 global.people.add({
     email: 'owner@zulip.com',
@@ -27,7 +28,7 @@ bot_data.initialize();
 assert.equal(bot_data.get(42).full_name, 'Bot 0');
 assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
 
-(function () {
+run_test('test_basics', () => {
     const test_bot = {
         email: 'bot1@zulip.com',
         user_id: 43,
@@ -155,4 +156,4 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         assert.equal(bots[0].email, 'bot1@zulip.com');
         assert.equal(bots[1].email, 'bot2@zulip.com');
     }());
-}());
+});

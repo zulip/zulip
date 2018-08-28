@@ -12,6 +12,8 @@ def is_reserved_subdomain(subdomain: str) -> bool:
     return False
 
 def is_disposable_domain(domain: str) -> bool:
+    if domain.lower() in WHITELISTED_EMAIL_DOMAINS:
+        return False
     return domain.lower() in DISPOSABLE_DOMAINS
 
 ZULIP_RESERVED_SUBDOMAINS = frozenset([
@@ -34,6 +36,8 @@ ZULIP_RESERVED_SUBDOMAINS = frozenset([
     'contribute', 'floss', 'foss', 'free', 'opensource', 'open', 'code', 'license',
     # intership programs
     'intern', 'outreachy', 'gsoc', 'gci', 'externship',
+    # Things that sound like security
+    'auth', 'authentication', 'security',
     # tech blogs
     'engineering', 'infrastructure', 'tooling', 'tools', 'javascript', 'python'])
 
@@ -75,3 +79,9 @@ GENERIC_RESERVED_SUBDOMAINS = frozenset([
     'wiki', 'www', 'www0', 'www8', 'www9', 'xml', 'xmpp', 'xoxo'])
 
 DISPOSABLE_DOMAINS = frozenset(blacklist)
+
+WHITELISTED_EMAIL_DOMAINS = frozenset([
+    # Controlled by https://www.abine.com; more legitimate than most
+    # disposable domains
+    'opayq.com', 'abinemail.com', 'blurmail.net', 'maskmemail.com',
+])

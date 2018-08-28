@@ -99,3 +99,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = admin_sections;
 }
+window.admin_sections = admin_sections;

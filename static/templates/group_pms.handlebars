@@ -1,14 +1,14 @@
 {{! User Presence rows }}
 {{#each group_pms}}
 <li data-user-ids="{{user_ids_string}}" class="group-pms-sidebar-entry narrow-filter">
-    <span class="selectable_sidebar_block">
+    <div class="selectable_sidebar_block">
         {{#if fraction_present}}
         <span class="group-pm-status-indicator" style="background:rgba(68,194,29,{{fraction_present}});"></span>
         {{else}}
         <span class="group-pm-status-indicator" style="background:rgb(255,255,255); border-color:rgb(127,127,127);"></span>
         {{/if}}
         <a href="{{href}}" data-name="{{name}}" title="{{name}}" class="group-pm-link">{{short_name}}</a>
-    </span>
-    <span class="count"><span class="value"></span></span>
+        <span class="count"><span class="value"></span></span>
+    </div>
 </li>
 {{/each}}

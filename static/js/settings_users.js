@@ -10,17 +10,8 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-function get_user_info(user_id) {
-    var self = {};
-    self.user_row = $("tr.user_row[data-user-id='" + user_id + "']");
-    self.form_row = $("tr.user-name-form[data-user-id='" + user_id + "']");
-
-    return self;
-}
-
-function get_email_for_user_row(row) {
-    var email = row.find('.email').text();
-    return email;
+function get_user_info_row(user_id) {
+    return $("tr.user_row[data-user-id='" + user_id + "']");
 }
 
 function update_view_on_deactivate(row) {
@@ -51,14 +42,11 @@ exports.update_user_data = function (user_id, new_data) {
         return;
     }
 
-    var user_info = get_user_info(user_id);
-    var user_row = user_info.user_row;
-    var form_row = user_info.form_row;
+    var user_row = get_user_info_row(user_id);
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
         user_row.find(".user_name").text(new_data.full_name);
-        form_row.find("input[name='full_name']").val(new_data.full_name);
     }
 
     if (new_data.owner !== undefined) {
@@ -76,12 +64,13 @@ exports.update_user_data = function (user_id, new_data) {
         }
     }
 
-    // Remove the bot owner select control.
-    form_row.find(".edit_bot_owner_container select").remove();
-
-    // Hide name change form
-    form_row.hide();
-    user_row.show();
+    if (new_data.is_admin !== undefined) {
+        if (new_data.is_admin) {
+            user_row.find('#admin_icon').show();
+        } else {
+            user_row.find('#admin_icon').hide();
+        }
+    }
 };
 
 function failed_listing_users(xhr) {
@@ -117,7 +106,7 @@ function populate_users(realm_people_data) {
     };
 
     var $bots_table = $("#admin_bots_table");
-    list_render($bots_table, bots, {
+    list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
             return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
@@ -135,7 +124,7 @@ function populate_users(realm_people_data) {
     }).init();
 
     var $users_table = $("#admin_users_table");
-    list_render($users_table, active_users, {
+    list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
             var activity_rendered;
@@ -175,7 +164,7 @@ function populate_users(realm_people_data) {
     }).init();
 
     var $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render($deactivated_users_table, deactivated_users, {
+    list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
             return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
@@ -216,7 +205,7 @@ exports.set_up = function () {
     channel.get({
         url:      '/json/users',
         idempotent: true,
-        timeout:  10*1000,
+        timeout:  10 * 1000,
         success: exports.on_load_success,
         error: failed_listing_users,
     });
@@ -229,13 +218,15 @@ exports.on_load_success = function (realm_people_data) {
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
         var row = $(e.target).closest(".user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = get_email_for_user_row(row);
+        var email = row.attr("data-email");
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
@@ -245,7 +236,8 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $("#do_deactivate_user_button").expectOne().click(function () {
-        var email = meta.current_deactivate_user_modal_row.find(".email").text();
+        var email = meta.current_deactivate_user_modal_row.attr("data-email");
+        var user_id = meta.current_deactivate_user_modal_row.attr("data-user-id");
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
@@ -255,7 +247,7 @@ exports.on_load_success = function (realm_people_data) {
         $("#deactivation_user_modal").modal("hide");
         meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text(i18n.t("Working…"));
         channel.del({
-            url: '/json/users/' + encodeURIComponent(email),
+            url: '/json/users/' + encodeURIComponent(user_id),
             error: function (xhr) {
                 var status = $("#organization-status").expectOne();
                 ui_report.error(i18n.t("Failed"), xhr, status);
@@ -280,10 +272,10 @@ exports.on_load_success = function (realm_people_data) {
 
         var row = $(e.target).closest(".user_row");
 
-        var email = get_email_for_user_row(row);
+        var bot_id = row.attr("data-user-id");
 
         channel.del({
-            url: '/json/bots/' + encodeURIComponent(email),
+            url: '/json/bots/' + encodeURIComponent(bot_id),
             error: function (xhr) {
                 ui_report.generic_row_button_error(xhr, $(e.target));
             },
@@ -299,10 +291,10 @@ exports.on_load_success = function (realm_people_data) {
 
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
+        var user_id = row.attr("data-user-id");
 
         channel.post({
-            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
             error: function (xhr) {
                 ui_report.generic_row_button_error(xhr, $(e.target));
             },
@@ -312,120 +304,65 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    $(".admin_user_table").on("click", ".make-admin", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Go up the tree until we find the user row, then grab the email element
-        var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
-
-        var url = "/json/users/" + encodeURIComponent(email);
-        var data = {
-            is_admin: JSON.stringify(true),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-            success: function () {
-                var button = row.find("button.make-admin");
-                button.addClass("btn-danger");
-                button.removeClass("btn-warning");
-                button.addClass("remove-admin");
-                button.removeClass("make-admin");
-                button.text(i18n.t("Remove admin"));
-            },
-            error: function (xhr) {
-                var status = $("#organization-status").expectOne();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
+    function open_user_info_form_modal(person) {
+        var html = templates.render('user-info-form-modal', {
+            user_id: person.user_id,
+            full_name: people.get_full_name(person.user_id),
+            is_admin: person.is_admin,
+            is_bot: person.is_bot,
         });
-    });
+        var user_info_form_modal = $(html);
+        var modal_container = $('#user-info-form-modal-container');
+        modal_container.empty().append(user_info_form_modal);
+        overlays.open_modal('user-info-form-modal');
 
-    $(".admin_user_table").on("click", ".remove-admin", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Go up the tree until we find the user row, then grab the email element
-        var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
-
-        var url = "/json/users/" + encodeURIComponent(email);
-        var data = {
-            is_admin: JSON.stringify(false),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-            success: function () {
-                var button = row.find("button.remove-admin");
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("make-admin");
-                button.removeClass("remove-admin");
-                button.text(i18n.t("Make admin"));
-            },
-            error: function (xhr) {
-                var status = $("#organization-status").expectOne();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
-    });
-
-    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        var users_list = people.get_realm_persons().filter(function (person)  {
-            return !person.is_bot;
-        });
-        var user_id = $(e.currentTarget).attr("data-user-id");
-        var user_info = get_user_info(user_id);
-        var user_row = user_info.user_row;
-        var form_row = user_info.form_row;
-        var reset_button = form_row.find(".reset_edit_user");
-        var submit_button = form_row.find(".submit_name_changes");
-        var full_name = form_row.find("input[name='full_name']");
-        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-        var admin_status = $('#organization-status').expectOne();
-        var person = people.get_person_from_user_id(user_id);
-        var url;
-        var data;
-        if (!person) {
-            return;
-        } else if (person.is_bot) {
+        if (person.is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
-            owner_select.val(bot_data.get(user_id).owner || "");
-            form_row.find(".edit_bot_owner_container").append(owner_select);
+            var users_list = people.get_active_human_persons();
+            var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
+            owner_select.val(bot_data.get(person.user_id).owner || "");
+            modal_container.find(".edit_bot_owner_container").append(owner_select);
         }
 
-        // Show user form and set the full name value in input field.
-        full_name.val(person.full_name);
-        user_row.hide();
-        form_row.show();
+        return user_info_form_modal;
+    }
 
-        reset_button.on("click", function () {
-            owner_select.remove();
-            form_row.hide();
-            user_row.show();
-        });
+    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+        var user_id = $(e.currentTarget).attr("data-user-id");
+        var person = people.get_person_from_user_id(user_id);
 
-        submit_button.on("click", function (e) {
+        if (!person) {
+            return;
+        }
+
+        var user_info_form_modal = open_user_info_form_modal(person);
+
+        var url;
+        var data;
+        var admin_status = $('#organization-status').expectOne();
+        var full_name = user_info_form_modal.find("input[name='full_name']");
+
+        user_info_form_modal.find('.submit_user_info_change').on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
 
+            var user_role_select_value = user_info_form_modal.find('#user-role-select').val();
+
             if (person.is_bot) {
-                url = "/json/bots/" + encodeURIComponent(person.email);
+                url = "/json/bots/" + encodeURIComponent(user_id);
                 data = {
                     full_name: full_name.val(),
                 };
-                if (owner_select.val() !== undefined && owner_select.val() !== "") {
-                    data.bot_owner = owner_select.val();
+                var owner_select_value = user_info_form_modal.find('.bot_owner_select').val();
+                if (owner_select_value) {
+                    data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
-                url = "/json/users/" + encodeURIComponent(person.email);
+                url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
+                    is_admin: JSON.stringify(user_role_select_value === 'admin'),
                 };
             }
 
@@ -434,9 +371,11 @@ exports.on_load_success = function (realm_people_data) {
                 data: data,
                 success: function () {
                     ui_report.success(i18n.t('Updated successfully!'), admin_status);
+                    overlays.close_modal('user-info-form-modal');
                 },
                 error: function (xhr) {
                     ui_report.error(i18n.t('Failed'), xhr, admin_status);
+                    overlays.close_modal('user-info-form-modal');
                 },
             });
         });
@@ -450,3 +389,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_users;
 }
+window.settings_users = settings_users;

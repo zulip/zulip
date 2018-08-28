@@ -2,29 +2,37 @@
   role="dialog" aria-labelledby="user_profile_modal_label" aria-hidden="true">
     <div class="modal-body" id="user-profile-modal-body">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true" class="exit-sign">&times;</span>
         </button>
         <div class="user-profile-modal-avatar" style="background-image: url('{{user_avatar}}');" ></div>
-        <div class="user-profile-modal-name-section">
-            {{full_name}}
-            {{#if is_me}}
-            <a href="/#settings/your-account">
-                <i class="icon-vector-edit user-profile-modal-edit-button" aria-hidden="true"></i>
-            </a>
-            {{/if}}
+        <div class="user-profile-modal-name-email-section">
+            <div class="user-profile-modal-name">
+                {{full_name}}
+                {{#if is_me}}
+                <a href="/#settings/your-account">
+                    <i class="fa fa-edit user-profile-modal-edit-button" aria-hidden="true"></i>
+                </a>
+                {{/if}}
+            </div>
+            <div class="user-profile-modal-email">
+                {{email}}
+            </div>
         </div>
-        <div class="user-profile-modal-email-section">
-            {{email}}
-        </div>
-        {{#if profile_data}}
-        <hr id="user-profile-modal-hr">
-        {{/if}}
+        <hr class="user-profile-modal-hr">
         <div class="user-profile-modal-content">
             {{#each profile_data}}
-                {{#if this}}
-                <div class="user-profile-key-value-section">
-                    <div class="user-profile-modal-field-name">{{@key}}</div>
-                    <div class="user-profile-modal-field-value">{{this}}</div>
+                {{#if this.value}}
+                <div data-type="{{this.type}}" class="user-profile-key-value-section">
+                    <div class="user-profile-modal-field-name">{{this.name}}:</div>
+                    {{#if this.is_user_field}}
+                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                        <div class="input" contenteditable="false" style="display: none;"></div>
+                    </div>
+                    {{else if this.is_link}}
+                    <a href={{this.value}} target="_blank" class="user-profile-modal-field-value">{{this.value}}</a>
+                    {{else}}
+                    <div class="user-profile-modal-field-value">{{this.value}}</div>
+                    {{/if}}
                 </div>
                 {{/if}}
             {{/each}}

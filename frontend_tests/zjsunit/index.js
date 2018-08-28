@@ -4,9 +4,20 @@ var fs = require('fs');
 global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
-global.Dict = require('js/dict');
 global._ = require('node_modules/underscore/underscore.js');
 var _ = global._;
+const windowObj = {
+    location: {
+        hash: '#',
+    },
+};
+global.window = _.extend({}, windowObj, {
+    to_$: () => {
+        return windowObj;
+    },
+});
+
+global.Dict = require('js/dict');
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
@@ -36,8 +47,6 @@ global.with_stub = stub.with_stub;
 
 // Set up helpers to render templates.
 var render = require('./render.js');
-global.make_sure_all_templates_have_been_compiled =
-    render.make_sure_all_templates_have_been_compiled;
 global.find_included_partials = render.find_included_partials;
 global.compile_template = render.compile_template;
 global.render_template = render.render_template;
@@ -68,17 +77,51 @@ global.read_fixture_data = (fn) => {
     return data;
 };
 
+function short_tb(tb) {
+    const lines = tb.split('\n');
+
+    var i = _.findIndex(lines, (line) => {
+        return line.includes('run_test') || line.includes('run_one_module');
+    });
+
+    if (i === -1) {
+        return tb;
+    }
+
+    return lines.splice(0, i + 1).join('\n') + '\n(...)\n';
+}
+
 // Set up bugdown comparison helper
 global.bugdown_assert = require('./bugdown_assert.js');
 
-files.forEach(function (file) {
-    global.patch_builtin('setTimeout', noop);
-    global.patch_builtin('setInterval', noop);
-    _.throttle = immediate;
-    _.debounce = immediate;
-
+function run_one_module(file) {
     console.info('running tests for ' + file.name);
-    render.init();
     require(file.full_name);
-    namespace.restore();
-});
+}
+
+global.run_test = (label, f) => {
+    if (files.length === 1) {
+        console.info('        test: ' + label);
+    }
+    f();
+};
+
+try {
+    files.forEach(function (file) {
+        global.patch_builtin('setTimeout', noop);
+        global.patch_builtin('setInterval', noop);
+        _.throttle = immediate;
+        _.debounce = immediate;
+
+        render.init();
+        run_one_module(file);
+        namespace.restore();
+    });
+} catch (e) {
+    if (e.stack) {
+        console.info(short_tb(e.stack));
+    } else {
+        console.info(e);
+    }
+    process.exit(1);
+}

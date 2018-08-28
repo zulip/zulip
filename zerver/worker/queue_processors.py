@@ -14,14 +14,15 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
+    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile, \
+    Client
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails
-from zerver.lib.push_notifications import handle_push_notification
+from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, check_send_message, extract_recipients, \
@@ -41,7 +42,6 @@ from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
-from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 
@@ -232,7 +232,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             "zerver/emails/invitation_reminder",
             referrer.realm,
             to_email=invitee.email,
-            from_address=FromAddress.NOREPLY,
+            from_address=FromAddress.tokenized_no_reply_address(),
             context=context,
             delay=datetime.timedelta(days=2))
 
@@ -306,6 +306,8 @@ class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, data: Mapping[str, Any]) -> None:
+        if data.get("type", "add") == "remove":
+            handle_remove_push_notification(data['user_profile_id'], data['message_id'])
         handle_push_notification(data['user_profile_id'], data)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
@@ -331,6 +333,9 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
         for query in slow_queries:
             logging.info("Slow query: %s" % (query))
 
+        if settings.SLOW_QUERY_LOGS_STREAM is None:
+            return
+
         if settings.ERROR_BOT is None:
             return
 
@@ -343,7 +348,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
 
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
-                                  "stream", "logs", topic, content)
+                                  "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
@@ -476,7 +481,8 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
             dup_event['service_name'] = str(service.name)
             service_handler = get_outgoing_webhook_service_handler(service)
             rest_operation, request_data = service_handler.process_event(dup_event)
-            do_rest_call(rest_operation, request_data, dup_event, service_handler)
+            if rest_operation:
+                do_rest_call(rest_operation, request_data, dup_event, service_handler)
 
 @assign_queue('embedded_bots')
 class EmbeddedBotWorker(QueueProcessingWorker):
@@ -519,6 +525,7 @@ class DeferredWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
+            client = Client.objects.get(id=event['client_id'])
 
             for stream_id in event['stream_ids']:
                 # Since the user just unsubscribed, we don't require
@@ -526,4 +533,4 @@ class DeferredWorker(QueueProcessingWorker):
                 # streams would never be accessible)
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
-                do_mark_stream_messages_as_read(user_profile, stream)
+                do_mark_stream_messages_as_read(user_profile, client, stream)

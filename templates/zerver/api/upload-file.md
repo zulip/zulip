@@ -2,7 +2,7 @@
 
 Upload a single file and get the corresponding URI.
 
-`POST {{ api_url}}/v1/user_uploads`
+`POST {{ api_url }}/v1/user_uploads`
 
 ## Usage examples
 <div class="code-section" markdown="1">
@@ -13,7 +13,7 @@ Upload a single file and get the corresponding URI.
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|upload-file|example}
+{generate_code_example(python)|/user_uploads:post|example}
 
 </div>
 
@@ -23,7 +23,8 @@ Upload a single file and get the corresponding URI.
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|upload-file.md}
+The file to upload must be provided, and it should be placed in the request's
+body as `multipart` media type.
 
 ## Maximum file size
 
@@ -44,4 +45,4 @@ to 25MB.
 
 A typical successful JSON response may look like:
 
-{generate_code_example|upload-file|fixture}
+{generate_code_example|/user_uploads:post|fixture(200)}

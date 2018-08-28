@@ -102,12 +102,18 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
-                                 payload_data: Dict[str, Any]) -> None:
+                                 payload_data: Dict[str, Any], remote: bool=False) -> None:
     client = get_apns_client()
     if client is None:
         logging.warning("APNs: Dropping a notification because nothing configured.  "
                         "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
         return
+
+    if remote:
+        DeviceTokenClass = RemotePushDeviceToken
+    else:
+        DeviceTokenClass = PushDeviceToken
+
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
@@ -137,11 +143,14 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         if result == 'Success':
             logging.info("APNs: Success sending for user %d to device %s",
                          user_id, device.token)
+        elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
+            logging.info("APNs: Removing invalid/expired token %s (%s)" % (device.token, result))
+            # We remove all entries for this token (There
+            # could be multiple for different Zulip servers).
+            DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
             logging.warning("APNs: Failed to send for user %d to device %s: %s",
                             user_id, device.token, result)
-            # TODO delete token if status 410 (and timestamp isn't before
-            #      the token we have)
 
 #
 # Sending to GCM, for Android
@@ -435,7 +444,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
-            match = re.search("emoji-(?P<emoji_code>\S+)", classes)
+            match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
             if match:
                 emoji_code = match.group('emoji_code')
                 char_repr = ""
@@ -488,6 +497,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST
     data['realm_id'] = message.sender.realm.id
+    data['realm_uri'] = message.sender.realm.uri
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data['sender_id'] = message.sender.id
@@ -538,6 +548,52 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     })
     return data
 
+def handle_remove_push_notification(user_profile_id: int, message_id: int) -> None:
+    """This should be called when a message that had previously had a
+    mobile push executed is read.  This triggers a mobile push notifica
+    mobile app when the message is read on the server, to remove the
+    message from the notification.
+
+    """
+    user_profile = get_user_profile_by_id(user_profile_id)
+    message, user_message = access_message(user_profile, message_id)
+
+    if not settings.SEND_REMOVE_PUSH_NOTIFICATIONS:
+        # It's a little annoying that we duplicate this flag-clearing
+        # code (also present below), but this block is scheduled to be
+        # removed in a few weeks, once the app has supported the
+        # feature for long enough.
+        user_message.flags.active_mobile_push_notification = False
+        user_message.save(update_fields=["flags"])
+        return
+
+    gcm_payload = get_common_payload(message)
+    gcm_payload.update({
+        'event': 'remove',
+        'zulip_message_id': message_id,  # message_id is reserved for CCS
+    })
+
+    if uses_notification_bouncer():
+        try:
+            send_notifications_to_bouncer(user_profile_id,
+                                          {},
+                                          gcm_payload)
+        except requests.ConnectionError:  # nocoverage
+            def failure_processor(event: Dict[str, Any]) -> None:
+                logging.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id']))
+        return
+
+    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM))
+
+    if android_devices:
+        send_android_push_notification(android_devices, gcm_payload)
+
+    user_message.flags.active_mobile_push_notification = False
+    user_message.save(update_fields=["flags"])
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
@@ -559,6 +615,12 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # the `zerver/tornado/event_queue.py` logic?
         if user_message.flags.read:
             return
+
+        # Otherwise, we mark the message as having an active mobile
+        # push notification, so that we can send revocation messages
+        # later.
+        user_message.flags.active_mobile_push_notification = True
+        user_message.save(update_fields=["flags"])
     else:
         # Users should only be getting push notifications into this
         # queue for messages they haven't received if they're

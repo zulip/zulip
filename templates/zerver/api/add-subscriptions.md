@@ -2,7 +2,11 @@
 
 Subscribe one or more users to one or more streams.
 
-`POST {{ api_url }}/v1/users/me/subcriptions`
+`POST {{ api_url }}/v1/users/me/subscriptions`
+
+If any of the specified streams do not exist, they are automatically
+created, and configured using the `invite_only` setting specified in
+the arguments (see below).
 
 ## Usage examples
 <div class="code-section" markdown="1">
@@ -79,7 +83,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|add-subscriptions.md}
+{generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:post}
 
 ## Response
 
@@ -100,19 +104,20 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|add-subscriptions|fixture(without_principals)}
+{generate_code_example|/users/me/subscriptions:post|fixture(200_without_principals)}
 
 A typical successful JSON response when the user is already subscribed to
 the streams specified:
 
-{generate_code_example|add-subscriptions|fixture(already_subscribed)}
+{generate_code_example|/users/me/subscriptions:post|fixture(200_already_subscribed)}
 
 A typical response for when the requesting user does not have access to
 a private stream and `authorization_errors_fatal` is `True`:
 
-{generate_code_example|add-subscriptions|fixture(unauthorized_errors_fatal_true)}
+{generate_code_example|/users/me/subscriptions:post|fixture(400_unauthorized_errors_fatal_true)}
+
 
 A typical response for when the requesting user does not have access to
 a private stream and `authorization_errors_fatal` is `False`:
 
-{generate_code_example|add-subscriptions|fixture(unauthorized_errors_fatal_false)}
+{generate_code_example|/users/me/subscriptions:post|fixture(400_unauthorized_errors_fatal_false)}

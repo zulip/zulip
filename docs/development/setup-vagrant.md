@@ -23,7 +23,7 @@ Contents:
 environment,** check
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors). If
 that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 real-time help, send a note to the
 [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
@@ -39,26 +39,23 @@ When reporting your issue, please include the following information:
 
 ### Requirements
 
-Installing the Zulip development environment requires downloading several
-hundred megabytes of dependencies. You will need an active internet
-connection throughout the entire installation processes. (See [Specifying a
-proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
-
+Installing the Zulip development environment with Vagrant requires
+downloading several hundred megabytes of dependencies. You will need
+an active internet connection throughout the entire installation
+processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
+a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
-- **macOS**: macOS (10.11 El Capitan or newer recommended), Git,
-  VirtualBox (version [5.2.6][vbox-dl-macos] recommended -- we find
-  it's more stable than more recent versions),
-  [Vagrant][vagrant-dl-macos].
-- **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
+- **macOS**: macOS (10.11 El Capitan or newer recommended)
+- **Ubuntu LTS**: 18.04, 16.04, or 14.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
-  virtualization enabled (VT-X or AMD-V), administrator access,
-  [Git for Windows][git-bash] (which installs Git BASH), [VirtualBox][vbox-dl],
-  [Vagrant][vagrant-dl-win].
+  virtualization enabled (VT-X or AMD-V), administrator access.
 
-Don't see your system listed above? See [Advanced setup][install-advanced] for
-details about installing for other Linux and UNIX platforms.
+Other Linux distributions work great too, but we don't maintain
+documentation for installing Vagrant and LXC on those systems, so
+you'll need to find a separate guide and crib from the Debian/Ubuntu
+docs.
 
 ### Step 0: Set up Git & GitHub
 
@@ -97,8 +94,6 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code).
 
 #### Ubuntu
 
-The setup for Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are the same.
-
 If you're in a hurry, you can copy and paste the following into your terminal
 after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
@@ -115,8 +110,15 @@ For a step-by-step explanation, read on.
 
 ##### 1. Install Vagrant
 
-For both 14.04 Trusty and 16.04 Xenial, you'll need a more recent version of
-Vagrant than what's available in the official Ubuntu repositories.
+For Ubuntu 18.04 Bionic, you can just install from `apt`:
+
+```
+sudo apt install vagrant
+```
+
+For Ubuntu 16.04 Xenial and 14.04 Trusty, you'll need a more recent
+version of Vagrant than what's available in the official Ubuntu
+repositories.
 
 First uninstall any vagrant package you may have installed from the Ubuntu
 repository:
@@ -175,8 +177,8 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 #### Debian
 
 The setup for Debian 9.0 "stretch" is very similar to that
-[for Ubuntu 16.04 above](#ubuntu).  Follow those instructions,
-except with the following differences:
+[for Ubuntu above](#ubuntu).  Follow those instructions, except with
+the following differences:
 
 **Apt package list**.  In "2. Install remaining dependencies", the
 command to install the dependencies is a bit shorter:
@@ -203,7 +205,7 @@ finishing those steps, you will be ready for
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (version == 5.2.6).
-3. Install [Vagrant][vagrant-dl-win] (version 2.0.2, do not use 1.8.7).
+3. Install [Vagrant][vagrant-dl-win] (version 2.0.2 is best tested).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
@@ -341,7 +343,7 @@ without provisioning after the first time).  Other common issues are
 documented in the
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 real-time help.
 
@@ -507,7 +509,7 @@ After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
 If you run into any trouble, the
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 is a great place to ask for help.
 
@@ -597,13 +599,14 @@ which can help you optimize your development workflow).
 ### Troubleshooting and Common Errors
 
 Below you'll find a list of common errors and their solutions.  Most
-issues are resolved by just provisioning again (by running `./tools/provision`
-inside the Vagrant guest or equivalently `vagrant provision` from outside).
+issues are resolved by just provisioning again (by running
+`./tools/provision` (from `/srv/zulip`) inside the Vagrant guest or
+equivalently `vagrant provision` from outside).
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
   in the [Zulip development community server](../contributing/chat-zulip-org.html),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or
@@ -641,61 +644,6 @@ persists, please come chat with us (see instructions above) for help.
 
 After you provision successfully, you'll need to exit your `vagrant ssh`
 shell and run `vagrant ssh` again to get the virtualenv setup properly.
-
-#### The box 'ubuntu/trusty64' could not be found
-
-If you see the following error when you run `vagrant up`:
-
-```
-The box 'ubuntu/trusty64' could not be found or
-could not be accessed in the remote catalog. If this is a private
-box on HashiCorp's Atlas, please verify you're logged in via
-`vagrant login`. Also, please double-check the name. The expanded
-URL and error message are shown below:
-URL: ["https://atlas.hashicorp.com/ubuntu/trusty64"]
-```
-
-Then the version of `curl` that ships with Vagrant is not working on your
-machine. You are most likely to encounter this error on Windows/Cygwin and
-macOS.
-
-On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
-is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
-
-The solution is to downgrade Vagrant to version 2.0.2 ([available
-here](https://releases.hashicorp.com/vagrant/2.0.2/)), or to use your system's
-version of `curl` instead of the one that ships with Vagrant:
-
-```
-sudo ln -nsf /usr/bin/curl /opt/vagrant/embedded/bin/curl
-```
-
-On **Windows/Cygwin,** the fix is simple: replace it with the version from
-Cygwin.
-
-First, determine the location of Cygwin's curl with `which curl`:
-
-```
-christie@win10 ~/zulip
-$ which curl
-/usr/bin/curl
-```
-Now determine the location of Vagrant with `which vagrant`:
-```
-christie@win10 ~/zulip
-$ which vagrant
-/cygdrive/c/HashiCorp/Vagrant/bin/vagrant
-```
-The path **up until `/bin/vagrant`** is what you need to know. In the example above it's `/cygdrive/c/HashiCorp/Vagrant`.
-
-Finally, copy Cygwin's curl to Vagrant `embedded/bin` directory:
-```
-christie@win10 ~/zulip
-$ cp /usr/bin/curl.exe /cygdrive/c/HashiCorp/Vagrant/embedded/bin/
-```
-
-Now re-run `vagrant up` and vagrant should be able to fetch the required
-box file.
 
 #### Vagrant was unable to mount VirtualBox shared folders
 

@@ -26,7 +26,8 @@ import urllib
 import base64
 import os
 import re
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ExifTags
+from PIL.GifImagePlugin import GifImageFile
 import io
 import random
 import logging
@@ -53,10 +54,10 @@ DEFAULT_EMOJI_SIZE = 64
 class RealmUploadQuotaError(JsonableError):
     code = ErrorCode.REALM_UPLOAD_QUOTA
 
-attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+attachment_url_re = re.compile(r'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url: str) -> str:
-    path_id_raw = re.sub('[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
+    path_id_raw = re.sub(r'[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
     return re.sub('[.]+$', '', path_id_raw, re.M)
 
@@ -72,8 +73,8 @@ def sanitize_name(value: NonBinaryStr) -> str:
     * preserving the case of the value.
     """
     value = unicodedata.normalize('NFKC', value)
-    value = re.sub('[^\w\s._-]', '', value, flags=re.U).strip()
-    return mark_safe(re.sub('[-\s]+', '-', value, flags=re.U))
+    value = re.sub(r'[^\w\s._-]', '', value, flags=re.U).strip()
+    return mark_safe(re.sub(r'[-\s]+', '-', value, flags=re.U))
 
 def random_name(bytes: int=60) -> str:
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
@@ -81,9 +82,32 @@ def random_name(bytes: int=60) -> str:
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
+name_to_tag_num = dict((name, num) for num, name in ExifTags.TAGS.items())
+
+# https://stackoverflow.com/a/6218425
+def exif_rotate(image: Image) -> Image:
+    if not hasattr(image, '_getexif'):
+        return image
+    exif_data = image._getexif()
+    if exif_data is None:
+        return image
+
+    exif_dict = dict(exif_data.items())
+    orientation = exif_dict.get(name_to_tag_num['Orientation'])
+
+    if orientation == 3:
+        return image.rotate(180, expand=True)
+    elif orientation == 6:
+        return image.rotate(270, expand=True)
+    elif orientation == 8:
+        return image.rotate(90, expand=True)
+
+    return image
+
 def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
+        im = exif_rotate(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
@@ -94,25 +118,39 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     return out.getvalue()
 
 
+def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
+    frames = []
+    duration_info = []
+    # If 'loop' info is not set then loop for infinite number of times.
+    loop = im.info.get("loop", 0)
+    for frame_num in range(0, im.n_frames):
+        im.seek(frame_num)
+        new_frame = Image.new("RGBA", im.size)
+        new_frame.paste(im, (0, 0), im.convert("RGBA"))
+        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+        frames.append(new_frame)
+        duration_info.append(im.info['duration'])
+    out = io.BytesIO()
+    frames[0].save(out, save_all=True, optimize=True,
+                   format="GIF", append_images=frames[1:],
+                   duration=duration_info,
+                   loop=loop)
+    return out.getvalue()
+
 def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
-        if image_format == 'GIF' and im.is_animated:
-            if im.size[0] != im.size[1]:
-                raise JsonableError(
-                    _("Animated emoji must have the same width and height."))
-            elif im.size[0] > size:
-                raise JsonableError(
-                    _("Animated emoji can't be larger than 64px in width or height."))
-            else:
-                return image_data
-        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+        if image_format == "GIF":
+            return resize_gif(im, size)
+        else:
+            im = exif_rotate(im)
+            im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+            out = io.BytesIO()
+            im.save(out, format=image_format)
+            return out.getvalue()
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
-    out = io.BytesIO()
-    im.save(out, format=image_format)
-    return out.getvalue()
 
 
 ### Common
@@ -133,6 +171,9 @@ class ZulipUploadBackend:
         raise NotImplementedError()
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
+        raise NotImplementedError()
+
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         raise NotImplementedError()
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
@@ -274,14 +315,10 @@ class S3UploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file: File,
-                            acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
-        content_type = guess_type(user_file.name)[0]
+    def write_avatar_images(self, s3_file_name: str, target_user_profile: UserProfile,
+                            image_data: bytes, content_type: Optional[str]) -> None:
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = user_avatar_path(target_user_profile)
 
-        image_data = user_file.read()
         upload_image_to_s3(
             bucket_name,
             s3_file_name + ".original",
@@ -310,6 +347,34 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
+
+    def upload_avatar_image(self, user_file: File,
+                            acting_user_profile: UserProfile,
+                            target_user_profile: UserProfile) -> None:
+        content_type = guess_type(user_file.name)[0]
+        s3_file_name = user_avatar_path(target_user_profile)
+
+        image_data = user_file.read()
+        self.write_avatar_images(s3_file_name, target_user_profile,
+                                 image_data, content_type)
+
+    def get_avatar_key(self, file_name: str) -> Key:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket_name = settings.S3_AVATAR_BUCKET
+        bucket = get_bucket(conn, bucket_name)
+
+        key = bucket.get_key(file_name)
+        return key
+
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
+        s3_source_file_name = user_avatar_path(source_profile)
+        s3_target_file_name = user_avatar_path(target_profile)
+
+        key = self.get_avatar_key(s3_source_file_name + ".original")
+        image_data = key.get_contents_as_string()  # type: ignore # https://github.com/python/typeshed/issues/1552
+        content_type = key.content_type
+
+        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)  # type: ignore # image_data is `bytes`, boto subs are wrong
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         bucket = settings.S3_AVATAR_BUCKET
@@ -407,6 +472,11 @@ def write_local_file(type: str, path: str, file_data: bytes) -> None:
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
+def read_local_file(type: str, path: str) -> bytes:
+    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    with open(file_path, 'rb') as f:
+        return f.read()
+
 def get_local_file_path(path_id: str) -> Optional[str]:
     local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
     if os.path.isfile(local_path):
@@ -441,12 +511,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file: File,
-                            acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
-        file_path = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
+    def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
         write_local_file('avatars', file_path + '.original', image_data)
 
         resized_data = resize_avatar(image_data)
@@ -455,10 +520,25 @@ class LocalUploadBackend(ZulipUploadBackend):
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         write_local_file('avatars', file_path + '-medium.png', resized_medium)
 
+    def upload_avatar_image(self, user_file: File,
+                            acting_user_profile: UserProfile,
+                            target_user_profile: UserProfile) -> None:
+        file_path = user_avatar_path(target_user_profile)
+
+        image_data = user_file.read()
+        self.write_avatar_images(file_path, image_data)
+
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
         return "/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
+        source_file_path = user_avatar_path(source_profile)
+        target_file_path = user_avatar_path(target_profile)
+
+        image_data = read_local_file('avatars', source_file_path + '.original')
+        self.write_avatar_images(target_file_path, image_data)
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
@@ -515,7 +595,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 if settings.LOCAL_UPLOADS_DIR is not None:
     upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
 else:
-    upload_backend = S3UploadBackend()
+    upload_backend = S3UploadBackend()  # nocoverage
 
 def delete_message_image(path_id: str) -> bool:
     return upload_backend.delete_message_image(path_id)
@@ -523,6 +603,9 @@ def delete_message_image(path_id: str) -> bool:
 def upload_avatar_image(user_file: File, acting_user_profile: UserProfile,
                         target_user_profile: UserProfile) -> None:
     upload_backend.upload_avatar_image(user_file, acting_user_profile, target_user_profile)
+
+def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
+    upload_backend.copy_avatar(source_profile, target_profile)
 
 def upload_icon_image(user_file: File, user_profile: UserProfile) -> None:
     upload_backend.upload_realm_icon_image(user_file, user_profile)

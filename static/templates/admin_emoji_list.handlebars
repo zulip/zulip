@@ -1,12 +1,12 @@
 {{#with emoji}}
 <tr class="emoji_row" id="emoji_{{name}}">
     <td>
-        <span class="emoji_name">{{name}}</span>
+        <span class="emoji_name">{{display_name}}</span>
     </td>
     <td>
         <span class="emoji_image">
             <a href="{{source_url}}" target="_blank">
-                <img src="{{source_url}}" alt="{{name}}" />
+                <img src="{{source_url}}" alt="{{display_name}}" />
             </a>
         </span>
     </td>
@@ -19,7 +19,7 @@
     </td>
     <td>
         <button class="button rounded small delete btn-danger" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}">
-            <i class="icon-vector-trash" aria-hidden="true"></i>
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>
 </tr>

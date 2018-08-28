@@ -1,8 +1,6 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
 
-        <div class="alert admin-realm-failed-change-status"></div>
-
         <div id="org-org-join" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
@@ -26,7 +24,7 @@
                         <option value="only_selected_domain">{{t "Restrict to a list of domains" }}</option>
                     </select>
                 </div>
-                <div class="inline-block">
+                <div class="dependent-block">
                     <p id="allowed_domains_label" class="inline-block"></p>
                     {{#if is_admin }}
                     <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
@@ -70,11 +68,11 @@
                         <option value="by_admin_user_with_custom_time">{{t "All admins, and users with accounts at least N days old." }}</option>
                     </select>
                 </div>
-                <div class="inline-block">
+                <div class="dependent-block">
                     <label for="aitin" class="inline-block">{{t "Minimum account age (N)" }}:</label>
                     <input type="text" id="id_realm_waiting_period_threshold"
                       name="realm_waiting_period_threshold"
-                      class="admin-realm-message-content-edit-limit-minutes"
+                      class="admin-realm-time-limit-input"
                       value="{{ realm_waiting_period_threshold }}"/>
                 </div>
 

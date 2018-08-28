@@ -2,7 +2,7 @@
 
 <p id="utctime" style="text-align: center;"></p>
 <p id="localtime" style="text-align: center;"></p>
-<script type="text/javascript">
+<script>
     var now = moment('{{ now }}');
     $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
     $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';
@@ -29,6 +29,7 @@
     <li><strong>WAU</strong> (Weekly Active Users) - users active in last 7 * 24hr</li>
     <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
     <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
+    <li><a href="/stats/installation">Server total /stats style graphs</a></li>
 </ul>
 
 <table class="table summary-table sortable table-striped table-bordered">
@@ -37,6 +38,7 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
+            <th>Plan Type</th>
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
@@ -61,6 +63,10 @@
               class="good" {% else %}
               class="neutral" {% endif %} >
                 {{ row.date_created_day }}
+            </td>
+
+            <td>
+                {{ row.plan_type_string }}
             </td>
 
             <td>

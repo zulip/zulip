@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ArchivedMessage',
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='ArchivedUserMessage',
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.AddField(
             model_name='archivedattachment',

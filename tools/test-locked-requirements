@@ -4,6 +4,7 @@ import filecmp
 import glob
 import hashlib
 import os
+import shutil
 import subprocess
 import sys
 import ujson
@@ -42,7 +43,7 @@ def test_locked_requirements():
     for fn in LOCKED_REQS_FILE_NAMES:
         locked_file = os.path.join(REQS_DIR, fn)
         test_locked_file = os.path.join(TMP_DIR, fn)
-        subprocess.check_call(['cp', locked_file, test_locked_file])
+        shutil.copyfile(locked_file, test_locked_file)
     subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', TMP_DIR],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -69,8 +70,7 @@ def get_requirements_hash(use_test_lock_files=False):
 
 def may_be_setup_cache():
     # type: () -> None
-    if not os.path.exists(CACHE_DIR):
-        subprocess.check_call(['mkdir', CACHE_DIR])
+    os.makedirs(CACHE_DIR, exist_ok=True)
     if not os.path.exists(CACHE_FILE):
         with open(CACHE_FILE, 'w') as fp:
             ujson.dump([], fp)

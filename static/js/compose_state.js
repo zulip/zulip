@@ -30,7 +30,7 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
-        var elem = $('#'+fieldname);
+        var elem = $('#' + fieldname);
         var oldval = elem.val();
         if (newval !== undefined) {
             elem.val(newval);
@@ -63,3 +63,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_state;
 }
+window.compose_state = compose_state;

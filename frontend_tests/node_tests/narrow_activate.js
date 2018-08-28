@@ -3,11 +3,14 @@ set_global('$', global.make_zjquery());
 zrequire('narrow_state');
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
+zrequire('search_pill');
 
 set_global('blueslip', {});
 set_global('channel', {});
+set_global('compose', {});
 set_global('compose_actions', {});
 set_global('current_msg_list', {});
 set_global('hashchange', {});
@@ -23,6 +26,12 @@ set_global('stream_list', {});
 set_global('top_left_corner', {});
 set_global('ui_util', {});
 set_global('unread_ops', {});
+set_global('search_pill_widget', {
+    widget: {
+        clear: function () {return true;},
+        appendValue: function () {return true;},
+    },
+});
 
 
 var noop = () => {};
@@ -41,6 +50,10 @@ function stub_trigger(f) {
         assert.equal(name, 'narrow_activated.zulip');
     };
 }
+
+set_global('muting', {
+    is_topic_muted: () => false,
+});
 
 var denmark = {
     subscribed: false,
@@ -70,6 +83,7 @@ function test_helper() {
     stub('top_left_corner', 'handle_narrow_activated');
     stub('ui_util', 'change_tab_to');
     stub('unread_ops', 'process_visible');
+    stub('compose', 'update_stream_button_for_stream');
 
     stub_trigger(() => { events.push('trigger event'); });
 
@@ -95,10 +109,9 @@ function test_helper() {
 }
 
 function stub_message_list() {
-    message_list.MessageList = function (table_name, filter) {
+    message_list.MessageList = function (opts) {
         var list = this;
-        this.messages = [];
-        this.filter = filter;
+        this.data = opts.data;
         this.view = {
             set_message_offset: function (offset) {
                 list.view.offset = offset;
@@ -109,21 +122,12 @@ function stub_message_list() {
     };
 
     message_list.MessageList.prototype = {
-        add_messages: function (messages) {
-            var predicate = this.filter.predicate();
-            messages = _.filter(messages, predicate);
-            this.messages = this.messages.concat(messages);
-        },
-
         get: function (msg_id) {
-            var msg = _.find(this.messages, (msg) => {
-                return msg.id === msg_id;
-            });
-            return msg;
+            return this.data.get(msg_id);
         },
 
         empty: function () {
-            return this.messages.length === 0;
+            return this.data.empty();
         },
 
         select_id: function (msg_id) {
@@ -132,7 +136,7 @@ function stub_message_list() {
     };
 }
 
-(function test_basics() {
+run_test('basics', () => {
     stub_message_list();
 
     var helper = test_helper();
@@ -166,6 +170,16 @@ function stub_message_list() {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
+        fetch_status: {
+            has_found_newest: () => true,
+        },
+        empty: () => false,
+        first: () => {
+            return {id: 900};
+        },
+        last: () => {
+            return {id: 1100};
+        },
     };
 
     var cont;
@@ -194,6 +208,7 @@ function stub_message_list() {
         'message_scroll.hide_indicators',
         'unread_ops.process_visible',
         'hashchange.save_narrow',
+        'compose.update_stream_button_for_stream',
         'search.update_button_visibility',
         'compose_actions.on_narrow',
         'top_left_corner.handle_narrow_activated',
@@ -212,4 +227,4 @@ function stub_message_list() {
         'report narrow times',
     ]);
 
-}());
+});

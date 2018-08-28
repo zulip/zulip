@@ -287,7 +287,7 @@ First, we start off with "positive" tests.
         - Have Cordelia subscribe to the stream.
         - Verify Cordelia can see the previous message.
         - Have Cordelia post a message to the stream.
-    - Have Hamlet create an invite-only stream with Cordelia
+    - Have Hamlet create a private stream with Cordelia
       invited and test a two-way conversation between the two
       users.
 

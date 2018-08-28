@@ -167,7 +167,7 @@ a.button:hover {
 
 .illustration {
     pointer-events: none;
-    cursor: default!important;
+    cursor: default !important;
     z-index: 100;
 }
 
@@ -238,7 +238,7 @@ a.button:hover {
         line-height: 100%;
     }
 
-    /* iOS converts adreses in emails to links automatically*/
+    /* iOS converts adreses in emails to links automatically */
     .apple-link a {
         color: inherit !important;
         font-family: inherit !important;

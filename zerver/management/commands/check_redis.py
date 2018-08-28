@@ -26,10 +26,7 @@ class Command(BaseCommand):
     def _check_within_range(self, key: str, count_func: Callable[[], int],
                             trim_func: Optional[Callable[[str, int], None]]=None) -> None:
         user_id = int(key.split(':')[1])
-        try:
-            user = get_user_profile_by_id(user_id)
-        except Exception:
-            user = None
+        user = get_user_profile_by_id(user_id)
         entity = RateLimitedUser(user)
         max_calls = max_api_calls(entity)
 

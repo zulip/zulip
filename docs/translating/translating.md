@@ -7,7 +7,7 @@ progress. If you speak a language other than English, your help with
 translating Zulip would be greatly appreciated!
 
 If you're interested in contributing translations to Zulip, please
-join [#translation](https://chat.zulip.org/#narrow/stream/translation)
+join [#translation](https://chat.zulip.org/#narrow/stream/58-translation)
 in the [Zulip development community server](../contributing/chat-zulip-org.html), and
 say hello. And please join the
 [Zulip project on Transifex](https://www.transifex.com/zulip/zulip/)
@@ -99,12 +99,12 @@ translating, you should check out the
      contains a translated text.
 
 3. Those resource files are uploaded to Transifex by a maintainer using the
-   `./tools/push-translations` command.
+   `./tools/i18n/push-translations` command.
 
 4. Translators translate the strings in Transifex.
 
 5. The translations are downloaded back into the codebase by a
-   maintainer, using `tools/sync-translations` (which invokes `tx
+   maintainer, using `tools/i18n/sync-translations` (which invokes `tx
    pull`, internally).
 
 ## Translators' workflow
@@ -132,7 +132,7 @@ Some useful tips for your translating journey:
   HTML tags `<...>`).
 
 - When in doubt, ask for context in
-  [#translation](https://chat.zulip.org/#narrow/stream/translation) in
+  [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
   the [Zulip development community server](../contributing/chat-zulip-org.html).
 
 - If there are multiple possible translations for a term, search for it in

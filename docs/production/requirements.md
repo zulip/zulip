@@ -1,17 +1,12 @@
 # Requirements
 
-Note that if you just want to play around with Zulip and see what it looks
-like, we recommend creating an account on the
-[Zulip community server](../contributing/chat-zulip-org.html), or creating a test
-organization on <https://zulipchat.com>.
-
-## Summary
-
 To run a Zulip server, you will need:
 * A dedicated machine or VM
 * A supported OS:
-  * Ubuntu 16.04 Xenial 64-bit
-  * Ubuntu 14.04 Trusty 64-bit (not recommended for new installations)
+  * Ubuntu 18.04 Bionic
+  * Ubuntu 16.04 Xenial
+  * Ubuntu 14.04 Trusty (not recommended for new installations)
+  * Debian 9 Stretch
 * At least 2GB RAM, and 10GB disk space
   * If you expect 100+ users: 4GB RAM, and 2 CPUs
 * A hostname in DNS
@@ -34,10 +29,11 @@ can't support you, but
 
 #### Operating System
 
-Ubuntu 16.04 Xenial and Ubuntu 14.04 Trusty are supported for running
-Zulip in production.  64-bit is recommended.  We recommend Xenial if
-you have a choice, since 14.04 is approaching end-of-life and you'll
-save yourself the work of upgrading in a few months.
+Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial, Ubuntu 14.04 Trusty and
+Debian Stretch are supported for running Zulip in production.  64-bit
+is recommended.  We also recommend installing on the newest option
+you're comfortable with, to save your organization the work of
+upgrading.
 
 #### Hardware Specifications
 

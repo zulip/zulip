@@ -55,7 +55,7 @@ exports.get_user_group_from_name = function (name) {
 
 exports.get_realm_user_groups = function () {
     return user_group_by_id_dict.values().sort(function (a, b) {
-        return (a.id - b.id);
+        return a.id - b.id;
     });
 };
 
@@ -96,3 +96,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = user_groups;
 }
+window.user_groups = user_groups;

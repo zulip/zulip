@@ -1,6 +1,9 @@
 zrequire('people');
-set_global('reload', {
-    is_in_progress: false,
+
+var return_false = function () { return false; };
+var return_true = function () { return true; };
+set_global('reload_state', {
+    is_in_progress: return_false,
 });
 
 set_global('blueslip', global.make_zblueslip({
@@ -18,21 +21,21 @@ people.init();
 people.add(me);
 people.initialize_current_user(me.user_id);
 
-(function test_report_late_add() {
+run_test('report_late_add', () => {
     blueslip.set_test_data('error', 'Added user late: user_id=55 email=foo@example.com');
     people.report_late_add(55, 'foo@example.com');
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 
-    reload.is_in_progress = true;
+    reload_state.is_in_progress = return_true;
     people.report_late_add(55, 'foo@example.com');
     assert.equal(blueslip.get_test_logs('log').length, 1);
-    assert.equal(blueslip.get_test_logs('log')[0], 'Added user late: user_id=55 email=foo@example.com');
+    assert.equal(blueslip.get_test_logs('log')[0].message, 'Added user late: user_id=55 email=foo@example.com');
     assert.equal(blueslip.get_test_logs('error').length, 0);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_blueslip() {
+run_test('blueslip', () => {
     var unknown_email = "alicebobfred@example.com";
 
     blueslip.set_test_data('debug', 'User email operand unknown: ' + unknown_email);
@@ -118,4 +121,4 @@ people.initialize_current_user(me.user_id);
     assert.equal(uri.indexOf('unk'), uri.length - 3);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+});

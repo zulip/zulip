@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.11
+Django==1.11.14
 
 # needed for mypy TypedDict
 mypy_extensions==0.3.0
@@ -17,13 +17,13 @@ MarkupSafe==1.0
 Pygments==2.2.0
 
 # Needed for manage.py
-ipython==6.3.1
+ipython==6.5.0
 
 # Needed for Image Processing
-Pillow==5.1.0
+Pillow==5.2.0
 
 # Needed for building complex DB queries
-SQLAlchemy==1.2.7
+SQLAlchemy==1.2.10
 
 # Needed for password hashing
 argon2-cffi==18.1.0
@@ -35,7 +35,7 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 
 # Needed for S3 file uploads
-boto==2.48.0
+boto==2.49.0
 
 certifi==2018.4.16
 
@@ -46,16 +46,16 @@ chardet==3.0.4
 
 # Pinned version because older versions don't compile on newer Linux.
 # Not actually a direct dependency.
-cryptography==2.2.2
+cryptography==2.3
 
 # Needed for integrations
 defusedxml==0.5.0
 
 # Needed for LDAP support
-django-auth-ldap==1.3.0
+django-auth-ldap==1.6.0
 
 # Django extension providing bitfield support
-django-bitfield==1.9.3
+-e git+https://github.com/zulip/django-bitfield@0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38#egg=django-bitfield==1.9.3+dev.0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38
 
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.4.0
@@ -68,7 +68,7 @@ python-gcm==0.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.6.7
+google-api-python-client==1.7.4
 
 # Needed for the email mirror
 html2text==2018.1.9
@@ -79,7 +79,7 @@ httplib2==0.11.3
 premailer==3.2.0
 
 # Needed for JWT-based auth
-PyJWT==1.6.1
+PyJWT==1.6.4
 
 # Needed for including other markdown files for user docs
 markdown-include==0.5.1
@@ -88,31 +88,34 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.1.2
-oauthlib==2.0.7
+oauthlib==2.1.0
 
 # Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
 # Needed by requests to send https request to some sites.
-ndg-httpsclient==0.5.0
+ndg-httpsclient==0.5.1
 
 # Needed to access rabbitmq
 # See #8466 for why we're not using the latest version.
 pika==0.11.0
 
 # Needed to access our database
-psycopg2==2.7.4 --no-binary psycopg2
+psycopg2==2.7.5 --no-binary psycopg2
 
-pyasn1==0.4.2
-pyasn1-modules==0.2.1
+pyasn1==0.4.4
+pyasn1-modules==0.2.2
 pycrypto==2.6.1
 
 # Needed for memcached usage
 pylibmc==1.5.2
 
+# Needed for compression support in memcached via pylibmc
+django-pylibmc==0.6.1
+
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil==2.6.1
 
 # Needed for timezone work
-pytz==2018.3
+pytz==2018.5
 
 # Needed for redis
 redis==2.10.6
@@ -148,9 +151,9 @@ django-pipeline==1.6.14
 django-webpack-loader==0.6.0
 
 # Needed for iOS push notifications
-apns2==0.3.0
+apns2==0.4.1
 
-python-twitter==3.4.1
+python-twitter==3.4.2
 
 # To parse po files
 polib==1.1.0
@@ -169,27 +172,34 @@ pyoembed==0.1.2
 # these tightly, including fetching content not included in the normal
 # release tarballs (which is a bug).  So we need to pin it makes sense
 # to pin a version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@0.4.6#egg=zulip==0.4.6_git&subdirectory=zulip"
--e "git+https://github.com/zulip/python-zulip-api.git@0.4.6#egg=zulip_bots==0.4.6+git&subdirectory=zulip_bots"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip==0.5.3_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip_bots==0.5.3+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
-py3dns==3.1.0
+py3dns==3.2.0
 
 # Install Python Social Auth
 social-auth-app-django==2.1.0
 
 # Needed for messages' rendered content parsing in push notifications.
-lxml==4.2.1
+lxml==4.2.3
 
 # Needed for 2-factor authentication
 django-two-factor-auth==1.7.0
-twilio==6.13.0
+twilio==6.15.2
 
 # Needed for processing payments (in zilencer)
-stripe==1.80.0
+stripe==2.3.0
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
 django-sendfile==0.3.11
 
 # For checking whether email of the user is from a disposable email provider.
-disposable-email-domains==0.0.26
+disposable-email-domains==0.0.30
+
+# Needed for parsing YAML with JSON references from the REST API spec files
+yamole==2.1.5
+
+# Needed for signing thumbnail requests so that they can be authenticated on the
+# other end.
+libthumbor==1.3.2

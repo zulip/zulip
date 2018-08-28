@@ -104,7 +104,7 @@ exports.maybe_advance_to_recently_sent_message = function (messages) {
 
         // Iterate backwards to find the last message sent_by_me, stopping at
         // the pointer position.
-        for (i = messages.length-1; i>=0; i -= 1) {
+        for (i = messages.length - 1; i >= 0; i -= 1) {
             var id = messages[i].id;
             if (id <= selected_id) {
                 break;
@@ -291,3 +291,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_events;
 }
+window.message_events = message_events;

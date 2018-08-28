@@ -69,11 +69,11 @@ exports.sort_groups = function (search_term) {
     normal_streams.sort(util.strcmp);
     dormant_streams.sort(util.strcmp);
 
-    var same_as_before =  (
+    var same_as_before =
         previous_pinned !== undefined &&
         util.array_compare(previous_pinned, pinned_streams) &&
         util.array_compare(previous_normal, normal_streams) &&
-        util.array_compare(previous_dormant, dormant_streams));
+        util.array_compare(previous_dormant, dormant_streams);
 
     if (!same_as_before) {
         previous_pinned = pinned_streams;
@@ -142,3 +142,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_sort;
 }
+window.stream_sort = stream_sort;

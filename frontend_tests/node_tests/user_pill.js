@@ -1,4 +1,7 @@
 zrequire('people');
+set_global('md5', function (s) {
+    return 'md5-' + s;
+});
 zrequire('user_pill');
 
 set_global('page_params', {
@@ -25,14 +28,15 @@ var isaac_item = {
     email: 'isaac@example.com',
     display_value: 'Isaac Newton',
     user_id: isaac.user_id,
+    img_src: 'https://secure.gravatar.com/avatar/md5-isaac@example.com?d=identicon&s=50',
 };
 
-(function setup() {
+run_test('setup', () => {
     people.add_in_realm(alice);
     people.add_in_realm(isaac);
-}());
+});
 
-(function test_create_item() {
+run_test('create_item', () => {
 
     function test_create_item(email, current_items, expected_item) {
         var item = user_pill.create_item_from_email(email, current_items);
@@ -52,13 +56,13 @@ var isaac_item = {
     test_create_item('bogus@example.com', [], undefined);
     test_create_item('isaac@example.com', [], isaac_item);
     test_create_item('isaac@example.com', [isaac_item], undefined);
-}());
+});
 
-(function test_get_email() {
+run_test('get_email', () => {
     assert.equal(user_pill.get_email_from_item({email: 'foo@example.com'}), 'foo@example.com');
-}());
+});
 
-(function test_append() {
+run_test('append', () => {
     var appended;
     var cleared;
 
@@ -67,6 +71,7 @@ var isaac_item = {
         assert.equal(opts.email, isaac.email);
         assert.equal(opts.display_value, isaac.full_name);
         assert.equal(opts.user_id, isaac.user_id);
+        assert.equal(opts.img_src, isaac_item.img_src);
     }
 
     function fake_clear() {
@@ -85,9 +90,9 @@ var isaac_item = {
 
     assert(appended);
     assert(cleared);
-}());
+});
 
-(function test_get_items() {
+run_test('get_items', () => {
     var items = [isaac_item, bogus_item];
 
     var pill_widget = {
@@ -95,9 +100,9 @@ var isaac_item = {
     };
 
     assert.deepEqual(user_pill.get_user_ids(pill_widget), [isaac.user_id]);
-}());
+});
 
-(function test_typeahead() {
+run_test('typeahead', () => {
     var items = [isaac_item, bogus_item];
 
     var pill_widget = {
@@ -109,4 +114,4 @@ var isaac_item = {
     // And then bogus_item is just a red herring to test robustness.
     var result = user_pill.typeahead_source(pill_widget);
     assert.deepEqual(result, [alice]);
-}());
+});

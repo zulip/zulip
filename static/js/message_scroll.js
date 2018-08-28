@@ -6,7 +6,7 @@ var actively_scrolling = false;
 
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_older = function () {
-    if (! loading_more_messages_indicator_showing) {
+    if (!loading_more_messages_indicator_showing) {
         loading.make_indicator($('#loading_more_messages_indicator'),
                                {abs_positioned: true});
         loading_more_messages_indicator_showing = true;
@@ -73,10 +73,10 @@ function scroll_finish() {
 }
 
 exports.initialize = function () {
-    message_viewport.message_pane.scroll($.throttle(50, function () {
+    message_viewport.message_pane.scroll(_.throttle(function () {
         unread_ops.process_visible();
         scroll_finish();
-    }));
+    }, 50));
 };
 
 
@@ -86,3 +86,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_scroll;
 }
+window.message_scroll = message_scroll;

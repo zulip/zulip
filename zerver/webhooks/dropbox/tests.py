@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.users import get_api_key
 
 class DropboxHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
@@ -21,7 +22,7 @@ class DropboxHookTests(WebhookTestCase):
         self.subscribe(self.test_user, self.STREAM_NAME)
         get_params = {'stream_name': self.STREAM_NAME,
                       'challenge': '9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E',
-                      'api_key': self.test_user.api_key}
+                      'api_key': get_api_key(self.test_user)}
         result = self.client_get(self.url, get_params)
 
         self.assert_in_response('9B2SVL4orbt5DxLMqJHI6pOTipTqingt2YFMIO0g06E', result)

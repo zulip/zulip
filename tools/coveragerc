@@ -11,6 +11,8 @@ exclude_lines =
     raise AssertionError
     # Don't require coverage for __str__ statements just used for printing
     def __str__[(]self[)] -> .*:
+    # Don't require coverage for errors about unsupported webhook event types
+    raise UnexpectedWebhookEventType
 
 [run]
 omit =
@@ -21,8 +23,11 @@ omit =
     tools/test-backend
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
-    # For API tests
+    # Has its own independent test suite
     zerver/lib/api_test_helpers.py
+    zerver/lib/parallel.py
+    # Debugging tools that don't lend themselves well to unit tests
+    zerver/lib/debug.py
     # Part of provisioning/populate_db
     zerver/lib/generate_test_data.py
     # Excluded because its coverage state is flaky.
@@ -31,3 +36,5 @@ omit =
     scripts/lib/zulip_tools.py
     # Used only for the legacy Zephyr integration, and unlikely to ever be unit-tested
     zerver/lib/ccache.py
+    # Settings.py files are hard to test
+    zproject/*settings.py

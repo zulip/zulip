@@ -19,12 +19,8 @@
                         {{/if}}
                         <div class="float-clear"></div>
                     </form>
-                    <div class="clear-float"></div>
                 </div>
                 <div class="streams-list">
-                    {{#each subscriptions}}
-                    {{partial "subscription"}}
-                    {{/each}}
                 </div>
             </div>
             <div class="right">
@@ -41,7 +37,7 @@
                 <div class="settings">
                     {{!-- edit stream here --}}
                 </div>
-                {{ partial "subscription_creation_form" }}
+                {{ partial "stream_creation_form" }}
             </div>
         </div>
     </div>

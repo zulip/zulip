@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
+import { getExposeLoaders, getImportLoaders } from './webpack-helpers';
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const assets = require('./webpack.assets.json');
@@ -14,6 +15,7 @@ function getHotCSS(bundle:any[], isProd:boolean) {
         'css-hot-loader',
     ].concat(bundle);
 }
+
 export default (env?: string) : webpack.Configuration => {
     const production: boolean = env === "production";
     let config: webpack.Configuration = {
@@ -35,42 +37,9 @@ export default (env?: string) : webpack.Configuration => {
                 // Currently the source maps don't work with these so use unminified files
                 // if debugging is required.
                 {
-                    test: /(min|zxcvbn)\.js/,
+                    // We dont want to match admin.js
+                    test: /(\.min|min\.|zxcvbn)\.js/,
                     use: [ 'script-loader' ],
-                },
-                // Expose Global variables to webpack
-                // Use the unminified versions of jquery and underscore so that
-                // Good error messages show up in production and development in the source maps
-                {
-                    test: require.resolve('../static/node_modules/jquery/dist/jquery.js'),
-                    use: [
-                        {loader: 'expose-loader', options: '$'},
-                        {loader: 'expose-loader', options: 'jQuery'},
-                    ],
-                },
-                {
-                    test: require.resolve('../node_modules/underscore/underscore.js'),
-                    use: [
-                        {loader: 'expose-loader', options: '_'},
-                    ],
-                },
-                {
-                    test: require.resolve('../static/js/debug.js'),
-                    use: [
-                        {loader: 'expose-loader', options: 'debug'},
-                    ],
-                },
-                {
-                    test: require.resolve('../static/js/blueslip.js'),
-                    use: [
-                        {loader: 'expose-loader', options: 'blueslip'},
-                    ],
-                },
-                {
-                    test: require.resolve('../static/js/common.js'),
-                    use: [
-                        {loader: 'expose-loader', options: 'common'},
-                    ],
                 },
                 // regular css files
                 {
@@ -81,9 +50,9 @@ export default (env?: string) : webpack.Configuration => {
                             loader: 'css-loader',
                             options: {
                                 sourceMap: true
-                            }
+                            },
                         },
-                    ], production),
+                    ], production)
                 },
                 // sass / scss loader
                 {
@@ -119,18 +88,58 @@ export default (env?: string) : webpack.Configuration => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
-            filename: production ? '[name]-[hash].js' : '[name].js',
+            filename: production ? '[name].[chunkhash].js' : '[name].js',
         },
         resolve: {
+            modules: [
+                resolve(__dirname, "../static"),
+                resolve(__dirname, "../node_modules"),
+                resolve(__dirname, "../"),
+            ],
             extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
         },
-        // We prefer cheap-module-eval-source-map over eval because
-        // currently eval has trouble setting breakpoints per line
-        // in Google Chrome. There's almost no difference
-        // between the compilation time for the two and could be
-        // re-evaluated as the size of files grows
-        devtool: production ? 'source-map' : 'cheap-module-eval-source-map',
+        // We prefer cheap-module-source-map over any eval-** options
+        // because the eval-options currently don't support being
+        // source mapped in error stack traces
+        // We prefer it over eval since eval has trouble setting
+        // breakpoints in chrome.
+        devtool: production ? 'source-map' : 'cheap-module-source-map',
     };
+
+    // Add variables within modules
+    // Because of code corecing the value of window within the libraries
+    var importsOptions = [
+        {
+            path: "../static/third/spectrum/spectrum.js",
+            args: "this=>window"
+        }
+    ];
+    config.module.rules.push(...getImportLoaders(importsOptions));
+
+    // Expose Global variables for third party libraries to webpack modules
+    // Use the unminified versions of jquery and underscore so that
+    // Good error messages show up in production and development in the source maps
+    var exposeOptions = [
+        { path: "../node_modules/blueimp-md5/js/md5.js" },
+        { path: "../node_modules/clipboard/dist/clipboard.js", name: "ClipboardJS" },
+        { path: "../node_modules/xdate/src/xdate.js", name: "XDate" },
+        { path: "../node_modules/perfect-scrollbar/dist/perfect-scrollbar.js", name: "PerfectScrollbar" },
+        { path: "../node_modules/simplebar/dist/simplebar.js"},
+        { path: "../static/third/marked/lib/marked.js" },
+        { path: "../static/generated/emoji/emoji_codes.js" },
+        { path: "../static/generated/pygments_data.js" },
+        { path: "../static/js/debug.js" },
+        { path: "../static/js/blueslip.js" },
+        { path: "../static/js/common.js" },
+        { path: "../node_modules/jquery/dist/jquery.js", name: ['$', 'jQuery'] },
+        { path: "../node_modules/underscore/underscore.js", name: '_' },
+        { path: "../node_modules/handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
+        { path: "../node_modules/to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
+        { path: "../node_modules/sortablejs/Sortable.js"},
+        { path: "../node_modules/winchan/winchan.js", name: 'WinChan'}
+    ];
+    config.module.rules.push(...getExposeLoaders(exposeOptions));
+
     if (production) {
         config.plugins = [
             new BundleTracker({filename: 'webpack-stats-production.json'}),
@@ -145,7 +154,7 @@ export default (env?: string) : webpack.Configuration => {
                     }
                     return '[name].[contenthash].css';
                 },
-                chunkFilename: "[id].css"
+                chunkFilename: "[chunkhash].css"
             })
         ];
     } else {
@@ -162,18 +171,9 @@ export default (env?: string) : webpack.Configuration => {
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: "[name].css",
-                chunkFilename: "[id].css"
+                chunkFilename: "[chunkhash].css"
             }),
-            // We use SourceMapDevToolPlugin in order to enable SourceMaps
-            // in combination with mini-css-extract-plugin and
-            // the devtool setting of cheap-module-eval-source-map.
-            // Without this plugin source maps won't work with that combo.
-            // See https://github.com/webpack-contrib/mini-css-extract-plugin/issues/29
-            new webpack.SourceMapDevToolPlugin({
-                filename: "[file].map"
-            })
         ];
-
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",

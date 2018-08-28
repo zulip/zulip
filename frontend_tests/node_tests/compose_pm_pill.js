@@ -1,14 +1,21 @@
+set_global('$', global.make_zjquery());
+
+const _people = {
+    small_avatar_url_for_person: function () {
+        return 'http://example.com/example.png';
+    },
+};
+
+set_global('people', _people);
 zrequire('compose_pm_pill');
 zrequire('input_pill');
 zrequire('user_pill');
 
-set_global('$', global.make_zjquery());
-set_global('people', {});
 var pills = {
     pill: {},
 };
 
-(function test_pills() {
+run_test('pills', () => {
     var othello = {
         user_id: 1,
         email: 'othello@example.com',
@@ -58,7 +65,7 @@ var pills = {
         pills = {
             pill: {},
         };
-        all_pills= {};
+        all_pills = {};
     };
 
     var appendValue_called;
@@ -100,7 +107,7 @@ var pills = {
             get_by_email_called = false;
             var res = handler(iago.email, pills.items());
             assert(get_by_email_called);
-            assert.equal(typeof(res), 'object');
+            assert.equal(typeof res, 'object');
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
         }());
@@ -113,12 +120,10 @@ var pills = {
         return pills;
     }
 
-    set_global('input_pill', {
-        create: input_pill_stub,
-    });
+    input_pill.create = input_pill_stub;
 
     compose_pm_pill.initialize();
-    assert(compose_pm_pill.my_pill);
+    assert(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
@@ -135,10 +140,10 @@ var pills = {
     test_create_item(create_item_handler);
 
     compose_pm_pill.set_from_emails('othello@example.com');
-    assert(compose_pm_pill.my_pill);
+    assert(compose_pm_pill.widget);
 
     assert(get_person_from_user_id_called);
     assert(pills_cleared);
     assert(appendValue_called);
     assert(text_cleared);
-}());
+});

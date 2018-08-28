@@ -132,7 +132,6 @@ exports.add_message_metadata = function (message) {
     case 'stream':
         message.is_stream = true;
         message.stream = message.display_recipient;
-        composebox_typeahead.add_topic(message.stream, message.subject);
         message.reply_to = message.sender_email;
 
         topic_data.add_message({
@@ -192,3 +191,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_store;
 }
+window.message_store = message_store;

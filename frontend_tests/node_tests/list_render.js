@@ -1,17 +1,4 @@
-// TODO: make an initialize function for list_render.
-const initialize = (function () {
-    var initalize_function;
-
-    set_global('$', (f) => {
-        initalize_function = f;
-    });
-
-    // We can move this module scope when we have
-    // an explicit initialize function.
-    zrequire('list_render');
-
-    return initalize_function;
-}());
+zrequire('list_render');
 
 // We need these stubs to get by instanceof checks.
 // The list_render library allows you to insert objects
@@ -22,27 +9,12 @@ set_global('Element', function () {
     return { };
 });
 
-// This function will be the anonymous click handler
-// for clicking on any element that matches the
-// CSS selector of "[data-sort]".
-var handle_sort_click;
-
 // We only need very simple jQuery wrappers for when the
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
 set_global('$', (arg) => {
     if (arg.to_jquery) {
         return arg.to_jquery();
-    }
-
-    if (arg === 'body') {
-        return {
-            on: (event_name, selector, f) => {
-                assert.equal(event_name, 'click');
-                assert.equal(selector, '[data-sort]');
-                handle_sort_click = f;
-            },
-        };
     }
 
     return {
@@ -120,7 +92,7 @@ function div(item) {
     return '<div>' + item + '</div>';
 }
 
-(function test_list_render() {
+run_test('list_render', () => {
     const {container, parent_container} = make_containers();
 
     const search_input = make_search_input();
@@ -142,7 +114,7 @@ function div(item) {
         modifier: (item) => div(item),
     };
 
-    const widget = list_render(container, list, opts);
+    const widget = list_render.create(container, list, opts);
 
     widget.render();
 
@@ -183,7 +155,7 @@ function div(item) {
     widget.render();
     expected_html = '<div>greta</div><div>gary</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
-}());
+});
 
 function sort_button(opts) {
     // The complications here are due to needing to find
@@ -237,7 +209,7 @@ function sort_button(opts) {
     return button;
 }
 
-(function test_sorting() {
+run_test('sorting', () => {
     const {container} = make_containers();
 
     var cleared;
@@ -265,8 +237,7 @@ function sort_button(opts) {
         return _.map(people, opts.modifier).join('');
     }
 
-    list_render(container, list, opts);
-    initialize();
+    list_render.create(container, list, opts);
 
     var button_opts;
     var button;
@@ -281,7 +252,7 @@ function sort_button(opts) {
 
     button = sort_button(button_opts);
 
-    handle_sort_click.call(button);
+    list_render.handle_sort.call(button);
 
     assert(cleared);
     assert(button.siblings_deactivated);
@@ -302,11 +273,11 @@ function sort_button(opts) {
     cleared = false;
     button.siblings_deactivated = false;
 
-    handle_sort_click.call(button);
+    list_render.handle_sort.call(button);
 
     assert(cleared);
     assert(button.siblings_deactivated);
 
     expected_html = html_for([dave, cal, bob, alice]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-}());
+});

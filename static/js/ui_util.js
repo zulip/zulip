@@ -50,3 +50,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = ui_util;
 }
+window.ui_util = ui_util;

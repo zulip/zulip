@@ -29,7 +29,7 @@ exports.make_indicator = function (outer_container, opts) {
     }
 
     var spinner_elem = $('<div class="loading_indicator_spinner"></div>');
-    spinner_elem.html(templates.render("loader"));
+    spinner_elem.html(templates.render("loader", { container_id: outer_container.attr("id") }));
     container.append(spinner_elem);
     var text_width = 0;
 
@@ -72,3 +72,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = loading;
 }
+window.loading = loading;

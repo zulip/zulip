@@ -15,7 +15,7 @@ def set_initial_value_for_history_public_to_subscribers(
 
     for stream in streams:
         if stream.invite_only:
-            stream.history_public_to_subscribers = settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS
+            stream.history_public_to_subscribers = getattr(settings, 'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS', False)
         else:
             stream.history_public_to_subscribers = True
 

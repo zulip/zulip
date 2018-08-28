@@ -108,7 +108,7 @@ exports.wrap_exclude = function (lst, val) {
     }
 
     var inners = [
-        exports.sub_list_generator(lst, i+1, lst.length),
+        exports.sub_list_generator(lst, i + 1, lst.length),
         exports.sub_list_generator(lst, 0, i),
     ];
 
@@ -127,7 +127,7 @@ exports.reverse_wrap_exclude = function (lst, val) {
 
     var inners = [
         exports.reverse_sub_list_generator(lst, 0, i),
-        exports.reverse_sub_list_generator(lst, i+1, lst.length),
+        exports.reverse_sub_list_generator(lst, i + 1, lst.length),
     ];
 
     return exports.chain(inners);
@@ -273,3 +273,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = topic_generator;
 }
+window.topic_generator = topic_generator;

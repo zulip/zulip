@@ -1,4 +1,10 @@
 
+import django_otp
+from two_factor.utils import default_device
+from django_otp import user_has_device, _user_is_authenticated
+from django_otp.conf import settings as otp_settings
+
+from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
@@ -225,11 +231,10 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     return user_profile
 
 def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
-    if not user_profile.is_active:
-        raise JsonableError(_("Account not active"))
-
     if user_profile.realm.deactivated:
         raise JsonableError(_("This organization has been deactivated"))
+    if not user_profile.is_active:
+        raise JsonableError(_("Account is deactivated"))
 
     # Either the subdomain matches, or processing a websockets message
     # in the message_sender worker (which will have already had the
@@ -391,6 +396,11 @@ def logged_in_and_active(request: HttpRequest) -> bool:
         return False
     return user_matches_subdomain(get_subdomain(request), request.user)
 
+def do_two_factor_login(request: HttpRequest, user_profile: UserProfile) -> None:
+    device = default_device(user_profile)
+    if device:
+        django_otp.login(request, device)
+
 def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     """Creates a session, logging in the user, using the Django method,
     and also adds helpful data needed by our server logs.
@@ -398,6 +408,9 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     django_login(request, user_profile)
     request._email = user_profile.email
     process_client(request, user_profile, is_browser_view=True)
+    if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+        # Login with two factor authentication as well.
+        do_two_factor_login(request, user_profile)
 
 def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
@@ -434,10 +447,16 @@ def zulip_login_required(
         login_url=login_url,
         redirect_field_name=redirect_field_name
     )
+
+    otp_required_decorator = zulip_otp_required(
+        redirect_field_name=redirect_field_name,
+        login_url=login_url
+    )
+
     if function:
         # Add necessary logging data via add_logging_data
-        return actual_decorator(add_logging_data(function))
-    return actual_decorator  # nocoverage # We don't use this without a function
+        return actual_decorator(zulip_otp_required(add_logging_data(function)))
+    return actual_decorator(otp_required_decorator)  # nocoverage # We don't use this without a function
 
 def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -786,3 +805,37 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
             return json_success()
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
+def zulip_otp_required(view: Any=None,
+                       redirect_field_name: str='next',
+                       login_url: str=settings.HOME_NOT_LOGGED_IN,
+                       ) -> Callable[..., HttpResponse]:
+    """
+    The reason we need to create this function is that the stock
+    otp_required decorator doesn't play well with tests. We cannot
+    enable/disable if_configured parameter during tests since the decorator
+    retains its value due to closure.
+
+    Similar to :func:`~django.contrib.auth.decorators.login_required`, but
+    requires the user to be :term:`verified`. By default, this redirects users
+    to :setting:`OTP_LOGIN_URL`.
+    """
+
+    def test(user: UserProfile) -> bool:
+        """
+        :if_configured: If ``True``, an authenticated user with no confirmed
+        OTP devices will be allowed. Default is ``False``. If ``False``,
+        2FA will not do any authentication.
+        """
+        if_configured = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+        if not if_configured:
+            return True
+
+        return user.is_verified() or (_user_is_authenticated(user)
+                                      and not user_has_device(user))
+
+    decorator = django_user_passes_test(test,
+                                        login_url=login_url,
+                                        redirect_field_name=redirect_field_name)
+
+    return decorator if (view is None) else decorator(view)

@@ -25,7 +25,7 @@ REALM_HOSTS = {}
 BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
 
 DATABASES["default"] = {
-    "NAME": "zulip_test",
+    "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
     "USER": "zulip_test",
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
@@ -34,15 +34,6 @@ DATABASES["default"] = {
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
-if USING_PGROONGA:
-    # We need to have "pgroonga" schema before "pg_catalog" schema in
-    # the PostgreSQL search path, because "pgroonga" schema overrides
-    # the "@@" operator from "pg_catalog" schema, and "pg_catalog"
-    # schema is searched first if not specified in the search path.
-    # See also: http://www.postgresql.org/docs/current/static/runtime-config-client.html
-    pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
-        DATABASES['default']
-    DATABASES['default']['OPTIONS']['options'] = pg_options
 
 if "TORNADO_SERVER" in os.environ:
     # This covers the Casper test suite case
@@ -55,6 +46,8 @@ else:
 
 if "CASPER_TESTS" in os.environ:
     CASPER_TESTS = True
+    # Disable search pills prototype for production use
+    SEARCH_PILLS_ENABLED = False
 
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
@@ -154,8 +147,14 @@ GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
 
 SOCIAL_AUTH_GITHUB_KEY = "key"
 SOCIAL_AUTH_GITHUB_SECRET = "secret"
+SOCIAL_AUTH_SUBDOMAIN = 'www'
 
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL = None
+
+# Disable messages from slow queries as they affect backend tests.
+SLOW_QUERY_LOGS_STREAM = None
+
+THUMBOR_URL = 'http://127.0.0.1:9995'

@@ -99,6 +99,26 @@ $(function () {
         });
     }
 
+    function update_full_name_section() {
+        var selected_realm = $("#source_realm_select").find(":selected").val();
+        if (selected_realm && selected_realm !== "on") {
+            $("#full_name_input_section").hide();
+            $("#profile_info_section").show();
+            var avatar_url = $("#source_realm_select").find(":selected").attr('data-avatar');
+            var full_name = $("#source_realm_select").find(":selected").attr('data-full-name');
+            $("#profile_full_name").text(full_name);
+            $("#id_full_name").val(full_name);
+            $("#profile_avatar").attr("src", avatar_url);
+        } else {
+            $("#full_name_input_section").show();
+            $("#profile_info_section").hide();
+            $("#id_full_name").val("");
+        }
+    }
+
+    $("#source_realm_select").change(update_full_name_section);
+    update_full_name_section();
+
     var timer;
     $('#id_team_subdomain').on("keydown", function () {
         $('.team_subdomain_error_server').text('').css('display', 'none');

@@ -3,10 +3,10 @@ zrequire('stream_data');
 zrequire('stream_sort');
 var with_overrides = global.with_overrides;
 
-(function test_no_subscribed_streams() {
+run_test('no_subscribed_streams', () => {
     assert.equal(stream_sort.sort_groups(''), undefined);
     assert.equal(stream_sort.first_stream_id(), undefined);
-}());
+});
 
 const scalene = {
     subscribed: true,
@@ -47,7 +47,7 @@ stream_data.add_sub(weaving.name, weaving);
 
 with_overrides(function (override) {
     override('stream_data.is_active', function (sub) {
-        return (sub.name !== "pneumonia");
+        return sub.name !== "pneumonia";
     });
 
     // Test sorting into categories/alphabetized

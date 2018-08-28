@@ -1,7 +1,28 @@
 var settings = (function () {
 
 var exports = {};
-var map;
+var header_map = {
+    "your-account": i18n.t("Your account"),
+    "display-settings": i18n.t("Display settings"),
+    notifications: i18n.t("Notifications"),
+    "your-bots": i18n.t("Your bots"),
+    "alert-words": i18n.t("Alert words"),
+    "uploaded-files": i18n.t("Uploaded files"),
+    "muted-topics": i18n.t("Muted topics"),
+    "organization-profile": i18n.t("Organization profile"),
+    "organization-settings": i18n.t("Organization settings"),
+    "organization-permissions": i18n.t("Organization permissions"),
+    "emoji-settings": i18n.t("Emoji settings"),
+    "auth-methods": i18n.t("Authorization methods"),
+    "user-list-admin": i18n.t("Active users"),
+    "deactivated-users-admin": i18n.t("Deactivated users"),
+    "bot-list-admin": i18n.t("Bot list"),
+    "default-streams-list": i18n.t("Default streams"),
+    "filter-settings": i18n.t("Filter settings"),
+    "invites-list-admin": i18n.t("Invitations"),
+    "user-groups-admin": i18n.t("User groups"),
+    "profile-field-settings": i18n.t("Profile field settings"),
+};
 
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
@@ -53,6 +74,11 @@ $("body").ready(function () {
         }
         e.preventDefault();
         e.stopPropagation();
+        // Whenever opening a modal(over settings overlay) in an event handler
+        // attached to a click event, make sure to stop the propagation of the
+        // event to the parent container otherwise the modal will not open. This
+        // is so because this event handler will get fired on any click in settings
+        // overlay and subsequently close any open modal.
         overlays.close_active_modal();
     });
 });
@@ -64,6 +90,7 @@ function setup_settings_label() {
         enable_stream_desktop_notifications: i18n.t("Visual desktop notifications"),
         enable_stream_sounds: i18n.t("Audible desktop notifications"),
         enable_stream_push_notifications: i18n.t("Mobile notifications"),
+        enable_stream_email_notifications: i18n.t("Email notifications"),
 
         // pm_mention_notification_settings
         enable_desktop_notifications: i18n.t("Visual desktop notifications"),
@@ -79,50 +106,27 @@ function setup_settings_label() {
         realm_name_in_notifications: i18n.t("Include organization name in subject of missed message emails"),
 
         // display settings
-        night_mode: i18n.t("Night mode"),
+        dense_mode: i18n.t("Dense mode"),
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
+        night_mode: i18n.t("Night mode"),
+        starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
-        translate_emoticons: i18n.t("Translate emoticons (convert <code>:)</code> to 😃 in messages)"),
+        translate_emoji_to_text: i18n.t("View emoji as text (see <code>:smile:</code> when others write 😃)"),
+        translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),
     };
 }
 
-function _setup_page() {
+exports.setup_page = function () {
     ui.set_up_scrollbar($("#settings_page .sidebar.left"));
     ui.set_up_scrollbar($("#settings_content"));
-
-    // only run once -- if the map has not already been initialized.
-    if (map === undefined) {
-        map = {
-            "your-account": i18n.t("Your account"),
-            "display-settings": i18n.t("Display settings"),
-            notifications: i18n.t("Notifications"),
-            "your-bots": i18n.t("Your bots"),
-            "alert-words": i18n.t("Alert words"),
-            "uploaded-files": i18n.t("Uploaded files"),
-            "muted-topics": i18n.t("Muted topics"),
-            "organization-profile": i18n.t("Organization profile"),
-            "organization-settings": i18n.t("Organization settings"),
-            "organization-permissions": i18n.t("Organization permissions"),
-            "emoji-settings": i18n.t("Emoji settings"),
-            "auth-methods": i18n.t("Authorization methods"),
-            "user-list-admin": i18n.t("Active users"),
-            "deactivated-users-admin": i18n.t("Deactivated users"),
-            "bot-list-admin": i18n.t("Bot list"),
-            "default-streams-list": i18n.t("Default streams"),
-            "filter-settings": i18n.t("Filter settings"),
-            "invites-list-admin": i18n.t("Invitations"),
-            "user-groups-admin": i18n.t("User groups"),
-            "profile-field-settings": i18n.t("Profile field settings"),
-        };
-    }
 
     var tab = (function () {
         var tab = false;
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(settings)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "your-account";
+            return tab || settings_panel_menu.normal_settings.current_tab();
         }
         return tab;
     }());
@@ -133,11 +137,9 @@ function _setup_page() {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
-        flaskbotrc: 'flaskbotrc',
+        botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
-        admin_only_bot_creation: page_params.is_admin ||
-            page_params.realm_bot_creation_policy !==
-            settings_bots.bot_creation_policy_values.admins_only.code,
+        can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: settings.settings_label,
     });
 
@@ -149,19 +151,12 @@ function _setup_page() {
 
     if (tab) {
         exports.launch_page(tab);
+        settings_toggle.highlight_toggle('settings');
     }
-}
-
-exports.setup_page = function () {
-    i18n.ensure_i18n(_setup_page);
 };
 
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
-
-    if (!$active_tab.hasClass("admin")) {
-        settings_toggle.highlight_toggle('settings');
-    }
 
     overlays.open_settings();
 
@@ -169,27 +164,11 @@ exports.launch_page = function (tab) {
 };
 
 exports.set_settings_header = function (key) {
-    if (map[key]) {
-        $(".settings-header h1 .section").text(" / " + map[key]);
+    if (header_map[key]) {
+        $(".settings-header h1 .section").text(" / " + header_map[key]);
     } else {
         blueslip.warn("Error: the key '" + key + "' does not exist in the settings" +
             " header mapping file. Please add it.");
-    }
-};
-
-exports.handle_up_arrow = function (e) {
-    var prev = e.target.previousElementSibling;
-
-    if ($(prev).css("display") !== "none") {
-        $(prev).focus().click();
-    }
-};
-
-exports.handle_down_arrow = function (e) {
-    var next = e.target.nextElementSibling;
-
-    if ($(next).css("display") !== "none") {
-        $(next).focus().click();
     }
 };
 
@@ -199,3 +178,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings;
 }
+window.settings = settings;

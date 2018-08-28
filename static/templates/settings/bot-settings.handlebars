@@ -1,5 +1,6 @@
 <div id="bot-settings" class="settings-section" data-name="your-bots">
     <div class="bot-settings-form">
+        {{#unless page_params.is_guest}}
         <div class="tip">
             {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
         </div>
@@ -7,15 +8,16 @@
 
         <div>
             <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
-            <a type="submit" download="{{flaskbotrc}}" id= "download_flaskbotrc" class="btn" title="{{t 'Download flaskbotrc' }}">
-                <i class="icon-vector-download-alt sea-green"></i>
+            <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn" title="{{t 'Download botserverrc' }}">
+                <i class="fa fa-download sea-green" aria-hidden="true"></i>
             </a>
         </div>
+        {{/unless}}
 
         <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
             <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
             <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
-            <li class="add-a-new-bot-tab {{#unless admin_only_bot_creation}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
+            <li class="add-a-new-bot-tab {{#unless can_create_new_bots}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
         </ul>
 
         <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
@@ -28,12 +30,12 @@
 
         <div id="add-a-new-bot-form">
             <form id="create_bot_form"
-              class="form-horizontal no-padding {{#unless admin_only_bot_creation}}hide{{/unless}}">
+              class="form-horizontal no-padding {{#unless can_create_new_bots}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="icon-vector-question-sign settings-info-icon bot_type_tooltip" data-toggle="tooltip"
+                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
                               title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
@@ -71,7 +73,7 @@
                         <div class="input-group">
                             <label for="create_payload_url">{{t "Endpoint URL" }}</label>
                             <input type="text" name="payload_url" id="create_payload_url"
-                              maxlength=2083 placeholder="https://hostname.example.com/bots/followup" value="" />
+                              maxlength=2083 placeholder="https://hostname.example.com" value="" />
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                         </div>
                         <div class="input-group">

@@ -166,7 +166,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
 
             var tah = $(field_selector).data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
+                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
@@ -179,7 +179,7 @@ exports.check_form = function (form_selector, expected, test_name) {
     for (k in expected) {
         if (expected.hasOwnProperty(k)) {
             casper.test.assertEqual(values[k], expected[k],
-                                    test_name ? (test_name + ": " + k) : undefined);
+                                    test_name ? test_name + ": " + k : undefined);
         }
     }
 };
@@ -271,7 +271,7 @@ exports.then_send_message = function (type, params) {
 // 'table' here).
 exports.get_rendered_messages = function (table) {
     return casper.evaluate(function (table) {
-        var tbl = $('#'+table);
+        var tbl = $('#' + table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
                 var $clone = $(elem).clone(true);
@@ -310,7 +310,7 @@ exports.keypress = function (code) {
 exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
         exports.then_send_message(
-            (msg.stream !== undefined) ? 'stream' : 'private',
+            msg.stream !== undefined ? 'stream' : 'private',
             msg);
     });
 };
@@ -319,7 +319,7 @@ exports.then_send_many = function (msgs) {
 exports.wait_for_receive = function (step) {
     // Wait until the last send or get_events result was more than 1000 ms ago.
     casper.waitFor(function () {
-        return (timestamp() - last_send_or_update) > 1000;
+        return timestamp() - last_send_or_update > 1000;
     }, step);
 };
 
@@ -349,7 +349,7 @@ exports.trim = function (str) {
 // Call get_rendered_messages and then check that the last few headings and
 // bodies match the specified arrays.
 exports.expected_messages = function (table, headings, bodies) {
-    casper.test.assertVisible('#'+table, table + ' is visible');
+    casper.test.assertVisible('#' + table, table + ' is visible');
 
     var msg = exports.get_rendered_messages(table);
 

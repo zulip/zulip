@@ -27,24 +27,20 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
-    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config
-from zerver.lib.utils import generate_random_token
+    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
+    access_bot_by_id, add_service, access_user_by_id
+from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
-    DomainNotAllowedForRealmError, DisposableEmailError
-from zerver.lib.create_user import random_api_key
-
+    DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
+    EmailContainsPlusError
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
-                            email: str) -> HttpResponse:
-    try:
-        target = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-    if target.is_bot:
-        return json_error(_('No such user'))
+                            user_id: int) -> HttpResponse:
+    target = access_user_by_id(user_profile, user_id)
     if check_last_admin(target):
         return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
@@ -61,47 +57,29 @@ def check_last_admin(user_profile: UserProfile) -> bool:
     return user_profile.is_realm_admin and len(admins) == 1
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
-                           email: str) -> HttpResponse:
-    try:
-        target = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such bot'))
-    if not target.is_bot:
-        return json_error(_('No such bot'))
+                           bot_id: int) -> HttpResponse:
+    target = access_bot_by_id(user_profile, bot_id)
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserProfile,
                                      target: UserProfile) -> HttpResponse:
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
-
     do_deactivate_user(target, acting_user=user_profile)
     return json_success()
 
 def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
-                            email: str) -> HttpResponse:
-    try:
-        target = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
-
+                            user_id: int) -> HttpResponse:
+    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
+    if target.is_bot:
+        assert target.bot_type is not None
+        check_bot_creation_policy(user_profile, target.bot_type)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success()
 
 @has_request_variables
-def update_user_backend(request: HttpRequest, user_profile: UserProfile, email: str,
+def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
-    try:
-        target = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
+    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if is_admin is not None:
         if not is_admin and check_last_admin(user_profile):
@@ -146,6 +124,7 @@ def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpRe
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
+    assert url is not None
     assert '?' in url
     url += '&' + request.META['QUERY_STRING']
     return redirect(url)
@@ -158,9 +137,9 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
 @require_non_guest_human_user
 @has_request_variables
 def patch_bot_backend(
-        request: HttpRequest, user_profile: UserProfile, email: str,
+        request: HttpRequest, user_profile: UserProfile, bot_id: int,
         full_name: Optional[str]=REQ(default=None),
-        bot_owner: Optional[str]=REQ(default=None),
+        bot_owner_id: Optional[int]=REQ(default=None),
         config_data: Optional[Dict[str, str]]=REQ(default=None,
                                                   validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[str]=REQ(validator=check_url, default=None),
@@ -169,28 +148,23 @@ def patch_bot_backend(
         default_events_register_stream: Optional[str]=REQ(default=None),
         default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
 ) -> HttpResponse:
-    try:
-        bot = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not bot.is_bot:
-        return json_error(_('No such bot'))
-    if not user_profile.can_admin_user(bot):
-        return json_error(_('Insufficient permission'))
+    bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
-    if bot_owner is not None:
+    if bot_owner_id is not None:
         try:
-            owner = get_user(bot_owner, user_profile.realm)
+            owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
             return json_error(_('Failed to change owner, no such user'))
         if not owner.is_active:
             return json_error(_('Failed to change owner, user is deactivated'))
         if owner.is_bot:
             return json_error(_("Failed to change owner, bots can't own other bots"))
-        do_change_bot_owner(bot, owner, user_profile)
+
+        previous_owner = bot.bot_owner
+        if previous_owner != owner:
+            do_change_bot_owner(bot, owner, user_profile)
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
@@ -211,6 +185,7 @@ def patch_bot_backend(
 
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
+        assert service_interface is not None
         do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
 
     if config_data is not None:
@@ -246,29 +221,14 @@ def patch_bot_backend(
 
 @require_non_guest_human_user
 @has_request_variables
-def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, email: str) -> HttpResponse:
-    try:
-        bot = get_user(email, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(bot):
-        return json_error(_('Insufficient permission'))
+def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
+    bot = access_bot_by_id(user_profile, bot_id)
 
     do_regenerate_api_key(bot, user_profile)
     json_result = dict(
         api_key = bot.api_key
     )
     return json_success(json_result)
-
-# Adds an outgoing webhook or embedded bot service.
-def add_service(name: str, user_profile: UserProfile, base_url: str=None,
-                interface: int=None, token: str=None) -> None:
-    Service.objects.create(name=name,
-                           user_profile=user_profile,
-                           base_url=base_url,
-                           interface=interface,
-                           token=token)
 
 @require_non_guest_human_user
 @has_request_variables
@@ -349,7 +309,7 @@ def add_bot_backend(
                     user_profile=bot_profile,
                     base_url=payload_url,
                     interface=interface_type,
-                    token=random_api_key())
+                    token=generate_api_key())
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         for key, value in config_data.items():
@@ -357,8 +317,10 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
+    api_key = get_api_key(bot_profile)
+
     json_result = dict(
-        api_key=bot_profile.api_key,
+        api_key=api_key,
         avatar_url=avatar_url(bot_profile),
         default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
         default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
@@ -377,10 +339,15 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
+        # Bots are supposed to have only one API key, at least for now.
+        # Therefore we can safely asume that one and only valid API key will be
+        # the first one.
+        api_key = get_api_key(bot_profile)
+
         return dict(
             username=bot_profile.email,
             full_name=bot_profile.full_name,
-            api_key=bot_profile.api_key,
+            api_key=api_key,
             avatar_url=avatar_url(bot_profile),
             default_sending_stream=default_sending_stream,
             default_events_register_stream=default_events_register_stream,
@@ -472,6 +439,8 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
                           {'email': email})
     except DisposableEmailError:
         return json_error(_("Disposable email addresses are not allowed in this organization"))
+    except EmailContainsPlusError:
+        return json_error(_("Email addresses containing + are not allowed."))
 
     try:
         get_user(email, user_profile.realm)

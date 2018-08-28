@@ -47,7 +47,7 @@ function create_bot(full_name, short_name, bot_avatar_file, stream_name,
     formData.append('csrfmiddlewaretoken', csrf_token);
     formData.append('full_name', full_name);
     formData.append('short_name', short_name);
-    formData.append('file-'+0, bot_avatar_file);
+    formData.append('file-' + 0, bot_avatar_file);
     channel.post({
         url: '/json/bots',
         data: formData,
@@ -81,3 +81,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = integration_bot_widget;
 }
+window.integration_bot_widget = integration_bot_widget;

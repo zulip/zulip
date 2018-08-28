@@ -104,6 +104,10 @@ hr {
     margin: 3px;
 }
 
+.button-active-users {
+    float: right;
+}
+
 .chart-container .button-container > * {
     display: inline-block;
     vertical-align: top;
@@ -157,7 +161,7 @@ hr {
     background: hsl(0, 0%, 84%) !important;
 }
 
-.button[data-user="realm"] {
+.button[data-user="everyone"] {
     margin-right: 10px;
 }
 
@@ -192,7 +196,7 @@ hr {
     }
 }
 
-.spinner:before {
+.spinner::before {
     content: '';
     box-sizing: border-box;
     position: absolute;

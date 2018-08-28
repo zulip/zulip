@@ -6,6 +6,7 @@ var stream_notification_settings = [
     {setting: "enable_stream_desktop_notifications", notifications:"desktop_notifications"},
     {setting: "enable_stream_push_notifications", notifications:"push_notifications"},
     {setting: "enable_stream_sounds", notifications:"audible_notifications"},
+    {setting: "enable_stream_email_notifications", notifications:"email_notifications"},
 ];
 
 var pm_mention_notification_settings = [
@@ -51,7 +52,7 @@ function change_notification_setting(setting, setting_data, status_element) {
 }
 
 exports.set_up = function () {
-    if (!page_params.realm_show_digest_email) {
+    if (!page_params.realm_digest_emails_enabled) {
         $("#digest_container").hide();
     }
 
@@ -90,14 +91,10 @@ exports.set_up = function () {
     });
 };
 
-function _update_page() {
+exports.update_page = function () {
     _.each(exports.notification_settings, function (setting) {
         $("#" + setting).prop('checked', page_params[setting]);
     });
-}
-
-exports.update_page = function () {
-    i18n.ensure_i18n(_update_page);
 };
 
 return exports;
@@ -106,3 +103,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_notifications;
 }
+window.settings_notifications = settings_notifications;

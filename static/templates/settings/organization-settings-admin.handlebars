@@ -2,7 +2,6 @@
     <form class="form-horizontal admin-realm-form org-settings-form">
         <div class="alert" id="admin-realm-notifications-stream-status"></div>
         <div class="alert" id="admin-realm-signup-notifications-stream-status"></div>
-        <div class="alert admin-realm-failed-change-status"></div>
 
         <div id="org-msg-editing" class="org-subsection-parent">
             <div class="subsection-header">
@@ -17,16 +16,15 @@
                         <option value="{{@key}}">{{this.text}}</option>
                         {{/each}}
                     </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="id_realm_message_content_edit_limit_minutes" class="inline-block">
-                        {{t 'Time limit in minutes after posting' }}:
-                    </label>
-                    <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                      name="realm_message_content_edit_limit_minutes"
-                      class="admin-realm-message-content-edit-limit-minutes"
-                      value="{{ realm_message_content_edit_limit_minutes }}"/>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          value="{{ realm_message_content_edit_limit_minutes }}"/>
+                    </div>
                 </div>
 
                 {{partial "settings_checkbox"
@@ -36,24 +34,25 @@
                   "label" admin_settings_label.realm_allow_community_topic_editing}}
 
                 <div class="input-group">
-                    <label for="realm_msg_delete_limit_setting" class="inline-block dropdown-title">{{t "Allow message deleting" }}</label>
-                    <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                      title="{{t 'Administrators can always delete any message.' }}"/>
-                    <select name="realm_msg_delete_limit_setting" class="block" id="id_realm_msg_delete_limit_setting">
+                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                        {{t "Allow message deleting" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
+                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"/>
+                    </label>
+                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting">
                         {{#each msg_delete_limit_dropdown_values}}
                         <option value="{{@key}}">{{this.text}}</option>
                         {{/each}}
                     </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="id_realm_message_content_delete_limit_minutes" class="inline-block">
-                        {{t 'Time limit in minutes after posting' }}:
-                    </label>
-                    <input type="text" id="id_realm_message_content_delete_limit_minutes"
-                      name="realm_message_content_delete_limit_minutes"
-                      class="admin-realm-message-content-edit-limit-minutes"
-                      value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="admin-realm-time-limit-input"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    </div>
                 </div>
 
                 {{partial "settings_checkbox"

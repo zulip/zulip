@@ -10,9 +10,17 @@ set_global('colorspace', {
     },
 });
 
+zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');
 var with_overrides = global.with_overrides;
+
+var george = {
+    email: 'george@zulip.com',
+    full_name: 'George',
+    user_id: 103,
+};
+people.add(george);
 
 var frontend = {
     subscribed: false,
@@ -22,9 +30,10 @@ var frontend = {
     in_home_view: false,
     invite_only: false,
 };
-stream_data.add_sub('Frontend', frontend);
 
-(function test_update_property() {
+stream_data.add_sub(frontend.name, frontend);
+
+run_test('update_property', () => {
     // Invoke error for non-existent stream/property
     with_overrides(function (override) {
         var errors = 0;
@@ -79,6 +88,12 @@ stream_data.add_sub('Frontend', frontend);
     checkbox = $(".subscription_settings[data-stream-id='1'] #sub_push_notifications_setting .sub_setting_control");
     assert.equal(checkbox.prop('checked'), true);
 
+    // Tests email notifications
+    stream_events.update_property(1, 'email_notifications', true);
+    assert.equal(frontend.email_notifications, true);
+    checkbox = $(".subscription_settings[data-stream-id='1'] #sub_email_notifications_setting .sub_setting_control");
+    assert.equal(checkbox.prop('checked'), true);
+
     // Test name change
     with_overrides(function (override) {
         global.with_stub(function (stub) {
@@ -113,9 +128,9 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(checkbox.prop('checked'), true);
     });
 
-}());
+});
 
-(function test_marked_subscribed() {
+run_test('marked_subscribed', () => {
     // Test undefined error
     with_overrides(function (override) {
         var errors = 0;
@@ -143,12 +158,11 @@ stream_data.add_sub('Frontend', frontend);
         },
     });
 
-    set_global('stream_data', {
-        subscribe_myself: noop,
-        set_subscribers: noop,
-        get_colors: noop,
-        update_calculated_fields: noop,
-    });
+    stream_data.subscribe_myself = noop;
+    stream_data.set_subscribers = noop;
+    stream_data.get_colors = noop;
+    stream_data.update_calculated_fields = noop;
+
     set_global('subs', { update_settings_for_subscribed: noop });
     set_global('narrow_state', { is_for_stream_id: noop });
     set_global('overlays', { streams_open: return_true });
@@ -241,9 +255,9 @@ stream_data.add_sub('Frontend', frontend);
             assert.deepEqual(frontend, args.sub);
         });
     });
-}());
+});
 
-(function test_mark_unsubscribed() {
+run_test('mark_unsubscribed', () => {
     var removed_sub = false;
     $(document).on('subscription_remove_done.zulip', function () {
         removed_sub = true;
@@ -305,4 +319,30 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(updated, true);
         assert.equal(event_triggered, true);
     });
-}());
+});
+
+stream_data.clear_subscriptions();
+var dev_help = {
+    subscribed: true,
+    color: 'blue',
+    name: 'dev help',
+    stream_id: 2,
+    in_home_view: false,
+    invite_only: false,
+};
+stream_data.add_sub(dev_help.name, dev_help);
+
+run_test('remove_deactivated_user_from_all_streams', () => {
+    subs.rerender_subscriptions_settings = () => {};
+
+    dev_help.can_access_subscribers = true;
+
+    // verify that deactivating user should unsubscribe user from all streams
+    assert(stream_data.add_subscriber(dev_help.name, george.user_id));
+    assert(dev_help.subscribers.has(george.user_id));
+
+    stream_events.remove_deactivated_user_from_all_streams(george.user_id);
+
+    assert(!dev_help.subscribers.has(george.user_id));
+});
+

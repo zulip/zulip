@@ -27,9 +27,8 @@ function get_users_typing_for_narrow() {
         // Get list of users typing in this conversation
         var narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.
-        var narrow_user_ids_string = people.emails_strings_to_user_ids_string(narrow_emails_string);
+        var narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
         if (!narrow_user_ids_string) {
-            blueslip.warn('Bad narrow for typing indicators: ' + narrow_emails_string);
             return [];
         }
         var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
@@ -100,3 +99,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing_events;
 }
+window.typing_events = typing_events;

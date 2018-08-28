@@ -1,5 +1,5 @@
 /* eslint indent: "off" */
-import PerfectScrollbar from 'perfect-scrollbar';
+import SimpleBar from 'simplebar';
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -9,10 +9,10 @@ function registerCodeSection($codeSection) {
         const language = this.dataset.language;
 
         $li.removeClass("active");
-        $li.filter("[data-language="+language+"]").addClass("active");
+        $li.filter("[data-language=" + language + "]").addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language="+language+"]").addClass("active");
+        $blocks.filter("[data-language=" + language + "]").addClass("active");
     });
 
     $li.eq(0).click();
@@ -20,13 +20,22 @@ function registerCodeSection($codeSection) {
 
 function highlight_current_article() {
     $('.help .sidebar a').removeClass('highlighted');
-    var path = window.location.href.match(/\/(help|api)\/.*/);
+    var path = window.location.pathname;
 
     if (!path) {
         return;
     }
 
-    var article = $('.help .sidebar a[href="' + path[0] + '"]');
+    var hash = window.location.hash;
+    var article = $('.help .sidebar a[href="' + path + hash + '"]');
+    if (!article.length) {
+        // If there isn't an entry in the left sidebar that matches
+        // the full url+hash pair, instead highlight an entry in the
+        // left sidebar that just matches the url part.
+        article = $('.help .sidebar a[href="' + path + '"]');
+    }
+    // Highlight current article link and the heading of the same
+    article.closest('ul').css('display', 'block');
     article.addClass('highlighted');
 }
 
@@ -68,14 +77,20 @@ function render_code_sections() {
     if (/Mac/i.test(navigator.userAgent)) {
         adjust_mac_shortcuts();
     }
+
+    $("table").each(function () {
+        $(this).addClass("table table-striped");
+    });
 }
 
-function scrollToHash(container) {
+function scrollToHash(simplebar) {
     var hash = window.location.hash;
+    var scrollbar = simplebar.getScrollElement();
     if (hash !== '') {
-        container.scrollTop = $(hash).position().top - $('.markdown .content').position().top;
+        var position = $(hash).position().top - $(scrollbar.firstChild).position().top;
+        scrollbar.scrollTop = position;
     } else {
-        container.scrollTop = 0;
+        scrollbar.scrollTop = 0;
     }
 }
 
@@ -85,36 +100,46 @@ function scrollToHash(container) {
         name: null,
     };
 
+    var markdownSB = new SimpleBar($(".markdown")[0]);
+
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
             var $html = $(res).find(".markdown .content");
-            $html.find(".back-to-home").remove();
 
             callback($html.html().trim());
             render_code_sections();
         });
     };
 
-    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
+    var update_page = function (html_map, path) {
+        if (html_map[path]) {
+            $(".markdown .content").html(html_map[path]);
+            render_code_sections();
+            markdownSB.recalculate();
+            scrollToHash(markdownSB);
+        } else {
+            loading.name = path;
+            fetch_page(path, function (res) {
+                html_map[path] = res;
+                $(".markdown .content").html(html_map[path]);
+                loading.name = null;
+                markdownSB.recalculate();
+                scrollToHash(markdownSB);
+            });
+        }
+    };
 
-    new PerfectScrollbar($(".sidebar")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
+    new SimpleBar($(".sidebar")[0]);
 
     $(".sidebar.slide h2").click(function (e) {
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {
+            // Close other article's headings first
+            $('.sidebar ul').not($next).hide();
+            // Toggle the heading
             $next.slideToggle("fast", "swing", function () {
-                markdownPS.update();
+                markdownSB.recalculate();
             });
         }
     });
@@ -129,54 +154,30 @@ function scrollToHash(container) {
             return;
         }
 
-        var container = $(".markdown")[0];
-
         if (loading.name === path) {
             return;
         }
 
         history.pushState({}, "", path);
 
-        if (html_map[path]) {
-            $(".markdown .content").html(html_map[path]);
-            markdownPS.update();
-            render_code_sections();
-            scrollToHash(container);
-        } else {
-            loading.name = path;
-
-            fetch_page(path, function (res) {
-                html_map[path] = res;
-                $(".markdown .content").html(html_map[path]);
-                loading.name = null;
-                markdownPS.update();
-                scrollToHash(container);
-            });
-        }
+        update_page(html_map, path);
 
         $(".sidebar").removeClass("show");
 
         e.preventDefault();
     });
 
-    // Show Guides user docs in sidebar by default
-    $('.help .sidebar h2#guides + ul').css('display', 'block');
-
+    if (window.location.pathname === '/help/') {
+        // Expand the Guides user docs section in sidebar in the /help/ homepage.
+        $('.help .sidebar h2#guides + ul').show();
+    }
     // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
     $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
 
     // Scroll to anchor link when clicked
-    $('.markdown .content h1, .markdown .content h2, .markdown .content h3').on('click', function () {
-        window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
-    });
-
-    window.onresize = function () {
-        markdownPS.update();
-    };
-
-    window.addEventListener("popstate", function () {
-        var path = window.location.pathname;
-        $(".markdown .content").html(html_map[path]);
+    $(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
+        window.location.hash = $(this).attr("id");
+        scrollToHash(markdownSB);
     });
 
     $(".hamburger").click(function () {
@@ -193,6 +194,16 @@ function scrollToHash(container) {
 
     // Finally, make sure if we loaded a window with a hash, we scroll
     // to the right place.
-    var container = $(".markdown")[0];
-    scrollToHash(container);
+    scrollToHash(markdownSB);
+
+    window.onresize = function () {
+        markdownSB.recalculate();
+    };
+
+    window.addEventListener("popstate", function () {
+        var path = window.location.pathname;
+        update_page(html_map, path);
+    });
+
+    $('body').addClass('noscroll');
 }());

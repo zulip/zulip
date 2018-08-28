@@ -95,13 +95,11 @@ strength allowed is controlled by two settings in
   parser which escapes content to protect against cross-site scripting
   attacks.
 
-* Zulip supports both public streams and private ("invite-only")
-  streams.  Any Zulip user can join any public stream in the realm,
-  and can view the complete message history of any public stream
-  without joining the stream.
+* Zulip supports both public streams and private streams.  Any Zulip
+  user can join any public stream in the realm, and can view the complete
+  message history of any public stream without joining the stream.
 
-* A private ("invite-only") stream is hidden from users who are not
-  subscribed to the stream.
+* A private stream is hidden from users who are not subscribed to the stream.
   * Users who are not members of a private stream cannot read messages
     on the stream, send messages to the stream, or join the stream,
     even if they are a Zulip organization administrator.
@@ -110,8 +108,11 @@ strength allowed is controlled by two settings in
     organization administrators cannot join a private stream without
     being added by an existing member).
   * When a new user joins a private stream, they can see future
-    messages sent to the stream, but they do not receive access to the
-    stream's message history.
+    messages sent to the stream.
+  * The person creating the stream can configure whether new
+    subscribers will receive access to the stream's message history
+    from before that user joined.  Organization administrators can
+    edit this configuration if they are a subscriber to the stream.
   * Organization administrators can do some basic management of
     private streams that they are not subscribed to: Changing the
     stream name and description, viewing the current subscribers, and
@@ -240,11 +241,11 @@ strength allowed is controlled by two settings in
   unauthorized users with access to that file.
 
   We have a similar protection for the `LOCAL_UPLOADS_DIR` backend,
-  that is currently only available in Ubuntu Xenial (this is the one
-  place in Zulip where behavior is currently different between Ubuntu
-  Trusty and Ubuntu Xenial).  On Ubuntu Xenial, every access to an
-  uploaded file has access control verified verified (confirming that
-  the browser is logged into a Zulip account that has received the
+  that is not only available on Ubuntu Trusty (this is the one place
+  in Zulip where behavior is currently different between different OS
+  versions).  For platforms that are not Ubuntu Trusty, every access
+  to an uploaded file has access control verified (confirming that the
+  browser is logged into a Zulip account that has received the
   uploaded file in question).
 
   On Ubuntu Trusty, because the older version of `nginx` available

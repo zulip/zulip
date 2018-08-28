@@ -74,8 +74,8 @@ exports.widget = function (parent_elem, my_stream_id) {
 
             if (!zoomed) {
                 // Show the most recent topics, as well as any with unread messages
-                var show_topic = (idx < max_topics) || (num_unread > 0) ||
-                                 (self.active_topic === topic_name.toLowerCase());
+                var show_topic = idx < max_topics || num_unread > 0 ||
+                                 self.active_topic === topic_name.toLowerCase();
 
                 if (!show_topic) {
                     return;
@@ -87,7 +87,7 @@ exports.widget = function (parent_elem, my_stream_id) {
                 unread: num_unread,
                 is_zero: num_unread === 0,
                 is_muted: muting.is_topic_muted(my_stream_name, topic_name),
-                url: narrow.by_stream_subject_uri(my_stream_name, topic_name),
+                url: hash_util.by_stream_subject_uri(my_stream_name, topic_name),
             };
             var li = $(templates.render('topic_list_item', topic_info));
             self.topic_items.set(topic_name, li);
@@ -236,7 +236,7 @@ exports.zoom_in = function () {
     var before_count = active_widget.num_items();
 
     function on_success() {
-        if ((!active_widget) || (stream_id !== active_widget.get_stream_id())) {
+        if (!active_widget || stream_id !== active_widget.get_stream_id()) {
             blueslip.warn('User re-narrowed before topic history was returned.');
             return;
         }
@@ -316,3 +316,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = topic_list;
 }
+window.topic_list = topic_list;

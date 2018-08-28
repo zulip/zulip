@@ -8,6 +8,7 @@ set_global('page_params', {
 set_global('channel', {});
 set_global('navigator', {});
 set_global('reload', {});
+set_global('reload_state', {});
 set_global('socket', {});
 set_global('Socket', function () {
     return global.socket;
@@ -16,10 +17,13 @@ set_global('sent_messages', {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
+set_global('blueslip', global.make_zblueslip());
 
+zrequire('people');
 zrequire('transmit');
 
 function test_with_mock_socket(test_params) {
+    transmit.initialize();
     var socket_send_called;
     var send_args = {};
 
@@ -40,7 +44,7 @@ function test_with_mock_socket(test_params) {
     test_params.check_send_args(send_args);
 }
 
-(function test_transmit_message_sockets() {
+run_test('transmit_message_sockets', () => {
     page_params.use_websockets = true;
     global.navigator.userAgent = 'unittest_transmit_message';
 
@@ -86,11 +90,11 @@ function test_with_mock_socket(test_params) {
             assert(error_func_checked);
         },
     });
-}());
+});
 
 page_params.use_websockets = false;
 
-(function test_transmit_message_ajax() {
+run_test('transmit_message_ajax', () => {
 
     var success_func_called;
     var success = function () {
@@ -128,12 +132,12 @@ page_params.use_websockets = false;
     };
     transmit.send_message(request, success, error);
     assert(error_func_called);
-}());
+});
 
-(function test_transmit_message_ajax_reload_pending() {
+run_test('transmit_message_ajax_reload_pending', () => {
     var success = function () { throw 'unexpected success'; };
 
-    reload.is_pending = function () {
+    reload_state.is_pending = function () {
         return true;
     };
 
@@ -167,4 +171,98 @@ page_params.use_websockets = false;
     transmit.send_message(request, success, error);
     assert(!error_func_called);
     assert(reload_initiated);
-}());
+});
+
+run_test('reply_message_stream', () => {
+    const stream_message = {
+        type: 'stream',
+        stream: 'social',
+        subject: 'lunch',
+        sender_full_name: 'Alice',
+    };
+
+    const content = 'hello';
+
+    var send_message_args;
+
+    transmit.send_message = (args) => {
+        send_message_args = args;
+    };
+
+    page_params.user_id = 44;
+    page_params.queue_id = 66;
+    sent_messages.get_new_local_id = () => 99;
+
+    transmit.reply_message({
+        message: stream_message,
+        content: content,
+    });
+
+    assert.deepEqual(send_message_args, {
+        sender_id: 44,
+        queue_id: 66,
+        local_id: 99,
+        type: 'stream',
+        to: 'social',
+        content: '@**Alice** hello',
+        subject: 'lunch',
+    });
+});
+
+run_test('reply_message_private', () => {
+    const fred = {
+        user_id: 3,
+        email: 'fred@example.com',
+        full_name: 'Fred Frost',
+    };
+    people.add(fred);
+
+    people.is_my_user_id = () => false;
+
+    const pm_message = {
+        type: 'private',
+        display_recipient: [
+            {user_id: fred.user_id},
+        ],
+    };
+
+    const content = 'hello';
+
+    var send_message_args;
+
+    transmit.send_message = (args) => {
+        send_message_args = args;
+    };
+
+    page_params.user_id = 155;
+    page_params.queue_id = 177;
+    sent_messages.get_new_local_id = () => 199;
+
+    transmit.reply_message({
+        message: pm_message,
+        content: content,
+    });
+
+    assert.deepEqual(send_message_args, {
+        sender_id: 155,
+        queue_id: 177,
+        local_id: 199,
+        type: 'private',
+        to: '["fred@example.com"]',
+        content: 'hello',
+    });
+});
+
+run_test('reply_message_errors', () => {
+    const bogus_message = {
+        type: 'bogus',
+    };
+
+    blueslip.set_test_data('error', 'unknown message type: bogus');
+
+    transmit.reply_message({
+        message: bogus_message,
+    });
+
+    blueslip.clear_test_data();
+});

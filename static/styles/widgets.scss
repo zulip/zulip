@@ -1,0 +1,107 @@
+.widget-choices ul {
+    padding: 3px;
+}
+
+.widget-choices li {
+    padding: 2px;
+    list-style: none;
+}
+
+.widget-choices button {
+    font-weight: 700;
+    color: blue;
+}
+
+.widget-choices-heading {
+    font-weight: 600;
+}
+
+.todo-widget h4,
+.poll-widget h4 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.todo-widget li,
+.poll-widget li {
+    list-style: none;
+    margin: 2px 2px 2px 0px;
+}
+
+.todo-widget ul,
+.poll-widget ul {
+    margin: 0px 0px 5px 0px;
+    padding: 0;
+}
+
+.poll-widget .poll-names .todo-widget {
+    font-size: 14px;
+    color: green;
+}
+
+.poll-widget .poll-option {
+    font-weight: 600;
+}
+
+.poll-vote {
+    color: #3c906e;
+    border-color: #9dc8b7;
+    margin-right: 4px;
+    background-color: white;
+}
+
+button.task {
+    height: 20px;
+    width: 20px;
+    background-color: transparent;
+    border-color: #9dc8b7;
+    margin-right: 4px;
+    border-radius: 3px;
+}
+
+button.task:hover {
+    border: 1px solid #2988a4;
+}
+
+button.task-completed {
+    border-color: #b9cec6;
+    padding: 0px;
+}
+
+img.task-completed {
+    width: 15px;
+}
+
+.poll-vote:hover {
+    border-color: #59a687;
+}
+
+input.add-task,
+button.add-task,
+input.poll-comment,
+button.poll-comment,
+input.poll-question,
+button.poll-question {
+    padding: 4px 6px;
+    margin: 2px 0px 2px 0px;
+}
+
+button.add-task,
+button.poll-comment,
+button.poll-question {
+    border-radius: 3px;
+    border: 1px solid #cccccc;
+    background-color: white;
+    width: 100px;
+}
+
+button.add-task:hover,
+button.poll-comment:hover,
+button.poll-question:hover {
+    border-color: #999999;
+}
+
+.widget-error {
+    color: #b94a48;
+    font-size: 12px;
+}

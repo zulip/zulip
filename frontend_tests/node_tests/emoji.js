@@ -10,7 +10,7 @@ zrequire('emoji');
 zrequire('markdown');
 zrequire('util');
 
-(function test_build_emoji_upload_widget() {
+run_test('build_emoji_upload_widget', () => {
     var build_widget_stub = false;
     upload_widget.build_widget = function (
         get_file_input,
@@ -28,28 +28,46 @@ zrequire('util');
     };
     emoji.build_emoji_upload_widget();
     assert(build_widget_stub);
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     var image_stub = false;
+    var urls = [];
+    var calls = 0;
     class Image {
         set src(data) {
-            assert.equal(data, '/static/generated/emoji/sheet_google_64.png');
             image_stub = true;
+            urls.push(data);
+            calls += 1;
         }
     }
     set_global('Image', Image);
     emoji.initialize();
     assert(image_stub);
-}());
+    assert.equal(calls, 2);
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet-google-64.png',
+                            '/static/generated/emoji/images-google-64/1f419.png']);
 
-(function test_get_canonical_name() {
+    // Check initialization sequence for `text` emojiset.
+    page_params.emojiset = 'text';
+    image_stub = false;
+    urls = [];
+    calls = 0;
+    emoji.initialize();
+    assert(image_stub);
+    assert.equal(calls, 2);
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet-google-64.png',
+                            '/static/generated/emoji/images-google-64/1f419.png']);
+});
+
+run_test('get_canonical_name', () => {
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
     };
     var canonical_name = emoji.get_canonical_name('realm_emoji');
     assert.equal(canonical_name, 'realm_emoji');
 
+    var orig_emoji_codes = global.emoji_codes;
     global.emoji_codes = {
         name_to_codepoint: {
             '+1': '1f44d',
@@ -71,12 +89,13 @@ zrequire('util');
     emoji.get_canonical_name('non_existent');
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+    global.emoji_codes = orig_emoji_codes;
+});
 
-(function test_translate_emoticons_to_names() {
+run_test('translate_emoticons_to_names', () => {
     // Simple test
     var test_text = 'Testing :)';
-    var expected = 'Testing :smiley:';
+    var expected = 'Testing :slight_smile:';
     var result = emoji.translate_emoticons_to_names(test_text);
     assert.equal(expected, result);
 
@@ -95,9 +114,9 @@ zrequire('util');
         {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
-    _.each(emoji.EMOTICON_CONVERSIONS, (full_name, shortcut) => {
+    _.each(emoji_codes.emoticon_conversions, (full_name, shortcut) => {
         _.each(testcases, (t) => {
-            var converted_value = ':' + full_name + ':';
+            var converted_value = full_name;
             var original = t.original;
             var expected = t.expected;
             original = original.replace(/(<original>)/g, shortcut);
@@ -107,4 +126,4 @@ zrequire('util');
             assert.equal(result, expected);
         });
     });
-}());
+});

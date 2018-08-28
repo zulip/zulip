@@ -9,7 +9,8 @@ from analytics.lib.counts import COUNT_STATS, \
     CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, FillState, RealmCount, UserCount, StreamCount
+from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
+    StreamCount, InstallationCount
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Message, Client, \
     RealmAuditLog, Recipient
@@ -30,7 +31,7 @@ class Command(BaseCommand):
             realm=realm, short_name=full_name, pointer=-1, last_pointer_updater='none',
             api_key='42', date_joined=date_joined)
         RealmAuditLog.objects.create(
-            realm=realm, modified_user=user, event_type='user_created',
+            realm=realm, modified_user=user, event_type=RealmAuditLog.USER_CREATED,
             event_time=user.date_joined)
         return user
 
@@ -46,9 +47,21 @@ class Command(BaseCommand):
             frequency=stat.frequency, partial_sum=partial_sum, random_seed=self.random_seed)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        # TODO: This should arguably only delete the objects
+        # associated with the "analytics" realm.
         do_drop_all_analytics_tables()
-        # I believe this also deletes any objects with this realm as a foreign key
+
+        # This also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
+
+        # Because we just deleted a bunch of objects in the database
+        # directly (rather than deleting individual objects in Django,
+        # in which case our post_save hooks would have flushed the
+        # individual objects from memcached for us), we need to flush
+        # memcached in order to ensure deleted objects aren't still
+        # present in the memcached cache.
+        from zerver.apps import flush_cache
+        flush_cache(None)
 
         installation_time = timezone_now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone_now())
@@ -64,6 +77,8 @@ class Command(BaseCommand):
                                 table: Type[BaseCount]) -> None:
             end_times = time_range(last_end_time, last_end_time, stat.frequency,
                                    len(list(fixture_data.values())[0]))
+            if table == InstallationCount:
+                id_args = {}  # type: Dict[str, Any]
             if table == RealmCount:
                 id_args = {'realm': realm}
             if table == UserCount:
@@ -77,11 +92,39 @@ class Command(BaseCommand):
                           value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
+        stat = COUNT_STATS['1day_actives::day']
+        realm_data = {
+            None: self.generate_fixture_data(stat, .08, .02, 3, .3, 6, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            None: self.generate_fixture_data(stat, .8, .2, 4, .3, 6, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, installation_data, InstallationCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
         stat = COUNT_STATS['realm_active_humans::day']
         realm_data = {
             None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
-        }  # type: Mapping[Optional[str], List[int]]
+        }
         insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            None: self.generate_fixture_data(stat, 1, .3, 4, .5, 3, partial_sum=True),
+        }
+        insert_fixture_data(stat, installation_data, InstallationCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        realm_data = {
+            'false': self.generate_fixture_data(stat, .1, .03, 3.5, .8, 2, partial_sum=True),
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            'false': self.generate_fixture_data(stat, 1, .3, 6, .8, 2, partial_sum=True),
+        }
+        insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
@@ -92,6 +135,9 @@ class Command(BaseCommand):
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {'false': self.generate_fixture_data(stat, 350, 150, 6, .6, 4),
+                             'true': self.generate_fixture_data(stat, 150, 150, 3, .4, 2)}
+        insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
@@ -107,6 +153,12 @@ class Command(BaseCommand):
             'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4),
             'huddle_message': self.generate_fixture_data(stat, 6, 3, 3, .6, 4)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            'public_stream': self.generate_fixture_data(stat, 300, 80, 5, .6, 4),
+            'private_stream': self.generate_fixture_data(stat, 70, 70, 5, .6, 4),
+            'private_message': self.generate_fixture_data(stat, 130, 50, 5, .6, 4),
+            'huddle_message': self.generate_fixture_data(stat, 60, 30, 3, .6, 4)}
+        insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
@@ -136,6 +188,17 @@ class Command(BaseCommand):
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            website.id: self.generate_fixture_data(stat, 300, 200, 5, .6, 3),
+            old_desktop.id: self.generate_fixture_data(stat, 50, 30, 8, .6, 3),
+            android.id: self.generate_fixture_data(stat, 50, 50, 2, .6, 3),
+            iOS.id: self.generate_fixture_data(stat, 50, 50, 2, .6, 3),
+            react_native.id: self.generate_fixture_data(stat, 5, 5, 10, .6, 3),
+            API.id: self.generate_fixture_data(stat, 50, 50, 5, .6, 3),
+            zephyr_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, .6, 3),
+            unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
+            long_webhook.id: self.generate_fixture_data(stat, 50, 50, 2, .6, 3)}
+        insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 

@@ -16,6 +16,12 @@ var me = {
     timezone: 'US/Pacific',
 };
 
+var isaac = {
+    email: 'isaac@example.com',
+    user_id: 32,
+    full_name: 'Isaac Newton',
+};
+
 function initialize() {
     people.init();
     people.add(me);
@@ -24,7 +30,7 @@ function initialize() {
 
 initialize();
 
-(function test_basics() {
+run_test('basics', () => {
     var persons = people.get_all_persons();
 
     assert.equal(_.size(persons), 1);
@@ -36,14 +42,10 @@ initialize();
 
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
-    var isaac = {
-        email: email,
-        user_id: 32,
-        full_name: full_name,
-    };
 
     assert(!people.is_known_user_id(32));
     people.add(isaac);
+
     assert(people.is_known_user_id(32));
     assert.equal(people.get_realm_count(), 0);
 
@@ -107,28 +109,39 @@ initialize();
     assert.equal(people.is_my_user_id(me.user_id), true);
     assert.equal(people.is_my_user_id(isaac.user_id), false);
     assert.equal(people.is_my_user_id(undefined), false);
-}());
 
-(function test_pm_lookup_key() {
+    // Reactivating issac
+    people.add_in_realm(isaac);
+    var active_human_persons = people.get_active_human_persons();
+    assert.equal(active_human_persons.length, 1);
+    assert.deepEqual(active_human_persons, [isaac]);
+});
+
+run_test('pm_lookup_key', () => {
     assert.equal(people.pm_lookup_key('30'), '30');
     assert.equal(people.pm_lookup_key('32,30'), '32');
     assert.equal(people.pm_lookup_key('101,32,30'), '32,101');
-}());
+});
 
-(function test_get_recipients() {
+run_test('get_recipients', () => {
     assert.equal(people.get_recipients('30'), 'Me Myself');
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
-}());
+});
 
-(function test_my_custom_profile_data() {
+run_test('safe_full_names', () => {
+    var names = people.safe_full_names([me.user_id, isaac.user_id]);
+    assert.equal(names, 'Me Myself, Isaac Newton');
+});
+
+run_test('my_custom_profile_data', () => {
     var person = people.get_by_email(me.email);
     person.profile_data = {3: 'My address', 4: 'My phone number'};
     assert.equal(people.my_custom_profile_data(3), 'My address');
     assert.equal(people.my_custom_profile_data(4), 'My phone number');
     assert.equal(people.my_custom_profile_data(undefined), undefined);
-}());
+});
 
-(function test_user_timezone() {
+run_test('user_timezone', () => {
     var expected_pref = {
         timezone: 'US/Pacific',
         format: 'HH:mm',
@@ -150,17 +163,17 @@ initialize();
     expected_pref.format = 'hh:mm A';
     global.page_params.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), '12:09 AM');
-}());
+});
 
-(function test_updates() {
+run_test('updates', () => {
     var person = people.get_by_email('me@example.com');
     people.set_full_name(person, 'Me the Third');
     assert.equal(people.my_full_name(), 'Me the Third');
     assert.equal(person.full_name, 'Me the Third');
     assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
-}());
+});
 
-(function test_get_person_from_user_id() {
+run_test('get_person_from_user_id', () => {
     var person = {
         email: 'mary@example.com',
         user_id: 42,
@@ -184,11 +197,11 @@ initialize();
     assert.equal(person, undefined);
     person = people.get_person_from_user_id(42);
     assert.equal(person.user_id, 42);
-}());
+});
 
 initialize();
 
-(function test_set_custom_profile_field_data() {
+run_test('set_custom_profile_field_data', () => {
     var person = people.get_by_email(me.email);
     me.profile_data = {};
     var field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value'};
@@ -196,9 +209,9 @@ initialize();
     assert.deepEqual(person.profile_data, {});
     people.set_custom_profile_field_data(person.user_id, field);
     assert.equal(person.profile_data[field.id], 'Field value');
-}());
+});
 
-(function test_get_rest_of_realm() {
+run_test('get_rest_of_realm', () => {
     var alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
@@ -227,11 +240,11 @@ initialize();
     ];
     assert.deepEqual(others, expected);
 
-}());
+});
 
 initialize();
 
-(function test_recipient_counts() {
+run_test('recipient_counts', () => {
     var user_id = 99;
     assert.equal(people.get_recipient_count({id: user_id}), 0);
     people.incr_recipient_count(user_id);
@@ -239,9 +252,9 @@ initialize();
     assert.equal(people.get_recipient_count({user_id: user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
-}());
+});
 
-(function test_filtered_users() {
+run_test('filtered_users', () => {
     var charles = {
         email: 'charles@example.com',
         user_id: 301,
@@ -323,11 +336,11 @@ initialize();
     filtered_people = people.filter_people_by_search_terms(users, ['ltorv']);
     assert.equal(filtered_people.num_items(), 1);
     assert(filtered_people.has(linus.user_id));
-}());
+});
 
 people.init();
 
-(function test_multi_user_methods() {
+run_test('multi_user_methods', () => {
     var emp401 = {
         email: 'emp401@example.com',
         user_id: 401,
@@ -359,11 +372,11 @@ people.init();
     assert.equal(slug, '401,402-group');
 
     assert.equal(people.reply_to_to_user_ids_string('invalid@example.com'), undefined);
-}());
+});
 
 initialize();
 
-(function test_message_methods() {
+run_test('message_methods', () => {
     var charles = {
         email: 'charles@example.com',
         user_id: 451,
@@ -459,11 +472,11 @@ initialize();
 
     message = { sender_id: undefined };
     assert.equal(people.sender_is_bot(message), false);
-}());
+});
 
 initialize();
 
-(function test_extract_people_from_message() {
+run_test('extract_people_from_message', () => {
     var unknown_user = {
         email: 'unknown@example.com',
         user_id: 500,
@@ -505,11 +518,11 @@ initialize();
         display_recipient: [unknown_user],
     };
     people.extract_people_from_message(message);
-}());
+});
 
 initialize();
 
-(function test_maybe_incr_recipient_count() {
+run_test('maybe_incr_recipient_count', () => {
     var maria = {
         email: 'athens@example.com',
         user_id: 452,
@@ -555,9 +568,9 @@ initialize();
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
-}());
+});
 
-(function test_slugs() {
+run_test('slugs', () => {
     var person = {
         email: 'deBBie71@example.com',
         user_id: 501,
@@ -572,13 +585,12 @@ initialize();
     assert.equal(email, 'debbie71@example.com');
 
     // Test undefined slug
-    people.emails_strings_to_user_ids_string = function () { return; };
-    assert.equal(people.emails_to_slug(), undefined);
-}());
+    assert.equal(people.emails_to_slug('does@not.exist'), undefined);
+});
 
 initialize();
 
-(function test_updates() {
+run_test('updates', () => {
     var old_email = 'FOO@example.com';
     var new_email = 'bar@example.com';
     var user_id = 502;
@@ -609,7 +621,7 @@ initialize();
     assert.equal(all_people.length, 2);
 
     person = _.filter(all_people, function (p) {
-        return (p.email === new_email);
+        return p.email === new_email;
     })[0];
     assert.equal(person.full_name, 'Foo Barson');
 
@@ -622,11 +634,11 @@ initialize();
     assert.equal(person.user_id, user_id);
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
-}());
+});
 
 initialize();
 
-(function test_update_email_in_reply_to() {
+run_test('update_email_in_reply_to', () => {
     var charles = {
         email: 'charles@example.com',
         user_id: 601,
@@ -655,9 +667,9 @@ initialize();
         people.update_email_in_reply_to(reply_to, 9999, 'whatever'),
         reply_to
     );
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     people.init();
 
     global.page_params.realm_non_active_users = [
@@ -693,6 +705,8 @@ initialize();
     assert(people.is_valid_email_for_compose('alice@example.com'));
     assert(!people.is_valid_email_for_compose('retiree@example.com'));
     assert(!people.is_valid_email_for_compose('totally-bogus-username@example.com'));
+    assert(people.is_valid_bulk_emails_for_compose(['bot@example.com', 'alice@example.com']));
+    assert(!people.is_valid_bulk_emails_for_compose(['not@valid.com', 'alice@example.com']));
     assert(people.is_my_user_id(42));
 
     var fetched_retiree = people.get_person_from_user_id(15);
@@ -701,4 +715,4 @@ initialize();
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);
     assert.equal(global.page_params.realm_non_active_users, undefined);
-}());
+});

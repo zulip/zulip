@@ -8,7 +8,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');
-zrequire('emoji_picker');
+zrequire('emoji');
 zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');
@@ -21,7 +21,7 @@ stream_data.create_streams([
     {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
 ]);
 
-(function test_sort_streams() {
+run_test('sort_streams', () => {
     var popular = {num_items: function () {
         return 10;
     }};
@@ -84,9 +84,9 @@ stream_data.create_streams([
     assert.deepEqual(test_streams[3].name, "Ether"); // Unsubscribed and description starts with query
     assert.deepEqual(test_streams[4].name, "New"); // Subscribed and no match
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
-}());
+});
 
-(function test_sort_languages() {
+run_test('sort_languages', () => {
     set_global('pygments_data', {langs:
         {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
     });
@@ -103,7 +103,7 @@ stream_data.create_streams([
     test_langs = th.sort_languages(test_langs, "p");
 
     assert.deepEqual(test_langs, ["php", "python", "pascal", "perl", "javascript"]);
-}());
+});
 
 var matches = [
     {
@@ -155,7 +155,7 @@ _.each(matches, function (person) {
     global.people.add_in_realm(person);
 });
 
-(function test_sort_recipients() {
+run_test('sort_recipients', () => {
     function get_typeahead_result(query, current_stream, current_topic) {
         var result = th.sort_recipients(
             global.people.get_realm_persons(),
@@ -324,7 +324,7 @@ _.each(matches, function (person) {
     assert.deepEqual(recipients_email, expected);
 
     // Reset matches
-    matches.splice(matches.length-1, 1);
+    matches.splice(matches.length - 1, 1);
 
     // full_name starts with same character but emails are 'all'
     var small_matches = [
@@ -377,9 +377,9 @@ _.each(matches, function (person) {
         'b_user_2@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
-}());
+});
 
-(function test_highlight_with_escaping() {
+run_test('highlight_with_escaping', () => {
     var item = "Denmark";
     var query = "Den";
     var expected = "<strong>Den</strong>mark";
@@ -397,9 +397,9 @@ _.each(matches, function (person) {
     expected = "<strong>development h</strong>elp";
     result = th.highlight_with_escaping(query, item);
     assert.equal(result, expected);
-}());
+});
 
-(function test_render_person() {
+run_test('render_person', () => {
     // Test render_person with regular person
     var rendered = false;
     global.templates.render = function (template_name, args) {
@@ -430,9 +430,9 @@ _.each(matches, function (person) {
     };
     assert.equal(th.render_person(special_person), 'typeahead-item-stub');
     assert(rendered);
-}());
+});
 
-(function test_clear_rendered_person() {
+run_test('clear_rendered_person', () => {
     var rendered = false;
     global.templates.render = function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -456,9 +456,9 @@ _.each(matches, function (person) {
     assert.equal(th.render_person(matches[5]), 'typeahead-item-stub');
     assert(rendered);
 
-}());
+});
 
-(function test_render_stream() {
+run_test('render_stream', () => {
     // Test render_stream with short description
     var rendered = false;
     var stream = {
@@ -493,20 +493,18 @@ _.each(matches, function (person) {
     };
     assert.equal(th.render_stream(stream), 'typeahead-item-stub');
     assert(rendered);
-}());
+});
 
-(function test_render_emoji() {
+run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
     var rendered = false;
-    var emoji = {
+    var test_emoji = {
         emoji_name: 'thumbs_up',
         codepoint: '1f44d',
     };
-    set_global('emoji', {
-        active_realm_emojis: {
-            realm_emoji: 'TBD',
-        },
-    });
+    emoji.active_realm_emojis = {
+        realm_emoji: 'TBD',
+    };
 
     global.templates.render = function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -520,12 +518,12 @@ _.each(matches, function (person) {
         rendered = true;
         return 'typeahead-item-stub';
     };
-    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
 
     // Test render_emoji with normal emoji.
     rendered = false;
-    emoji = {
+    test_emoji = {
         emoji_name: 'realm_emoji',
         emoji_url: 'TBD',
     };
@@ -542,11 +540,11 @@ _.each(matches, function (person) {
         rendered = true;
         return 'typeahead-item-stub';
     };
-    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
-}());
+});
 
-(function test_sort_emojis() {
+run_test('sort_emojis', () => {
     var emoji_list = [
         { emoji_name: '+1' },
         { emoji_name: 'thumbs_up' },
@@ -559,9 +557,9 @@ _.each(matches, function (person) {
         { emoji_name: '+1' },
         { emoji_name: 'pig' },
     ]);
-}());
+});
 
-(function test_sort_recipientbox_typeahead() {
+run_test('sort_recipientbox_typeahead', () => {
     var recipients = th.sort_recipientbox_typeahead("b, a", matches, ""); // search "a"
     var recipients_email = _.map(recipients, function (person) {
         return person.email;
@@ -589,4 +587,4 @@ _.each(matches, function (person) {
         'zman@test.net',
         'a_bot@zulip.com',
     ]);
-}());
+});

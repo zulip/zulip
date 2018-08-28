@@ -21,8 +21,15 @@ exports.reload = function () {
 };
 
 exports.can_edit = function (group_id) {
-    var me = people.get_person_from_user_id(people.my_current_user_id());
-    return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    return user_groups.is_member_of(group_id, people.my_current_user_id());
 };
 
 exports.populate_user_groups = function () {
@@ -37,33 +44,17 @@ exports.populate_user_groups = function () {
                 description: data.description,
             },
         }));
-        var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
-        var pills = input_pill.create({
-            container: pill_container,
-            create_item_from_text: user_pill.create_item_from_email,
-            get_text_from_item: user_pill.get_email_from_item,
-        });
+        var pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
+        var pills = user_pill.create_pills(pill_container);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
         }
 
-        function append_user(user) {
-            user_pill.append_person({
-                pill_widget: pills,
-                person: user,
-            });
-        }
-
         var userg = $('div.user-group[id="' + data.id + '"]');
         data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
-
-            if (user) {
-                append_user(user);
-            } else {
-                blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
-            }
+            user_pill.append_user(user, pills);
         });
 
         function update_membership(group_id) {
@@ -75,7 +66,7 @@ exports.populate_user_groups = function () {
             userg.addClass('ntm');
             pill_container.find('.input').attr('contenteditable','false');
             pill_container.find('.input').css('display', 'none');
-            pill_container.addClass('notmem');
+            pill_container.addClass('not-editable');
             pill_container.off('keydown', '.pill');
             pill_container.off('keydown', '.input');
             pill_container.off('click');
@@ -95,8 +86,13 @@ exports.populate_user_groups = function () {
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             var description = $('#user-groups #' + data.id + ' .description').text().trim();
             var name = $('#user-groups #' + data.id + ' .name').text().trim();
+            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
 
-            if ((group_data.description === description && group_data.name === name) &&
+            if (user_group_status.is(':visible')) {
+                return false;
+            }
+
+            if (group_data.description === description && group_data.name === name &&
                 (!draft_group.length || same_groups)) {
                 return false;
             }
@@ -107,8 +103,8 @@ exports.populate_user_groups = function () {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
-            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
 
             if (is_user_group_changed() &&
@@ -124,13 +120,13 @@ exports.populate_user_groups = function () {
         }
 
         function show_saved_button() {
-            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
-            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
-                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
             }
         }
 
@@ -151,12 +147,13 @@ exports.populate_user_groups = function () {
                     delete: JSON.stringify(removed),
                 },
                 success: function () {
-                    show_saved_button();
+                    setTimeout(show_saved_button, 200);
                 },
             });
         }
 
         function save_name_desc() {
+            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
             var group_data = user_groups.get_user_group_from_id(data.id);
             var description = $('#user-groups #' + data.id + ' .description').text().trim();
             var name = $('#user-groups #' + data.id + ' .name').text().trim();
@@ -172,7 +169,16 @@ exports.populate_user_groups = function () {
                     description: description,
                 },
                 success: function () {
-                    setTimeout(show_saved_button, 100);
+                    user_group_status.hide();
+                    setTimeout(show_saved_button, 200);
+                },
+                error: function (xhr) {
+                    var errors = JSON.parse(xhr.responseText).msg;
+                    xhr.responseText = JSON.stringify({msg: errors});
+                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    update_cancel_button();
+                    $('#user-groups #' + data.id + ' .name').text(group_data.name);
+                    $('#user-groups #' + data.id + ' .description').text(group_data.description);
                 },
             });
         }
@@ -202,7 +208,7 @@ exports.populate_user_groups = function () {
                 return;
             }
             if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
-                $(event.relatedTarget).closest('.cancel').length) {
+                $(event.relatedTarget).closest('.save-status.btn-danger').length) {
                 settings_user_groups.reload();
                 return;
             }
@@ -229,37 +235,9 @@ exports.populate_user_groups = function () {
         });
 
         var input = pill_container.children('.input');
-        (function set_up_typeahead() {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
-            input.typeahead({
-                items: 5,
-                fixed: true,
-                dropup: true,
-                source: function () {
-                    return user_pill.typeahead_source(pills);
-                },
-                highlighter: function (item) {
-                    return typeahead_helper.render_person(item);
-                },
-                matcher: function (item) {
-                    var query = this.query.toLowerCase();
-                    return (item.email.toLowerCase().indexOf(query) !== -1
-                            || item.full_name.toLowerCase().indexOf(query) !== -1);
-                },
-                sorter: function (matches) {
-                    return typeahead_helper.sort_recipientbox_typeahead(
-                        this.query, matches, "");
-                },
-                updater: function (user) {
-                    append_user(user);
-                    input.focus();
-                    update_cancel_button();
-                },
-                stopAdvance: true,
-            });
-        }());
+        if (exports.can_edit(data.id)) {
+            user_pill.set_up_typeahead_on_pills(input, pills, update_cancel_button);
+        }
 
         (function pill_remove() {
             if (!exports.can_edit(data.id)) {
@@ -349,3 +327,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_user_groups;
 }
+window.settings_user_groups = settings_user_groups;

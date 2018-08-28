@@ -5,7 +5,7 @@
         <div class="stream-header">
             {{#if invite_only}}
             <div class="large-icon lock" style="color: {{color}}">
-                <i class="icon-vector-lock"></i>
+                <i class="fa fa-lock" aria-hidden="true"></i>
             </div>
             {{else}}
             <div class="large-icon hash" style="color: {{color}}"></div>
@@ -19,7 +19,7 @@
             </div>
             <div class="button-group">
                 {{#if is_admin}}
-                <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}">{{t 'Delete' }} <i class="icon-vector-trash" aria-hidden="true"></i></button>
+                <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}">{{t 'Delete' }} <i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 {{/if}}
                 <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)" {{#unless should_display_subscription_button}}style="display: none"{{/unless}}>
                     {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
@@ -37,9 +37,7 @@
             <div class="subscription-type-text">
                 {{partial "subscription_type"}}
             </div>
-            {{#if can_change_subscription_type}}
-            <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
-            {{/if}}
+            <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">
@@ -73,6 +71,13 @@
                         </div>
                     </li>
                     <li>
+                        <div id="sub_email_notifications_setting"
+                          class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+                            <input id="email-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if email_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+                            <label class="subscription-control-label">{{t "Email notifications" }}</label>
+                        </div>
+                    </li>
+                    <li>
                         <div id="sub_pin_setting" class="sub_setting_checkbox">
                             <input id="pinstream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if pin_to_top}}checked{{/if}} />
                             <label class="subscription-control-label">{{t "Pin stream to top of left sidebar" }}</label>
@@ -87,7 +92,7 @@
                 </ul>
             </div>
             <div class="stream-email-box" {{#unless email_address}}style="display: none;"{{/unless}}>
-                <div class="sub_settings_title">{{t "Email address" }} <i class="icon-vector-question-sign stream-email-hint"></i></div>
+                <div class="sub_settings_title">{{t "Email address" }} <i class="fa fa-question-circle stream-email-hint" aria-hidden="true"></i></div>
                 <div class="stream-email">
                     <span class="email-address">{{email_address}}</span>
                 </div>

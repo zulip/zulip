@@ -2,34 +2,18 @@
 
 {!admin-only.md!}
 
-Follow the following steps to deactivate or reactivate any bots
-in your organization.
+By default, users can deactivate and reactivate the bots that they
+add. Organization admins can prevent users from reactivating bots by
+[restricting bot creation](/help/restrict-bot-creation).
 
-!!! tip ""
-    You can manage your own bots or integrations on the
-    [Your bots](/#settings/your-bots) {!settings.md!}
-
-## Deactivate a bot
+Organization administrators can also deactivate or reactivate any existing
+bot, regardless of who owns them.
 
 {settings_tab|bot-list-admin}
 
-4. Click the **Deactivate** button to the right of the bot that you want to
-deactivate.
+4. Find the bot that you would like to manage and click
+**Deactivate** or **Reactivate** to its right.
 
-5. After clicking the **Deactivate** button, the button will transform into a
-**Reactivate** button, and the **Name** and **Email** of the bot will be
-stricken through, confirming the success of the bot's deactivation.
+## Related articles
 
-## Reactivate a bot
-
-Zulip organization administrators can choose to reactivate a deactivated bot by
-following the following steps.
-
-{settings_tab|bot-list-admin}
-
-4. In the **Bots** section, click the **Reactivate** button to the right of the
-bot that you want to reactivate.
-
-5. After clicking the **Reactivate** button, the button will transform into a
-**Deactivate** button, and the **Name** and **Email** of the bot will be cleared
-of strikethrough, confirming the success of the bot's reactivation.
+* [Restrict bot creation](/help/restrict-bot-creation)

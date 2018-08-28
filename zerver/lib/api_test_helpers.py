@@ -5,6 +5,7 @@ import json
 import os
 
 from zerver.lib import mdiff
+from zerver.lib.openapi import validate_against_openapi_schema
 
 if False:
     from zulip import Client
@@ -35,8 +36,8 @@ def add_subscriptions(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['add-subscriptions']['without_principals']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '200_without_principals')
 
     # {code_example|start}
     # To subscribe another user to a stream, you may pass in
@@ -60,8 +61,8 @@ def test_add_subscriptions_already_subscribed(client):
         principals=['newbie@zulip.com']
     )
 
-    fixture = FIXTURES['add-subscriptions']['already_subscribed']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '200_already_subscribed')
 
 def test_authorization_errors_fatal(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -85,8 +86,8 @@ def test_authorization_errors_fatal(client, nonadmin_client):
         authorization_errors_fatal=False,
     )
 
-    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_false']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '400_unauthorized_errors_fatal_false')
 
     result = nonadmin_client.add_subscriptions(
         streams=[
@@ -95,8 +96,8 @@ def test_authorization_errors_fatal(client, nonadmin_client):
         authorization_errors_fatal=True,
     )
 
-    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_true']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '400_unauthorized_errors_fatal_true')
 
 def create_user(client):
     # type: (Client) -> None
@@ -112,14 +113,12 @@ def create_user(client):
     result = client.create_user(request)
     # {code_example|end}
 
-    fixture = FIXTURES['create-user']['successful_response']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users', 'post', '200')
 
     # Test "Email already used error"
     result = client.create_user(request)
 
-    fixture = FIXTURES['create-user']['email_already_used_error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users', 'post', '400')
 
 def get_members(client):
     # type: (Client) -> None
@@ -129,31 +128,33 @@ def get_members(client):
     result = client.get_members()
     # {code_example|end}
 
-    fixture = FIXTURES['get-all-users']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['members'])
+    validate_against_openapi_schema(result, '/users', 'get', '200')
+
     members = [m for m in result['members'] if m['email'] == 'newbie@zulip.com']
     assert len(members) == 1
     newbie = members[0]
     assert not newbie['is_admin']
     assert newbie['full_name'] == 'New User'
 
-    member_fixture = fixture['members'][0]
-    member_result = result['members'][0]
-    test_against_fixture(member_result, member_fixture,
-                         check_if_exists=member_fixture.keys())
-
     # {code_example|start}
     # You may pass the `client_gravatar` query parameter as follows:
-    result = client.call_endpoint(
-        url='users?client_gravatar=true',
-        method='GET',
-    )
+    result = client.get_members({'client_gravatar': True})
     # {code_example|end}
 
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['members'])
+    validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
+
+def add_realm_filter(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Add a filter to automatically linkify #<number> to the corresponding
+    # issue in Zulip's server repo
+    result = client.add_realm_filter('#(?P<id>[0-9]+)',
+                                     'https://github.com/zulip/zulip/issues/%(id)s')
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
 
 def get_profile(client):
     # type: (Client) -> None
@@ -180,9 +181,7 @@ def get_stream_id(client):
     result = client.get_stream_id(stream_name)
     # {code_example|end}
 
-    fixture = FIXTURES['get-stream-id']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['stream_id'])
+    validate_against_openapi_schema(result, '/get_stream_id', 'get', '200')
 
 def get_streams(client):
     # type: (Client) -> None
@@ -192,10 +191,7 @@ def get_streams(client):
     result = client.get_streams()
     # {code_example|end}
 
-    fixture = FIXTURES['get-all-streams']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['streams'])
-    assert len(result['streams']) == len(fixture['streams'])
+    validate_against_openapi_schema(result, '/streams', 'get', '200')
     streams = [s for s in result['streams'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
 
@@ -205,8 +201,7 @@ def get_streams(client):
     result = client.get_streams(include_public=False)
     # {code_example|end}
 
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['streams'])
+    validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
 def test_user_not_authorized_error(nonadmin_client):
@@ -252,8 +247,8 @@ def remove_subscriptions(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['remove-subscriptions']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions',
+                                    'delete', '200')
 
     # test it was actually removed
     result = client.list_subscriptions()
@@ -269,7 +264,52 @@ def remove_subscriptions(client):
     )
     # {code_example|end}
 
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions',
+                                    'delete', '200')
+
+def toggle_mute_topic(client):
+    # type: (Client) -> None
+
+    # Send a test message
+    message = {
+        'type': 'stream',
+        'to': 'Denmark',
+        'subject': 'boat party'
+    }
+    client.call_endpoint(
+        url='messages',
+        method='POST',
+        request=message
+    )
+
+    # {code_example|start}
+    # Mute the topic "boat party" in the stream "Denmark"
+    request = {
+        'stream': 'Denmark',
+        'topic': 'boat party',
+        'op': 'add'
+    }
+    result = client.mute_topic(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result,
+                                    '/users/me/subscriptions/muted_topics',
+                                    'patch', '200')
+
+    # {code_example|start}
+    # Unmute the topic "boat party" in the stream "Denmark"
+    request = {
+        'stream': 'Denmark',
+        'topic': 'boat party',
+        'op': 'remove'
+    }
+
+    result = client.mute_topic(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result,
+                                    '/users/me/subscriptions/muted_topics',
+                                    'patch', '200')
 
 def render_message(client):
     # type: (Client) -> None
@@ -282,10 +322,9 @@ def render_message(client):
     result = client.render_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['render-message']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/render', 'post', '200')
 
-def stream_message(client):
+def send_message(client):
     # type: (Client) -> int
 
     # {code_example|start}
@@ -299,11 +338,31 @@ def stream_message(client):
     result = client.send_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['stream-message']
-    test_against_fixture(result, fixture, check_if_equal=['result'],
-                         check_if_exists=['id'])
+    validate_against_openapi_schema(result, '/messages', 'post', '200')
 
-    # test it was actually sent
+    # test that the message was actually sent
+    message_id = result['id']
+    url = 'messages/' + str(message_id)
+    result = client.call_endpoint(
+        url=url,
+        method='GET'
+    )
+    assert result['result'] == 'success'
+    assert result['raw_content'] == request['content']
+
+    # {code_example|start}
+    # Send a private message
+    request = {
+        "type": "private",
+        "to": "iago@zulip.com",
+        "content": "I come not, friends, to steal away your hearts."
+    }
+    result = client.send_message(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages', 'post', '200')
+
+    # test that the message was actually sent
     message_id = result['id']
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
@@ -325,35 +384,8 @@ def test_nonexistent_stream_error(client):
     }
     result = client.send_message(request)
 
-    fixture = FIXTURES['nonexistent-stream-error']
-    test_against_fixture(result, fixture)
-
-def private_message(client):
-    # type: (Client) -> None
-
-    # {code_example|start}
-    # Send a private message
-    request = {
-        "type": "private",
-        "to": "iago@zulip.com",
-        "content": "I come not, friends, to steal away your hearts."
-    }
-    result = client.send_message(request)
-    # {code_example|end}
-
-    fixture = FIXTURES['private-message']
-    test_against_fixture(result, fixture, check_if_equal=['result'],
-                         check_if_exists=['id'])
-
-    # test it was actually sent
-    message_id = result['id']
-    url = 'messages/' + str(message_id)
-    result = client.call_endpoint(
-        url=url,
-        method='GET'
-    )
-    assert result['result'] == 'success'
-    assert result['raw_content'] == request['content']
+    validate_against_openapi_schema(result, '/messages', 'post',
+                                    '400_non_existing_stream')
 
 def test_private_message_invalid_recipient(client):
     # type: (Client) -> None
@@ -364,8 +396,8 @@ def test_private_message_invalid_recipient(client):
     }
     result = client.send_message(request)
 
-    fixture = FIXTURES['invalid-pm-recipient-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages', 'post',
+                                    '400_non_existing_user')
 
 def update_message(client, message_id):
     # type: (Client, int) -> None
@@ -383,8 +415,8 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['update-message']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch',
+                                    '200')
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
@@ -420,14 +452,11 @@ def register_queue(client):
     # {code_example|start}
     # Register the queue
     result = client.register(
-        event_types=['messages', 'realm_emoji']
+        event_types=['message', 'realm_emoji']
     )
     # {code_example|end}
 
-    fixture = FIXTURES['register-queue']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['last_event_id', 'queue_id'])
-
+    validate_against_openapi_schema(result, '/register', 'post', '200')
     return result['queue_id']
 
 def deregister_queue(client, queue_id):
@@ -439,14 +468,21 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     # {code_example|end}
 
-    fixture = FIXTURES['delete-queue']['successful_response']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/events', 'delete', '200')
 
     # Test "BAD_EVENT_QUEUE_ID" error
     result = client.deregister(queue_id)
-    fixture = FIXTURES['delete-queue']['bad_event_queue_id_error']
-    test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
-                         check_if_exists=['queue_id', 'msg'])
+    validate_against_openapi_schema(result, '/events', 'delete', '400')
+
+def get_server_settings(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch the settings for this server
+    result = client.get_server_settings()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/server_settings', 'get', '200')
 
 def upload_file(client):
     # type: (Client) -> None
@@ -463,9 +499,43 @@ def upload_file(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['upload-file']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['uri'])
+    validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
+
+def get_stream_topics(client, stream_id):
+    # type: (Client, int) -> None
+
+    # {code_example|start}
+    result = client.get_stream_topics(stream_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
+                                    'get', '200')
+
+def set_typing_status(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # The user has started to type in the group PM with Iago and Polonius
+    request = {
+        'op': 'start',
+        'to': ['iago@zulip.com', 'polonius@zulip.com']
+    }
+    result = client.set_typing_status(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/typing', 'post', '200')
+
+    # {code_example|start}
+    # The user has finished typing in the group PM with Iago and Polonius
+    request = {
+        'op': 'stop',
+        'to': ['iago@zulip.com', 'polonius@zulip.com']
+    }
+    result = client.set_typing_status(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/typing', 'post', '200')
+
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
@@ -484,25 +554,28 @@ def test_invalid_stream_error(client):
     # type: (Client) -> None
     result = client.get_stream_id('nonexistent')
 
-    fixture = FIXTURES['invalid-stream-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/get_stream_id', 'get', '400')
 
 TEST_FUNCTIONS = {
-    'render-message': render_message,
-    'stream-message': stream_message,
-    'private-message': private_message,
-    'update-message': update_message,
-    'get-stream-id': get_stream_id,
+    '/messages/render:post': render_message,
+    '/messages:post': send_message,
+    '/messages/{message_id}:patch': update_message,
+    '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
-    'get-all-streams': get_streams,
-    'create-user': create_user,
+    '/streams:get': get_streams,
+    '/users:post': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
-    'remove-subscriptions': remove_subscriptions,
-    'get-all-users': get_members,
-    'register-queue': register_queue,
-    'delete-queue': deregister_queue,
-    'upload-file': upload_file,
+    '/users/me/subscriptions:delete': remove_subscriptions,
+    '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
+    '/users:get': get_members,
+    '/realm/filters:post': add_realm_filter,
+    '/register:post': register_queue,
+    '/events:delete': deregister_queue,
+    '/server_settings:get': get_server_settings,
+    '/user_uploads:post': upload_file,
+    '/users/me/{stream_id}/topics:get': get_stream_topics,
+    '/typing:post': set_typing_status,
 }
 
 # SETUP METHODS FOLLOW
@@ -552,16 +625,17 @@ def assertIn(key, result):
     else:
         assert key in result
 
-def test_messages(client):
-    # type: (Client) -> None
+def test_messages(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     render_message(client)
-    message_id = stream_message(client)
+    message_id = send_message(client)
     update_message(client, message_id)
-    private_message(client)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
+    test_update_message_edit_permission_error(client, nonadmin_client)
+
 
 def test_users(client):
     # type: (Client) -> None
@@ -570,9 +644,10 @@ def test_users(client):
     get_members(client)
     get_profile(client)
     upload_file(client)
+    set_typing_status(client)
 
-def test_streams(client):
-    # type: (Client) -> None
+def test_streams(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     add_subscriptions(client)
     test_add_subscriptions_already_subscribed(client)
@@ -581,6 +656,12 @@ def test_streams(client):
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
+    toggle_mute_topic(client)
+    get_stream_topics(client, 1)
+
+    test_user_not_authorized_error(nonadmin_client)
+    test_authorization_errors_fatal(client, nonadmin_client)
+
 
 def test_queues(client):
     # type: (Client) -> None
@@ -592,17 +673,24 @@ def test_queues(client):
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
+def test_server_organizations(client):
+    # type: (Client) -> None
+
+    add_realm_filter(client)
+    get_server_settings(client)
+
 def test_errors(client):
     # type: (Client) -> None
     test_missing_request_argument(client)
     test_invalid_stream_error(client)
 
-def test_the_api(client):
-    # type: (Client) -> None
+def test_the_api(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     get_user_agent(client)
     test_users(client)
-    test_streams(client)
-    test_messages(client)
+    test_streams(client, nonadmin_client)
+    test_messages(client, nonadmin_client)
     test_queues(client)
+    test_server_organizations(client)
     test_errors(client)

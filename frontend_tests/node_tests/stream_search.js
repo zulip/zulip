@@ -49,7 +49,7 @@ function toggle_filter() {
     stream_list.toggle_filter_displayed({preventDefault: noop});
 }
 
-(function test_basics() {
+run_test('basics', () => {
     var cursor_helper;
     const input = $('.stream-list-filter');
     const header = $.create('header stub');
@@ -162,9 +162,9 @@ function toggle_filter() {
     stream_list.escape_search();
     verify_collapsed();
 
-}());
+});
 
-(function test_expanding_sidebar() {
+run_test('expanding_sidebar', () => {
     $('.app-main .column-left').removeClass('expanded');
 
     const events = [];
@@ -181,4 +181,4 @@ function toggle_filter() {
         'popovers.hide_all',
         'stream_popover.show_streamlist_sidebar',
     ]);
-}());
+});

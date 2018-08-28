@@ -19,6 +19,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
+    is_web_public_compatible,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -54,7 +55,7 @@ def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     return comp.params
 
 def fix_ws(s: str) -> str:
-    return re.sub('\s+', ' ', str(s)).strip()
+    return re.sub(r'\s+', ' ', str(s)).strip()
 
 def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
@@ -99,12 +100,12 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator='is', operand='private')
-        self._do_add_term_test(term, 'WHERE type = :type_1 OR type = :type_2')
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
     def test_add_term_using_is_operator_private_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='is', operand='private', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (type = :type_1 OR type = :type_2)')
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
 
     def test_add_term_using_is_operator_and_non_private_operand(self) -> None:
         for operand in ['starred', 'mentioned', 'alerted']:
@@ -261,13 +262,13 @@ class NarrowBuilderTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator='search', operand='"french fries"')
-        self._do_add_term_test(term, 'WHERE search_pgroonga @@ :search_pgroonga_1')
+        self._do_add_term_test(term, 'WHERE search_pgroonga &@~ escape_html(:escape_html_1)')
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(
             self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ :search_pgroonga_1)')
+        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga &@~ escape_html(:escape_html_1))')
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
         term = dict(operator='has', operand='attachment')
@@ -344,7 +345,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
 
-class BuildNarrowFilterTest(TestCase):
+class NarrowLibraryTest(TestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      'fixtures/narrow.json')
@@ -363,6 +364,39 @@ class BuildNarrowFilterTest(TestCase):
     def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):
             build_narrow_filter(["invalid_operator", "operand"])
+
+    def test_is_web_public_compatible(self) -> None:
+        self.assertTrue(is_web_public_compatible([]))
+        self.assertTrue(is_web_public_compatible([{"operator": "has",
+                                                   "operand": "attachment"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "has",
+                                                   "operand": "image"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "search",
+                                                   "operand": "magic"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "near",
+                                                   "operand": "15"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "id",
+                                                   "operand": "15"},
+                                                  {"operator": "has",
+                                                   "operand": "attachment"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "sender",
+                                                   "operand": "hamlet@zulip.com"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "pm-with",
+                                                    "operand": "hamlet@zulip.com"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "group-pm-with",
+                                                    "operand": "hamlet@zulip.com"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "stream",
+                                                   "operand": "Denmark"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "stream",
+                                                   "operand": "Denmark"},
+                                                  {"operator": "topic",
+                                                   "operand": "logic"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "is",
+                                                    "operand": "starred"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "is",
+                                                    "operand": "private"}]))
+        # Malformed input not allowed
+        self.assertFalse(is_web_public_compatible([{"operator": "has"}]))
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
@@ -1343,6 +1377,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ('english', u'I want to go to 日本!'),
             ('english', 'Can you speak https://en.wikipedia.org/wiki/Japanese?'),
             ('english', 'https://google.com'),
+            ('bread & butter', 'chalk & cheese'),
         ]
 
         for topic, content in messages_to_search:
@@ -1360,7 +1395,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE zerver_message SET
-                search_pgroonga = subject || ' ' || rendered_content
+                search_pgroonga = escape_html(subject) || ' ' || rendered_content
                 """)
 
         narrow = [
@@ -1437,6 +1472,35 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
+
+        # Search operands with HTML Special Characters
+        special_search_narrow = [
+            dict(operator='search', operand='butter'),
+        ]
+        special_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(special_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))  # type: Dict[str, Any]
+        self.assertEqual(len(special_search_result['messages']), 1)
+        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+                         'bread &amp; <span class="highlight">butter</span>')
+
+        special_search_narrow = [
+            dict(operator='search', operand='&'),
+        ]
+        special_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(special_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(special_search_result['messages']), 1)
+        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+                         'bread <span class="highlight">&amp;</span> butter')
+        self.assertEqual(special_search_result['messages'][0]['match_content'],
+                         '<p>chalk <span class="highlight">&amp;</span> cheese</p>')
 
     def test_messages_in_narrow_for_non_search(self) -> None:
         email = self.example_email("cordelia")
@@ -1633,7 +1697,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
+        required_args = (("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
@@ -1832,8 +1896,9 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
+        # Here, Hamlet isn't subscribed to the stream Scotland
         self.send_stream_message(self.example_email("othello"), "Scotland")
-        last_message_id_to_hamlet = self.send_personal_message(
+        first_unread_message_id = self.send_personal_message(
             self.example_email("othello"),
             self.example_email("hamlet"),
         )
@@ -1863,11 +1928,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('ORDER BY message_id ASC', sql)
 
         cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
-            user_profile.id, last_message_id_to_hamlet,
+            user_profile.id, first_unread_message_id,
         )
         self.assertIn(cond, sql)
         cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
-            user_profile.id, last_message_id_to_hamlet - 1,
+            user_profile.id, first_unread_message_id - 1,
         )
         self.assertIn(cond, sql)
         self.assertIn('UNION', sql)
@@ -1955,7 +2020,7 @@ class GetOldMessagesTest(ZulipTestCase):
             queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
             sql = queries[0]['sql']
 
-            m = re.findall('AND message_id >= (\d+)', str(sql))
+            m = re.findall(r'AND message_id >= (\d+)', str(sql))
             self.assertEqual(m, [str(first_visible_message_id)])
 
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:

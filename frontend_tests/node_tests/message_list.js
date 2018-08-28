@@ -7,6 +7,7 @@ var noop = function () {};
 set_global('Filter', noop);
 global.stub_out_jquery();
 set_global('document', null);
+set_global('blueslip', global.make_zblueslip());
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('util');
@@ -20,11 +21,22 @@ set_global('feature_flags', {});
 
 var with_overrides = global.with_overrides; // make lint happy
 
-(function test_basics() {
-    var table;
-    var filter = {};
+function accept_all_filter() {
+    var filter = {
+        predicate: () => {
+            return () => true;
+        },
+    };
 
-    var list = new MessageList(table, filter);
+    return filter;
+}
+
+run_test('basics', () => {
+    var filter = accept_all_filter();
+
+    var list = new MessageList({
+        filter: filter,
+    });
 
     var messages = [
         {
@@ -91,7 +103,7 @@ var with_overrides = global.with_overrides; // make lint happy
             id: 40,
         },
     ];
-    list.prepend(old_messages, true);
+    list.add_messages(old_messages);
     assert.equal(list.first().id, 30);
     assert.equal(list.last().id, 80);
 
@@ -113,12 +125,49 @@ var with_overrides = global.with_overrides; // make lint happy
 
     list.clear();
     assert.deepEqual(list.all_messages(), []);
-}());
+});
 
-(function test_message_range() {
-    var table;
-    var filter = {};
-    var list = new MessageList(table, filter);
+run_test('prev_next', () => {
+    var list = new MessageList({});
+
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
+
+    // try to confuse things with bogus selected id
+    list.data.set_selected_id(33);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
+
+    var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
+    list.append(messages, true);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+
+    // The next case is for defensive code.
+    list.data.set_selected_id(45);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
+
+    list.data.set_selected_id(30);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), 40);
+
+    list.data.set_selected_id(50);
+    assert.equal(list.prev(), 40);
+    assert.equal(list.next(), 60);
+    assert.equal(list.is_at_end(), false);
+
+    list.data.set_selected_id(60);
+    assert.equal(list.prev(), 50);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), true);
+});
+
+run_test('message_range', () => {
+    var list = new MessageList({});
 
     var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
@@ -127,12 +176,12 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
     assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
-}());
+    blueslip.set_test_data('error', 'message_range given a start of -1');
+    assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
+});
 
-(function test_updates() {
-    var table;
-    var filter = {};
-    var list = new MessageList(table, filter);
+run_test('updates', () => {
+    var list = new MessageList({});
     list.view.rerender_the_whole_thing = noop;
 
     var messages = [
@@ -166,38 +215,37 @@ var with_overrides = global.with_overrides; // make lint happy
     list.update_stream_name(64, "Finland");
     assert.equal(list.get(2).stream, "Finland");
     assert.equal(list.get(1).stream, "denmark");
-}());
+});
 
-(function test_nth_most_recent_id() {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+run_test('nth_most_recent_id', () => {
+    var list = new MessageList({});
     list.append([{id:10}, {id:20}, {id:30}]);
     assert.equal(list.nth_most_recent_id(1), 30);
     assert.equal(list.nth_most_recent_id(2), 20);
     assert.equal(list.nth_most_recent_id(3), 10);
     assert.equal(list.nth_most_recent_id(4), -1);
-}());
+});
 
-(function test_change_message_id() {
-    var table;
-    var filter = {};
+run_test('change_message_id', () => {
+    var list = new MessageList({});
+    list.data._add_to_hash([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
 
-    var list = new MessageList(table, filter);
-    list.append([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
-    list.change_message_id(10.5, 11);
+    // local to local
+    list.change_message_id(10.5, 11.5);
+    assert.equal(list.get(11.5).content, "good job");
+
+    list.change_message_id(11.5, 11);
     assert.equal(list.get(11).content, "good job");
 
     list.change_message_id(20.5, 10);
     assert.equal(list.get(10).content, "ok!");
-}());
 
-(function test_last_sent_by_me() {
-    var table;
-    var filter = {};
+    // test nonexistent id
+    assert.equal(list.change_message_id(13, 15), undefined);
+});
 
-    var list = new MessageList(table, filter);
+run_test('last_sent_by_me', () => {
+    var list = new MessageList({});
     var items = [
         {
             id: 1,
@@ -217,15 +265,12 @@ var with_overrides = global.with_overrides; // make lint happy
     set_global("page_params", {user_id: 3});
     // Look for the last message where user_id == 3 (our ID)
     assert.equal(list.get_last_message_sent_by_me().id, 2);
-}());
+});
 
-(function test_local_echo() {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+run_test('local_echo', () => {
+    var list = new MessageList({});
     list.append([{id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40}, {id:50}, {id:60}]);
-    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03}};
+    list._local_only = {20.02: {id:20.02}, 20.03: {id:20.03}};
 
     assert.equal(list.closest_id(10), 10);
     assert.equal(list.closest_id(20), 20);
@@ -245,12 +290,12 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.equal(list.closest_id(58), 60);
 
 
-    list = new MessageList(table, filter);
+    list = new MessageList({});
     list.append([
         {id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40},
         {id:50}, {id: 50.01}, {id: 50.02}, {id:60}]);
-    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03},
-                       50.01: {id: 50.01}, 50.02: {id: 50.02}};
+    list._local_only = {20.02: {id:20.02}, 20.03: {id:20.03},
+                        50.01: {id: 50.01}, 50.02: {id: 50.02}};
 
     assert.equal(list.closest_id(10), 10);
     assert.equal(list.closest_id(20), 20);
@@ -269,13 +314,10 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.equal(list.closest_id(51), 50.02);
     assert.equal(list.closest_id(59), 60);
     assert.equal(list.closest_id(50.01), 50.01);
-}());
+});
 
-(function test_bookend() {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+run_test('bookend', () => {
+    var list = new MessageList({});
 
     with_overrides(function (override) {
         var expected = "translated: You subscribed to stream IceCream";
@@ -349,13 +391,10 @@ var with_overrides = global.with_overrides; // make lint happy
             assert.equal(bookend.show_button, true);
         });
     });
-}());
+});
 
-(function test_unmuted_messages() {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+run_test('unmuted_messages', () => {
+    var list = new MessageList({});
 
     var unmuted = [
         {
@@ -387,26 +426,18 @@ var with_overrides = global.with_overrides; // make lint happy
         var test_unmuted = list.unmuted_messages(unmuted.concat(muted));
         assert.deepEqual(unmuted, test_unmuted);
     });
-}());
+});
 
-(function test_add_remove_rerender() {
-    var table;
-    var filter = {};
+run_test('add_remove_rerender', () => {
+    var filter = accept_all_filter();
 
-    var list = new MessageList(table, filter);
+    var list = new MessageList({filter: filter});
 
     var messages = [{id: 1}, {id: 2}, {id: 3}];
 
     list.data.unmuted_messages = function (msgs) { return msgs; };
-    global.with_stub(function (stub) {
-        list.view.rerender_the_whole_thing = stub.f;
-        list.add_and_rerender(messages);
-
-        // Make sure the function has triggered a rerender
-        // and that all 3 items were added to the list.
-        assert.equal(stub.num_calls, 1);
-        assert.equal(list.num_items(), 3);
-    });
+    list.add_messages(messages);
+    assert.equal(list.num_items(), 3);
 
     global.with_stub(function (stub) {
         list.rerender = stub.f;
@@ -414,4 +445,4 @@ var with_overrides = global.with_overrides; // make lint happy
         assert.equal(stub.num_calls, 1);
         assert.equal(list.num_items(), 0);
     });
-}());
+});

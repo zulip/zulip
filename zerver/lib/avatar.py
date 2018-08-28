@@ -10,7 +10,7 @@ from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 from zerver.models import UserProfile
 import urllib
 
-def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: bool=False) -> str:
+def avatar_url(user_profile: UserProfile, medium: bool=False, client_gravatar: bool=False) -> Optional[str]:
 
     return get_avatar_field(
         user_id=user_profile.id,
@@ -112,6 +112,11 @@ def _get_unversioned_avatar_url(user_profile_id: int,
     return _get_unversioned_gravatar_url(email, medium)
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:
-    """Absolute URLs are used to simplify logic for applications that
-    won't be served by browsers, such as rendering GCM notifications."""
-    return urllib.parse.urljoin(user_profile.realm.uri, avatar_url(user_profile))
+    """
+    Absolute URLs are used to simplify logic for applications that
+    won't be served by browsers, such as rendering GCM notifications.
+    """
+    avatar = avatar_url(user_profile)
+    # avatar_url can return None if client_gravatar=True, however here we use the default value of False
+    assert avatar is not None
+    return urllib.parse.urljoin(user_profile.realm.uri, avatar)

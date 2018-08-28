@@ -1,0 +1,40 @@
+<% if @nginx_http_only != '' -%>
+<% else -%>
+server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+<% end -%>
+
+include /etc/nginx/zulip-include/upstreams;
+
+server {
+<% if @nginx_http_only != '' -%>
+    listen 80;
+<% else -%>
+    listen 443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/zulip.key;
+<% end -%>
+
+<% if @no_serve_uploads == '' -%>
+    location /user_avatars {
+        add_header X-Content-Type-Options nosniff;
+        add_header Content-Security-Policy "default-src 'none' img-src 'self'";
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/avatars;
+    }
+<% end -%>
+
+    location /local-static {
+        alias /home/zulip/local-static;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+    include /etc/nginx/zulip-include/app;
+<% if @no_serve_uploads == '' -%>
+    include /etc/nginx/zulip-include/uploads.route;
+<% end -%>
+}

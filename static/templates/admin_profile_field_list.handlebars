@@ -1,6 +1,10 @@
 {{#with profile_field}}
-<tr class="profile-field-row" data-profile-field-id="{{id}}">
+<tr class="profile-field-row movable-profile-field-row" data-profile-field-id="{{id}}">
     <td>
+        {{#if ../can_modify}}
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        {{/if}}
         <span class="profile_field_name">{{name}}</span>
     </td>
     <td>
@@ -12,16 +16,10 @@
     {{#if ../can_modify}}
     <td>
         <button class="button rounded small delete btn-danger" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
-            <i class="icon-vector-trash"></i>
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
         <button class="button rounded small btn-warning open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
-            <i class="icon-vector-pencil"></i>
-        </button>
-        <button class="button rounded small btn-warning move-field-up" {{#if ../first}}disabled="disabled"{{/if}} title="{{t 'Up' }}" data-profile-field-id="{{id}}">
-            <i class="icon-vector-chevron-up"></i>
-        </button>
-        <button class="button rounded small btn-warning move-field-down" {{#if ../last}}disabled="disabled"{{/if}} title="{{t 'Down' }}" data-profile-field-id="{{id}}">
-            <i class="icon-vector-chevron-down"></i>
+            <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>
     </td>
     {{/if}}
@@ -31,25 +29,22 @@
         <form class="form-horizontal name-setting">
             <div class="input-group name_change_container">
                 <label for="name">{{t "Name" }}</label>
-                <input type="text" name="name" value="{{ name }}" />
+                <input type="text" name="name" value="{{ name }}" maxlength="40" />
             </div>
             <div class="input-group hint_change_container">
                 <label for="hint">{{t "Hint" }}</label>
-                <input type="text" name="hint" value="{{ hint }}" />
+                <input type="text" name="hint" value="{{ hint }}" maxlength="80" />
             </div>
             {{#if is_choice_field }}
             <div class="input-group">
                 <label for="profile_field_choices_edit">{{t "Field choices" }}</label>
                 <div class="profile-field-choices" name="profile_field_choices_edit">
-                    <div class='choices-header'>
-                        <div class='choice-field'>Value</div>
-                        <div class='choice-field'>Text</div>
-                        <div class='choice-field'>Order</div>
-                    </div>
                     <hr />
-                    {{#each choices}}
-                    {{partial "profile-field-choice" }}
-                    {{/each}}
+                    <div class="edit_profile_field_choices_container">
+                        {{#each choices}}
+                        {{partial "profile-field-choice" }}
+                        {{/each}}
+                    </div>
                 </div>
             </div>
             {{/if}}

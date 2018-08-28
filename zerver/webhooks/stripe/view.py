@@ -9,7 +9,8 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Stripe')
@@ -158,7 +159,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         topic = "Transfer {}".format(object_id)
 
     if body is None:
-        return json_error(_("We don't support {} event".format(event_type)))
+        raise UnexpectedWebhookEventType('Stripe', event_type)
 
     check_send_webhook_message(request, user_profile, topic, body)
 

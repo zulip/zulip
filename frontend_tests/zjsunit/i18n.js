@@ -18,6 +18,4 @@ i18n.t = function (str, context) {
     return 'translated: ' + str;
 };
 
-i18n.ensure_i18n = function (f) { f(); };
-
 module.exports = i18n;

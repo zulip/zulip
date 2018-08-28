@@ -41,6 +41,7 @@ IGNORED_PHRASES = [
     r'Slack',
     r"SSO",
     r'Terms of Service',
+    r'Tuesday',
     r"URL",
     r"Ubuntu",
     r"Updown",
@@ -72,7 +73,12 @@ IGNORED_PHRASES = [
     r"enabled",
     r"disabled",
     r"zulip_org_id",
-
+    r"admins",
+    r"members",
+    # Placeholders
+    r"keyword",
+    r"streamname",
+    r"user@example.com",
     # Fragments of larger strings
     (r'your subscriptions on your Streams page'),
     (r'Change notification settings for individual streams on your '
@@ -95,6 +101,10 @@ IGNORED_PHRASES = [
     r"more topics",
     # For consistency with "more topics"
     r"more conversations",
+    # Capital 'i' looks weird in reminders popover
+    r"in 1 hour",
+    r"in 20 minutes",
+    r"in 3 hours",
     # We should probably just delete this string from translations
     r'activation key',
     # this is used as a topic
@@ -103,6 +113,8 @@ IGNORED_PHRASES = [
     r"^marketing$",
     r"^cookie$",
     r"^new_emoji$",
+    # Used to refer custom time limits
+    r"\bN\b",
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
@@ -111,6 +123,9 @@ IGNORED_PHRASES = [
     r"argument ",
     # I can't find this one
     r"text",
+    r"GIF",
+    # Emoji name placeholder
+    r"leafy green vegetable",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

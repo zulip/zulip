@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/users \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|create-user|example(admin_config=True)}
+{generate_code_example(python)|/users:post|example(admin_config=True)}
 
 </div>
 
@@ -64,7 +64,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|create-user.md}
+{generate_api_arguments_table|zulip.yaml|/users:post}
 
 ## Response
 
@@ -72,9 +72,9 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|create-user|fixture(successful_response)}
+{generate_code_example|/users:post|fixture(200)}
 
 A typical JSON response for when another user with the same
 email address already exists in the realm:
 
-{generate_code_example|create-user|fixture(email_already_used_error)}
+{generate_code_example|/users:post|fixture(400)}

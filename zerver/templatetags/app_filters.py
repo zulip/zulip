@@ -1,4 +1,5 @@
 import os
+from html import unescape
 from typing import Any, Dict, List, Optional
 
 import markdown
@@ -10,11 +11,15 @@ import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
 from django.utils.safestring import mark_safe
+from jinja2.exceptions import TemplateNotFound
 
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
+import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.help_settings_links
+import zerver.lib.bugdown.help_emoticon_translations_table
+from zerver.context_processors import zulip_default_context
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
@@ -54,8 +59,8 @@ def display_list(values: List[str], display_limit: int) -> str:
 
     return display_string
 
-md_extensions = None
-md_macro_extension = None
+md_extensions = None  # type: Optional[List[Any]]
+md_macro_extension = None  # type: Optional[Any]
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
@@ -69,7 +74,9 @@ docs_without_macros = [
 # the results when called if none of the arguments are unhashable.
 @ignore_unhashable_lru_cache(512)
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, Any]]=None) -> str:
+def render_markdown_path(markdown_file_path: str,
+                         context: Optional[Dict[Any, Any]]=None,
+                         pure_markdown: Optional[bool]=False) -> str:
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is
@@ -98,7 +105,9 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.api_code_examples.makeExtension(),
+            zerver.lib.bugdown.nested_code_blocks.makeExtension(),
             zerver.lib.bugdown.help_settings_links.makeExtension(),
+            zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),
         ]
     if md_macro_extension is None:
         md_macro_extension = markdown_include.include.makeExtension(
@@ -111,7 +120,35 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
     md_engine.reset()
 
     jinja = engines['Jinja2']
-    markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+    try:
+        # By default, we do both Jinja2 templating and markdown
+        # processing on the file, to make it easy to use both Jinja2
+        # context variables and markdown includes in the file.
+        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+    except TemplateNotFound as e:
+        if pure_markdown:
+            # For files such as /etc/zulip/terms.md where we don't intend
+            # to use Jinja2 template variables, we still try to load the
+            # template using Jinja2 (in case the file path isn't absolute
+            # and does happen to be in Jinja's recognized template
+            # directories), and if that fails, we try to load it directly
+            # from disk.
+            with open(markdown_file_path) as fp:
+                markdown_string = fp.read()
+        else:
+            raise e
+
     html = md_engine.convert(markdown_string)
-    html_template = jinja.from_string(html)
-    return mark_safe(html_template.render(context))
+    rendered_html = jinja.from_string(html).render(context)
+
+    if context.get('unescape_rendered_html', False):
+        # In some exceptional cases (such as our Freshdesk webhook docs),
+        # code blocks in some of our Markdown templates have characters such
+        # as '{' encoded as '&#123;' to prevent clashes with Jinja2 syntax,
+        # but the encoded form never gets decoded because the text ends up
+        # inside a <pre> tag. So here, we explicitly "unescape" such characters
+        # if 'unescape_rendered_html' is True.
+        rendered_html = unescape(rendered_html)
+
+    return mark_safe(rendered_html)

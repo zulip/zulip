@@ -6,38 +6,29 @@ var toggler;
 
 exports.highlight_toggle = function (tab_name) {
     if (toggler) {
-        toggler.goto(tab_name, { dont_switch_tab: true });
+        toggler.goto(tab_name);
     }
 };
 
-exports.create_toggler = function () {
+exports.initialize = function () {
     toggler = components.toggle({
+        child_wants_focus: true,
         values: [
             { label: i18n.t("Settings"), key: "settings" },
             { label: i18n.t("Organization"), key: "organization" },
         ],
-        callback: function (name, key, payload) {
-            $(".sidebar li").hide();
-
+        callback: function (name, key) {
             if (key === "organization") {
-                $("li.admin").show();
-                if (!payload.dont_switch_tab) {
-                    $("li[data-section='organization-profile']").click();
-                }
+                settings_panel_menu.show_org_settings();
             } else {
-                $(".settings-list li:not(.admin)").show();
-                if (!payload.dont_switch_tab) {
-                    $("li[data-section='your-account']").click();
-                }
+                settings_panel_menu.show_normal_settings();
             }
         },
     });
 
-    $("#settings_overlay_container .tab-container").append(toggler.get());
-};
+    settings_panel_menu.set_key_handlers(toggler);
 
-exports.initialize = function () {
-    i18n.ensure_i18n(exports.create_toggler);
+    $("#settings_overlay_container .tab-container").append(toggler.get());
 };
 
 return exports;
@@ -47,3 +38,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_toggle;
 }
+window.settings_toggle = settings_toggle;

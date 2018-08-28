@@ -30,7 +30,7 @@ curl {{ api_url }}/v1/users?client_gravatar=true \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|get-all-users|example}
+{generate_code_example(python)|/users:get|example}
 
 </div>
 
@@ -62,7 +62,7 @@ zulip(config).then((client) => {
 
 **Note**: The following arguments are all URL query parameters.
 
-{generate_api_arguments_table|arguments.json|get-all-users.md}
+{generate_api_arguments_table|zulip.yaml|/users:get}
 
 ## Response
 
@@ -88,4 +88,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-all-users|fixture}
+{generate_code_example|/users:get|fixture(200)}

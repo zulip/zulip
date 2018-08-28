@@ -1,0 +1,30 @@
+{
+    "id":"5b1fe779-e8d0-4a4d-a8d3-3d179da7b55e",
+    "changed_at":"2018-06-12T15:32:09.246Z",
+    "primary_id":14,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":14,
+            "entity_type":"story-task",
+            "action":"delete",
+            "description":"Added a new task"
+        },
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "task_ids":{
+                    "removes":[
+                        14
+                    ]
+                }
+            }
+        }
+    ]
+}

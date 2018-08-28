@@ -35,4 +35,4 @@ object as `request.client`.
 In most integrations, `request.client` is then passed to
 `check_send_stream_message`, where it is used to keep track of which client
 sent the message (which in turn is used by analytics). For more
-information, see [the webhook walkthrough](https://zulipchat.com/api/webhook-walkthrough).
+information, see [the incoming webhook walkthrough](https://zulipchat.com/api/webhook-walkthrough).

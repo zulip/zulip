@@ -9,11 +9,11 @@
                     <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
                         <button type="button" class="button small rounded inline-block" id='email_value'
                           {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
-                            {{page_params.email}}
+                            {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
-                    <i class="icon-vector-question-sign change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
+                    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
                       title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
@@ -37,6 +37,13 @@
                 </div>
             </form>
 
+            {{#if page_params.two_fa_enabled }}
+            <p for="two_factor_auth" class="inline-block title">
+                {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
+                <a target="_blank" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Setup two factor authentication' }}">[{{t "Setup" }}]</a>
+            </p>
+            {{/if}}
+
             <form class="form-horizontal full-name-change-form">
                 <div class="input-group inline-block grid user-name-parent">
                     <div class="user-name-section inline-block">
@@ -47,7 +54,7 @@
                                 <i class="fa fa-pencil"></i>
                             </button>
                         </a>
-                        <i class="icon-vector-question-sign change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                        <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
                           {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_name_changes_disabled}}style="display:none"{{/unless}}{{/if}}
                           title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                     </div>
@@ -117,9 +124,12 @@
                 </div>
             </form>
 
-            <h3 class="inline-block" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
+            <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
             <div class="alert-notification" id="custom-field-status"></div>
             <form class="form-horizontal custom-profile-fields-form grid"></form>
+            <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
+                {{t 'View my profile' }}
+            </button>
 
         </div>
 
@@ -188,14 +198,12 @@
         <div id="get_api_key_box">
             <p>{{t "Please re-enter your password to confirm your identity." }}
               <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
-            <form action="/json/fetch_api_key" method="post" class="form-horizontal">
+            <form cslass="form-horizontal" id="get_api_key_form">
                 <div class="control-group">
                     <label for="password" class="control-label">{{t "Current password" }}</label>
                     <input type="password" autocomplete="off"
                       name="password" id="get_api_key_password" value="" />
-                </div>
-                <div class="control-group">
-                    <button type="submit" name="view_api_key"
+                    <button type="submit" name="view_api_key" id="get_api_key_button"
                       class="button sea-green">{{t 'Get API key' }}</button>
                 </div>
             </form>

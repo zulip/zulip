@@ -26,6 +26,7 @@ USAGE = '''
 enforce_fully_covered = {
     'static/js/activity.js',
     'static/js/alert_words.js',
+    'static/js/alert_words_ui.js',
     'static/js/bot_data.js',
     'static/js/buddy_data.js',
     'static/js/buddy_list.js',
@@ -43,6 +44,8 @@ enforce_fully_covered = {
     'static/js/fetch_status.js',
     'static/js/filter.js',
     'static/js/hash_util.js',
+    'static/js/keydown_util.js',
+    'static/js/list_cursor.js',
     'static/js/markdown.js',
     'static/js/message_store.js',
     'static/js/muting.js',
@@ -54,8 +57,11 @@ enforce_fully_covered = {
     'static/js/reactions.js',
     'static/js/recent_senders.js',
     'static/js/rtl.js',
+    'static/js/schema.js',
     'static/js/scroll_util.js',
+    'static/js/search.js',
     'static/js/search_suggestion.js',
+    'static/js/search_util.js',
     # Removed because we're migrating code from uncovered other settings pages to here.
     # 'static/js/settings_ui.js',
     'static/js/settings_muting.js',
@@ -76,6 +82,9 @@ enforce_fully_covered = {
     'static/js/user_pill.js',
     'static/js/user_search.js',
     'static/js/util.js',
+    'static/js/widgetize.js',
+    'static/js/voting_widget.js',
+    'static/js/search_pill.js',
 }
 
 parser = argparse.ArgumentParser(USAGE)
@@ -140,6 +149,9 @@ try:
 except OSError:
     print('Bad command: %s' % (command,))
     raise
+except subprocess.CalledProcessError:
+    print('\n** Tests failed, PLEASE FIX! **\n')
+    sys.exit(1)
 
 def check_line_coverage(fn, line_coverage, line_mapping, log=True):
     # type: (str, Dict[Any, Any], Dict[Any, Any], bool) -> bool

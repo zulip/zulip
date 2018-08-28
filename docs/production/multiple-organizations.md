@@ -41,19 +41,58 @@ things:
   new organization.  Review
   [the install instructions](install.html) if you need a
   refresher on how this works.
+* If you're planning on using GitHub auth or another social
+  authentication method, review
+  [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#social-authentication).
 
 For servers hosting a large number of organizations, like
 [zulipchat.com](https://zulipchat.com), one can set
 `ROOT_DOMAIN_LANDING_PAGE = True` in `/etc/zulip/settings.py` so that
 the homepage for the server is a copy of the Zulip homepage.
 
+### Other hostnames
+
+If you'd like to use hostnames that are not subdomains of each other,
+you can set the `REALM_HOSTS` setting in `/etc/zulip/settings.py` to a
+Python dictionary, like this:
+
+```
+REALM_HOSTS = {
+    'mysubdomain': 'hostname.example.com',
+}
+```
+
+What this will do is map the hostname `hostname.example.com` to the
+realm whose `subdomain` in the Zulip database is `mysubdomain`.
+
+In a future version of Zulip, we expect to move this configuration
+into the database.
+
 ### The root domain
 
 Most Zulip servers host a single Zulip organization on the root domain
 (i.e. `zulip.example.com`).  The way this is implemented internally
 involves the organization having the empty string (`''`) as its
-"subdomain".  You can mix having an organization on the root domain
-and some others on subdomains (e.g. `it.zulip.example.com`).
+"subdomain".
+
+You can mix having an organization on the root domain and some others
+on subdomains (e.g. `subdivision.zulip.example.com`), but this only
+works well if there are no users in common between the two
+organizations, because the auth cookies for the root domain are
+visible to the subdomain (so it's not possible for a single
+browser/client to be logged into both).  So we don't recommend that
+configuration.
+
+### Social authentication
+
+If you're using GitHub authentication (or any other authentication
+backend that we implement using python-social-auth), you will likely
+want to set the `SOCIAL_AUTH_SUBDOMAIN` setting to something (`'auth'`
+is a good choice) and update the GitHub authentication callback URL to
+be that subdomain.  Otherwise, your users will experience confusing
+behavior where attempting to login using a social authentication
+backend will appear to log them out of the other organizations on your
+server.
 
 ### The system bot realm
 

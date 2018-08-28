@@ -11,7 +11,8 @@ from django.utils.log import AdminEmailHandler
 from functools import wraps
 from mock import MagicMock, patch
 from mypy_extensions import NoReturn
-from typing import Any, Callable, Dict, Mapping, Optional, Iterator
+from typing import Any, Callable, Dict, Mapping, Optional, Iterator, Optional, Tuple, Type
+from types import TracebackType
 
 from zerver.lib.request import JsonableError
 from zerver.lib.types import ViewFuncT
@@ -22,7 +23,7 @@ from zerver.views.compatibility import check_compatibility
 from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
-captured_exc_info = None
+captured_exc_info = None  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]
 def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)

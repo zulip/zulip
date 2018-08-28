@@ -14,7 +14,7 @@ function set_filter(operators) {
 }
 
 
-(function test_stream() {
+run_test('stream', () => {
     assert.equal(narrow_state.public_operators(), undefined);
     assert(!narrow_state.active());
 
@@ -29,6 +29,7 @@ function set_filter(operators) {
         ['search', 'yo'],
     ]);
     assert(narrow_state.active());
+    assert(!narrow_state.is_reading_mode());
 
     assert.equal(narrow_state.stream(), 'Test');
     assert.equal(narrow_state.stream_id(), test_stream.stream_id);
@@ -44,10 +45,10 @@ function set_filter(operators) {
     var public_operators = narrow_state.public_operators();
     assert.deepEqual(public_operators, expected_operators);
     assert.equal(narrow_state.search_string(), 'stream:Test topic:Bar yo');
-}());
+});
 
 
-(function test_narrowed() {
+run_test('narrowed', () => {
     narrow_state.reset_current_filter(); // not narrowed, basically
     assert(!narrow_state.narrowed_to_pms());
     assert(!narrow_state.narrowed_by_reply());
@@ -57,6 +58,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_id(), undefined);
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -66,6 +68,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
     assert(narrow_state.narrowed_to_pms());
@@ -75,6 +78,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -84,6 +88,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_to_search());
     assert(narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['search', 'grail']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -93,9 +98,10 @@ function set_filter(operators) {
     assert(narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
-}());
+    assert(!narrow_state.is_reading_mode());
+});
 
-(function test_operators() {
+run_test('operators', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
     var result = narrow_state.operators();
     assert.equal(result.length, 3);
@@ -111,9 +117,9 @@ function set_filter(operators) {
     narrow_state.reset_current_filter();
     result = narrow_state.operators();
     assert.equal(result.length, 0);
-}());
+});
 
-(function test_muting_enabled() {
+run_test('muting_enabled', () => {
     set_filter([['stream', 'devel']]);
     assert(narrow_state.muting_enabled());
 
@@ -129,9 +135,9 @@ function set_filter(operators) {
     set_filter([['is', 'private']]);
     assert(!narrow_state.muting_enabled());
 
-}());
+});
 
-(function test_set_compose_defaults() {
+run_test('set_compose_defaults', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
     var stream_and_subject = narrow_state.set_compose_defaults();
@@ -140,7 +146,19 @@ function set_filter(operators) {
 
     set_filter([['pm-with', 'foo@bar.com']]);
     var pm_test = narrow_state.set_compose_defaults();
-    assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
+    assert.equal(pm_test.private_message_recipient, undefined);
+
+    var john = {
+        email: 'john@doe.com',
+        user_id: 57,
+        full_name: 'John Doe',
+    };
+    people.add(john);
+    people.add_in_realm(john);
+
+    set_filter([['pm-with', 'john@doe.com']]);
+    pm_test = narrow_state.set_compose_defaults();
+    assert.equal(pm_test.private_message_recipient, 'john@doe.com');
 
     set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
@@ -150,9 +168,9 @@ function set_filter(operators) {
 
     var stream_test = narrow_state.set_compose_defaults();
     assert.equal(stream_test.stream, 'ROME');
-}());
+});
 
-(function test_update_email() {
+run_test('update_email', () => {
     var steve = {
         email: 'steve@foo.com',
         user_id: 43,
@@ -170,9 +188,9 @@ function set_filter(operators) {
     assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
-}());
+});
 
-(function test_topic() {
+run_test('topic', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
     assert.equal(narrow_state.topic(), 'Bar');
 
@@ -190,10 +208,10 @@ function set_filter(operators) {
 
     narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.topic(), undefined);
-}());
+});
 
 
-(function test_stream() {
+run_test('stream', () => {
     set_filter(undefined);
     assert.equal(narrow_state.stream(), undefined);
     assert.equal(narrow_state.stream_id(), undefined);
@@ -210,9 +228,9 @@ function set_filter(operators) {
 
     set_filter([['sender', 'someone'], ['topic', 'random']]);
     assert.equal(narrow_state.stream(), undefined);
-}());
+});
 
-(function test_pm_string() {
+run_test('pm_string', () => {
     // This function will return undefined unless we're clearly
     // narrowed to a specific PM (including huddles) with real
     // users.
@@ -225,11 +243,8 @@ function set_filter(operators) {
     set_filter([['pm-with', '']]);
     assert.equal(narrow_state.pm_string(), undefined);
 
-    blueslip.set_test_data('warn', 'Unknown emails: bogus@foo.com');
     set_filter([['pm-with', 'bogus@foo.com']]);
     assert.equal(narrow_state.pm_string(), undefined);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
 
     var alice = {
         email: 'alice@foo.com',
@@ -248,4 +263,4 @@ function set_filter(operators) {
 
     set_filter([['pm-with', 'bob@foo.com,alice@foo.com']]);
     assert.equal(narrow_state.pm_string(), '444,555');
-}());
+});

@@ -2,6 +2,7 @@ import logging
 import re
 from functools import partial
 from typing import Any, Callable, Dict, Optional
+from inspect import signature
 
 from django.http import HttpRequest, HttpResponse
 
@@ -9,7 +10,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
@@ -20,7 +21,8 @@ from zerver.models import UserProfile
 class UnknownEventType(Exception):
     pass
 
-def get_opened_or_update_pull_request_body(payload: Dict[str, Any]) -> str:
+def get_opened_or_update_pull_request_body(payload: Dict[str, Any],
+                                           include_title: Optional[bool]=False) -> str:
     pull_request = payload['pull_request']
     action = payload['action']
     if action == 'synchronize':
@@ -36,10 +38,13 @@ def get_opened_or_update_pull_request_body(payload: Dict[str, Any]) -> str:
         target_branch=pull_request['head']['ref'],
         base_branch=pull_request['base']['ref'],
         message=pull_request['body'],
-        assignee=assignee
+        assignee=assignee,
+        number=pull_request['number'],
+        title=pull_request['title'] if include_title else None
     )
 
-def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any]) -> str:
+def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any],
+                                                 include_title: Optional[bool]=False) -> str:
     pull_request = payload['pull_request']
     assignee = pull_request.get('assignee')
     if assignee is not None:
@@ -49,18 +54,23 @@ def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any]) -> str
         get_sender_name(payload),
         payload['action'],
         pull_request['html_url'],
+        number=pull_request['number'],
+        title=pull_request['title'] if include_title else None
     )
     if assignee is not None:
         return "{} to {}".format(base_message, assignee)
     return base_message
 
-def get_closed_pull_request_body(payload: Dict[str, Any]) -> str:
+def get_closed_pull_request_body(payload: Dict[str, Any],
+                                 include_title: Optional[bool]=False) -> str:
     pull_request = payload['pull_request']
     action = 'merged' if pull_request['merged'] else 'closed without merge'
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
         pull_request['html_url'],
+        number=pull_request['number'],
+        title=pull_request['title'] if include_title else None
     )
 
 def get_membership_body(payload: Dict[str, Any]) -> str:
@@ -88,7 +98,8 @@ def get_member_body(payload: Dict[str, Any]) -> str:
         payload['repository']['html_url']
     )
 
-def get_issue_body(payload: Dict[str, Any]) -> str:
+def get_issue_body(payload: Dict[str, Any],
+                   include_title: Optional[bool]=False) -> str:
     action = payload['action']
     issue = payload['issue']
     assignee = issue['assignee']
@@ -98,10 +109,12 @@ def get_issue_body(payload: Dict[str, Any]) -> str:
         issue['html_url'],
         issue['number'],
         issue['body'],
-        assignee=assignee['login'] if assignee else None
+        assignee=assignee['login'] if assignee else None,
+        title=issue['title'] if include_title else None
     )
 
-def get_issue_comment_body(payload: Dict[str, Any]) -> str:
+def get_issue_comment_body(payload: Dict[str, Any],
+                           include_title: Optional[bool]=False) -> str:
     action = payload['action']
     comment = payload['comment']
     issue = payload['issue']
@@ -118,6 +131,7 @@ def get_issue_comment_body(payload: Dict[str, Any]) -> str:
         issue['html_url'],
         issue['number'],
         comment['body'],
+        title=issue['title'] if include_title else None
     )
 
 def get_fork_body(payload: Dict[str, Any]) -> str:
@@ -257,26 +271,66 @@ def get_status_body(payload: Dict[str, Any]) -> str:
         status
     )
 
-def get_pull_request_review_body(payload: Dict[str, Any]) -> str:
+def get_pull_request_review_body(payload: Dict[str, Any],
+                                 include_title: Optional[bool]=False) -> str:
+    title = "for #{} {}".format(
+        payload['pull_request']['number'],
+        payload['pull_request']['title']
+    )
     return get_pull_request_event_message(
         get_sender_name(payload),
         'submitted',
         payload['review']['html_url'],
-        type='PR Review'
+        type='PR Review',
+        title=title if include_title else None
     )
 
-def get_pull_request_review_comment_body(payload: Dict[str, Any]) -> str:
+def get_pull_request_review_comment_body(payload: Dict[str, Any],
+                                         include_title: Optional[bool]=False) -> str:
     action = payload['action']
     message = None
     if action == 'created':
         message = payload['comment']['body']
+
+    title = "on #{} {}".format(
+        payload['pull_request']['number'],
+        payload['pull_request']['title']
+    )
 
     return get_pull_request_event_message(
         get_sender_name(payload),
         action,
         payload['comment']['html_url'],
         message=message,
-        type='PR Review Comment'
+        type='PR Review Comment',
+        title=title if include_title else None
+    )
+
+def get_pull_request_review_requested_body(payload: Dict[str, Any],
+                                           include_title: Optional[bool]=False) -> str:
+    requested_reviewers = payload['pull_request']['requested_reviewers']
+    sender = get_sender_name(payload)
+    pr_number = payload['pull_request']['number']
+    pr_url = payload['pull_request']['html_url']
+    message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
+    message_with_title = ("**{sender}** requested {reviewers} for a review on "
+                          "[PR #{pr_number} {title}]({pr_url}).")
+    body = message_with_title if include_title else message
+
+    reviewers = ""
+    if len(requested_reviewers) == 1:
+        reviewers = "[{login}]({html_url})".format(**requested_reviewers[0])
+    else:
+        for reviewer in requested_reviewers[:-1]:
+            reviewers += "[{login}]({html_url}), ".format(**reviewer)
+        reviewers += "and [{login}]({html_url})".format(**requested_reviewers[-1])
+
+    return body.format(
+        sender=sender,
+        reviewers=reviewers,
+        pr_number=pr_number,
+        pr_url=pr_url,
+        title=payload['pull_request']['title'] if include_title else None
     )
 
 def get_ping_body(payload: Dict[str, Any]) -> str:
@@ -358,6 +412,7 @@ EVENT_FUNCTION_MAPPER = {
     'public': get_public_body,
     'pull_request_review': get_pull_request_review_body,
     'pull_request_review_comment': get_pull_request_review_comment_body,
+    'pull_request_review_requested': get_pull_request_review_requested_body,
     'push_commits': get_push_commits_body,
     'push_tags': get_push_tags_body,
     'release': get_release_body,
@@ -371,11 +426,19 @@ EVENT_FUNCTION_MAPPER = {
 def api_github_webhook(
         request: HttpRequest, user_profile: UserProfile,
         payload: Dict[str, Any]=REQ(argument_type='body'),
-        branches: str=REQ(default=None)) -> HttpResponse:
+        branches: str=REQ(default=None),
+        user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
-        body = get_body_function_based_on_type(event)(payload)
+        body_function = get_body_function_based_on_type(event)
+        if 'include_title' in signature(body_function).parameters:
+            body = body_function(
+                payload,
+                include_title=user_specified_topic is not None
+            )
+        else:
+            body = body_function(payload)
         check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
@@ -389,8 +452,11 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
-        logging.warning(u'Event pull_request with {} action is unsupported'.format(action))
-        return None
+        if action == 'review_requested':
+            return '{}_{}'.format(event, action)
+        # Unsupported pull_request events
+        if action in ('labeled', 'unlabeled', 'review_request_removed'):
+            return None
     if event == 'push':
         if is_commit_push_event(payload):
             if branches is not None:
@@ -402,8 +468,8 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return "push_tags"
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
-    logging.warning(u'Event {} is unknown and cannot be handled'.format(event))
-    return None
+
+    raise UnexpectedWebhookEventType('GitHub', event)
 
 def get_body_function_based_on_type(type: str) -> Any:
     return EVENT_FUNCTION_MAPPER.get(type)

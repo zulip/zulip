@@ -1,11 +1,14 @@
+import datetime
 from django.conf import settings
 from django.core import mail
 from django.contrib.auth.signals import user_logged_in
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.signals import get_device_browser, get_device_os
+from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
 from zerver.lib.actions import notify_new_user
 from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
+from unittest import mock
+from zerver.lib.timezone import get_timezone
 
 class SendLoginEmailTest(ZulipTestCase):
     """
@@ -22,16 +25,40 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
-            email = self.example_email('hamlet')
-            password = initial_password(email)
+            utc = get_timezone('utc')
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+
+            user = self.example_user('hamlet')
+            user.timezone = 'US/Pacific'
+            user.twenty_four_hour_time = False
+            user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+            user.save()
+            password = initial_password(user.email)
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
-            self.client_post("/accounts/login/", info={"username": email, "password": password},
-                             HTTP_USER_AGENT=firefox_windows)
+            user_tz = get_timezone(user.timezone)
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+            reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p %Z')
+            with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
+                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                                 HTTP_USER_AGENT=firefox_windows)
 
             # email is sent and correct subject
             self.assertEqual(len(mail.outbox), 1)
             subject = 'New login from Firefox on Windows'
             self.assertEqual(mail.outbox[0].subject, subject)
+            # local time is correct and in email's body
+            self.assertIn(reference_time, mail.outbox[0].body)
+
+            # Try again with the 24h time format setting enabled for this user
+            self.logout()  # We just logged in, we'd be redirected without this
+            user.twenty_four_hour_time = True
+            user.save()
+            with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
+                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                                 HTTP_USER_AGENT=firefox_windows)
+
+            reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %H:%M %Z')
+            self.assertIn(reference_time, mail.outbox[1].body)
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
         self.assertFalse(settings.SEND_LOGIN_EMAILS)

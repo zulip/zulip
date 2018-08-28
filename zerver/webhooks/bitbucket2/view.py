@@ -2,6 +2,7 @@
 import re
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional
+from inspect import signature
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -10,7 +11,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
@@ -41,21 +42,14 @@ PULL_REQUEST_SUPPORTED_ACTIONS = [
     'comment_deleted',
 ]
 
-class UnknownTriggerType(Exception):
-    pass
-
-
 @api_key_only_webhook_view('Bitbucket2')
 @has_request_variables
 def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body'),
-                           branches: Optional[str]=REQ(default=None)) -> HttpResponse:
+                           branches: Optional[str]=REQ(default=None),
+                           user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
     type = get_type(request, payload)
-    if type != 'push':
-        subject = get_subject_based_on_type(payload, type)
-        body = get_body_based_on_type(type)(payload)
-        check_send_webhook_message(request, user_profile, subject, body)
-    else:
+    if type == 'push':
         # ignore push events with no changes
         if not payload['push']['changes']:
             return json_success()
@@ -63,10 +57,22 @@ def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
         if branch and branches:
             if branches.find(branch) == -1:
                 return json_success()
-        subjects = get_push_subjects(payload)
-        bodies_list = get_push_bodies(payload)
-        for body, subject in zip(bodies_list, subjects):
-            check_send_webhook_message(request, user_profile, subject, body)
+
+    subject = get_subject_based_on_type(payload, type)
+    body_function = get_body_based_on_type(type)
+    if 'include_title' in signature(body_function).parameters:
+        body = body_function(
+            payload,
+            include_title=user_specified_topic is not None
+        )
+    else:
+        body = body_function(payload)
+
+    if type != 'push':
+        check_send_webhook_message(request, user_profile, subject, body)
+    else:
+        for b, s in zip(body, subject):
+            check_send_webhook_message(request, user_profile, s, b)
 
     return json_success()
 
@@ -95,7 +101,7 @@ def get_subject(payload: Dict[str, Any]) -> str:
     assert(payload['repository'] is not None)
     return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
 
-def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> str:
+def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
     if type.startswith('pull_request'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload['repository']),
@@ -110,6 +116,8 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> str:
             id=payload['issue']['id'],
             title=payload['issue']['title']
         )
+    if type == 'push':
+        return get_push_subjects(payload)
     return get_subject(payload)
 
 def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
@@ -142,11 +150,10 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         if event_key == 'repo:updated':
             return event_key
 
-    raise UnknownTriggerType("We don't support {} event type".format(event_key))
+    raise UnexpectedWebhookEventType('BitBucket2', event_key)
 
-def get_body_based_on_type(type: str) -> Callable[[Dict[str, Any]], str]:
+def get_body_based_on_type(type: str) -> Any:
     fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
-    assert callable(fn)  # type parameter should be pre-checked, so not None
     return fn
 
 def get_push_bodies(payload: Dict[str, Any]) -> List[str]:
@@ -234,11 +241,13 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
         status=payload['commit_status']['state']
     )
 
-def get_issue_commented_body(payload: Dict[str, Any]) -> str:
+def get_issue_commented_body(payload: Dict[str, Any],
+                             include_title: Optional[bool]=False) -> str:
     action = '[commented]({}) on'.format(payload['comment']['links']['html']['href'])
-    return get_issue_action_body(payload, action)
+    return get_issue_action_body(payload, action, include_title)
 
-def get_issue_action_body(payload: Dict[str, Any], action: str) -> str:
+def get_issue_action_body(payload: Dict[str, Any], action: str,
+                          include_title: Optional[bool]=False) -> str:
     issue = payload['issue']
     assignee = None
     message = None
@@ -253,19 +262,23 @@ def get_issue_action_body(payload: Dict[str, Any], action: str) -> str:
         issue['links']['html']['href'],
         issue['id'],
         message,
-        assignee
+        assignee,
+        title=issue['title'] if include_title else None
     )
 
-def get_pull_request_action_body(payload: Dict[str, Any], action: str) -> str:
+def get_pull_request_action_body(payload: Dict[str, Any], action: str,
+                                 include_title: Optional[bool]=False) -> str:
     pull_request = payload['pullrequest']
     return get_pull_request_event_message(
         get_user_username(payload),
         action,
         get_pull_request_url(pull_request),
-        pull_request.get('id')
+        pull_request.get('id'),
+        title=pull_request['title'] if include_title else None
     )
 
-def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: str) -> str:
+def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: str,
+                                             include_title: Optional[bool]=False) -> str:
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
@@ -279,25 +292,36 @@ def get_pull_request_created_or_updated_body(payload: Dict[str, Any], action: st
         target_branch=pull_request['source']['branch']['name'],
         base_branch=pull_request['destination']['branch']['name'],
         message=pull_request['description'],
-        assignee=assignee
+        assignee=assignee,
+        title=pull_request['title'] if include_title else None
     )
 
-def get_pull_request_comment_created_action_body(payload: Dict[str, Any]) -> str:
+def get_pull_request_comment_created_action_body(
+        payload: Dict[str, Any],
+        include_title: Optional[bool]=False
+) -> str:
     action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
-    return get_pull_request_comment_action_body(payload, action)
+    return get_pull_request_comment_action_body(payload, action, include_title)
 
-def get_pull_request_deleted_or_updated_comment_action_body(payload: Dict[str, Any], action: str) -> str:
+def get_pull_request_deleted_or_updated_comment_action_body(
+        payload: Dict[str, Any], action: str,
+        include_title: Optional[bool]=False
+) -> str:
     action = "{} a [comment]({})".format(action, payload['comment']['links']['html']['href'])
-    return get_pull_request_comment_action_body(payload, action)
+    return get_pull_request_comment_action_body(payload, action, include_title)
 
-def get_pull_request_comment_action_body(payload: Dict[str, Any], action: str) -> str:
+def get_pull_request_comment_action_body(
+        payload: Dict[str, Any], action: str,
+        include_title: Optional[bool]=False
+) -> str:
     action += ' on'
     return get_pull_request_event_message(
         get_user_username(payload),
         action,
         payload['pullrequest']['links']['html']['href'],
         payload['pullrequest']['id'],
-        message=payload['comment']['content']['raw']
+        message=payload['comment']['content']['raw'],
+        title=payload['pullrequest']['title'] if include_title else None
     )
 
 def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
@@ -389,5 +413,6 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
                                             action='updated'),
     'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body,
                                             action='deleted'),
+    'push': get_push_bodies,
     'repo:updated': get_repo_updated_body,
 }

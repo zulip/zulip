@@ -15,8 +15,8 @@ from django.utils.translation import ugettext as _
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
-from zerver.lib.notifications import encode_stream
 from zerver.lib.queue import retry_event
+from zerver.lib.url_encoding import encode_stream
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
@@ -25,7 +25,7 @@ class OutgoingWebhookServiceInterface:
     def __init__(self, base_url: str, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.base_url = base_url  # type: str
         self.token = token  # type: str
-        self.user_profile = user_profile  # type: str
+        self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
 
     # Given an event that triggers an outgoing webhook operation, returns:
@@ -58,7 +58,9 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'request_kwargs': {}}
         request_data = {"data": event['command'],
                         "message": event['message'],
-                        "token": self.token}
+                        "bot_email": self.user_profile.email,
+                        "token": self.token,
+                        "trigger": event['trigger']}
         return rest_operation, json.dumps(request_data)
 
     def process_success(self, response: Response,
@@ -81,9 +83,10 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'request_kwargs': {}}
 
         if event['message']['type'] == 'private':
-            raise NotImplementedError("Private messaging service not supported.")
+            failure_message = "Slack outgoing webhooks don't support private messages."
+            fail_with_message(event, failure_message)
+            return None, None
 
-        service = get_service_profile(event['user_profile_id'], str(self.service_name))
         request_data = [("token", self.token),
                         ("team_id", event['message']['sender_realm_str']),
                         ("team_domain", email_to_domain(event['message']['sender_email'])),
@@ -94,7 +97,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         ("user_name", event['message']['sender_full_name']),
                         ("text", event['command']),
                         ("trigger_word", event['trigger']),
-                        ("service_id", service.id),
+                        ("service_id", event['user_profile_id']),
                         ]
 
         return rest_operation, request_data

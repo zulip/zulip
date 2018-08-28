@@ -1,0 +1,31 @@
+{
+    "id":"5b295cc0-242a-4ecf-b75c-e2467c25513c",
+    "changed_at":"2018-06-19T19:42:56.825Z",
+    "primary_id":11,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "label_ids":{
+                    "removes":[
+                        18
+                    ]
+                }
+            }
+        }
+    ],
+    "references":[
+        {
+            "id":18,
+            "entity_type":"label",
+            "name":"mockup"
+        }
+    ]
+}

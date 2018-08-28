@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+# This tool generates emoji_names.py from a CSV file passed in on the command line.
+#
+# The CSV files come from a Google Sheets document, because that's a
+# better format for reviewing all the emoji and thinking about what
+# names and aliases make the most sense; this script converts the
+# easily exported CSV one can get from Google Sheets into the
+# emoji_names.py format for consumption by the rest of our emoji
+# tooling.  We check in emoji_names.py (not the CSV) whenever we rerun
+# this tool to update the data.
+import argparse
+import csv
+import os
+import re
+import textwrap
+
+from typing import Any, Dict, List, Set
+
+EMOJI_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
+
+ACTIVE_ENTRY = (
+    "%(explanation)s"
+    "\n    '%(emoji_code)s': {'canonical_name': '%(canonical_name)s', 'aliases': %(aliases)s},"
+)
+
+INACTIVE_ENTRY = (
+    "%(explanation)s"
+    "\n    # '%(emoji_code)s': {'canonical_name': '%(canonical_name)s', 'aliases': %(aliases)s},"
+)
+
+FILE_TEMPLATE = (
+    "from typing import Any, Dict\n\n"
+    "EMOJI_NAME_MAPS = {"
+    "%(emoji_entries)s\n"
+    "}   # type: Dict[str, Dict[str, Any]]\n"
+)
+
+emoji_names = set()     # type: Set[str]
+
+def load_data(data_file: str) -> List[List[str]]:
+    emoji_name_data = []    # type: List[List[str]]
+    with open(data_file, newline='') as fp:
+        data = csv.reader(fp)
+        for row in data:
+            emoji_name_data.append(row)
+    return emoji_name_data[1:]
+
+def check_uniqueness(emoji_name: str) -> None:
+    if emoji_name in emoji_names:
+        raise Exception("Duplicate emoji name: %s" % (emoji_name,))
+    emoji_names.add(emoji_name)
+
+def check_valid_emoji_name(emoji_name: str) -> None:
+    if re.fullmatch("[+-]?[a-z0-9_-]+", emoji_name) is None:
+        raise Exception("Invalid emoji name: %s" % (emoji_name,))
+
+def check_emoji_names(canonical_name: str, aliases: List[str]) -> None:
+    if canonical_name == 'X':
+        return
+    names_to_check = [canonical_name, ] + aliases
+    for name in names_to_check:
+        check_valid_emoji_name(name)
+        check_uniqueness(name)
+
+def prepare_explanation(explanation: str) -> str:
+    if explanation == '':
+        return ''
+
+    wrapper_config = {
+        'width': 80,
+        'break_long_words': False,
+        'break_on_hyphens': False,
+        'initial_indent': '\n    # ',
+        'subsequent_indent': '\n    # ',
+    }   # type: Dict[str, Any]
+    wrapped_lines = textwrap.wrap(explanation.strip(), **wrapper_config)
+    return ''.join(wrapped_lines)
+
+def prepare_aliases(aliases: str) -> List[str]:
+    if aliases == '':
+        return []
+    return [alias.strip() for alias in aliases.split(',')]
+
+def main() -> None:
+    description = ("This script is used for generating `emoji_names.py`. It takes the "
+                   "path of an csv file containing the required data and optional output "
+                   "file path.")
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "--input-file", dest="input_file_path", type=str, metavar="<path>",
+        default=os.path.join(EMOJI_DIR_PATH, "emoji_names.csv"),
+        help="Path to the csv file from which data is to be read.")
+    parser.add_argument(
+        "--output-file", dest="output_file_path", type=str, metavar="<path>",
+        default=os.path.join(EMOJI_DIR_PATH, "emoji_names.py"),
+        help="Path to the output file.")
+
+    args = parser.parse_args()
+    emoji_name_data = load_data(args.input_file_path)
+    emoji_entry = ""
+    emoji_entries = ""
+
+    for row in emoji_name_data:
+        emoji_code = row[0]
+        canonical_name = row[2]
+        aliases = row[3]
+        explanation = row[4]
+
+        formatted_explanation = prepare_explanation(explanation)
+        extracted_aliases = prepare_aliases(aliases)
+        check_emoji_names(canonical_name, extracted_aliases)
+
+        context = {
+            'emoji_code': emoji_code,
+            'canonical_name': canonical_name,
+            'aliases': extracted_aliases,
+            'explanation': formatted_explanation,
+        }
+        if canonical_name == 'X':
+            emoji_entry = INACTIVE_ENTRY % dict(**context)
+        else:
+            emoji_entry = ACTIVE_ENTRY % dict(**context)
+
+        # If an entry is longer than 120 then append
+        # `    # ignorelongline` to avoid lint errors.
+        if len(emoji_entry.split('\n')[-1]) >= 110:
+            emoji_entry += '    # ignorelongline'
+        emoji_entries += emoji_entry
+
+    with open(args.output_file_path, 'w') as fp:
+        fp.write(FILE_TEMPLATE % {'emoji_entries': emoji_entries})
+
+if __name__ == '__main__':
+    main()

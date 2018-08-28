@@ -67,7 +67,7 @@ exports.handle_narrow_activated = function (filter) {
     ops = filter.operands('is');
     if (ops.length >= 1) {
         filter_name = ops[0];
-        if ((filter_name === 'starred') || (filter_name === 'mentioned')) {
+        if (filter_name === 'starred' || filter_name === 'mentioned') {
             filter_li = exports.get_global_filter_li(filter_name);
             filter_li.addClass('active-filter');
         }
@@ -75,7 +75,11 @@ exports.handle_narrow_activated = function (filter) {
 
     var op_is = filter.operands('is');
     var op_pm = filter.operands('pm-with');
-    if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
+    if (op_is.length >= 1 && _.contains(op_is, "private") || op_pm.length >= 1) {
+        if (!people.is_valid_bulk_emails_for_compose(op_pm)) {
+            // Don't go into the else statement and close the pm_list.
+            return;
+        }
         pm_list.expand(op_pm);
     } else {
         pm_list.close();
@@ -95,3 +99,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = top_left_corner;
 }
+window.top_left_corner = top_left_corner;

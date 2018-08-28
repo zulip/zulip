@@ -11,12 +11,13 @@ zrequire('stream_sort');
 zrequire('colorspace');
 zrequire('stream_color');
 zrequire('hash_util');
-zrequire('narrow');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('scroll_util');
 zrequire('list_cursor');
 zrequire('stream_list');
+
+stream_color.initialize();
 
 var noop = function () {};
 var return_false = function () { return false; };
@@ -30,7 +31,7 @@ set_global('keydown_util', {
     handle: noop,
 });
 
-(function test_create_sidebar_row() {
+run_test('create_sidebar_row', () => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
 
@@ -152,7 +153,7 @@ set_global('keydown_util', {
 
     row.remove();
     assert(removed);
-}());
+});
 
 set_global('$', global.make_zjquery());
 
@@ -250,7 +251,7 @@ function elem($obj) {
     return {to_$: () => $obj};
 }
 
-(function test_zoom_in_and_zoom_out() {
+run_test('zoom_in_and_zoom_out', () => {
     var helper;
 
     var callbacks;
@@ -345,11 +346,11 @@ function elem($obj) {
     assert(stream_li1.visible());
     assert(stream_li2.visible());
     assert($('#streams_list').hasClass('zoom-out'));
-}());
+});
 
 set_global('$', global.make_zjquery());
 
-(function test_narrowing() {
+run_test('narrowing', () => {
     initialize_stream_data();
 
     set_global('narrow_state', {
@@ -417,23 +418,23 @@ set_global('$', global.make_zjquery());
     stream_list.handle_narrow_deactivated();
     assert.equal(removed_classes, 'active-filter active-sub-filter');
     assert(topics_closed);
-}());
+});
 
-(function test_focusout_user_filter() {
+run_test('focusout_user_filter', () => {
     var e = { };
     var click_handler = $('.stream-list-filter').get_on_handler('focusout');
     click_handler(e);
-}());
+});
 
-(function test_focus_user_filter() {
+run_test('focus_user_filter', () => {
     var e = {
         stopPropagation: function () {},
     };
     var click_handler = $('.stream-list-filter').get_on_handler('click');
     click_handler(e);
-}());
+});
 
-(function test_sort_streams() {
+run_test('sort_streams', () => {
     stream_data.clear_subscriptions();
 
     // Get coverage on early-exit.
@@ -486,9 +487,9 @@ set_global('$', global.make_zjquery());
     assert(stream_list.stream_sidebar.has_row_for(stream_id));
     stream_list.remove_sidebar_row(stream_id);
     assert(!stream_list.stream_sidebar.has_row_for(stream_id));
-}());
+});
 
-(function test_separators_only_pinned_and_dormant() {
+run_test('separators_only_pinned_and_dormant', () => {
 
     // Test only pinned and dormant streams
 
@@ -548,9 +549,9 @@ set_global('$', global.make_zjquery());
 
     assert.deepEqual(appended_elems, expected_elems);
 
-}());
+});
 
-(function test_separators_only_pinned() {
+run_test('separators_only_pinned', () => {
 
     // Test only pinned streams
 
@@ -595,8 +596,8 @@ set_global('$', global.make_zjquery());
 
     assert.deepEqual(appended_elems, expected_elems);
 
-}());
-(function test_update_count_in_dom() {
+});
+run_test('update_count_in_dom', () => {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
         var value = $(value_selector);
@@ -663,11 +664,11 @@ set_global('$', global.make_zjquery());
         topic: 'lunch',
         count: 555,
     });
-}());
+});
 
 narrow_state.active = () => false;
 
-(function test_rename_stream() {
+run_test('rename_stream', () => {
     const old_stream_id = stream_data.get_stream_id('devel');
     const renamed_devel = {
         name: 'Development',
@@ -701,11 +702,11 @@ narrow_state.active = () => false;
 
     stream_list.rename_stream(renamed_devel);
     assert(count_updated);
-}());
+});
 
 set_global('$', global.make_zjquery());
 
-(function test_refresh_pin() {
+run_test('refresh_pin', () => {
     initialize_stream_data();
 
     const sub = {
@@ -737,9 +738,9 @@ set_global('$', global.make_zjquery());
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);
     assert(scrolled);
-}());
+});
 
-(function test_create_initial_sidebar_rows() {
+run_test('create_initial_sidebar_rows', () => {
     initialize_stream_data();
 
     var html_dict = new Dict();
@@ -763,4 +764,4 @@ set_global('$', global.make_zjquery());
 
     assert.equal(html_dict.get(1000), '<div>stub-html-devel');
     assert.equal(html_dict.get(5000), '<div>stub-html-Denmark');
-}());
+});

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import json
+import os
 import requests
 import subprocess
 from typing import Any
@@ -34,11 +35,6 @@ class Command(ZulipBaseCommand):
         if not settings.DEVELOPMENT:
             check_config()
 
-        if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
-            raise CommandError(
-                "You must agree to the Zulipchat Terms of Service: https://zulipchat.com/terms/.  Run as:\n"
-                "  python manage.py register_remote_server --agree_to_terms_of_service\n")
-
         if not settings.ZULIP_ORG_ID:
             raise CommandError("Missing zulip_org_id; run scripts/setup/generate_secrets.py to generate.")
         if not settings.ZULIP_ORG_KEY:
@@ -66,8 +62,9 @@ class Command(ZulipBaseCommand):
 
         if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
             raise CommandError(
-                "You must agree to the Terms of Service: https://zulipchat.com/terms/\n"
-                "  python manage.py register_remote_server --agree_to_terms_of_service\n")
+                "You must first agree to the Zulipchat Terms of Service: "
+                "https://zulipchat.com/terms/. Run as:\n"
+                "  ./manage.py %s --agree_to_terms_of_service\n" % (os.path.basename(__file__)[:-3],))
 
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         try:

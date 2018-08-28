@@ -189,7 +189,7 @@ exports.open_settings = function () {
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $("body").on("click", ".overlay, .overlay .exit", function (e) {
         var $target = $(e.target);
 
@@ -209,7 +209,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
     });
-});
+};
 
 return exports;
 
@@ -218,3 +218,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = overlays;
 }
+window.overlays = overlays;

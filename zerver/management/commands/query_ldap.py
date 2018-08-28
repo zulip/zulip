@@ -18,6 +18,8 @@ def query_ldap(**options: str) -> None:
             else:
                 for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
                     print("%s: %s" % (django_field, ldap_attrs[ldap_field]))
+                if settings.LDAP_EMAIL_ATTR is not None:
+                    print("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR]))
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:

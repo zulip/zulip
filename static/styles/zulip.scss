@@ -417,6 +417,16 @@ code {
     font-size: 0.857em;
 }
 
+code::before {
+    /* Add a left-to-right embedding character before each code block */
+    content: '\202a';
+}
+
+code::after {
+    /* And add a pop directional formatting character after each code block */
+    content: '\202c';
+}
+
 .message_content code {
     white-space: pre-wrap;
     padding: 0px 4px;
@@ -428,6 +438,10 @@ code {
     margin: 5px 0 5px 20px;
 }
 
+.rtl.message_content ul {
+    margin: 5px 20px 5px 0;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
@@ -435,6 +449,7 @@ code {
 }
 
 pre {
+    direction: ltr;
     /* code block text is a bit smaller than normal text */
     font-size: 0.8em;
     line-height: 1.4;
@@ -613,11 +628,11 @@ td.pointer {
     @include prefixed-user-select(none);
 }
 
-.include-sender .message_edit_notice:before {
+.include-sender .message_edit_notice::before {
     content: "(";
 }
 
-.include-sender .message_edit_notice:after {
+.include-sender .message_edit_notice::after {
     content: ")";
 }
 
@@ -637,6 +652,10 @@ td.pointer {
     line-height: 20px;
     text-align: right;
     @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
+}
+
+#message-edit-history .message_time {
+    position: static;
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -755,7 +774,7 @@ td.pointer {
     text-decoration: none;
 }
 
-.stream_label:after {
+.stream_label::after {
     left: 100%;
     top: 50%;
     content: " ";
@@ -771,7 +790,7 @@ td.pointer {
     -moz-transform: scale(.9999);
 }
 
-.stream_label:before {
+.stream_label::before {
     left: 100%;
     top: 50%;
     content: " ";
@@ -842,19 +861,14 @@ td.pointer {
 
 .summary_row.last_message .message_header {
     border-bottom-right-radius: 3px;
-    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+    box-shadow:
+        inset 0px 2px 1px -2px hsl(0, 0%, 20%),
         inset -2px 0px 1px -2px hsl(0, 0%, 20%),
         inset 0px -2px 1px -2px hsl(0, 0%, 20%);
 }
 
 .summary_row.last_message .summary_colorblock {
     border-bottom-left-radius: 3px;
-}
-
-.message_header .icon-vector-narrow {
-    font-size: 0.6em;
-    position: relative;
-    top: -1px;
 }
 
 .copy-paste-text {
@@ -915,7 +929,6 @@ td.pointer {
 @-ms-keyframes rotate {
     from {
         -ms-transform: rotate(0deg);
-
     }
 
     to {
@@ -1089,11 +1102,12 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-                     -1px -1px 0px 0px hsl(215, 47%, 50%),
-                      1px 1px 0px 0px hsl(215, 47%, 50%),
-                     -1px 1px 0px 0px hsl(215, 47%, 50%),
-                      1px -1px 0px 0px hsl(215, 47%, 50%);
+    box-shadow:
+        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+        -1px -1px 0px 0px hsl(215, 47%, 50%),
+        1px 1px 0px 0px hsl(215, 47%, 50%),
+        -1px 1px 0px 0px hsl(215, 47%, 50%),
+        1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
 .message_sender {
@@ -1310,13 +1324,17 @@ div.focused_table {
     position: relative;
 }
 
+.rtl {
+    direction: rtl;
+}
+
 .message_content:empty {
     display: none;
 }
 
 .message_edit_content {
     line-height: 18px;
-    resize: vertical!important;
+    resize: vertical !important;
     max-height: 24em;
 }
 
@@ -1349,14 +1367,12 @@ div.focused_table {
 #inline_topic_edit.header-v {
     height: 18px;
     display: inline-block;
-    margin: -2px 0 0 0;
     padding: 0px 3px;
+    vertical-align: baseline;
 
     line-height: 0px;
     font-size: 14px;
 
-    border-radius: 0px;
-    border: 1px solid hsl(204, 20%, 74%);
     box-shadow: none;
 }
 
@@ -1379,11 +1395,7 @@ div.focused_table {
 #message-edit-history .author_details {
     display: block;
     font-size: 12px;
-    vertical-align: middle;
     padding: 1px;
-    position: absolute;
-    right: -80px;
-    line-height: 20px;
     text-align: right;
 }
 
@@ -1461,6 +1473,10 @@ blockquote p {
     padding: 4px 115px 1px 10px;
 }
 
+#message-edit-history .messagebox-content {
+    padding: 0px 10px;
+}
+
 .last_message .messagebox-content {
     padding-bottom: 1px;
 }
@@ -1477,6 +1493,15 @@ blockquote p {
     padding-left: 5px;
     margin-left: 10px;
     border-left-color: hsl(0, 0%, 86%);
+}
+
+.messagebox .rtl blockquote {
+    padding-left: unset;
+    padding-right: 5px;
+    margin-left: unset;
+    margin-right: 10px;
+    border-left: unset;
+    border-right: 5px solid hsl(0, 0%, 86%);
 }
 
 .bookend {
@@ -1528,11 +1553,6 @@ blockquote p {
     white-space: nowrap;
 }
 
-#searchbox {
-    width: 100%;
-    height: 40px;
-}
-
 #tab_bar {
     z-index: 2;
     padding-top: 0px;
@@ -1578,7 +1598,7 @@ blockquote p {
     color: hsl(0, 0%, 100%);
 }
 
-#tab_list li.inactive:before {
+#tab_list li.inactive::before {
     left: 100%;
     top: 50%;
     content: " ";
@@ -1750,12 +1770,7 @@ blockquote p {
     text-align: center;
 }
 
-.typeahead-image.icon {
-    /* This aligns the icon vertically. */
-    top: 0px;
-}
-
-.nav .dropdown-menu:after {
+.nav .dropdown-menu::after {
     position: absolute;
     width: 0px;
     height: 0px;
@@ -1799,20 +1814,6 @@ blockquote p {
     }
 }
 
-#searchbox .input-append {
-    position: relative;
-    width: 100%;
-
-    .icon-vector-search {
-        padding: 0px;
-        font-size: 20px;
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        z-index: 5;
-    }
-}
-
 nav .column-left {
     text-align: center;
 }
@@ -1828,7 +1829,6 @@ nav .column-left .nav-logo {
     margin-top: 8px;
     width: 25px;
     height: 25px;
-
 }
 
 nav .column-left .company-name {
@@ -1848,105 +1848,217 @@ nav a .no-style {
     text-decoration: none;
 }
 
-.navbar-search {
-    margin-top: 0px;
-    width: auto;
-    float: none;
-    overflow: hidden;
-    border-right: 1px solid hsl(0, 0%, 87.8%);
-    height: 40px;
-}
-
 .modal-bg {
-    background: hsl(0, 0%, 100%);
+    background: #f9f9f9;
 }
 
-#search_query {
+#searchbox {
+    display: flex;
     width: 100%;
-    font-size: 16px;
     height: 40px;
-    padding: 0px;
-    padding-left: 35px;
-    padding-right: 20px;
-    border: none;
-    border-radius: 0px;
-    font-family: 'Source Sans Pro';
-    font-weight: 300;
-    line-height: 27px;
+    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
+
+    .navbar-search {
+        margin-top: 0px;
+        width: calc(100% - 66px);
+        float: none;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .input-append {
+        height: 100%;
+        align-items: center;
+        display: flex;
+        flex-wrap: nowrap;
+        position: relative;
+        width: calc(100% - 28px);
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: 40px;
+        padding: 0px;
+        padding-left: 5px;
+        padding-right: 20px;
+        border: none;
+        border-radius: 0px;
+        font-family: 'Source Sans Pro';
+        font-weight: 300;
+        line-height: 40px;
+    }
+
+    .search_button,
+    .search_button[disabled]:hover {
+        position: relative;
+        background: none;
+        height: 40px;
+        padding: 4px;
+        color: hsl(0, 0%, 80%);
+        font-size: 18px;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+        float: right;
+    }
+
+    .search_button:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    .search_button[disabled] {
+        visibility: hidden;
+    }
+
+    a.search_icon {
+        display: table;
+        height: 100%;
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        float: left;
+
+        i {
+            display: table-cell;
+            vertical-align: middle;
+        }
+    }
+
+    a.search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        font-size: 90%;
+        letter-spacing: normal;
+        border: none;
+        background-color: inherit;
+    }
+
+    @media (min-width: 500px) {
+        .pill {
+            padding: 2px 0px 2px 0px !important;
+            font-size: 14px;
+        }
+    }
+    @media (max-width: 500px) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
+    }
 }
 
-#search_query:focus {
-    box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
-}
+#searchbox_legacy {
+    width: 100%;
+    height: 40px;
+    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0, 0%, 88%);
 
-#searchbox .search_button,
-#searchbox .search_button[disabled]:hover {
-    position: absolute;
-    right: 2px;
-    top: 6px;
-    background: none;
-    border-radius: 0px;
-    border: none;
-    height: 30px;
-    text-align: center;
-    padding: 4px;
-    color: hsl(0, 0%, 80%);
-    font-size: 18px;
-    box-shadow: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    text-shadow: none;
-    z-index: 5;
-}
+    .navbar-search {
+        margin-top: 0px;
+        width: auto;
+        float: none;
+        overflow: hidden;
+        height: 40px;
+    }
 
-#searchbox .search_button:hover {
-    color: hsl(0, 0%, 0%);
-}
+    .input-append {
+        position: relative;
+        width: 100%;
 
-#searchbox .search_button[disabled] {
-    visibility: hidden;
-}
+        .fa-search {
+            padding: 0px;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+        }
+    }
 
-#searchbox a.search_icon {
-    color: hsl(0, 0%, 80%);
-    text-decoration: none;
-    display: block;
-    width: 1px;
-    height: 1px;
-}
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: 40px;
+        padding: 0px;
+        padding-left: 35px;
+        padding-right: 20px;
+        border: none;
+        border-radius: 0px;
+        font-family: 'Source Sans Pro';
+        font-weight: 300;
+        line-height: 27px;
+    }
 
-#searchbox a.search_icon:hover {
-    color: hsl(0, 0%, 0%);
-    text-decoration: none;
-}
+    #search_query:focus {
+        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
+    }
 
-.highlight {
-    background-color: hsl(51, 94%, 74%);
-}
+    .search_button,
+    .search_button[disabled]:hover {
+        position: absolute;
+        right: 2px;
+        top: 6px;
+        background: none;
+        border-radius: 0px;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: hsl(0, 0%, 80%);
+        font-size: 18px;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+    }
 
-.highlight_text_inserted {
-    color: hsl(122, 72%, 30%);
-    background-color: hsl(120, 64%, 95%);
-}
+    .search_button:hover {
+        color: hsl(0, 0%, 0%);
+    }
 
-.highlight_text_deleted {
-    color: hsl(0, 0%, 73%);
-    text-decoration: line-through;
-    background-color: hsl(7, 90%, 92%);
-}
+    .search_button[disabled] {
+        visibility: hidden;
+    }
 
-#search_arrows {
-    /* Bootstrap wants font-size: 0 to eliminate space between
+    a.search_icon {
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        display: block;
+        width: 1px;
+        height: 1px;
+    }
+
+    a.search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
        remove the button gap by adjusting "letter" spacing. */
-    font-size: 90%;
-    letter-spacing: -.3em;
-}
+        font-size: 90%;
+        letter-spacing: -.3em;
+    }
 
-#search_arrows input {
-    /* Chrome and Firefox do this already via default browser stylesheet;
+    #search_arrows input {
+        /* Chrome and Firefox do this already via default browser stylesheet;
        but Opera needs this to avoid smushed letters in the search box. */
-    letter-spacing: normal;
+        letter-spacing: normal;
+    }
 }
 
 div.floating_recipient {
@@ -2059,12 +2171,47 @@ div.floating_recipient {
     border: none !important;
 }
 
+.rtl .twitter-image,
+.rtl .message_inline_image {
+    margin-left: unset;
+    margin-right: 5px;
+}
+
+.highlight {
+    background-color: hsl(51, 94%, 74%);
+}
+
+.highlight_text_inserted {
+    color: hsl(122, 72%, 30%);
+    background-color: hsl(120, 64%, 95%);
+}
+
+.highlight_text_deleted {
+    color: hsl(0, 0%, 73%);
+    text-decoration: line-through;
+    background-color: hsl(7, 90%, 92%);
+    word-break: break-all;
+}
+
+#message-edit-history .message_inline_image {
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    margin: 0px;
+}
+
 .message_inline_ref {
     margin-bottom: 5px;
     margin-left: 5px;
     height: 50px;
     display: block !important;
     border: none !important;
+}
+
+.rtl .message_inline_ref {
+    margin-left: unset;
+    margin-right: 5px;
 }
 
 .twitter-image img,
@@ -2074,6 +2221,18 @@ div.floating_recipient {
     max-height: 100%;
     float: left;
     margin-right: 10px;
+}
+
+.rtl .twitter-image img,
+.rtl .message_inline_image img,
+.rtl .message_inline_ref img {
+    float: right;
+    margin-right: unset;
+    margin-left: 10px;
+}
+
+#message-edit-history .message_inline_image img {
+    max-height: 100px;
 }
 
 li .message_inline_image img {
@@ -2220,7 +2379,8 @@ button.topic_edit_cancel {
     font-size: 12px;
     width: 18px;
     height: 18px;
-    margin-top: -1px;
+    vertical-align: baseline;
+    border-radius: 4px;
 }
 
 div.topic_edit_spinner {
@@ -2450,10 +2610,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-transform: none;
 }
 
-.sub-unsub-message span:before,
-.sub-unsub-message span:after,
-.date_row span:before,
-.date_row span:after {
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -2464,14 +2624,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     border-bottom: 1px solid #fff;
 }
 
-.sub-unsub-message span:before,
-.date_row span:before {
+.sub-unsub-message span::before,
+.date_row span::before {
     right: 0.5em;
     margin-left: -50%;
 }
 
-.sub-unsub-message span:after,
-.date_row span:after {
+.sub-unsub-message span::after,
+.date_row span::after {
     left: 0.5em;
     margin-right: -50%;
 }
@@ -2530,7 +2690,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: inline-block;
     margin: 0 0 0 0;
     height: 22px;
-    background: hsl(0, 0%, 88%);
     padding-left: 20px;
     padding-right: 3px;
     line-height: 22px;
@@ -2551,9 +2710,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     padding: 0 0.2em;
     box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
     margin-right: 2px;
+    margin-left: 2px;
     white-space: nowrap;
     background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
     background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
@@ -2626,6 +2786,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-smoothing: antialiased;
     -webkit-font-smoothing: antialiased;
     text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
+}
+
+.rtl.message_content .message_embed {
+    border-left: unset;
+    border-right: 3px solid hsl(0, 0%, 93%);
 }
 
 .message_content .message_embed > * {
@@ -2777,4 +2942,38 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .hotkey-hint {
     opacity: 0.75;
+}
+
+div.message_content table.tictactoe {
+    width: 80px;
+    margin-left: 0px;
+}
+
+div.message_content td.tictactoe {
+    width: 15px;
+    border: none;
+    padding: 2px;
+}
+
+div.message_content button.tictactoe-square {
+    background-color: #81bba4;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 3px;
+    font-size: 25px;
+    color: white;
+}
+
+div.message_content button.tictactoe-square:hover {
+    background-color: #808c87;
+}
+
+div.message_content button.tictactoe-square:disabled {
+    background-color: #beded1;
+}
+
+// Hide the up and down arrows in the Flatpickr datepicker year
+.flatpickr-months .numInputWrapper span {
+    display: none;
 }

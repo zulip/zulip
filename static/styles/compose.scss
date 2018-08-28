@@ -79,8 +79,9 @@
     width: 100%;
 }
 
-.compose_table .right_part .icon-vector-narrow {
-    font-size: 0.6em;
+.compose_table .right_part .fa-angle-right {
+    font-size: 0.9em;
+    -webkit-text-stroke: 0.05em;
     position: relative;
     margin: 0px 5px;
 }
@@ -229,11 +230,6 @@ table.compose_table {
 
 #error-message-sub-button {
     margin-right: 30px;
-}
-
-.compose_invite_user_error {
-    margin-right: 10px;
-    padding: 3px 8px 3px 8px;
 }
 
 /* Like .nav-tabs > li > a */
@@ -394,6 +390,10 @@ input.recipient_box {
 #stream-message,
 #private-message {
     display: flex;
+}
+
+#private-message {
+    align-items: center;
 }
 
 .compose_table .drafts-link {

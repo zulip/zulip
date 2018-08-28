@@ -9,7 +9,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
     get_pull_request_event_message, get_push_commits_event_message
@@ -43,7 +43,8 @@ def format_new_branch_event(payload: Dict[str, Any]) -> str:
     }
     return get_create_branch_event_message(**data)
 
-def format_pull_request_event(payload: Dict[str, Any]) -> str:
+def format_pull_request_event(payload: Dict[str, Any],
+                              include_title: Optional[bool]=False) -> str:
 
     data = {
         'user_name': payload['pull_request']['user']['username'],
@@ -52,6 +53,7 @@ def format_pull_request_event(payload: Dict[str, Any]) -> str:
         'number': payload['pull_request']['number'],
         'target_branch': payload['pull_request']['head_branch'],
         'base_branch': payload['pull_request']['base_branch'],
+        'title': payload['pull_request']['title'] if include_title else None
     }
 
     if payload['pull_request']['merged']:
@@ -64,7 +66,8 @@ def format_pull_request_event(payload: Dict[str, Any]) -> str:
 @has_request_variables
 def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body'),
-                     branches: Optional[str]=REQ(default=None)) -> HttpResponse:
+                     branches: Optional[str]=REQ(default=None),
+                     user_specified_topic: Optional[str]=REQ("topic", default=None)) -> HttpResponse:
 
     repo = payload['repository']['name']
     event = validate_extract_webhook_http_header(request, 'X_GOGS_EVENT', 'Gogs')
@@ -84,7 +87,10 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
             branch=payload['ref']
         )
     elif event == 'pull_request':
-        body = format_pull_request_event(payload)
+        body = format_pull_request_event(
+            payload,
+            include_title=user_specified_topic is not None
+        )
         topic = SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type='PR',
@@ -92,7 +98,7 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
             title=payload['pull_request']['title']
         )
     else:
-        return json_error(_('Invalid event "{}" in request headers').format(event))
+        raise UnexpectedWebhookEventType('Gogs', event)
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

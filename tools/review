@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import shlex
 import subprocess
 import sys
+from typing import List
 
 def exit(message):
     # type: (str) -> None
@@ -10,23 +12,23 @@ def exit(message):
     sys.exit(1)
 
 def run(command):
-    # type: (str) -> None
-    print('\n>>> ' + command)
-    subprocess.check_call(command.split())
+    # type: (List[str]) -> None
+    print('\n>>> ' + ' '.join(map(shlex.quote, command)))
+    subprocess.check_call(command)
 
 def check_output(command):
-    # type: (str) -> str
-    return subprocess.check_output(command.split()).decode('ascii')
+    # type: (List[str]) -> str
+    return subprocess.check_output(command).decode('ascii')
 
 def get_git_branch():
     # type: () -> str
-    command = 'git rev-parse --abbrev-ref HEAD'
+    command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
     output = check_output(command)
     return output.strip()
 
 def check_git_pristine():
     # type: () -> None
-    command = 'git status --porcelain'
+    command = ['git', 'status', '--porcelain']
     output = check_output(command)
     if output.strip():
         exit('Git is not pristine:\n' + output)
@@ -37,16 +39,16 @@ def ensure_on_clean_master():
     if branch != 'master':
         exit('You are still on a feature branch: %s' % (branch,))
     check_git_pristine()
-    run('git fetch upstream master')
-    run('git rebase upstream/master')
+    run(['git', 'fetch', 'upstream', 'master'])
+    run(['git', 'rebase', 'upstream/master'])
 
 def create_pull_branch(pull_id):
     # type: (int) -> None
-    run('git fetch upstream pull/%d/head' % (pull_id,))
-    run('git checkout -B review-%s FETCH_HEAD' % (pull_id,))
-    run('git rebase upstream/master')
-    run('git log upstream/master.. --oneline')
-    run('git diff upstream/master.. --name-status')
+    run(['git', 'fetch', 'upstream', 'pull/%d/head' % (pull_id,)])
+    run(['git', 'checkout', '-B', 'review-%s' % (pull_id,), 'FETCH_HEAD'])
+    run(['git', 'rebase', 'upstream/master'])
+    run(['git', 'log', 'upstream/master..', '--oneline'])
+    run(['git', 'diff', 'upstream/master..', '--name-status'])
 
     print()
     print('PR: %d' % (pull_id,))

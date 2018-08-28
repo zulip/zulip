@@ -3,31 +3,31 @@ class zulip_ops::prod_app_frontend {
   include zulip_ops::app_frontend
   include zulip::app_frontend_once
 
-  file { "/etc/nginx/sites-available/zulip":
-    ensure => file,
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip_ops/nginx/sites-available/zulip",
-    notify => Service["nginx"],
+  file { '/etc/nginx/sites-available/zulip':
+    ensure  => file,
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip_ops/nginx/sites-available/zulip',
+    notify  => Service['nginx'],
   }
 
   file { '/etc/nginx/sites-enabled/zulip':
-    ensure => 'link',
-    require => Package["nginx-full"],
-    target => '/etc/nginx/sites-available/zulip',
-    notify => Service["nginx"],
+    ensure  => 'link',
+    require => Package['nginx-full'],
+    target  => '/etc/nginx/sites-available/zulip',
+    notify  => Service['nginx'],
   }
 
-  file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
+  file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':
     require => Package[nagios-plugins-basic],
     recurse => true,
-    purge => true,
-    owner => "root",
-    group => "root",
-    mode => '0755',
-    source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
+    purge   => true,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
   }
 
   # Prod has our Apple Push Notifications Service private key at

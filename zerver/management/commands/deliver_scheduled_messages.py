@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.management import sleep_forever
 from zerver.models import ScheduledMessage, Message, get_user
 from zerver.lib.actions import do_send_messages
 from zerver.lib.addressee import Addressee
@@ -21,6 +22,11 @@ log_to_file(logger, settings.SCHEDULED_MESSAGE_DELIVERER_LOG_PATH)
 class Command(BaseCommand):
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
+
+This management command is run via supervisor.  Do not run on multiple
+machines, as you may encounter multiple sends in a specific race
+condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
+on all but one machine to make the command have no effect.)
 
 Usage: ./manage.py deliver_scheduled_messages
 """
@@ -39,13 +45,19 @@ Usage: ./manage.py deliver_scheduled_messages
             message.sender = original_sender
         elif delivery_type == ScheduledMessage.REMIND:
             message.sender = get_user(settings.REMINDER_BOT, original_sender.realm)
-            whos_reminding = ('%s asked me to do a reminder about:\n' % (original_sender.full_name))
-            message.content = whos_reminding + message.content
 
         return {'message': message, 'stream': scheduled_message.stream,
                 'realm': scheduled_message.realm}
 
     def handle(self, *args: Any, **options: Any) -> None:
+
+        if settings.EMAIL_DELIVERER_DISABLED:
+            # Here doing a check and sleeping indefinitely on this setting might
+            # not sound right. Actually we do this check to avoid running this
+            # process on every server that might be in service to a realm. See
+            # the comment in zproject/settings.py file about renaming this setting.
+            sleep_forever()
+
         with lockfile("/tmp/zulip_scheduled_message_deliverer.lockfile"):
             while True:
                 messages_to_deliver = ScheduledMessage.objects.filter(

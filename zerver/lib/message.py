@@ -37,13 +37,15 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    SubMessage,
     Subscription,
     UserProfile,
     UserMessage,
-    Reaction
+    Reaction,
+    get_usermessage_by_message_id,
 )
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union, Sequence
 from mypy_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[str]]
@@ -65,7 +67,11 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
     'count': int,
 })
 
-MAX_UNREAD_MESSAGES = 5000
+# We won't try to fetch more unread message IDs from the database than
+# this limit.  The limit is super high, in large part because it means
+# client-side code mostly doesn't need to think about the case that a
+# user has more older unread messages that were cut off.
+MAX_UNREAD_MESSAGES = 50000
 
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
@@ -121,6 +127,20 @@ def sew_messages_and_reactions(messages: List[Dict[str, Any]],
     return list(converted_messages.values())
 
 
+def sew_messages_and_submessages(messages: List[Dict[str, Any]],
+                                 submessages: List[Dict[str, Any]]) -> None:
+    # This is super similar to sew_messages_and_reactions.
+    for message in messages:
+        message['submessages'] = []
+
+    message_dict = {message['id']: message for message in messages}
+
+    for submessage in submessages:
+        message_id = submessage['message_id']
+        if message_id in message_dict:
+            message = message_dict[message_id]
+            message['submessages'].append(submessage)
+
 def extract_message_dict(message_bytes: bytes) -> Dict[str, Any]:
     return ujson.loads(zlib.decompress(message_bytes).decode("utf-8"))
 
@@ -130,6 +150,13 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 @cache_with_key(to_dict_cache_key, timeout=3600*24)
 def message_to_dict_json(message: Message) -> bytes:
     return MessageDict.to_dict_uncached(message)
+
+def save_message_rendered_content(message: Message, content: str) -> str:
+    rendered_content = render_markdown(message, content, realm=message.get_realm())
+    message.rendered_content = rendered_content
+    message.rendered_content_version = bugdown.version
+    message.save_rendered_content()
+    return rendered_content
 
 class MessageDict:
     @staticmethod
@@ -205,7 +232,8 @@ class MessageDict:
             recipient_id = message.recipient.id,
             recipient_type = message.recipient.type,
             recipient_type_id = message.recipient.type_id,
-            reactions = Reaction.get_raw_db_rows([message.id])
+            reactions = Reaction.get_raw_db_rows([message.id]),
+            submessages = SubMessage.get_raw_db_rows([message.id]),
         )
 
     @staticmethod
@@ -229,11 +257,10 @@ class MessageDict:
             'sender__realm_id',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
-        """Adding one-many or Many-Many relationship in values results in N X
-        results.
 
-        Link: https://docs.djangoproject.com/en/1.8/ref/models/querysets/#values
-        """
+        submessages = SubMessage.get_raw_db_rows(needed_ids)
+        sew_messages_and_submessages(messages, submessages)
+
         reactions = Reaction.get_raw_db_rows(needed_ids)
         return sew_messages_and_reactions(messages, reactions)
 
@@ -259,7 +286,8 @@ class MessageDict:
             recipient_id = row['recipient_id'],
             recipient_type = row['recipient__type'],
             recipient_type_id = row['recipient__type_id'],
-            reactions=row['reactions']
+            reactions=row['reactions'],
+            submessages=row['submessages'],
         )
 
     @staticmethod
@@ -279,7 +307,8 @@ class MessageDict:
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
-            reactions: List[Dict[str, Any]]
+            reactions: List[Dict[str, Any]],
+            submessages: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
 
         obj = dict(
@@ -325,10 +354,7 @@ class MessageDict:
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
             # in some cases.
-            rendered_content = render_markdown(message, content, realm=message.get_realm())
-            message.rendered_content = rendered_content
-            message.rendered_content_version = bugdown.version
-            message.save_rendered_content()
+            rendered_content = save_message_rendered_content(message, content)
 
         if rendered_content is not None:
             obj['rendered_content'] = rendered_content
@@ -343,6 +369,7 @@ class MessageDict:
 
         obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
                             for reaction in reactions]
+        obj['submessages'] = submessages
         return obj
 
     @staticmethod
@@ -457,7 +484,7 @@ class ReactionDict:
                          'full_name': row['user_profile__full_name']}}
 
 
-def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, UserMessage]:
+def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, Optional[UserMessage]]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
         (aka have a UserMessage row for).
@@ -471,40 +498,58 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
-    try:
-        user_message = UserMessage.objects.select_related().get(user_profile=user_profile,
-                                                                message=message)
-    except UserMessage.DoesNotExist:
-        user_message = None
+    user_message = get_usermessage_by_message_id(user_profile, message_id)
 
+    if has_message_access(user_profile, message, user_message):
+        return (message, user_message)
+    raise JsonableError(_("Invalid message(s)"))
+
+def has_message_access(user_profile: UserProfile, message: Message,
+                       user_message: Optional[UserMessage]) -> bool:
     if user_message is None:
         if message.recipient.type != Recipient.STREAM:
             # You can't access private messages you didn't receive
-            raise JsonableError(_("Invalid message(s)"))
+            return False
+
         stream = Stream.objects.get(id=message.recipient.type_id)
         if stream.realm != user_profile.realm:
             # You can't access public stream messages in other realms
-            raise JsonableError(_("Invalid message(s)"))
+            return False
+
+        if not stream.is_history_public_to_subscribers():
+            # You can't access messages you didn't directly receive
+            # unless history is public to subscribers.
+            return False
 
         if not stream.is_public():
-            if not stream.is_history_public_to_subscribers():
-                # You can't access messages sent to invite-only streams
-                # that you didn't receive
-                raise JsonableError(_("Invalid message(s)"))
-
             # This stream is an invite-only stream where message
             # history is available to subscribers.  So we check if
             # you're subscribed.
             if not Subscription.objects.filter(user_profile=user_profile, active=True,
                                                recipient=message.recipient).exists():
-                raise JsonableError(_("Invalid message(s)"))
+                return False
 
             # You are subscribed, so let this fall through to the public stream case.
+        elif user_profile.is_guest:
+            # Guest users don't get automatic access to public stream messages
+            if not Subscription.objects.filter(user_profile=user_profile, active=True,
+                                               recipient=message.recipient).exists():
+                return False
         else:
             # Otherwise, the message was sent to a public stream in
             # your realm, so return the message, user_message pair
             pass
-    return (message, user_message)
+
+    return True
+
+def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
+    filtered_messages = []
+
+    for message in messages:
+        user_message = get_usermessage_by_message_id(user_profile, message.id)
+        if has_message_access(user_profile, message, user_message):
+            filtered_messages.append(message)
+    return filtered_messages
 
 def render_markdown(message: Message,
                     content: str,
@@ -659,6 +704,15 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         row['recipient__type_id']
         for row in rows]
     return muted_stream_ids
+
+def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
+    return list(UserMessage.objects.filter(
+        user_profile=user_profile,
+    ).extra(
+        where=[UserMessage.where_starred()]
+    ).order_by(
+        'message_id'
+    ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
@@ -875,6 +929,8 @@ def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> 
 
 def update_first_visible_message_id(realm: Realm) -> None:
     try:
+        # We have verified that the limit is not none before calling this function.
+        assert realm.message_visibility_limit is not None
         first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
             order_by('-id')[realm.message_visibility_limit - 1]["id"]
     except IndexError:

@@ -3,24 +3,27 @@
         {% if enable_feedback %}
         <div id="feedback_section" class="new-style">
             <button type="button" class="button small rounded" id="feedback_button">
-                <i class="icon-vector-comment"></i>&nbsp;&nbsp;{{ _('Send feedback') }}
+                <i class="fa fa-comment" aria-hidden="true"></i>&nbsp;&nbsp;{{ _('Send feedback') }}
             </button>
         </div>
         {% endif %}
         <div id="user-list">
             <div id="userlist-header">
                 <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>
-                <i id="user_filter_icon" class='fa fa-search' aria-label="{{ _('Filter users') }}" data-toggle="tooltip" title="{{ _('Filter users') }} (w)"></i>
+                <i id="user_filter_icon" class='fa fa-search' aria-hidden="true" aria-label="{{ _('Filter users') }}" data-toggle="tooltip" title="{{ _('Filter users') }} (w)"></i>
             </div>
             <div class="input-append notdisplayed">
                 <input class="user-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search people') }}" />
                 <button type="button" class="btn clear_search_button" id="clear_search_people_button">
-                    <i class="icon-vector-remove"></i>
+                    <i class="fa fa-remove" aria-hidden="true"></i>
                 </button>
             </div>
-            <ul id="user_presences" class="filters scrolling_list"></ul>
+            <div id="buddy_list_wrapper" class="scrolling_list">
+                <ul id="user_presences" class="filters"></ul>
+                <div id="buddy_list_wrapper_padding"></div>
+            </div>
             {% if show_invites %}
-            <a id="invite-user-link" href="#invite"><i class="icon-vector-plus-sign"></i>{{ _('Invite more users') }}</a>
+            <a id="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Invite more users') }}</a>
             {% endif %}
         </div>
         <div id="group-pm-list">
@@ -29,6 +32,11 @@
             </div>
             <ul id="group-pms" class="filters scrolling_list">
             </ul>
+        </div>
+        <div id="sidebar-keyboard-shortcuts">
+            <a data-overlay-trigger="keyboard-shortcuts">
+                <i class="fa fa-keyboard-o fa-2x" id="keyboard-icon" data-html="true" data-toggle="tooltip" title="{{ _('Keyboard shortcuts') }} <span class='hotkey-hint'>(?)</span>"></i>
+            </a>
         </div>
     </div>
 </div>

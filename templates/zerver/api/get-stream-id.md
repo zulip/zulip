@@ -24,7 +24,7 @@ curl {{ api_url }}/v1/get_stream_id?stream=Denmark \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|get-stream-id|example}
+{generate_code_example(python)|/get_stream_id:get|example}
 
 </div>
 
@@ -53,7 +53,7 @@ zulip(config).then((client) => {
 
 **Note**: The following arguments are all URL query parameters.
 
-{generate_api_arguments_table|arguments.json|get-stream-id.md}
+{generate_api_arguments_table|zulip.yaml|/get_stream_id:get}
 
 ## Response
 
@@ -65,9 +65,8 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-stream-id|fixture}
+{generate_code_example|/get_stream_id:get|fixture(200)}
 
-An example of a JSON response for when the supplied stream does not
-exist:
+An example JSON response for when the supplied stream does not exist:
 
-{generate_code_example|invalid-stream-error|fixture}
+{generate_code_example|/get_stream_id:get|fixture(400)}

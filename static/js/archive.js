@@ -39,8 +39,8 @@ exports.initialize = function () {
         all_message_groups.push(current_message_group);
         current_message_group = {};
         current_message_group.message_containers = [];
-        current_message_group.show_date = (
-            timerender.render_date(time, prev_time, today))[0].outerHTML;
+        current_message_group.show_date =
+            timerender.render_date(time, prev_time, today)[0].outerHTML;
         current_message_group.show_date_separator = true;
         current_message_group.display_recipient = stream_name;
         current_message_group.subject = topic;
@@ -84,7 +84,7 @@ exports.initialize = function () {
         if (prev_sender !== undefined) {
             var first_group_msg = $(this).find('.message_row').first();
             var message_sender = first_group_msg.find('.message_sender');
-            if (! message_sender.find('.inline_profile_picture').length) {
+            if (!message_sender.find('.inline_profile_picture').length) {
                 message_sender.replaceWith(prev_sender.clone());
             }
         }
@@ -136,8 +136,8 @@ $(function () {
     $.fn.safeOuterWidth = function () {
         return $(this).outerWidth.apply(this, arguments) || 0;
     };
-    $('.app').scroll($.throttle(50, function () {
+    $('.app').scroll(_.throttle(function () {
         scroll_finish();
-    }));
+    }, 50));
     archive.initialize();
 });

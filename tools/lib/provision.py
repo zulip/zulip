@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -29,6 +29,7 @@ SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
         "xenial",
+        "bionic",
     ],
     "Debian": [
         "stretch",
@@ -41,7 +42,6 @@ LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
 TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
-LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
 is_travis = 'TRAVIS' in os.environ
@@ -73,7 +73,7 @@ if ram_gb < 1.5:
 
 try:
     UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
-    run(["mkdir", "-p", UUID_VAR_PATH])
+    os.makedirs(UUID_VAR_PATH, exist_ok=True)
     if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
@@ -81,7 +81,7 @@ try:
         os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
     )
     os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
-except OSError as err:
+except OSError:
     print(FAIL + "Error: Unable to create symlinks."
           "Make sure you have permission to create symbolic links." + ENDC)
     print("See this page for more information:")
@@ -99,9 +99,12 @@ else:
 
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
-subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
-vendor = subprocess_text_output(["lsb_release", "-is"])
-codename = subprocess_text_output(["lsb_release", "-cs"])
+if not os.path.exists("/usr/bin/lsb_release"):
+    subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
+
+distro_info = parse_lsb_release()
+vendor = distro_info['DISTRIB_ID']
+codename = distro_info['DISTRIB_CODENAME']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -122,15 +125,16 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "hunspell-en-us",
     "supervisor",
     "git",
-    "libssl-dev",
     "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
     "puppet",               # Used by lint
+    "puppet-lint",
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
     "moreutils",            # Used for sponge command
+    "libfontconfig1",       # Required by phantomjs
 ] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
@@ -138,10 +142,6 @@ APT_DEPENDENCIES = {
         "postgresql-9.6",
         "postgresql-9.6-tsearch-extras",
         "postgresql-9.6-pgroonga",
-        # Technically, this should be in VENV_DEPENDENCIES, but it
-        # doesn't exist in trusty and we don't have a conditional on
-        # platform there.
-        "virtualenv",
     ],
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.3",
@@ -152,13 +152,11 @@ APT_DEPENDENCIES = {
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
         "postgresql-9.5-pgroonga",
-        "virtualenv",  # see comment on stretch
     ],
     "bionic": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-10",
         "postgresql-10-pgroonga",
         "postgresql-10-tsearch-extras",
-        "virtualenv",  # see comment on stretch
     ],
 }
 
@@ -223,12 +221,9 @@ def main(options):
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
-    try:
-        hash_file = open(apt_hash_file_path, 'r+')
+    with open(apt_hash_file_path, 'a+') as hash_file:
+        hash_file.seek(0)
         last_apt_dependencies_hash = hash_file.read()
-    except IOError:
-        run(['touch', apt_hash_file_path])
-        hash_file = open(apt_hash_file_path, 'r+')
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
@@ -243,7 +238,8 @@ def main(options):
             # recover automatically.
             run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
-        hash_file.write(new_apt_dependencies_hash)
+        with open(apt_hash_file_path, 'w') as hash_file:
+            hash_file.write(new_apt_dependencies_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
 
@@ -275,17 +271,15 @@ def main(options):
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
-    run(["mkdir", "-p", LOG_DIR_PATH])
+    os.makedirs(LOG_DIR_PATH, exist_ok=True)
     # create upload directory `var/uploads`
-    run(["mkdir", "-p", UPLOAD_DIR_PATH])
+    os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
     # create test upload directory `var/test_upload`
-    run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
+    os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
     # create coverage directory`var/coverage`
-    run(["mkdir", "-p", COVERAGE_DIR_PATH])
-    # create linecoverage directory`var/linecoverage-report`
-    run(["mkdir", "-p", LINECOVERAGE_DIR_PATH])
+    os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
     # create linecoverage directory`var/node-coverage`
-    run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
+    os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
 
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
@@ -298,11 +292,31 @@ def main(options):
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
 
-    run(["tools/generate-custom-icon-webfont"])
-    run(["tools/setup/build_pygments_data"])
+    webfont_paths = ["tools/setup/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
+    webfont_paths += glob.glob('static/assets/icons/*')
+    if file_or_package_hash_updated(webfont_paths, "webfont_files_hash", options.is_force):
+        run(["tools/setup/generate-custom-icon-webfont"])
+    else:
+        print("No need to run `tools/setup/generate-custom-icon-webfont`.")
+
+    build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
+    from pygments import __version__ as pygments_version
+    if file_or_package_hash_updated(build_pygments_data_paths, "build_pygments_data_hash", options.is_force,
+                                    [pygments_version]):
+        run(["tools/setup/build_pygments_data"])
+    else:
+        print("No need to run `tools/setup/build_pygments_data`.")
+
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
-    run(["tools/inline-email-css"])
+
+    email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
+    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
+    if file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
+        run(["tools/inline-email-css"])
+    else:
+        print("No need to run `tools/inline-email-css`.")
+
     if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
@@ -320,12 +334,12 @@ def main(options):
         # of the development environment (it just uses the development
         # environment to build a release tarball).
 
-        # Need to set up Django before using is_template_database_current
+        # Need to set up Django before using template_database_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
 
-        from zerver.lib.test_fixtures import is_template_database_current
+        from zerver.lib.test_fixtures import template_database_status, run_db_migrations
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -340,47 +354,38 @@ def main(options):
             print("RabbitMQ is already configured.")
 
         migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        if options.is_force or not is_template_database_current(
-                migration_status=migration_status_path,
-                settings="zproject.settings",
-                database_name="zulip",
-        ):
+        dev_template_db_status = template_database_status(
+            migration_status=migration_status_path,
+            settings="zproject.settings",
+            database_name="zulip",
+        )
+        if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
-        else:
+        elif dev_template_db_status == 'run_migrations':
+            run_db_migrations('dev')
+        elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        if options.is_force or not is_template_database_current():
+        test_template_db_status = template_database_status()
+        if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
-        else:
+        elif test_template_db_status == 'run_migrations':
+            run_db_migrations('test')
+        elif test_template_db_status == 'current':
             print("No need to regenerate the test DB.")
 
         # Consider updating generated translations data: both `.mo`
         # files and `language-options.json`.
-        sha1sum = hashlib.sha1()
         paths = ['zerver/management/commands/compilemessages.py']
         paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
         paths += glob.glob('static/locale/*/translations.json')
 
-        for path in paths:
-            with open(path, 'rb') as file_to_hash:
-                sha1sum.update(file_to_hash.read())
-
-        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
-        new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', compilemessages_hash_path])
-        with open(compilemessages_hash_path, 'r') as hash_file:
-            last_compilemessages_hash = hash_file.read()
-
-        if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open(compilemessages_hash_path, 'w') as hash_file:
-                hash_file.write(new_compilemessages_hash)
+        if file_or_package_hash_updated(paths, "last_compilemessages_hash", options.is_force):
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
-
-        run(["./manage.py", "create_realm_internal_bots"])  # Creates realm internal bots if required.
 
     run(["scripts/lib/clean-unused-caches"])
 

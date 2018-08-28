@@ -1,4 +1,3 @@
-
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
@@ -14,8 +13,9 @@ from zerver.decorator import has_request_variables, \
     REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
+from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
-    compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
+    compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
@@ -36,6 +36,7 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
+from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, email_to_domain, get_realm, get_active_streams, \
@@ -148,12 +149,7 @@ class NarrowBuilder:
 
     def by_is(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand == 'private':
-            # The `.select_from` method extends the query with a join.
-            query = query.select_from(join(query.froms[0], table("zerver_recipient"),
-                                           column("recipient_id") ==
-                                           literal_column("zerver_recipient.id")))
-            cond = or_(column("type") == Recipient.PERSONAL,
-                       column("type") == Recipient.HUDDLE)
+            cond = column("flags").op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == 'starred':
             cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
@@ -357,14 +353,15 @@ class NarrowBuilder:
 
     def _by_search_pgroonga(self, query: Query, operand: str,
                             maybe_negate: ConditionTransform) -> Query:
-        match_positions_character = func.pgroonga.match_positions_character
-        query_extract_keywords = func.pgroonga.query_extract_keywords
-        keywords = query_extract_keywords(operand)
+        match_positions_character = func.pgroonga_match_positions_character
+        query_extract_keywords = func.pgroonga_query_extract_keywords
+        operand_escaped = func.escape_html(operand)
+        keywords = query_extract_keywords(operand_escaped)
         query = query.column(match_positions_character(column("rendered_content"),
                                                        keywords).label("content_matches"))
-        query = query.column(match_positions_character(column("subject"),
+        query = query.column(match_positions_character(func.escape_html(column("subject")),
                                                        keywords).label("subject_matches"))
-        condition = column("search_pgroonga").op("@@")(operand)
+        condition = column("search_pgroonga").op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(self, query: Query, operand: str,
@@ -383,7 +380,7 @@ class NarrowBuilder:
         # search here so we can ignore punctuation and do
         # stemming, but there isn't a standard phrase search
         # mechanism in Postgres
-        for term in re.findall('"[^"]+"|\S+', operand):
+        for term in re.findall(r'"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
@@ -681,8 +678,13 @@ def find_first_unread_anchor(sa_conn: Any,
     return anchor
 
 @has_request_variables
+def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
+                     command: str=REQ('command')) -> HttpResponse:
+    return json_success(process_zcommands(command, user_profile))
+
+@has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
-                         anchor: int=REQ(converter=int),
+                         anchor: int=REQ(converter=int, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: Optional[List[Dict[str, Any]]]=REQ('narrow', converter=narrow_parameter,
@@ -690,6 +692,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
+    if anchor is None and not use_first_unread_anchor:
+        return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
     include_history = ok_to_include_history(narrow, user_profile)
 
     if include_history:
@@ -968,7 +972,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
                          operation: str=REQ('op'), flag: str=REQ()) -> HttpResponse:
 
-    count = do_update_message_flags(user_profile, operation, flag, messages)
+    count = do_update_message_flags(user_profile, request.client, operation, flag, messages)
 
     target_count_str = str(len(messages))
     log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
@@ -980,7 +984,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    count = do_mark_all_as_read(user_profile)
+    count = do_mark_all_as_read(user_profile, request.client)
 
     log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
@@ -993,7 +997,7 @@ def mark_stream_as_read(request: HttpRequest,
                         user_profile: UserProfile,
                         stream_id: int=REQ(validator=check_int)) -> HttpResponse:
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
-    count = do_mark_stream_messages_as_read(user_profile, stream)
+    count = do_mark_stream_messages_as_read(user_profile, request.client, stream)
 
     log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
@@ -1015,7 +1019,7 @@ def mark_topic_as_read(request: HttpRequest,
         if not topic_exists:
             raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
 
-    count = do_mark_stream_messages_as_read(user_profile, stream, topic_name)
+    count = do_mark_stream_messages_as_read(user_profile, request.client, stream, topic_name)
 
     log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
@@ -1123,7 +1127,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     try:
         deliver_at = dateparser(defer_until)
     except ValueError:
-        return json_error(_("Invalid timestamp for scheduling message."))
+        return json_error(_("Invalid time format"))
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
@@ -1133,7 +1137,7 @@ def handle_deferred_message(sender: UserProfile, client: Client,
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
-        return json_error(_("Invalid timestamp for scheduling message. Choose a time in future."))
+        return json_error(_("Time must be in the future."))
 
     check_schedule_message(sender, client, message_type_name, message_to,
                            topic_name, message_content, delivery_type,
@@ -1153,6 +1157,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          topic_name: Optional[str]=REQ('subject',
                                                        converter=lambda x: x.strip(), default=None),
                          message_content: str=REQ('content'),
+                         widget_content: Optional[str]=REQ(default=None),
                          realm_str: Optional[str]=REQ('realm_str', default=None),
                          local_id: Optional[str]=REQ(default=None),
                          queue_id: Optional[str]=REQ(default=None),
@@ -1217,7 +1222,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                              topic_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
-                             local_id=local_id, sender_queue_id=queue_id)
+                             local_id=local_id, sender_queue_id=queue_id,
+                             widget_content=widget_content)
     return json_success({"id": ret})
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
@@ -1232,7 +1238,12 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     prev_topic = message.subject
-    assert(datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp'])
+
+    # Make sure that the latest entry in the history corresponds to the
+    # message's last edit time
+    if len(message_history) > 0:
+        assert(datetime_to_timestamp(message.last_edit_time) ==
+               message_history[0]['timestamp'])
 
     for entry in message_history:
         entry['topic'] = prev_topic
@@ -1269,7 +1280,10 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message
-    message_edit_history = ujson.loads(message.edit_history)
+    if message.edit_history is not None:
+        message_edit_history = ujson.loads(message.edit_history)
+    else:
+        message_edit_history = []
 
     # Fill in all the extra data that will make it usable
     fill_edit_history_entries(message_edit_history, message)
@@ -1285,6 +1299,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
+    is_no_topic_msg = (message.topic_name() == "(no topic)")
 
     # You only have permission to edit a message if:
     # you change this value also change those two parameters in message_edit.js.
@@ -1294,7 +1309,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
-    elif (content is None) and ((message.topic_name() == "(no topic)") or
+    elif (content is None) and (is_no_topic_msg or
                                 user_profile.is_realm_admin or
                                 user_profile.realm.allow_community_topic_editing):
         pass
@@ -1316,7 +1331,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # edit it and that it has not been too long. If this is not the user who
     # sent the message, they are not the admin, and the time limit for editing
     # topics is passed, raise an error.
-    if content is None and message.sender != user_profile and not user_profile.is_realm_admin:
+    if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
+            not is_no_topic_msg:
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))

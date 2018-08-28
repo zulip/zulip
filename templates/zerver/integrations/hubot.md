@@ -28,7 +28,7 @@ The `--name` parameter must match the name you gave the bot on
 the settings page.
 
 Hubot will automatically listen for commands on all public streams.
-You can also invite Hubot to invite-only streams.
+You can also invite Hubot to private streams.
 
 To test your Hubot installation, send it an @-notification with a
 basic command, for example `@Hubot pug me`, which should produce a

@@ -31,14 +31,14 @@ def filter_by_subscription_history(user_profile: UserProfile,
         for log_entry in stream_subscription_logs:
             if len(stream_messages) == 0:
                 continue
-            if log_entry.event_type == 'subscription_deactivated':
+            if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
                 for stream_message in stream_messages:
                     if stream_message['id'] <= log_entry.event_last_message_id:
                         store_user_message_to_insert(stream_message)
                     else:
                         break
-            elif log_entry.event_type in ('subscription_activated',
-                                          'subscription_created'):
+            elif log_entry.event_type in (RealmAuditLog.SUBSCRIPTION_ACTIVATED,
+                                          RealmAuditLog.SUBSCRIPTION_CREATED):
                 initial_msg_count = len(stream_messages)
                 for i, stream_message in enumerate(stream_messages):
                     if stream_message['id'] > log_entry.event_last_message_id:
@@ -56,8 +56,8 @@ def filter_by_subscription_history(user_profile: UserProfile,
             # event was a subscription_deactivated then we don't want to create
             # UserMessage rows for any of the remaining messages.
             if stream_subscription_logs[-1].event_type in (
-                    'subscription_activated',
-                    'subscription_created'):
+                    RealmAuditLog.SUBSCRIPTION_ACTIVATED,
+                    RealmAuditLog.SUBSCRIPTION_CREATED):
                 for stream_message in stream_messages:
                     store_user_message_to_insert(stream_message)
     return user_messages_to_insert
@@ -97,6 +97,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     * Create the UserMessage rows.
 
     """
+    assert user_profile.last_active_message_id is not None
     all_stream_subs = list(Subscription.objects.select_related('recipient').filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
@@ -104,7 +105,8 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # For Stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
     stream_ids = [sub['recipient__type_id'] for sub in all_stream_subs]
-    events = ['subscription_created', 'subscription_deactivated', 'subscription_activated']
+    events = [RealmAuditLog.SUBSCRIPTION_CREATED, RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+              RealmAuditLog.SUBSCRIPTION_ACTIVATED]
     subscription_logs = list(RealmAuditLog.objects.select_related(
         'modified_stream').filter(
         modified_user=user_profile,
@@ -118,11 +120,12 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     recipient_ids = []
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub['recipient__type_id']]
-        if (stream_subscription_logs[-1].event_type == 'subscription_deactivated' and
-                stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id):
-            # We are going to short circuit this iteration as its no use
-            # iterating since user unsubscribed before soft-deactivation
-            continue
+        if stream_subscription_logs[-1].event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
+            assert stream_subscription_logs[-1].event_last_message_id is not None
+            if stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id:
+                # We are going to short circuit this iteration as its no use
+                # iterating since user unsubscribed before soft-deactivation
+                continue
         recipient_ids.append(sub['recipient'])
 
     all_stream_msgs = list(Message.objects.select_related(
@@ -178,7 +181,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
             log = RealmAuditLog(
                 realm=user.realm,
                 modified_user=user,
-                event_type='user_soft_deactivated',
+                event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
                 event_time=event_time
             )
             realm_logs.append(log)
@@ -194,7 +197,7 @@ def maybe_catch_up_soft_deactivated_user(user_profile: UserProfile) -> Union[Use
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
             modified_user=user_profile,
-            event_type='user_soft_activated',
+            event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now()
         )
         logger.info('Soft Reactivated user %s (%s)' %

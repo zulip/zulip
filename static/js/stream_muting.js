@@ -43,7 +43,7 @@ exports.update_in_home_view = function (sub, value) {
         pointer.recenter_pointer_on_display = true;
         pointer.suppress_scroll_pointer_update = true;
 
-        if (! home_msg_list.empty()) {
+        if (!home_msg_list.empty()) {
             message_util.do_unread_count_updates(home_msg_list.all_messages());
         }
     }, 0);
@@ -61,3 +61,4 @@ if (typeof module !== 'undefined') {
     module.exports = stream_muting;
 }
 
+window.stream_muting = stream_muting;

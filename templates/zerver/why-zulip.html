@@ -14,43 +14,16 @@
 {% include 'zerver/landing_nav.html' %}
 
 <div class="portico-landing why-page">
-    <div class="hero small-hero" id="why-zulip-hero"></div>
+    <div class="hero small-hero">
+        <h1 class="center">{% trans %}Why Zulip?{% endtrans %}</h1>
+    </div>
     <div class="main">
-        <div class="padded-content why-zulip-padded-content">
+        <div class="padded-content">
             <div class="inner-content">
                 {{ render_markdown_path('zerver/why-zulip.md') }}
             </div>
         </div>
     </div>
-    <div class="testimonials">
-        <div class="padded-content">
-            <div class="carousel slide" data-ride="carousel">
-                <div class="carousel-quotes">
-                    <div class="carousel-inner">
-                        <div class="item active quote-container">
-                            <blockquote>
-                                Zulip helped the FHIR community grow from a tiny group of dreamers to 500 active users sending 6000 messages per month, all driving the creation of better healthcare standards. Zulip&rsquo;s topic-based threading helps us manage simultaneous discussions with clarity, ensuring the right people can pay attention to the right messages. This makes our large-group discussion far more manageable than what we&rsquo;ve experienced with Skype and Slack.&rdquo;
-                            </blockquote>
-                            <cite>Grahame Grieve, founder, FHIR open health care standard</cite>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="main">
-        <div class="padded-content why-zulip-padded-content">
-            <div class="inner-content">
-                <h2>Read more about how we’ve made Zulip work for you</h2>
-                <ul>
-                    <li><a href="/for/companies">Zulip for companies</a></li>
-                    <li><a href="/for/open-source">Zulip for open source projects</a></li>
-                    <li><a href="/for/working-groups-and-communities">Zulip for working groups and part-time communities</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 {% endblock %}

@@ -1,7 +1,7 @@
 <nav class="portico-header">
     <div class="content">
         <a class="brand logo" href="{{ root_domain_uri }}">
-            <svg class="brand-logo" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+            <svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
                 <g transform="translate(-297.14285,-466.64792)">
                     <circle cx="317.14285" cy="486.64792" r="19.030317" style="fill:#fff;stroke-width:1.93936479;stroke:transparent"></circle>
                     <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z" style="fill:#52c2af;stroke:#52c2af"></path>
@@ -11,22 +11,22 @@
         </a>
         <ul>
             <div class="exit">&times;</div>
-            <li on-page="hello">
+            <li data-on-page="hello">
                 <a href="/hello/">Home</a>
             </li>
-            <li on-page="features">
+            <li data-on-page="features">
                 <a href="/features/">Features</a>
             </li>
-            <li on-page="plans">
+            <li data-on-page="plans">
                 <a href="/plans/">Plans</a>
             </li>
-            <li on-page="apps">
+            <li data-on-page="apps">
                 <a href="{{ apps_page_url }}">Apps</a>
             </li>
-            <li on-page="integrations">
+            <li data-on-page="integrations">
                 <a href="/integrations/">Integrations</a>
             </li>
-            <li on-page="why-zulip">
+            <li data-on-page="why-zulip">
                 <a href="/why-zulip/">Why Zulip</a>
             </li>
             {% if user_is_authenticated %}

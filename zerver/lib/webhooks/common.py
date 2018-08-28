@@ -24,6 +24,18 @@ Contact {support_email} if you need help debugging!
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
 
+class UnexpectedWebhookEventType(JsonableError):
+    code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
+    data_fields = ['webhook_name', 'event_type']
+
+    def __init__(self, webhook_name: str, event_type: Optional[str]) -> None:
+        self.webhook_name = webhook_name
+        self.event_type = event_type
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+
 class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ['header']

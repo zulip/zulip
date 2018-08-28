@@ -34,6 +34,7 @@ CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) bra
 REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}"
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = "{user_name} {action} [{type}{id} {title}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "\nfrom `{target}` to `{base}`"
 
@@ -123,14 +124,21 @@ def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
 def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
                                    message: Optional[str]=None, assignee: Optional[str]=None,
-                                   type: Optional[str]='PR') -> str:
-    main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(
-        user_name=user_name,
-        action=action,
-        type=type,
-        url=url,
-        id=" #{}".format(number) if number is not None else ''
-    )
+                                   type: Optional[str]='PR', title: Optional[str]=None) -> str:
+    kwargs = {
+        'user_name': user_name,
+        'action': action,
+        'type': type,
+        'url': url,
+        'id': ' #{}'.format(number) if number is not None else '',
+        'title': title,
+    }
+
+    if title is not None:
+        main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE.format(**kwargs)
+    else:
+        main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
+
     if assignee:
         main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
 
@@ -154,7 +162,8 @@ def get_issue_event_message(user_name: str,
                             url: str,
                             number: Optional[int]=None,
                             message: Optional[str]=None,
-                            assignee: Optional[str]=None) -> str:
+                            assignee: Optional[str]=None,
+                            title: Optional[str]=None) -> str:
     return get_pull_request_event_message(
         user_name,
         action,
@@ -162,7 +171,8 @@ def get_issue_event_message(user_name: str,
         number,
         message=message,
         assignee=assignee,
-        type='Issue'
+        type='Issue',
+        title=title,
     )
 
 def get_push_tag_event_message(user_name: str,

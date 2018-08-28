@@ -8,7 +8,8 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import create_stream_if_needed, do_create_user
-from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails
+from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
+    gather_new_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, get_realm, Realm, UserActivity, UserProfile
 
@@ -52,7 +53,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         enqueue_emails(cutoff)
         self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
         mock_queue_digest_recipient.reset_mock()
-        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+        for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
             user_profiles = all_user_profiles.filter(realm=realm)
             for user_profile in user_profiles:
                 UserActivity.objects.create(
@@ -82,7 +83,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
-        realms = Realm.objects.filter(deactivated=False, show_digest_email=True)
+        realms = Realm.objects.filter(deactivated=False, digest_emails_enabled=True)
         for realm in realms:
             user_profiles = UserProfile.objects.filter(realm=realm)
             for counter, user_profile in enumerate(user_profiles, 1):
@@ -141,3 +142,29 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream = gather_new_streams(cordelia, cutoff)[1]
         expected_html = "<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>".format(stream_id=stream_id)
         self.assertIn(expected_html, new_stream['html'])
+
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_gather_new_users(self, mock_django_timezone: mock.MagicMock) -> None:
+        cutoff = timezone_now()
+        do_create_user('abc@example.com', password='abc', realm=get_realm('zulip'), full_name='abc', short_name='abc')
+
+        # Normal users get info about new users
+        user = self.example_user('aaron')
+        gathered_no_of_user, _ = gather_new_users(user, cutoff)
+        self.assertEqual(gathered_no_of_user, 1)
+
+        # Definitely, admin users get info about new users
+        user = self.example_user('iago')
+        gathered_no_of_user, _ = gather_new_users(user, cutoff)
+        self.assertEqual(gathered_no_of_user, 1)
+
+        # Guest users don't get info about new users
+        user = self.example_user('polonius')
+        gathered_no_of_user, _ = gather_new_users(user, cutoff)
+        self.assertEqual(gathered_no_of_user, 0)
+
+        # Zephyr users also don't get info about new users in their realm
+        user = self.mit_user('starnine')
+        do_create_user('abc@mit.edu', password='abc', realm=user.realm, full_name='abc', short_name='abc')
+        gathered_no_of_user, _ = gather_new_users(user, cutoff)
+        self.assertEqual(gathered_no_of_user, 0)

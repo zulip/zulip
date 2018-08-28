@@ -43,7 +43,7 @@ Handlebars.registerHelper('partial', function (template_name) {
 });
 
 Handlebars.registerHelper('plural', function (condition, one, other) {
-    return (condition === 1) ? one : other;
+    return condition === 1 ? one : other;
 });
 
 Handlebars.registerHelper('if_and', function () {
@@ -112,3 +112,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = templates;
 }
+window.templates = templates;

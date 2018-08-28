@@ -2,10 +2,11 @@ set_global('$', global.make_zjquery());
 
 zrequire('Filter', 'js/filter');
 zrequire('unread_ui');
+zrequire('people');
 
 zrequire('top_left_corner');
 
-(function test_narrowing() {
+run_test('narrowing', () => {
     // activating narrow
 
     var pm_expanded;
@@ -22,6 +23,27 @@ zrequire('top_left_corner');
     ]);
     top_left_corner.handle_narrow_activated(filter);
     assert(pm_expanded);
+
+    const alice = {
+        email: 'alice@example.com',
+        user_id: 1,
+        full_name: 'Alice Smith',
+    };
+    people.add(alice);
+    people.add_in_realm(alice);
+    pm_expanded = false;
+    filter = new Filter([
+        {operator: 'pm-with', operand: 'alice@example.com'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(pm_expanded);
+
+    pm_expanded = false;
+    filter = new Filter([
+        {operator: 'pm-with', operand: 'not@valid.com'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(!pm_expanded);
 
     filter = new Filter([
         {operator: 'is', operand: 'mentioned'},
@@ -45,9 +67,9 @@ zrequire('top_left_corner');
     assert(!top_left_corner.get_global_filter_li('private').hasClass('active-filter'));
     assert(!top_left_corner.get_global_filter_li('starred').hasClass('active-filter'));
     assert(pm_closed);
-}());
+});
 
-(function test_update_count_in_dom() {
+run_test('update_count_in_dom', () => {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
         var value = $(value_selector);
@@ -86,4 +108,4 @@ zrequire('top_left_corner');
 
     assert(!$('<mentioned-count>').visible());
     assert.equal($('<mentioned-value>').text(), '');
-}());
+});

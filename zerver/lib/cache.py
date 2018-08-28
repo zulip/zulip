@@ -1,4 +1,4 @@
-
+# See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 from functools import wraps
 
 from django.utils.lru_cache import lru_cache
@@ -11,7 +11,6 @@ from django.core.cache.backends.base import BaseCache
 from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
-import subprocess
 import time
 import base64
 import random
@@ -65,7 +64,7 @@ def get_or_create_key_prefix() -> str:
         return 'django_tests_unused:'
 
     # directory `var` should exist in production
-    subprocess.check_call(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
+    os.makedirs(os.path.join(settings.DEPLOY_ROOT, "var"), exist_ok=True)
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
@@ -321,13 +320,18 @@ def user_profile_by_api_key_cache_key(api_key: str) -> str:
 realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
-    'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
+    'is_realm_admin', 'is_bot', 'realm_id', 'timezone',
+    'date_joined'
+]  # type: List[str]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
 
 def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)
+
+def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
+    return "active_non_guest_user_ids:%s" % (realm_id,)
 
 bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
@@ -345,11 +349,14 @@ def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
+    # Imported here to avoid cyclic dependency.
+    from zerver.lib.users import get_all_api_keys
     keys = []
     for user_profile in user_profiles:
         keys.append(user_profile_by_email_cache_key(user_profile.email))
         keys.append(user_profile_by_id_cache_key(user_profile.id))
-        keys.append(user_profile_by_api_key_cache_key(user_profile.api_key))
+        for api_key in get_all_api_keys(user_profile):
+            keys.append(user_profile_by_api_key_cache_key(api_key))
         keys.append(user_profile_cache_key(user_profile.email, user_profile.realm))
 
     cache_delete_many(keys)
@@ -386,6 +393,10 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 
     if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
+        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
+
+    if changed(['is_guest']):
+        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
     if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
@@ -418,6 +429,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
+        cache_delete(active_non_guest_user_ids_cache_key(realm.id))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
@@ -449,6 +461,13 @@ def to_dict_cache_key(message: 'Message') -> str:
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']
     cache_delete(to_dict_cache_key_id(message.id))
+
+def flush_submessage(sender: Any, **kwargs: Any) -> None:
+    submessage = kwargs['instance']
+    # submessages are not cached directly, they are part of their
+    # parent messages
+    message_id = submessage.message_id
+    cache_delete(to_dict_cache_key_id(message_id))
 
 DECORATOR = Callable[[Callable[..., Any]], Callable[..., Any]]
 

@@ -11,7 +11,7 @@ var in_stoppable_autoscroll = false;
 exports.last_movement_direction = 1;
 
 exports.at_top = function () {
-    return (exports.scrollTop() <= 0);
+    return exports.scrollTop() <= 0;
 };
 
 exports.message_viewport_info = function () {
@@ -106,12 +106,12 @@ exports.set_message_position = function (message_top, message_height, viewport_i
 function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
                              require_fully_visible) {
     if (require_fully_visible) {
-        return ((rect.top > top_of_feed) && // Message top is in view and
-                ((rect.bottom < bottom_of_feed) || // message is fully in view or
-                 ((rect.height > bottom_of_feed - top_of_feed) &&
-                  (rect.top < bottom_of_feed)))); // message is tall.
+        return rect.top > top_of_feed && // Message top is in view and
+                (rect.bottom < bottom_of_feed || // message is fully in view or
+                 rect.height > bottom_of_feed - top_of_feed &&
+                  rect.top < bottom_of_feed); // message is tall.
     }
-    return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
+    return rect.bottom > top_of_feed && rect.top < bottom_of_feed;
 }
 
 function add_to_visible(candidates, visible,
@@ -312,9 +312,9 @@ exports.recenter_view = function (message, opts) {
     }
 
     if (is_above || opts.force_center) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/2);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/7);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 7);
     }
 };
 
@@ -334,8 +334,8 @@ exports.keep_pointer_in_view = function () {
     }
 
     var info = message_viewport.message_viewport_info();
-    var top_threshold = info.visible_top + (1/10 * info.visible_height);
-    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
+    var top_threshold = info.visible_top + 1 / 10 * info.visible_height;
+    var bottom_threshold = info.visible_top + 9 / 10 * info.visible_height;
 
     function message_is_far_enough_down() {
         if (message_viewport.at_top()) {
@@ -365,7 +365,7 @@ exports.keep_pointer_in_view = function () {
 
     function message_is_far_enough_up() {
         return message_viewport.at_bottom() ||
-            (next_row.offset().top <= bottom_threshold);
+            next_row.offset().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {
@@ -391,7 +391,7 @@ exports.keep_pointer_in_view = function () {
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 };
 
-$(function () {
+exports.initialize = function () {
     jwindow = $(window);
     exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
@@ -405,7 +405,7 @@ $(function () {
     $(document).on('compose_started compose_canceled compose_finished', function () {
         bottom_of_feed.reset();
     });
-});
+};
 
 return exports;
 }());
@@ -413,3 +413,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_viewport;
 }
+window.message_viewport = message_viewport;

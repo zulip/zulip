@@ -1,8 +1,13 @@
 zrequire('people');
 zrequire('presence');
 
+var return_false = function () { return false; };
+
 set_global('server_events', {});
 set_global('blueslip', {});
+set_global('reload_state', {
+    is_in_progress: return_false,
+});
 
 var OFFLINE_THRESHOLD_SECS = 140;
 
@@ -44,7 +49,7 @@ people.add_in_realm(zoe);
 people.add_in_realm(bot);
 people.initialize_current_user(me.user_id);
 
-(function test_on_mobile_property() {
+run_test('on_mobile_property', () => {
     // TODO: move this test to a new test module directly testing presence.js
     var status_from_timestamp = presence._status_from_timestamp;
 
@@ -136,9 +141,9 @@ people.initialize_current_user(me.user_id);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active"); // website
     assert(called);
-}());
+});
 
-(function test_set_presence_info() {
+run_test('set_presence_info', () => {
     var presences = {};
     var base_time = 500;
 
@@ -190,9 +195,9 @@ people.initialize_current_user(me.user_id);
         assert.equal(msg, 'Unknown email in presence data: unknown@zulip.com');
     };
     presence.set_info(presences, base_time);
-}());
+});
 
-(function test_last_active_date() {
+run_test('last_active_date', () => {
     var unknown_id = 42;
     presence.presence_info = {
         1: { last_active: 500 }, // alice.user_id
@@ -203,9 +208,9 @@ people.initialize_current_user(me.user_id);
     assert.equal(presence.last_active_date(unknown_id), undefined);
     assert.equal(presence.last_active_date(fred.user_id), undefined);
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
-}());
+});
 
-(function test_set_user_status() {
+run_test('set_user_status', () => {
     var server_time = 500;
     var info = {
         website: {
@@ -219,5 +224,5 @@ people.initialize_current_user(me.user_id);
 
     var expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
-}());
+});
 

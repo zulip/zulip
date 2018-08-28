@@ -44,11 +44,11 @@ def get_js_edges():
         modules.append(dict(
             name=name,
             path=path,
-            regex=re.compile('[^_]{}\.\w+\('.format(name))
+            regex=re.compile(r'[^_]{}\.\w+\('.format(name))
         ))
 
-    comment_regex = re.compile('\s+//')
-    call_regex = re.compile('[^_](\w+\.\w+)\(')
+    comment_regex = re.compile(r'\s+//')
+    call_regex = re.compile(r'[^_](\w+\.\w+)\(')
 
     methods = defaultdict(list)  # type: DefaultDict[Edge, List[Method]]
     edges = set()

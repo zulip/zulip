@@ -8,7 +8,7 @@ class zulip::app_frontend_base {
     # Needed to access our database
     "postgresql-client-${zulip::base::postgres_version}",
   ]
-  safepackage { $web_packages: ensure => 'installed' }
+  zulip::safepackage { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package['nginx-full'],
@@ -77,8 +77,7 @@ class zulip::app_frontend_base {
     notify  => Service['supervisor'],
   }
 
-  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes',
-                               $uwsgi_default_processes)
+  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
   file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],

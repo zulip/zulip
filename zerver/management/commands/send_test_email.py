@@ -13,17 +13,16 @@ class Command(sendtestemail.Command):
         if settings.WARN_NO_EMAIL:
             raise CommandError("Outgoing email not yet configured, see\n  "
                                "https://zulip.readthedocs.io/en/latest/production/email.html")
-        subject = "Zulip Test email"
         message = ("Success!  If you receive this message, you've "
                    "successfully configured sending email from your "
                    "Zulip server.  Remember that you need to restart "
                    "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
                    "after changing the settings in /etc/zulip before your changes will take effect.")
-        sender = FromAddress.SUPPORT
-        send_mail(subject, message, sender, kwargs['email'])
+        send_mail("Zulip email test", message, FromAddress.SUPPORT, kwargs['email'])
+        send_mail("Zulip noreply email test", message, FromAddress.tokenized_no_reply_address(), kwargs['email'])
 
         if kwargs['managers']:
-            mail_managers(subject, "This email was sent to the site managers.")
+            mail_managers("Zulip manager email test", "This email was sent to the site managers.")
 
         if kwargs['admins']:
-            mail_admins(subject, "This email was sent to the site admins.")
+            mail_admins("Zulip admins email test", "This email was sent to the site admins.")

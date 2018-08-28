@@ -56,12 +56,12 @@ const denmark_stream = {
 
 zrequire('stream_data');
 
-(function test_stream_data() {
+run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);
     stream_data.add_sub('Denmark', denmark_stream);
     const sub = stream_data.get_sub_by_name('Denmark');
     assert.equal(sub.color, 'blue');
-}());
+});
 
 // Hopefully the basic patterns for testing data-oriented modules
 // are starting to become apparent.  To reinforce that, we will present
@@ -89,19 +89,18 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
-set_global('composebox_typeahead', {});
 
 alert_words.process_message = noop;
-composebox_typeahead.add_topic = noop;
 
 // We can also bring in real code:
 zrequire('recent_senders');
+zrequire('unread');
 zrequire('topic_data');
 
 // And finally require the module that we will test directly:
 zrequire('message_store');
 
-(function test_message_store() {
+run_test('message_store', () => {
     // Our test runner automatically sets _ for us.
     // See http://underscorejs.org/ for help on that library.
     var in_message = _.clone(messages.isaac_to_denmark_stream);
@@ -120,13 +119,12 @@ zrequire('message_store');
     // There are more side effects.
     const topic_names = topic_data.get_recent_names(denmark_stream.stream_id);
     assert.deepEqual(topic_names, ['copenhagen']);
-}());
+});
 
 // Tracking unread messages is a very fundamental part of the Zulip
 // app, and we use the unread object to track unread messages.
-zrequire('unread');
 
-(function test_unread() {
+run_test('unread', () => {
     const stream_id = denmark_stream.stream_id;
     const topic_name = 'copenhagen';
 
@@ -137,7 +135,7 @@ zrequire('unread');
 
     unread.process_loaded_messages([in_message]);
     assert.equal(unread.num_unread_for_topic(stream_id, topic_name), 1);
-}());
+});
 
 // In the Zulip app you can narrow your message stream by topic, by
 // sender, by PM recipient, by search keywords, etc.  We will discuss
@@ -155,7 +153,7 @@ set_global('page_params', {});
 // Filter class.
 zrequire('Filter', 'js/filter');
 
-(function test_filter() {
+run_test('filter', () => {
     const filter_terms = [
         {operator: 'stream', operand: 'Denmark'},
         {operator: 'topic', operand: 'copenhagen'},
@@ -181,7 +179,7 @@ zrequire('Filter', 'js/filter');
         stream_id: denmark_stream.stream_id,
         subject: 'copenhagen',
     }), true);
-}());
+});
 
 // We have a "narrow" abstraction that sits roughly on top of the
 // "filter" abstraction.  If you are in a narrow, we track the
@@ -189,7 +187,7 @@ zrequire('Filter', 'js/filter');
 
 zrequire('narrow_state');
 
-(function test_narrow_state() {
+run_test('narrow_state', () => {
     // As we often do, first make assertions about the starting
     // state:
 
@@ -207,7 +205,7 @@ zrequire('narrow_state');
 
     assert.equal(narrow_state.stream(), 'Denmark');
     assert.equal(narrow_state.topic(), 'copenhagen');
-}());
+});
 
 /*
 
@@ -295,7 +293,7 @@ const bob = {
     full_name: 'Bob Roberts',
 };
 
-(function test_add_user_event() {
+run_test('add_user_event', () => {
     const event = {
         type: 'realm_user',
         op: 'add',
@@ -305,7 +303,7 @@ const bob = {
     assert(!people.is_known_user_id(bob.user_id));
     server_events_dispatch.dispatch_normal_event(event);
     assert(people.is_known_user_id(bob.user_id));
-}());
+});
 
 /*
 
@@ -328,7 +326,7 @@ set_global('settings_users', {});
 
 zrequire('user_events');
 
-(function test_update_user_event() {
+run_test('update_user_event', () => {
     const new_bob = {
         email: 'bob@example.com',
         user_id: bob.user_id,
@@ -356,7 +354,7 @@ zrequire('user_events');
 
     // Verify that the code actually did its main job:
     assert.equal(user.full_name, 'The Artist Formerly Known as Bob');
-}());
+});
 
 /*
 
@@ -413,7 +411,7 @@ set_global('unread_ui', {});
 
 zrequire('message_events');
 
-(function test_insert_message() {
+run_test('insert_message', () => {
     const helper = test_helper();
 
     const new_message = {
@@ -458,7 +456,7 @@ zrequire('message_events');
     const inserted_message = message_store.get(new_message.id);
     assert.equal(inserted_message.id, new_message.id);
     assert.equal(inserted_message.content, 'example content');
-}());
+});
 
 
 /*
@@ -504,7 +502,7 @@ zrequire('message_flags');
 
 zrequire('unread_ops');
 
-(function test_unread_ops() {
+run_test('unread_ops', () => {
     (function set_up() {
         const test_messages = [
             {
@@ -524,11 +522,14 @@ zrequire('unread_ops');
         notifications.window_has_focus = () => true;
 
         // Make our "test" message appear visible.
-        message_viewport.visible_messages = () => test_messages;
+        message_viewport.bottom_message_visible = () => true;
 
         // Make us not be in a narrow (somewhat hackily).
         message_list.narrowed = undefined;
-        set_global('current_msg_list', 'not-narrowed-stub');
+
+        set_global('current_msg_list', {
+            all_messages: () => test_messages,
+        });
 
         // Ignore these interactions for now:
         home_msg_list.show_message_as_read = noop;
@@ -555,7 +556,7 @@ zrequire('unread_ops');
         data: { messages: '[50]', op: 'add', flag: 'read' },
         success: channel_post_opts.success,
     });
-}());
+});
 
 /*
 
@@ -582,7 +583,7 @@ const social_stream = {
     subscribed: true,
 };
 
-(function set_up_filter() {
+run_test('set_up_filter', () => {
     stream_data.add_sub('Social', social_stream);
 
     const filter_terms = [
@@ -594,7 +595,7 @@ const social_stream = {
 
     narrow_state.filter = () => filter;
     narrow_state.active = () => true;
-}());
+});
 
 function jquery_elem() {
     // We create basic stubs for jQuery elements, so they
@@ -611,7 +612,6 @@ function jquery_elem() {
 
 function make_jquery_helper() {
     const stream_list_filter = jquery_elem();
-    stream_list_filter.is = () => true;
     stream_list_filter.val = () => '';
 
     const stream_filters = jquery_elem();
@@ -623,15 +623,9 @@ function make_jquery_helper() {
 
     function fake_jquery(selector) {
         switch (selector) {
-        case '#stream_filters li.highlighted_stream':
-            return jquery_elem();
         case '.stream-list-filter':
             return stream_list_filter;
-        case '#stream_filters li.narrow-filter':
-            return jquery_elem();
         case 'ul#stream_filters li':
-            return jquery_elem();
-        case '.stream-filters-label':
             return jquery_elem();
         case '#stream_filters':
             return stream_filters;
@@ -706,7 +700,7 @@ function make_sidebar_helper() {
     };
 }
 
-(function test_stream_list() {
+run_test('stream_list', () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
@@ -724,4 +718,4 @@ function make_sidebar_helper() {
     jquery_helper.verify_actions();
     sidebar_helper.verify_actions();
     topic_list_helper.verify_actions();
-}());
+});

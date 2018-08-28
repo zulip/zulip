@@ -40,7 +40,7 @@ Usage assumptions and concepts
 Zulip is a real-time web-based chat application meant for companies and
 similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
-search, public group conversations (*streams*), invite-only streams,
+search, public group conversations (*streams*), private streams,
 private one-on-one and group conversations, inline image previews, team
 presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
@@ -183,10 +183,13 @@ guide](../subsystems/queuing.html).
 
 ### memcached
 
-memcached is used to cache database model objects. `zerver/lib/cache.py`
-and `zerver/lib/cache_helpers.py` manage putting things into memcached,
-and invalidating the cache when values change. The memcached
-configuration is in `puppet/zulip/files/memcached.conf`.
+memcached is used to cache database model
+objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
+manage putting things into memcached, and invalidating the cache when
+values change. The memcached configuration is in
+`puppet/zulip/files/memcached.conf`.  See our
+[caching guide](../subsystems/caching.html) to learn how this works in
+detail.
 
 ### Redis
 
@@ -246,6 +249,13 @@ development postgresql user.
 
 `tools/provision` also invokes `tools/do-destroy-rebuild-database`
 to create the actual database with its schema.
+
+### Thumbor and thumbnailing
+
+We use Thumbor, a popular open source thumbnailing server, to serve
+images (both for inline URL previews and serving uploaded image
+files).  See [our thumbnailing docs](../subsystems/thumbnailing.html)
+for more details on how this works.
 
 ### Nagios
 

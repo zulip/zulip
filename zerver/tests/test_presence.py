@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from datetime import timedelta
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from mock import mock
+import mock
 
 from typing import Any, Dict
 from zerver.lib.actions import do_deactivate_user
+from zerver.lib.statistics import seconds_usage_between
 from zerver.lib.test_helpers import (
     make_client,
     queries_captured,
@@ -36,19 +38,43 @@ class ActivityTest(ZulipTestCase):
         query = '/json/users/me/pointer'
         last_visit = timezone_now()
         count = 150
-        for user_profile in UserProfile.objects.all():
+        for activity_user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
-                user_profile=user_profile,
+                user_profile=activity_user_profile,
                 client=client,
                 query=query,
                 count=count,
                 last_visit=last_visit
             )
+
+        # Fails when not staff
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.example_user("hamlet")
+        user_profile.is_staff = True
+        user_profile.save()
+
         flush_per_request_caches()
         with queries_captured() as queries:
-            self.client_get('/activity')
+            result = self.client_get('/activity')
+            self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 13)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            result = self.client_get('/realm_activity/zulip/')
+            self.assertEqual(result.status_code, 200)
+
+        self.assert_length(queries, 9)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            result = self.client_get('/user_activity/iago@zulip.com/')
+            self.assertEqual(result.status_code, 200)
+
+        self.assert_length(queries, 5)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self) -> None:
@@ -177,8 +203,6 @@ class UserPresenceTests(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login(self.example_email("hamlet"))
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=user_profile).count(), 0)
-        from django.utils.timezone import now as timezone_now
-        from datetime import timedelta
         time_zero = timezone_now().replace(microsecond=0)
         with mock.patch('zerver.views.presence.timezone_now', return_value=time_zero):
             result = self.client_post("/json/users/me/presence", {'status': 'active',
@@ -212,6 +236,39 @@ class UserPresenceTests(ZulipTestCase):
         interval = UserActivityInterval.objects.filter(user_profile=user_profile).order_by('start')[1]
         self.assertEqual(interval.start, third_time)
         self.assertEqual(interval.end, third_time + UserActivityInterval.MIN_INTERVAL_LENGTH)
+
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time).total_seconds(),
+            1500)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time+timedelta(seconds=10)).total_seconds(),
+            1510)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time+timedelta(seconds=1000)).total_seconds(),
+            2400)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time - timedelta(seconds=100)).total_seconds(),
+            1500)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero + timedelta(seconds=100),
+                third_time - timedelta(seconds=100)).total_seconds(),
+            1400)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero + timedelta(seconds=1200),
+                third_time - timedelta(seconds=100)).total_seconds(),
+            300)
+
+        # Now test /activity with actual data
+        user_profile.is_staff = True
+        user_profile.save()
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 200)
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -259,7 +316,7 @@ class UserPresenceTests(ZulipTestCase):
         UserActivity.objects.get_or_create(
             user_profile=user_profile,
             client=client,
-            query='get_events_backend',
+            query='get_events',
             count=2,
             last_visit=last_visit
         )

@@ -1,3 +1,9 @@
+global.patch_builtin('window', {
+    location: {
+        protocol: 'http:',
+        host: 'example.com',
+    },
+});
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');
@@ -5,12 +11,6 @@ zrequire('stream_data');
 
 set_global('document', 'document-stub');
 set_global('history', {});
-set_global('window', {
-    location: {
-        protocol: 'http:',
-        host: 'example.com',
-    },
-});
 
 set_global('admin', {});
 set_global('drafts', {});
@@ -22,18 +22,9 @@ set_global('overlays', {});
 set_global('settings', {});
 set_global('subs', {});
 set_global('ui_util', {});
+set_global('blueslip', global.make_zblueslip());
 
-function blueslip_wrap(f) {
-    return function (e) {
-        return f(e);
-    };
-}
-
-set_global('blueslip', {
-    wrap_function: blueslip_wrap,
-});
-
-(function test_operators_round_trip() {
+run_test('operators_round_trip', () => {
     var operators;
     var hash;
     var narrow;
@@ -42,7 +33,7 @@ set_global('blueslip', {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'algol'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/topic/algol');
 
     narrow = hashchange.parse_narrow(hash.split('/'));
@@ -55,7 +46,7 @@ set_global('blueslip', {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'visual c++', negated: true},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/-topic/visual.20c.2B.2B');
 
     narrow = hashchange.parse_narrow(hash.split('/'));
@@ -73,15 +64,27 @@ set_global('blueslip', {
     operators = [
         {operator: 'stream', operand: 'Florida, USA'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/987-Florida.2C-USA');
     narrow = hashchange.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'Florida, USA', negated: false},
     ]);
-}());
+});
 
-(function test_people_slugs() {
+run_test('operators_trailing_slash', () => {
+    var hash;
+    var narrow;
+
+    hash = '#narrow/stream/devel/topic/algol/';
+    narrow = hashchange.parse_narrow(hash.split('/'));
+    assert.deepEqual(narrow, [
+        {operator: 'stream', operand: 'devel', negated: false},
+        {operator: 'topic', operand: 'algol', negated: false},
+    ]);
+});
+
+run_test('people_slugs', () => {
     var operators;
     var hash;
     var narrow;
@@ -96,7 +99,7 @@ set_global('blueslip', {
     operators = [
         {operator: 'sender', operand: 'alice@example.com'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
     narrow = hashchange.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
@@ -106,9 +109,9 @@ set_global('blueslip', {
     operators = [
         {operator: 'pm-with', operand: 'alice@example.com'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/pm-with/42-alice');
-}());
+});
 
 function stub_trigger(f) {
     set_global('$', () => {
@@ -169,7 +172,7 @@ function test_helper() {
     };
 }
 
-(function test_hash_interactions() {
+run_test('hash_interactions', () => {
     var helper = test_helper();
 
     window.location.hash = '#';
@@ -301,9 +304,9 @@ function test_helper() {
     ]);
     assert(called_back);
 
-}());
+});
 
-(function test_save_narrow() {
+run_test('save_narrow', () => {
     var helper = test_helper();
 
     var operators = [
@@ -333,5 +336,4 @@ function test_helper() {
         'favicon.reset',
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');
-}());
-
+});

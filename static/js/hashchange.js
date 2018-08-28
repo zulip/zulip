@@ -39,45 +39,28 @@ exports.changehash = function (newhash) {
     favicon.reset();
 };
 
-// Encodes an operator list into the
-// corresponding hash: the # component
-// of the narrow URL
-exports.operators_to_hash = function (operators) {
-    var hash = '#';
-
-    if (operators !== undefined) {
-        hash = '#narrow';
-        _.each(operators, function (elem) {
-            // Support legacy tuples.
-            var operator = elem.operator;
-            var operand = elem.operand;
-
-            var sign = elem.negated ? '-' : '';
-            hash += '/' + sign + hash_util.encodeHashComponent(operator)
-                  + '/' + hash_util.encode_operand(operator, operand);
-        });
-    }
-
-    return hash;
-};
-
 exports.save_narrow = function (operators) {
     if (changing_hash) {
         return;
     }
-    var new_hash = exports.operators_to_hash(operators);
+    var new_hash = hash_util.operators_to_hash(operators);
     exports.changehash(new_hash);
 };
 
 exports.parse_narrow = function (hash) {
     var i;
     var operators = [];
-    for (i=1; i<hash.length; i+=2) {
+    for (i = 1; i < hash.length; i += 2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
         try {
             var operator = hash_util.decodeHashComponent(hash[i]);
-            var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
+            // Do not parse further if empty operator encountered.
+            if (operator === '') {
+                break;
+            }
+
+            var operand  = hash_util.decode_operand(operator, hash[i + 1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;
@@ -107,9 +90,9 @@ function do_hashchange(from_reload) {
     // The second case is for handling the fact that some browsers
     // automatically convert '#' to '' when you change the hash to '#'.
     if (window.location.hash === expected_hash ||
-        (expected_hash !== undefined &&
+        expected_hash !== undefined &&
          window.location.hash.replace(/^#/, '') === '' &&
-         expected_hash.replace(/^#/, '') === '')) {
+         expected_hash.replace(/^#/, '') === '') {
         return false;
     }
 
@@ -236,7 +219,7 @@ function should_ignore(hash) {
     var ignore_list = ["streams", "drafts", "settings", "organization", "invite"];
     var main_hash = get_main_hash(hash);
 
-    return (ignore_list.indexOf(main_hash) > -1);
+    return ignore_list.indexOf(main_hash) > -1;
 }
 
 function hashchanged(from_reload, e) {
@@ -271,7 +254,7 @@ function hashchanged(from_reload, e) {
                 settings.setup_page();
                 admin.setup_page();
             } else if (base === "invite") {
-                invite.initialize();
+                invite.launch();
             }
 
             ignore.group = get_hash_group(base);
@@ -319,3 +302,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hashchange;
 }
+window.hashchange = hashchange;

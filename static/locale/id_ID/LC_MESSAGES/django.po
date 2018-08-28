@@ -6,13 +6,14 @@
 # Mamat Rahmat <coderbodoh@gmail.com>, 2017
 # Rafid Aslam <rafidteam@gmail.com>, 2017
 # Steven Hans <cqpphp@gmail.com>, 2018
+# Tim Abbott <tabbott@kandralabs.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-13 18:14+0000\n"
-"PO-Revision-Date: 2018-04-11 21:06+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2018-08-09 00:53+0000\n"
+"PO-Revision-Date: 2018-08-09 00:54+0000\n"
+"Last-Translator: Mamat Rahmat <coderbodoh@gmail.com>\n"
 "Language-Team: Indonesian (Indonesia) (http://www.transifex.com/zulip/zulip/language/id_ID/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,111 +21,158 @@ msgstr ""
 "Language: id_ID\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: analytics/views.py:79
+#: analytics/views.py:72
+msgid "Invalid organization"
+msgstr ""
+
+#: analytics/views.py:117
+msgid "Public streams"
+msgstr ""
+
+#: analytics/views.py:118
+msgid "Private streams"
+msgstr ""
+
+#: analytics/views.py:119 templates/zerver/app/left_sidebar.html:17
+#: templates/zerver/app/left_sidebar.html:22
+msgid "Private messages"
+msgstr "Pesan pribadi"
+
+#: analytics/views.py:120
+msgid "Group private messages"
+msgstr ""
+
+#: analytics/views.py:132
 #, python-format
 msgid "Unknown chart name: %s"
 msgstr "Nama bagan tidak dikenal: %s"
 
-#: analytics/views.py:88
+#: analytics/views.py:141
 #, python-format
 msgid "Start time is later than end time. Start: %(start)s, End: %(end)s"
 msgstr "Waktu mulai lebih akhir dari waktu selesai. Mulai: %(start)s, Selesai: %(end)s"
 
-#: analytics/views.py:101
+#: analytics/views.py:159
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Data analisis tidak tersedia. Mohon hubungi administrator server anda."
 
-#: templates/analytics/stats.html:17
+#: templates/analytics/stats.html:22
 #, python-format
-msgid "Zulip analytics for %(realm_name)s"
-msgstr "Analisis Zulip untuk %(realm_name)s"
+msgid "Zulip analytics for %(target_name)s"
+msgstr ""
 
-#: templates/analytics/stats.html:21
+#: templates/analytics/stats.html:26
 msgid "Messages sent over time"
 msgstr "Pesan terkirim sepanjang waktu"
 
-#: templates/analytics/stats.html:23
+#: templates/analytics/stats.html:28
 msgid "Aggregation"
 msgstr "Agregasi"
 
-#: templates/analytics/stats.html:25
+#: templates/analytics/stats.html:30
 msgid "Daily"
 msgstr "Harian"
 
-#: templates/analytics/stats.html:26
+#: templates/analytics/stats.html:31
 msgid "Weekly"
 msgstr "Mingguan"
 
-#: templates/analytics/stats.html:27
+#: templates/analytics/stats.html:32
 msgid "Cumulative"
 msgstr "Kumulatif"
 
-#: templates/analytics/stats.html:35 templates/analytics/stats.html:51
-#: templates/analytics/stats.html:71
+#: templates/analytics/stats.html:40 templates/analytics/stats.html:56
+#: templates/analytics/stats.html:76
 msgid "Me"
 msgstr "Saya"
 
-#: templates/analytics/stats.html:37
+#: templates/analytics/stats.html:42
 msgid "Humans"
 msgstr "Manusia"
 
-#: templates/analytics/stats.html:39 templates/zerver/settings_overlay.html:83
+#: templates/analytics/stats.html:44
+#: templates/zerver/app/settings_overlay.html:81
 msgid "Bots"
 msgstr "Bot"
 
-#: templates/analytics/stats.html:46
+#: templates/analytics/stats.html:51
 msgid "Messages sent by client"
 msgstr "Pesan terkirim oleh klien"
 
-#: templates/analytics/stats.html:52 templates/analytics/stats.html:72
+#: templates/analytics/stats.html:57 templates/analytics/stats.html:77
 msgid "Everyone"
 msgstr "Semua orang"
 
-#: templates/analytics/stats.html:53 templates/analytics/stats.html:73
+#: templates/analytics/stats.html:58 templates/analytics/stats.html:78
 msgid "Last week"
 msgstr "Minggu lalu"
 
-#: templates/analytics/stats.html:54 templates/analytics/stats.html:74
+#: templates/analytics/stats.html:59 templates/analytics/stats.html:79
 msgid "Last month"
 msgstr "Bulan lalu"
 
-#: templates/analytics/stats.html:55 templates/analytics/stats.html:75
+#: templates/analytics/stats.html:60 templates/analytics/stats.html:80
 msgid "Last year"
 msgstr "Tahun lalu"
 
-#: templates/analytics/stats.html:56 templates/analytics/stats.html:76
+#: templates/analytics/stats.html:61 templates/analytics/stats.html:81
 msgid "All time"
 msgstr "Semua waktu"
 
-#: templates/analytics/stats.html:65
+#: templates/analytics/stats.html:70
 msgid "Messages sent by recipient type"
 msgstr "Pesan terkirim berdasarkan jenis penerima"
 
-#: templates/analytics/stats.html:82
+#: templates/analytics/stats.html:87
 msgid "Active users"
 msgstr "Pengguna aktif"
 
-#: templates/analytics/stats.html:88 templates/zerver/settings_overlay.html:73
+#: templates/analytics/stats.html:90
+msgid "Daily actives"
+msgstr ""
+
+#: templates/analytics/stats.html:91
+msgid "15 day actives"
+msgstr ""
+
+#: templates/analytics/stats.html:92
+msgid "Total users"
+msgstr ""
+
+#: templates/analytics/stats.html:100
+#: templates/zerver/app/settings_overlay.html:71
 msgid "Users"
 msgstr "Pengguna"
 
-#: templates/analytics/stats.html:96
+#: templates/analytics/stats.html:110
 msgid "Last update"
 msgstr "Pembaruan terakhir"
 
-#: templates/analytics/stats.html:97
+#: templates/analytics/stats.html:111
 msgid ""
 "A full update of all the graphs happens once a day.<br/>The “Messages Sent "
 "Over Time” graph is updated once an hour."
 msgstr "Pembaruan lengkap untuk semua grafik terjadi sekali dalam sehari.<br/>Grafik “Pesan Terkirim Sepanjang Waktu” diperbarui sekali dalam satu jam."
 
-#: templates/analytics/stats.html:101
+#: templates/analytics/stats.html:115
 msgid "Analytics documentation"
 msgstr "Dokumentasi analisis"
 
 #: templates/confirmation/confirm_email_change.html:8
 msgid "Email changed!"
 msgstr "Email berubah!"
+
+#: templates/two_factor/_wizard_forms.html:26
+msgid "Or, alternatively, use one of your backup phones:"
+msgstr ""
+
+#: templates/two_factor/_wizard_forms.html:37
+msgid "As a last resort, you can use a backup token:"
+msgstr ""
+
+#: templates/two_factor/_wizard_forms.html:40
+msgid "Use backup token"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:14
 msgid "There are new Terms of Service."
@@ -135,8 +183,8 @@ msgid "Accept the terms of service"
 msgstr "Setujui ketentuan layanan"
 
 #: templates/zerver/accounts_accept_terms.html:22
-#: templates/zerver/create_realm.html:27 templates/zerver/login.html:84
-#: templates/zerver/register.html:42 templates/zerver/reset.html:23
+#: templates/zerver/create_realm.html:27 templates/zerver/login.html:90
+#: templates/zerver/register.html:102 templates/zerver/reset.html:23
 #: templates/zerver/reset_confirm.html:23
 msgid "Email"
 msgstr "Email"
@@ -159,23 +207,21 @@ msgid "You need an invitation to join this organization."
 msgstr "Anda memerlukan undangan untuk bergabung di organisasi ini."
 
 #: templates/zerver/accounts_home.html:70 templates/zerver/footer.html:39
-#: templates/zerver/login.html:149 templates/zerver/portico-header.html:43
-#: templates/zerver/register.html:184
+#: templates/zerver/login.html:162 templates/zerver/portico-header.html:43
+#: templates/zerver/register.html:203
 msgid "Sign up"
 msgstr "Mendaftar"
 
-#: templates/zerver/accounts_home.html:74 templates/zerver/login.html:121
-#: templates/zerver/register.html:135
+#: templates/zerver/accounts_home.html:74 templates/zerver/login.html:130
+#: templates/zerver/register.html:65
 msgid "OR"
 msgstr ""
 
-#: templates/zerver/accounts_home.html:82
-msgid "Sign up with Google"
-msgstr "Mendaftar dengan Google"
-
-#: templates/zerver/accounts_home.html:90
-msgid "Sign up with GitHub"
-msgstr "Mendaftar dengan Github"
+#: templates/zerver/accounts_home.html:83
+#: templates/zerver/accounts_home.html:93
+#, python-format
+msgid "Sign up with %(identity_provider)s"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:10
 msgid "Thanks for signing up!"
@@ -193,125 +239,994 @@ msgstr "Masih tidak ada email? Kami dapat <a href=\"#\" id=\"resend_email_link\"
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Untuk berjaga-jaga, lihat ke folder Spam anda."
 
-#: templates/zerver/bankruptcy.html:5 templates/zerver/delete_message.html:3
-#: templates/zerver/deprecation_notice.html:5
-#: templates/zerver/invite_user.html:5
-#: templates/zerver/lightbox_overlay.html:7
-#: templates/zerver/message_history.html:4
-#: templates/zerver/message_history.html:12 templates/zerver/navbar.html:3
-#: templates/zerver/navbar.html:21
+#: templates/zerver/app/bankruptcy.html:5
+#: templates/zerver/app/delete_message.html:3
+#: templates/zerver/app/deprecation_notice.html:5
+#: templates/zerver/app/invite_user.html:5
+#: templates/zerver/app/lightbox_overlay.html:7
+#: templates/zerver/app/message_history.html:4
+#: templates/zerver/app/message_history.html:12
+#: templates/zerver/app/navbar.html:3 templates/zerver/app/navbar.html:21
 msgid "Close"
 msgstr "Tutup"
 
-#: templates/zerver/bankruptcy.html:6
+#: templates/zerver/app/bankruptcy.html:6
 msgid "Welcome back"
 msgstr "Selamat datang kembali"
 
-#: templates/zerver/bankruptcy.html:12
+#: templates/zerver/app/bankruptcy.html:13
 msgid "Yes, please!"
 msgstr "Ya, tentu!"
 
-#: templates/zerver/bankruptcy.html:14
+#: templates/zerver/app/bankruptcy.html:15
 msgid "No, I'll catch up."
 msgstr "Tidak, saya akan menyusul."
 
-#: templates/zerver/compose.html:12 templates/zerver/compose.html:14
-#: templates/zerver/compose.html:120
-#: templates/zerver/keyboard_shortcuts.html:241
+#: templates/zerver/app/compose.html:12 templates/zerver/app/compose.html:13
+#: templates/zerver/app/compose.html:97
+#: templates/zerver/app/keyboard_shortcuts.html:241
 msgid "Drafts"
 msgstr "Konsep"
 
-#: templates/zerver/compose.html:17
+#: templates/zerver/app/compose.html:15
 msgid "Saved as draft"
 msgstr "Tersimpan sebagai arsip"
 
-#: templates/zerver/compose.html:22 templates/zerver/compose.html:23
+#: templates/zerver/app/compose.html:20 templates/zerver/app/compose.html:21
 msgid "New topic"
 msgstr "Topik baru"
 
-#: templates/zerver/compose.html:30 templates/zerver/compose.html:31
-#: templates/zerver/keyboard_shortcuts.html:21
-#: templates/zerver/keyboard_shortcuts.html:133
+#: templates/zerver/app/compose.html:28 templates/zerver/app/compose.html:29
+#: templates/zerver/app/keyboard_shortcuts.html:21
+#: templates/zerver/app/keyboard_shortcuts.html:133
 msgid "New private message"
 msgstr "Pesan pribadi baru"
 
-#: templates/zerver/compose.html:38 templates/zerver/compose.html:39
+#: templates/zerver/app/compose.html:36 templates/zerver/app/compose.html:37
 msgid "Reply"
 msgstr "Balas"
 
-#: templates/zerver/compose.html:56
-#: templates/zerver/keyboard_shortcuts.html:25
-#: templates/zerver/keyboard_shortcuts.html:149
+#: templates/zerver/app/compose.html:54
+#: templates/zerver/app/keyboard_shortcuts.html:25
+#: templates/zerver/app/keyboard_shortcuts.html:149
 msgid "Cancel compose"
 msgstr "Batalkan penyusunan"
 
-#: templates/zerver/compose.html:70
-msgid "This is an invite-only stream"
-msgstr "Ini adalah stream khusus bagi yang diundang"
+#: templates/zerver/app/compose.html:62
+msgid "This is a private stream"
+msgstr ""
 
-#: templates/zerver/compose.html:74
+#: templates/zerver/app/compose.html:64
 msgid "Stream"
 msgstr "Stream"
 
-#: templates/zerver/compose.html:78
+#: templates/zerver/app/compose.html:66
 msgid "Topic"
 msgstr "Topik"
 
-#: templates/zerver/compose.html:83
+#: templates/zerver/app/compose.html:71
 msgid "To"
 msgstr ""
 
-#: templates/zerver/compose.html:87
+#: templates/zerver/app/compose.html:75
 msgid "You and"
 msgstr "Anda dan"
 
-#: templates/zerver/compose.html:89
+#: templates/zerver/app/compose.html:76
 msgid "Add one or more users"
 msgstr ""
 
-#: templates/zerver/compose.html:89
+#: templates/zerver/app/compose.html:76
 msgid "Add another user..."
 msgstr ""
 
-#: templates/zerver/compose.html:97
+#: templates/zerver/app/compose.html:83
 msgid "Compose your message here"
 msgstr ""
 
-#: templates/zerver/compose.html:97
+#: templates/zerver/app/compose.html:83
 msgid "Compose your message here..."
 msgstr "Susun pesan Anda disini..."
 
-#: templates/zerver/compose.html:106
+#: templates/zerver/app/compose.html:91
 msgid "Add emoji"
 msgstr "Tambah emoji"
 
-#: templates/zerver/compose.html:108
+#: templates/zerver/app/compose.html:92
 msgid "Formatting"
 msgstr "Format"
 
-#: templates/zerver/compose.html:110
+#: templates/zerver/app/compose.html:93
 msgid "Attach files"
 msgstr "Lampirkan file"
 
-#: templates/zerver/compose.html:113
+#: templates/zerver/app/compose.html:94
 msgid "Add video call"
 msgstr "Tambah panggilan video"
 
-#: templates/zerver/compose.html:117
+#: templates/zerver/app/compose.html:95
 msgid "Write"
 msgstr "Tulis"
 
-#: templates/zerver/compose.html:119
+#: templates/zerver/app/compose.html:96
 msgid "Preview"
 msgstr "Pratinjau"
 
-#: templates/zerver/compose.html:124
+#: templates/zerver/app/compose.html:101
 msgid "Press Enter to send"
 msgstr "Tekan Enter untuk mengirim"
 
-#: templates/zerver/compose.html:126
+#: templates/zerver/app/compose.html:103
 msgid "Send"
 msgstr "Kirim"
+
+#: templates/zerver/app/delete_message.html:4
+msgid "Delete message"
+msgstr "Hapus pesan"
+
+#: templates/zerver/app/delete_message.html:8
+msgid "Are you sure you want to delete this message?"
+msgstr "Apakah anda yakin ingin menghapus pesan ini?"
+
+#: templates/zerver/app/delete_message.html:13
+#: templates/zerver/app/invite_user.html:38
+msgid "Cancel"
+msgstr "Batal"
+
+#: templates/zerver/app/delete_message.html:14
+msgid "Yes, delete this message"
+msgstr "Ya, hapus pesan ini"
+
+#: templates/zerver/app/deprecation_notice.html:6
+msgid "Deprecation notice"
+msgstr ""
+
+#: templates/zerver/app/deprecation_notice.html:14
+msgid "Got it"
+msgstr ""
+
+#: templates/zerver/app/home.html:14
+msgid "Welcome to Zulip."
+msgstr "Selamat datang di Zulip."
+
+#: templates/zerver/app/home.html:16
+msgid ""
+"\n"
+"            See, the thing about it is... there aren't any messages\n"
+"            here for you right now. I'm sure someone will eventually send\n"
+"            you one.\n"
+"            "
+msgstr ""
+
+#: templates/zerver/app/home.html:24
+msgid ""
+"\n"
+"            Or, <strong>take matters into your own hands</strong>,\n"
+"            and <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            compose a new stream message</a>.\n"
+"            "
+msgstr "\nAtau, <strong>ambil alih hal ini ke dalam tangan Anda sendiri</strong>,\ndan <a href=\"#\" class=\"empty_feed_compose_stream\">\nbuat pesan siaran baru</a>."
+
+#: templates/zerver/app/home.html:32
+msgid "Nothing's been sent here yet!"
+msgstr "Belum ada yang terkirim kesini!"
+
+#: templates/zerver/app/home.html:35
+msgid ""
+"\n"
+"            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            start the conversation</a>?\n"
+"            "
+msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n            memulai percakapan</a>?</p>\n        "
+
+#: templates/zerver/app/home.html:42
+msgid "You have no private messages yet!"
+msgstr "Anda belum memiliki pesan pribadi!"
+
+#: templates/zerver/app/home.html:45 templates/zerver/app/home.html:55
+#: templates/zerver/app/home.html:65 templates/zerver/app/home.html:75
+msgid ""
+"\n"
+"            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            start the conversation</a>?\n"
+"            "
+msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_private\">\n            memulai percakapan</a>?</p>\n        "
+
+#: templates/zerver/app/home.html:52
+msgid "You have no private messages with this person yet!"
+msgstr "Anda tidak memiliki pesan pribadi dengan orang ini."
+
+#: templates/zerver/app/home.html:62
+msgid "You have no group private messages with this person yet!"
+msgstr "Anda belum memiliki pesan grup pribadi dengan orang ini!"
+
+#: templates/zerver/app/home.html:72
+msgid "You have no private messages with these people yet!"
+msgstr "Anda tidak memiliki pesan pribadi dengan orang-orang ini!"
+
+#: templates/zerver/app/home.html:82
+msgid "You haven't received any messages sent by this user yet!"
+msgstr "Anda belum pernah menerima pesan yang dikirim pengguna ini!"
+
+#: templates/zerver/app/home.html:85
+msgid "This user does not exist!"
+msgstr "Pengguna ini tidak ada!"
+
+#: templates/zerver/app/home.html:88
+msgid "One or more of these users do not exist!"
+msgstr ""
+
+#: templates/zerver/app/home.html:91
+msgid ""
+"You aren't subscribed to this stream and nobody has talked about that yet!"
+msgstr "Anda tidak berlangganan ke stream ini dan belum ada seorangpun yang membicarakan tentangnya!"
+
+#: templates/zerver/app/home.html:94
+msgid "Subscribe"
+msgstr "Langganan"
+
+#: templates/zerver/app/home.html:99
+msgid "This stream does not exist or is private."
+msgstr "Siaran ini tidak ada atau merupakan siaran pribadi/privat."
+
+#: templates/zerver/app/home.html:102
+msgid "You haven't starred anything yet!"
+msgstr "Anda belum membintangi apapun!"
+
+#: templates/zerver/app/home.html:105
+msgid ""
+"\n"
+"            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
+"            here</a>.\n"
+"            "
+msgstr ""
+
+#: templates/zerver/app/home.html:112
+msgid "You have no unread messages!"
+msgstr "Anda tidak memiliki pesan yang belum dibaca!"
+
+#: templates/zerver/app/home.html:115
+msgid "You haven't been mentioned yet!"
+msgstr "Anda belum menyebut siapapun!"
+
+#: templates/zerver/app/home.html:118
+msgid ""
+"\n"
+"            Learn more about mentions <a href=\"/help/at-mention-a-team-member\">\n"
+"            here</a>.\n"
+"            "
+msgstr ""
+
+#: templates/zerver/app/home.html:125
+msgid "Nobody has talked about that yet!"
+msgstr "Belum ada seorangpun yang membicarakan hal tersebut!"
+
+#: templates/zerver/app/index.html:41
+msgid "Loading..."
+msgstr "Memuat..."
+
+#: templates/zerver/app/index.html:42
+msgid ""
+"If this message does not go away, please wait a couple seconds and <a id"
+"=\"reload-lnk\">reload</a> the page."
+msgstr ""
+
+#: templates/zerver/app/index.html:74
+msgid ""
+"<strong class=\"message\">Unable to connect to\n"
+"            Zulip.</strong>  Updates may be delayed."
+msgstr ""
+
+#: templates/zerver/app/index.html:75
+msgid "Retrying soon..."
+msgstr "Segera mencoba kembali..."
+
+#: templates/zerver/app/index.html:75
+msgid "Try now."
+msgstr "Coba sekarang."
+
+#: templates/zerver/app/invite_user.html:6
+msgid "Invite users to Zulip"
+msgstr "Undang pengguna ke Zulip"
+
+#: templates/zerver/app/invite_user.html:12
+msgid "Emails (one on each line or comma-separated)"
+msgstr "Email (satu untuk setiap baris atau dipisahkan koma)"
+
+#: templates/zerver/app/invite_user.html:14
+msgid "One or more email addresses..."
+msgstr "Satu atau lebih alamat email..."
+
+#: templates/zerver/app/invite_user.html:19
+msgid "User(s) join as"
+msgstr "Undang pengguna sebagai"
+
+#: templates/zerver/app/invite_user.html:22
+msgid "Members"
+msgstr "Anggota"
+
+#: templates/zerver/app/invite_user.html:23
+msgid "Organization administrators"
+msgstr "Pengurus organisasi"
+
+#: templates/zerver/app/invite_user.html:33
+msgid "Streams they should join"
+msgstr "Siaran yang mereka harus ikuti"
+
+#: templates/zerver/app/invite_user.html:40
+msgid "Inviting..."
+msgstr "Mengundang..."
+
+#: templates/zerver/app/invite_user.html:40
+msgid "Invite"
+msgstr "Undang"
+
+#: templates/zerver/app/keyboard_shortcuts.html:2
+#: templates/zerver/app/navbar.html:121
+#: templates/zerver/app/right_sidebar.html:37
+msgid "Keyboard shortcuts"
+msgstr "Shorcut keyboard"
+
+#: templates/zerver/app/keyboard_shortcuts.html:8
+msgid "The basics"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:13
+#: templates/zerver/app/keyboard_shortcuts.html:117
+msgid "Reply to message"
+msgstr "Balas pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:17
+#: templates/zerver/app/keyboard_shortcuts.html:129
+msgid "New stream message"
+msgstr "Pesan stream baru"
+
+#: templates/zerver/app/keyboard_shortcuts.html:29
+#: templates/zerver/app/keyboard_shortcuts.html:246
+msgid "View drafts"
+msgstr "Lihat konsep"
+
+#: templates/zerver/app/keyboard_shortcuts.html:33
+#: templates/zerver/app/keyboard_shortcuts.html:89
+msgid "Next message"
+msgstr "Pesan selanjutnya"
+
+#: templates/zerver/app/keyboard_shortcuts.html:37
+#: templates/zerver/app/keyboard_shortcuts.html:101
+msgid "Last message"
+msgstr "Pesan terakhir"
+
+#: templates/zerver/app/keyboard_shortcuts.html:41
+msgid "Next unread topic"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:45
+msgid "Next unread private message"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:49
+msgid "All private messages"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:53
+#: templates/zerver/app/keyboard_shortcuts.html:73
+msgid "Initiate a search"
+msgstr "Memulai pencarian"
+
+#: templates/zerver/app/keyboard_shortcuts.html:57
+#: templates/zerver/app/keyboard_shortcuts.html:277
+msgid "Show keyboard shortcuts"
+msgstr "Tampilkan pintasan papan ketik"
+
+#: templates/zerver/app/keyboard_shortcuts.html:68
+msgid "Navigation"
+msgstr "Navigasi"
+
+#: templates/zerver/app/keyboard_shortcuts.html:77
+#: templates/zerver/app/left_sidebar.html:58
+msgid "Search streams"
+msgstr "Cari stream"
+
+#: templates/zerver/app/keyboard_shortcuts.html:81
+#: templates/zerver/app/right_sidebar.html:16
+msgid "Search people"
+msgstr "Cari orang"
+
+#: templates/zerver/app/keyboard_shortcuts.html:85
+msgid "Previous message"
+msgstr "Pesan sebelumnya"
+
+#: templates/zerver/app/keyboard_shortcuts.html:93
+msgid "Scroll up"
+msgstr "Scroll ke atas"
+
+#: templates/zerver/app/keyboard_shortcuts.html:97
+msgid "Scroll down"
+msgstr "Scroll ke bawah"
+
+#: templates/zerver/app/keyboard_shortcuts.html:105
+msgid "First message"
+msgstr "Pesan pertama"
+
+#: templates/zerver/app/keyboard_shortcuts.html:112
+msgid "Composing messages"
+msgstr "Menyusun pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:121
+msgid "Reply to author"
+msgstr "Balas penulis"
+
+#: templates/zerver/app/keyboard_shortcuts.html:125
+msgid "Quote and reply to message"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:137
+msgid "Compose a reply @-mentioning author"
+msgstr "`"
+
+#: templates/zerver/app/keyboard_shortcuts.html:141
+msgid "Send message"
+msgstr "Kirim pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:145
+msgid "Insert new line"
+msgstr "Sisipkan baris baru"
+
+#: templates/zerver/app/keyboard_shortcuts.html:158
+msgid "Narrowing"
+msgstr "Persempit"
+
+#: templates/zerver/app/keyboard_shortcuts.html:163
+msgid "Narrow by stream"
+msgstr "Persempit berdasarkan stream"
+
+#: templates/zerver/app/keyboard_shortcuts.html:167
+msgid "Narrow by topic"
+msgstr "Persempit berdasarkan topik"
+
+#: templates/zerver/app/keyboard_shortcuts.html:171
+msgid "Narrow to all private messages"
+msgstr "Persempit ke semua pesan pribadi"
+
+#: templates/zerver/app/keyboard_shortcuts.html:175
+msgid "Narrow to next unread topic"
+msgstr "Persempit ke topik yang belum dibaca selanjutnya"
+
+#: templates/zerver/app/keyboard_shortcuts.html:179
+msgid "Narrow to next unread private message"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:183
+msgid "Cycle between stream narrows"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:187
+msgid "Narrow to all unmuted messages"
+msgstr "Bataskan sampai semua pesan yang tidak didiamkan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:193
+msgid "Message actions"
+msgstr "Aksi untuk pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:198
+msgid "Edit your last message"
+msgstr "Edit pesan terakhir anda"
+
+#: templates/zerver/app/keyboard_shortcuts.html:202
+msgid "Show message sender's profile"
+msgstr "Perlihatkan profil pengirim pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:206
+msgid "Show images in thread"
+msgstr "Tampilkan gambar di thread"
+
+#: templates/zerver/app/keyboard_shortcuts.html:210
+msgid "Edit selected message"
+msgstr "Edit pesan terpilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:214
+msgid "Star selected message"
+msgstr "Bintangi pesan terpilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:219
+msgid "React to selected message with"
+msgstr "Beri reaksi pada pesan terpilih dengan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:228
+msgid "Collapse/show selected message"
+msgstr "Hilangkan/munculkan pesan yang dipilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:232
+msgid "Toggle topic mute"
+msgstr "Alihkan pendiaman topik"
+
+#: templates/zerver/app/keyboard_shortcuts.html:250
+msgid "Edit selected draft"
+msgstr "Edit konsep terpilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:254
+msgid "Delete selected draft"
+msgstr "Hapus konsep terpilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:260
+msgid "Menus"
+msgstr "Menu"
+
+#: templates/zerver/app/keyboard_shortcuts.html:265
+msgid "Toggle the gear menu"
+msgstr "Alihkan menu gerigi"
+
+#: templates/zerver/app/keyboard_shortcuts.html:269
+msgid "Open message menu"
+msgstr "Buka menu pesan"
+
+#: templates/zerver/app/keyboard_shortcuts.html:273
+msgid "Open reactions menu"
+msgstr "Buka menu reaksi"
+
+#: templates/zerver/app/keyboard_shortcuts.html:286
+msgid "Streams settings"
+msgstr "Pengaturan stream"
+
+#: templates/zerver/app/keyboard_shortcuts.html:291
+msgid "Scroll through streams"
+msgstr "Pindai berdasarkan siaran"
+
+#: templates/zerver/app/keyboard_shortcuts.html:295
+msgid "Switch between tabs"
+msgstr "Berpindah antar tab"
+
+#: templates/zerver/app/keyboard_shortcuts.html:299
+msgid "View stream messages"
+msgstr "Lihat pesan stream"
+
+#: templates/zerver/app/keyboard_shortcuts.html:303
+msgid "Subscribe to/unsubscribe from selected stream"
+msgstr "Berlangganan/tidak berlangganan pada stream terpilih"
+
+#: templates/zerver/app/keyboard_shortcuts.html:307
+msgid "Create new stream"
+msgstr "Buat stream baru"
+
+#: templates/zerver/app/keyboard_shortcuts.html:312
+msgid "Detailed keyboard shortcuts documentation"
+msgstr "Dokumentasi mendetail tentang tombol pintas keyboard"
+
+#: templates/zerver/app/left_sidebar.html:5
+#: templates/zerver/app/left_sidebar.html:10
+msgid "All messages"
+msgstr "Semua pesan"
+
+#: templates/zerver/app/left_sidebar.html:33
+msgid "Starred messages"
+msgstr "Pesan yang dibintangi"
+
+#: templates/zerver/app/left_sidebar.html:41
+msgid "Mentions"
+msgstr "Disebut"
+
+#: templates/zerver/app/left_sidebar.html:49
+msgid "Subscribed streams"
+msgstr "Stream yang dilangganani"
+
+#: templates/zerver/app/left_sidebar.html:49
+msgid "STREAMS"
+msgstr "STREAM"
+
+#: templates/zerver/app/left_sidebar.html:50
+msgid "Subscribe, add, or configure streams"
+msgstr "Berlanggan, tambahkan, atau atur siaran"
+
+#: templates/zerver/app/left_sidebar.html:51
+msgid "Filter streams"
+msgstr "Saring stream"
+
+#: templates/zerver/app/left_sidebar.html:54
+msgid "All streams"
+msgstr "Semua stream"
+
+#: templates/zerver/app/lightbox_overlay.html:10
+msgid "Pan &amp; Zoom"
+msgstr "Pergerakan &amp; Pembesaran"
+
+#: templates/zerver/app/lightbox_overlay.html:11
+msgid "Disabled"
+msgstr "Dinonaktifkan"
+
+#: templates/zerver/app/lightbox_overlay.html:11
+msgid "Enabled"
+msgstr "Diizinkan"
+
+#: templates/zerver/app/lightbox_overlay.html:14
+msgid "Open"
+msgstr "Buka"
+
+#: templates/zerver/app/lightbox_overlay.html:17
+msgid "Download"
+msgstr "Unduh"
+
+#: templates/zerver/app/markdown_help.html:2
+#: templates/zerver/app/navbar.html:126
+msgid "Message formatting"
+msgstr "Format pesan"
+
+#: templates/zerver/app/markdown_help.html:8
+msgid "You type"
+msgstr "Anda mengetik"
+
+#: templates/zerver/app/markdown_help.html:9
+msgid "You get"
+msgstr "Anda mendapat"
+
+#: templates/zerver/app/markdown_help.html:107
+msgid ""
+"To add syntax highlighting to a multi-line code block,\n"
+"                          add the language's <b>first</b> <a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments short name</a>\n"
+"                          after the first set of back-ticks.\n"
+"                          You can also make a code block by indenting each line with 4 spaces."
+msgstr "Untuk menambah pewarnaan sintaks pada kode berbaris banyak,\ntambahkan <b>nama depan</b><a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments</a> bahasa tersebut\nsetelah simbol petik balik.\nAnda juga dapat membuat blok kode dengan melekukkan setiap baris dengan 4 spasi."
+
+#: templates/zerver/app/markdown_help.html:138
+msgid ""
+"You can also make <a target=\"_blank\"\n"
+"                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
+"                            with this <a target=\"_blank\"\n"
+"                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
+"                        table syntax</a>."
+msgstr "Anda juga dapat membuat <a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tabel\ndengan <a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">sintaks tabel yang berkesan Markdown</a>"
+
+#: templates/zerver/app/message_history.html:5
+msgid "Message edit history"
+msgstr "Histori pengeditan pesan"
+
+#: templates/zerver/app/navbar.html:5
+msgid ""
+"Zulip needs your permission to\n"
+"            <a class=\"request-desktop-notifications alert-link\">enable desktop notifications.</a>\n"
+"            "
+msgstr ""
+
+#: templates/zerver/app/navbar.html:10
+msgid ""
+"We strongly recommend enabling desktop notifications. They help Zulip keep "
+"your team connected."
+msgstr "Kami sangat merekomendasikan menyalakan pemberitahuan desktop. Hal ini membantu Zulip untuk terus membuat tim Anda terhubung."
+
+#: templates/zerver/app/navbar.html:12
+msgid "Enable notifications"
+msgstr "Izinkan notifikasi"
+
+#: templates/zerver/app/navbar.html:14
+msgid "Ask me later"
+msgstr "Tanyakan lagi nanti"
+
+#: templates/zerver/app/navbar.html:16
+msgid "Never ask on this computer"
+msgstr "jangan tanyakan lagi untuk komputer ini"
+
+#: templates/zerver/app/navbar.html:23
+msgid ""
+"Zulip needs to send email to confirm users' addresses and send "
+"notifications."
+msgstr ""
+
+#: templates/zerver/app/navbar.html:25
+msgid "See how to configure email."
+msgstr ""
+
+#: templates/zerver/app/navbar.html:42
+msgid "Stream list"
+msgstr ""
+
+#: templates/zerver/app/navbar.html:51 templates/zerver/app/navbar.html:71
+msgid "Search help"
+msgstr "Cari bantuan"
+
+#: templates/zerver/app/navbar.html:54 templates/zerver/app/navbar.html:55
+#: templates/zerver/app/navbar.html:67 templates/zerver/app/navbar.html:68
+msgid "Search"
+msgstr "Cari"
+
+#: templates/zerver/app/navbar.html:59 templates/zerver/app/navbar.html:70
+msgid "Exit search"
+msgstr "Keluar dari pencarian"
+
+#: templates/zerver/app/navbar.html:79
+msgid "User list"
+msgstr ""
+
+#: templates/zerver/app/navbar.html:87
+msgid "Menu"
+msgstr "Menu"
+
+#: templates/zerver/app/navbar.html:99
+msgid "Manage streams"
+msgstr "Kelola stream"
+
+#: templates/zerver/app/navbar.html:104
+#: templates/zerver/app/settings_overlay.html:4
+#: templates/zerver/app/settings_overlay.html:106
+msgid "Settings"
+msgstr "Pengaturan"
+
+#: templates/zerver/app/navbar.html:110
+msgid "Manage organization"
+msgstr "Kelola organisasi"
+
+#: templates/zerver/app/navbar.html:116 templates/zerver/footer.html:16
+msgid "Help center"
+msgstr "Pusat bantuan"
+
+#: templates/zerver/app/navbar.html:131
+#: templates/zerver/app/search_operators.html:2
+msgid "Search operators"
+msgstr "Operator pencarian"
+
+#: templates/zerver/app/navbar.html:137
+msgid "Desktop & mobile apps"
+msgstr "Aplikasi desktop & mobile"
+
+#: templates/zerver/app/navbar.html:142 templates/zerver/footer.html:49
+msgid "Integrations"
+msgstr "Integrasi"
+
+#: templates/zerver/app/navbar.html:147
+msgid "API documentation"
+msgstr "Dokumentasi API"
+
+#: templates/zerver/app/navbar.html:153
+msgid "Statistics"
+msgstr "Statistik"
+
+#: templates/zerver/app/navbar.html:160
+msgid "Feedback"
+msgstr "Masukan"
+
+#: templates/zerver/app/navbar.html:167
+msgid "Invite users"
+msgstr "Undang pengguna"
+
+#: templates/zerver/app/navbar.html:173
+msgid ""
+"Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
+"Webathena"
+msgstr "Sediakan Zulip tiket Kerberos yang diperlukan untuk menjalankan mirror .Zephyr Anda melalui Webathena"
+
+#: templates/zerver/app/navbar.html:175
+msgid "Link with Webathena"
+msgstr "Tautkan dengan Webatehna"
+
+#: templates/zerver/app/navbar.html:181
+msgid "Log out"
+msgstr "Keluar"
+
+#: templates/zerver/app/navbar.html:187
+msgid "Debug"
+msgstr "Debug"
+
+#: templates/zerver/app/right_sidebar.html:6
+msgid "Send feedback"
+msgstr "Kirim masukan"
+
+#: templates/zerver/app/right_sidebar.html:12
+#: templates/zerver/app/right_sidebar.html:13
+msgid "Filter users"
+msgstr "Saring pengguna"
+
+#: templates/zerver/app/right_sidebar.html:12
+msgid "USERS"
+msgstr "PENGGUNA"
+
+#: templates/zerver/app/right_sidebar.html:26
+msgid "Invite more users"
+msgstr "Undang lebih banyak pengguna"
+
+#: templates/zerver/app/right_sidebar.html:31
+msgid "GROUP PMs"
+msgstr "PESAN PRIBADI GRUP"
+
+#: templates/zerver/app/search_operators.html:7
+msgid "Operator"
+msgstr "Operator"
+
+#: templates/zerver/app/search_operators.html:8
+msgid "Effect"
+msgstr "Efek"
+
+#: templates/zerver/app/search_operators.html:13
+msgid "Narrow to messages on stream"
+msgstr "Persempit ke pesan dalam stream"
+
+#: templates/zerver/app/search_operators.html:17
+msgid "Narrow to messages with topic"
+msgstr "Persempit ke pesan dalam topik"
+
+#: templates/zerver/app/search_operators.html:21
+msgid "Narrow to private messages with"
+msgstr "Bataskan ke pesan pribadi dengan"
+
+#: templates/zerver/app/search_operators.html:25
+msgid "Narrow to group private messages with"
+msgstr "Bataskan ke pesan pribadi grup dengan"
+
+#: templates/zerver/app/search_operators.html:29
+msgid "Narrow to messages sent by"
+msgstr "Bataskan ke pesan yang dikirim oleh"
+
+#: templates/zerver/app/search_operators.html:33
+msgid "Narrow to messages sent by you."
+msgstr "Bataskan ke pesan yang dikirim oleh Anda."
+
+#: templates/zerver/app/search_operators.html:37
+msgid "Center the view around message ID"
+msgstr "Tengahkan penglihatan sekitar ID pesan"
+
+#: templates/zerver/app/search_operators.html:41
+msgid "Narrow to just message ID"
+msgstr "Bataskan ke dan hanya ID pesan"
+
+#: templates/zerver/app/search_operators.html:45
+msgid "Narrow to messages with alert words."
+msgstr "Bataskan ke pesan yang mengandung kata pemberitahuan."
+
+#: templates/zerver/app/search_operators.html:49
+msgid "Narrow to messages that mention you."
+msgstr "Bataskan ke pesan yang menyinggung Anda."
+
+#: templates/zerver/app/search_operators.html:53
+msgid "Narrow to private messages."
+msgstr "Bataskan ke pesan pribadi."
+
+#: templates/zerver/app/search_operators.html:57
+msgid "Narrow to starred messages."
+msgstr "Bataskan ke pesan yang dibintangi"
+
+#: templates/zerver/app/search_operators.html:61
+msgid "Narrow to unread messages."
+msgstr "Bataskan ke pesan yang belum dibaca"
+
+#: templates/zerver/app/search_operators.html:65
+msgid "Narrow to messages containing links."
+msgstr "Bataskan ke pesan yang mengandung link."
+
+#: templates/zerver/app/search_operators.html:69
+msgid "Narrow to messages containing images."
+msgstr "Bataskan ke pesan yang mengandung gambar."
+
+#: templates/zerver/app/search_operators.html:73
+msgid "Narrow to messages containing uploads."
+msgstr "Bataskan ke pesan yang mengandung unggahan."
+
+#: templates/zerver/app/search_operators.html:77
+msgid ""
+"Search for <span class=\"operator_value\"> keyword </span> in the topic or "
+"message content "
+msgstr "Cari <span class=\"operator_value\">kata kunci</span> pada topik atau isi pesan"
+
+#: templates/zerver/app/search_operators.html:81
+msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
+msgstr "Kecualikan pesan dengan topik <span class=\"operator_value\">topic</span>"
+
+#: templates/zerver/app/search_operators.html:85
+msgid ""
+"You can use any combination of these search operators in a single query. "
+"Consider the following example:"
+msgstr ""
+
+#: templates/zerver/app/search_operators.html:87
+msgid "streamname"
+msgstr ""
+
+#: templates/zerver/app/search_operators.html:88
+msgid "user@example.com"
+msgstr ""
+
+#: templates/zerver/app/search_operators.html:89
+msgid "keyword"
+msgstr ""
+
+#: templates/zerver/app/search_operators.html:101
+#, python-format
+msgid ""
+"\n"
+"            That query would search for messages sent by\n"
+"            <span class=\"operator_value\">%(placeholder_email)s</span>\n"
+"            to stream\n"
+"            <span class=\"operator_value\">%(placeholder_stream)s</span>\n"
+"            containing the keyword\n"
+"            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
+"            "
+msgstr ""
+
+#: templates/zerver/app/search_operators.html:111
+msgid "Detailed search operators documentation"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:16
+msgid "Your account"
+msgstr "Akun anda"
+
+#: templates/zerver/app/settings_overlay.html:20
+msgid "Display settings"
+msgstr "Pengaturan tampilan"
+
+#: templates/zerver/app/settings_overlay.html:24
+msgid "Notifications"
+msgstr "Notifikasi"
+
+#: templates/zerver/app/settings_overlay.html:28
+msgid "Your bots"
+msgstr "Bot anda"
+
+#: templates/zerver/app/settings_overlay.html:32
+msgid "Alert words"
+msgstr "Kata peringatan"
+
+#: templates/zerver/app/settings_overlay.html:36
+msgid "Uploaded files"
+msgstr "File yang telah diupload"
+
+#: templates/zerver/app/settings_overlay.html:40
+msgid "Muted topics"
+msgstr "Topik yang didiamkan"
+
+#: templates/zerver/app/settings_overlay.html:47
+msgid "Organization profile"
+msgstr "Profil organisasi"
+
+#: templates/zerver/app/settings_overlay.html:51
+msgid "Organization settings"
+msgstr "Pengaturan organisasi"
+
+#: templates/zerver/app/settings_overlay.html:55
+msgid "Organization permissions"
+msgstr "Izin organisasi"
+
+#: templates/zerver/app/settings_overlay.html:59 zerver/models.py:1477
+msgid "Custom emoji"
+msgstr "Emoji khusus"
+
+#: templates/zerver/app/settings_overlay.html:63
+msgid "User groups"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:67
+msgid "Authentication methods"
+msgstr "Metode Otentikasi"
+
+#: templates/zerver/app/settings_overlay.html:76
+msgid "Deactivated users"
+msgstr "Deaktivasi pengguna"
+
+#: templates/zerver/app/settings_overlay.html:85
+msgid "Default streams"
+msgstr "Stream standar"
+
+#: templates/zerver/app/settings_overlay.html:89
+msgid "Filter settings"
+msgstr "Pengaturan saringan"
+
+#: templates/zerver/app/settings_overlay.html:93
+msgid "Custom profile fields"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:98
+msgid "Invitations"
+msgstr "Undangan"
+
+#: templates/zerver/app/topic_is_muted.html:3
+msgid "Topic muted"
+msgstr ""
+
+#: templates/zerver/app/topic_is_muted.html:5
+msgid "Unmute"
+msgstr ""
+
+#: templates/zerver/app/topic_is_muted.html:8
+msgid ""
+"You have muted the topic <span class=\"topic\"></span> under the <span "
+"class=\"stream\"></span> stream."
+msgstr ""
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -326,30 +1241,21 @@ msgstr "\n                        Anda mencoba untuk masuk menggunakan LDAP tanp
 msgid "Zulip account not found."
 msgstr "Akun Zulip tidak ditemukan."
 
-#: templates/zerver/confirm_continue_registration.html:17
-msgid ""
-"\n"
-"                            Please click the following button if you wish to register.\n"
-"                            "
-msgstr "\n                            Mohon klik tombol berikut jika anda ingin mendaftar.\n                            "
-
-#: templates/zerver/confirm_continue_registration.html:24
+#: templates/zerver/confirm_continue_registration.html:14
 #, python-format
 msgid ""
 "\n"
-"\n"
-"                            No account found for %(email)s. Would you like to register instead?\n"
-"\n"
+"                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n\n                            Tidak ditemukan akun untuk %(email)s. Anda ingin mendaftarkannya?\n\n                            "
+msgstr ""
 
-#: templates/zerver/confirm_continue_registration.html:38
-msgid "Go back to login"
-msgstr "Kembali ke halaman masuk"
+#: templates/zerver/confirm_continue_registration.html:26
+msgid "Log in with another account"
+msgstr ""
 
-#: templates/zerver/confirm_continue_registration.html:46
-msgid "Sign up instead"
-msgstr "Daftar saja"
+#: templates/zerver/confirm_continue_registration.html:33
+msgid "Continue to registration"
+msgstr ""
 
 #: templates/zerver/create_realm.html:18
 msgid "Create a new Zulip organization"
@@ -377,31 +1283,6 @@ msgid ""
 "                    "
 msgstr "\n                    Organisasi yang anda coba untuk bergabung, %(deactivated_domain_name)s, telah dideaktivasi.\n                    Mohon hubungi <a href=\"mailto:%(support_email)s\">%(support_email)s</a> untuk mengaktivasi ulang\n                    grup ini.\n                    "
 
-#: templates/zerver/delete_message.html:4
-msgid "Delete message"
-msgstr "Hapus pesan"
-
-#: templates/zerver/delete_message.html:8
-msgid "Are you sure you want to delete this message?"
-msgstr "Apakah anda yakin ingin menghapus pesan ini?"
-
-#: templates/zerver/delete_message.html:13
-#: templates/zerver/invite_user.html:39
-msgid "Cancel"
-msgstr "Batal"
-
-#: templates/zerver/delete_message.html:14
-msgid "Yes, delete this message"
-msgstr "Ya, hapus pesan ini"
-
-#: templates/zerver/deprecation_notice.html:6
-msgid "Deprecation notice"
-msgstr ""
-
-#: templates/zerver/deprecation_notice.html:14
-msgid "Got it"
-msgstr ""
-
 #: templates/zerver/dev_login.html:12
 msgid "(Or visit the <a href=\"/login\">normal login page</a>)"
 msgstr "(Atau kunjungi <a href=\"/login\">halaman masuk biasa</a>)"
@@ -410,9 +1291,528 @@ msgstr "(Atau kunjungi <a href=\"/login\">halaman masuk biasa</a>)"
 msgid "Administrators"
 msgstr "Administrator"
 
-#: templates/zerver/dev_login.html:29
+#: templates/zerver/dev_login.html:26
+msgid "Guest users"
+msgstr ""
+
+#: templates/zerver/dev_login.html:38
 msgid "Normal users"
 msgstr "Pengguna biasa"
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:9
+#: templates/zerver/emails/confirm_new_email.source.html:8
+#: templates/zerver/emails/confirm_new_email.txt:1
+msgid "Hi!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:13
+#: templates/zerver/emails/confirm_new_email.source.html:12
+#, python-format
+msgid ""
+"\n"
+"    We received a request to change the email address for the Zulip account on\n"
+"    %(realm_uri)s from %(old_email)s to %(new_email)s. If you would like\n"
+"    to confirm this change, please click below:\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:18
+#: templates/zerver/emails/confirm_new_email.source.html:17
+msgid "Confirm email change"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:22
+#, python-format
+msgid ""
+"\n"
+"    If you did not request this change, please contact us immediately at\n"
+"    <a href=\"mailto:%(support_email)s\" style=\"color:#45a98e; text-decoration:underline\">%(support_email)s</a>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:29
+#: templates/zerver/emails/compiled/confirm_registration.html:27
+#: templates/zerver/emails/compiled/followup_day1.html:56
+#: templates/zerver/emails/compiled/invitation.html:26
+#: templates/zerver/emails/compiled/invitation_reminder.html:22
+#: templates/zerver/emails/confirm_new_email.source.html:28
+#: templates/zerver/emails/confirm_new_email.txt:15
+#: templates/zerver/emails/confirm_registration.source.html:26
+#: templates/zerver/emails/confirm_registration.txt:10
+#: templates/zerver/emails/followup_day1.source.html:55
+#: templates/zerver/emails/followup_day1.txt:33
+#: templates/zerver/emails/invitation.source.html:25
+#: templates/zerver/emails/invitation.txt:10
+#: templates/zerver/emails/invitation_reminder.source.html:21
+#: templates/zerver/emails/invitation_reminder.txt:10
+msgid "Cheers,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:30
+#: templates/zerver/emails/compiled/confirm_registration.html:28
+#: templates/zerver/emails/compiled/followup_day1.html:57
+#: templates/zerver/emails/compiled/notify_change_in_email.html:15
+#: templates/zerver/emails/confirm_new_email.source.html:29
+#: templates/zerver/emails/confirm_new_email.txt:16
+#: templates/zerver/emails/confirm_registration.source.html:27
+#: templates/zerver/emails/confirm_registration.txt:11
+#: templates/zerver/emails/followup_day1.source.html:56
+#: templates/zerver/emails/followup_day1.txt:34
+#: templates/zerver/emails/notify_change_in_email.source.html:14
+#: templates/zerver/emails/notify_change_in_email.txt:10
+msgid "Team Zulip"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:10
+#: templates/zerver/emails/confirm_registration.source.html:9
+#: templates/zerver/emails/confirm_registration.txt:1
+msgid "Hello there."
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:13
+#: templates/zerver/emails/confirm_registration.source.html:12
+#: templates/zerver/emails/confirm_registration.txt:3
+msgid "You recently signed up for Zulip. Awesome!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:16
+#: templates/zerver/emails/confirm_registration.source.html:15
+#: templates/zerver/emails/confirm_registration.txt:5
+msgid "To complete signup, please click here:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:17
+#: templates/zerver/emails/compiled/invitation.html:20
+#: templates/zerver/emails/compiled/invitation_reminder.html:16
+#: templates/zerver/emails/confirm_registration.source.html:16
+#: templates/zerver/emails/invitation.source.html:19
+#: templates/zerver/emails/invitation_reminder.source.html:15
+msgid "Complete registration"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:20
+#, python-format
+msgid ""
+"\n"
+"    Feel free to give us a shout at\n"
+"    <a href=\"mailto:%(support_email)s\" style=\"color:#45a98e; text-decoration:underline\">%(support_email)s</a>,\n"
+"    if you have any questions.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:9
+#: templates/zerver/emails/find_team.source.html:8
+#: templates/zerver/emails/find_team.txt:1
+#, python-format
+msgid "Hi %(full_name)s,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:12
+#: templates/zerver/emails/find_team.source.html:11
+#: templates/zerver/emails/find_team.txt:3
+#, python-format
+msgid ""
+"You can log in to your Zulip organization, %(realm_name)s,\n"
+"at the following link:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:23
+#: templates/zerver/emails/find_team.source.html:22
+#: templates/zerver/emails/find_team.txt:7
+#, python-format
+msgid "The email address associated with your account is %(email)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:25
+#: templates/zerver/emails/find_team.source.html:24
+#: templates/zerver/emails/find_team.txt:9
+msgid ""
+"If you have trouble logging in, please contact Zulip support by replying to\n"
+"this email."
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:28
+#: templates/zerver/emails/find_team.source.html:27
+#: templates/zerver/emails/find_team.txt:12
+msgid "Thanks for using Zulip!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:9
+#: templates/zerver/emails/compiled/invitation.html:9
+#: templates/zerver/emails/followup_day1.source.html:8
+#: templates/zerver/emails/followup_day1.txt:1
+#: templates/zerver/emails/invitation.source.html:8
+#: templates/zerver/emails/invitation.txt:1
+msgid "Hi there,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:11
+#: templates/zerver/emails/followup_day1.source.html:10
+#: templates/zerver/emails/followup_day1.txt:3
+msgid "Welcome to Zulip! A few tips to get you started:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:14
+msgid ""
+"\n"
+"    Zulip works best when it's always open, so we suggest downloading\n"
+"    our <a href=\"https://zulipchat.com/apps\" style=\"color:#45a98e; text-decoration:underline\">desktop and mobile apps</a>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:19
+#: templates/zerver/emails/followup_day1.source.html:18
+msgid ""
+"\n"
+"    To access your account from the apps, enter this Organization URL:\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:29
+#, python-format
+msgid ""
+"\n"
+"    Become a Zulip pro with a few\n"
+"    <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#45a98e; text-decoration:underline\">keyboard shortcuts</a>:\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:34
+#: templates/zerver/emails/followup_day1.source.html:33
+#: templates/zerver/emails/followup_day1.txt:17
+msgid "Next unread thread"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:35
+#: templates/zerver/emails/followup_day1.source.html:34
+#: templates/zerver/emails/followup_day1.txt:18
+msgid "Reply to message under the blue box"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:36
+#: templates/zerver/emails/followup_day1.source.html:35
+#: templates/zerver/emails/followup_day1.txt:19
+msgid "Start a new topic"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:40
+#, python-format
+msgid ""
+"\n"
+"    Give our <a href=\"%(getting_started_link)s\" style=\"color:#45a98e; text-decoration:underline\">guide for new\n"
+"    %(user_role_group)s</a> a spin.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:47
+msgid ""
+"\n"
+"    Zulip combines the real-time ease of chat with the threaded organization\n"
+"    of email. Zulip is about productivity—making communication fun and\n"
+"    easy, while avoiding the distracting and disorganized conversations of\n"
+"    chatrooms. We hope you love using Zulip as much as we do.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:61
+msgid ""
+"\n"
+"    PS: Follow us on <a href=\"https://twitter.com/zulip\" style=\"color:#45a98e; text-decoration:underline\">Twitter</a>,\n"
+"    star us on <a href=\"https://github.com/zulip/zulip\" style=\"color:#45a98e; text-decoration:underline\">GitHub</a>, or\n"
+"    chat with us live on the\n"
+"    <a href=\"https://chat.zulip.org\" style=\"color:#45a98e; text-decoration:underline\">Zulip community server</a>!\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:12
+#, python-format
+msgid ""
+"\n"
+"    %(referrer_full_name)s (%(referrer_email)s) wants you to join\n"
+"    them on Zulip — the team communication tool designed for\n"
+"    productivity.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:19
+#: templates/zerver/emails/compiled/invitation_reminder.html:15
+#: templates/zerver/emails/invitation.source.html:18
+#: templates/zerver/emails/invitation_reminder.source.html:14
+msgid "To get started, please click here:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:23
+#, python-format
+msgid ""
+"Feel free to give us a shout at <a href=\"mailto:%(support_email)s\" "
+"style=\"color:#45a98e; text-decoration:underline\">%(support_email)s</a>, if"
+" you have any questions."
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:27
+#: templates/zerver/emails/compiled/invitation_reminder.html:23
+#: templates/zerver/emails/invitation.source.html:26
+#: templates/zerver/emails/invitation.txt:11
+#: templates/zerver/emails/invitation_reminder.source.html:22
+#: templates/zerver/emails/invitation_reminder.txt:11
+msgid "The Zulip Team"
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:9
+#: templates/zerver/emails/invitation_reminder.source.html:8
+#: templates/zerver/emails/invitation_reminder.txt:1
+msgid "Hi again,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:12
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s (<a "
+"href=\"mailto:%(referrer_email)s\" style=\"color:#45a98e; text-"
+"decoration:underline\">%(referrer_email)s</a>) wants you to join them on "
+"Zulip, a workplace chat tool that actually makes you more productive."
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:19
+#, python-format
+msgid ""
+"We're here for you at <a href=\"mailto:%(support_email)s\" "
+"style=\"color:#45a98e; text-decoration:underline\">%(support_email)s</a> if "
+"you have any questions."
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:9
+#: templates/zerver/emails/notify_change_in_email.source.html:8
+#: templates/zerver/emails/notify_change_in_email.txt:1
+msgid "Hi,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:11
+#, python-format
+msgid ""
+"We just wanted to let you know that the email associated with your Zulip "
+"account was recently changed to <a href=\"%(new_email)s\" "
+"style=\"color:#45a98e; text-decoration:underline\">%(new_email)s</a>. If you"
+" did not request this change, please contact us immediately at <a "
+"href=\"mailto:%(support_email)s\" style=\"color:#45a98e; text-"
+"decoration:underline\">%(support_email)s</a>."
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:14
+#: templates/zerver/emails/notify_change_in_email.source.html:13
+#: templates/zerver/emails/notify_change_in_email.txt:9
+msgid "Best,"
+msgstr ""
+
+#: templates/zerver/emails/confirm_new_email.source.html:21
+#, python-format
+msgid ""
+"\n"
+"    If you did not request this change, please contact us immediately at\n"
+"    <a href=\"mailto:%(support_email)s\">%(support_email)s</a>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/confirm_new_email.txt:3
+#, python-format
+msgid ""
+"\n"
+"We received a request to change the email address for the Zulip account on\n"
+"%(realm_uri)s from %(old_email)s to %(new_email)s. If you would like\n"
+"to confirm this change, please click below:\n"
+msgstr ""
+
+#: templates/zerver/emails/confirm_new_email.txt:10
+#, python-format
+msgid ""
+"\n"
+"If you did not request this change, please contact us immediately at\n"
+"<%(support_email)s>.\n"
+msgstr ""
+
+#: templates/zerver/emails/confirm_registration.source.html:19
+#, python-format
+msgid ""
+"\n"
+"    Feel free to give us a shout at\n"
+"    <a href=\"mailto:%(support_email)s\">%(support_email)s</a>,\n"
+"    if you have any questions.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/confirm_registration.txt:8
+#: templates/zerver/emails/invitation.txt:8
+#, python-format
+msgid ""
+"Feel free to give us a shout at <%(support_email)s> if you have any "
+"questions."
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:13
+msgid ""
+"\n"
+"    Zulip works best when it's always open, so we suggest downloading\n"
+"    our <a href=\"https://zulipchat.com/apps\">desktop and mobile apps</a>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:28
+#, python-format
+msgid ""
+"\n"
+"    Become a Zulip pro with a few\n"
+"    <a href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>:\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:39
+#, python-format
+msgid ""
+"\n"
+"    Give our <a href=\"%(getting_started_link)s\">guide for new\n"
+"    %(user_role_group)s</a> a spin.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:46
+msgid ""
+"\n"
+"    Zulip combines the real-time ease of chat with the threaded organization\n"
+"    of email. Zulip is about productivity&mdash;making communication fun and\n"
+"    easy, while avoiding the distracting and disorganized conversations of\n"
+"    chatrooms. We hope you love using Zulip as much as we do.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:60
+msgid ""
+"\n"
+"    PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>,\n"
+"    star us on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or\n"
+"    chat with us live on the\n"
+"    <a href=\"https://chat.zulip.org\">Zulip community server</a>!\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:5
+msgid ""
+"\n"
+"* Zulip works best when it's always open, so we suggest pinning a browser\n"
+"  tab or downloading our desktop and mobile apps (https://zulipchat.com/apps).\n"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:10
+msgid ""
+"\n"
+"To access your account from the apps, enter this Organization URL:\n"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:16
+msgid "Become a Zulip pro with a few keyboard shortcuts:"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:21
+#, python-format
+msgid ""
+"\n"
+"* Give our guide for new %(user_role_group)s (%(getting_started_link)s)\n"
+"  a spin.\n"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:26
+msgid ""
+"\n"
+"* Zulip combines the real-time ease of chat with the threaded organization\n"
+"  of email. Zulip is about productivity---making communication fun and\n"
+"  easy, while avoiding the distracting and disorganized conversations of\n"
+"  chatrooms. We hope you love using Zulip as much as we do.\n"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:36
+msgid ""
+"\n"
+"PS: Check us out on Twitter (@zulip), star us on GitHub\n"
+"(https://github.com/zulip/zulip), or chat with us live on the\n"
+"Zulip community server (https://chat.zulip.org)!\n"
+msgstr ""
+
+#: templates/zerver/emails/invitation.source.html:11
+#, python-format
+msgid ""
+"\n"
+"    %(referrer_full_name)s (%(referrer_email)s) wants you to join\n"
+"    them on Zulip &mdash; the team communication tool designed for\n"
+"    productivity.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/invitation.source.html:22
+#, python-format
+msgid ""
+"Feel free to give us a shout at <a "
+"href=\"mailto:%(support_email)s\">%(support_email)s</a>, if you have any "
+"questions."
+msgstr ""
+
+#: templates/zerver/emails/invitation.txt:3
+#, python-format
+msgid ""
+"%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
+"-- the team communication tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/invitation.txt:5
+#: templates/zerver/emails/invitation_reminder.txt:5
+msgid "To get started, visit the link below:"
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.source.html:11
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s (<a "
+"href=\"mailto:%(referrer_email)s\">%(referrer_email)s</a>) wants you to join"
+" them on Zulip, a workplace chat tool that actually makes you more "
+"productive."
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.source.html:18
+#, python-format
+msgid ""
+"We're here for you at <a "
+"href=\"mailto:%(support_email)s\">%(support_email)s</a> if you have any "
+"questions."
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.txt:3
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
+"wants you to join them on Zulip, a workplace chat tool that actually makes "
+"you more productive."
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.txt:8
+#, python-format
+msgid "We're here for you at <%(support_email)s> if you have any questions."
+msgstr ""
+
+#: templates/zerver/emails/notify_change_in_email.source.html:10
+#, python-format
+msgid ""
+"We just wanted to let you know that the email associated with your Zulip "
+"account was recently changed to <a href=\"%(new_email)s\">%(new_email)s</a>."
+" If you did not request this change, please contact us immediately at <a "
+"href=\"mailto:%(support_email)s\">%(support_email)s</a>."
+msgstr ""
+
+#: templates/zerver/emails/notify_change_in_email.txt:3
+#, python-format
+msgid ""
+"\n"
+"We just wanted to let you know that the email associated with your Zulip account\n"
+"was recently changed to %(new_email)s. If you did not request this change,\n"
+"please contact us immediately at <%(support_email)s>.\n"
+msgstr ""
 
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
@@ -458,10 +1858,6 @@ msgstr "Bantuan &amp; komunitas"
 msgid "Community chat"
 msgstr "Percakapan komunitas"
 
-#: templates/zerver/footer.html:16
-msgid "Help center"
-msgstr "Pusat bantuan"
-
 #: templates/zerver/footer.html:17
 msgid "Documentation"
 msgstr "Dokumentasi"
@@ -482,11 +1878,11 @@ msgstr "Organisasi baru"
 msgid "Login"
 msgstr "Masuk"
 
-#: templates/zerver/footer.html:41 templates/zerver/terms.html:21
+#: templates/zerver/footer.html:41 templates/zerver/terms.html:17
 msgid "Terms of Service"
 msgstr "Ketentuan Layanan"
 
-#: templates/zerver/footer.html:42 templates/zerver/privacy.html:23
+#: templates/zerver/footer.html:42 templates/zerver/privacy.html:18
 msgid "Privacy policy"
 msgstr "Kebijakan privasi"
 
@@ -498,200 +1894,94 @@ msgstr "Aplikasi &amp; integrasi"
 msgid "Desktop &amp; mobile apps"
 msgstr "Aplikasi desktop &amp; mobile"
 
-#: templates/zerver/footer.html:49 templates/zerver/navbar.html:126
-msgid "Integrations"
-msgstr "Integrasi"
-
-#: templates/zerver/for-companies.html:23
+#: templates/zerver/for-companies.html:19
 msgid "The best chat for workplaces"
 msgstr "Chat terbaik untuk lingkungan kerja"
 
-#: templates/zerver/for-open-source.html:23
+#: templates/zerver/for-open-source.html:18
 msgid "The best chat for open source projects"
 msgstr "Chat terbaik untuk proyek sumber terbuka"
 
-#: templates/zerver/for-working-groups-and-communities.html:23
+#: templates/zerver/for-working-groups-and-communities.html:19
 msgid "The best chat for working groups and communities"
 msgstr "Chat terbaik kelompok kerja dan komunitas"
 
-#: templates/zerver/hello.html:43 templates/zerver/hello.html:612
-msgid "Log in now!"
-msgstr "Masuk sekarang!"
+#: templates/zerver/hello.html:58
+msgid "Streams in Zulip"
+msgstr ""
 
-#: templates/zerver/hello.html:48 templates/zerver/hello.html:617
-msgid "Sign up now!"
-msgstr "Daftar sekarang!"
+#: templates/zerver/hello.html:62 templates/zerver/hello.html:77
+#: templates/zerver/hello.html:92
+msgid "Streams in Slack"
+msgstr ""
 
-#: templates/zerver/hello.html:520
+#: templates/zerver/hello.html:73
+msgid "Topics in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:88
+msgid "Stream topics in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:100 templates/zerver/hello.html:101
+#: templates/zerver/hello.html:107 templates/zerver/hello.html:109
+msgid "The Tuesday night catering topic in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:111
+msgid "The Tuesday night catering topic in Zulip - compose box"
+msgstr ""
+
+#: templates/zerver/hello.html:118 templates/zerver/hello.html:120
+msgid "The Tuesday night catering topic in Slack"
+msgstr ""
+
+#: templates/zerver/hello.html:130
+msgid "See plans and pricing"
+msgstr ""
+
+#: templates/zerver/hello.html:391
 msgid "Travis logo"
 msgstr "Logo Travis"
 
-#: templates/zerver/hello.html:527
+#: templates/zerver/hello.html:398
 msgid "Github logo"
 msgstr "Logo Github"
 
-#: templates/zerver/hello.html:534
+#: templates/zerver/hello.html:405
 msgid "Heroku logo"
 msgstr "Logo Heroku"
 
-#: templates/zerver/hello.html:541
+#: templates/zerver/hello.html:412
 msgid "Zendesk logo"
 msgstr "Logo Zendesk"
 
-#: templates/zerver/hello.html:548
+#: templates/zerver/hello.html:419
 msgid "JIRA logo"
 msgstr "Logo JIRA"
 
-#: templates/zerver/hello.html:555
+#: templates/zerver/hello.html:426
 msgid "Sentry logo"
 msgstr "Logo Sentry"
 
-#: templates/zerver/hello.html:562
+#: templates/zerver/hello.html:433
 msgid "Pagerduty logo"
 msgstr "Logo Pagerduty"
 
-#: templates/zerver/home.html:14
-msgid "Welcome to Zulip."
-msgstr "Selamat datang di Zulip."
+#: templates/zerver/hello.html:513
+msgid "Log in now!"
+msgstr "Masuk sekarang!"
 
-#: templates/zerver/home.html:16
-msgid ""
-"\n"
-"            See, the thing about it is... there aren't any messages\n"
-"            here for you right now. I'm sure someone will eventually send\n"
-"            you one.\n"
-"            "
-msgstr ""
+#: templates/zerver/hello.html:517
+msgid "Sign up now!"
+msgstr "Daftar sekarang!"
 
-#: templates/zerver/home.html:24
-msgid ""
-"\n"
-"            Or, <strong>take matters into your own hands</strong>,\n"
-"            and <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
-"            compose a new stream message</a>.\n"
-"            "
-msgstr "\nAtau, <strong>ambil alih hal ini ke dalam tangan Anda sendiri</strong>,\ndan <a href=\"#\" class=\"empty_feed_compose_stream\">\nbuat pesan siaran baru</a>."
-
-#: templates/zerver/home.html:32
-msgid "Nothing's been sent here yet!"
-msgstr "Belum ada yang terkirim kesini!"
-
-#: templates/zerver/home.html:35
-msgid ""
-"\n"
-"            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
-"            start the conversation</a>?\n"
-"            "
-msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n            memulai percakapan</a>?</p>\n        "
-
-#: templates/zerver/home.html:42
-msgid "You have no private messages yet!"
-msgstr "Anda belum memiliki pesan pribadi!"
-
-#: templates/zerver/home.html:45 templates/zerver/home.html:55
-#: templates/zerver/home.html:65 templates/zerver/home.html:75
-msgid ""
-"\n"
-"            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
-"            start the conversation</a>?\n"
-"            "
-msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n            memulai percakapan</a>?</p>\n        "
-
-#: templates/zerver/home.html:52
-msgid "You have no private messages with this person yet!"
-msgstr "Anda tidak memiliki pesan pribadi dengan orang ini."
-
-#: templates/zerver/home.html:62
-msgid "You have no group private messages with this person yet!"
-msgstr "Anda belum memiliki pesan grup pribadi dengan orang ini!"
-
-#: templates/zerver/home.html:72
-msgid "You have no private messages with these people yet!"
-msgstr "Anda tidak memiliki pesan pribadi dengan orang-orang ini!"
-
-#: templates/zerver/home.html:82
-msgid "You haven't received any messages sent by this user yet!"
-msgstr "Anda belum pernah menerima pesan yang dikirim pengguna ini!"
-
-#: templates/zerver/home.html:85
-msgid "This user does not exist!"
-msgstr "Pengguna ini tidak ada!"
-
-#: templates/zerver/home.html:88
-msgid ""
-"You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr "Anda tidak berlangganan ke stream ini dan belum ada seorangpun yang membicarakan tentangnya!"
-
-#: templates/zerver/home.html:91
-msgid "Subscribe"
-msgstr "Langganan"
-
-#: templates/zerver/home.html:96
-msgid "This stream does not exist or is private."
-msgstr "Siaran ini tidak ada atau merupakan siaran pribadi/privat."
-
-#: templates/zerver/home.html:99
-msgid "You haven't starred anything yet!"
-msgstr "Anda belum membintangi apapun!"
-
-#: templates/zerver/home.html:102
-msgid ""
-"\n"
-"            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
-"            here</a>.\n"
-"            "
-msgstr ""
-
-#: templates/zerver/home.html:109
-msgid "You have no unread messages!"
-msgstr "Anda tidak memiliki pesan yang belum dibaca!"
-
-#: templates/zerver/home.html:112
-msgid "You haven't been mentioned yet!"
-msgstr "Anda belum menyebut siapapun!"
-
-#: templates/zerver/home.html:115
-msgid ""
-"\n"
-"            Learn more about mentions <a href=\"/help/at-mention-a-team-member\">\n"
-"            here</a>.\n"
-"            "
-msgstr ""
-
-#: templates/zerver/home.html:122
-msgid "Nobody has talked about that yet!"
-msgstr "Belum ada seorangpun yang membicarakan hal tersebut!"
-
-#: templates/zerver/index.html:50
-msgid "Loading..."
-msgstr "Memuat..."
-
-#: templates/zerver/index.html:51
-msgid ""
-"If this message does not go away, please wait a couple seconds and <a "
-"href=\"javascript:location.reload(true)\">reload</a> the page."
-msgstr "Jika pesan ini tidak hilang, mohon tunggu beberapa detik dan <a href=\"javascript:location.reload(true)\">muat ulang </a> halaman."
-
-#: templates/zerver/index.html:75
-msgid ""
-"<strong class=\"message\">Unable to connect to\n"
-"            Zulip.</strong>  Updates may be delayed."
-msgstr ""
-
-#: templates/zerver/index.html:76
-msgid "Retrying soon..."
-msgstr "Segera mencoba kembali..."
-
-#: templates/zerver/index.html:76
-msgid "Try now."
-msgstr "Coba sekarang."
-
-#: templates/zerver/integrations/index.html:28
+#: templates/zerver/integrations/index.html:23
 #, python-format
 msgid "Over %(integrations_count_display)s native integrations."
 msgstr ""
 
-#: templates/zerver/integrations/index.html:32
+#: templates/zerver/integrations/index.html:27
 msgid ""
 "\n"
 "                        And hundreds more through\n"
@@ -702,23 +1992,23 @@ msgid ""
 "                        "
 msgstr "\nDan ratusan lainnya melalui\n<a href=\"/integrations/doc/hubot\">Hubot</a>,\n<a href=\"/integrations/doc/zapier\">Zapier</a>,\ndan\n<a href=\"/integrations/doc/ifttt\">IFTTT</a>."
 
-#: templates/zerver/integrations/index.html:46
+#: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
 msgstr "Cari integrasi"
 
-#: templates/zerver/integrations/index.html:53
+#: templates/zerver/integrations/index.html:48
 msgid "Filter by category"
 msgstr "Saring berdasarkan kategori"
 
-#: templates/zerver/integrations/index.html:72
+#: templates/zerver/integrations/index.html:67
 msgid "Categories"
 msgstr "Kategori"
 
-#: templates/zerver/integrations/index.html:74
+#: templates/zerver/integrations/index.html:69
 msgid "All"
 msgstr "Semua"
 
-#: templates/zerver/integrations/index.html:116
+#: templates/zerver/integrations/index.html:111
 msgid "Create your own!"
 msgstr "Buat sendiri!"
 
@@ -758,6 +2048,15 @@ msgid ""
 "        "
 msgstr ""
 
+#: templates/zerver/invalid_email.html:38
+#, python-format
+msgid ""
+"The organization you are trying to join,\n"
+"        %(realm_name)s, does not allow signups using emails\n"
+"        that contains +. Please sign up using appropriate email address.\n"
+"        "
+msgstr ""
+
 #: templates/zerver/invalid_realm.html:7
 msgid "Organization does not exist"
 msgstr "Organisasi ini tidak ada"
@@ -766,512 +2065,42 @@ msgstr "Organisasi ini tidak ada"
 msgid "There is no Zulip organization hosted at this subdomain."
 msgstr "Tidak terdapat organisasi Zulip yang di-host pada subdomain ini."
 
-#: templates/zerver/invite_user.html:6
-msgid "Invite users to Zulip"
-msgstr "Undang pengguna ke Zulip"
-
-#: templates/zerver/invite_user.html:13
-msgid "Emails (one on each line or comma-separated)"
-msgstr "Email (satu untuk setiap baris atau dipisahkan koma)"
-
-#: templates/zerver/invite_user.html:15
-msgid "One or more email addresses..."
-msgstr "Satu atau lebih alamat email..."
-
-#: templates/zerver/invite_user.html:18
-msgid "User(s) join as"
-msgstr "Undang pengguna sebagai"
-
-#: templates/zerver/invite_user.html:21
-msgid "Regular users"
-msgstr "Pengguna reguler"
-
-#: templates/zerver/invite_user.html:24
-msgid "Organization administrators"
-msgstr "Pengurus organisasi"
-
-#: templates/zerver/invite_user.html:34
-msgid "Streams they should join"
-msgstr "Siaran yang mereka harus ikuti"
-
-#: templates/zerver/invite_user.html:41
-msgid "Inviting..."
-msgstr "Mengundang..."
-
-#: templates/zerver/invite_user.html:41
-msgid "Invite"
-msgstr "Undang"
-
-#: templates/zerver/keyboard_shortcuts.html:2 templates/zerver/navbar.html:105
-msgid "Keyboard shortcuts"
-msgstr "Shorcut keyboard"
-
-#: templates/zerver/keyboard_shortcuts.html:8
-msgid "The basics"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:13
-#: templates/zerver/keyboard_shortcuts.html:117
-msgid "Reply to message"
-msgstr "Balas pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:17
-#: templates/zerver/keyboard_shortcuts.html:129
-msgid "New stream message"
-msgstr "Pesan stream baru"
-
-#: templates/zerver/keyboard_shortcuts.html:29
-#: templates/zerver/keyboard_shortcuts.html:246
-msgid "View drafts"
-msgstr "Lihat konsep"
-
-#: templates/zerver/keyboard_shortcuts.html:33
-#: templates/zerver/keyboard_shortcuts.html:89
-msgid "Next message"
-msgstr "Pesan selanjutnya"
-
-#: templates/zerver/keyboard_shortcuts.html:37
-#: templates/zerver/keyboard_shortcuts.html:101
-msgid "Last message"
-msgstr "Pesan terakhir"
-
-#: templates/zerver/keyboard_shortcuts.html:41
-msgid "Next unread topic"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:45
-msgid "Next unread private message"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:49
-msgid "All private messages"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:53
-#: templates/zerver/keyboard_shortcuts.html:73
-msgid "Initiate a search"
-msgstr "Memulai pencarian"
-
-#: templates/zerver/keyboard_shortcuts.html:57
-#: templates/zerver/keyboard_shortcuts.html:277
-msgid "Show keyboard shortcuts"
-msgstr "Tampilkan pintasan papan ketik"
-
-#: templates/zerver/keyboard_shortcuts.html:68
-msgid "Navigation"
-msgstr "Navigasi"
-
-#: templates/zerver/keyboard_shortcuts.html:77
-#: templates/zerver/left_sidebar.html:58
-msgid "Search streams"
-msgstr "Cari stream"
-
-#: templates/zerver/keyboard_shortcuts.html:81
-#: templates/zerver/right_sidebar.html:16
-msgid "Search people"
-msgstr "Cari orang"
-
-#: templates/zerver/keyboard_shortcuts.html:85
-msgid "Previous message"
-msgstr "Pesan sebelumnya"
-
-#: templates/zerver/keyboard_shortcuts.html:93
-msgid "Scroll up"
-msgstr "Scroll ke atas"
-
-#: templates/zerver/keyboard_shortcuts.html:97
-msgid "Scroll down"
-msgstr "Scroll ke bawah"
-
-#: templates/zerver/keyboard_shortcuts.html:105
-msgid "First message"
-msgstr "Pesan pertama"
-
-#: templates/zerver/keyboard_shortcuts.html:112
-msgid "Composing messages"
-msgstr "Menyusun pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:121
-msgid "Reply to author"
-msgstr "Balas penulis"
-
-#: templates/zerver/keyboard_shortcuts.html:125
-msgid "Quote and reply to message"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:137
-msgid "Compose a reply @-mentioning author"
-msgstr "`"
-
-#: templates/zerver/keyboard_shortcuts.html:141
-msgid "Send message"
-msgstr "Kirim pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:145
-msgid "Insert new line"
-msgstr "Sisipkan baris baru"
-
-#: templates/zerver/keyboard_shortcuts.html:158
-msgid "Narrowing"
-msgstr "Persempit"
-
-#: templates/zerver/keyboard_shortcuts.html:163
-msgid "Narrow by stream"
-msgstr "Persempit berdasarkan stream"
-
-#: templates/zerver/keyboard_shortcuts.html:167
-msgid "Narrow by topic"
-msgstr "Persempit berdasarkan topik"
-
-#: templates/zerver/keyboard_shortcuts.html:171
-msgid "Narrow to all private messages"
-msgstr "Persempit ke semua pesan pribadi"
-
-#: templates/zerver/keyboard_shortcuts.html:175
-msgid "Narrow to next unread topic"
-msgstr "Persempit ke topik yang belum dibaca selanjutnya"
-
-#: templates/zerver/keyboard_shortcuts.html:179
-msgid "Narrow to next unread private message"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:183
-msgid "Cycle between stream narrows"
-msgstr ""
-
-#: templates/zerver/keyboard_shortcuts.html:187
-msgid "Narrow to all unmuted messages"
-msgstr "Bataskan sampai semua pesan yang tidak didiamkan"
-
-#: templates/zerver/keyboard_shortcuts.html:193
-msgid "Message actions"
-msgstr "Aksi untuk pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:198
-msgid "Edit your last message"
-msgstr "Edit pesan terakhir anda"
-
-#: templates/zerver/keyboard_shortcuts.html:202
-msgid "Show message sender's profile"
-msgstr "Perlihatkan profil pengirim pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:206
-msgid "Show images in thread"
-msgstr "Tampilkan gambar di thread"
-
-#: templates/zerver/keyboard_shortcuts.html:210
-msgid "Edit selected message"
-msgstr "Edit pesan terpilih"
-
-#: templates/zerver/keyboard_shortcuts.html:214
-msgid "Star selected message"
-msgstr "Bintangi pesan terpilih"
-
-#: templates/zerver/keyboard_shortcuts.html:219
-msgid "React to selected message with"
-msgstr "Beri reaksi pada pesan terpilih dengan"
-
-#: templates/zerver/keyboard_shortcuts.html:228
-msgid "Collapse/show selected message"
-msgstr "Hilangkan/munculkan pesan yang dipilih"
-
-#: templates/zerver/keyboard_shortcuts.html:232
-msgid "Toggle topic mute"
-msgstr "Alihkan pendiaman topik"
-
-#: templates/zerver/keyboard_shortcuts.html:250
-msgid "Edit selected draft"
-msgstr "Edit konsep terpilih"
-
-#: templates/zerver/keyboard_shortcuts.html:254
-msgid "Delete selected draft"
-msgstr "Hapus konsep terpilih"
-
-#: templates/zerver/keyboard_shortcuts.html:260
-msgid "Menus"
-msgstr "Menu"
-
-#: templates/zerver/keyboard_shortcuts.html:265
-msgid "Toggle the gear menu"
-msgstr "Alihkan menu gerigi"
-
-#: templates/zerver/keyboard_shortcuts.html:269
-msgid "Open message menu"
-msgstr "Buka menu pesan"
-
-#: templates/zerver/keyboard_shortcuts.html:273
-msgid "Open reactions menu"
-msgstr "Buka menu reaksi"
-
-#: templates/zerver/keyboard_shortcuts.html:286
-msgid "Streams settings"
-msgstr "Pengaturan stream"
-
-#: templates/zerver/keyboard_shortcuts.html:291
-msgid "Scroll through streams"
-msgstr "Pindai berdasarkan siaran"
-
-#: templates/zerver/keyboard_shortcuts.html:295
-msgid "Switch between tabs"
-msgstr "Berpindah antar tab"
-
-#: templates/zerver/keyboard_shortcuts.html:299
-msgid "View stream messages"
-msgstr "Lihat pesan stream"
-
-#: templates/zerver/keyboard_shortcuts.html:303
-msgid "Subscribe to/unsubscribe from selected stream"
-msgstr "Berlangganan/tidak berlangganan pada stream terpilih"
-
-#: templates/zerver/keyboard_shortcuts.html:307
-msgid "Create new stream"
-msgstr "Buat stream baru"
-
-#: templates/zerver/keyboard_shortcuts.html:312
-msgid "Detailed keyboard shortcuts documentation"
-msgstr "Dokumentasi mendetail tentang tombol pintas keyboard"
-
-#: templates/zerver/left_sidebar.html:5 templates/zerver/left_sidebar.html:10
-msgid "All messages"
-msgstr "Semua pesan"
-
-#: templates/zerver/left_sidebar.html:17 templates/zerver/left_sidebar.html:22
-msgid "Private messages"
-msgstr "Pesan pribadi"
-
-#: templates/zerver/left_sidebar.html:33
-msgid "Starred messages"
-msgstr "Pesan yang dibintangi"
-
-#: templates/zerver/left_sidebar.html:41
-msgid "Mentions"
-msgstr "Disebut"
-
-#: templates/zerver/left_sidebar.html:49
-msgid "Subscribed streams"
-msgstr "Stream yang dilangganani"
-
-#: templates/zerver/left_sidebar.html:49
-msgid "STREAMS"
-msgstr "STREAM"
-
-#: templates/zerver/left_sidebar.html:50
-msgid "Subscribe, add, or configure streams"
-msgstr "Berlanggan, tambahkan, atau atur siaran"
-
-#: templates/zerver/left_sidebar.html:51
-msgid "Filter streams"
-msgstr "Saring stream"
-
-#: templates/zerver/left_sidebar.html:54
-msgid "All streams"
-msgstr "Semua stream"
-
-#: templates/zerver/lightbox_overlay.html:10
-msgid "Pan &amp; Zoom"
-msgstr "Pergerakan &amp; Pembesaran"
-
-#: templates/zerver/lightbox_overlay.html:11
-msgid "Disabled"
-msgstr "Dinonaktifkan"
-
-#: templates/zerver/lightbox_overlay.html:11
-msgid "Enabled"
-msgstr "Diizinkan"
-
-#: templates/zerver/lightbox_overlay.html:14
-msgid "Open"
-msgstr "Buka"
-
-#: templates/zerver/lightbox_overlay.html:17
-msgid "Download"
-msgstr "Unduh"
-
 #: templates/zerver/login.html:27
 msgid "Log in to Zulip"
 msgstr ""
 
-#: templates/zerver/login.html:35
-msgid "Log in with SSO"
+#: templates/zerver/login.html:36 templates/zerver/login.html:140
+#: templates/zerver/login.html:151
+#, python-format
+msgid "Log in with %(identity_provider)s"
 msgstr ""
 
-#: templates/zerver/login.html:80
+#: templates/zerver/login.html:86
 msgid "Email or username"
 msgstr "Email atau username"
 
-#: templates/zerver/login.html:82
+#: templates/zerver/login.html:88
 msgid "Username"
 msgstr "Username"
 
-#: templates/zerver/login.html:91 templates/zerver/register.html:68
+#: templates/zerver/login.html:97 templates/zerver/register.html:147
 #: templates/zerver/reset_confirm.html:30
 msgid "Password"
 msgstr "Kata Sandi"
 
-#: templates/zerver/login.html:104
+#: templates/zerver/login.html:113
 msgid ""
 "You've already registered with this email address. Please log in below."
 msgstr ""
 
-#: templates/zerver/login.html:116 templates/zerver/portico-header.html:33
+#: templates/zerver/login.html:125 templates/zerver/portico-header.html:33
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
 msgstr "Masuk"
 
-#: templates/zerver/login.html:130
-msgid "Log in with Google"
-msgstr "Masuk dengan Google"
-
-#: templates/zerver/login.html:139
-msgid "Log in with GitHub"
-msgstr "Masuk dengan GitHub"
-
-#: templates/zerver/login.html:146
+#: templates/zerver/login.html:159
 msgid "Forgot your password?"
 msgstr ""
-
-#: templates/zerver/markdown_help.html:2 templates/zerver/navbar.html:110
-msgid "Message formatting"
-msgstr "Format pesan"
-
-#: templates/zerver/markdown_help.html:8
-msgid "You type"
-msgstr "Anda mengetik"
-
-#: templates/zerver/markdown_help.html:9
-msgid "You get"
-msgstr "Anda mendapat"
-
-#: templates/zerver/markdown_help.html:107
-msgid ""
-"To add syntax highlighting to a multi-line code block,\n"
-"                          add the language's <b>first</b> <a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments short name</a>\n"
-"                          after the first set of back-ticks.\n"
-"                          You can also make a code block by indenting each line with 4 spaces."
-msgstr "Untuk menambah pewarnaan sintaks pada kode berbaris banyak,\ntambahkan <b>nama depan</b><a target=\"_blank\" href=\"http://pygments.org/docs/lexers/\">Pygments</a> bahasa tersebut\nsetelah simbol petik balik.\nAnda juga dapat membuat blok kode dengan melekukkan setiap baris dengan 4 spasi."
-
-#: templates/zerver/markdown_help.html:138
-msgid ""
-"You can also make <a target=\"_blank\"\n"
-"                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
-"                            with this <a target=\"_blank\"\n"
-"                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
-"                        table syntax</a>."
-msgstr "Anda juga dapat membuat <a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tabel\ndengan <a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">sintaks tabel yang berkesan Markdown</a>"
-
-#: templates/zerver/message_history.html:5
-msgid "Message edit history"
-msgstr "Histori pengeditan pesan"
-
-#: templates/zerver/navbar.html:5
-msgid ""
-"Zulip needs your permission to\n"
-"            <a class=\"request-desktop-notifications alert-link\">enable desktop notifications.</a>\n"
-"            "
-msgstr ""
-
-#: templates/zerver/navbar.html:10
-msgid ""
-"We strongly recommend enabling desktop notifications. They help Zulip keep "
-"your team connected."
-msgstr "Kami sangat merekomendasikan menyalakan pemberitahuan desktop. Hal ini membantu Zulip untuk terus membuat tim Anda terhubung."
-
-#: templates/zerver/navbar.html:12
-msgid "Enable notifications"
-msgstr "Izinkan notifikasi"
-
-#: templates/zerver/navbar.html:14
-msgid "Ask me later"
-msgstr "Tanyakan lagi nanti"
-
-#: templates/zerver/navbar.html:16
-msgid "Never ask on this computer"
-msgstr "jangan tanyakan lagi untuk komputer ini"
-
-#: templates/zerver/navbar.html:23
-msgid ""
-"Zulip needs to send email to confirm users' addresses and send "
-"notifications."
-msgstr ""
-
-#: templates/zerver/navbar.html:25
-msgid "See how to configure email."
-msgstr ""
-
-#: templates/zerver/navbar.html:52 templates/zerver/navbar.html:53
-msgid "Search"
-msgstr "Cari"
-
-#: templates/zerver/navbar.html:55
-msgid "Exit search"
-msgstr "Keluar dari pencarian"
-
-#: templates/zerver/navbar.html:56
-msgid "Search help"
-msgstr "Cari bantuan"
-
-#: templates/zerver/navbar.html:71
-msgid "Menu"
-msgstr "Menu"
-
-#: templates/zerver/navbar.html:83
-msgid "Manage streams"
-msgstr "Kelola stream"
-
-#: templates/zerver/navbar.html:88 templates/zerver/settings_overlay.html:4
-#: templates/zerver/settings_overlay.html:125
-msgid "Settings"
-msgstr "Pengaturan"
-
-#: templates/zerver/navbar.html:94
-msgid "Manage organization"
-msgstr "Kelola organisasi"
-
-#: templates/zerver/navbar.html:100
-msgid "User documentation"
-msgstr "Dokumentasi pengguna"
-
-#: templates/zerver/navbar.html:115 templates/zerver/search_operators.html:2
-msgid "Search operators"
-msgstr "Operator pencarian"
-
-#: templates/zerver/navbar.html:121
-msgid "Desktop & mobile apps"
-msgstr "Aplikasi desktop & mobile"
-
-#: templates/zerver/navbar.html:131
-msgid "API documentation"
-msgstr "Dokumentasi API"
-
-#: templates/zerver/navbar.html:137
-msgid "Statistics"
-msgstr "Statistik"
-
-#: templates/zerver/navbar.html:144
-msgid "Feedback"
-msgstr "Masukan"
-
-#: templates/zerver/navbar.html:151
-msgid "Invite users"
-msgstr "Undang pengguna"
-
-#: templates/zerver/navbar.html:157
-msgid ""
-"Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
-"Webathena"
-msgstr "Sediakan Zulip tiket Kerberos yang diperlukan untuk menjalankan mirror .Zephyr Anda melalui Webathena"
-
-#: templates/zerver/navbar.html:159
-msgid "Link with Webathena"
-msgstr "Tautkan dengan Webatehna"
-
-#: templates/zerver/navbar.html:165 templates/zerver/settings_overlay.html:118
-msgid "Log out"
-msgstr "Keluar"
-
-#: templates/zerver/navbar.html:171
-msgid "Debug"
-msgstr "Debug"
 
 #: templates/zerver/portico-header-dropdown.html:3
 msgid "Go to Zulip"
@@ -1281,7 +2110,7 @@ msgstr "Pergi ke Zulip"
 msgid "Zulip"
 msgstr "Zulip"
 
-#: templates/zerver/privacy.html:31
+#: templates/zerver/privacy.html:26
 #, python-format
 msgid ""
 "\n"
@@ -1291,17 +2120,22 @@ msgid ""
 "                    "
 msgstr "\nInstalasi Zulip ini tidak mempunyai polisi privasi yang telah dikonfigurasi\nHubungi <a href=\"mailto:%(support_email)s\">pengelola server</a> ini\napabila Anda mempunyai pertanyaan."
 
-#: templates/zerver/realm_creation_failed.html:8
+#: templates/zerver/realm_creation_failed.html:20
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
 msgstr "Server ini tidak memperbolehkan anggota dari publik untuk membuat organisasi bari."
 
-#: templates/zerver/realm_creation_failed.html:9
+#: templates/zerver/realm_creation_failed.html:22
 msgid ""
-"Zulip is open source, so you can install your own Zulip server by following "
-"the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
-msgstr "Zulip adalah open source, sehingga anda dapat menginstall server Zulip anda sendiri dengan mengikuti instruksi dari <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
+"\n"
+"                    Zulip is open source, so you\n"
+"                    can <a href=\"https://zulip.readthedocs.io/en/stable/production/install.html\">install\n"
+"                    your own Zulip server</a> or create a new\n"
+"                    organization on\n"
+"                    <a href=\"https://zulipchat.com\">Zulip Cloud</a>\n"
+"                    "
+msgstr ""
 
 #: templates/zerver/register.html:20
 msgid ""
@@ -1311,50 +2145,54 @@ msgid ""
 "            "
 msgstr "\n<h1>Anda hampir sampai.</h1>\n<p>Kami hanya membutuhkan Anda untuk melakukan satu hal terakhir.</p>"
 
-#: templates/zerver/register.html:51
+#: templates/zerver/register.html:38
+msgid "Organization name"
+msgstr "Nama organisasi"
+
+#: templates/zerver/register.html:46
+msgid "Shorter is better than longer."
+msgstr "Pendek lebih baik daripada panjang"
+
+#: templates/zerver/register.html:52
+msgid "Organization URL"
+msgstr "URL Organisasi"
+
+#: templates/zerver/register.html:59
+#, python-format
+msgid "Use %(external_host)s"
+msgstr "Gunakan %(external_host)s"
+
+#: templates/zerver/register.html:83
+msgid "The address you'll use to log in to your organization."
+msgstr ""
+
+#: templates/zerver/register.html:107
+msgid "Import settings from an existing Zulip account"
+msgstr ""
+
+#: templates/zerver/register.html:125
 msgid "Full name or 名前"
 msgstr "Nama lengkap atau 名前"
 
-#: templates/zerver/register.html:52
+#: templates/zerver/register.html:126
 msgid "Full name"
 msgstr "Nama lengkap"
 
-#: templates/zerver/register.html:71
+#: templates/zerver/register.html:150
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
 msgstr "Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata sandi."
 
-#: templates/zerver/register.html:79
+#: templates/zerver/register.html:158
 msgid "Password strength"
 msgstr "Kekuatan kata sandi"
 
-#: templates/zerver/register.html:88
+#: templates/zerver/register.html:167
 msgid "What parts of the organization are you interested in?"
 msgstr "Bagian mana dari organisasi ini yang menarik Anda?"
 
-#: templates/zerver/register.html:108
-msgid "Organization name"
-msgstr "Nama organisasi"
-
-#: templates/zerver/register.html:116
-msgid "Shorter is better than longer."
-msgstr "Pendek lebih baik daripada panjang"
-
-#: templates/zerver/register.html:122
-msgid "Organization URL"
-msgstr "URL Organisasi"
-
-#: templates/zerver/register.html:129
-#, python-format
-msgid "Use %(external_host)s"
-msgstr "Gunakan %(external_host)s"
-
-#: templates/zerver/register.html:153
-msgid "The address you'll use to log in to your organization."
-msgstr ""
-
-#: templates/zerver/register.html:174
+#: templates/zerver/register.html:193
 #, python-format
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\">Terms"
@@ -1402,219 +2240,11 @@ msgstr "Periksa email Anda untuk menyelesaikan prosesnya."
 msgid "(Or don't, but then why did you fill out this form?)"
 msgstr "(Atau jangan, tapi kenapa Anda jadi isi formulir ini?)"
 
-#: templates/zerver/right_sidebar.html:6
-msgid "Send feedback"
-msgstr "Kirim masukan"
-
-#: templates/zerver/right_sidebar.html:12
-#: templates/zerver/right_sidebar.html:13
-msgid "Filter users"
-msgstr "Saring pengguna"
-
-#: templates/zerver/right_sidebar.html:12
-msgid "USERS"
-msgstr "PENGGUNA"
-
-#: templates/zerver/right_sidebar.html:23
-msgid "Invite more users"
-msgstr "Undang lebih banyak pengguna"
-
-#: templates/zerver/right_sidebar.html:28
-msgid "GROUP PMs"
-msgstr "PESAN PRIBADI GRUP"
-
-#: templates/zerver/search_operators.html:7
-msgid "Operator"
-msgstr "Operator"
-
-#: templates/zerver/search_operators.html:8
-msgid "Effect"
-msgstr "Efek"
-
-#: templates/zerver/search_operators.html:13
-msgid "Narrow to messages on stream"
-msgstr "Persempit ke pesan dalam stream"
-
-#: templates/zerver/search_operators.html:17
-msgid "Narrow to messages with topic"
-msgstr "Persempit ke pesan dalam topik"
-
-#: templates/zerver/search_operators.html:21
-msgid "Narrow to private messages with"
-msgstr "Bataskan ke pesan pribadi dengan"
-
-#: templates/zerver/search_operators.html:25
-msgid "Narrow to group private messages with"
-msgstr "Bataskan ke pesan pribadi grup dengan"
-
-#: templates/zerver/search_operators.html:29
-msgid "Narrow to messages sent by"
-msgstr "Bataskan ke pesan yang dikirim oleh"
-
-#: templates/zerver/search_operators.html:33
-msgid "Narrow to messages sent by you."
-msgstr "Bataskan ke pesan yang dikirim oleh Anda."
-
-#: templates/zerver/search_operators.html:37
-msgid "Center the view around message ID"
-msgstr "Tengahkan penglihatan sekitar ID pesan"
-
-#: templates/zerver/search_operators.html:41
-msgid "Narrow to just message ID"
-msgstr "Bataskan ke dan hanya ID pesan"
-
-#: templates/zerver/search_operators.html:46
-msgid "Narrow to messages with alert words."
-msgstr "Bataskan ke pesan yang mengandung kata pemberitahuan."
-
-#: templates/zerver/search_operators.html:49
-msgid "Narrow to messages that mention you."
-msgstr "Bataskan ke pesan yang menyinggung Anda."
-
-#: templates/zerver/search_operators.html:53
-msgid "Narrow to private messages."
-msgstr "Bataskan ke pesan pribadi."
-
-#: templates/zerver/search_operators.html:57
-msgid "Narrow to starred messages."
-msgstr "Bataskan ke pesan yang dibintangi"
-
-#: templates/zerver/search_operators.html:61
-msgid "Narrow to unread messages."
-msgstr "Bataskan ke pesan yang belum dibaca"
-
-#: templates/zerver/search_operators.html:65
-msgid "Narrow to messages containing links."
-msgstr "Bataskan ke pesan yang mengandung link."
-
-#: templates/zerver/search_operators.html:69
-msgid "Narrow to messages containing images."
-msgstr "Bataskan ke pesan yang mengandung gambar."
-
-#: templates/zerver/search_operators.html:73
-msgid "Narrow to messages containing uploads."
-msgstr "Bataskan ke pesan yang mengandung unggahan."
-
-#: templates/zerver/search_operators.html:77
-msgid ""
-"Search for <span class=\"operator_value\"> keyword </span> in the topic or "
-"message content "
-msgstr "Cari <span class=\"operator_value\">kata kunci</span> pada topik atau isi pesan"
-
-#: templates/zerver/search_operators.html:81
-msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
-msgstr "Kecualikan pesan dengan topik <span class=\"operator_value\">topic</span>"
-
-#: templates/zerver/search_operators.html:84
-msgid ""
-"\n"
-"        <p>You can use any combination of these search operators in a single query. For example:</p>\n"
-"\n"
-"        <p>\n"
-"            &nbsp;\n"
-"            <span class=\"operator\">\n"
-"                stream:<span class=\"operator_value\">streamname</span>\n"
-"                sender:<span class=\"operator_value\">user@example.com</span>\n"
-"                <span class=\"operator_value\">keyword</span>\n"
-"            </span>\n"
-"        </p>\n"
-"\n"
-"        <p>\n"
-"            would search for messages sent by\n"
-"            <span class=\"operator_value\">user@example.com</span>\n"
-"            to stream\n"
-"            <span class=\"operator_value\">streamname</span>\n"
-"            containing the keyword\n"
-"            <span class=\"operator_value\">keyword</span>.\n"
-"        </p>\n"
-"        "
-msgstr ""
-
-#: templates/zerver/settings_overlay.html:16
-msgid "Your account"
-msgstr "Akun anda"
-
-#: templates/zerver/settings_overlay.html:20
-msgid "Display settings"
-msgstr "Pengaturan tampilan"
-
-#: templates/zerver/settings_overlay.html:24
-msgid "Notifications"
-msgstr "Notifikasi"
-
-#: templates/zerver/settings_overlay.html:28
-msgid "Your bots"
-msgstr "Bot anda"
-
-#: templates/zerver/settings_overlay.html:32
-msgid "Alert words"
-msgstr "Kata peringatan"
-
-#: templates/zerver/settings_overlay.html:36
-msgid "Uploaded files"
-msgstr "File yang telah diupload"
-
-#: templates/zerver/settings_overlay.html:40
-msgid "Muted topics"
-msgstr "Topik yang didiamkan"
-
-#: templates/zerver/settings_overlay.html:44
-msgid "Zulip labs"
-msgstr "Lab Zulip"
-
-#: templates/zerver/settings_overlay.html:49
-msgid "Organization profile"
-msgstr "Profil organisasi"
-
-#: templates/zerver/settings_overlay.html:53
-msgid "Organization settings"
-msgstr "Pengaturan organisasi"
-
-#: templates/zerver/settings_overlay.html:57
-msgid "Organization permissions"
-msgstr "Izin organisasi"
-
-#: templates/zerver/settings_overlay.html:61 zerver/models.py:1294
-msgid "Custom emoji"
-msgstr "Emoji khusus"
-
-#: templates/zerver/settings_overlay.html:65
-msgid "User groups"
-msgstr ""
-
-#: templates/zerver/settings_overlay.html:69
-msgid "Authentication methods"
-msgstr "Metode Otentikasi"
-
-#: templates/zerver/settings_overlay.html:78
-msgid "Deactivated users"
-msgstr "Deaktivasi pengguna"
-
-#: templates/zerver/settings_overlay.html:88
-msgid "Delete streams"
-msgstr "Hapus stream"
-
-#: templates/zerver/settings_overlay.html:93
-msgid "Default streams"
-msgstr "Stream standar"
-
-#: templates/zerver/settings_overlay.html:97
-msgid "Filter settings"
-msgstr "Pengaturan saringan"
-
-#: templates/zerver/settings_overlay.html:102
-msgid "Custom profile fields"
-msgstr ""
-
-#: templates/zerver/settings_overlay.html:108
-msgid "Invitations"
-msgstr "Undangan"
-
-#: templates/zerver/team.html:171
+#: templates/zerver/team.html:166
 msgid "Avatar"
 msgstr "Avatar"
 
-#: templates/zerver/terms.html:29
+#: templates/zerver/terms.html:25
 #, python-format
 msgid ""
 "\n"
@@ -1659,12 +2289,9 @@ msgstr "Kami telah memperbarui pengaturan berlanggan email, dan Anda tidak akan 
 #, python-format
 msgid ""
 "To undo this change or review your other subscription settings, please visit"
-" your <a href=\"%(realm_uri)s/#settings\">Zulip Settings page</a>."
-msgstr "Untuk membatalkan perubahan ini atau mengecek pengaturan berlanggan Anda yang lainnya, silakan kunjungi <a href=\"%(realm_uri)s/#settings\">halaman Pengaturan Zulip</a>."
-
-#: templates/zerver/why-zulip.html:23
-msgid "Why Zulip?"
-msgstr "Mengapa Zulip?"
+" your <a href=\"%(realm_uri)s/#settings/notifications\">Zulip Settings "
+"page</a>."
+msgstr ""
 
 #: templates/zerver/zulipchat_migration_tos.html:1
 msgid "Welcome! We think you'll like it here."
@@ -1678,301 +2305,362 @@ msgid ""
 "    "
 msgstr "\n<p>Organisasi Anda telah bermigrasi dari zulip.com ke zulipchat.com! Layanan baru, percakapan terbaik seperti biasanya. Kami hanya memerlukan Anda untuk melakukan satu hal terakhir.</p>\n<h3>Terima persyaratan layanan Zulip</h3>"
 
-#: zerver/decorator.py:128 zerver/lib/emoji.py:100 zerver/lib/users.py:52
-#: zerver/lib/users.py:55 zerver/views/invite.py:26 zerver/views/invite.py:28
-#: zerver/views/invite.py:105
+#: templates/zilencer/billing.html:22
+msgid "Billing"
+msgstr ""
+
+#: templates/zilencer/upgrade.html:25
+#, python-format
+msgid "Upgrade to %(plan)s"
+msgstr ""
+
+#: templates/zilencer/upgrade.html:32
+msgid "Payment schedule"
+msgstr ""
+
+#: templates/zilencer/upgrade.html:36
+msgid "Pay annually"
+msgstr ""
+
+#: templates/zilencer/upgrade.html:48
+msgid "Pay monthly"
+msgstr ""
+
+#: templates/zilencer/upgrade.html:64
+msgid "Add card"
+msgstr ""
+
+#: zerver/decorator.py:134 zerver/lib/emoji.py:93 zerver/lib/users.py:63
+#: zerver/lib/users.py:66 zerver/views/invite.py:29 zerver/views/invite.py:31
 msgid "Must be an organization administrator"
 msgstr ""
 
-#: zerver/decorator.py:210
+#: zerver/decorator.py:216
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr "Subdomain invalid untuk bouncer push notifications"
 
-#: zerver/decorator.py:219
+#: zerver/decorator.py:225
 msgid "This API is not available to incoming webhook bots."
 msgstr "API ini tidak tersedia untuk robot yang menerapkan incoming webhook."
 
-#: zerver/decorator.py:229
+#: zerver/decorator.py:235
 msgid "Account not active"
 msgstr "Akun tidak aktif"
 
-#: zerver/decorator.py:232
+#: zerver/decorator.py:238
 msgid "This organization has been deactivated"
 msgstr ""
 
-#: zerver/decorator.py:246
+#: zerver/decorator.py:252
 msgid "Account is not associated with this subdomain"
 msgstr "Akun ini tidak terasosiasi dengan subdomain ini"
 
-#: zerver/decorator.py:252 zerver/decorator.py:257
+#: zerver/decorator.py:258 zerver/decorator.py:263
 msgid "Invalid API key"
 msgstr "API key tidak valid"
 
-#: zerver/decorator.py:422
+#: zerver/decorator.py:436 zerver/decorator.py:498
 msgid "This endpoint does not accept bot requests."
 msgstr "Endpoint ini tidak menerima request dari robot."
 
-#: zerver/decorator.py:506
+#: zerver/decorator.py:478
+msgid "Must be an server administrator"
+msgstr ""
+
+#: zerver/decorator.py:487 zerver/decorator.py:496
+msgid "Not allowed for guest users"
+msgstr ""
+
+#: zerver/decorator.py:573
 msgid "This endpoint requires HTTP basic authentication."
 msgstr "Endpoint ini memerlukan autentikasi sederhana HTTP."
 
-#: zerver/decorator.py:509
+#: zerver/decorator.py:576
 msgid "Invalid authorization header for basic auth"
 msgstr "Header otorisasi invalid untuk auth sederhana"
 
-#: zerver/decorator.py:560
+#: zerver/decorator.py:578
+msgid "Missing authorization header for basic auth"
+msgstr ""
+
+#: zerver/decorator.py:635
 msgid "Not logged in"
 msgstr "Belum masuk"
 
-#: zerver/decorator.py:565
+#: zerver/decorator.py:640
 msgid "Webhook bots can only access webhooks"
 msgstr "Robot webhook hanya dapat mengakses webhook"
 
-#: zerver/decorator.py:621
+#: zerver/decorator.py:696
 msgid "Access denied"
 msgstr "Akses ditolak"
 
-#: zerver/forms.py:60
+#: zerver/forms.py:63
 msgid "Subdomain needs to have length 3 or greater."
 msgstr "Subdomain harus memiliki panjang lebih dari atau sama dengan 3."
 
-#: zerver/forms.py:61
+#: zerver/forms.py:64
 msgid "Subdomain cannot start or end with a '-'."
 msgstr "Subdomain tidak dapat dimulai atau diakhiri dengan '-'."
 
-#: zerver/forms.py:62
+#: zerver/forms.py:65
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "Subdomain hanya dapat mengandung huruf kecil, angka, dan '-'."
 
-#: zerver/forms.py:63
+#: zerver/forms.py:66
 msgid "Subdomain unavailable. Please choose a different one."
 msgstr "Subdomain tidak tersedia. Silakan pilih yang lain."
 
-#: zerver/forms.py:139
+#: zerver/forms.py:144
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
 msgstr "Organisasi yang Anda coba gabung menggunakan {email} tidak tersedia."
 
-#: zerver/forms.py:144
+#: zerver/forms.py:149
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr "Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
 
-#: zerver/forms.py:152
+#: zerver/forms.py:157
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr "Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang diperbolehkan untuk mendaftar akun pada organisasi ini."
 
-#: zerver/forms.py:156 zerver/forms.py:167
+#: zerver/forms.py:161 zerver/forms.py:174 zerver/lib/actions.py:4351
 msgid "Please use your real email address."
 msgstr "Mohon gunakan email asli Anda."
 
-#: zerver/forms.py:310
+#: zerver/forms.py:163
+msgid "Email addresses containing + are not allowed in this organization."
+msgstr ""
+
+#: zerver/forms.py:318
+msgid "Token"
+msgstr ""
+
+#: zerver/forms.py:338
 msgid "Add up to 10 comma-separated email addresses."
 msgstr "Tambah hingga 10 alamat email yang dipisah dengan tanda koma."
 
-#: zerver/forms.py:315
+#: zerver/forms.py:343
 msgid "Please enter at most 10 emails."
 msgstr "Tolong masukkan paling banyak 10 email."
 
-#: zerver/lib/actions.py:847
+#: zerver/lib/actions.py:925
 msgid "Unable to render message"
 msgstr "Tidak dapat menampilkan pesan."
 
-#: zerver/lib/actions.py:1506
+#: zerver/lib/actions.py:1628
 msgid "Missing parameter: 'to' (recipient)"
 msgstr "Parameter tidak ada: 'ke' (penerima)"
 
-#: zerver/lib/actions.py:1508
+#: zerver/lib/actions.py:1630
 msgid "Invalid 'op' value (should be start or stop)"
 msgstr "Nilai 'op' invalid (haruslah bernilai start atau stop)"
 
-#: zerver/lib/actions.py:1521
+#: zerver/lib/actions.py:1641
 #, python-format
 msgid "Welcome to #**%s**."
 msgstr "Selamat datang di $**%s**."
 
-#: zerver/lib/actions.py:1524
+#: zerver/lib/actions.py:1644
 msgid "Description"
 msgstr "Deskripsi"
 
-#: zerver/lib/actions.py:1532
+#: zerver/lib/actions.py:1652
 msgid "hello"
 msgstr "halo"
 
-#: zerver/lib/actions.py:1613 zerver/lib/actions.py:4433
-#: zerver/views/messages.py:1165 zerver/views/messages.py:1172
-#: zerver/views/messages.py:1195
+#: zerver/lib/actions.py:1769 zerver/lib/actions.py:4679
+#: zerver/views/messages.py:1174 zerver/views/messages.py:1181
+#: zerver/views/messages.py:1204
 msgid "User not authorized for this query"
 msgstr "Pengguna tidak berotoritas untuk melakukan perintah ini."
 
-#: zerver/lib/actions.py:1638
+#: zerver/lib/actions.py:1794
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr "'%s' tidak lagi menggunakan Zulip."
 
-#: zerver/lib/actions.py:1644
+#: zerver/lib/actions.py:1800
 msgid "You can't send private messages outside of your organization."
 msgstr "Anda tidak dapat mengirim pesan pribadi di luar dari organisasi Anda."
 
-#: zerver/lib/actions.py:1770 zerver/lib/streams.py:101
-#: zerver/lib/streams.py:156
+#: zerver/lib/actions.py:1928 zerver/lib/streams.py:107
+#: zerver/lib/streams.py:163
 #, python-format
 msgid "Invalid stream name '%s'"
 msgstr "Nama siaran invalid: '%s'"
 
-#: zerver/lib/actions.py:1772
+#: zerver/lib/actions.py:1930
 #, python-format
 msgid "Stream name too long (limit: %s characters)."
 msgstr ""
 
-#: zerver/lib/actions.py:1775
+#: zerver/lib/actions.py:1933
 #, python-format
 msgid "Stream name '%s' contains NULL (0x00) characters."
 msgstr "Nama siaran '%s' mengandung NULL (0x00) karakter."
 
-#: zerver/lib/actions.py:1779
+#: zerver/lib/actions.py:1937
 #, python-format
 msgid "Invalid default stream group name '%s'"
 msgstr "Nama grup siaran default invalid '%s'"
 
-#: zerver/lib/actions.py:1781
+#: zerver/lib/actions.py:1939
 #, python-format
 msgid "Default stream group name too long (limit: %s characters)"
 msgstr "Nama grup siaran default terlalu panjang (limit: %s karakter)"
 
-#: zerver/lib/actions.py:1785
+#: zerver/lib/actions.py:1943
 #, python-format
 msgid "Default stream group name '%s' contains NULL (0x00) characters."
 msgstr "Nama grup siaran default '%s' mengandung NULL (0x00) karakter.."
 
-#: zerver/lib/actions.py:1850
+#: zerver/lib/actions.py:2022
 msgid "Message must not be empty"
 msgstr "Pesan harus tidak boleh kosong"
 
-#: zerver/lib/actions.py:1852
+#: zerver/lib/actions.py:2024
 msgid "Message must not contain null bytes"
 msgstr "Pesan harus tidak mengandung null bytes"
 
-#: zerver/lib/actions.py:1899
+#: zerver/lib/actions.py:2053
+msgid "Only organization administrators can send to this stream."
+msgstr ""
+
+#: zerver/lib/actions.py:2076
 #, python-format
 msgid "Not authorized to send to stream '%s'"
 msgstr "Tidak berotoritas untuk mengirim pesan pada siaran '%s'"
 
-#: zerver/lib/actions.py:1905
+#: zerver/lib/actions.py:2082
 msgid "Message must have recipients"
 msgstr "Pesan harus memiliki penerima"
 
-#: zerver/lib/actions.py:1917 zerver/lib/addressee.py:110
-#: zerver/lib/outgoing_webhook.py:138
+#: zerver/lib/actions.py:2094 zerver/lib/addressee.py:107
+#: zerver/lib/outgoing_webhook.py:145
 msgid "Invalid message type"
 msgstr "Tipe pesan tidak valid"
 
-#: zerver/lib/actions.py:2105
+#: zerver/lib/actions.py:2121
+msgid "Widgets: API programmer sent invalid JSON content"
+msgstr ""
+
+#: zerver/lib/actions.py:2125
+#, python-format
+msgid "Widgets: %s"
+msgstr ""
+
+#: zerver/lib/actions.py:2312
 msgid "Subscriber data is not available for this stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2112
-msgid "Unable to retrieve subscribers for invite-only stream"
-msgstr "Tidak dapat menerima informasi tentang orang yang berlanggan pada siaran undangan"
+#: zerver/lib/actions.py:2319
+msgid "Unable to retrieve subscribers for private stream"
+msgstr ""
 
-#: zerver/lib/actions.py:2812 zerver/views/users.py:75
-#: zerver/views/users.py:88 zerver/views/users.py:103
-#: zerver/views/users.py:178 zerver/views/users.py:253
+#: zerver/lib/actions.py:3005 zerver/lib/users.py:153 zerver/lib/users.py:167
 msgid "Insufficient permission"
 msgstr "Tidak cukup izin"
 
-#: zerver/lib/actions.py:3085
+#: zerver/lib/actions.py:3277
 #, python-format
 msgid "Invalid default stream group %s"
 msgstr "Nama grup siaran default invalid: %s"
 
-#: zerver/lib/actions.py:3141 zerver/lib/actions.py:3160
+#: zerver/lib/actions.py:3333 zerver/lib/actions.py:3352
 #, python-format
 msgid ""
 "'%(stream_name)s' is a default stream and cannot be added to "
 "'%(group_name)s'"
 msgstr "'%(stream_name)s' adalah siaran default dan tidak dapat ditambahkan ke '%(group_name)s'"
 
-#: zerver/lib/actions.py:3148
+#: zerver/lib/actions.py:3340
 #, python-format
 msgid "Default stream group '%(group_name)s' already exists"
 msgstr "Grup siaran default %(group_name)s sudah ada"
 
-#: zerver/lib/actions.py:3164
+#: zerver/lib/actions.py:3356
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is already present in default stream group "
 "'%(group_name)s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3176
+#: zerver/lib/actions.py:3368
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is not present in default stream group "
 "'%(group_name)s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3186
+#: zerver/lib/actions.py:3378
 #, python-format
 msgid "This default stream group is already named '%s'"
 msgstr "Grup siaran default ini telah sudah dinamai '%s'"
 
-#: zerver/lib/actions.py:3189
+#: zerver/lib/actions.py:3381
 #, python-format
 msgid "Default stream group '%s' already exists"
 msgstr "Grup siaran default '%s' sudah ada"
 
-#: zerver/lib/actions.py:3438 zerver/lib/actions.py:3440
-#: zerver/lib/message.py:472 zerver/lib/message.py:483
-#: zerver/lib/message.py:487 zerver/lib/message.py:493
-#: zerver/lib/message.py:500
+#: zerver/lib/actions.py:3632 zerver/lib/actions.py:3634
+#: zerver/lib/message.py:495 zerver/lib/message.py:501
 msgid "Invalid message(s)"
 msgstr "Pesan invalid"
 
-#: zerver/lib/actions.py:4109
+#: zerver/lib/actions.py:4344
 msgid "Invalid address."
 msgstr "Alamat tidak valid."
 
-#: zerver/lib/actions.py:4114
+#: zerver/lib/actions.py:4349
 msgid "Outside your domain."
 msgstr "Diluar domain Anda."
 
-#: zerver/lib/actions.py:4119
+#: zerver/lib/actions.py:4353 zerver/views/users.py:443
+msgid "Email addresses containing + are not allowed."
+msgstr ""
+
+#: zerver/lib/actions.py:4358
 msgid "Already has an account."
 msgstr "Telah mempunyai akun."
 
-#: zerver/lib/actions.py:4145
+#: zerver/lib/actions.py:4384
 #, python-format
 msgid ""
 "You do not have enough remaining invites. Please contact %s to have your "
 "limit raised. No invitations were sent."
 msgstr "Anda tidak mempunyai sisa undangan yang cukup. Silakan kontak %s untuk meningkatkan batas yang Anda miliki. Undangan tidak terkirim."
 
-#: zerver/lib/actions.py:4180
+#: zerver/lib/actions.py:4419
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr ""
 
-#: zerver/lib/actions.py:4200
+#: zerver/lib/actions.py:4439
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan apapun."
 
-#: zerver/lib/actions.py:4205
+#: zerver/lib/actions.py:4444
 msgid "We weren't able to invite anyone."
 msgstr "Kami tidak dapat mengundang siapapun."
 
-#: zerver/lib/actions.py:4229
+#: zerver/lib/actions.py:4468
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-orang yang lain!"
 
-#: zerver/lib/actions.py:4580
+#: zerver/lib/actions.py:4822
+msgid "Invalid order mapping."
+msgstr ""
+
+#: zerver/lib/actions.py:4862 zerver/lib/actions.py:4873
 #, python-format
 msgid "User group '%s' already exists."
 msgstr "Grup pengguna '%s' sudah ada."
@@ -1982,19 +2670,19 @@ msgstr "Grup pengguna '%s' sudah ada."
 msgid "Invalid email '%s'"
 msgstr "Email invalid '%s'"
 
-#: zerver/lib/addressee.py:91
+#: zerver/lib/addressee.py:88
 msgid "Cannot send to multiple streams"
 msgstr "Tidak dapat mengirim ke banyak siaran"
 
-#: zerver/lib/addressee.py:103
+#: zerver/lib/addressee.py:100
 msgid "Missing stream"
 msgstr "Siaran tidak ada"
 
-#: zerver/lib/addressee.py:115
+#: zerver/lib/addressee.py:112
 msgid "Missing topic"
 msgstr "Topik tidak ada"
 
-#: zerver/lib/addressee.py:118 zerver/views/messages.py:1329
+#: zerver/lib/addressee.py:115 zerver/views/messages.py:1349
 #: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:22
 msgid "Topic can't be empty"
 msgstr "Topik tidak boleh kosong"
@@ -2008,64 +2696,68 @@ msgid ""
 "An error occurred while deleting the attachment. Please try again later."
 msgstr "Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba lagi nanti."
 
-#: zerver/lib/domains.py:9
+#: zerver/lib/domains.py:8
 msgid "Domain can't be empty."
 msgstr "Domain tidak bisa kosong."
 
-#: zerver/lib/domains.py:11
+#: zerver/lib/domains.py:10
 msgid "Domain must have at least one dot (.)"
 msgstr "Domain paling tidak harus mempunyai satu titik (.)"
 
-#: zerver/lib/domains.py:13
+#: zerver/lib/domains.py:12
+msgid "Domain is too long"
+msgstr ""
+
+#: zerver/lib/domains.py:14
 msgid "Domain cannot start or end with a dot (.)"
 msgstr "Domain tidak dapat dimulai atau diakhiri dengan titik (.)"
 
-#: zerver/lib/domains.py:16
+#: zerver/lib/domains.py:17
 msgid "Consecutive '.' are not allowed."
 msgstr "Tanda '.' secara berurutan tidak diperbolehkan."
 
-#: zerver/lib/domains.py:18
+#: zerver/lib/domains.py:19
 msgid "Subdomains cannot start or end with a '-'."
 msgstr "Subdomain tidak dapat dimulai atau diakhiri dengan '-'."
 
-#: zerver/lib/domains.py:20
+#: zerver/lib/domains.py:21
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "Domain hanya dapat menggunakan huruf, angka, '.' dan '-'."
 
-#: zerver/lib/emoji.py:60 zerver/views/realm_emoji.py:52
+#: zerver/lib/emoji.py:53 zerver/views/realm_emoji.py:53
 #, python-format
 msgid "Emoji '%s' does not exist"
 msgstr "Emoji '%s' tidak ada"
 
-#: zerver/lib/emoji.py:73
+#: zerver/lib/emoji.py:66
 msgid "Invalid custom emoji."
 msgstr ""
 
-#: zerver/lib/emoji.py:75
+#: zerver/lib/emoji.py:68
 msgid "Invalid custom emoji name."
 msgstr ""
 
-#: zerver/lib/emoji.py:77
+#: zerver/lib/emoji.py:70
 msgid "This custom emoji has been deactivated."
 msgstr ""
 
-#: zerver/lib/emoji.py:80 zerver/lib/emoji.py:85
+#: zerver/lib/emoji.py:73 zerver/lib/emoji.py:78
 msgid "Invalid emoji code."
 msgstr ""
 
-#: zerver/lib/emoji.py:82 zerver/lib/emoji.py:87
+#: zerver/lib/emoji.py:75 zerver/lib/emoji.py:80
 msgid "Invalid emoji name."
 msgstr "Nama emoji invalid."
 
-#: zerver/lib/emoji.py:90
+#: zerver/lib/emoji.py:83
 msgid "Invalid emoji type."
 msgstr "Jenis emoji invalid"
 
-#: zerver/lib/emoji.py:114
+#: zerver/lib/emoji.py:107
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:119 zerver/models.py:423
+#: zerver/lib/emoji.py:112 zerver/models.py:476
 msgid "Invalid characters in emoji name"
 msgstr "Karakter pada nama emoji invalid"
 
@@ -2073,13 +2765,51 @@ msgstr "Karakter pada nama emoji invalid"
 msgid "Invalid type parameter"
 msgstr "Jenis parameter invalid"
 
-#: zerver/lib/events.py:640
+#: zerver/lib/events.py:660
 msgid "Could not allocate event queue"
 msgstr "Tidak dapat mengalokasi antrian event"
 
-#: zerver/lib/exceptions.py:148
+#: zerver/lib/exceptions.py:151
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
+msgstr ""
+
+#: zerver/lib/hotspots.py:10
+msgid "Reply to a message"
+msgstr ""
+
+#: zerver/lib/hotspots.py:11
+msgid "Click anywhere on a message to reply."
+msgstr ""
+
+#: zerver/lib/hotspots.py:14
+msgid "Catch up on a stream"
+msgstr ""
+
+#: zerver/lib/hotspots.py:15
+msgid ""
+"Messages sent to a stream are seen by everyone subscribed to that stream. "
+"Try clicking on one of the stream links below."
+msgstr ""
+
+#: zerver/lib/hotspots.py:19
+msgid "Topics"
+msgstr ""
+
+#: zerver/lib/hotspots.py:20
+msgid ""
+"Every message has a topic. Topics keep conversations easy to follow, and "
+"make it easy to reply to conversations that start while you are offline."
+msgstr ""
+
+#: zerver/lib/hotspots.py:25
+msgid "Compose"
+msgstr ""
+
+#: zerver/lib/hotspots.py:26
+msgid ""
+"Click here to start a new conversation. Pick a topic (2-3 words is best), "
+"and give it a go!"
 msgstr ""
 
 #: zerver/lib/integrations.py:36
@@ -2143,17 +2873,25 @@ msgstr "Robot interaktif"
 msgid "Operator %s not supported."
 msgstr "Operator %s tidak didukung."
 
-#: zerver/lib/push_notifications.py:298
+#: zerver/lib/notifications.py:507
+msgid "admins"
+msgstr ""
+
+#: zerver/lib/notifications.py:511
+msgid "members"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:307
 msgid "Received 500 from push notification bouncer"
 msgstr "Diterima 500 dari push notification bouncer"
 
-#: zerver/lib/push_notifications.py:306
+#: zerver/lib/push_notifications.py:315
 #, python-format
 msgid "Push notifications bouncer error: %s"
 msgstr "Eror push notifications bouncer: %s"
 
 #. error
-#: zerver/lib/push_notifications.py:394 zilencer/views.py:73
+#: zerver/lib/push_notifications.py:403 zilencer/views.py:128
 msgid "Token does not exist"
 msgstr "Token tidak ada"
 
@@ -2167,55 +2905,47 @@ msgstr "Tidak ada argumen '{var_name}'"
 msgid "Bad value for '{var_name}': {bad_value}"
 msgstr "Nilai tidak baik untuk '{var_name}': {bad_value}"
 
-#: zerver/lib/request.py:135
+#: zerver/lib/request.py:142
 msgid "Malformed JSON"
 msgstr "Kesalahan bentuk JSON"
 
-#: zerver/lib/request.py:140
+#: zerver/lib/request.py:147
 msgid "Invalid argument type"
 msgstr "Tipe argumen invalid"
 
-#: zerver/lib/request.py:166
+#: zerver/lib/request.py:173
 #, python-format
 msgid "Argument \"%s\" is not valid JSON."
 msgstr "Argument \"%s\" bukan merupakan JSON yang valid."
 
-#: zerver/lib/rest.py:112 zerver/lib/rest.py:115
+#: zerver/lib/rest.py:119 zerver/lib/rest.py:122
 msgid "Not logged in: API authentication or user session required"
 msgstr "Belum masuk: Autentikasi API atau sesi pengguna dibutuhkan"
 
-#: zerver/lib/streams.py:21 zerver/lib/streams.py:80
+#: zerver/lib/streams.py:21 zerver/lib/streams.py:82 zerver/lib/streams.py:89
 msgid "Invalid stream id"
 msgstr "Stream id tidak valid"
 
-#: zerver/lib/streams.py:95
+#: zerver/lib/streams.py:100
 #, python-format
 msgid "Stream name '%s' is already taken."
 msgstr ""
 
-#: zerver/lib/streams.py:234
+#: zerver/lib/streams.py:242
 msgid "User cannot create streams."
 msgstr "Pengguna tidak dapat membuat stream."
 
-#: zerver/lib/streams.py:236
+#: zerver/lib/streams.py:244
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr "Siaran-siaran (%s) tidak ada"
 
-#: zerver/lib/streams.py:254
+#: zerver/lib/streams.py:262
 #, python-format
 msgid "Default stream group with id '%s' does not exist."
 msgstr "Grup siaran default dengan id '%s' tidak ada."
 
-#: zerver/lib/upload.py:104
-msgid "Animated emoji must have the same width and height."
-msgstr "Emoji beranimasi harus mempunyai lebar dan tinggi yang sama."
-
-#: zerver/lib/upload.py:107
-msgid "Animated emoji can't be larger than 64px in width or height."
-msgstr "Emoji beranimasi tidak dapat lebih besar dari 64px pada lebar atau tinggi."
-
-#: zerver/lib/upload.py:201
+#: zerver/lib/upload.py:242
 msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 
@@ -2229,102 +2959,161 @@ msgstr ""
 msgid "Invalid user group"
 msgstr "Grup pengguna invalid"
 
-#: zerver/lib/users.py:17
+#: zerver/lib/users.py:19
 msgid "Name too long!"
 msgstr "Nama terlalu panjang!"
 
-#: zerver/lib/users.py:19
+#: zerver/lib/users.py:21
 msgid "Name too short!"
 msgstr "Nama terlalu pendek!"
 
-#: zerver/lib/users.py:21
+#: zerver/lib/users.py:23
 msgid "Invalid characters in name!"
 msgstr "Karakter pada nama invalid!"
 
-#: zerver/lib/users.py:27 zerver/views/users.py:300 zerver/views/users.py:457
+#: zerver/lib/users.py:29 zerver/views/users.py:264 zerver/views/users.py:429
 msgid "Bad name or username"
 msgstr "Nama atau username tidak dibenarkan"
 
-#: zerver/lib/users.py:42
+#: zerver/lib/users.py:44
 msgid "Invalid configuration data!"
 msgstr ""
 
-#: zerver/lib/users.py:59
+#: zerver/lib/users.py:70
 msgid "Invalid bot type"
 msgstr "Tipe robot invalid"
 
-#: zerver/lib/users.py:63
+#: zerver/lib/users.py:74
 msgid "Invalid interface type"
 msgstr "Tipe antarmuka invalid"
 
-#: zerver/lib/users.py:126 zerver/lib/users.py:131
+#: zerver/lib/users.py:137 zerver/lib/users.py:142
 #, python-format
 msgid "Invalid user ID: %s"
 msgstr "ID user invalid: %s"
 
-#: zerver/lib/validator.py:38 zerver/lib/validator.py:46
+#: zerver/lib/users.py:149 zerver/lib/users.py:151
+msgid "No such bot"
+msgstr "Tidak ada robot demikian"
+
+#: zerver/lib/users.py:161 zerver/lib/users.py:163 zerver/views/presence.py:29
+msgid "No such user"
+msgstr "Tidak ada pengguna tersebut"
+
+#: zerver/lib/users.py:165
+msgid "User is deactivated"
+msgstr ""
+
+#: zerver/lib/validator.py:41 zerver/lib/validator.py:61
+#: zerver/lib/validator.py:71 zerver/lib/validator.py:83
 #, python-format
 msgid "%s is not a string"
 msgstr "%s bukan merupakan suatu string"
 
-#: zerver/lib/validator.py:48
+#: zerver/lib/validator.py:51
 #, python-brace-format
-msgid "{var_name} is longer than {max_length}."
-msgstr "{var_name} lebih panjang dari {max_length}."
+msgid "{item} cannot be blank."
+msgstr ""
 
-#: zerver/lib/validator.py:57
+#: zerver/lib/validator.py:63
+#, python-brace-format
+msgid "{var_name} is too long (limit: {max_length} characters)"
+msgstr ""
+
+#: zerver/lib/validator.py:73
+#, python-brace-format
+msgid "{var_name} has incorrect length {length}; should be {target_length}"
+msgstr ""
+
+#: zerver/lib/validator.py:87
+#, python-format
+msgid "%s is not a date"
+msgstr ""
+
+#: zerver/lib/validator.py:92
 #, python-format
 msgid "%s is not an integer"
 msgstr "%s bukan merupakan suatu angka"
 
-#: zerver/lib/validator.py:62
+#: zerver/lib/validator.py:97
 #, python-format
 msgid "%s is not a float"
 msgstr "%s bukan merupakan suatu float"
 
-#: zerver/lib/validator.py:67
+#: zerver/lib/validator.py:102
 #, python-format
 msgid "%s is not a boolean"
 msgstr "%s bukan merupakan suatu boolean"
 
-#: zerver/lib/validator.py:81
+#: zerver/lib/validator.py:116
 #, python-format
 msgid "%s is not a list"
 msgstr "%s bukan merupakan suatu list"
 
-#: zerver/lib/validator.py:84
+#: zerver/lib/validator.py:119
 #, python-format
 msgid "%(container)s should have exactly %(length)s items"
 msgstr "%(container)s harus mempunyai tepat %(length)s buah"
 
-#: zerver/lib/validator.py:102
+#: zerver/lib/validator.py:137
 #, python-format
 msgid "%s is not a dict"
 msgstr "%s bukan merupakan suatu dict"
 
-#: zerver/lib/validator.py:106
+#: zerver/lib/validator.py:141
 #, python-format
 msgid "%(key_name)s key is missing from %(var_name)s"
 msgstr "key %(key_name)s tidak ada pada %(var_name)s"
 
-#: zerver/lib/validator.py:123
+#: zerver/lib/validator.py:158
 #, python-format
 msgid "Unexpected arguments: %s"
 msgstr "Argument tidak disangka: %s"
 
-#: zerver/lib/validator.py:144
+#: zerver/lib/validator.py:179
 #, python-format
 msgid "%s is not an allowed_type"
 msgstr "%s bukan sebuah allowed_type"
 
-#: zerver/lib/validator.py:150
+#: zerver/lib/validator.py:185
 #, python-format
 msgid "%(variable)s != %(expected_value)s (%(value)s is wrong)"
 msgstr "%(variable)s != %(expected_value)s (%(value)s adalah salah)"
 
-#: zerver/lib/validator.py:174
+#: zerver/lib/validator.py:209
 #, python-format
 msgid "%s is not a URL"
+msgstr ""
+
+#: zerver/lib/validator.py:223
+#, python-brace-format
+msgid "'{item}' cannot be blank."
+msgstr ""
+
+#: zerver/lib/validator.py:238
+#, python-brace-format
+msgid "'{value}' is not a valid choice for '{field_name}'."
+msgstr ""
+
+#: zerver/lib/webhooks/common.py:37
+#, python-brace-format
+msgid ""
+"The '{event_type}' event isn't currently supported by the {webhook_name} "
+"webhook"
+msgstr ""
+
+#: zerver/lib/webhooks/common.py:48
+#, python-brace-format
+msgid "Missing the HTTP event header '{header}'"
+msgstr ""
+
+#: zerver/lib/zcommand.py:10
+msgid "There should be a leading slash in the zcommand."
+msgstr ""
+
+#: zerver/lib/zcommand.py:40
+#, python-format
+msgid "No such command: %s"
 msgstr ""
 
 #: zerver/middleware.py:283
@@ -2340,13 +3129,56 @@ msgstr "Eror CSRF: {reason}"
 msgid "API usage exceeded rate limit"
 msgstr "Penggunaan API melewati batas"
 
-#: zerver/models.py:1293
+#: zerver/models.py:1476
 msgid "Unicode emoji"
 msgstr "Emoji unicode"
 
-#: zerver/models.py:1295
+#: zerver/models.py:1478
 msgid "Zulip extra emoji"
 msgstr "Ekstra emoji Zulip"
+
+#: zerver/models.py:2221
+#, python-format
+msgid "Invalid user ID: %d"
+msgstr ""
+
+#: zerver/models.py:2225
+#, python-format
+msgid "User with ID %d is deactivated"
+msgstr ""
+
+#: zerver/models.py:2228
+#, python-format
+msgid "User with ID %d is a bot"
+msgstr ""
+
+#: zerver/models.py:2256
+msgid "Choice"
+msgstr ""
+
+#: zerver/models.py:2259
+msgid "User"
+msgstr ""
+
+#: zerver/models.py:2271
+msgid "Short text"
+msgstr ""
+
+#: zerver/models.py:2272
+msgid "Long text"
+msgstr ""
+
+#: zerver/models.py:2273
+msgid "Date"
+msgstr ""
+
+#: zerver/models.py:2274
+msgid "URL"
+msgstr ""
+
+#: zerver/signals.py:82
+msgid "Unknown IP address"
+msgstr ""
 
 #: zerver/tornado/event_queue.py:504 zerver/tornado/socket.py:130
 msgid "Missing 'queue_id' argument"
@@ -2360,7 +3192,7 @@ msgstr "Tidak ada argumen 'last_event_id'"
 msgid "You are not authorized to get events from this queue"
 msgstr "Anda tidak berotoritas untuk mendapatkan events dari antrian ini"
 
-#: zerver/tornado/exceptions.py:16
+#: zerver/tornado/exceptions.py:15
 #, python-brace-format
 msgid "Bad event queue id: {queue_id}"
 msgstr "ID antrian event invalid: {queue_id}"
@@ -2386,95 +3218,96 @@ msgstr "Anda bukan merupakan pemilik dari antrian dengan id '%s'"
 msgid "You are not authorized to access this queue"
 msgstr "Anda tidak berotoritas untuk mengakses antrian ini"
 
-#: zerver/views/auth.py:199
+#: zerver/views/auth.py:195
 msgid "No REMOTE_USER set."
 msgstr "Tidak ada REMOTE_USER di set."
 
-#: zerver/views/auth.py:212 zerver/views/auth.py:293
+#: zerver/views/auth.py:208 zerver/views/auth.py:299
 msgid "Invalid OTP"
 msgstr "OTP tidak valid"
 
-#: zerver/views/auth.py:233
+#: zerver/views/auth.py:232
 msgid "Auth key for this subdomain not found."
 msgstr "Kunci autentikasi untuk subdomain ini tidak ditemukan."
 
-#: zerver/views/auth.py:240
+#: zerver/views/auth.py:239
 msgid "No JSON web token passed in request"
 msgstr "Tidak ada token web JSON yang diberikan dalam request"
 
-#: zerver/views/auth.py:242
+#: zerver/views/auth.py:241
 msgid "Bad JSON web token"
 msgstr "Token web JSON tidak dibenarkan"
 
-#: zerver/views/auth.py:246
+#: zerver/views/auth.py:245
 msgid "No user specified in JSON web token claims"
 msgstr "Tidak ada pengguna dispesifikasikan pada claim dari JSON web token"
 
-#: zerver/views/auth.py:249
+#: zerver/views/auth.py:248
 msgid "No organization specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:255
+#: zerver/views/auth.py:254
 msgid "Wrong subdomain"
 msgstr "Subdomain salah"
 
-#: zerver/views/auth.py:630 zerver/views/auth.py:660
+#: zerver/views/auth.py:710 zerver/views/auth.py:741
 msgid "Dev environment not enabled."
 msgstr ""
 
-#: zerver/views/auth.py:646 zerver/views/auth.py:693
+#: zerver/views/auth.py:726 zerver/views/auth.py:774
 msgid "This organization has been deactivated."
 msgstr ""
 
-#: zerver/views/auth.py:649 zerver/views/auth.py:690
+#: zerver/views/auth.py:729 zerver/views/auth.py:771
 msgid "Your account has been disabled."
 msgstr "Akun Anda telah dinonaktifkan"
 
-#: zerver/views/auth.py:652
+#: zerver/views/auth.py:732
 msgid "This user is not registered."
 msgstr "Pengguna ini belum terdaftar."
 
-#: zerver/views/auth.py:696
+#: zerver/views/auth.py:777
 msgid "Password auth is disabled in your team."
 msgstr "Kata sandi auth dinonaktifkan pada tim Anda."
 
-#: zerver/views/auth.py:702
+#: zerver/views/auth.py:783
 msgid "This user is not registered; do so from a browser."
 msgstr "Pengguna ini tidak teregistrasi; Lakukan hal demikian pada sebuah browser."
 
-#: zerver/views/auth.py:704 zerver/views/auth.py:787
+#: zerver/views/auth.py:785 zerver/views/auth.py:869
 msgid "Your username or password is incorrect."
 msgstr "Nama pengguna atau kata sandi anda salah."
 
-#: zerver/views/auth.py:728
+#: zerver/views/auth.py:810
 msgid "Invalid subdomain"
 msgstr "Subdomain tidak valid"
 
-#: zerver/views/auth.py:734
+#: zerver/views/auth.py:816
 msgid "Subdomain required"
 msgstr "Subdomain dibutuhkan"
 
-#: zerver/views/auth.py:793
+#: zerver/views/auth.py:877
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr "GOOGLE_CLIENT_ID belum diatur"
 
-#: zerver/views/custom_profile_fields.py:32
-#: zerver/views/custom_profile_fields.py:64
+#: zerver/views/custom_profile_fields.py:42
+#: zerver/views/custom_profile_fields.py:89
 msgid "Name cannot be blank."
 msgstr "Nama tidak boleh kosong."
 
-#: zerver/views/custom_profile_fields.py:35
+#: zerver/views/custom_profile_fields.py:50
 msgid "Invalid field type."
 msgstr ""
 
-#: zerver/views/custom_profile_fields.py:45
-#: zerver/views/custom_profile_fields.py:75
+#: zerver/views/custom_profile_fields.py:66
+#: zerver/views/custom_profile_fields.py:109
 msgid "A field with that name already exists."
 msgstr ""
 
-#: zerver/views/custom_profile_fields.py:53
-#: zerver/views/custom_profile_fields.py:70
-#: zerver/views/custom_profile_fields.py:90
+#: zerver/views/custom_profile_fields.py:74
+#: zerver/views/custom_profile_fields.py:103
+#: zerver/views/custom_profile_fields.py:129
+#: zerver/views/custom_profile_fields.py:152
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr ""
@@ -2484,25 +3317,25 @@ msgstr ""
 msgid "Unknown hotspot: %s"
 msgstr "Hotspot tidak diketahui: %s"
 
-#: zerver/views/invite.py:30
+#: zerver/views/invite.py:33
 msgid "You must specify at least one email address."
 msgstr "Anda harus menentukan minimal satu alamat email."
 
-#: zerver/views/invite.py:36
+#: zerver/views/invite.py:39
 msgid "You must specify at least one stream for invitees to join."
 msgstr "Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk bergabung."
 
-#: zerver/views/invite.py:49
+#: zerver/views/invite.py:52
 #, python-format
 msgid "Stream does not exist: %s. No invites were sent."
 msgstr ""
 
-#: zerver/views/invite.py:77 zerver/views/invite.py:80
-#: zerver/views/invite.py:92 zerver/views/invite.py:95
+#: zerver/views/invite.py:80 zerver/views/invite.py:83
+#: zerver/views/invite.py:95 zerver/views/invite.py:98
 msgid "No such invitation"
 msgstr "Tidak ada undangan tersebut"
 
-#: zerver/views/invite.py:112
+#: zerver/views/invite.py:113
 msgid "Invalid stream id {}. No invites were sent."
 msgstr ""
 
@@ -2511,59 +3344,71 @@ msgstr ""
 msgid "Invalid narrow operator: {desc}"
 msgstr "Operator batas invalid: {desc}"
 
-#: zerver/views/messages.py:1016
+#: zerver/views/messages.py:700
+msgid "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."
+msgstr ""
+
+#: zerver/views/messages.py:1024
 #, python-format
 msgid "No such topic '%s'"
 msgstr "Tidak ada topik '%s'"
 
-#: zerver/views/messages.py:1126
-msgid "Invalid timestamp for scheduling message."
+#: zerver/views/messages.py:1134
+msgid "Invalid time format"
 msgstr ""
 
-#: zerver/views/messages.py:1136
-msgid "Invalid timestamp for scheduling message. Choose a time in future."
+#: zerver/views/messages.py:1144
+msgid "Time must be in the future."
 msgstr ""
 
-#: zerver/views/messages.py:1175
+#: zerver/views/messages.py:1184
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1193
+#: zerver/views/messages.py:1202
 msgid "Missing sender"
 msgstr "Pengirim tidak ada"
 
-#: zerver/views/messages.py:1199
+#: zerver/views/messages.py:1208
 msgid "Invalid mirrored message"
 msgstr ""
 
-#: zerver/views/messages.py:1201
+#: zerver/views/messages.py:1210
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1207
+#: zerver/views/messages.py:1216
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr ""
 
-#: zerver/views/messages.py:1268
+#: zerver/views/messages.py:1283
 msgid "Message edit history is disabled in this organization"
 msgstr "Riwayat penyuntingan pesan dinonaktifkan di organisasi ini"
 
-#: zerver/views/messages.py:1285
+#: zerver/views/messages.py:1303
 msgid "Your organization has turned off message editing"
 msgstr "Organisasi Anda telah menonaktifkan penyuntingan pesan"
 
-#: zerver/views/messages.py:1302 zerver/views/messages.py:1382
+#: zerver/views/messages.py:1321
 msgid "You don't have permission to edit this message"
 msgstr "Anda tidak memiliki ijin untuk mengedit pesan ini"
 
-#: zerver/views/messages.py:1313 zerver/views/messages.py:1322
-msgid "The time limit for editing this message has past"
-msgstr "Batas waktu untuk mengedit pesan ini telah berakhir"
+#: zerver/views/messages.py:1332 zerver/views/messages.py:1342
+msgid "The time limit for editing this message has passed"
+msgstr ""
 
-#: zerver/views/messages.py:1325
+#: zerver/views/messages.py:1345
 msgid "Nothing to change"
 msgstr "Tidak ada yang dapat diubah"
+
+#: zerver/views/messages.py:1401 zerver/views/messages.py:1404
+msgid "You don't have permission to delete this message"
+msgstr ""
+
+#: zerver/views/messages.py:1412
+msgid "The time limit for deleting this message has passed"
+msgstr ""
 
 #: zerver/views/muting.py:21
 msgid "Topic already muted"
@@ -2573,27 +3418,20 @@ msgstr "Topik sudah disenyapkan"
 msgid "Topic is not there in the muted_topics list"
 msgstr "Topik tidak ada pada daftar muted_topics"
 
-#: zerver/views/pointer.py:27
+#: zerver/views/pointer.py:21
 msgid "Invalid message ID"
 msgstr "ID pesan invalid"
 
-#: zerver/views/presence.py:29 zerver/views/presence.py:31
-#: zerver/views/users.py:44 zerver/views/users.py:46 zerver/views/users.py:85
-#: zerver/views/users.py:100 zerver/views/users.py:173
-#: zerver/views/users.py:250
-msgid "No such user"
-msgstr "Tidak ada pengguna tersebut"
-
-#: zerver/views/presence.py:33
+#: zerver/views/presence.py:31
 msgid "Presence is not supported for bot users."
 msgstr ""
 
-#: zerver/views/presence.py:37
+#: zerver/views/presence.py:35
 #, python-format
 msgid "No presence data for %s"
 msgstr ""
 
-#: zerver/views/presence.py:59
+#: zerver/views/presence.py:57
 #, python-format
 msgid "Invalid status: %s"
 msgstr "Status invalid: %s"
@@ -2606,76 +3444,82 @@ msgstr ""
 msgid "Invalid APNS token"
 msgstr "Token APNS invalid"
 
-#: zerver/views/reactions.py:37
+#: zerver/views/reactions.py:46
 msgid "Reaction already exists."
 msgstr "Reaksi sudah ada."
 
-#: zerver/views/reactions.py:85
+#: zerver/views/reactions.py:93
+msgid ""
+"At least one of the following arguments must be present: emoji_name, "
+"emoji_code"
+msgstr ""
+
+#: zerver/views/reactions.py:108
 msgid "Reaction doesn't exist."
 msgstr "Reaksi tidak ada."
 
-#: zerver/views/reactions.py:114
+#: zerver/views/reactions.py:137
 msgid "Reaction already exists"
 msgstr "Reaksi sudah ada"
 
-#: zerver/views/reactions.py:136
+#: zerver/views/reactions.py:159
 msgid "Reaction does not exist"
 msgstr "Reaksi tidak ada"
 
-#: zerver/views/realm.py:63 zerver/views/user_settings.py:140
+#: zerver/views/realm.py:68 zerver/views/user_settings.py:129
 #, python-format
 msgid "Invalid language '%s'"
 msgstr "Bahasa '%s' invalid"
 
-#: zerver/views/realm.py:65
+#: zerver/views/realm.py:70
 msgid "Organization description is too long."
 msgstr ""
 
-#: zerver/views/realm.py:67
+#: zerver/views/realm.py:72
 msgid "Organization name is too long."
 msgstr ""
 
-#: zerver/views/realm.py:69
+#: zerver/views/realm.py:74
 msgid "At least one authentication method must be enabled."
 msgstr "Setidaknya satu metode autentikasi harus diaktifkan"
 
-#: zerver/views/realm.py:73
+#: zerver/views/realm.py:79 zerver/views/realm_domains.py:28
+msgid "Invalid domain: {}"
+msgstr "Domain invalid: {}"
+
+#: zerver/views/realm.py:83
 msgid "Invalid bot creation policy"
 msgstr ""
 
 #: zerver/views/realm_domains.py:30
-msgid "Invalid domain: {}"
-msgstr "Domain invalid: {}"
-
-#: zerver/views/realm_domains.py:32
 #, python-format
 msgid "The domain %(domain)s is already a part of your organization."
 msgstr "Domain %(domain)s sudah menjadi bagian dari organisasi Anda."
 
-#: zerver/views/realm_domains.py:45 zerver/views/realm_domains.py:56
+#: zerver/views/realm_domains.py:43 zerver/views/realm_domains.py:54
 #, python-format
 msgid "No entry found for domain %(domain)s."
 msgstr "Tidak ada entri ditemukan untuk domain %(domain)s"
 
-#: zerver/views/realm_emoji.py:30
+#: zerver/views/realm_emoji.py:31
 msgid "A custom emoji with this name already exists."
 msgstr ""
 
-#: zerver/views/realm_emoji.py:32
+#: zerver/views/realm_emoji.py:33
 msgid "You must upload exactly one file."
 msgstr "Anda harus mengunggah tepat satu file."
 
-#: zerver/views/realm_emoji.py:35 zerver/views/realm_icon.py:22
-#: zerver/views/upload.py:75 zerver/views/user_settings.py:196
+#: zerver/views/realm_emoji.py:36 zerver/views/realm_icon.py:22
+#: zerver/views/upload.py:74 zerver/views/user_settings.py:185
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
 msgstr "File yang diunggah lebih besar dari batas yang diperbolehkan, %s MB"
 
-#: zerver/views/realm_emoji.py:43
+#: zerver/views/realm_emoji.py:44
 msgid "Image file upload failed."
 msgstr ""
 
-#: zerver/views/realm_filters.py:44
+#: zerver/views/realm_filters.py:42
 msgid "Filter not found"
 msgstr "Saringan tidak ditemukan"
 
@@ -2683,200 +3527,213 @@ msgstr "Saringan tidak ditemukan"
 msgid "You must upload exactly one icon."
 msgstr "Anda harus mengunggah tepat satu ikon."
 
-#: zerver/views/registration.py:343
+#: zerver/views/registration.py:380
 msgid "The organization creation link has expired or is not valid."
 msgstr "Link untuk pembuatan organisasi telah kedaluarsa atau tidak valid."
 
-#: zerver/views/registration.py:348
+#: zerver/views/registration.py:385
 msgid "New organization creation disabled."
 msgstr "Pembuatan organisasi baru dinonaktifkan."
 
-#: zerver/views/streams.py:48
+#: zerver/views/streams.py:49
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr "Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili '{principal}'"
 
-#: zerver/views/streams.py:96
+#: zerver/views/streams.py:97
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:122
+#: zerver/views/streams.py:123
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 
-#: zerver/views/streams.py:159
+#: zerver/views/streams.py:164
 msgid "Stream already has that name!"
 msgstr "Siaran sudah mempunyai nama demikian!"
 
-#: zerver/views/streams.py:186 zerver/views/user_groups.py:64
+#: zerver/views/streams.py:193 zerver/views/user_groups.py:69
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah' atau 'hapus'."
 
-#: zerver/views/streams.py:228
+#: zerver/views/streams.py:235
 msgid "This action requires administrative rights"
 msgstr "Tindakan ini memerlukan kekuatan administratif"
 
-#: zerver/views/streams.py:313
+#: zerver/views/streams.py:265
+#, python-format
+msgid "Hi there! @**%s** just subscribed you to the stream #**%s**."
+msgstr ""
+
+#: zerver/views/streams.py:268
+#, python-format
+msgid "Hi there! @**%s** just subscribed you to the following streams:"
+msgstr ""
+
+#: zerver/views/streams.py:308
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr "Tidak dapat mengakses siaran (%s)."
 
-#: zerver/views/streams.py:319
-msgid ""
-"You can only invite other Zephyr mirroring users to invite-only streams."
-msgstr "Anda hanya dapat mengundang pengguna mirroring Zephyr lain ke dalam siaran undangan."
+#: zerver/views/streams.py:314
+msgid "You can only invite other Zephyr mirroring users to private streams."
+msgstr ""
 
-#: zerver/views/streams.py:525
+#: zerver/views/streams.py:316
+msgid "Your account is too new to modify other users' subscriptions."
+msgstr ""
+
+#: zerver/views/streams.py:521
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr ""
 
-#: zerver/views/streams.py:529
+#: zerver/views/streams.py:525
 #, python-format
 msgid "Not subscribed to stream id %d"
 msgstr ""
 
-#: zerver/views/upload.py:58
-msgid "<p>File not found.</p>"
-msgstr "<p>File tidak ditemukan.</p>"
+#: zerver/views/submessage.py:37
+msgid "Invalid json for submessage"
+msgstr ""
 
-#: zerver/views/upload.py:60
+#: zerver/views/thumbnail.py:27 zerver/views/upload.py:59
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:68
+#: zerver/views/thumbnail.py:36
+msgid "<p>Invalid size.</p>"
+msgstr ""
+
+#: zerver/views/upload.py:57
+msgid "<p>File not found.</p>"
+msgstr "<p>File tidak ditemukan.</p>"
+
+#: zerver/views/upload.py:67
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:70 zerver/views/users.py:225
-#: zerver/views/users.py:313
+#: zerver/views/upload.py:69 zerver/views/users.py:202
+#: zerver/views/users.py:277
 msgid "You may only upload one file at a time"
 msgstr "Anda hanya dapat mengunggah file satu per satu"
 
-#: zerver/views/user_groups.py:35
+#: zerver/views/user_groups.py:38
 msgid "No new data supplied"
 msgstr "Tidak ada data baru diberikan"
 
-#: zerver/views/user_groups.py:42
+#: zerver/views/user_groups.py:45
 msgid "Name successfully updated."
 msgstr "Nama sukses diperbarui"
 
-#: zerver/views/user_groups.py:46
+#: zerver/views/user_groups.py:49
 msgid "Description successfully updated."
 msgstr "Deskripsi sukses diperbarui."
 
-#: zerver/views/user_groups.py:85
+#: zerver/views/user_groups.py:90
 #, python-format
 msgid "User %s is already a member of this group"
 msgstr ""
 
-#: zerver/views/user_groups.py:100
+#: zerver/views/user_groups.py:105
 #, python-format
 msgid "There is no member '%s' in this user group"
 msgstr ""
 
-#: zerver/views/user_settings.py:41 zerver/views/user_settings.py:104
+#: zerver/views/user_settings.py:41 zerver/views/user_settings.py:92
 msgid "Email address changes are disabled in this organization."
 msgstr ""
 
-#: zerver/views/user_settings.py:78
+#: zerver/views/user_settings.py:63
 msgid "Please fill out all fields."
 msgstr ""
 
-#: zerver/views/user_settings.py:83
+#: zerver/views/user_settings.py:68
+msgid "Your Zulip password is managed in LDAP"
+msgstr ""
+
+#: zerver/views/user_settings.py:71
 msgid "Wrong password!"
 msgstr "Kata sandi salah!"
 
-#: zerver/views/user_settings.py:112
+#: zerver/views/user_settings.py:100
 msgid "Check your email for a confirmation link. "
 msgstr ""
 
-#: zerver/views/user_settings.py:144
+#: zerver/views/user_settings.py:133
 #, python-format
 msgid "Invalid timezone '%s'"
 msgstr ""
 
-#: zerver/views/user_settings.py:148
+#: zerver/views/user_settings.py:137
 #, python-format
 msgid "Invalid emojiset '%s'"
 msgstr ""
 
-#: zerver/views/user_settings.py:192
+#: zerver/views/user_settings.py:181
 msgid "You must upload exactly one avatar."
 msgstr "Anda harus mengunggah tepat satu avatar."
 
-#: zerver/views/users.py:48 zerver/views/users.py:54
+#: zerver/views/users.py:45 zerver/views/users.py:51
 msgid "Cannot deactivate the only organization administrator"
 msgstr "Tidak dapat mendeaktivasi satu-satunya pengurus organisasi"
 
-#: zerver/views/users.py:67 zerver/views/users.py:69 zerver/views/users.py:176
-msgid "No such bot"
-msgstr "Tidak ada robot demikian"
-
-#: zerver/views/users.py:107
+#: zerver/views/users.py:86
 msgid "Cannot remove the only organization administrator"
 msgstr "Tidak dapat menghapus satu-satunya pengelola organisasi"
 
-#: zerver/views/users.py:186
+#: zerver/views/users.py:159
 msgid "Failed to change owner, no such user"
 msgstr ""
 
-#: zerver/views/users.py:188
+#: zerver/views/users.py:161
 msgid "Failed to change owner, user is deactivated"
 msgstr ""
 
-#: zerver/views/users.py:190
+#: zerver/views/users.py:163
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 
-#: zerver/views/users.py:294
+#: zerver/views/users.py:258
 msgid "Embedded bots are not enabled."
 msgstr ""
 
-#: zerver/views/users.py:296
+#: zerver/views/users.py:260
 msgid "Invalid embedded bot name."
 msgstr ""
 
-#: zerver/views/users.py:303
+#: zerver/views/users.py:267
 msgid "Username already in use"
 msgstr "Nama pengguna sudah digunakan"
 
-#: zerver/views/users.py:466
+#: zerver/views/users.py:438
 #, python-format
 msgid "Email '%(email)s' not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:469
+#: zerver/views/users.py:441
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:473
+#: zerver/views/users.py:447
 #, python-format
 msgid "Email '%s' already in use"
 msgstr "Email '%s' sudah digunakan"
 
-#: zerver/views/zephyr.py:31
+#: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
 msgstr "Tidak dapat menemukan kredensial Kerberos"
 
-#: zerver/views/zephyr.py:33
+#: zerver/views/zephyr.py:34
 msgid "Webathena login not enabled"
 msgstr "Login Webathena tidak diaktifkan"
 
-#: zerver/views/zephyr.py:43
+#: zerver/views/zephyr.py:44
 msgid "Invalid Kerberos cache"
 msgstr "Cache Kerberos invalid"
 
-#: zerver/views/zephyr.py:54
+#: zerver/views/zephyr.py:56
 msgid "We were unable to setup mirroring for you"
-msgstr ""
-
-#: zerver/webhooks/facebook/view.py:88
-msgid "Error: Token is wrong"
-msgstr ""
-
-#: zerver/webhooks/facebook/view.py:89
-msgid "Error: Unsupported method"
 msgstr ""
 
 #: zerver/webhooks/freshdesk/view.py:122
@@ -2884,19 +3741,11 @@ msgstr ""
 msgid "Missing key %s in JSON"
 msgstr ""
 
-#: zerver/webhooks/front/view.py:119 zerver/webhooks/newrelic/view.py:33
+#: zerver/webhooks/front/view.py:119
 msgid "Unknown webhook request"
 msgstr ""
 
-#: zerver/webhooks/gogs/view.py:94
-msgid "Invalid event \"{}\" in request headers"
-msgstr ""
-
-#: zerver/webhooks/groove/view.py:87
-msgid "Missing event header"
-msgstr ""
-
-#: zerver/webhooks/groove/view.py:95
+#: zerver/webhooks/groove/view.py:92
 msgid "Missing required data"
 msgstr ""
 
@@ -2904,20 +3753,11 @@ msgstr ""
 msgid "Content can't be empty"
 msgstr "Konten tidak boleh kosong"
 
-#: zerver/webhooks/jira/view.py:245
-msgid "Event is not given by JIRA"
-msgstr ""
-
 #: zerver/webhooks/librato/view.py:154
 msgid "Malformed JSON input"
 msgstr ""
 
-#: zerver/webhooks/pingdom/view.py:44
-#, python-brace-format
-msgid "Unsupported check_type: {check_type}"
-msgstr ""
-
-#: zerver/webhooks/pivotal/view.py:170
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 
@@ -2929,45 +3769,30 @@ msgstr ""
 msgid "Message from Slack"
 msgstr ""
 
-#: zerver/webhooks/stripe/view.py:161
-msgid "We don't support {} event"
-msgstr ""
-
-#: zerver/webhooks/transifex/view.py:25
-msgid "Transifex wrong request"
-msgstr ""
-
-#: zerver/webhooks/trello/view/__init__.py:31
-#, python-brace-format
-msgid "Unsupported action_type: {action_type}"
-msgstr ""
-
-#: zerver/webhooks/updown/view.py:80
-#, python-format
-msgid "Unsupported Updown event type: %s"
-msgstr ""
-
 #: zerver/webhooks/wordpress/view.py:38
 msgid "Unknown WordPress webhook action: "
 msgstr ""
 
-#: zilencer/lib/stripe.py:49
+#: zilencer/lib/stripe.py:68
 #, python-format
-msgid "Something went wrong. Please try again or email us at %s."
+msgid "Something went wrong. Please contact %s)"
+msgstr ""
+
+#: zilencer/lib/stripe.py:69
+msgid "Something went wrong. Please reload the page."
 msgstr ""
 
 #. error
-#: zilencer/views.py:27
+#: zilencer/views.py:39
 msgid "Must validate with valid Zulip server API key"
 msgstr ""
 
 #. error
-#: zilencer/views.py:32
+#: zilencer/views.py:44
 msgid "Invalid token type"
 msgstr "Tipe token invalid"
 
-#: zilencer/views.py:117
+#: zilencer/views.py:67
 #, python-format
-msgid ""
-"You should be an administrator of the organization %s to view this page."
+msgid "%s is not a valid hostname"
 msgstr ""

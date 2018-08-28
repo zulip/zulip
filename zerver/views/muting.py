@@ -25,7 +25,7 @@ def mute_topic(user_profile: UserProfile, stream_name: str,
 
 def unmute_topic(user_profile: UserProfile, stream_name: str,
                  topic_name: str) -> HttpResponse:
-    error = _("Topic is not there in the muted_topics list")
+    error = _("Topic is not muted")
     stream = access_stream_for_unmute_topic(user_profile, stream_name, error)
 
     if not topic_is_muted(user_profile, stream.id, topic_name):

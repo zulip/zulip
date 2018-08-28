@@ -3,7 +3,7 @@ var message_fetch = (function () {
 var exports = {};
 
 var consts = {
-    backfill_idle_time: 10*1000,
+    backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
     backfill_batch_size: 1000,
     narrow_before: 50,
@@ -20,7 +20,7 @@ function process_result(data, opts) {
 
     $('#connection-error').removeClass("show");
 
-    if ((messages.length === 0) && (current_msg_list === message_list.narrowed) &&
+    if (messages.length === 0 && current_msg_list === message_list.narrowed &&
         message_list.narrowed.empty()) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.
@@ -51,6 +51,7 @@ function process_result(data, opts) {
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
         opts.cont(data);
@@ -63,7 +64,7 @@ function get_messages_success(data, opts) {
         // don't bother processing the newly arrived messages.
         return;
     }
-    if (! data) {
+    if (!data) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(function () {
@@ -315,7 +316,7 @@ exports.initialize = function () {
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
         var messages = data.messages;
-        var latest_id = messages[messages.length-1].id;
+        var latest_id = messages[messages.length - 1].id;
 
         exports.load_messages({
             anchor: latest_id.toFixed(),
@@ -348,3 +349,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_fetch;
 }
+window.message_fetch = message_fetch;

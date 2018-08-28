@@ -24,6 +24,7 @@ from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
     get_raw_unread_data,
+    get_starred_message_ids,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -56,7 +57,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     # TODO: Consider optimizing this query away with caching.
     custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile__realm_id=realm_id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
-    for profile_field in custom_profile_field_values:  # nocoverage # TODO: Fix this.
+    for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
         profiles_by_user_id[user_id][profile_field.field_id] = profile_field.value
 
@@ -73,6 +74,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
 
         is_admin = row['is_realm_admin']
         is_bot = row['is_bot']
+        # This format should align with get_cross_realm_dicts() and notify_created_user
         result = dict(
             email=row['email'],
             user_id=row['id'],
@@ -82,6 +84,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
             full_name=row['full_name'],
             timezone=row['timezone'],
             is_active = row['is_active'],
+            date_joined = row['date_joined'].isoformat(),
         )
         if not is_bot:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
@@ -125,7 +128,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
-        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
+        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
 
     if want('hotspots'):
         state['hotspots'] = get_next_hotspots(user_profile)
@@ -169,7 +172,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
         state['realm_presence_disabled'] = realm.presence_disabled
-        state['realm_show_digest_email'] = realm.show_digest_email and settings.SEND_DIGEST_EMAILS
+        state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
@@ -180,8 +183,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
         else:
             state['realm_notifications_stream_id'] = -1
 
-        if realm.get_signup_notifications_stream():
-            signup_notifications_stream = realm.get_signup_notifications_stream()
+        signup_notifications_stream = realm.get_signup_notifications_stream()
+        if signup_notifications_stream:
             state['realm_signup_notifications_stream_id'] = signup_notifications_stream.id
         else:
             state['realm_signup_notifications_stream_id'] = -1
@@ -221,11 +224,14 @@ def fetch_initial_state_data(user_profile: UserProfile,
         )
 
         state['can_create_streams'] = user_profile.can_create_streams()
+        state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
+        state['is_guest'] = user_profile.is_guest
         state['user_id'] = user_profile.id
         state['enter_sends'] = user_profile.enter_sends
         state['email'] = user_profile.email
+        state['delivery_email'] = user_profile.delivery_email
         state['full_name'] = user_profile.full_name
 
     if want('realm_bot'):
@@ -253,6 +259,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # generate a flag update so we need to use the flags field in the
         # message event.
         state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+
+    if want('starred_messages'):
+        state['starred_messages'] = get_starred_message_ids(user_profile)
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
@@ -383,6 +392,10 @@ def apply_event(state: Dict[str, Any],
                 for field in p:
                     if field in person:
                         p[field] = person[field]
+                    if 'custom_profile_field' in person:
+                        custom_field_id = person['custom_profile_field']['id']
+                        custom_field_new_value = person['custom_profile_field']['value']
+                        p['profile_data'][custom_field_id] = custom_field_new_value
 
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
@@ -413,7 +426,7 @@ def apply_event(state: Dict[str, Any],
                     stream_data = copy.deepcopy(stream)
                     if include_subscribers:
                         stream_data['subscribers'] = []
-                    stream_data['stream_weekly_traffic'] = 0
+                    stream_data['stream_weekly_traffic'] = None
                     stream_data['is_old_stream'] = False
                     stream_data['is_announcement_only'] = False
                     # Add stream to never_subscribed (if not invite_only)
@@ -457,6 +470,7 @@ def apply_event(state: Dict[str, Any],
             if (field in ['realm_create_stream_by_admins_only',
                           'realm_waiting_period_threshold']) and 'can_create_streams' in state:
                 state['can_create_streams'] = user_profile.can_create_streams()
+                state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value
@@ -560,6 +574,9 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
+    elif event['type'] == "submessage":
+        # The client will get submessages with their messages
+        pass
     elif event['type'] == 'typing':
         # Typing notification events are transient and thus ignored
         pass
@@ -574,6 +591,11 @@ def apply_event(state: Dict[str, Any],
         if event['flag'] == 'read' and event['operation'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state, remove_id)
+        if event['flag'] == 'starred' and event['operation'] == 'add':
+            state['starred_messages'] += event['messages']
+        if event['flag'] == 'starred' and event['operation'] == 'remove':
+            state['starred_messages'] = [message for message in state['starred_messages']
+                                         if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
@@ -598,6 +620,8 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "update_global_notifications":
         assert event['notification_name'] in UserProfile.notification_setting_types
         state[event['notification_name']] = event['setting']
+    elif event['type'] == "invites_changed":
+        pass
     elif event['type'] == "user_group":
         if event['op'] == 'add':
             state['realm_user_groups'].append(event['group'])

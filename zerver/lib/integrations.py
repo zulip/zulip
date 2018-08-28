@@ -282,6 +282,7 @@ WEBHOOK_INTEGRATIONS = [
         legacy=True
     ),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
+    WebhookIntegration('clubhouse', ['project-management']),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
     WebhookIntegration('crashlytics', ['monitoring']),
     WebhookIntegration('dialogflow', ['customer-support'], display_name='Dialogflow'),
@@ -335,7 +336,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
     ),
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'], display_name='OpsGenie'),
-    WebhookIntegration('pagerduty', ['monitoring']),
+    WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
@@ -362,6 +363,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
     WebhookIntegration('zapier', ['meta-integration']),
     WebhookIntegration('zendesk', ['customer-support']),
+    WebhookIntegration('zabbix', ['monitoring'], display_name='Zabbix'),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
 ]  # type: List[WebhookIntegration]
@@ -383,7 +385,8 @@ INTEGRATIONS = {
                               doc='zerver/integrations/email.md'),
     'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'],
                           doc='zerver/integrations/errbot.md'),
-    'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
+    'git': Integration('git', 'git', ['version-control'],
+                       stream_name='commits', doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
         'google-calendar',
@@ -392,6 +395,8 @@ INTEGRATIONS = {
         doc='zerver/integrations/google-calendar.md'
     ),
     'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
+    'irc': Integration('irc', 'irc', ['communication'], display_name='IRC',
+                       doc='zerver/integrations/irc.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
@@ -410,6 +415,8 @@ INTEGRATIONS = {
         stream_name='jira',
         legacy=True
     ),
+    'matrix': Integration('matrix', 'matrix', ['communication'],
+                          doc='zerver/integrations/matrix.md'),
     'mercurial': Integration(
         'mercurial',
         'mercurial',

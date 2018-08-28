@@ -3,27 +3,12 @@ from __future__ import absolute_import
 
 import subprocess
 
-from .printer import print_err, colors
+from zulint.linters import run_pycodestyle
 
 from typing import List
 
 def check_pep8(files):
     # type: (List[str]) -> bool
-
-    def run_pycodestyle(files, ignored_rules):
-        # type: (List[str], List[str]) -> bool
-        failed = False
-        color = next(colors)
-        pep8 = subprocess.Popen(
-            ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        assert pep8.stdout is not None  # Implied by use of subprocess.PIPE
-        for line in iter(pep8.stdout.readline, b''):
-            print_err('pep8', color, line)
-            failed = True
-        return failed
-
-    failed = False
     ignored_rules = [
         # Each of these rules are ignored for the explained reason.
 
@@ -41,7 +26,7 @@ def check_pep8(files):
         'E226',
 
         # New rules in pycodestyle 2.4.0 that we haven't decided whether to comply with yet
-        'E252', 'W605', 'W504',
+        'E252', 'W504',
 
         # "multiple spaces after ':'"
         # This is the `{}` analogue of E221, and these are similarly being used
@@ -96,9 +81,4 @@ def check_pep8(files):
         # 'W504',
     ]
 
-    if len(files) == 0:
-        return False
-
-    failed = run_pycodestyle(files, ignored_rules)
-
-    return failed
+    return run_pycodestyle(files, ignored_rules)

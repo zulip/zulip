@@ -40,5 +40,5 @@ class Command(BaseCommand):
                                                                 active=True)),), end=' ')
                 num_messages = len(Message.objects.filter(recipient=recipient))
                 print("%12d" % (num_messages,))
-            print("%d invite-only streams" % (invite_only_count,))
+            print("%d private streams" % (invite_only_count,))
             print("")

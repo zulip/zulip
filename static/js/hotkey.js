@@ -7,7 +7,8 @@ function do_narrow_action(action) {
     return true;
 }
 
-var actions_dropdown_hotkeys = [
+// For message actions and user profile menu.
+var menu_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
     'vim_up',
@@ -21,7 +22,7 @@ var actions_dropdown_hotkeys = [
 
 // The `message_view_only` property is a convenient and performant way
 // to express a common case of which hotkeys do something in which
-// views.  It is set for hotkeys (like `*`) that only have an effect
+// views.  It is set for hotkeys (like `Ctrl + s`) that only have an effect
 // in the main message view with a selected message.
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
@@ -47,9 +48,13 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
+var keydown_ctrl_mappings = {
+    219: {name: 'escape', message_view_only: false}, // '['
+};
+
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
-    219: {name: 'escape', message_view_only: false}, // '['
+    83: {name: 'star_message', message_view_only: true}, // 's'
 };
 
 var keydown_either_mappings = {
@@ -70,7 +75,7 @@ var keydown_either_mappings = {
 };
 
 var keypress_mappings = {
-    42: {name: 'star_message', message_view_only: true}, // '*'
+    42: {name: 'star_deprecated', message_view_only: true}, // '*'
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
@@ -113,8 +118,15 @@ exports.get_keydown_hotkey = function (e) {
 
     var hotkey;
 
+    if (e.ctrlKey && !e.shiftKey) {
+        hotkey = keydown_ctrl_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+    }
+
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
-    if (isCmdOrCtrl) {
+    if (isCmdOrCtrl && !e.shiftKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
@@ -244,9 +256,14 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
+        if (page_params.search_pills_enabled && $('#searchbox').has(':focus')) {
+            $('#searchbox .pill').blur();
+            $('#searchbox #search_query').blur();
+            return true;
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
-        // (this is almost certainly the searchbar)
         $("input:focus,textarea:focus").blur();
         return true;
     }
@@ -465,17 +482,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (overlays.settings_open()) {
-        if (exports.processing_text()) {
-            return false;
-        }
-        switch (event_name) {
-        case 'up_arrow':
-            settings.handle_up_arrow(e);
-            return true;
-        case 'down_arrow':
-            settings.handle_down_arrow(e);
-            return true;
-        }
         return false;
     }
 
@@ -519,9 +525,16 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if ((actions_dropdown_hotkeys.indexOf(event_name) !== -1) && popovers.actions_popped()) {
-        popovers.actions_menu_handle_keyboard(event_name);
-        return true;
+    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1) {
+        if (popovers.actions_popped()) {
+            popovers.actions_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (popovers.message_info_popped()) {
+            popovers.user_info_popover_handle_keyboard(event_name);
+            return true;
+        }
     }
 
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
@@ -557,6 +570,8 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         } else if (event_name === "search_with_k") {
             // Do nothing; this allows one to use ctrl+k inside compose.
+        } else if (event_name === "star_message") {
+            // Do nothing; this allows one to use ctrl+s inside compose.
         } else {
             // Let the browser handle the key normally.
             return false;
@@ -650,6 +665,9 @@ exports.process_hotkey = function (e, hotkey) {
     case 'C_deprecated':
         ui.maybe_show_deprecation_notice('C');
         return true;
+    case 'star_deprecated':
+        ui.maybe_show_deprecation_notice('*');
+        return true;
     }
 
     if (current_msg_list.empty()) {
@@ -691,7 +709,8 @@ exports.process_hotkey = function (e, hotkey) {
     case 'message_actions':
         return popovers.open_message_menu(msg);
     case 'star_message':
-        return message_flags.toggle_starred(msg);
+        message_flags.toggle_starred_and_update_server(msg);
+        return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
     case 'narrow_by_subject':
@@ -712,7 +731,10 @@ exports.process_hotkey = function (e, hotkey) {
         reactions.open_reactions_popover();
         return true;
     case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-        reactions.toggle_emoji_reaction(msg.id, "thumbs_up");
+        // Use canonical name.
+        var thumbs_up_emoji_code = '1f44d';
+        var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
+        reactions.toggle_emoji_reaction(msg.id, canonical_name);
         return true;
     case 'toggle_mute':
         muting_ui.toggle_mute(msg);
@@ -777,3 +799,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hotkeys;
 }
+window.hotkey = hotkeys;

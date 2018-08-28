@@ -146,7 +146,7 @@ AUTHENTICATION_BACKENDS = (
 #   https://github.com/organizations/ORGNAME/settings/developers
 # Fill in "Callback URL" with a value like
 #   https://zulip.example.com/complete/github/ as
-# based on your value for EXTERNAL_HOST.
+# based on your values for EXTERNAL_HOST and SOCIAL_AUTH_SUBDOMAIN.
 #
 # (2) You should get a page with settings for your new application,
 # showing a client ID and a client secret.  Use the client ID as
@@ -160,6 +160,19 @@ AUTHENTICATION_BACKENDS = (
 # this, set one of the two parameters below:
 #SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
 #SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+
+# (4) If you are serving multiple Zulip organizations on different
+# subdomains, you need to set SOCIAL_AUTH_SUBDOMAIN.  You can set it
+# to any subdomain on which you do not plan to host a Zulip
+# organization.  The default recommendation, `auth`, is a reserved
+# subdomain; if you're using this setting, the "Callback URL" should be e.g.:
+#   https://auth.zulip.example.com/complete/github/
+#
+# If you end up using a subdomain other then the default
+# recommendation, you must also set the 'ROOT_SUBDOMAIN_ALIASES' list
+# to include this subdomain.
+#
+#SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 ########
 # SSO via REMOTE_USER.
@@ -238,23 +251,14 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 ENABLE_FILE_LINKS = False
 
 # By default, files uploaded by users and user avatars are stored
-# directly on the Zulip server.  If file storage in Amazon S3 is
-# desired, you can configure that as follows:
+# directly on the Zulip server.  You can configure files being instead
+# stored in Amazon S3 or another scalable data store here.  See docs at:
 #
-# (1) Set s3_key and s3_secret_key in /etc/zulip/zulip-secrets.conf to
-# be the S3 access and secret keys that you want to use, and setting
-# the S3_AUTH_UPLOADS_BUCKET and S3_AVATAR_BUCKET to be the S3 buckets
-# you've created to store file uploads and user avatars, respectively.
-# Then restart Zulip (scripts/restart-server).
-#
-# (2) Edit /etc/nginx/sites-available/zulip-enterprise to comment out
-# the nginx configuration for /user_uploads and /user_avatars (see
-# https://github.com/zulip/zulip/issues/291 for discussion of a better
-# solution that won't be automatically reverted by the Zulip upgrade
-# script), and then restart nginx.
+#   https://zulip.readthedocs.io/en/latest/production/upload-backends.html
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 #S3_AUTH_UPLOADS_BUCKET = ""
 #S3_AVATAR_BUCKET = ""
+#S3_REGION = ""
 
 # Maximum allowed size of uploaded files, in megabytes.  DO NOT SET
 # ABOVE 80MB.  The file upload implementation doesn't support chunked
@@ -386,7 +390,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 #       LDAP_APPEND_DOMAIN = example.com and
 #       AUTH_LDAP_USER_SEARCH to lookup users by username
 #
-#   (C) If LDAP username are completely unrelated to email addresses,
+#   (C) If LDAP usernames are completely unrelated to email addresses,
 #       you should set:
 #       LDAP_EMAIL_ATTR = "email"
 #       LDAP_APPEND_DOMAIN = None
@@ -482,6 +486,13 @@ CAMO_URI = '/external_content/'
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+# By default, Zulip connects to the thumbor (the thumbnailing software
+# we use) service running locally on the machine.  If you're running
+# thumbor on a different server, you can configure that by setting
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will disable
+# thumbnailing in Zulip.
+#THUMBOR_URL = 'http://127.0.0.1:9995'
 
 # Controls the Jitsi video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify

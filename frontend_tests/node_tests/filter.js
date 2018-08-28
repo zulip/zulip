@@ -49,7 +49,7 @@ function assert_same_operators(result, terms) {
     assert.deepEqual(result, terms);
 }
 
-(function test_basics() {
+run_test('basics', () => {
     var operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'stream', operand: 'exclude_stream', negated: true},
@@ -78,8 +78,8 @@ function assert_same_operators(result, terms) {
     filter = new Filter(operators);
 
     assert(filter.is_search());
-    assert(! filter.can_apply_locally());
-    assert(! filter.is_exactly('stream'));
+    assert(!filter.can_apply_locally());
+    assert(!filter.is_exactly('stream'));
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
@@ -107,9 +107,9 @@ function assert_same_operators(result, terms) {
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
     assert(!filter.can_apply_locally());
-}());
+});
 
-(function test_topic_stuff() {
+run_test('topic_stuff', () => {
     var operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'old topic'},
@@ -124,9 +124,9 @@ function assert_same_operators(result, terms) {
 
     assert.deepEqual(new_filter.operands('stream'), ['foo']);
     assert.deepEqual(new_filter.operands('topic'), ['new topic']);
-}());
+});
 
-(function test_new_style_operators() {
+run_test('new_style_operators', () => {
     var term = {
         operator: 'stream',
         operand: 'foo',
@@ -136,9 +136,9 @@ function assert_same_operators(result, terms) {
 
     assert.deepEqual(filter.operands('stream'), ['foo']);
     assert(filter.is_exactly('stream'));
-}());
+});
 
-(function test_public_operators() {
+run_test('public_operators', () => {
     var operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'in', operand: 'all'},
@@ -155,9 +155,9 @@ function assert_same_operators(result, terms) {
     ];
     filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), []);
-}());
+});
 
-(function test_canonicalizations() {
+run_test('canonicalizations', () => {
     assert.equal(Filter.canonicalize_operator('Is'), 'is');
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
@@ -203,7 +203,7 @@ function assert_same_operators(result, terms) {
     assert.equal(term.operator, 'has');
     assert.equal(term.operand, 'link');
 
-}());
+});
 
 function get_predicate(operators) {
     operators = _.map(operators, function (op) {
@@ -220,7 +220,7 @@ function make_sub(name, stream_id) {
     global.stream_data.add_sub(name, sub);
 }
 
-(function test_predicate_basics() {
+run_test('predicate_basics', () => {
     // Predicates are functions that accept a message object with the message
     // attributes (not content), and return true if the message belongs in a
     // given narrow. If the narrow parameters include a search, the predicate
@@ -350,9 +350,9 @@ function make_sub(name, stream_id) {
         display_recipient: [{id: steve.user_id}, {id: me.user_id}],
     }));
     assert(!predicate({type: 'stream'}));
-}());
+});
 
-(function test_negated_predicates() {
+run_test('negated_predicates', () => {
     var predicate;
     var narrow;
 
@@ -365,9 +365,9 @@ function make_sub(name, stream_id) {
     predicate = new Filter(narrow).predicate();
     assert(predicate({type: 'stream', stream_id: 999999}));
     assert(!predicate({type: 'stream', stream_id: social_stream_id}));
-}());
+});
 
-(function test_mit_exceptions() {
+run_test('mit_exceptions', () => {
     global.page_params.realm_is_zephyr_mirror_realm = true;
 
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
@@ -396,9 +396,9 @@ function make_sub(name, stream_id) {
     ];
     predicate = new Filter(terms).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
-}());
+});
 
-(function test_predicate_edge_cases() {
+run_test('predicate_edge_cases', () => {
     var predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
@@ -427,9 +427,9 @@ function make_sub(name, stream_id) {
     predicate = filter.predicate(); // get cached version
     assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
 
-}());
+});
 
-(function test_parse() {
+run_test('parse', () => {
     var string;
     var operators;
 
@@ -535,9 +535,9 @@ function make_sub(name, stream_id) {
         {operator: 'topic', operand: 'with space'},
     ];
     _test();
-}());
+});
 
-(function test_unparse() {
+run_test('unparse', () => {
     var string;
     var operators;
 
@@ -566,9 +566,9 @@ function make_sub(name, stream_id) {
     ];
     string = '';
     assert.deepEqual(Filter.unparse(operators), string);
-}());
+});
 
-(function test_describe() {
+run_test('describe', () => {
     var narrow;
     var string;
 
@@ -627,7 +627,7 @@ function make_sub(name, stream_id) {
     narrow = [
         {operator: 'is', operand: 'something_we_do_not_support'},
     ];
-    string = 'something_we_do_not_support messages';
+    string = 'invalid something_we_do_not_support operand for is operator';
     assert.equal(Filter.describe(narrow), string);
 
     // this should be unreachable, but just in case
@@ -665,12 +665,26 @@ function make_sub(name, stream_id) {
     string = 'stream devel, exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [
+        {operator: 'has', operand: 'abc', negated: true},
+        {operator: 'stream', operand: 'devel'},
+    ];
+    string = 'invalid abc operand for has operator, stream devel';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'has', operand: 'image', negated: true},
+        {operator: 'stream', operand: 'devel'},
+    ];
+    string = 'exclude messages with one or more image, stream devel';
+    assert.equal(Filter.describe(narrow), string);
+
     narrow = [];
     string = 'all messages';
     assert.equal(Filter.describe(narrow), string);
-}());
+});
 
-(function test_is_functions() {
+run_test('is_functions', () => {
     var terms = [
         {operator: 'stream', operand: 'My Stream'},
     ];
@@ -756,9 +770,9 @@ function make_sub(name, stream_id) {
     filter = new Filter(terms);
     assert.equal(filter.is_exactly('is-mentioned'), false);
     assert.equal(filter.is_exactly('is-private'), false);
-}());
+});
 
-(function test_term_type() {
+run_test('term_type', () => {
     function assert_term_type(term, expected_term_type) {
         assert.equal(Filter.term_type(term), expected_term_type);
     }
@@ -811,9 +825,9 @@ function make_sub(name, stream_id) {
     const term_types = filter.sorted_term_types();
 
     assert.deepEqual(term_types, ['stream', 'topic', 'sender']);
-}());
+});
 
-(function test_first_valid_id_from() {
+run_test('first_valid_id_from', () => {
     const terms = [
         {operator: 'is', operand: 'alerted'},
     ];
@@ -837,9 +851,9 @@ function make_sub(name, stream_id) {
     message_store.get = (msg_id) => messages[msg_id];
 
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
-}());
+});
 
-(function test_update_email() {
+run_test('update_email', () => {
     var terms = [
         {operator: 'pm-with', operand: 'steve@foo.com'},
         {operator: 'sender', operand: 'steve@foo.com'},
@@ -850,14 +864,14 @@ function make_sub(name, stream_id) {
     assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
-}());
+});
 
 
-(function test_error_cases() {
+run_test('error_cases', () => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
     people.pm_with_user_ids = function () {};
 
     var predicate = get_predicate([['pm-with', 'Joe@example.com']]);
     assert(!predicate({type: 'private'}));
-}());
+});

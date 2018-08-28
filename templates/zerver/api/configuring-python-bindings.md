@@ -3,14 +3,15 @@
 Zulip provides a set of tools that allows interacting with its API more
 easily, called the [Python bindings](https://pypi.python.org/pypi/zulip/).
 One of the most notable use cases for these bindings are bots developed
-using Zulip's [bot framework](/#writing-bots).
+using Zulip's [bot framework](/api/writing-bots).
 
 In order to use them, you need to configure them with your API key and other
 settings. There are two ways to achieve that:
 
  - With a file called `.zuliprc`, located in your home directory.
- - With [environment variables](https://en.wikipedia.org/wiki/
-Environment_variable) set up in your host machine.
+ - With
+   [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
+   set up in your host machine.
 
 A `.zuliprc` file is a plain text document that has the same format as
 Microsft Windows INI files. It looks like this:
@@ -41,7 +42,7 @@ can be found in the following table:
         <td>Yes</td>
         <td>
             <a href="/api/api-keys">API key</a>, which you can get through
-            Zulip's web interface.</a>
+            Zulip's web interface.
         </td>
     </tr>
     <tr>

@@ -1,16 +1,18 @@
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
-from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy,\
+from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy, \
     do_remove_reaction, do_remove_reaction_legacy
-from zerver.lib.emoji import check_emoji_request, check_valid_emoji
+from zerver.lib.emoji import check_emoji_request, check_valid_emoji, \
+    emoji_name_to_emoji_code
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.models import Message, Reaction, UserMessage, UserProfile
+
+from typing import Optional
 
 def create_historical_message(user_profile: UserProfile, message: Message) -> None:
     # Users can see and react to messages sent to streams they
@@ -25,9 +27,17 @@ def create_historical_message(user_profile: UserProfile, message: Message) -> No
 @has_request_variables
 def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
                  emoji_name: str=REQ(),
-                 emoji_code: str=REQ(),
+                 emoji_code: Optional[str]=REQ(default=None),
                  reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
+
+    if emoji_code is None:
+        # The emoji_code argument is only required for rare corner
+        # cases discussed in the long block comment below.  For simple
+        # API clients, we allow specifying just the name, and just
+        # look up the code using the current name->code mapping.
+        emoji_code = emoji_name_to_emoji_code(message.sender.realm,
+                                              emoji_name)[0]
 
     if Reaction.objects.filter(user_profile=user_profile,
                                message=message,
@@ -73,9 +83,23 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
 
 @has_request_variables
 def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
-                    emoji_code: str=REQ(),
+                    emoji_name: Optional[str]=REQ(default=None),
+                    emoji_code: Optional[str]=REQ(default=None),
                     reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
+
+    if emoji_code is None:
+        if emoji_name is None:
+            raise JsonableError(_('At least one of the following arguments '
+                                  'must be present: emoji_name, emoji_code'))
+        # A correct full Zulip client implementation should always
+        # pass an emoji_code, because of the corner cases discussed in
+        # the long block comments elsewhere in this file.  However, to
+        # make it easy for simple API clients to use the reactions API
+        # without needing the mapping between emoji names and codes,
+        # we allow instead passing the emoji_name and looking up the
+        # corresponding code using the current data.
+        emoji_code = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[0]
 
     if not Reaction.objects.filter(user_profile=user_profile,
                                    message=message,

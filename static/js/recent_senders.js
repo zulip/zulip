@@ -70,3 +70,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = recent_senders;
 }
+window.recent_senders = recent_senders;

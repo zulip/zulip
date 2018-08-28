@@ -390,6 +390,15 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock_info.assert_any_call(
                     "GCM: Sent %s as %s" % (token, message.id))
 
+            # Now test the unregistered case
+            mock_apns.get_notification_result.return_value = 'Unregistered'
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            for _, _, token in apns_devices:
+                mock_info.assert_any_call(
+                    "APNs: Removing invalid/expired token %s (%s)" %
+                    (token, "Unregistered"))
+            self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
+
     def test_end_to_end_connection_error(self) -> None:
         remote_gcm_tokens = [u'dddd']
         for token in remote_gcm_tokens:
@@ -526,6 +535,54 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                {'apns': True})
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True})
+
+    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
+    def test_send_remove_notifications_to_bouncer(self) -> None:
+        user_profile = self.example_user('hamlet')
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=user_profile,
+            message=message
+        )
+
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_notifications_to_bouncer') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.get_common_payload',
+                           return_value={'gcm': True}):
+            apn.handle_remove_push_notification(user_profile.id, message.id)
+            mock_send_android.assert_called_with(user_profile.id, {},
+                                                 {'gcm': True,
+                                                  'event': 'remove',
+                                                  'zulip_message_id': message.id})
+
+    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
+    def test_non_bouncer_push_remove(self) -> None:
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message
+        )
+
+        for token in [u'dddd']:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user=self.user_profile)
+
+        android_devices = list(
+            PushDeviceToken.objects.filter(user=self.user_profile,
+                                           kind=PushDeviceToken.GCM))
+
+        with mock.patch('zerver.lib.push_notifications'
+                        '.send_android_push_notification') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.get_common_payload',
+                           return_value={'gcm': True}):
+            apn.handle_remove_push_notification(self.user_profile.id, message.id)
+            mock_send_android.assert_called_with(android_devices,
+                                                 {'gcm': True,
+                                                  'event': 'remove',
+                                                  'zulip_message_id': message.id})
 
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
@@ -735,6 +792,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -763,6 +821,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.subject,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -794,6 +853,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -820,6 +880,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -845,6 +906,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -869,6 +931,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -896,6 +959,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",

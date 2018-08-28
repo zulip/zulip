@@ -40,7 +40,7 @@ function message_hover(message_row) {
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
-    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
+    if (message_edit.get_editability(message) === message_edit.editability_types.FULL &&
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit"></i>');
     } else {
@@ -48,8 +48,14 @@ function message_hover(message_row) {
     }
 }
 
-$(function () {
-    var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
+function initialize_kitchen_sink_stuff() {
+    // TODO:
+    //      This function is a historical dumping ground
+    //      for lots of miscellaneous setup.  Almost all of
+    //      the code here can probably be moved to more
+    //      specific-purpose modules like message_viewport.js.
+
+    var throttled_mousewheelhandler = _.throttle(function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -65,7 +71,7 @@ $(function () {
         }
 
         message_viewport.last_movement_direction = delta;
-    });
+    }, 50);
 
     message_viewport.message_pane.on('wheel', function (e) {
         var delta = e.originalEvent.deltaY;
@@ -77,7 +83,7 @@ $(function () {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).resize($.throttle(50, resize.handler));
+    $(window).resize(_.throttle(resize.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
@@ -94,8 +100,8 @@ $(function () {
         var max_scroll = this.scrollHeight - self.innerHeight() - 1;
 
         e.stopPropagation();
-        if (((delta < 0) && (scroll <= 0)) ||
-            ((delta > 0) && (scroll >= max_scroll))) {
+        if (delta < 0 && scroll <= 0 ||
+            delta > 0 && scroll >= max_scroll) {
             e.preventDefault();
         }
     });
@@ -117,6 +123,12 @@ $(function () {
 
     if (page_params.high_contrast_mode) {
         $("body").addClass("high-contrast");
+    }
+
+    if (!page_params.dense_mode) {
+        $("body").addClass("less_dense_mode");
+    } else {
+        $("body").addClass("more_dense_mode");
     }
 
     $("#main_div").on("mouseover", ".message_row", function () {
@@ -171,17 +183,18 @@ $(function () {
         if (event.then_scroll) {
             if (row.length === 0) {
                 var row_from_dom = current_msg_list.get_row(event.id);
+                var messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected: event.previously_selected,
                     selected_id: event.id,
                     selected_idx: event.msg_list.selected_idx(),
-                    selected_idx_exact: event.msg_list._items.indexOf(event.msg_list.get(event.id)),
+                    selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)),
                     render_start: event.msg_list.view._render_win_start,
                     render_end: event.msg_list.view._render_win_end,
-                    selected_id_from_idx: event.msg_list._items[event.msg_list.selected_idx()].id,
+                    selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
-                        _.pluck(event.msg_list._items, 'id'),
-                        _.chain(current_msg_list._items).pluck('id').clone().value().sort()
+                        _.pluck(messages, 'id'),
+                        _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
                     ),
                     found_in_dom: row_from_dom.length,
                 });
@@ -206,6 +219,11 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
+    // compose-content padding = icon bottom to make keyboard popover shortcut
+    // vertically aligned with the compose box
+    $('#sidebar-keyboard-shortcuts #keyboard-icon').css('bottom',
+                                                        parseInt($(".compose-content").css("paddingBottom"), 10));
+
     $('#streams_header h4').tooltip({placement: 'right',
                                      animation: false});
 
@@ -221,6 +239,8 @@ $(function () {
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
+
+    $('#keyboard-icon').tooltip();
 
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
@@ -247,15 +267,32 @@ $(function () {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }
+}
 
-    if (feature_flags.full_width) {
-        ui.switchToFullWidth();
-    }
-
+$(function () {
     // initialize other stuff
+    scroll_bar.initialize();
+    muting_ui.initialize();
+    message_viewport.initialize();
+    initialize_kitchen_sink_stuff();
+    echo.initialize();
+    stream_color.initialize();
+    stream_edit.initialize();
+    subs.initialize();
+    condense.initialize();
+    lightbox.initialize();
+    click_handlers.initialize();
+    copy_and_paste.initialize();
+    overlays.initialize();
+    invite.initialize();
+    timerender.initialize();
+    if (!page_params.search_pills_enabled) {
+        tab_bar.initialize();
+    }
     server_events.initialize();
     people.initialize();
     compose_pm_pill.initialize();
+    search_pill_widget.initialize();
     reload.initialize();
     user_groups.initialize();
     unread.initialize();
@@ -270,6 +307,7 @@ $(function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
     hashchange.initialize();
@@ -283,10 +321,10 @@ $(function () {
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
-    info_overlay.initialize();
     ui.initialize();
     panels.initialize();
     typing.initialize();
+    starred_messages.initialize();
 });
 
 

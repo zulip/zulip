@@ -123,8 +123,8 @@ class MutedTopicsTests(ZulipTestCase):
         url = '/api/v1/users/me/subscriptions/muted_topics'
         data = {'stream': 'BOGUS', 'topic': 'Verona3', 'op': 'remove'}
         result = self.api_patch(email, url, data)
-        self.assert_json_error(result, "Topic is not there in the muted_topics list")
+        self.assert_json_error(result, "Topic is not muted")
 
         data = {'stream': 'Verona', 'topic': 'BOGUS', 'op': 'remove'}
         result = self.api_patch(email, url, data)
-        self.assert_json_error(result, "Topic is not there in the muted_topics list")
+        self.assert_json_error(result, "Topic is not muted")

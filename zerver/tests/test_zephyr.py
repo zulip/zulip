@@ -6,6 +6,7 @@ from mock import patch
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.users import get_api_key
 from zerver.models import get_user, get_realm
 
 
@@ -27,6 +28,8 @@ class ZephyrTest(ZulipTestCase):
 
         email = str(self.mit_email("starnine"))
         realm = get_realm('zephyr')
+        user = get_user(email, realm)
+        api_key = get_api_key(user)
         self.login(email, realm=realm)
 
         def ccache_mock(**kwargs: Any) -> Any:
@@ -66,7 +69,7 @@ class ZephyrTest(ZulipTestCase):
             '--',
             '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
             'starnine',
-            get_user(email, realm).api_key,
+            api_key,
             'MTIzNA=='])
 
         # Accounts whose Kerberos usernames are known not to match their
@@ -92,5 +95,5 @@ class ZephyrTest(ZulipTestCase):
             '--',
             '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
             'starnine',
-            get_user(email, realm).api_key,
+            api_key,
             'MTIzNA=='])

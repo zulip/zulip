@@ -2,7 +2,6 @@
 # /tools/update-locked-requirements to update requirements/dev.txt
 # and requirements/mypy.txt.
 # See requirements/README.md for more detail.
-mypy==0.600
-
+mypy==0.620
 # Include typing explicitly, since it's needed on Python 3.4
 typing==3.6.4

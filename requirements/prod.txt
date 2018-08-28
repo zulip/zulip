@@ -9,11 +9,12 @@
 #
 --no-binary psycopg2
 
+git+https://github.com/zulip/django-bitfield@0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38#egg=django-bitfield==1.9.3+dev.0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/python-zulip-api.git@0.4.6#egg=zulip==0.4.6_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.4.6#egg=zulip_bots==0.4.6+git&subdirectory=zulip_bots
-apns2==0.3.0
+git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip==0.5.3_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip_bots==0.5.3+git&subdirectory=zulip_bots
+apns2==0.4.1
 argon2-cffi==18.1.0
 asn1crypto==0.23.0        # via cryptography
 babel==2.5.1              # via django-phonenumber-field
@@ -21,31 +22,34 @@ backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
-boto==2.48.0
+boto==2.49.0
+cachetools==2.1.0         # via google-auth
 cchardet==2.1.1
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
-cryptography==2.2.2
+cryptography==2.3
 cssselect==1.0.1          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
-disposable-email-domains==0.0.26
-django-auth-ldap==1.3.0
-django-bitfield==1.9.3
+disposable-email-domains==0.0.30
+django-auth-ldap==1.6.0
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.4.1.1       # via django-two-factor-auth
 django-phonenumber-field==1.3.0  # via django-two-factor-auth
 django-pipeline==1.6.14
+django-pylibmc==0.6.1
 django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.7.0
 django-webpack-loader==0.6.0
-django==1.11.11
+django==1.11.14
 docopt==0.6.2
 gitdb==0.6.4
-google-api-python-client==1.6.7
+google-api-python-client==1.7.4
+google-auth-httplib2==0.0.3  # via google-api-python-client
+google-auth==1.5.0        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
@@ -55,53 +59,55 @@ hyperframe==3.2.0         # via h2, hyper
 idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.3.1
+ipython==6.5.0
 jedi==0.11.0              # via ipython
 jinja2==2.10
-lxml==4.2.1
+libthumbor==1.3.2
+lxml==4.2.3
 markdown-include==0.5.1
 markdown==2.6.11
 markupsafe==1.0
+matrix-client==0.3.2
 mock==2.0.0
 mypy_extensions==0.3.0
-ndg-httpsclient==0.5.0
+ndg-httpsclient==0.5.1
 oauth2client==4.1.2
-oauthlib==2.0.7
+oauthlib==2.1.0
 parso==0.1.0              # via jedi
 pbr==3.1.1                # via mock
 pexpect==4.3.0            # via ipython
 phonenumberslite==8.8.6   # via django-phonenumber-field
 pickleshare==0.7.4        # via ipython
 pika==0.11.0
-pillow==5.1.0
+pillow==5.2.0
 polib==1.1.0
 premailer==3.2.0
 prompt-toolkit==1.0.15    # via ipython
-psycopg2==2.7.4
+psycopg2==2.7.5
 ptyprocess==0.5.2         # via pexpect
-py3dns==3.1.0
-pyasn1-modules==0.2.1
-pyasn1==0.4.2
+py3dns==3.2.0
+pyasn1-modules==0.2.2
+pyasn1==0.4.4
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pygments==2.2.0
-pyjwt==1.6.1
-pyldap==3.0.0.post1       # via django-auth-ldap
+pyjwt==1.6.4
 pylibmc==1.5.2
 pyoembed==0.1.2
-pyopenssl==17.3.0         # via ndg-httpsclient
+pyopenssl==17.3.0         # via ndg-httpsclient, requests
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
-python-ldap==3.0.0        # via pyldap
-python-twitter==3.4.1
+python-ldap==3.1.0        # via django-auth-ldap
+python-twitter==3.4.2
 python3-openid==3.1.0     # via social-auth-core
-pytz==2018.3
+pytz==2018.5
+pyyaml==3.12              # via yamole
 qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
+requests[security]==2.18.4  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -110,15 +116,16 @@ social-auth-app-django==2.1.0
 social-auth-core==1.5.0   # via social-auth-app-django
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
-sqlalchemy==1.2.7
+sqlalchemy==1.2.10
 statsd==3.2.1             # via django-statsd-mozilla
-stripe==1.80.0
+stripe==2.3.0
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
-twilio==6.13.0
+twilio==6.15.2
 typing==3.6.4
 uritemplate==3.0.0
 urllib3==1.22             # via requests
-uwsgi==2.0.17
+uwsgi==2.0.17.1
 virtualenv-clone==0.3.0
 wcwidth==0.1.7            # via prompt-toolkit
+yamole==2.1.5

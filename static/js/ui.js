@@ -52,7 +52,7 @@ function update_message_in_all_views(message_id, callback) {
 
 exports.show_error_for_unsupported_platform = function () {
     // Check if the user is using old desktop app
-    if (window.bridge !== undefined) {
+    if (typeof bridge !== 'undefined') {
         // We don't internationalize this string because it is long,
         // and few users will have both the old desktop app and an
         // internationalized version of Zulip anyway.
@@ -78,17 +78,17 @@ exports.find_message = function (message_id) {
     return message;
 };
 
-exports.update_starred = function (message) {
-    var starred = message.starred;
+exports.update_starred_view = function (message_id, new_value) {
+    var starred = new_value;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message.id, function update_row(row) {
+    update_message_in_all_views(message_id, function update_row(row) {
         var elt = row.find(".star");
         if (starred) {
-            elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
+            elt.addClass("fa-star").removeClass("fa-star-o").removeClass("empty-star");
         } else {
-            elt.removeClass("icon-vector-star").addClass("icon-vector-star-empty").addClass("empty-star");
+            elt.removeClass("fa-star").addClass("fa-star-o").addClass("empty-star");
         }
         var title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
         elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
@@ -123,11 +123,21 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
+exports.get_hotkey_deprecation_notice = function (originalHotkey, replacementHotkey) {
+    return i18n.t(
+        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" '
+            + 'to make this common shortcut easier to trigger.',
+        { originalHotkey: originalHotkey, replacementHotkey: replacementHotkey }
+    );
+};
+
 var shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     var message;
     if (key === 'C') {
-        message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
+        message = exports.get_hotkey_deprecation_notice('C', 'x');
+    } else if (key === '*') {
+        message = exports.get_hotkey_deprecation_notice('*', 'Ctrl + s');
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;
@@ -147,6 +157,7 @@ exports.maybe_show_deprecation_notice = function (key) {
     if (shown_deprecation_notices.indexOf(key) === -1) {
         $('#deprecation-notice-modal').modal('show');
         $('#deprecation-notice-message').text(message);
+        $('#close-deprecation-notice').focus();
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
             localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
@@ -154,26 +165,11 @@ exports.maybe_show_deprecation_notice = function (key) {
     }
 };
 
-/* EXPERIMENTS */
-
-/* This method allows an advanced user to use the console
- * to switch the application to span full width of the browser.
- */
-exports.switchToFullWidth = function () {
-    $("#full-width-style").remove();
-    $('head').append('<style id="full-width-style" type="text/css">' +
-                         '#home .alert-bar, .recipient-bar-content, #compose-container, .app-main, .header-main { max-width: none; }' +
-                     '</style>');
-    return ("Switched to full width");
-};
-
-/* END OF EXPERIMENTS */
-
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
 
-$(function () {
+exports.set_compose_textarea_handlers = function () {
     $('#compose-textarea').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
@@ -183,7 +179,7 @@ $(function () {
     $("body").on(animationEnd, ".fade-in-message", function () {
         $(this).removeClass("fade-in-message");
     });
-});
+};
 
 exports.restore_compose_cursor = function () {
     $('#compose-textarea')
@@ -191,21 +187,8 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor);
 };
 
-$(function () {
-    if (window.bridge !== undefined) {
-        // Disable "spellchecking" in our desktop app. The "spellchecking"
-        // in our Mac app is actually autocorrect, and frustrates our
-        // users.
-        $("#compose-textarea").attr('spellcheck', 'false');
-        // Modify the zephyr mirroring error message in our desktop
-        // app, since it doesn't work from the desktop version.
-        $("#webathena_login_menu").hide();
-        $("#normal-zephyr-mirror-error-text").addClass("notdisplayed");
-        $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
-    }
-});
-
 exports.initialize = function () {
+    exports.set_compose_textarea_handlers();
     exports.show_error_for_unsupported_platform();
 
     if (page_params.night_mode) {
@@ -219,3 +202,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = ui;
 }
+window.ui = ui;

@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('info', models.CharField(max_length=1000)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='HuddleCount',
@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('value', models.BigIntegerField()),
                 ('anomaly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analytics.Anomaly', null=True)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='InstallationCount',
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('value', models.BigIntegerField()),
                 ('anomaly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analytics.Anomaly', null=True)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='RealmCount',
@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                 ('anomaly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analytics.Anomaly', null=True)),
 
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='StreamCount',
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                 ('value', models.BigIntegerField()),
                 ('anomaly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analytics.Anomaly', null=True)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='UserCount',
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('value', models.BigIntegerField()),
                 ('anomaly', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analytics.Anomaly', null=True)),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
             name='usercount',

@@ -20,7 +20,7 @@ class GenericParser(BaseParser):
     def _get_description(self) -> Optional[str]:
         soup = self._soup
         meta_description = soup.find('meta', attrs={'name': 'description'})
-        if (meta_description and meta_description['content'] != ''):
+        if (meta_description and meta_description.get('content', '') != ''):
             return meta_description['content']
         first_h1 = soup.find('h1')
         if first_h1:

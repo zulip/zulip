@@ -97,14 +97,14 @@ function place_popover(hotspot) {
     case TOP:
         popover_offset = {
             top: -(popover_height + arrow_offset),
-            left: (el_width / 2) - (popover_width / 2),
+            left: el_width / 2 - popover_width / 2,
         };
         arrow_placement = 'bottom';
         break;
 
     case LEFT:
         popover_offset = {
-            top: (el_height / 2) - (popover_height / 2),
+            top: el_height / 2 - popover_height / 2,
             left: -(popover_width + arrow_offset),
         };
         arrow_placement = 'right';
@@ -113,14 +113,14 @@ function place_popover(hotspot) {
     case BOTTOM:
         popover_offset = {
             top: el_height + arrow_offset,
-            left: (el_width / 2) - (popover_width / 2),
+            left: el_width / 2 - popover_width / 2,
         };
         arrow_placement = 'top';
         break;
 
     case RIGHT:
         popover_offset = {
-            top: (el_height / 2) - (popover_height / 2),
+            top: el_height / 2 - popover_height / 2,
             left: el_width + arrow_offset,
         };
         arrow_placement = 'left';
@@ -170,6 +170,11 @@ function place_popover(hotspot) {
 }
 
 function insert_hotspot_into_DOM(hotspot) {
+    if (hotspot.name === "intro_reply") {
+        $('#bottom_whitespace').append(templates.render('intro_reply_hotspot', {}));
+        return;
+    }
+
     var hotspot_overlay_HTML = templates.render('hotspot_overlay', {
         name: hotspot.name,
         title: hotspot.title,
@@ -199,7 +204,7 @@ function insert_hotspot_into_DOM(hotspot) {
                 }
             }, 10), true);
         });
-    }, (hotspot.delay * 1000));
+    }, hotspot.delay * 1000);
 }
 
 exports.is_open = function () {
@@ -239,3 +244,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hotspots;
 }
+window.hotspots = hotspots;

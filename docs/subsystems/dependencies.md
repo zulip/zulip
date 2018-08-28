@@ -164,7 +164,7 @@ highlighting.  The system is largely managed by the code in
   finally, we use `pip`'s built-in caching to ensure that a specific
   version of a specific package is only downloaded once.
 * **Garbage-collecting caches**.  We have a tool,
-  `scripts/lib/clean-venv-cache`, which will clean old cached
+  `scripts/lib/clean_venv_cache.py`, which will clean old cached
   virtualenvs that are no longer in use.  In production, the algorithm
   preserves recent virtualenvs as well as those in use by any current
   production deployment directory under `/home/zulip/deployments/`.
@@ -177,6 +177,14 @@ highlighting.  The system is largely managed by the code in
   currently running Python script into the Zulip virtualenv.  This is
   called by `./manage.py` to ensure that our Django code always uses
   the correct virtualenv as well.
+* **Mypy type checker**.  Because we're using mypy in a strict mode,
+  when you add use of a new Python dependency, you usually need to
+  either adds stubs to the `stubs/` directory for the library, or edit
+  `mypy.ini` in the root of the Zulip project to configure
+  `ignore_missing_imports` for the new library.  See
+  [our mypy docs][mypy-docs] for more details.
+
+[mypy-docs]: ../contributing/mypy.html
 
 ## JavaScript and other frontend packages
 
@@ -188,7 +196,7 @@ reasoning here.
   `scripts/lib/node_cache.py` manages cached `node_modules`
   directories in `/srv/zulip-npm-cache`.  Each is named by its hash,
   computed by the `generate_sha1sum_node_modules` function.
-  `scripts/lib/clean-npm-cache` handles garbage-collection.
+  `scripts/lib/clean_node_cache.py` handles garbage-collection.
 * We use [yarn][], a `pip`-like tool for JavaScript, to download most
   JavaScript dependencies.  Yarn talks to standard the [npm][]
   repository.  We use the standard `package.json` file to declare our
@@ -248,7 +256,7 @@ environments where they need to be displayed.
 Since processing emoji is a relatively expensive operation, as part of
 optimizing provisioning, we use the same caching strategy for the
 compiled emoji data as we use for virtualenvs and `node_modules`
-directories, with `scripts/lib/clean-emoji-cache` responsible for
+directories, with `scripts/lib/clean_emoji_cache.py` responsible for
 garbage-collection.  This caching and garbage-collection is required
 because a correct emoji implementation involves over 1000 small image
 files and a few large ones.  There is a more extended article on our

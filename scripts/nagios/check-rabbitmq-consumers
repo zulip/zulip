@@ -86,4 +86,4 @@ for queue_name in consumers.keys():
         f.write("%s|%s|%s|queue %s has %s consumers, needs %s\n" % (
             now, status, states[status], queue_name,
             consumers[queue_name], options.min_count))
-    subprocess.check_call(["mv", state_file_tmp, state_file_path])
+    os.rename(state_file_tmp, state_file_path)

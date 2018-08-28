@@ -48,7 +48,6 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
 
     return sendfile(request, local_path, attachment=attachment)
 
-@has_request_variables
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
                        realm_id_str: str, filename: str) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)

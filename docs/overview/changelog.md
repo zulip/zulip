@@ -7,6 +7,115 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+These changes likely will not be included in Zulip 1.9, but are
+scheduled for the next major release.
+
+- Added support for limited-permissions "guest" users.
+- Added support for clearing push notifications on Android.
+- Redesigned search navbar area to use more attractive input pills.
+
+### Unreleased targeting Zulip 1.9
+
+This section lists notable unreleased changes that will be included in
+Zulip 1.9; it is generally updated in bursts.
+
+**Highlights:**
+- Added support for custom profile fields.
+- Added support for Debian stretch and Ubuntu bionic.
+- Added support for using Google Hangouts as the video chat provider.
+- Added support for configuring a private stream so subscribers can
+  access full history, even before they joined the stream.
+- Added support for announcement-only streams.
+- Adopted docker-zulip to be now the official Docker image for Zulip.
+- Added support for using matrix.org as an IRC gateway.
+- Added support for configuring email notifications for all messages
+  in a stream (useful for very low-traffic streams/organizations).
+- New translations: Ukrainian and others.
+
+**Upgrade notes:**
+
+* Zulip 1.9 contains a significant database migration that can take
+  several minutes to run.  The upgrade process automatically minimizes
+  disruption by running this migration first, before beginning the
+  user-facing downtime.  However, if you'd like to watch the downtime
+  phase of the upgrade closely, we recommend
+  [running them first manually](../production/expensive-migrations.html)
+  and as well as the usual trick of
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
+
+**Full feature changelog:**
+- Added an organization setting for message deletion time limits.
+- Added an organization setting to control who can edit topics.
+- Added ctrl+K keyboard shortcut for getting to search (same as /, but
+  works even when you're inside compose).
+- Renamed the hotkey for starring a message to Ctrl+S.
+- Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
+  both GitHub authentication and hosting multiple Zulip organizations
+  should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
+- Added automatic thumbnailing of images, powered by thumbor.  The new
+  THUMBOR_URL setting controls this feature; it is disabled by default
+  in this release, because the mobile apps don't support it yet.
+- Added documentation on alternative production deployment options.
+- Added a Gitter data import tool.
+- Added support for using both LDAPAuthBackend and EmailAuthBackend.
+- Added Clubhouse and Zabbix integrations.
+- Added support for rendering message content written in right-to-left
+  languages in a right-to-left style.
+- Added support for compose keyboard shortcuts in message edit UI.
+- Dramatically expanded our API documentation.
+- Optimized the performance of loading Zulip in an organization with
+  thousands of users and hundreds of bot users.
+- Optimized production release tarballs to save about 40MB of size.
+- Upgraded to the latest version of the Google emoji set.
+- Dropped, at least for now, support for user-configured alternative
+  emoji sets.  This was largely motivated by
+  [EmojiOne requesting removal from the emoji-data project](https://github.com/iamcal/emoji-data/pull/142)
+- Removed the "Delete streams" administration page; one can delete
+  streams directly on "Manage streams".
+- Removed support code for the (long-deprecated) legacy desktop app.
+- Fixed several bugs with progress bars when uploading files.
+- Fixed several bugs in `manage.py register_server`.
+- Fixed several minor real-time sync issues with stream settings.
+- Fixed some tricky corner cases with the webapp's caching model and
+  narrowing to the first unread message.
+- Fixed confusing intermediate states of group PMs online indicators.
+- Fixed several subtle unread count corner case bugs.
+- Fixed several installer issues to make it easier to Dockerize Zulip.
+- Fixed several subtle issues with the LDAP integration.
+- Fixed several minor bugs and otherwise optimized search typeahead.
+- Fixed a bad nginx configuration interaction with servers that have
+  misconfigured IPv6.
+- Fixed most of the caveats on the Slack data import tool.
+- Fixed memcached cache size issues for organizations over 10,000 users.
+- Zulip's data export system has full support for all features, and
+  tests to ensure that it stays that way.
+- Rewrote user documentation for dozens of integrations.
+- Rewrote the GitHub authentication backend (and more generally our
+  python-social-auth integration) to make it easier to add new auth methods.
+- Upgraded to modern versions of most of our stale dependencies.
+- Updated our CSS toolchain to support hot module reloading.
+- Updated numerous pages within the /help/ site.
+- We no longer require re-authing to signup after trying to login with
+  an OAuth authentication backend (GitHub or Google).
+- Made major improvements to the Help Center.
+- Improved system for configuring the S3 file uploads backend.
+- Improved emoji typeahead sorting.
+- Improved Zulip's layout for windows with a width around 1024px.
+- Improved Zulip's generic error handling behavior for webhooks.
+- Improved keyboard navigation of settings and popovers.
+- Converted several layered-checkbox settings to clearer dropdowns.
+- Cleaned up some legacy APIs still using email addresses.
+- Made arrow-key navigation work within right and left sidebar search.
+- Fixed performance issues of the right sidebar user list with 5000+
+  user accounts on a server.
+- Emails and several other onboarding strings are now tagged for
+  translation.
+- Optimized the performance of development provisioning; a no-op
+  provision now completes in about 3.5s.
+- Migrated our static asset pipeline to webpack.
+- Our steady work on codebase quality and our automated test suite
+  continues.  Backend test coverage is now an incredible 98%.
+
 ### 1.8.1 -- 2018-05-07
 
 - Added an automated tool (`manage.py register_server`) to sign up for
@@ -307,7 +416,7 @@ Backend and scaling
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.html) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-ubuntu-system-updates).
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.

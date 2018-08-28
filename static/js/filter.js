@@ -36,8 +36,8 @@ function zephyr_topic_name_match(message, operand) {
 
 function message_in_home(message) {
     if (message.type === "private" || message.mentioned ||
-        (page_params.narrow_stream !== undefined &&
-         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())) {
+        page_params.narrow_stream !== undefined &&
+         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase()) {
         return true;
     }
 
@@ -48,7 +48,7 @@ function message_matches_search_term(message, operator, operand) {
     switch (operator) {
     case 'is':
         if (operand === 'private') {
-            return (message.type === 'private');
+            return message.type === 'private';
         } else if (operand === 'starred') {
             return message.starred;
         } else if (operand === 'mentioned') {
@@ -73,7 +73,7 @@ function message_matches_search_term(message, operator, operand) {
         return true;
 
     case 'id':
-        return (message.id.toString() === operand);
+        return message.id.toString() === operand;
 
     case 'stream':
         if (message.type !== 'stream') {
@@ -89,13 +89,13 @@ function message_matches_search_term(message, operator, operand) {
         // the operand.
         var stream_id = stream_data.get_stream_id(operand);
         if (stream_id) {
-            return (message.stream_id === stream_id);
+            return message.stream_id === stream_id;
         }
 
         // We need this fallback logic in case we have a message
         // loaded for a stream that we are no longer
         // subscribed to (or that was deleted).
-        return (message.stream.toLowerCase() === operand);
+        return message.stream.toLowerCase() === operand;
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -106,7 +106,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return (message.subject.toLowerCase() === operand);
+        return message.subject.toLowerCase() === operand;
 
 
     case 'sender':
@@ -121,7 +121,7 @@ function message_matches_search_term(message, operator, operand) {
         if (!user_ids) {
             return false;
         }
-        return (user_ids.includes(operand_ids[0]));
+        return user_ids.indexOf(operand_ids[0]) !== -1;
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
 
@@ -347,7 +347,7 @@ Filter.prototype = {
 
     operands: function (operator) {
         return _.chain(this._operators)
-            .filter(function (elem) { return !elem.negated && (elem.operator === operator); })
+            .filter(function (elem) { return !elem.negated && elem.operator === operator; })
             .map(function (elem) { return elem.operand; })
             .value();
     },
@@ -360,7 +360,7 @@ Filter.prototype = {
 
     has_operator: function (operator) {
         return _.any(this._operators, function (elem) {
-            if (elem.negated && (!_.contains(['search', 'has'], elem.operator))) {
+            if (elem.negated && !_.contains(['search', 'has'], elem.operator)) {
                 return false;
             }
             return elem.operator === operator;
@@ -372,7 +372,23 @@ Filter.prototype = {
     },
 
     can_apply_locally: function () {
-        return (!this.is_search()) && (!this.has_operator('has'));
+        if (this.is_search()) {
+            // The semantics for matching keywords are implemented
+            // by database plugins, and we don't have JS code for
+            // that, plus search queries tend to go too far back in
+            // history.
+            return false;
+        }
+
+        if (this.has_operator('has')) {
+            // See #6186 to see why we currently punt on 'has:foo'
+            // queries.  This can be fixed, there are just some random
+            // complications that make it non-trivial.
+            return false;
+        }
+
+        // If we get this far, we're good!
+        return true;
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
@@ -413,6 +429,25 @@ Filter.prototype = {
         var term_types = this.sorted_term_types();
 
         return _.isEqual(term_types, wanted_term_types);
+    },
+
+    is_reading_mode: function () {
+        // We only turn on "reading mode" for filters that
+        // have contiguous messages for a narrow, as opposed
+        // to "random access" queries like search:<keyword>
+        // or id:<number> that jump you to parts of the message
+        // view where you might only care about reading the
+        // current message.
+        var term_types = this.sorted_term_types();
+        var wanted_list = [
+            ['stream'],
+            ['stream', 'topic'],
+            ['is-private'],
+            ['pm-with'],
+        ];
+        return _.any(wanted_list, function (wanted_types) {
+            return _.isEqual(wanted_types, term_types);
+        });
     },
 
     can_bucket_by: function () {
@@ -471,7 +506,7 @@ Filter.prototype = {
     _build_predicate: function () {
         var operators = this._operators;
 
-        if (! this.can_apply_locally()) {
+        if (!this.can_apply_locally()) {
             return function () { return true; };
         }
 
@@ -553,6 +588,7 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'near':
         return verb + 'messages around';
 
+    // Note: We hack around using this in "describe" below.
     case 'has':
         return verb + 'messages with one or more';
 
@@ -583,6 +619,18 @@ Filter.operator_to_prefix = function (operator, negated) {
     return '';
 };
 
+function describe_is_operator(operator) {
+    var verb = operator.negated ? 'exclude ' : '';
+    var operand = operator.operand;
+    var operand_list = ['private', 'starred', 'alerted', 'unread'];
+    if (operand_list.indexOf(operand) !== -1) {
+        return verb + operand + ' messages';
+    } else if (operand === 'mentioned') {
+        return verb + '@-mentions';
+    }
+    return 'invalid ' + operand + ' operand for is operator';
+}
+
 // Convert a list of operators to a human-readable description.
 function describe_unescaped(operators) {
     if (operators.length === 0) {
@@ -593,7 +641,7 @@ function describe_unescaped(operators) {
 
     if (operators.length >= 2) {
         var is = function (term, expected) {
-            return (term.operator === expected) && !term.negated;
+            return term.operator === expected && !term.negated;
         };
 
         if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
@@ -608,20 +656,16 @@ function describe_unescaped(operators) {
     var more_parts = _.map(operators, function (elem) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-        if (canonicalized_operator ==='is') {
-            var verb = elem.negated ? 'exclude ' : '';
-            if (operand === 'private') {
-                return verb + 'private messages';
-            } else if (operand === 'starred') {
-                return verb + 'starred messages';
-            } else if (operand === 'mentioned') {
-                return verb + '@-mentions';
-            } else if (operand === 'alerted') {
-                return verb + 'alerted messages';
-            } else if (operand === 'unread') {
-                return verb + 'unread messages';
+        if (canonicalized_operator === 'is') {
+            return describe_is_operator(elem);
+        }
+        if (canonicalized_operator === 'has') {
+            // search_suggestion.get_suggestions takes care that this message will
+            // only be shown if the `has` operator is not at the last.
+            var valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
+            if (valid_has_operands.indexOf(operand) === -1) {
+                return 'invalid ' + operand + ' operand for has operator';
             }
-            return operand + ' messages';
         }
         var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
                                                             elem.negated);
@@ -643,3 +687,5 @@ return Filter;
 if (typeof module !== 'undefined') {
     module.exports = Filter;
 }
+
+window.Filter = Filter;

@@ -37,7 +37,7 @@ def update_fts_columns(cursor):
         if USING_PGROONGA:
             cursor.execute("UPDATE zerver_message SET "
                            "search_pgroonga = "
-                           "subject || ' ' || rendered_content "
+                           "escape_html(subject) || ' ' || rendered_content "
                            "WHERE id = %s", (message_id,))
         cursor.execute("UPDATE zerver_message SET "
                        "search_tsvector = to_tsvector('zulip.english_us_search', "
@@ -52,6 +52,7 @@ def am_master(cursor):
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("process_fts_updates")
 logger.setLevel(logging.DEBUG)
@@ -67,7 +68,7 @@ try:
     from django.conf import settings
     remote_postgres_host = settings.REMOTE_POSTGRES_HOST
     USING_PGROONGA = settings.USING_PGROONGA
-except ImportError as e:
+except ImportError:
     # process_fts_updates also supports running locally on a remote
     # postgres server; in that case, one can just connect to localhost
     remote_postgres_host = ''

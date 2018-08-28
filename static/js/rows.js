@@ -55,7 +55,7 @@ var valid_table_names = {
 };
 
 exports.get_table = function (table_name) {
-    if (! valid_table_names.hasOwnProperty(table_name)) {
+    if (!valid_table_names.hasOwnProperty(table_name)) {
         return $();
     }
 
@@ -114,3 +114,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = rows;
 }
+window.rows = rows;

@@ -22,10 +22,10 @@ function adjust_mac_shortcuts() {
 }
 
 // Make it explicit that our toggler is undefined until
-// _setup_info_overlay is called via ensure_i18n.
+// set_up_toggler is called.
 exports.toggler = undefined;
 
-function _setup_info_overlay() {
+exports.set_up_toggler = function () {
     var opts = {
         selected: 0,
         child_wants_focus: true,
@@ -68,9 +68,13 @@ function _setup_info_overlay() {
     }
 
     exports.toggler = toggler;
-}
+};
 
 exports.show = function (target) {
+    if (!exports.toggler) {
+        exports.set_up_toggler();
+    }
+
     var overlay = $(".informational-overlays");
 
     if (!overlay.hasClass("show")) {
@@ -84,9 +88,7 @@ exports.show = function (target) {
     }
 
     if (target) {
-        if (exports.toggler) {
-            exports.toggler.goto(target);
-        }
+        exports.toggler.goto(target);
     }
 };
 
@@ -100,13 +102,10 @@ exports.maybe_show_keyboard_shortcuts = function () {
     exports.show("keyboard-shortcuts");
 };
 
-exports.initialize = function () {
-    i18n.ensure_i18n(_setup_info_overlay);
-};
-
 return exports;
 }());
 
 if (typeof module !== 'undefined') {
     module.exports = info_overlay;
 }
+window.info_overlay = info_overlay;

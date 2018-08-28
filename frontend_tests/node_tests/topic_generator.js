@@ -1,4 +1,4 @@
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });
@@ -13,7 +13,7 @@ var tg = zrequire('topic_generator');
 function is_even(i) { return i % 2 === 0; }
 function is_odd(i) { return i % 2 === 1; }
 
-(function test_basics() {
+run_test('basics', () => {
     var gen = tg.list_generator([10, 20, 30]);
     assert.equal(gen.next(), 10);
     assert.equal(gen.next(), 20);
@@ -78,9 +78,9 @@ function is_odd(i) { return i % 2 === 1; }
     gen = tg.map(ints, mult10);
     assert.equal(gen.next(), 100);
     assert.equal(gen.next(), 200);
-}());
+});
 
-(function test_reverse() {
+run_test('reverse', () => {
     var gen = tg.reverse_list_generator([10, 20, 30]);
     assert.equal(gen.next(), 30);
     assert.equal(gen.next(), 20);
@@ -139,15 +139,15 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), 5);
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
-}());
+});
 
-(function test_fchain() {
+run_test('fchain', () => {
     var mults = function (n) {
         var ret = 0;
         return {
             next: function () {
                 ret += n;
-                return (ret <= 100) ? ret : undefined;
+                return ret <= 100 ? ret : undefined;
             },
         };
     };
@@ -177,16 +177,15 @@ function is_odd(i) { return i % 2 === 1; }
         return;
     };
 
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Invalid generator returned.');
-    };
-
+    blueslip.set_test_data('error', 'Invalid generator returned.');
     ints = tg.list_generator([29, 43]);
     gen = tg.fchain(ints, undef);
     gen.next();
-}());
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
+});
 
-(function test_streams() {
+run_test('streams', () => {
     function assert_next_stream(curr_stream, expected) {
         var actual = tg.get_next_stream(curr_stream);
         assert.equal(actual, expected);
@@ -211,9 +210,9 @@ function is_odd(i) { return i % 2 === 1; }
     assert_prev_stream('test here', 'devel');
     assert_prev_stream('announce', 'test here');
 
-}());
+});
 
-(function test_topics() {
+run_test('topics', () => {
     var streams = [1, 2, 3, 4];
     var topics = {};
 
@@ -284,7 +283,7 @@ function is_odd(i) { return i % 2 === 1; }
     };
 
     global.stream_data.name_in_home_view = function (stream_name) {
-        return (stream_name !== 'muted');
+        return stream_name !== 'muted';
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
@@ -292,7 +291,7 @@ function is_odd(i) { return i % 2 === 1; }
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {
-        return (topic === 'muted');
+        return topic === 'muted';
     };
 
     var next_item = tg.get_next_topic('announce', 'whatever');
@@ -306,9 +305,9 @@ function is_odd(i) { return i % 2 === 1; }
         stream: 'muted',
         topic: 'ms-topic1',
     });
-}());
+});
 
-(function test_get_next_unread_pm_string() {
+run_test('get_next_unread_pm_string', () => {
     pm_conversations.recent.get_strings = function () {
         return ['1', 'read', '2,3', '4', 'unk'];
     };
@@ -332,4 +331,4 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(tg.get_next_unread_pm_string('1'), '2,3');
     assert.equal(tg.get_next_unread_pm_string('read'), '2,3');
     assert.equal(tg.get_next_unread_pm_string('2,3'), '4');
-}());
+});

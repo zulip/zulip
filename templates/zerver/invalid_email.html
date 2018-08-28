@@ -33,4 +33,13 @@
     </p>
     {% endif %}
 
+    {% if email_contains_plus %}
+    <p>
+        {% trans %}The organization you are trying to join,
+        {{realm_name}}, does not allow signups using emails
+        that contains +. Please sign up using appropriate email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
 {% endblock %}

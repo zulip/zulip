@@ -1,7 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-zrequire('hashchange');
 zrequire('hash_util');
 zrequire('narrow');
 zrequire('narrow_state');
@@ -12,6 +11,7 @@ var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
 
 zrequire('popovers');
+popovers.hide_user_profile = noop;
 
 set_global('current_msg_list', {});
 set_global('page_params', {
@@ -88,7 +88,7 @@ function make_image_stubber() {
     };
 }
 
-(function test_sender_hover() {
+run_test('sender_hover', () => {
     popovers.register_click_handlers();
 
     var handler = $('#main_div').get_on_handler('click', '.sender_info_hover');
@@ -146,7 +146,7 @@ function make_image_stubber() {
                 user_id: 42,
                 user_time: undefined,
                 presence_status: 'offline',
-                user_last_seen_time_status: 'translated: Unknown',
+                user_last_seen_time_status: 'translated: More than 2 weeks ago',
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
                 narrowed: false,
@@ -174,4 +174,4 @@ function make_image_stubber() {
     assert.equal(avatar_img.src, 'avatar/42/medium');
 
     // todo: load image
-}());
+});

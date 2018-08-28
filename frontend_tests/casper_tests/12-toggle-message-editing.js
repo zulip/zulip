@@ -104,7 +104,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Saved');
         casper.test.assertEval(function () {
-            return (document.querySelector('#id_realm_msg_edit_limit_setting').value === "never");
+            return document.querySelector('#id_realm_msg_edit_limit_setting').value === "never";
         }, 'Message editing Setting disabled');
     });
 });
@@ -166,7 +166,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Saved');
         casper.test.assertEval(function () {
-            return (document.querySelector('#id_realm_msg_edit_limit_setting').value === "upto_ten_min");
+            return document.querySelector('#id_realm_msg_edit_limit_setting').value === "upto_ten_min";
         }, 'Allow message editing Setting re-activated and set to 10 minutes');
     });
 });
@@ -189,7 +189,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Saved');
         casper.test.assertEval(function () {
-            return (document.querySelector('#id_realm_msg_edit_limit_setting').value === "upto_one_week");
+            return document.querySelector('#id_realm_msg_edit_limit_setting').value === "upto_one_week";
         }, 'Message edit limit set to one week');
     });
 });
@@ -212,7 +212,7 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Saved');
         casper.test.assertEval(function () {
-            return (document.querySelector('#id_realm_msg_edit_limit_setting').value === "any_time");
+            return document.querySelector('#id_realm_msg_edit_limit_setting').value === "any_time";
         }, 'Message can be edited any time');
     });
 });
@@ -267,7 +267,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.admin-realm-failed-change-status', function () {
+    casper.waitUntilVisible('#org-msg-editing .subsection-failed-status', function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Save');
     });

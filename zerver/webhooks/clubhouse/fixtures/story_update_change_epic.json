@@ -1,0 +1,35 @@
+{
+    "id":"5b1fefb0-45f1-4e20-bacb-b8038867fa54",
+    "changed_at":"2018-06-12T16:07:12.821Z",
+    "primary_id":11,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "epic_id":{
+                    "new":17,
+                    "old":7
+                }
+            }
+        }
+    ],
+    "references":[
+        {
+            "id":17,
+            "entity_type":"epic",
+            "name":"Clubhouse Fork"
+        },
+        {
+            "id":7,
+            "entity_type":"epic",
+            "name":"Release 1.9"
+        }
+    ]
+}

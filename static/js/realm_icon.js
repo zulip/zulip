@@ -49,3 +49,4 @@ var realm_icon = (function () {
 if (typeof module !== 'undefined') {
     module.exports = realm_icon;
 }
+window.realm_icon = realm_icon;

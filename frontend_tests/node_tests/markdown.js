@@ -12,7 +12,7 @@ zrequire('emoji');
 zrequire('message_store');
 zrequire('markdown');
 
-set_global('window', {
+global.patch_builtin('window', {
     location: {
         origin: 'http://zulip.zulipdev.com',
     },
@@ -135,18 +135,18 @@ stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
 
 // Check the default behavior of fenced code blocks
 // works properly before markdown is initialized.
-(function test_fenced_block_defaults() {
+run_test('fenced_block_defaults', () => {
     var input = '\n```\nfenced code\n```\n\nand then after\n';
     var expected = '\n\n<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n\nand then after\n\n';
     var output = fenced_code.process_fenced_code(input);
     assert.equal(output, expected);
-}());
+});
 
 markdown.initialize();
 
 var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
-(function test_bugdown_detection() {
+run_test('bugdown_detection', () => {
     var no_markup = [
         "This is a plaintext message",
         "This is a plaintext: message",
@@ -192,9 +192,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
     markup.forEach(function (content) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     });
-}());
+});
 
-(function test_marked_shared() {
+run_test('marked_shared', () => {
     var tests = bugdown_data.regular_tests;
 
     tests.forEach(function (test) {
@@ -218,9 +218,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
             global.bugdown_assert.equal(test.expected_output, output, error_message);
         }
     });
-}());
+});
 
-(function test_message_flags() {
+run_test('message_flags', () => {
     var message = {raw_content: '@**Leo**'};
     markdown.apply_markdown(message);
     assert(!message.mentioned);
@@ -235,9 +235,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
     markdown.apply_markdown(message);
     assert(message.mentioned);
     assert(!message.mentioned_me_directly);
-}());
+});
 
-(function test_marked() {
+run_test('marked', () => {
     var test_cases = [
         {input: 'hello', expected: '<p>hello</p>'},
         {input: 'hello there', expected: '<p>hello there</p>'},
@@ -321,7 +321,7 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
         {input: ':)',
          expected: '<p>:)</p>'},
         {input: ':)',
-         expected: '<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>',
+         expected: '<p><span class="emoji emoji-1f642" title="slight smile">:slight_smile:</span></p>',
          translate_emoticons: true},
         // Test HTML Escape in Custom Zulip Rules
         {input: '@**<h1>The Rogue One</h1>**',
@@ -359,9 +359,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
         var output = message.content;
         assert.equal(expected, output);
     });
-}());
+});
 
-(function test_subject_links() {
+run_test('subject_links', () => {
     var message = {type: 'stream', subject: "No links here"};
     markdown.add_subject_links(message);
     assert.equal(message.subject_links.length, []);
@@ -396,9 +396,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
     message = {type: "not-stream"};
     markdown.add_subject_links(message);
     assert.equal(message.subject_links.length, 0);
-}());
+});
 
-(function test_message_flags() {
+run_test('message_flags', () => {
     var input = "/me is testing this";
     var message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
@@ -468,9 +468,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
-}());
+});
 
-(function test_backend_only_realm_filters() {
+run_test('backend_only_realm_filters', () => {
     var backend_only_realm_filters = [
         'Here is the PR-#123.',
         'Function abc() was introduced in (PR)#123.',
@@ -478,22 +478,22 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
     backend_only_realm_filters.forEach(function (content) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     });
-}());
+});
 
-(function test_python_to_js_filter() {
+run_test('python_to_js_filter', () => {
     // The only way to reach python_to_js_filter is indirectly, hence the call
     // to set_realm_filters.
     markdown.set_realm_filters([['/a(?im)a/g'], ['/a(?L)a/g']]);
-    var actual_value = (marked.InlineLexer.rules.zulip.realm_filters);
+    var actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     var expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
-}());
+});
 
-(function test_katex_throws_unexpected_exceptions() {
+run_test('katex_throws_unexpected_exceptions', () => {
     katex.renderToString = function () { throw new Error('some-exception'); };
     blueslip.set_test_data('error', 'Error: some-exception');
     var message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+});

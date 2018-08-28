@@ -27,6 +27,7 @@ class SlowQueryTest(ZulipTestCase):
         self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
+    @override_settings(SLOW_QUERY_LOGS_STREAM="logs")
     @patch('logging.info')
     def test_slow_query_log(self, mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME
@@ -37,7 +38,7 @@ class SlowQueryTest(ZulipTestCase):
         self.assertIn("logs", str(last_message.recipient))
         self.assertEqual(last_message.topic_name(), "testserver: slow queries")
         self.assertRegexpMatches(last_message.content,
-                                 "123\.456\.789\.012 SOCKET  200 10\.\ds .*")
+                                 r"123\.456\.789\.012 SOCKET  200 10\.\ds .*")
 
     @override_settings(ERROR_BOT=None)
     @patch('logging.info')

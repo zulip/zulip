@@ -15,32 +15,33 @@
     </div>
     {{#if is_admin}}
     <form class="form-horizontal admin-profile-field-form">
-        <input id="profile_field_data" type="hidden" name="field_data" />
         <div class="add-new-profile-field-box grey-box">
             <div class="new-profile-field-form wrapper">
                 <div class="settings-section-title new-profile-field-section-title">{{t "Add a new profile field" }}</div>
                 <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
-                    <input type="text" id="profile_field_name" name="name" autocomplete="off"/>
+                    <input type="text" id="profile_field_name" name="name" autocomplete="off" maxlength="40" />
                 </div>
                 <div class="control-group">
-                    <label for="profile_field_hint" class="control-label">{{t "Hint" }}</label>
-                    <input type="text" id="profile_field_hint" name="hint" autocomplete="off"/>
+                    <label for="profile_field_hint" class="control-label">{{t "Hint (up to 80 characters)" }}</label>
+                    <input type="text" id="profile_field_hint" name="hint" autocomplete="off" maxlength="80" />
                     <div class="alert" id="admin-profile-field-hint-status"></div>
                 </div>
                 <div class="control-group">
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
                     <select id="profile_field_type" name="field_type">
                         {{#each custom_profile_field_types}}
-                        <option value='{{this.[0]}}'>{{this.[1]}}</option>
+                        <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
                 <div class="control-group" id="profile_field_choices_row">
                     <label for="profile_field_choices" class="control-label">{{t "Field choices" }}</label>
-                    <div id="profile_field_choices" class="profile-field-choices"></div>
+                    <table class="profile_field_choices_table">
+                        <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
+                    </table>
                 </div>
-                <button type="submit" class="button rounded sea-green">
+                <button type="submit" class="button rounded sea-green" id="add-custom-profile-field-btn">
                     {{t 'Add profile field' }}
                 </button>
             </div>

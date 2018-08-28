@@ -4,18 +4,23 @@
 
 {% block page_params %}
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
-<script type="text/javascript" nonce="{{ csp_nonce }}">
+<script nonce="{{ csp_nonce }}">
     {% autoescape off %}
     var page_params = {{ page_params }};
     {% endautoescape %}
 </script>
 {% endblock %}
 
+{% block commonjs %}
+{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce)) }}
+{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
+{% endblock %}
+
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
-<link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}_sprite.css" rel="stylesheet" type="text/css">
-<style type="text/css">
+<link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}-sprite.css" rel="stylesheet" type="text/css">
+<style>
     #css-loading {
     background: white;
     position: fixed;
@@ -27,15 +32,10 @@
     }
 
 </style>
-
-{{ minified_js('app', csp_nonce)|safe }}
-{{ render_bundle('app-styles', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
-{% include "zerver/app/topic_is_muted.html" %}
 {% endblock %}
 
 {% block content %}
+{% include "zerver/app/topic_is_muted.html" %}
 
 <div id="css-loading">
     <h3>{{ _('Loading...') }}</h3>
@@ -119,7 +119,7 @@
                         <div id="alert-bar" class="alert-bar">
                             <div id="alert-bar-contents" class="alert-bar-contents">
                                 <div id="custom-alert-bar-content"></div>
-                                <i class="icon-vector-remove close-alert-icon"></i>
+                                <i class="fa fa-remove close-alert-icon" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>

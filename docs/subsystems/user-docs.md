@@ -192,13 +192,12 @@ a new line to be formatted this way.
 
 ### Icons
 
-You can refer to features in the Zulip UI by referencing their names and
-their [FontAwesome](http://fontawesome.io) (version 4.7.0) text icons within
-parentheses. The source for the text icons is located in
-`static/third/thirdparty-fonts.css`. **Note:** It is strongly recommended to use
-the new base class `fa` instead of the older base class `icon-vector` when
-specifying icons. In future we will be removing support for the icons with base
-class `icon-vector`.
+You can refer to features in the Zulip UI by referencing their names
+and their [FontAwesome](http://fontawesome.io) (version 4.7.0) text
+icons within parentheses. **Note:** We are migrating to the modern
+font awesome base class `fa` instead of the older base class
+`icon-vector` when specifying icons. In future we will be removing
+support for the icons with base class `icon-vector`.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
 class="fa fa-cog"></i>) icon`
@@ -246,27 +245,6 @@ The source for macros is the Markdown files under
 [main Zulip server repository](https://github.com/zulip/zulip). If you find
 multiple instances of particular content in the documentation, you can
 always create a new macro by adding a new file to that folder.
-
-### **Organization settings** `{!admin.md!}` macro
-
-* **About:** Links to the **Organization settings** documentation. Usually
-preceded by a link to a particular section on the **Organization settings**
-page.
-
-* **Contents:**
-    ```md
-    tab of the [Organization settings](/help/edit-administrator-settings) page.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    1. Go to the [Organization settings](/#organization/organization-settings)
-    {!admin.md!}
-    ```
-    ```md
-    1. Go to the [Organization settings](/#organization/organization-settings) tab of the
-    [Organization](/help/edit-administrator-settings) page.
-    ```
 
 ### **Administrator only feature** `{!admin-only.md!}` macro
 
@@ -378,8 +356,7 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
 
 * **Contents:**
     ```md
-    1. Hover over a message to replace the message's timestamp with its message
-    actions, represented by three icons. From the icons that appear, select the
+    1. Hover over the message to reveal three icons on the right. Select the
     ```
 
 * **Example usage and rendering:**
@@ -388,8 +365,7 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
     {!down-chevron.md!}
     ```
     ```md
-    1. Hover over a message to replace the message's timestamp with its message
-    actions, represented by three icons. From the icons that appear, select the
+    1. Hover over the message to reveal three icons on the right. Select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 

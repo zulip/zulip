@@ -1,6 +1,8 @@
 import datetime
 from boto.s3.connection import S3Connection
+from django.apps import apps
 from django.conf import settings
+from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils.timezone import make_aware as timezone_make_aware
 from django.utils.timezone import utc as timezone_utc
@@ -13,13 +15,15 @@ import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
+    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, \
-    get_display_recipient, Attachment, get_system_bot
+    UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
+    CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
+    RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
+    UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Iterable
+    Iterable, Union
 
 # Custom mypy types follow:
 Record = Dict[str, Any]
@@ -43,8 +47,10 @@ PostProcessData = Any  # TODO: make more specific
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
 # lists of integers or a single integer.
-# TODO: tighten this up with a union.
-MessageOutput = Dict[str, Any]
+# TODO: This could maybe be improved using TypedDict?
+MessageOutput = Dict[str, Union[List[Record], List[int], int]]
+
+MESSAGE_BATCH_CHUNK_SIZE = 1000
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -52,63 +58,155 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
 
 
-ALL_ZERVER_TABLES = [
-    # TODO: get a linter to ensure that this list is actually complete.
+ALL_ZULIP_TABLES = {
+    'analytics_anomaly',
+    'analytics_fillstate',
+    'analytics_installationcount',
+    'analytics_realmcount',
+    'analytics_streamcount',
+    'analytics_usercount',
+    'otp_static_staticdevice',
+    'otp_static_statictoken',
+    'otp_totp_totpdevice',
+    'social_auth_association',
+    'social_auth_code',
+    'social_auth_nonce',
+    'social_auth_partial',
+    'social_auth_usersocialauth',
+    'two_factor_phonedevice',
+    'zerver_archivedattachment',
+    'zerver_archivedattachment_messages',
+    'zerver_archivedmessage',
+    'zerver_archivedusermessage',
     'zerver_attachment',
     'zerver_attachment_messages',
+    'zerver_botconfigdata',
+    'zerver_botstoragedata',
     'zerver_client',
+    'zerver_customprofilefield',
+    'zerver_customprofilefieldvalue',
     'zerver_defaultstream',
+    'zerver_defaultstreamgroup',
+    'zerver_defaultstreamgroup_streams',
+    'zerver_emailchangestatus',
     'zerver_huddle',
     'zerver_message',
+    'zerver_multiuseinvite',
+    'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
+    'zerver_reaction',
     'zerver_realm',
+    'zerver_realmauditlog',
     'zerver_realmdomain',
     'zerver_realmemoji',
     'zerver_realmfilter',
     'zerver_recipient',
     'zerver_scheduledemail',
+    'zerver_scheduledmessage',
+    'zerver_service',
     'zerver_stream',
+    'zerver_submessage',
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_usergroup',
+    'zerver_usergroupmembership',
+    'zerver_userhotspot',
     'zerver_usermessage',
     'zerver_userpresence',
     'zerver_userprofile',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
-]
+    'zerver_mutedtopic',
+}
 
-NON_EXPORTED_TABLES = [
-    # These are known to either be altogether obsolete or
-    # simply inappropriate for exporting (e.g. contains transient
-    # data).
+NON_EXPORTED_TABLES = {
+    # These invitation/confirmation flow tables don't make sense to
+    # export, since invitations links will be broken by the server URL
+    # change anyway:
+    'zerver_emailchangestatus',
+    'zerver_multiuseinvite',
+    'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
+
+    # When switching servers, clients will need to re-login and
+    # reregister for push notifications anyway.
     'zerver_pushdevicetoken',
-    'zerver_scheduledemail',
+
+    # We don't use these generated Django tables
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
-]
-assert set(NON_EXPORTED_TABLES).issubset(set(ALL_ZERVER_TABLES))
 
-IMPLICIT_TABLES = [
+    # These is used for scheduling future activity; it could make
+    # sense to export, but is relatively low value.
+    'zerver_scheduledemail',
+    'zerver_scheduledmessage',
+
+    # These tables are related to a user's 2FA authentication
+    # configuration, which will need to be re-setup on the new server.
+    'two_factor_phonedevice',
+    'otp_static_staticdevice',
+    'otp_static_statictoken',
+    'otp_totp_totpdevice',
+
+    # These archive tables should not be exported (they are to support
+    # restoring content accidentally deleted due to software bugs in
+    # the retention policy feature)
+    'zerver_archivedmessage',
+    'zerver_archivedusermessage',
+    'zerver_archivedattachment',
+    'zerver_archivedattachment_messages',
+
+    # Social auth tables are not needed post-export, since we don't
+    # use any of this state outside of a direct authentication flow.
+    'social_auth_association',
+    'social_auth_code',
+    'social_auth_nonce',
+    'social_auth_partial',
+    'social_auth_usersocialauth',
+
+    # We will likely never want to migrate this table, since it's a
+    # total of all the realmcount values on the server.  Might need to
+    # recompute it after a fillstate import.
+    'analytics_installationcount',
+
+    # These analytics tables, however, should ideally be in the export.
+    'analytics_realmcount',
+    'analytics_streamcount',
+    'analytics_usercount',
+    # Fillstate will require some cleverness to do the right partial export.
+    'analytics_fillstate',
+    # This table isn't yet used for anything.
+    'analytics_anomaly',
+
+    # These are for unfinished features; we'll want to add them ot the
+    # export before they reach full production status.
+    'zerver_defaultstreamgroup',
+    'zerver_defaultstreamgroup_streams',
+    'zerver_submessage',
+
+    # For any tables listed below here, it's a bug that they are not present in the export.
+}
+
+IMPLICIT_TABLES = {
     # ManyToMany relationships are exported implicitly.
     'zerver_attachment_messages',
-]
-assert set(IMPLICIT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+}
 
-ATTACHMENT_TABLES = [
+ATTACHMENT_TABLES = {
     'zerver_attachment',
-]
-assert set(ATTACHMENT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+}
 
-MESSAGE_TABLES = [
+MESSAGE_TABLES = {
     # message tables get special treatment, because they're so big
     'zerver_message',
     'zerver_usermessage',
-]
+    # zerver_reaction belongs here, since it's added late
+    'zerver_reaction',
+}
 
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
@@ -119,14 +217,43 @@ DATE_FIELDS = {
     'zerver_useractivityinterval': ['start', 'end'],
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
+    'zerver_realmauditlog': ['event_time'],
+    'zerver_userhotspot': ['timestamp'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
-    tables = set(ALL_ZERVER_TABLES)
-    tables -= set(NON_EXPORTED_TABLES)
-    tables -= set(IMPLICIT_TABLES)
-    tables -= set(MESSAGE_TABLES)
-    tables -= set(ATTACHMENT_TABLES)
+    # First, we verify that the export tool has a declared
+    # configuration for every table.
+    target_models = (
+        list(apps.get_app_config('analytics').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('django_otp').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('otp_static').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('otp_totp').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('social_django').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('two_factor').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('zerver').get_models(include_auto_created=True))
+    )
+    all_tables_db = set(model._meta.db_table for model in target_models)
+
+    # These assertion statements will fire when we add a new database
+    # table that is not included in Zulip's data exports.  Generally,
+    # you can add your new table to `ALL_ZULIP_TABLES` and
+    # `NON_EXPORTED_TABLES` during early work on a new feature so that
+    # CI passes.
+    #
+    # We'll want to make sure we handle it for exports before
+    # releasing the new feature, but doing so correctly requires some
+    # expertise on this export system.
+    assert ALL_ZULIP_TABLES == all_tables_db
+    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES)
+    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES)
+    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES)
+
+    tables = set(ALL_ZULIP_TABLES)
+    tables -= NON_EXPORTED_TABLES
+    tables -= IMPLICIT_TABLES
+    tables -= MESSAGE_TABLES
+    tables -= ATTACHMENT_TABLES
 
     for table in tables:
         if table not in data:
@@ -388,6 +515,13 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table='zerver_customprofilefield',
+        model=CustomProfileField,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
         table='zerver_realmemoji',
         model=RealmEmoji,
         normal_parent=realm_config,
@@ -426,6 +560,20 @@ def get_realm_config() -> Config:
         custom_fetch=fetch_user_profile,
     )
 
+    user_groups_config = Config(
+        table='zerver_usergroup',
+        model=UserGroup,
+        normal_parent=realm_config,
+        parent_key='realm__in',
+    )
+
+    Config(
+        table='zerver_usergroupmembership',
+        model=UserGroupMembership,
+        normal_parent=user_groups_config,
+        parent_key='user_group__in',
+    )
+
     Config(
         custom_tables=[
             'zerver_userprofile_crossrealm',
@@ -442,6 +590,13 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table='zerver_customprofilefieldvalue',
+        model=CustomProfileFieldValue,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
         table='zerver_useractivity',
         model=UserActivity,
         normal_parent=user_profile_config,
@@ -453,6 +608,48 @@ def get_realm_config() -> Config:
         model=UserActivityInterval,
         normal_parent=user_profile_config,
         parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_realmauditlog',
+        model=RealmAuditLog,
+        normal_parent=user_profile_config,
+        parent_key='modified_user__in',
+    )
+
+    Config(
+        table='zerver_userhotspot',
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        parent_key='user__in',
+    )
+
+    Config(
+        table='zerver_mutedtopic',
+        model=MutedTopic,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_service',
+        model=Service,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_botstoragedata',
+        model=BotStorageData,
+        normal_parent=user_profile_config,
+        parent_key='bot_profile__in',
+    )
+
+    Config(
+        table='zerver_botconfigdata',
+        model=BotConfigData,
+        normal_parent=user_profile_config,
+        parent_key='bot_profile__in',
     )
 
     # Some of these tables are intermediate "tables" that we
@@ -546,15 +743,17 @@ def sanity_check_stream_data(response: TableData, config: Config, context: Conte
         realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
-    if streams_in_response != actual_streams:
-        print(streams_in_response - actual_streams)
-        print(actual_streams - streams_in_response)
-        raise Exception('''
-            zerver_stream data does not match
-            Stream.objects.all().
-
-            Please investigate!
-            ''')
+    if len(streams_in_response - actual_streams) > 0:
+        print("Error: Streams not present in the realm were exported:")
+        print("   ", streams_in_response - actual_streams)
+        print("This is likely due to a bug in the export tool.")
+        raise AssertionError("Aborting!  Please investigate.")
+    if len(actual_streams - streams_in_response) > 0:
+        print("Error: Some streams present in the realm were not exported:")
+        print("    ", actual_streams - streams_in_response)
+        print("Usually, this is caused by a stream having been created that never had subscribers.")
+        print("(Due to a bug elsewhere in Zulip, not in the export tool)")
+        raise AssertionError("Aborting!  Please investigate.")
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
@@ -623,6 +822,10 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
     response['zerver_attachment'] = [
         row for row in response['zerver_attachment']
         if row['messages']]
+
+def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
+    query = Reaction.objects.filter(message_id__in=list(message_ids))
+    response['zerver_reaction'] = make_raw(list(query))
 
 def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
 
@@ -701,7 +904,7 @@ def write_message_export(message_filename: Path, output: MessageOutput) -> None:
 
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
-                                 chunk_size: int=1000,
+                                 chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE,
                                  output_dir: Optional[Path]=None) -> Set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
@@ -770,15 +973,16 @@ def export_partial_message_files(realm: Realm,
             dump_file_id=dump_file_id,
             all_message_ids=all_message_ids,
             output_dir=output_dir,
-            chunk_size=chunk_size,
             user_profile_ids=user_ids_for_us,
+            chunk_size=chunk_size,
         )
 
     return all_message_ids
 
 def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_id: int,
                                     all_message_ids: Set[int], output_dir: Path,
-                                    chunk_size: int, user_profile_ids: Set[int]) -> int:
+                                    user_profile_ids: Set[int],
+                                    chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> int:
     min_id = -1
 
     while True:
@@ -820,8 +1024,9 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
 def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     uploads_output_dir = os.path.join(output_dir, 'uploads')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
+    emoji_output_dir = os.path.join(output_dir, 'emoji')
 
-    for output_dir in (uploads_output_dir, avatars_output_dir):
+    for output_dir in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
@@ -833,6 +1038,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_avatars_from_local(realm,
                                   local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                                   output_dir=avatars_output_dir)
+        export_emoji_from_local(realm,
+                                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+                                output_dir=emoji_output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(realm,
@@ -842,9 +1050,14 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_files_from_s3(realm,
                              settings.S3_AUTH_UPLOADS_BUCKET,
                              output_dir=uploads_output_dir)
+        export_files_from_s3(realm,
+                             settings.S3_AVATAR_BUCKET,
+                             output_dir=emoji_output_dir,
+                             processing_emoji=True)
 
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
-                         processing_avatars: bool=False) -> None:
+                         processing_avatars: bool=False,
+                         processing_emoji: bool=False) -> None:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
@@ -860,6 +1073,8 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
+    if processing_emoji:
+        bucket_list = bucket.list(prefix="%s/emoji/images/" % (realm.id,))
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
@@ -893,24 +1108,30 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                       content_type=key.content_type, md5=key.md5)
         record.update(key.metadata)
 
+        if processing_emoji:
+            record['file_name'] = os.path.basename(key.name)
+
         # A few early avatars don't have 'realm_id' on the object; fix their metadata
         user_profile = get_user_profile_by_id(record['user_profile_id'])
         if 'realm_id' not in record:
             record['realm_id'] = user_profile.realm_id
         record['user_profile_email'] = user_profile.email
 
-        if processing_avatars:
-            dirname = output_dir
-            filename = os.path.join(dirname, key.name)
+        # Fix the record ids
+        record['user_profile_id'] = int(record['user_profile_id'])
+        record['realm_id'] = int(record['realm_id'])
+
+        if processing_avatars or processing_emoji:
+            filename = os.path.join(output_dir, key.name)
             record['path'] = key.name
         else:
             fields = key.name.split('/')
             if len(fields) != 3:
                 raise AssertionError("Suspicious key with invalid format %s" % (key.name))
-            dirname = os.path.join(output_dir, fields[1])
-            filename = os.path.join(dirname, fields[2])
+            filename = os.path.join(output_dir, fields[1], fields[2])
             record['path'] = os.path.join(fields[1], fields[2])
 
+        dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         key.get_contents_to_filename(filename)
@@ -995,6 +1216,34 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+
+    count = 0
+    records = []
+    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm.id,
+            emoji_file_name=realm_emoji.file_name
+        )
+        local_path = os.path.join(local_dir, emoji_path)
+        output_path = os.path.join(output_dir, emoji_path)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        subprocess.check_call(["cp", "-a", local_path, output_path])
+        record = dict(realm_id=realm.id,
+                      author=realm_emoji.author.id,
+                      path=emoji_path,
+                      s3_path=emoji_path,
+                      file_name=realm_emoji.file_name,
+                      name=realm_emoji.name,
+                      deactivated=realm_emoji.deactivated)
+        records.append(record)
+
+        count += 1
+        if (count % 100 == 0):
+            logging.info("Finished %s" % (count,))
+    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
+        ujson.dump(records, records_file, indent=4)
+
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
@@ -1047,9 +1296,6 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     )
     logging.info('...DONE with get_realm_config() data')
 
-    export_file = os.path.join(output_dir, "realm.json")
-    write_data_to_file(output_file=export_file, data=response)
-
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
@@ -1063,6 +1309,16 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     logging.info("Exporting .partial files messages")
     message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
     logging.info('%d messages were exported' % (len(message_ids)))
+
+    # zerver_reaction
+    zerver_reaction = {}  # type: TableData
+    fetch_reaction_data(response=zerver_reaction, message_ids=message_ids)
+    response.update(zerver_reaction)
+
+    # Write realm data
+    export_file = os.path.join(output_dir, "realm.json")
+    write_data_to_file(output_file=export_file, data=response)
+    logging.info('Writing realm data to %s' % (export_file,))
 
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
@@ -1164,7 +1420,8 @@ def get_single_user_config() -> Config:
 
     return user_profile_config
 
-def export_messages_single_user(user_profile: UserProfile, output_dir: Path, chunk_size: int=1000) -> None:
+def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
+                                chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
     user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
     min_id = -1
     dump_file_id = 1
@@ -1192,7 +1449,8 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path, chu
 
         output = {'zerver_message': message_chunk}
         floatify_datetime_fields(output, 'zerver_message')
+        message_output = dict(output)  # type: MessageOutput
 
-        write_message_export(message_filename, output)
+        write_message_export(message_filename, message_output)
         min_id = max(user_message_ids)
         dump_file_id += 1

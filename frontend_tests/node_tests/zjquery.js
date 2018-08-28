@@ -27,7 +27,7 @@ The code we are testing lives here:
 set_global('$', global.make_zjquery());
 
 
-(function test_basics() {
+run_test('basics', () => {
     // Let's create a sample piece of code to test:
 
     function show_my_form() {
@@ -56,9 +56,9 @@ set_global('$', global.make_zjquery());
 
     widget.val('42');
     assert.equal(widget.val(), '42');
-}());
+});
 
-(function test_finding_related_objects() {
+run_test('finding_related_objects', () => {
     // Let's say you have a function like the following:
     function update_message_emoji(emoji_src) {
         $('#my-message').find('.emoji').attr('src', emoji_src);
@@ -95,9 +95,9 @@ set_global('$', global.make_zjquery());
     elem.parents('.folder').addClass('active');
     assert(my_parents.hasClass('active'));
 
-}());
+});
 
-(function test_clicks() {
+run_test('clicks', () => {
     // We can support basic handlers like click and keydown.
 
     var state = {};
@@ -125,9 +125,9 @@ set_global('$', global.make_zjquery());
     $('.some-class').keydown();
     assert.equal(state.keydown, true);
 
-}());
+});
 
-(function test_events() {
+run_test('events', () => {
     // Zulip's codebase uses jQuery's event API heavily with anonymous
     // functions that are hard for naive test code to cover.  zjquery
     // will come to our rescue.
@@ -135,8 +135,13 @@ set_global('$', global.make_zjquery());
     var value;
 
     function initialize_handler() {
-        $('#my-parent').on('input', '.some-child-class', function (e) {
-            value = 42; // just a dummy side effect
+        $('#my-parent').on('click', '.button-red', function (e) {
+            value = 'red'; // just a dummy side effect
+            e.stopPropagation();
+        });
+
+        $('#my-parent').on('click', '.button-blue', function (e) {
+            value = 'blue';
             e.stopPropagation();
         });
     }
@@ -147,7 +152,7 @@ set_global('$', global.make_zjquery());
 
     // We want to call the inner function, so first let's get it using the
     // get_on_handler() helper from zjquery.
-    var handler_func = $('#my-parent').get_on_handler('input', '.some-child-class');
+    var red_handler_func = $('#my-parent').get_on_handler('click', '.button-red');
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     var stub_event = {
@@ -155,13 +160,18 @@ set_global('$', global.make_zjquery());
     };
 
     // Now call the hander.
-    handler_func(stub_event);
+    red_handler_func(stub_event);
 
     // And verify it did what it was supposed to do.
-    assert.equal(value, 42);
-}());
+    assert.equal(value, 'red');
 
-(function test_create() {
+    // Test we can have multiple click handlers in the parent.
+    var blue_handler_func = $('#my-parent').get_on_handler('click', '.button-blue');
+    blue_handler_func(stub_event);
+    assert.equal(value, 'blue');
+});
+
+run_test('create', () => {
     // You can create jQuery objects that aren't tied to any particular
     // selector, and which just have a name.
 
@@ -173,9 +183,9 @@ set_global('$', global.make_zjquery());
 
     obj2.addClass('.striped');
     assert(obj2.hasClass('.striped'));
-}());
+});
 
-(function test_extensions() {
+run_test('extensions', () => {
     // You can extend $.fn so that all subsequent objects
     // we create get a new function.
 
@@ -196,4 +206,4 @@ set_global('$', global.make_zjquery());
 
     // But we also have area available from general extension.
     assert.equal(rect.area(), 35);
-}());
+});

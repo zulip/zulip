@@ -15,10 +15,12 @@ class zulip::postgres_common {
                         # Postgres Nagios check plugin
                         'check-postgres',
                         ]
-  safepackage { $postgres_packages: ensure => 'installed' }
+  zulip::safepackage { $postgres_packages: ensure => 'installed' }
 
   exec { 'disable_logrotate':
+    # lint:ignore:140chars
     command => '/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common',
+    # lint:endignore
     creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
   file { '/usr/lib/nagios/plugins/zulip_postgres_common':
@@ -53,8 +55,10 @@ class zulip::postgres_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
-    require    => [Package["postgresql-${zulip::base::postgres_version}"],
-                   Package['ssl-cert']],
+    require    => [
+      Package["postgresql-${zulip::base::postgres_version}"],
+      Package['ssl-cert']
+    ],
   }
   User <| title == postgres |> { groups +> 'zulip' }
 }

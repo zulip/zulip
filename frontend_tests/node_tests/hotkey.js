@@ -62,7 +62,7 @@ function stubbing(func_name_to_stub, test_function) {
     });
 }
 
-(function test_mappings() {
+run_test('mappings', () => {
     function map_press(which, shiftKey) {
         return hotkey.get_keypress_hotkey({
             which: which,
@@ -100,6 +100,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
+    assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -113,26 +114,30 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_down(79, false, true), undefined); // ctrl + o
     assert.equal(map_down(80, false, true), undefined); // ctrl + p
     assert.equal(map_down(65, false, true), undefined); // ctrl + a
-    assert.equal(map_down(83, false, true), undefined); // ctrl + s
     assert.equal(map_down(70, false, true), undefined); // ctrl + f
     assert.equal(map_down(72, false, true), undefined); // ctrl + h
     assert.equal(map_down(88, false, true), undefined); // ctrl + x
     assert.equal(map_down(78, false, true), undefined); // ctrl + n
     assert.equal(map_down(77, false, true), undefined); // ctrl + m
     assert.equal(map_down(75, false, false, true), undefined); // cmd + k
+    assert.equal(map_down(83, false, false, true), undefined); // cmd + s
+    assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
+    assert.equal(map_down(83, true, true), undefined); // shift + ctrl + s
+    assert.equal(map_down(219, true, true, false), undefined); // shift + ctrl + [
 
     // CMD tests for MacOS
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
-    assert.equal(map_down(219, false, false, true).name, 'escape'); // cmd + [
+    assert.equal(map_down(219, false, true, false).name, 'escape'); // ctrl + [
+    assert.equal(map_down(219, false, false, true), undefined); // cmd + [
     assert.equal(map_down(75, false, false, true).name, 'search_with_k'); // cmd + k
-
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
-
+    assert.equal(map_down(83, false, false, true).name, 'star_message'); // cmd + s
+    assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
     // Reset userAgent
     global.navigator.userAgent = '';
-}());
+});
 
-(function test_basic_chars() {
+run_test('basic_chars', () => {
     function process(s) {
         var e = {
             which: s.charCodeAt(0),
@@ -172,6 +177,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     set_global('popovers', {
         actions_popped: return_false,
+        message_info_popped: return_false,
     });
     set_global('emoji_picker', {
         reactions_popped: return_false,
@@ -250,7 +256,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@*+>RjJkKsSuvi:GM';
+    var message_view_only_keys = '@+>RjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
@@ -266,7 +272,6 @@ function stubbing(func_name_to_stub, test_function) {
     // TODO: Similar check for being in the subs page
 
     assert_mapping('@', 'compose_actions.reply_with_mention');
-    assert_mapping('*', 'message_flags.toggle_starred');
     assert_mapping('+', 'reactions.toggle_emoji_reaction');
     assert_mapping('-', 'condense.toggle_collapse');
     assert_mapping('r', 'compose_actions.respond_to_message');
@@ -307,9 +312,9 @@ function stubbing(func_name_to_stub, test_function) {
 
     global.current_msg_list.empty = return_false;
 
-}());
+});
 
-(function test_motion_keys() {
+run_test('motion_keys', () => {
     var codes = {
         down_arrow: 40,
         end: 35,
@@ -407,9 +412,6 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('page_up');
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
-
-    assert_mapping('up_arrow', 'settings.handle_up_arrow');
-    assert_mapping('down_arrow', 'settings.handle_down_arrow');
     overlays.settings_open = return_false;
 
     overlays.is_active = return_true;
@@ -418,4 +420,4 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
     overlays.is_active = return_false;
     overlays.drafts_open = return_false;
-}());
+});

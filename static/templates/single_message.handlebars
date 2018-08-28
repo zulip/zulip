@@ -45,23 +45,23 @@
                         <div class="edit_content"></div>
                         {{else}}
                         <div class="reaction_button">
-                            <i class="icon-vector-smile" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
+                            <i class="fa fa-smile-o" aria-hidden="true" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
                         </div>
                         {{/if}}
 
                         {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
-                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
+                            <i class="fa fa-chevron-down" aria-hidden="true" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
                         </div>
                         {{/unless}}
 
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-                            <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
-                            <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
+                            <i class="fa fa-refresh refresh-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
+                            <i class="fa fa-times-circle remove-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
                         </div>
 
                         {{#unless msg/locally_echoed}}
-                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
+                        <div class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
                         </div>
                         {{/unless}}
 

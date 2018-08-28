@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/streams?include_public=false \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|get-all-streams|example}
+{generate_code_example(python)|/streams:get|example}
 
 </div>
 
@@ -61,7 +61,7 @@ zulip(config).then((client) => {
 
 **Note**: The following arguments are all URL query parameters.
 
-{generate_api_arguments_table|arguments.json|get-all-streams.md}
+{generate_api_arguments_table|zulip.yaml|/streams:get}
 
 ## Response
 
@@ -70,16 +70,17 @@ zulip(config).then((client) => {
 * `stream_id`: The unique ID of a stream.
 * `name`: The name of a stream.
 * `description`: A short description of a stream.
-* `invite-only`: Specifies whether a stream is invite-only or not.
-  Only people who have been invited can access an invite-only stream.
+* `invite-only`: Specifies whether a stream is private or not.
+  Only people who have been invited can access a private stream.
 
 #### Example response
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-all-streams|fixture}
+{generate_code_example|/streams:get|fixture(200)}
 
-An example of a JSON response for when the user is not authorized
-to use the `include_all_active` parameter:
+An example JSON response for when the user is not authorized to use the
+`include_all_active` parameter (i.e. because they are not an organization
+administrator):
 
-{generate_code_example|user-not-authorized-error|fixture}
+{generate_code_example|/streams:get|fixture(400)}

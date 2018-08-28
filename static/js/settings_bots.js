@@ -2,6 +2,11 @@ var settings_bots = (function () {
 
 var exports = {};
 
+exports.hide_errors = function () {
+    $('#bot_table_error').hide();
+    $('.bot_error').hide();
+};
+
 var focus_tab = {
     add_a_new_bot_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -9,7 +14,7 @@ var focus_tab = {
         $("#add-a-new-bot-form").show();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
     active_bots_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -17,7 +22,7 @@ var focus_tab = {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
     inactive_bots_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -25,12 +30,25 @@ var focus_tab = {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
 };
 
+exports.get_bot_info_div = function (bot_id) {
+    var sel = '.bot_info[data-user-id="' + bot_id + '"]';
+    return $(sel).expectOne();
+};
+
+exports.bot_error = function (bot_id, xhr) {
+    var bot_info = exports.get_bot_info_div(bot_id);
+    var bot_error_div = bot_info.find('.bot_error');
+    bot_error_div.text(JSON.parse(xhr.responseText).msg);
+    bot_error_div.show();
+    var bot_box = bot_info.closest('.bot-information-box');
+    bot_box.scrollTop(bot_box[0].scrollHeight - bot_box[0].clientHeight);
+};
+
 function add_bot_row(info) {
-    info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
     if (info.is_active) {
         $('#active_bots_list').append(row);
@@ -51,7 +69,7 @@ exports.type_id_to_string = function (type_id) {
     return i18n.t(name);
 };
 
-function render_bots() {
+exports.render_bots = function () {
     $('#active_bots_list').empty();
     $('#inactive_bots_list').empty();
 
@@ -72,8 +90,7 @@ function render_bots() {
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     });
 
-    if (page_params.is_admin || page_params.realm_bot_creation_policy !==
-        exports.bot_creation_policy_values.admins_only.code) {
+    if (settings_bots.can_create_new_bots()) {
         if (!user_owns_an_active_bot) {
             focus_tab.add_a_new_bot_tab();
             return;
@@ -93,52 +110,70 @@ function render_bots() {
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
     }
-}
-
-exports.generate_zuliprc_uri = function (email, api_key) {
-    var data = exports.generate_zuliprc_content(email, api_key);
-
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
 };
 
-exports.generate_zuliprc_content = function (email, api_key) {
+exports.generate_zuliprc_uri = function (bot_id) {
+    var bot = bot_data.get(bot_id);
+    var data;
+    var token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        token = bot_data.get_services(bot_id)[0].token;
+    }
+    data = exports.generate_zuliprc_content(bot.email, bot.api_key, token);
+    return exports.encode_zuliprc_as_uri(data);
+};
+
+exports.encode_zuliprc_as_uri = function (zuliprc) {
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
+};
+
+exports.generate_zuliprc_content = function (email, api_key, token) {
     return "[api]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +
+           (token === undefined ? "" : "\ntoken=" + token) +
            // Some tools would not work in files without a trailing new line.
            "\n";
 };
 
-function bot_name_from_email(email) {
-    return email.substring(0, email.indexOf("-bot@"));
-}
-
-exports.generate_flaskbotrc_content = function (email, api_key) {
-    return "[" + bot_name_from_email(email) + "]" +
+exports.generate_botserverrc_content = function (email, api_key, token) {
+    return "[]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +
+           "\ntoken=" + token +
            "\n";
 };
 
-exports.bot_creation_policy_values = {};
+exports.bot_creation_policy_values = {
+    everyone: {
+        code: 1,
+        description: i18n.t("Everyone"),
+    },
+    admins_only: {
+        code: 3,
+        description: i18n.t("Admins only"),
+    },
+    restricted: {
+        code: 2,
+        description: i18n.t("Everyone, but only admins can add generic bots"),
+    },
+};
 
-exports.setup_bot_creation_policy_values = function () {
-    exports.bot_creation_policy_values = {
-        everyone: {
-            code: 1,
-            description: i18n.t("Everyone"),
-        },
-        admins_only: {
-            code: 3,
-            description: i18n.t("Admins only"),
-        },
-        restricted: {
-            code: 2,
-            description: i18n.t("Everyone, but only admins can add generic bots"),
-        },
-    };
+exports.can_create_new_bots = function () {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    return page_params.realm_bot_creation_policy !==
+        exports.bot_creation_policy_values.admins_only.code;
 };
 
 exports.update_bot_settings_tip = function () {
@@ -157,11 +192,9 @@ exports.update_bot_settings_tip = function () {
 
 exports.update_bot_permissions_ui = function () {
     exports.update_bot_settings_tip();
-    $('#bot_table_error').hide();
+    exports.hide_errors();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-    if (page_params.realm_bot_creation_policy ===
-        exports.bot_creation_policy_values.admins_only.code &&
-        !page_params.is_admin) {
+    if (!exports.can_create_new_bots()) {
         $('#create_bot_form').hide();
         $('.add-a-new-bot-tab').hide();
         focus_tab.active_bots_tab();
@@ -179,22 +212,21 @@ exports.set_up = function () {
     var selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $('#config_inputbox').children().hide();
-    $("[name*='"+selected_embedded_bot+"']").show();
+    $("[name*='" + selected_embedded_bot + "']").show();
 
-    $('#download_flaskbotrc').click(function () {
+    $('#download_botserverrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         var content = "";
         _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                content += exports.generate_flaskbotrc_content(bot.email, bot.api_key);
+                var bot_token = bot_data.get_services(bot.user_id)[0].token;
+                content += exports.generate_botserverrc_content(bot.email, bot.api_key, bot_token);
             }
         });
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
     });
 
-    // TODO: render bots xxxx
-    render_bots();
-    $(document).on('zulip.bot_data_changed', render_bots);
+    exports.render_bots();
 
     $.validator.addMethod("bot_local_part",
                           function (value, element) {
@@ -213,7 +245,7 @@ exports.set_up = function () {
     $('#create_bot_form').validate({
         errorClass: 'text-error',
         success: function () {
-            $('#bot_table_error').hide();
+            exports.hide_errors();
         },
         submitHandler: function () {
             var bot_type = $('#create_bot_type :selected').val();
@@ -237,13 +269,13 @@ exports.set_up = function () {
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
                 var config_data = {};
-                $("#config_inputbox [name*='"+service_name+"'] input").each(function () {
+                $("#config_inputbox [name*='" + service_name + "'] input").each(function () {
                     config_data[$(this).attr('name')] = $(this).val();
                 });
                 formData.append('config_data', JSON.stringify(config_data));
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
-                formData.append('file-'+i, file);
+                formData.append('file-' + i, file);
             });
             loading.make_indicator(spinner, {text: i18n.t('Creating bot')});
             channel.post({
@@ -253,13 +285,13 @@ exports.set_up = function () {
                 processData: false,
                 contentType: false,
                 success: function () {
-                    $('#bot_table_error').hide();
+                    exports.hide_errors();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
                     $('#config_inputbox').hide();
-                    $("[name*='"+service_name+"'] input").each(function () {
+                    $("[name*='" + service_name + "'] input").each(function () {
                         $(this).val('');
                     });
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
@@ -305,38 +337,39 @@ exports.set_up = function () {
     $("#select_service_name").on("change", function () {
         $('#config_inputbox').children().hide();
         var selected_bot = $('#select_service_name :selected').val();
-        $("[name*='"+selected_bot+"']").show();
+        $("[name*='" + selected_bot + "']").show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var bot_id = $(e.currentTarget).attr('data-user-id');
+
         channel.del({
-            url: '/json/bots/' + encodeURIComponent(email),
+            url: '/json/bots/' + encodeURIComponent(bot_id),
             success: function () {
                 var row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
             },
             error: function (xhr) {
-                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+                exports.bot_error(bot_id, xhr);
             },
         });
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var user_id = $(e.currentTarget).attr('data-user-id');
 
         channel.post({
-            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
             error: function (xhr) {
-                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+                exports.bot_error(user_id, xhr);
             },
         });
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var bot_id = $(e.currentTarget).attr('data-user-id');
         channel.post({
-            url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
+            url: '/json/bots/' + encodeURIComponent(bot_id) + '/api_key/regenerate',
             idempotent: true,
             success: function (data) {
                 var row = $(e.currentTarget).closest("li");
@@ -356,9 +389,7 @@ exports.set_up = function () {
         var li = $(e.currentTarget).closest('li');
         var bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
         var bot = bot_data.get(bot_id);
-        var users_list = people.get_realm_persons().filter(function (person)  {
-            return !person.is_bot;
-        });
+        var users_list = people.get_active_human_persons();
         $("#edit_bot").empty();
         $("#edit_bot").append(templates.render('edit_bot', {bot: bot,
                                                             users_list: users_list}));
@@ -372,6 +403,7 @@ exports.set_up = function () {
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(templates.render("edit-outgoing-webhook-service",
                                                        {service: service}));
+            $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
             $("#service_data").append(templates.render("edit-embedded-bot-service",
@@ -386,8 +418,7 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler: function () {
-                var bot_id = form.attr('data-bot_id');
-                var email = form.attr('data-email');
+                var bot_id = form.attr('data-user-id');
                 var type = form.attr('data-type');
 
                 var full_name = form.find('.edit_bot_name').val();
@@ -399,7 +430,7 @@ exports.set_up = function () {
                 var formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
-                formData.append('bot_owner', bot_owner);
+                formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
                     var service_payload_url = $("#edit_service_base_url").val();
@@ -414,12 +445,12 @@ exports.set_up = function () {
                     formData.append('config_data', JSON.stringify(config_data));
                 }
                 jQuery.each(file_input[0].files, function (i, file) {
-                    formData.append('file-'+i, file);
+                    formData.append('file-' + i, file);
                 });
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({
-                    url: '/json/bots/' + encodeURIComponent(email),
+                    url: '/json/bots/' + encodeURIComponent(bot_id),
                     data: formData,
                     cache: false,
                     processData: false,
@@ -435,7 +466,7 @@ exports.set_up = function () {
                             // when the user had a previous uploaded avatar.  Only the content
                             // changes, so we version it to get an uncached copy.
                             image_version += 1;
-                            image.find('img').attr('src', data.avatar_url+'&v='+image_version.toString());
+                            image.find('img').attr('src', data.avatar_url + '&v=' + image_version.toString());
                         }
                     },
                     error: function (xhr) {
@@ -449,13 +480,19 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).closest(".bot-information-box");
-        var email = bot_info.find(".email .value").text();
-        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+        var bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        var bot_id = bot_info.attr("data-user-id");
+        $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
+    });
 
-        $(this).attr("href", exports.generate_zuliprc_uri(
-            $.trim(email), $.trim(api_key)
-        ));
+    new ClipboardJS('#copy_zuliprc', {
+        text: function (trigger) {
+            var bot_info = trigger.closest(".bot-information-box");
+            var email = $(bot_info).find(".email .value").text();
+            var api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
+            var data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
+            return data;
+        },
     });
 
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
@@ -484,3 +521,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_bots;
 }
+window.settings_bots = settings_bots;

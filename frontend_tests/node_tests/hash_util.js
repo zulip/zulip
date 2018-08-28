@@ -2,6 +2,16 @@ zrequire('hash_util');
 zrequire('stream_data');
 zrequire('people');
 
+var _window = {
+    location: {
+        protocol: "https:",
+        host: "example.com",
+        pathname: "/",
+    },
+};
+
+global.patch_builtin('window', _window);
+
 var hamlet = {
     user_id: 1,
     email: 'hamlet@example.com',
@@ -17,7 +27,7 @@ var sub = {
 
 stream_data.add_sub(sub.name, sub);
 
-(function test_hash_util() {
+run_test('hash_util', () => {
     // Test encodeHashComponent
     var str = 'https://www.zulipexample.com';
     var result1 = hash_util.encodeHashComponent(str);
@@ -51,4 +61,27 @@ stream_data.add_sub(sub.name, sub);
     operand = 'testing 123';
 
     encode_decode_operand(operator, operand, 'testing.20123');
-}());
+});
+
+run_test('test_by_conversation_and_time_uri', () => {
+    var message = {
+        type: 'stream',
+        stream: 'frontend',
+        subject: 'testing',
+        id: 42,
+    };
+
+    assert.equal(hash_util.by_conversation_and_time_uri(message),
+                 'https://example.com/#narrow/stream/99-frontend/subject/testing/near/42');
+
+    message = {
+        type: 'private',
+        reply_to: 'iago@example.com,hamlet@example.com',
+        id: 43,
+    };
+
+    people.my_current_email = () => 'jeff@example.com';
+
+    assert.equal(hash_util.by_conversation_and_time_uri(message),
+                 'https://example.com/#narrow/pm-with/iago.40example.2Ecom.2Chamlet.40example.2Ecom.2Cjeff.40example.2Ecom/near/43');
+});

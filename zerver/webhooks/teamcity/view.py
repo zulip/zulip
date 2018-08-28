@@ -8,11 +8,22 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_private_message
+from zerver.lib.actions import check_send_private_message, \
+    send_rate_limited_pm_notification_to_bot_owner
+from zerver.lib.send_email import FromAddress
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
+
+MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE = """
+Hi there! Your bot {bot_name} just received a TeamCity payload in a
+format that Zulip doesn't recognize. This usually indicates a
+configuration issue in your TeamCity webhook settings. Please make sure
+that you set the **Payload Format** option to **Legacy Webhook (JSON)**
+in your TeamCity webhook configuration. Contact {support_email} if you
+need further help!
+"""
 
 def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Optional[UserProfile]:
     try:
@@ -39,7 +50,18 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
 @has_request_variables
 def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    message = payload['build']
+    message = payload.get('build')
+    if message is None:
+        # Ignore third-party specific (e.g. Slack/HipChat) payload formats
+        # and notify the bot owner
+        message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
+            bot_name=user_profile.full_name,
+            support_email=FromAddress.SUPPORT,
+        ).strip()
+        send_rate_limited_pm_notification_to_bot_owner(
+            user_profile, user_profile.realm, message)
+
+        return json_success()
 
     build_name = message['buildFullName']
     build_url = message['buildStatusUrl']
@@ -69,7 +91,11 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         u'Details: [changes](%s), [build log](%s)')
 
     body = template % (build_name, build_number, status, changes_url, build_url)
-    topic = build_name
+
+    if 'branchDisplayName' in message:
+        topic = build_name + ' (' + message['branchDisplayName'] + ')'
+    else:
+        topic = build_name
 
     # Check if this is a personal build, and if so try to private message the user who triggered it.
     if get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL') == 'true':

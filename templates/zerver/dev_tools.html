@@ -45,6 +45,13 @@
                 <td>Preview all email templates.</td>
             </tr>
             <tr>
+                <td><a href="/stats/realm/analytics/">/stats/realm/analytics/</a></td>
+                <td><code>./manage.py populate_analytics_db</code><br/>
+                    Run the command after changing analytics data population logic.
+                </td>
+                <td>View the /stats page with some pre-populated data</td>
+            </tr>
+            <tr>
                 <td><a href="/static/html/5xx.html">/static/html/5xx.html</a></td>
                 <td><code>./manage.py collectstatic --noinput</code></td>
                 <td>Error 5xx page served by nginx (used when Django is totally broken)</td>
@@ -78,7 +85,11 @@
             </li>
         </ul>
     </p>
-    <p>You can find docs on testing Google &amp; GitHub authentication over <a href="https://zulip.readthedocs.io/en/latest/subsystems/settings.html#testing-google-github-authentication">here</a>.</p>
+    <p>We also have
+        <a href="https://zulip.readthedocs.io/en/latest/subsystems/auth.html">documentation
+          on testing LDAP, Google &amp; GitHub authentication</a> in
+        the development environment.
+    </p>
 </div>
 
 {% endblock %}

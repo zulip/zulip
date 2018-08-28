@@ -31,6 +31,34 @@ You can learn more about it at:
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process in the `backend` build.
 
+You can learn a lot more about mypy from our blog post on being an
+early adopted of mypy back in 2016:
+
+https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
+
+## mypy stubs for third-party modules.
+
+For the Python standard library and some popular third-party modules,
+the [typeshed project](https://github.com/python/typeshed) has
+[stubs](https://github.com/python/mypy/wiki/Creating-Stubs-For-Python-Modules),
+basically the equivalent of C header files defining the types used in
+these Python APIs.
+
+For other third-party modules that we call from Zulip, one either
+needs to add an `ignore_missing_imports` entry in `mypy.ini` in the
+root of the project, letting `mypy` know that it's third-party code,
+or add type stubs to the `stubs/` directory, which has type stubs that
+mypy can use to type-check calls into that third-party module.
+
+It's easy to add new stubs!  Just read the docs, look at some of
+existing examples to see how they work, and remember to remove the
+`ignore_missing_imports` entry in `mypy.ini` when you add them.
+
+For any third-party modules that don't have stubs, `mypy` treats
+everything in the third-party module as an `Any`, which is the right
+model (one certainly wouldn't want to need stubs for everything just
+to use `mypy`!), but means the code can't be fully type-checked.
+
 ## `type_debug.py`
 
 `zerver/lib/type_debug.py` has a useful decorator `print_types`.  It

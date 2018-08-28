@@ -15,7 +15,7 @@ import os
 import platform
 import time
 import sys
-from typing import Optional
+from typing import Any, Optional
 import configparser
 
 from zerver.lib.db import TimeTrackingConnection
@@ -40,12 +40,13 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key: str, development_only=False) -> Optional[str]:
+def get_secret(key: str, default_value: Optional[Any]=None,
+               development_only: bool=False) -> Optional[Any]:
     if development_only and PRODUCTION:
-        return None
+        return default_value
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
-    return None
+    return default_value
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
@@ -122,6 +123,8 @@ DEFAULT_SETTINGS = {
 
     # Basic email settings
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+    'ADD_TOKENS_TO_NOREPLY_ADDRESS': True,
+    'TOKENIZED_NOREPLY_EMAIL_ADDRESS': "noreply-{token}@" + EXTERNAL_HOST.split(":")[0],
     'PHYSICAL_ADDRESS': '',
 
     # SMTP settings
@@ -136,13 +139,19 @@ DEFAULT_SETTINGS = {
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
     # Disable django-auth-ldap caching, to prevent problems with OU changes.
-    'AUTH_LDAP_GROUP_CACHE_TIMEOUT': 0,
+    'AUTH_LDAP_CACHE_TIMEOUT': 0,
+    # Development-only settings for fake LDAP authentication; used to
+    # support local development of LDAP auth without an LDAP server.
+    # Detailed docs in zproject/dev_settings.py.
+    'FAKE_LDAP_MODE': None,
+    'FAKE_LDAP_EXTRA_USERS': 0,
 
     # Social auth; we support providing values for some of these
     # settings in zulip-secrets.conf instead of settings.py in development.
     'SOCIAL_AUTH_GITHUB_KEY': get_secret('social_auth_github_key', development_only=True),
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
+    'SOCIAL_AUTH_SUBDOMAIN': None,
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
@@ -158,10 +167,13 @@ DEFAULT_SETTINGS = {
     'BROWSER_ERROR_REPORTING': False,
     'LOGGING_SHOW_MODULE': False,
     'LOGGING_SHOW_PID': False,
+    'SLOW_QUERY_LOGS_STREAM': None,
 
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
     'S3_AVATAR_BUCKET': '',
+    'S3_AUTH_UPLOADS_BUCKET': '',
+    'S3_REGION': '',
     'LOCAL_UPLOADS_DIR': None,
     'MAX_FILE_UPLOAD_SIZE': 25,
 
@@ -187,7 +199,7 @@ DEFAULT_SETTINGS = {
     'REDIS_PORT': 6379,
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
-    'THUMBOR_HOST': '',
+    'THUMBOR_URL': '',
     'SENDFILE_BACKEND': None,
 
     # ToS/Privacy templates
@@ -208,12 +220,24 @@ DEFAULT_SETTINGS = {
     'SEND_LOGIN_EMAILS': True,
     'EMBEDDED_BOTS_ENABLED': False,
 
+    # Temporary setting while we wait for app support for removing
+    # push notifications.  Controls whether the Zulip server sends
+    # cancellation notices for previously sent push notifications.
+    'SEND_REMOVE_PUSH_NOTIFICATIONS': False,
+
     # Two Factor Authentication is not yet implementation-complete
     'TWO_FACTOR_AUTHENTICATION_ENABLED': False,
 
     # This is used to send all hotspots for convenient manual testing
     # in development mode.
     'ALWAYS_SEND_ALL_HOTSPOTS': False,
+
+    # In-development search pills feature.
+    'SEARCH_PILLS_ENABLED': False,
+
+    # We use SubMessage for now-experimental features like
+    # slash commands.
+    'ALLOW_SUB_MESSAGES': DEVELOPMENT,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -316,12 +340,6 @@ DEFAULT_SETTINGS.update({
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
-    # TODO: This server setting is a hack to help with folks who are
-    # finding our private stream security model painful.  Future work
-    # will migrate this to be a property of Stream or maybe Realm and
-    # this setting will be deprecated.
-    'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS': False,
-
     # Limits to help prevent spam, in particular by sending invitations.
     #
     # A non-admin user who's joined an open realm this recently can't invite at all.
@@ -336,13 +354,20 @@ DEFAULT_SETTINGS.update({
     'INVITES_NEW_REALM_DAYS': 7,
 
     # Controls for which links are published in portico footers/headers/etc.
-    'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': None,
     'LOGIN_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
 
+    # Controls if the server should run certain jobs like deliver_email or
+    # deliver_scheduled_messages. This setting in long term is meant for
+    # handling jobs for which we don't have a means of establishing a locking
+    # mechanism that works with multiple servers running these jobs.
+    # TODO: We should rename this setting so that it reflects its purpose actively.
+    'EMAIL_DELIVERER_DISABLED': False,
+
     # What domains to treat like the root domain
-    'ROOT_SUBDOMAIN_ALIASES': ["www"],
+    # "auth" is by default a reserved subdomain for the use by python-social-auth.
+    'ROOT_SUBDOMAIN_ALIASES': ["www", "auth"],
     # Whether the root domain is a landing page or can host a realm.
     'ROOT_DOMAIN_LANDING_PAGE': False,
 
@@ -411,6 +436,14 @@ DEFAULT_SETTINGS.update({
     # value in static/js/presence.js.  Also, probably move it out of
     # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
+
+    # Enables billing pages and plan-based feature gates. If False, all features
+    # are available to all realms.
+    'BILLING_ENABLED': False,
+
+    # Controls whether we run the worker that syncs billing-related updates
+    # into Stripe. Should be True on at most one machine.
+    'BILLING_PROCESSOR_ENABLED': False,
 })
 
 
@@ -479,6 +512,12 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
                   '.' + EXTERNAL_HOST.split(":")[0]]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
+
+from django.template.loaders import app_directories
+class TwoFactorLoader(app_directories.Loader):
+    def get_dirs(self):
+        dirs = super().get_dirs()
+        return [d for d in dirs if 'two_factor' in d]
 
 MIDDLEWARE = (
     # With the exception of it's dependencies,
@@ -587,16 +626,6 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
-if USING_PGROONGA:
-    # We need to have "pgroonga" schema before "pg_catalog" schema in
-    # the PostgreSQL search path, because "pgroonga" schema overrides
-    # the "@@" operator from "pg_catalog" schema, and "pg_catalog"
-    # schema is searched first if not specified in the search path.
-    # See also: http://www.postgresql.org/docs/current/static/runtime-config-client.html
-    pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
-        DATABASES['default']
-    DATABASES['default']['OPTIONS']['options'] = pg_options
-
 ########################################################################
 # RABBITMQ CONFIGURATION
 ########################################################################
@@ -610,9 +639,14 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
+# Compress large values being stored in memcached; this is important
+# for at least the realm_users cache.
+PYLIBMC_MIN_COMPRESS_LEN = 100 * 1024
+PYLIBMC_COMPRESS_LEVEL = 1
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
         'TIMEOUT': 3600,
         'OPTIONS': {
@@ -816,7 +850,7 @@ if DEBUG:
     else:
         STATIC_ROOT = os.path.abspath('static/')
 else:
-    STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
+    STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
         'pipeline.finders.PipelineFinder',
@@ -849,220 +883,17 @@ PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
     'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
     'YUI_BINARY': '/usr/bin/env yui-compressor',
-    'STYLESHEETS': {
-        # If you add a style here, please update stylesheets()
-        # in frontend_tests/zjsunit/output.js as needed.
-        'apple_sprite': {
-            'source_filenames': (
-                'generated/emoji/apple_sprite.css',
-            ),
-            'output_filename': 'min/apple_sprite.css',
-        },
-        'emojione_sprite': {
-            'source_filenames': (
-                'generated/emoji/emojione_sprite.css',
-            ),
-            'output_filename': 'min/emojione_sprite.css',
-        },
-        'google_sprite': {
-            'source_filenames': (
-                'generated/emoji/google_sprite.css',
-            ),
-            'output_filename': 'min/google_sprite.css',
-        },
-        'twitter_sprite': {
-            'source_filenames': (
-                'generated/emoji/twitter_sprite.css',
-            ),
-            'output_filename': 'min/twitter_sprite.css',
-        },
-    },
+    'STYLESHEETS': {},
     'JAVASCRIPT': {},
 }
 
 # Useful reading on how this works is in
 # https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
 JS_SPECS = {
-    'app': {
-        'source_filenames': [
-            'third/bootstrap-notify/js/bootstrap-notify.js',
-            'third/html5-formdata/formdata.js',
-            'node_modules/jquery-validation/dist/jquery.validate.js',
-            'node_modules/blueimp-md5/js/md5.js',
-            'node_modules/clipboard/dist/clipboard.js',
-            'third/jquery-form/jquery.form.js',
-            'third/jquery-filedrop/jquery.filedrop.js',
-            'third/jquery-caret/jquery.caret.1.5.2.js',
-            'node_modules/xdate/src/xdate.js',
-            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
-            'third/jquery-idle/jquery.idle.js',
-            'third/jquery-autosize/jquery.autosize.js',
-            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
-            'third/spectrum/spectrum.js',
-            'third/sockjs/sockjs-0.3.4.js',
-            'node_modules/string.prototype.codepointat/codepointat.js',
-            'node_modules/winchan/winchan.js',
-            'node_modules/handlebars/dist/handlebars.runtime.js',
-            'node_modules/to-markdown/dist/to-markdown.js',
-            'node_modules/flatpickr/dist/flatpickr.js',
-            'node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.js',
-            'third/marked/lib/marked.js',
-            'generated/emoji/emoji_codes.js',
-            'generated/pygments_data.js',
-            'templates/compiled.js',
-            'js/feature_flags.js',
-            'js/loading.js',
-            'js/util.js',
-            'js/keydown_util.js',
-            'js/lightbox_canvas.js',
-            'js/rtl.js',
-            'js/dict.js',
-            'js/scroll_util.js',
-            'js/components.js',
-            'js/localstorage.js',
-            'js/drafts.js',
-            'js/input_pill.js',
-            'js/user_pill.js',
-            'js/compose_pm_pill.js',
-            'js/channel.js',
-            'js/setup.js',
-            'js/unread_ui.js',
-            'js/unread_ops.js',
-            'js/muting.js',
-            'js/muting_ui.js',
-            'js/message_viewport.js',
-            'js/rows.js',
-            'js/people.js',
-            'js/user_groups.js',
-            'js/unread.js',
-            'js/topic_list.js',
-            'js/pm_list.js',
-            'js/pm_conversations.js',
-            'js/recent_senders.js',
-            'js/stream_sort.js',
-            'js/topic_generator.js',
-            'js/top_left_corner.js',
-            'js/stream_list.js',
-            'js/filter.js',
-            'js/fetch_status.js',
-            'js/message_list_data.js',
-            'js/message_list_view.js',
-            'js/message_list.js',
-            'js/message_live_update.js',
-            'js/narrow_state.js',
-            'js/narrow.js',
-            'js/reload.js',
-            'js/compose_fade.js',
-            'js/fenced_code.js',
-            'js/markdown.js',
-            'js/echo.js',
-            'js/socket.js',
-            'js/sent_messages.js',
-            'js/compose_state.js',
-            'js/compose_actions.js',
-            'js/transmit.js',
-            'js/compose.js',
-            'js/upload.js',
-            'js/stream_color.js',
-            'js/stream_data.js',
-            'js/topic_data.js',
-            'js/stream_muting.js',
-            'js/stream_events.js',
-            'js/stream_create.js',
-            'js/stream_edit.js',
-            'js/subs.js',
-            'js/message_edit.js',
-            'js/condense.js',
-            'js/resize.js',
-            'js/list_render.js',
-            'js/floating_recipient_bar.js',
-            'js/lightbox.js',
-            'js/ui_report.js',
-            'js/message_scroll.js',
-            'js/info_overlay.js',
-            'js/ui.js',
-            'js/night_mode.js',
-            'js/ui_util.js',
-            'js/pointer.js',
-            'js/click_handlers.js',
-            'js/settings_toggle.js',
-            'js/scroll_bar.js',
-            'js/gear_menu.js',
-            'js/copy_and_paste.js',
-            'js/stream_popover.js',
-            'js/popovers.js',
-            'js/overlays.js',
-            'js/typeahead_helper.js',
-            'js/search_suggestion.js',
-            'js/search.js',
-            'js/composebox_typeahead.js',
-            'js/navigate.js',
-            'js/list_util.js',
-            'js/hotkey.js',
-            'js/favicon.js',
-            'js/notifications.js',
-            'js/hash_util.js',
-            'js/hashchange.js',
-            'js/invite.js',
-            'js/message_flags.js',
-            'js/alert_words.js',
-            'js/alert_words_ui.js',
-            'js/attachments_ui.js',
-            'js/message_store.js',
-            'js/message_util.js',
-            'js/message_events.js',
-            'js/message_fetch.js',
-            'js/server_events.js',
-            'js/server_events_dispatch.js',
-            'js/zulip.js',
-            'js/presence.js',
-            'js/user_search.js',
-            'js/buddy_data.js',
-            'js/buddy_list.js',
-            'js/list_cursor.js',
-            'js/activity.js',
-            'js/user_events.js',
-            'js/colorspace.js',
-            'js/timerender.js',
-            'js/tutorial.js',
-            'js/hotspots.js',
-            'js/templates.js',
-            'js/upload_widget.js',
-            'js/avatar.js',
-            'js/realm_icon.js',
-            'js/settings_account.js',
-            'js/settings_display.js',
-            'js/settings_notifications.js',
-            'js/settings_bots.js',
-            'js/settings_muting.js',
-            'js/settings_sections.js',
-            'js/settings_emoji.js',
-            'js/settings_org.js',
-            'js/settings_users.js',
-            'js/settings_streams.js',
-            'js/settings_filters.js',
-            'js/settings_invites.js',
-            'js/settings_user_groups.js',
-            'js/settings_profile_fields.js',
-            'js/settings.js',
-            'js/admin_sections.js',
-            'js/admin.js',
-            'js/tab_bar.js',
-            'js/emoji.js',
-            'js/bot_data.js',
-            'js/reactions.js',
-            'js/typing.js',
-            'js/typing_status.js',
-            'js/typing_data.js',
-            'js/typing_events.js',
-            'js/ui_init.js',
-            'js/emoji_picker.js',
-            'js/compose_ui.js',
-            'js/panels.js',
-            'js/settings_ui.js'
-        ],
-        'output_filename': 'min/app.js'
-    },
+    # One of the main reason we are treating the following bundles separately
+    # from webpack is we want to reduce the webpack compile time since These
+    # files are very large in size and are already minified or being minified
+    # in the pipeline itself
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
@@ -1089,33 +920,15 @@ JS_SPECS = {
         ],
         'output_filename': 'min/zxcvbn.js'
     },
-    # This is used for displaying archives.
-    'archive': {
-        'source_filenames': [
-            'js/archive.js',
-            'js/colorspace.js',
-            'js/floating_recipient_bar.js',
-            'js/timerender.js',
-            'node_modules/handlebars/dist/handlebars.runtime.js',
-            'js/templates.js',
-            'js/stream_color.js',
-            'js/scroll_bar.js',
-            'node_modules/xdate/src/xdate.js',
-            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
-            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
-            'templates/compiled.js',
-        ],
-        'output_filename': 'min/archive.js'
-    },
 }
 
-app_srcs = JS_SPECS['app']['source_filenames']
 if DEVELOPMENT:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:
     WEBPACK_STATS_FILE = 'webpack-stats-production.json'
 WEBPACK_LOADER = {
     'DEFAULT': {
+        'CACHE': not DEBUG,
         'BUNDLE_DIR_NAME': 'webpack-bundles/',
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
@@ -1177,11 +990,27 @@ non_html_template_engine_settings['OPTIONS'].update({
     'lstrip_blocks': True,
 })
 
+# django-two-factor uses the default Django template engine (not Jinja2), so we
+# need to add config for it here.
+two_factor_template_options = deepcopy(default_template_engine_settings['OPTIONS'])
+del two_factor_template_options['environment']
+del two_factor_template_options['extensions']
+two_factor_template_options['loaders'] = ['zproject.settings.TwoFactorLoader']
+
+two_factor_template_engine_settings = {
+    'NAME': 'Two_Factor',
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [],
+    'APP_DIRS': False,
+    'OPTIONS': two_factor_template_options,
+}
+
 # The order here is important; get_template and related/parent functions try
 # the template engines in order until one succeeds.
 TEMPLATES = [
     default_template_engine_settings,
     non_html_template_engine_settings,
+    two_factor_template_engine_settings,
 ]
 ########################################################################
 # LOGGING SETTINGS
@@ -1505,6 +1334,12 @@ SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'zproject.backends.social_auth_associate_user',
+    'zproject.backends.social_auth_finish',
+]
+
 ########################################################################
 # EMAIL SETTINGS
 ########################################################################
@@ -1527,7 +1362,7 @@ else:
 
 EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
-AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
+AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
 
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:

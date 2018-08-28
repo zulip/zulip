@@ -35,7 +35,7 @@ exports.scroll_element_into_container = function (elem, container) {
     // the element visible.
 
     var elem_top = elem.position().top;
-    var elem_bottom = elem_top + elem.height();
+    var elem_bottom = elem_top + elem.innerHeight();
 
     var opts = {
         elem_top: elem_top,
@@ -57,3 +57,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = scroll_util;
 }
+window.scroll_util = scroll_util;

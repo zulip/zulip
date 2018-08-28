@@ -22,3 +22,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_muting;
 }
+window.settings_muting = settings_muting;

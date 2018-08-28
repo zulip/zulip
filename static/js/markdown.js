@@ -122,10 +122,10 @@ exports.add_subject_links = function (message) {
 };
 
 exports.is_status_message = function (raw_content, content) {
-    return (raw_content.indexOf('/me ') === 0 &&
+    return raw_content.indexOf('/me ') === 0 &&
             raw_content.indexOf('\n') === -1 &&
             content.indexOf('<p>') === 0 &&
-            content.lastIndexOf('</p>') === content.length - 4);
+            content.lastIndexOf('</p>') === content.length - 4;
 };
 
 function handleUnicodeEmoji(unicode_emoji) {
@@ -432,3 +432,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = markdown;
 }
+window.markdown = markdown;

@@ -205,7 +205,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
     try:
         validate(val)
         return None
-    except ValidationError as err:
+    except ValidationError:
         return _('%s is not a URL') % (var_name,)
 
 def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
@@ -237,3 +237,48 @@ def validate_choice_field(var_name: str, field_data: str, value: object) -> None
     if value not in field_data_dict:
         msg = _("'{value}' is not a valid choice for '{field_name}'.")
         return msg.format(value=value, field_name=var_name)
+
+def check_widget_content(widget_content: object) -> Optional[str]:
+    if not isinstance(widget_content, dict):
+        return 'widget_content is not a dict'
+
+    if 'widget_type' not in widget_content:
+        return 'widget_type is not in widget_content'
+
+    if 'extra_data' not in widget_content:
+        return 'extra_data is not in widget_content'
+
+    widget_type = widget_content['widget_type']
+    extra_data = widget_content['extra_data']
+
+    if not isinstance(extra_data, dict):
+        return 'extra_data is not a dict'
+
+    if widget_type == 'zform':
+
+        if 'type' not in extra_data:
+            return 'zform is missing type field'
+
+        if extra_data['type'] == 'choices':
+            check_choices = check_list(
+                check_dict([
+                    ('short_name', check_string),
+                    ('long_name', check_string),
+                    ('reply', check_string),
+                ]),
+            )
+
+            checker = check_dict([
+                ('heading', check_string),
+                ('choices', check_choices),
+            ])
+
+            msg = checker('extra_data', extra_data)
+            if msg:
+                return msg
+
+            return None
+
+        return 'unknown zform type: ' + extra_data['type']
+
+    return 'unknown widget type: ' + widget_type

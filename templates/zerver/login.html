@@ -11,7 +11,7 @@
 
 
     {% if password_auth_enabled %}
-    <script type="text/javascript">
+    <script>
         {% if email %}
         common.autofocus('#id_password');
         {% else %}
@@ -168,7 +168,7 @@
             </div>
         </div>
     </div>
-    <script type="text/javascript">
+    <script>
     if (window.location.hash.substring(0, 1) === "#") {
         /* We append the location.hash to the formaction so that URL can be
         preserved after user is logged in. See this:

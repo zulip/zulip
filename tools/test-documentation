@@ -3,8 +3,10 @@ set -e
 
 color_message () {
     local color_code="$1" message="$2"
-    echo -e "\e[${color_code}m${message}\e[0m" >&2
+    printf '\e[%sm%s\e[0m\n' "$color_code" "$message" >&2
 }
+
+loglevel=()
 
 case $1 in
     -h|--help)
@@ -13,7 +15,7 @@ case $1 in
         exit 0
         ;;
     -L|--loglevel)
-        loglevel="$1 $2"
+        loglevel=("$1" "$2")
         ;;
     --skip-check-links)
         skip_check_links=1
@@ -38,7 +40,7 @@ color_message 94 "Testing links in documentation..."
 
 cd ../tools/documentation_crawler
 set +e
-scrapy crawl_with_status documentation_crawler $loglevel
+scrapy crawl_with_status documentation_crawler "${loglevel[@]}"
 result=$?
 if [ "$result" = 1 ]; then
     color_message 91 "Failed!"

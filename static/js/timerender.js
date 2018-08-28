@@ -36,7 +36,7 @@ exports.render_now = function (time, today) {
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     var is_older_year =
-        (start_of_today.getFullYear() - start_of_other_day.getFullYear()) > 0;
+        start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -70,7 +70,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     var minutes = Math.floor(last_active_date.diffMinutes(current_date));
     if (minutes <= 2) {
-        return i18n.t("Last seen just now");
+        return i18n.t("Just now");
     }
     if (minutes < 60) {
         return i18n.t("Last seen __minutes__ minutes ago", {minutes: minutes});
@@ -105,9 +105,9 @@ var update_list = [];
 // The time at the beginning of the next day, when the timestamps are updated.
 // Represented as an XDate with hour, minute, second, millisecond 0.
 var next_update;
-$(function () {
+exports.initialize = function () {
     next_update = set_to_start_of_day(new XDate()).addDays(1);
-});
+};
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
@@ -250,7 +250,7 @@ exports.absolute_time = (function () {
             today = new Date();
         }
         var date = new Date(timestamp);
-        var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;
+        var is_older_year = today.getFullYear() - date.getFullYear() > 0;
         var H_24 = page_params.twenty_four_hour_time;
         var str = MONTHS[date.getMonth()] + " " + date.getDate();
         // include year if message date is from a previous year
@@ -278,7 +278,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
 
     message.full_date_str = time.toLocaleDateString();
     message.full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
+        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')';
 
     time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
 };
@@ -289,3 +289,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = timerender;
 }
+window.timerender = timerender;

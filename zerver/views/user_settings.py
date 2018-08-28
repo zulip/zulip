@@ -25,6 +25,7 @@ from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
     ConfirmationKeyException, Confirmation
+from zproject.backends import email_belongs_to_ldap
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
@@ -62,8 +63,11 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Please fill out all fields."))
 
     if new_password != "":
+        return_data = {}  # type: Dict[str, Any]
+        if email_belongs_to_ldap(user_profile.realm, user_profile.email):
+            return json_error(_("Your Zulip password is managed in LDAP"))
         if not authenticate(username=user_profile.email, password=old_password,
-                            realm=user_profile.realm):
+                            realm=user_profile.realm, return_data=return_data):
             return json_error(_("Wrong password!"))
         do_change_password(user_profile, new_password)
         # In Django 1.10, password changes invalidates sessions, see
@@ -111,6 +115,8 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 def update_display_settings_backend(
         request: HttpRequest, user_profile: UserProfile,
         twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
+        dense_mode: Optional[bool]=REQ(validator=check_bool, default=None),
+        starred_message_counts: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),

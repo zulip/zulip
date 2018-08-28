@@ -3,8 +3,8 @@ zrequire('templates');
 
 set_global('i18n', global.stub_i18n);
 
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
+const { JSDOM } = require("jsdom");
+const { window } = new JSDOM();
 global.$ = require('jquery')(window);
 
 // When writing these tests, the following command might be helpful:
@@ -14,7 +14,7 @@ function render(template_name, args) {
     return global.render_template(template_name, args);
 }
 
-(function test_finding_partials() {
+run_test('finding_partials', () => {
     var fns = global.find_included_partials('settings_tab');
     assert.deepEqual(fns, [
         'account-settings',
@@ -25,9 +25,9 @@ function render(template_name, args) {
         'attachments-settings',
         'muted-topics-settings',
     ]);
-}());
+});
 
-(function test_handlebars_bug() {
+run_test('handlebars_bug', () => {
     // There was a bug in 1.0.9 where identically structured
     // blocks get confused, so when foo is false, it still
     // renders the foo-is-true block.
@@ -49,9 +49,9 @@ function render(template_name, args) {
     var output = template({});
 
     assert.equal(output, 'd'); // the buggy version would return 'b'
-}());
+});
 
-(function actions_popover_content() {
+run_test('actions_popover_content', () => {
     var args = {
         message: {
             is_stream: true,
@@ -92,9 +92,9 @@ function render(template_name, args) {
     assert.equal(viewSourceLink.length, 0);
     var quoteLink = $(deletedHtml).find("a.respond_button");
     assert.equal(quoteLink.length, 0);
-}());
+});
 
-(function admin_realm_domains_list() {
+run_test('admin_realm_domains_list', () => {
     var html = "<table>";
     var args = {
         realm_domain: {
@@ -115,9 +115,9 @@ function render(template_name, args) {
     assert.equal(domain.text(), "zulip.org");
 
     assert.equal(subdomains_checkbox.prop('checked'), true);
-}());
+});
 
-(function admin_realm_dropdown_stream_list() {
+run_test('admin_realm_dropdown_stream_list', () => {
     var html = "<ul>";
     var args = {
         stream: {
@@ -135,9 +135,9 @@ function render(template_name, args) {
     assert.equal(link.text().trim(), "Italy");
     assert(list_item.hasClass("stream_name"));
     assert.equal(list_item.attr("data-stream-id"), "18");
-}());
+});
 
-(function admin_default_streams_list() {
+run_test('admin_default_streams_list', () => {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
 
@@ -165,13 +165,13 @@ function render(template_name, args) {
     html += "</table>";
     span = $(html).find(".default_stream_name:first");
     assert.equal(span.text(), "devel");
-}());
+});
 
-(function admin_emoji_list() {
+run_test('admin_emoji_list', () => {
     var args = {
         emoji: {
             name: "MouseFace",
-            display_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+            display_name: "MouseFace",
             source_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
         },
     };
@@ -186,9 +186,9 @@ function render(template_name, args) {
 
     assert.equal(emoji_name.text(), 'MouseFace');
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
-}());
+});
 
-(function admin_profile_field_list() {
+run_test('admin_profile_field_list', () => {
 
     // When the logged in user is admin
     var args = {
@@ -233,9 +233,9 @@ function render(template_name, args) {
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long text');
     assert.equal(td.length, 3);
-}());
+});
 
-(function admin_filter_list() {
+run_test('admin_filter_list', () => {
 
     // When the logged in user is admin
     var args = {
@@ -276,9 +276,9 @@ function render(template_name, args) {
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
-}());
+});
 
-(function admin_invites_list() {
+run_test('admin_invites_list', () => {
     var html = '<table>';
     var invites = ['alice', 'bob', 'carl'];
     var invite_id = 0;
@@ -309,23 +309,11 @@ function render(template_name, args) {
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
 
-    var icon = $(html).find(".icon-vector-bolt");
+    var icon = $(html).find(".fa-bolt");
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
-}());
+});
 
-(function admin_streams_list() {
-    var html = '<table>';
-    var streams = ['devel', 'trac', 'zulip'];
-    _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false}};
-        html += render('admin_streams_list', args);
-    });
-    html += "</table>";
-    var span = $(html).find(".stream_name:first");
-    assert.equal(span.text(), "devel");
-}());
-
-(function admin_tab() {
+run_test('admin_tab', () => {
     var args = {
         realm_name: 'Zulip',
     };
@@ -336,9 +324,9 @@ function render(template_name, args) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
     });
     assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
-}());
+});
 
-(function admin_user_group_list() {
+run_test('admin_user_group_list', () => {
     var args = {
         user_group: {
             id: "9",
@@ -353,17 +341,17 @@ function render(template_name, args) {
     html += '</div>';
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_pills_id, '9');
     assert.equal(group_name_display, 'uranohoshi');
     assert.equal(group_description, 'Students at Uranohoshi Academy');
-}());
+});
 
-(function admin_user_list() {
+run_test('admin_user_list', () => {
     var html = '<table>';
     var users = ['alice', 'bob', 'carl'];
 
@@ -387,11 +375,8 @@ function render(template_name, args) {
     assert.equal($(buttons[0]).text().trim(), "translated: Deactivate");
     assert($(buttons[0]).hasClass("deactivate"));
 
-    assert.equal($(buttons[1]).text().trim(), "translated: Make admin");
-    assert($(buttons[1]).hasClass("make-admin"));
-
-    assert.equal($(buttons[2]).attr('title').trim(), "translated: Edit user");
-    assert($(buttons[2]).hasClass("open-user-form"));
+    assert.equal($(buttons[1]).attr('title').trim(), "translated: Edit user");
+    assert($(buttons[1]).hasClass("open-user-form"));
 
     // When the logged in user is not admin
     html = '<table>';
@@ -410,10 +395,11 @@ function render(template_name, args) {
     html += "</table>";
 
     buttons = $(html).find('.button');
-    assert.equal($(buttons).length, 6);
-}());
+    // No buttons should be availabe to non-admins
+    assert.equal($(buttons).length, 0);
+});
 
-(function alert_word_settings_item() {
+run_test('alert_word_settings_item', () => {
     var html = '<ul id="alert-words">';
     var words = ['lunch', 'support'];
     var args;
@@ -451,26 +437,26 @@ function render(template_name, args) {
     assert.equal(button.length, 1);
     assert.equal(button.text().trim(), 'translated: Add alert word');
 
-}());
+});
 
-(function all_messages_sidebar_actions() {
+run_test('all_messages_sidebar_actions', () => {
     render('all_messages_sidebar_actions');
-}());
+});
 
-(function announce_stream_docs() {
+run_test('announce_stream_docs', () => {
     render('announce_stream_docs');
-}());
+});
 
-(function bankruptcy_modal() {
+run_test('bankruptcy_modal', () => {
     var args = {
         unread_count: 99,
     };
     var html = render('bankruptcy_modal', args);
     var count = $(html).find("p b");
     assert.equal(count.text(), 99);
-}());
+});
 
-(function admin_auth_methods_list() {
+run_test('admin_auth_methods_list', () => {
     var args = {
         method: {
             method: "Email",
@@ -486,9 +472,9 @@ function render(template_name, args) {
     var method = $(html).find('tr.method_row:first span.method');
     assert.equal(method.text(), 'Email');
     assert.equal(method.is("checked"), false);
-}());
+});
 
-(function bookend() {
+run_test('bookend', () => {
     // Do subscribed/unsubscribed cases here.
     var args = {
         bookend_content: "subscribed to stream",
@@ -509,9 +495,9 @@ function render(template_name, args) {
     html = render('bookend', args);
     assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            translated: Subscribe');
 
-}());
+});
 
-(function bot_avatar_row() {
+run_test('bot_avatar_row', () => {
     var html = '';
     var args = {
         email: "hamlet@zulip.com",
@@ -523,9 +509,9 @@ function render(template_name, args) {
 
     var img = $(html).find("img");
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
-}());
+});
 
-(function bot_owner_select() {
+run_test('bot_owner_select', () => {
     var args = {
         users_list: [
             {
@@ -540,20 +526,26 @@ function render(template_name, args) {
     var option = $(html).find("option:last");
     assert.equal(option.val(), "hamlet@zulip.com");
     assert.equal(option.text(), "Hamlet");
-}());
+});
 
 
-(function compose_invite_users() {
+run_test('compose_invite_users', () => {
     var args = {
         email: 'hamlet@zulip.com',
         name: 'Hamlet',
+        can_subscribe_other_users: true,
     };
     var html = render('compose-invite-users', args);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
-}());
 
-(function compose_all_everyone() {
+    args.can_subscribe_other_users = false;
+    html = render('compose-invite-users', args);
+    button = $(html).find("button:first");
+    assert.equal(button.length, 0);
+});
+
+run_test('compose_all_everyone', () => {
     var args = {
         count: '101',
         name: 'all',
@@ -563,9 +555,9 @@ function render(template_name, args) {
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
     assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
-}());
+});
 
-(function compose_announce() {
+run_test('compose_announce', () => {
     var args = {
         count: '101',
     };
@@ -574,15 +566,15 @@ function render(template_name, args) {
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-announce-msg').text().trim();
     assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
-}());
+});
 
-(function compose_not_subscribed() {
+run_test('compose_not_subscribed', () => {
     var html = render('compose_not_subscribed');
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
-}());
+});
 
-(function compose_notification() {
+run_test('compose_notification', () => {
     var args = {
         note: "You sent a message to a muted topic.",
         link_text: "Narrow to here",
@@ -594,9 +586,9 @@ function render(template_name, args) {
     html += '</div>';
     var a = $(html).find("a.compose_notification_narrow_by_subject");
     assert.equal(a.text(), "Narrow to here");
-}());
+});
 
-(function compose_private_stream_alert() {
+run_test('compose_private_stream_alert', () => {
     var args = {
         stream_name: 'Denmark',
     };
@@ -606,9 +598,9 @@ function render(template_name, args) {
     var actual_text = $(html).text();
     var expected_text = 'translated: Warning: Denmark is a private stream.';
     assert(actual_text.indexOf(expected_text) >= 1);
-}());
+});
 
-(function custom_user_profile_field() {
+run_test('custom_user_profile_field', () => {
     var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
     var args = {field: field, field_value: "@GitHub", field_type: "text"};
     var html = render('custom-user-profile-field', args);
@@ -616,9 +608,9 @@ function render(template_name, args) {
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
     assert.equal($(html).find('.field_hint').text(), "Or link to profile");
     assert.equal($(html).find('label').text(), "GitHub user name");
-}());
+});
 
-(function deactivate_stream_modal() {
+run_test('deactivate_stream_modal', () => {
     var args = {
         stream_name: "Public stream",
     };
@@ -629,13 +621,13 @@ function render(template_name, args) {
 
     var button = $(html).find("#do_deactivate_stream_button");
     assert.equal(button.text(), "translated: Yes, delete this stream");
-}());
+});
 
-(function dev_env_email_access() {
+run_test('dev_env_email_access', () => {
     render('dev_env_email_access');
-}());
+});
 
-(function draft_table_body() {
+run_test('draft_table_body', () => {
     var args = {
         drafts: [
             {
@@ -673,16 +665,16 @@ function render(template_name, args) {
     assert.equal(row_2.find(".stream_label").text().trim(), "translated: You and Jordan, Michael");
     assert(row_2.find(".message_row").hasClass("private-message"));
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
-}());
+});
 
 
-(function email_address_hint() {
+run_test('email_address_hint', () => {
     var html = render('email_address_hint');
     var li = $(html).find("li:first");
     assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
-}());
+});
 
-(function emoji_popover() {
+run_test('emoji_popover', () => {
     var args = {
         class: "emoji-info-popover",
     };
@@ -691,9 +683,9 @@ function render(template_name, args) {
     html += "</div>";
     var popover = $(html).find(".popover");
     assert(popover.hasClass("emoji-info-popover"));
-}());
+});
 
-(function emoji_popover_content() {
+run_test('emoji_popover_content', () => {
     var args = {
         search: 'Search',
         message_id: 1,
@@ -705,7 +697,7 @@ function render(template_name, args) {
                         has_reacted: false,
                         is_realm_emoji: false,
                         name: '100',
-                        css_class: '100',
+                        emoji_code: '100',
                     },
                 ],
             },
@@ -735,9 +727,9 @@ function render(template_name, args) {
 
     var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test']");
     assert(category_1.hasClass("active"));
-}());
+});
 
-(function emoji_popover_search_results() {
+run_test('emoji_popover_search_results', () => {
     var args = {
         message_id: 1,
         search_results: [
@@ -745,13 +737,13 @@ function render(template_name, args) {
                 has_reacted: false,
                 is_realm_emoji: false,
                 name: 'test-1',
-                css_class: 'test-1',
+                emoji_code: 'test-1',
             },
             {
                 has_reacted: true,
                 is_realm_emoji: false,
                 name: 'test-2',
-                css_class: 'test-2',
+                emoji_code: 'test-2',
             },
         ],
     };
@@ -761,14 +753,14 @@ function render(template_name, args) {
     var used_emoji = $(html).find(".emoji-test-2").parent();
     assert(used_emoji.hasClass("reaction"));
     assert(used_emoji.hasClass("reacted"));
-}());
+});
 
-(function emoji_showcase() {
+run_test('emoji_showcase', () => {
     var args = {
         emoji_dict: {
             name: "thumbs_up",
             is_realm_emoji: false,
-            css_class: "1f44d",
+            emoji_code: "1f44d",
             has_reacted: false,
         },
     };
@@ -780,9 +772,9 @@ function render(template_name, args) {
     assert(emoji_div.hasClass("emoji-1f44d"));
     assert.equal(canonical_name.text(), "thumbs_up");
     assert.equal(canonical_name.attr("title"), "thumbs_up");
-}());
+});
 
-(function group_pms() {
+run_test('group_pms', () => {
     var args = {
         group_pms: [
             {
@@ -797,9 +789,9 @@ function render(template_name, args) {
 
     var a = $(html).find("a:first");
     assert.equal(a.text(), 'Alice and Bob');
-}());
+});
 
-(function hotspot_overlay() {
+run_test('hotspot_overlay', () => {
     var args = {
         title: 'Start a new conversation',
         name: 'intro_compose',
@@ -814,9 +806,9 @@ function render(template_name, args) {
         $(html).find('.hotspot-description').text(),
         'Click the "New topic" button to start a new conversation.'
     );
-}());
+});
 
-(function input_pill() {
+run_test('input_pill', () => {
     var args = {
         id: 22,
         display_value: 'King Hamlet',
@@ -825,9 +817,15 @@ function render(template_name, args) {
     var html = render('input_pill', args);
 
     assert($(html).hasClass('pill'));
-}());
+});
 
-(function invite_subscription() {
+run_test('intro_reply_hotspot', () => {
+    var html = render('intro_reply_hotspot', {});
+
+    assert($(html).hasClass('hotspot-message'));
+});
+
+run_test('invite_subscription', () => {
     var args = {
         streams: [
             {
@@ -842,9 +840,9 @@ function render(template_name, args) {
 
     var input = $(html).find("label:first");
     assert.equal(input.text().trim(), "devel");
-}());
+});
 
-(function single_message() {
+run_test('single_message', () => {
     var message =  {
         msg: {
             include_recipient: true,
@@ -868,9 +866,9 @@ function render(template_name, args) {
 
     var starred_title = first_message.find(".star").attr("title");
     assert.equal(starred_title, "translated: Unstar this message (*)");
-}());
+});
 
-(function message_edit_form() {
+run_test('message_edit_form', () => {
     var args = {
         topic: "lunch",
         content: "Let's go to lunch!",
@@ -880,9 +878,9 @@ function render(template_name, args) {
 
     var textarea = $(html).find("textarea.message_edit_content");
     assert.equal(textarea.text(), "Let's go to lunch!");
-}());
+});
 
-(function message_group() {
+run_test('message_group', () => {
     var messages = [
         {
             msg: {
@@ -931,9 +929,9 @@ function render(template_name, args) {
 
     var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
     assert.equal(highlighted_subject_word, 'two');
-}());
+});
 
-(function message_edit_history() {
+run_test('message_edit_history', () => {
     var message = {
         content: "Let's go to lunch!",
         edit_history: [
@@ -953,10 +951,10 @@ function render(template_name, args) {
     });
     var edited_message = $(html).find("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
-                 "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
-}());
+                 "1468132659\n            Let\'s go to lunchdinner!\n            Edited by Alice");
+});
 
-(function message_reaction() {
+run_test('message_reaction', () => {
     var args = {
         class: 'message_reaction',
         emoji_name: 'smile',
@@ -973,15 +971,15 @@ function render(template_name, args) {
     var reaction = $(html).find(".message_reaction");
     assert.equal(reaction.data("reaction-id"), "unicode_emoji,smile,1f604");
     assert(reaction.find(".emoji").hasClass("emoji-1f604"));
-}());
+});
 
-(function more_topics() {
+run_test('more_topics', () => {
     var html = render('more_topics');
 
     assert($(html).hasClass('show-more-topics'));
-}());
+});
 
-(function new_stream_users() {
+run_test('new_stream_users', () => {
     var args = {
         users: [
             {
@@ -999,9 +997,9 @@ function render(template_name, args) {
 
     var label = $(html).find("label:first");
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
-}());
+});
 
-(function non_editable_user_group() {
+run_test('non_editable_user_group', () => {
     var args = {
         user_group: {
             id: "9",
@@ -1016,17 +1014,17 @@ function render(template_name, args) {
     html += '</div>';
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_pills_id, '9');
     assert.equal(group_name_display, 'uranohoshi');
     assert.equal(group_description, 'Students at Uranohoshi Academy');
-}());
+});
 
-(function notification() {
+run_test('notification', () => {
     var args = {
         content: "Hello",
         gravatar_url: "/gravatar/url",
@@ -1037,17 +1035,17 @@ function render(template_name, args) {
 
     var title = $(html).find(".title");
     assert.equal(title.text().trim(), 'You have a notification');
-}());
+});
 
-(function propagate_notification_change() {
+run_test('propagate_notification_change', () => {
     var html = render('propagate_notification_change');
 
     var button_area = $(html).find(".propagate-notifications-controls");
     assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'translated: Yes');
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
-}());
+});
 
-(function reminder_popover_content() {
+run_test('reminder_popover_content', () => {
     var args = {
         message: {
             is_stream: true,
@@ -1066,9 +1064,9 @@ function render(template_name, args) {
     html += "</div>";
     var link = $(html).find("a.remind.custom");
     assert.equal(link.text().trim(), 'translated: Select date and time');
-}());
+});
 
-(function settings_tab() {
+run_test('settings_tab', () => {
     var page_param_checkbox_options = {
         enable_stream_desktop_notifications: true,
         enable_stream_push_notifications: true,
@@ -1126,9 +1124,9 @@ function render(template_name, args) {
         assert.equal($('#pm_content_in_desktop_notifications').attr('disabled'), undefined);
     });
 
-}());
+});
 
-(function sidebar_private_message_list() {
+run_test('sidebar_private_message_list', () => {
     var args = {
         want_show_more_messages_links: true,
         messages: [
@@ -1144,9 +1142,9 @@ function render(template_name, args) {
     var conversations = $(html).find('a').text().trim().split('\n');
     assert.equal(conversations[0], 'alice,bob');
     assert.equal(conversations[1].trim(), '(translated: more conversations)');
-}());
+});
 
-(function stream_member_list_entry() {
+run_test('stream_member_list_entry', () => {
     var everyone_items = ["subscriber-name", "subscriber-email"];
     var admin_items = ["remove-subscriber-button"];
 
@@ -1170,9 +1168,9 @@ function render(template_name, args) {
     _.each(admin_items, function (item) {
         assert.equal($(html).find("." + item).length, 1);
     });
-}());
+});
 
-(function stream_sidebar_actions() {
+run_test('stream_sidebar_actions', () => {
     var args = {
         stream: {
             color: 'red',
@@ -1186,9 +1184,9 @@ function render(template_name, args) {
 
     var li = $(html).find("li:first");
     assert.equal(li.text().trim(), 'translated: Stream settings');
-}());
+});
 
-(function stream_sidebar_row() {
+run_test('stream_sidebar_row', () => {
     var args = {
         name: "devel",
         color: "red",
@@ -1206,16 +1204,16 @@ function render(template_name, args) {
 
     // test to ensure that the hashtag element from stream_privacy exists.
     assert.equal($(html).find(".stream-privacy").children("*").attr("class"), "hashtag");
-}());
+});
 
-(function subscription_invites_warning_modal() {
+run_test('subscription_invites_warning_modal', () => {
     var html = render('subscription_invites_warning_modal');
 
     var button = $(html).find(".close-invites-warning-modal").last();
     assert.equal(button.text(), 'translated: Go back');
-}());
+});
 
-(function subscription_settings() {
+run_test('subscription_settings', () => {
     var sub = {
         name: 'devel',
         subscribed: true,
@@ -1224,9 +1222,7 @@ function render(template_name, args) {
         render_subscribers: true,
         color: 'purple',
         invite_only: true,
-        can_make_public: true,
-        can_make_private: true, /* not logical, but that's ok */
-        can_change_subscription_type: true,
+        can_change_stream_permissions: true,
         email_address: 'xxxxxxxxxxxxxxx@zulip.com',
         stream_id: 888,
         in_home_view: true,
@@ -1236,31 +1232,43 @@ function render(template_name, args) {
     html += render('subscription_settings', sub);
 
     var div = $(html).find(".subscription-type");
-    assert(div.text().indexOf('invite-only stream') > 0);
+    assert(div.text().indexOf('private stream') > 0);
 
     var anchor = $(html).find(".change-stream-privacy:first");
-    assert.equal(anchor.data("is-private"), true);
     assert.equal(anchor.text(), "[translated: Change]");
-}());
+});
 
 
-(function subscription_stream_privacy_modal() {
+run_test('subscription_stream_privacy_modal', () => {
     var args = {
         stream_id: 999,
         is_private: true,
     };
     var html = render('subscription_stream_privacy_modal', args);
 
-    var stream_desc = $(html).find(".modal-body b");
-    assert.equal(stream_desc.text(), 'an invite-only stream');
+    var other_options = $(html).find("input[name=privacy]");
+    assert.equal(other_options[0].value, 'public');
+    assert.equal(other_options[1].value, 'invite-only-public-history');
+    assert.equal(other_options[2].value, 'invite-only');
+
+    var is_announcement_only = $(html).find("input[name=is-announcement-only]");
+    assert.equal(is_announcement_only.prop('checked'), false);
 
     var button = $(html).find("#change-stream-privacy-button");
-    assert(button.hasClass("btn-primary"));
-    assert.equal(button.text().trim(), "translated: Make stream public");
-}());
+    assert(button.hasClass("btn-danger"));
+    assert.equal(button.text().trim(), "translated: Save changes");
+});
 
 
-(function subscription_table_body() {
+run_test('subscription_table_body', () => {
+    // We are mostly deprecating template tests,
+    // but we try to make sure rendering does not
+    // crash.
+    render('subscription_table_body', {});
+});
+
+
+run_test('subscriptions', () => {
     var args = {
         subscriptions: [
             {
@@ -1271,8 +1279,6 @@ function render(template_name, args) {
                 render_subscribers: true,
                 color: 'purple',
                 invite_only: true,
-                can_make_public: true,
-                can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
                 stream_id: 888,
                 in_home_view: true,
@@ -1286,16 +1292,16 @@ function render(template_name, args) {
     };
 
     var html = '';
-    html += '<div id="subscriptions_table">';
-    html += render('subscription_table_body', args);
+    html += '<div>';
+    html += render('subscriptions', args);
     html += '</div>';
 
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
-}());
+});
 
 
-(function tab_bar() {
+run_test('tab_bar', () => {
     var args = {
         tabs: [
             {
@@ -1317,16 +1323,16 @@ function render(template_name, args) {
 
     var a = $(html).find("li:first");
     assert.equal(a.text().trim(), 'Home');
-}());
+});
 
-(function topic_edit_form() {
+run_test('topic_edit_form', () => {
     var html = render('topic_edit_form');
 
     var button = $(html).find("button:first");
-    assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
-}());
+    assert.equal(button.find("i").attr("class"), 'fa fa-check');
+});
 
-(function topic_list_item() {
+run_test('topic_list_item', () => {
     var args = {
         is_muted: false,
         topic_name: 'lunch',
@@ -1337,10 +1343,10 @@ function render(template_name, args) {
     var html = render('topic_list_item', args);
 
     assert.equal($(html).attr('data-topic-name'), 'lunch');
-}());
+});
 
 
-(function topic_sidebar_actions() {
+run_test('topic_sidebar_actions', () => {
     var args = {
         stream_name: 'social',
         topic_name: 'lunch',
@@ -1351,9 +1357,9 @@ function render(template_name, args) {
     var a = $(html).find("a.narrow_to_topic");
     assert.equal(a.text().trim(), 'translated: Narrow to topic lunch');
 
-}());
+});
 
-(function typeahead_list_item() {
+run_test('typeahead_list_item', () => {
     var args = {
         primary: 'primary-text',
         secondary: 'secondary-text',
@@ -1368,9 +1374,9 @@ function render(template_name, args) {
     assert.equal($(html).find('.emoji').attr('src'), 'https://zulip.org');
     assert.equal($(html).find('strong').text().trim(), 'primary-text');
     assert.equal($(html).find('small').text().trim(), 'secondary-text');
-}());
+});
 
-(function typing_notifications() {
+run_test('typing_notifications', () => {
     var args = {
         users: [{
             full_name: 'Hamlet',
@@ -1386,15 +1392,15 @@ function render(template_name, args) {
     var li = $(html).find('li:first');
     assert.equal(li.text(), 'Hamlet is typing...');
 
-}());
+});
 
-(function user_group_info_popover() {
+run_test('user_group_info_popover', () => {
     var html = render('user_group_info_popover');
 
     $(html).hasClass('popover message-info-popover group-info-popover');
-}());
+});
 
-(function user_group_info_popover_content() {
+run_test('user_group_info_popover_content', () => {
     var args = {
         group_name: 'groupName',
         group_description: 'groupDescription',
@@ -1431,15 +1437,15 @@ function render(template_name, args) {
 
     assert.equal($(html).find('.group-name').text().trim(), 'groupName');
     assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
-}());
+});
 
-(function user_info_popover() {
+run_test('user_info_popover', () => {
     var html = render('user_info_popover', {class: 'message-info-popover'});
 
     $(html).hasClass('popover message-info-popover');
-}());
+});
 
-(function user_info_popover_content() {
+run_test('user_info_popover_content', () => {
     var args = {
         message: {
             full_date_str: 'Monday',
@@ -1456,16 +1462,16 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'translated: View private messages');
-}());
+});
 
-(function user_info_popover_title() {
+run_test('user_info_popover_title', () => {
     var html = render('user_info_popover_title', {user_avatar: 'avatar/hamlet@zulip.com'});
 
     html = '<div>' + html + '</div>';
     assert.equal($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
-}());
+});
 
-(function uploaded_files_list_popover() {
+run_test('uploaded_files_list_popover', () => {
     var args = {
         attachment: {
             name: "file_name.txt",
@@ -1488,9 +1494,9 @@ function render(template_name, args) {
     assert.equal($(html).find('#download_attachment').attr("href"),
                  "/user_uploads/2/65/6wITdgsd63hdskjuFqEeEy7_r/file_name.txt");
 
-}());
+});
 
-(function user_presence_rows() {
+run_test('user_presence_rows', () => {
     var args = {
         users: [
             {
@@ -1516,10 +1522,10 @@ function render(template_name, args) {
     html += '</ul>';
 
     var a = $(html).find("a:first");
-    assert.equal(a.text(), 'King Lear');
-}());
+    assert.equal(a.text().trim(), 'King Lear');
+});
 
-(function user_profile_modal() {
+run_test('user_profile_modal', () => {
     var args = {
         full_name: "Iago",
         email: "iago@zulip.com",
@@ -1530,11 +1536,11 @@ function render(template_name, args) {
     };
 
     var html = render('user_profile_modal', args);
-    var div = $(html).find(".user-profile-modal-email-section");
+    var div = $(html).find(".user-profile-modal-email");
     assert.equal(div.text().trim(), 'iago@zulip.com');
-}());
+});
 
-(function muted_topic_ui_row() {
+run_test('muted_topic_ui_row', () => {
     var args = {
         stream: 'Verona',
         topic: 'Verona2',
@@ -1548,9 +1554,9 @@ function render(template_name, args) {
 
     assert.equal($(html).find("tr").data("stream"), "Verona");
     assert.equal($(html).find("tr").data("topic"), "Verona2");
-}());
+});
 
-(function embedded_bot_config_item() {
+run_test('embedded_bot_config_item', () => {
     var args = {
         botname: 'giphy',
         key: 'api_key',
@@ -1558,26 +1564,26 @@ function render(template_name, args) {
     };
     var html = render('embedded_bot_config_item', args);
     assert.equal($(html).attr('name'), args.botname);
-    assert.equal($(html).attr('id'), args.botname+'_'+args.key);
+    assert.equal($(html).attr('id'), args.botname + '_' + args.key);
     assert.equal($(html).find('label').text(), args.key);
     assert.equal($(html).find('input').attr('placeholder'), args.value);
-}());
+});
 
-(function edit_bot() {
+run_test('edit_bot', () => {
     render('edit_bot');
-}());
+});
 
-(function edit_outgoing_webhook_service() {
+run_test('edit_outgoing_webhook_service', () => {
     var args = {
         service: {base_url: "http://www.foo.bar",
                   interface: "1"},
     };
     var html = render('edit-outgoing-webhook-service', args);
-    assert.equal($(html).find('#edit_service_base_url').attr('value'), args.service.base_url);
-    assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
-}());
+    assert.equal($(html).find('#edit_service_base_url').val(), args.service.base_url);
+    assert.equal($(html).find('#edit_service_interface').val(), args.service.interface);
+});
 
-(function edit_embedded_bot_service() {
+run_test('edit_embedded_bot_service', () => {
     var args = {
         service: {service_name: "giphy",
                   config_data: {key: "abcd1234"}},
@@ -1585,9 +1591,9 @@ function render(template_name, args) {
     var html = render('edit-embedded-bot-service', args);
     assert.equal($(html).find('#embedded_bot_key_edit').attr('name'), 'key');
     assert.equal($(html).find('#embedded_bot_key_edit').val(), 'abcd1234');
-}());
+});
 
-(function archive_message_group() {
+run_test('archive_message_group', () => {
     // The messages list below doesn't represent the actual HTML which would be
     // feed to these handlebar templates but since the actual one is a lot bigger
     // to be included in a test case and really comes pre rendered from the backend
@@ -1616,8 +1622,4 @@ function render(template_name, args) {
     var last_message_text = $(html).next('.recipient_row').find('p').last().text().trim();
     assert.equal(last_message_text, 'This is message two.');
 
-}());
-// By the end of this test, we should have compiled all our templates.  Ideally,
-// we will also have exercised them to some degree, but that's a little trickier
-// to enforce.
-global.make_sure_all_templates_have_been_compiled();
+});

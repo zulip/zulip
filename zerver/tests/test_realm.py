@@ -11,6 +11,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_deactivate_realm,
     do_deactivate_stream,
+    do_create_realm,
 )
 
 from zerver.lib.send_email import send_future_email
@@ -333,6 +334,12 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
+
+    def test_initial_plan_type(self) -> None:
+        with self.settings(BILLING_ENABLED=True):
+            self.assertEqual(Realm.LIMITED, do_create_realm('hosted', 'hosted').plan_type)
+        with self.settings(BILLING_ENABLED=False):
+            self.assertEqual(Realm.SELF_HOSTED, do_create_realm('onpremise', 'onpremise').plan_type)
 
 class RealmAPITest(ZulipTestCase):
 

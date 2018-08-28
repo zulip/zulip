@@ -329,6 +329,19 @@ td .button {
     margin: 10px 0px;
 }
 
+.input-group label.checkbox + label {
+    cursor: pointer;
+}
+
+.dependent-block {
+    margin: -5px 0 15px 35px;
+}
+
+.dependent-inline-block {
+    display: inline-block;
+    margin: 0 0 0 10px !important;
+}
+
 .no-margin {
     margin: 0px;
 }
@@ -352,7 +365,7 @@ input[type=checkbox] + .inline-block {
 
 #settings_page .icon-button {
     border-radius: 5px;
-    border: 1px solid hsl(0,0%,80%);
+    border: 1px solid hsl(0, 0%, 80%);
     font-size: 14px;
     padding: 3px 14px 4px 11px;
     text-decoration: none;
@@ -461,9 +474,9 @@ input[type=checkbox].inline-block {
 }
 
 .remove-attachment {
-    margin-right: 5px       !important;
-    font-size: 1.1em        !important;
-    padding-left: 0px       !important;
+    margin-right: 5px !important;
+    font-size: 1.1em !important;
+    padding-left: 0px !important;
 }
 
 #download_attachment {
@@ -528,6 +541,11 @@ input[type=checkbox].inline-block {
         margin: auto;
         text-align: center;
     }
+
+    #settings_page .save-button-controls {
+        display: block;
+        margin: 10px 0 0 0;
+    }
 }
 
 #organization .settings-section .settings-section-icon,
@@ -536,7 +554,6 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .alert-notification:not(:empty) {
-    color: hsl(170, 47%, 54%);
     display: inline-block !important;
     vertical-align: top;
     height: auto !important;
@@ -593,14 +610,22 @@ input[type=checkbox].inline-block {
     color: hsl(0, 0%, 82%);
 }
 
+.control-label-disabled.enabled {
+    color: hsl(0, 0%, 20%);
+}
+
 .disableable {
     margin-left: 22px;
     margin-top: -10px;
 }
 
-.admin-realm-message-content-edit-limit-minutes {
+#settings_page .admin-realm-time-limit-input {
     width: 5ch;
     text-align: right;
+}
+
+#settings_page .realm-time-limit-label {
+    vertical-align: middle;
 }
 
 .admin-realm-message-content-delete-limit-minutes {
@@ -625,7 +650,7 @@ input[type=checkbox].inline-block {
 }
 
 .emoji_image {
-    width: 50px;
+    width: 20px;
     display: block;
 }
 
@@ -680,8 +705,26 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
+#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
+    width: 28%;
+}
+
 .admin_profile_fields_table,
-.admin_filters_table {
+.profile_field_choices_table {
+    .movable-profile-field-row {
+        cursor: move;
+        .fa-ellipsis-v {
+            color: hsl(0, 0, 75%);
+            position: relative;
+            top: 1px;
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+#filter-settings .admin_filters_table {
     margin-top: 20px;
 }
 
@@ -721,7 +764,7 @@ input[type=checkbox].inline-block {
     margin: 10px 0px 5px 0px;
 
     overflow: hidden;
-    max-height: 1em;
+    line-height: 1.3em;
     text-overflow: ellipsis;
     white-space: pre;
 }
@@ -759,6 +802,10 @@ input[type=checkbox].inline-block {
 
 .bots_list .edit-bot-buttons .danger-red {
     color: hsl(0, 56%, 73%);
+}
+
+.bots_list .edit-bot-buttons .copy-gold {
+    color: hsl(51, 90%, 50%);
 }
 
 .bots_list .bot-information-box {
@@ -803,6 +850,7 @@ input[type=checkbox].inline-block {
 .bots_list .api_key .api-key-value-and-button {
     font-family: "Inconsolata", Menlo, monospace;
     font-size: 0.85em;
+    display: flex;
 }
 
 .bots_list .bot_info {
@@ -814,6 +862,11 @@ input[type=checkbox].inline-block {
     text-transform: uppercase;
     font-weight: 600;
     color: hsl(0, 0%, 66%);
+}
+
+.bot_error {
+    margin-top: 10px;
+    margin-bottom: 0 !important;
 }
 
 .edit_bot h3 {
@@ -1009,17 +1062,28 @@ input[type=checkbox].inline-block {
     border-radius: 5px;
 }
 
+#user-groups .user-group-status {
+    margin-bottom: 10px;
+}
+
 #user-groups .user-group h4 {
     font-weight: normal;
     margin: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: left;
 }
 
-#user-groups .user-group p {
-    font-weight: bold;
+#user-groups p {
     line-height: 2;
-    margin: 0px;
+    margin: 0;
 }
 
+#user-groups .spacer {
+    margin: 0 2px;
+}
+
+#user-groups .subscribers,
 #user-groups .user-group h4 > .name {
     font-weight: bold;
 }
@@ -1051,10 +1115,6 @@ input[type=checkbox].inline-block {
     opacity: 0.5;
 }
 
-#user-groups .user-group h4 > .button {
-    vertical-align: 1px;
-}
-
 #user-groups .ntm h4 > .button {
     cursor: not-allowed;
     display: none;
@@ -1065,35 +1125,22 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .save-status {
-    vertical-align: middle;
-    height: auto;
-    width: auto;
-    background: transparent;
+    background-color: transparent;
     padding: 2px 5px;
     border-radius: 4px;
     margin-left: 10px;
-}
-
-#user-groups .save-status.saved {
+    border-style: solid;
+    border-width: 1px;
     display: none;
     opacity: 0;
-    border: 1px solid hsl(178, 100%, 40%);
-    color: hsl(178, 100%, 40%);
-}
-
-#user-groups .save-status.cancel {
-    display: none;
-    opacity: 0;
-    border: 1px solid #333;
-    color: #333;
 }
 
 #user-groups .checkmark {
-    width: 13px;
+    height: 12px;
 }
 
 #user-groups .delete {
-    float: right;
+    margin-left: auto;
 }
 
 #user-groups .save-instructions {
@@ -1133,7 +1180,8 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-#settings_page .sidebar .settings-list {
+#settings_page .sidebar .normal-settings-list,
+#settings_page .sidebar .org-settings-list {
     position: relative;
 }
 
@@ -1169,7 +1217,7 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-.settings-header.mobile .icon-vector-chevron-left {
+.settings-header.mobile .fa-chevron-left {
     float: left;
     position: relative;
     top: 14px;
@@ -1202,6 +1250,8 @@ input[type=checkbox].inline-block {
 }
 
 .modal.fade {
+    /* Ensure the modal is entirely off-screen while we fade the background */
+    top: -50%;
     -webkit-transition: opacity 0.3s linear;
     -moz-transition: opacity 0.3s linear;
     -o-transition: opacity 0.3s linear;
@@ -1209,7 +1259,7 @@ input[type=checkbox].inline-block {
     transform: translateY(-50%);
 }
 
-#settings_page .table-striped thead th.active:after {
+#settings_page .table-striped thead th.active::after {
     content: " \f0d8";
     white-space: pre;
     display: inline-block;
@@ -1220,7 +1270,7 @@ input[type=checkbox].inline-block {
     -moz-osx-font-smoothing: grayscale;
 }
 
-#settings_page .table-striped thead th.active.descend:after {
+#settings_page .table-striped thead th.active.descend::after {
     content: " \f0d7";
 }
 
@@ -1255,10 +1305,15 @@ input[type=checkbox].inline-block {
     width: calc(100% - 10px - 4px);
 }
 
+#settings_page .propagate-notifications-controls button,
 #settings_page .form-sidebar input[type=submit],
 #settings_page .form-sidebar button {
     border-radius: 4px;
     outline: none;
+}
+
+#settings_page .propagate_stream_notifications_change {
+    margin-top: 8px;
 }
 
 #settings_page .form-sidebar select {
@@ -1345,9 +1400,34 @@ input[type=checkbox].inline-block {
     padding-bottom: 20px;
 }
 
+body:not(.night-mode) #account-settings .custom_user_field .datepicker {
+    background-color: #ffffff;
+}
+
 #settings_page .custom_user_field textarea {
     width: 320px;
     height: 80px;
+}
+
+#settings_page .custom_user_field .remove_date {
+    opacity: 0.5;
+    display: none;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    left: -20px;
+}
+
+#settings_page .custom_user_field:hover .remove_date {
+    display: inline-flex;
+}
+
+#settings_page .custom_user_field .remove_date:hover {
+    opacity: 1;
+}
+
+#settings_page .custom_user_field .person_picker {
+    min-width: 206px;
 }
 
 #settings_page #change_password_modal .change_password_info,
@@ -1367,8 +1447,7 @@ input[type=checkbox].inline-block {
 #id_realm_create_stream_permission,
 #id_realm_org_join_restrictions,
 #id_realm_bot_creation_policy,
-#id_realm_user_invite_restriction,
-#id_realm_msg_edit_limit_setting {
+#id_realm_user_invite_restriction {
     width: 100%;
 }
 
@@ -1376,12 +1455,7 @@ input[type=checkbox].inline-block {
     margin-top: 10px;
 }
 
-#change_email_modal,
-#change_full_name_modal,
-#change_password_modal,
-#default_language_modal,
-#deactivate_self_modal,
-#deactivate-realm-modal {
+.modal {
     box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
     outline: 10000px solid hsla(0, 0%, 0%, 0.3);
     border: none;
@@ -1490,12 +1564,8 @@ input[type=text]#settings_search {
     background-repeat: no-repeat;
 }
 
-#settings_page .sidebar li.admin {
+#settings_page .sidebar .org-settings-list {
     display: none;
-}
-
-#settings_page .sidebar li.admin .icon {
-    text-align: center;
 }
 
 #settings_page .sidebar li:last-of-type .text {
@@ -1507,6 +1577,14 @@ input[type=text]#settings_search {
     position: absolute;
     bottom: 0px;
 }
+
+.subsection-failed-status p {
+    background: #f2dede;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+}
+
 
 @media (max-width: 953px) {
     .user-avatar-section,
@@ -1522,6 +1600,10 @@ input[type=text]#settings_search {
 
     #settings_content .warning {
         display: none;
+    }
+
+    .subsection-failed-status p {
+        margin: 5px 0 0 0;
     }
 }
 
@@ -1658,13 +1740,6 @@ thead .actions {
     display: inline-block;
 }
 
-.profile-field-choices .choices-header .choice-field {
-    width: 65px;
-    margin-top: 5px;
-    display: inline-block;
-    font-weight: bold;
-}
-
 .profile-field-choices hr {
     margin-top: 0;
     margin-bottom: 5px;
@@ -1678,10 +1753,26 @@ thead .actions {
     margin-top: 0;
 }
 
+.profile-field-choices .choice-row input {
+    width: 190px;
+}
+
 .profile-field-choices .choice-row button {
     margin-left: 0 !important;
 }
 
-.profile-field-choices .choice-row input {
-    width: 50px;
+.custom_user_field .pill-container {
+    padding: 2px 6px;
+    height: 24px;
+    background-color: white;
+}
+
+.custom_user_field .pill-container:focus-within {
+    border-color: rgba(82, 168, 236, 0.8);
+    outline: 0;
+    outline: thin dotted \9;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
 }

@@ -25,7 +25,12 @@ set_global('user_groups', {
 set_global('ui_report', {});
 set_global('people', {
     my_current_user_id: noop,
+    small_avatar_url_for_person: function () {
+        return 'http://example.com/example.png';
+    },
 });
+set_global('page_params', {});
+
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
         assert.equal(opts.container, pill_container_stub);
@@ -38,30 +43,33 @@ function reset_test_setup(pill_container_stub) {
     });
 }
 
-(function test_can_edit() {
-    var me = {
-        is_admin: false,
-    };
-    people.get_person_from_user_id = function (id) {
-        assert.equal(id, undefined);
-        return me;
-    };
-    user_groups.is_member_of = function (group_id, user_id) {
+run_test('can_edit', () => {
+    page_params.is_guest = false;
+    page_params.is_admin = true;
+    assert(settings_user_groups.can_edit(1));
+
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    assert(!settings_user_groups.can_edit(1));
+
+    page_params.is_guest = false;
+    page_params.is_admin = false;
+    user_groups.is_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
         return false;
     };
-    settings_user_groups.can_edit(1);
-}());
+    assert(!settings_user_groups.can_edit(1));
+});
 
 var user_group_selector = "#user-groups #1";
-var cancel_selector = "#user-groups #1 .cancel";
-var saved_selector = "#user-groups #1 .saved";
+var cancel_selector = "#user-groups #1 .save-status.btn-danger";
+var saved_selector = "#user-groups #1 .save-status.sea-green";
 var name_selector = "#user-groups #1 .name";
 var description_selector = "#user-groups #1 .description";
 var instructions_selector = "#user-groups #1 .save-instructions";
 
-(function test_populate_user_groups() {
+run_test('populate_user_groups', () => {
     var realm_user_group = {
         id: 1,
         name: 'Mobile',
@@ -118,7 +126,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.set_test_data('warn', 'Unknown user ID 4 in members of user group Mobile');
+        blueslip.set_test_data('warn', 'Undefined user in function append_user');
         get_person_from_user_id_called = true;
     };
 
@@ -128,7 +136,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
 
     var all_pills = {};
 
-    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+    var pill_container_stub = $('.pill-container[data-group-pills="1"]');
     pills.appendValidatedData = function (item) {
         var id = item.user_id;
         assert.equal(all_pills[id], undefined);
@@ -154,11 +162,11 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         assert(config.fixed);
         assert(config.dropup);
         assert(config.stopAdvance);
-        assert.equal(typeof(config.source), 'function');
-        assert.equal(typeof(config.highlighter), 'function');
-        assert.equal(typeof(config.matcher), 'function');
-        assert.equal(typeof(config.sorter), 'function');
-        assert.equal(typeof(config.updater), 'function');
+        assert.equal(typeof config.source, 'function');
+        assert.equal(typeof config.highlighter, 'function');
+        assert.equal(typeof config.matcher, 'function');
+        assert.equal(typeof config.sorter, 'function');
+        assert.equal(typeof config.updater, 'function');
 
         (function test_highlighter() {
             var fake_person = $.create('fake-person');
@@ -210,10 +218,10 @@ var instructions_selector = "#user-groups #1 .save-instructions";
                 saved_fade_out_called = true;
             };
             $(cancel_selector).css = function (data) {
-                if (typeof(data) === 'string') {
+                if (typeof data === 'string') {
                     assert.equal(data, 'display');
                 }
-                assert.equal(typeof(data), 'object');
+                assert.equal(typeof data, 'object');
                 assert.equal(data.display, 'inline-block');
                 assert.equal(data.opacity, '0');
                 return $(cancel_selector);
@@ -222,10 +230,10 @@ var instructions_selector = "#user-groups #1 .save-instructions";
                 cancel_fade_to_called = true;
             };
             $(instructions_selector).css = function (data) {
-                if (typeof(data) === 'string') {
+                if (typeof data === 'string') {
                     assert.equal(data, 'display');
                 }
-                assert.equal(typeof(data), 'object');
+                assert.equal(typeof data, 'object');
                 assert.equal(data.display, 'block');
                 assert.equal(data.opacity, '0');
                 return $(instructions_selector);
@@ -258,7 +266,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
                      'Expected user email to be of Alice or Iago here.');
     };
     pills.onPillCreate = function (handler) {
-        assert.equal(typeof(handler), 'function');
+        assert.equal(typeof handler, 'function');
         handler();
     };
 
@@ -273,7 +281,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             get_by_email_called = false;
             var res = handler(bob.email, pills.items());
             assert(get_by_email_called);
-            assert.equal(typeof(res), 'object');
+            assert.equal(typeof res, 'object');
             assert.equal(res.user_id, bob.user_id);
             assert.equal(res.display_value, bob.full_name);
         }());
@@ -298,11 +306,11 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
-    assert.equal(typeof($('.organization form.admin-user-group-form').get_on_handler("submit")), 'function');
-    assert.equal(typeof($('#user-groups').get_on_handler('click', '.delete')), 'function');
-    assert.equal(typeof($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
-}());
-(function test_with_external_user() {
+    assert.equal(typeof $('.organization form.admin-user-group-form').get_on_handler("submit"), 'function');
+    assert.equal(typeof $('#user-groups').get_on_handler('click', '.delete'), 'function');
+    assert.equal(typeof $('#user-groups').get_on_handler('keypress', '.user-group h4 > span'), 'function');
+});
+run_test('with_external_user', () => {
 
     var realm_user_group = {
         id: 1,
@@ -357,7 +365,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         }
     };
 
-    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+    var pill_container_stub = $('.pill-container[data-group-pills="1"]');
     var pill_stub = $.create('fake-pill');
     var pill_container_find_called = 0;
     pill_container_stub.find = function (elem) {
@@ -392,13 +400,13 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         callback = one;
         empty_fn = two;
         pill_hover_called = true;
-        assert.equal(typeof(one), 'function');
-        assert.equal(typeof(two), 'function');
+        assert.equal(typeof one, 'function');
+        assert.equal(typeof two, 'function');
     };
 
     var exit_button = $.create('fake-pill-exit');
     pill_stub.set_find_results('.exit', exit_button);
-    var exit_button_called=false;
+    var exit_button_called = false;
     exit_button.css = function (property, value) {
         exit_button_called = true;
         assert.equal(property, 'opacity');
@@ -468,9 +476,9 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     assert.equal(turned_off['keydown/.pill'], true);
     assert.equal(turned_off['keydown/.input'], true);
     assert.equal(turned_off['click/whole'], true);
-}());
+});
 
-(function test_reload() {
+run_test('reload', () => {
     $('#user-groups').html('Some text');
     var populate_user_groups_called = false;
     settings_user_groups.populate_user_groups = function () {
@@ -479,15 +487,15 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($('#user-groups').html(), '');
-}());
+});
 
-(function test_reset() {
+run_test('reset', () => {
     settings_user_groups.reset();
     var result = settings_user_groups.reload();
     assert.equal(result, undefined);
-}());
+});
 
-(function test_on_events() {
+run_test('on_events', () => {
 
     settings_user_groups.can_edit = function () {
         return true;
@@ -641,7 +649,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             };
             api_endpoint_called = false;
             fake_this.closest = function (class_name) {
-                if (class_name === ".cancel" || class_name === user_group_selector) {
+                if (class_name === ".save-status.btn-danger" || class_name === user_group_selector) {
                     return [1];
                 }
                 return [];
@@ -685,6 +693,14 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         assert(cancel_fade_out_called);
         assert(instructions_fade_out_called);
 
+        // Check if cancel button removed if user group error is showing.
+        $(user_group_selector + ' .user-group-status').show();
+        cancel_fade_out_called = false;
+        instructions_fade_out_called = false;
+        handler_name.call(fake_this);
+        assert(cancel_fade_out_called);
+        assert(instructions_fade_out_called);
+
         // Check for handler_desc to achieve 100% coverage.
         cancel_fade_out_called = false;
         instructions_fade_out_called = false;
@@ -716,16 +732,17 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             cancel_fade_out_called = true;
         };
         $(saved_selector).css = function (data) {
-            if (typeof(data) === 'string') {
+            if (typeof data === 'string') {
                 assert.equal(data, 'display');
             }
-            assert.equal(typeof(data), 'object');
+            assert.equal(typeof data, 'object');
             assert.equal(data.display, 'inline-block');
             assert.equal(data.opacity, '0');
             return $(saved_selector);
         };
         $(saved_selector).fadeTo = function () {
             saved_fade_to_called = true;
+            return $(saved_selector);
         };
 
         channel.patch = function (opts) {
@@ -741,6 +758,24 @@ var instructions_selector = "#user-groups #1 .save-instructions";
                 assert(cancel_fade_out_called);
                 assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
+            }());
+            (function test_post_error() {
+                var user_group_error = $(user_group_selector + ' .user-group-status');
+                user_group_error.show();
+                ui_report.error = function (error_msg, error_obj, ele) {
+                    var xhr = {
+                        responseText: '{"msg":"fake-msg"}',
+                    };
+                    assert.equal(error_msg, 'translated: Failed');
+                    assert.deepEqual(error_obj, xhr);
+                    assert.equal(ele, user_group_error);
+                };
+                var xhr = {
+                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
+                };
+                opts.error(xhr);
+
+                assert(user_group_error.visible());
             }());
         };
 
@@ -798,6 +833,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         };
         $(saved_selector).fadeTo = function () {
             saved_fade_to_called = true;
+            return $(saved_selector);
         };
 
         var api_endpoint_called = false;
@@ -828,4 +864,4 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         handler.call(fake_this, event);
         assert(api_endpoint_called);
     }());
-}());
+});

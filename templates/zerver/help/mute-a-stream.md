@@ -1,24 +1,33 @@
 # Mute a stream
 
-If you would like to stop receiving notifications from a certain stream, you can
-choose to mute it. You can also [mute individual topics](/help/mute-a-topic).
+Messages from muted streams do not show up in **All messages** or generate
+notifications, unless you are
+[@-mentioned](/help/at-mention-a-team-member). Messages from muted streams
+do not generate [alert word](/help/add-an-alert-word) notifications.
+
+Muted streams still appear in the left sidebar, though they are grayed out.
+
+!!! tip ""
+    Some parts of the Zulip experience may start to degrade
+    if you receive more than a few hundred muted messages a day.
+
+## Mute a stream
 
 {!stream-actions.md!}
 
-2. Click on the {!down-chevron.md!} Select the **Mute the stream (stream name)**
-option from the actions dropdown.
+2. Click on the down chevron (<i class="icon-vector-chevron-down"></i>).
 
-3. Upon selecting the **Mute the stream (stream name)** option, the selected
-stream will be grayed out in the left sidebar, confirming the success of your
-muting.
+3. Select **Mute the stream (stream name)**.
+
 
 ## Unmute a stream
 
 {!stream-actions.md!}
 
-2. Click on the {!down-chevron.md!} Select the **Unmute the stream (stream name)**
-option from the actions dropdown.
+2. Click on the down chevron (<i class="icon-vector-chevron-down"></i>).
 
-3. Upon selecting the **Unmute the stream (stream name)** option, the selected
-stream will stop being grayed out in the left sidebar, confirming the success
-of your unmuting.
+3. Select the **Unmute the stream (stream name)**.
+
+## Related Articles
+
+* [Mute a topic](/help/mute-a-topic)

@@ -1,49 +1,26 @@
 # Change the topic of a message
 
-You can easily change the topic of a message by following the following steps.
+By default, any user can change the topic of any message. This is useful for
+keeping messages organized even if some users are still learning how to use
+topics effectively.
 
-{!message-actions.md!} the pencil
-(<i class="icon-vector-pencil"></i>) icon to begin editing your
-message.
+Organization administrators can
+[turn off community topic editing](/help/community-topic-edits), or turn off
+message editing entirely. See the
+[guide to message and topic editing](/help/configure-message-editing-and-deletion)
+for the details on when topic editing is allowed.
 
-2. In the field labeled **Topic**, enter the new topic name for your message.
+{!message-actions.md!} down chevron (<i class="icon-vector-chevron-down"></i>).
 
-3. Once you begin typing in the **Topic** field, you will notice that a dropdown
-appears to the right of the **Topic** field with the **Change only this message topic**
-option selected by default. Click the dropdown to view all options for editing
-your message's topic.
+1. Select the first option. It may be called **View source / Edit topic**,
+   or simply **Edit**. If it's called **View source**, then you are not
+   allowed to edit the topic of that message.
 
-    * **Change only this message topic**
+2. Edit the topic.
 
-        This option only changes the topic of the message that you have selected.
+3. A dropdown with three options will appear to the right:
+**Change only this message topic**, **Change later messages to this topic**, and
+**Change previous and following messages to this topic**. Pick the appropriate
+option.
 
-        !!! tip ""
-            You may want to select this option if you sent the message to the
-            wrong topic.
-
-    * **Change later messages to this topic**
-
-        This option changes the topic of the selected message as well
-        as the topic of any messages under the same topic that were
-        sent after the selected message.
-
-        !!! tip ""
-            You may want to select this option if you feel that some of your
-            messages have gone off-topic.
-
-    * **Change previous and following messages to this topic**
-
-        This option changes the topic of the selected message as well
-        as any messages under the same topic that were sent before and
-        after the selected message.
-
-        !!! tip ""
-            You may want to select this option to change the topic for all
-            messages with the same topic.
-
-5. After choosing your desired option from the dropdown, click the **Save**
-button under the box containing the message's contents.
-
-6. After clicking **Save**, the topic of your edited message(s) will change, and
-the message(s) will be marked with **(EDITED)**, confirming the success of the
-topic change.
+4. Click **Save**.

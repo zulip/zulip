@@ -1,15 +1,14 @@
-# Allow image/link previews
+# Block image and website previews
 
 {!admin-only.md!}
 
-By default, when a user uploads or links to an image or links to a website, a
-preview of the content will be shown. You can choose to disable previews of
-images and links separately.
+By default, when a user links to an image or a website, a preview of the
+image or website content is shown. You can choose to disable previews of
+images and/or website links.
 
 {settings_tab|organization-settings}
 
-2. Select the **Show previews of uploaded and linked images** or the
-**Show previews of linked websites** checkbox under the **Message feed**
-section.
+2. Under **Message feed**, toggle **Show previews of uploaded and linked images** and/or
+**Show previews of linked websites**.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

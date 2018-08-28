@@ -18,7 +18,7 @@ you can do in Zulip, you can do with Zulip's REST API.  To use this API:
 Most other details are covered in the documentation for the individual
 endpoints:
 
-{!rest_endpoints.md!}
+{!rest-endpoints.md!}
 
 Since Zulip is open source, you can also consult the
 [Zulip server source code](https://github.com/zulip/zulip/) as a

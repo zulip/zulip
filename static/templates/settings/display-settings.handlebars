@@ -23,20 +23,36 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "dense_mode"
+              "is_checked" page_params.dense_mode
+              "label" settings_label.dense_mode}}
+            {{/if}}
+
             {{partial "settings_checkbox"
               "setting_name" "night_mode"
               "is_checked" page_params.night_mode
               "label" settings_label.night_mode}}
 
+            {{#if page_params.development_environment}}
             {{partial "settings_checkbox"
               "setting_name" "high_contrast_mode"
               "is_checked" page_params.high_contrast_mode
               "label" settings_label.high_contrast_mode}}
+            {{/if}}
 
             {{partial "settings_checkbox"
               "setting_name" "left_side_userlist"
               "is_checked" page_params.left_side_userlist
               "label" settings_label.left_side_userlist}}
+
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "starred_message_counts"
+              "is_checked" page_params.starred_message_counts
+              "label" settings_label.starred_message_counts}}
+            {{/if}}
         </div>
 
         <div id="user-time-settings">
@@ -63,9 +79,10 @@
         </div>
 
         <div id="user-emoji-settings">
-            <h3 class="inline-block light">Emoji style</h3>
+            <h3 class="inline-block light">Emoji settings</h3>
             <div class="alert-notification" id="emoji-settings-status"></div>
 
+            {{#if false}}
             <div class="input-group">
                 <div class="emojiset_choices grey-box">
                     {{#each page_params.emojiset_choices }}
@@ -86,6 +103,12 @@
                     {{/each}}
                 </div>
             </div>
+            {{/if}}
+
+            {{partial "settings_checkbox"
+              "setting_name" "translate_emoji_to_text"
+              "is_checked" false
+              "label" settings_label.translate_emoji_to_text}}
 
             {{partial "settings_checkbox"
               "setting_name" "translate_emoticons"

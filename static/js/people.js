@@ -73,7 +73,7 @@ exports.id_matches_email_operand = function (user_id, email) {
         return false;
     }
 
-    return (person.user_id === user_id);
+    return person.user_id === user_id;
 };
 
 exports.update_email = function (user_id, new_email) {
@@ -137,7 +137,7 @@ exports.huddle_string = function (message) {
     function is_huddle_recip(user_id) {
         return user_id &&
             people_by_user_id_dict.has(user_id) &&
-            (!exports.is_my_user_id(user_id));
+            !exports.is_my_user_id(user_id);
     }
 
     user_ids = _.filter(user_ids, is_huddle_recip);
@@ -240,6 +240,19 @@ exports.email_list_to_user_ids_string = function (emails) {
     user_ids = sort_numerically(user_ids);
 
     return user_ids.join(',');
+};
+
+exports.safe_full_names = function (user_ids) {
+    var names = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (person) {
+            return person.full_name;
+        }
+    });
+
+    names = _.filter(names);
+
+    return names.join(', ');
 };
 
 exports.get_full_name = function (user_id) {
@@ -449,7 +462,7 @@ exports.pm_with_operand_ids = function (operand) {
 };
 
 exports.emails_to_slug = function (emails_string) {
-    var slug = exports.emails_strings_to_user_ids_string(emails_string);
+    var slug = exports.reply_to_to_user_ids_string(emails_string);
 
     if (!slug) {
         return;
@@ -558,6 +571,16 @@ exports.is_valid_email_for_compose = function (email) {
     return active_user_dict.has(person.user_id);
 };
 
+exports.is_valid_bulk_emails_for_compose = function (emails) {
+    // Returns false if at least one of the emails is invalid.
+    return _.every(emails, function (email) {
+        if (!people.is_valid_email_for_compose(email)) {
+            return false;
+        }
+        return true;
+    });
+};
+
 exports.get_active_user_for_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {
@@ -592,6 +615,13 @@ exports.get_all_persons = function () {
 
 exports.get_realm_persons = function () {
     return active_user_dict.values();
+};
+
+exports.get_active_human_persons = function () {
+    var human_persons = exports.get_realm_persons().filter(function (person)  {
+        return !person.is_bot;
+    });
+    return human_persons;
 };
 
 exports.get_active_user_ids = function () {
@@ -753,7 +783,7 @@ exports.report_late_add = function (user_id, email) {
     // types of realms.
     var msg = 'Added user late: user_id=' + user_id + ' email=' + email;
 
-    if (reload.is_in_progress) {
+    if (reload_state.is_in_progress()) {
         blueslip.log(msg);
     } else {
         blueslip.error(msg);
@@ -908,3 +938,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = people;
 }
+window.people = people;

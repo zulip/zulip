@@ -13,6 +13,9 @@ from django.utils.translation import ugettext_lazy as _
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
+from zerver.lib.timezone import get_timezone
+
+JUST_CREATED_THRESHOLD = 60
 
 def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
@@ -65,15 +68,22 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
     if request:
         # If the user's account was just created, avoid sending an email.
-        if getattr(user, "just_registered", False):
+        if (timezone_now() - user.date_joined).total_seconds() <= JUST_CREATED_THRESHOLD:
             return
 
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
 
         context = common_context(user)
         context['user_email'] = user.email
-        context['login_time'] = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
-            timezone_get_current_timezone_name()
+        user_tz = user.timezone
+        if user_tz == '':
+            user_tz = timezone_get_current_timezone_name()
+        local_time = timezone_now().astimezone(get_timezone(user_tz))
+        if user.twenty_four_hour_time:
+            hhmm_string = local_time.strftime('%H:%M')
+        else:
+            hhmm_string = local_time.strftime('%I:%M%p')
+        context['login_time'] = local_time.strftime('%A, %B %d, %Y at {} %Z'.format(hhmm_string))
         context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
         context['device_os'] = get_device_os(user_agent)
         context['device_browser'] = get_device_browser(user_agent)

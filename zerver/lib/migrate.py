@@ -1,7 +1,11 @@
-from typing import Any, Callable, Dict, List, Tuple
 from django.db.models.query import QuerySet
+from psycopg2.extensions import cursor
+from typing import Any, Callable, Dict, List, Tuple, TypeVar
+
 import re
 import time
+
+CursorObj = TypeVar('CursorObj', bound=cursor)
 
 def create_index_if_not_exist(index_name: str, table_name: str, column_string: str,
                               where_clause: str) -> str:
@@ -26,42 +30,42 @@ def create_index_if_not_exist(index_name: str, table_name: str, column_string: s
         ''' % (index_name, index_name, table_name, column_string, where_clause)
     return stmt
 
-def act_on_message_ranges(db: Any,
-                          orm: Dict[str, Any],
-                          tasks: List[Tuple[Callable[[QuerySet], QuerySet], Callable[[QuerySet], None]]],
-                          batch_size: int=5000,
-                          sleep: float=0.5) -> None:
-    # tasks should be an array of (filterer, action) tuples
-    # where filterer is a function that returns a filtered QuerySet
-    # and action is a function that acts on a QuerySet
 
-    all_objects = orm['zerver.Message'].objects
+def do_batch_update(cursor: CursorObj,
+                    table: str,
+                    cols: List[str],
+                    vals: List[str],
+                    batch_size: int=10000,
+                    sleep: float=0.1,
+                    escape: bool=True) -> None:  # nocoverage
+    stmt = '''
+        UPDATE %s
+        SET (%s) = (%s)
+        WHERE id >= %%s AND id < %%s
+    ''' % (table, ', '.join(cols), ', '.join(['%s'] * len(cols)))
 
-    try:
-        min_id = all_objects.all().order_by('id')[0].id
-    except IndexError:
-        print('There is no work to do')
+    cursor.execute("SELECT MIN(id), MAX(id) FROM %s" % (table,))
+    (min_id, max_id) = cursor.fetchall()[0]
+    if min_id is None:
         return
 
-    max_id = all_objects.all().order_by('-id')[0].id
-    print("max_id = %d" % (max_id,))
-    overhead = int((max_id + 1 - min_id) / batch_size * sleep / 60)
-    print("Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,))
-
+    print("\n    Range of rows to update: [%s, %s]" % (min_id, max_id))
     while min_id <= max_id:
         lower = min_id
-        upper = min_id + batch_size - 1
-        if upper > max_id:
-            upper = max_id
+        upper = min_id + batch_size
+        print('    Updating range [%s,%s)' % (lower, upper))
+        params = list(vals) + [lower, upper]
+        if escape:
+            cursor.execute(stmt, params=params)
+        else:
+            cursor.execute(stmt % tuple(params))
 
-        print('%s about to update range %s to %s' % (time.asctime(), lower, upper))
-
-        db.start_transaction()
-        for filterer, action in tasks:
-            objects = all_objects.filter(id__range=(lower, upper))
-            targets = filterer(objects)
-            action(targets)
-        db.commit_transaction()
-
-        min_id = upper + 1
+        min_id = upper
         time.sleep(sleep)
+
+        # Once we've finished, check if any new rows were inserted to the table
+        if min_id > max_id:
+            cursor.execute("SELECT MAX(id) FROM %s" % (table,))
+            max_id = cursor.fetchall()[0][0]
+
+    print("    Finishing...", end='')

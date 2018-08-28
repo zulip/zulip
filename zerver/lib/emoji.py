@@ -11,20 +11,19 @@ from zerver.lib.request import JsonableError
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
 
-NAME_TO_CODEPOINT_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
-CODEPOINT_TO_NAME_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "codepoint_to_name.json")
+EMOJI_PATH = os.path.join(settings.STATIC_ROOT, "generated", "emoji")
+NAME_TO_CODEPOINT_PATH = os.path.join(EMOJI_PATH, "name_to_codepoint.json")
+CODEPOINT_TO_NAME_PATH = os.path.join(EMOJI_PATH, "codepoint_to_name.json")
+EMOTICON_CONVERSIONS_PATH = os.path.join(EMOJI_PATH, "emoticon_conversions.json")
 
-# Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `static/js/emoji.js`
-# and `templates/zerver/help/enable-emoticon-translations.md`.
-EMOTICON_CONVERSIONS = {
-    ':)': ':smiley:',
-    '(:': ':smiley:',
-    ':(': ':slightly_frowning_face:',
-    '<3': ':heart:',
-    ':|': ':expressionless:',
-    ':/': ':confused:',
-}
+with open(NAME_TO_CODEPOINT_PATH) as fp:
+    name_to_codepoint = ujson.load(fp)
+
+with open(CODEPOINT_TO_NAME_PATH) as fp:
+    codepoint_to_name = ujson.load(fp)
+
+with open(EMOTICON_CONVERSIONS_PATH) as fp:
+    EMOTICON_CONVERSIONS = ujson.load(fp)
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = map(re.escape, possible_emoticons)  # type: ignore # AnyStr/str issues
@@ -41,12 +40,6 @@ def translate_emoticons(text: str) -> str:
         translated = re.sub(re.escape(emoticon), EMOTICON_CONVERSIONS[emoticon], translated)
 
     return translated
-
-with open(NAME_TO_CODEPOINT_PATH) as fp:
-    name_to_codepoint = ujson.load(fp)
-
-with open(CODEPOINT_TO_NAME_PATH) as fp:
-    codepoint_to_name = ujson.load(fp)
 
 def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
     realm_emojis = realm.get_active_emoji()
@@ -114,7 +107,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name: str) -> None:
-    if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+    if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
         return
     raise JsonableError(_("Invalid characters in emoji name"))
 

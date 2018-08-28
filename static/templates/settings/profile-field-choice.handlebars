@@ -1,13 +1,9 @@
-<div class='choice-row'>
-    <input type='text' data-toggle='tooltip' title='{{t "Value" }}' placeholder='{{t "Value" }}' value="{{ value }}" />
+<div class='choice-row movable-profile-field-row'>
+    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+    <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
     <input type='text' data-toggle='tooltip' title='{{t "Text" }}' placeholder='{{t "Text" }}' value="{{ text }}" />
-    <input type='text' data-toggle='tooltip' title='{{t "Order" }}' placeholder='{{t "Order" }}' value="{{ order }}" />
-    {{#if add_delete_button }}
+
     <button type='button' class="button rounded small btn-danger delete-choice" title="{{t 'Delete' }}">
-        <i class="icon-vector-trash"></i>
-    </button>
-    {{/if}}
-    <button type='button' class="button rounded small sea-green add-choice" title="{{t 'Add' }}">
-        <i class="icon-vector-plus"></i>
+        <i class="fa fa-trash-o" aria-hidden="true"></i>
     </button>
 </div>

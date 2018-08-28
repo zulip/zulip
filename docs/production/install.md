@@ -2,9 +2,11 @@
 
 Make sure you want to install a Zulip production server. If you'd
 instead like to test or develop a new feature, we recommend the
-[Zulip server development environment](../development/overview.html#requirements) instead.
+[Zulip development server](../development/overview.html#requirements) instead.
+If you just want to play around with Zulip and see what it looks like, you
+can create a test organization at <https://zulipchat.com>.
 
-You'll need an Ubuntu system that satisfies
+You'll need an Ubuntu or Debian system that satisfies
 [the installation requirements](../production/requirements.html).
 
 ## Step 1: Download the latest release
@@ -125,6 +127,9 @@ symbolic link to it.
 Postgres, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
 
+If you'd like to deploy Zulip with these services on different
+machines, check out our [deployment options documentation](deployment.html).
+
 ## Troubleshooting
 
 **Install script.**
@@ -154,7 +159,7 @@ how to debug.
 
 **Community.**
 If the tips above don't help, please visit
-[#production help](https://chat.zulip.org/#narrow/stream/production.20help)
+[#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback, and we'll try to help you out!  Please provide details like

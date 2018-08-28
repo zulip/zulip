@@ -48,19 +48,19 @@ strip_whitespace_right = re.compile("(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (
 strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
-regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
-           '{{\s*t "(.*?)"\W*}}',
-           "{{\s*t '(.*?)'\W*}}",
-           "i18n\.t\('([^\']*?)'\)",
-           "i18n\.t\('(.*?)',\s*.*?[^,]\)",
-           'i18n\.t\("([^\"]*?)"\)',
-           'i18n\.t\("(.*?)",\s*.*?[^,]\)',
+regexes = [r'{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
+           r'{{\s*t "(.*?)"\W*}}',
+           r"{{\s*t '(.*?)'\W*}}",
+           r"i18n\.t\('([^']*?)'\)",
+           r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
+           r'i18n\.t\("([^"]*?)"\)',
+           r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
            ]
 tags = [('err_', "error"),
         ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
-multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
+multiline_js_comment = re.compile(r"/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
 def strip_whitespaces(src: str) -> str:

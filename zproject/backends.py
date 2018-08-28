@@ -1,15 +1,18 @@
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional
+import mock
+from typing import Any, Dict, List, Set, Tuple, Optional, Sequence
 
-from apiclient.sample_tools import client as googleapiclient
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpResponse
-from oauth2client.crypt import AppIdentityError
+from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
+from social_core.backends.base import BaseAuth
 from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
@@ -104,164 +107,56 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     return user_profile
 
+def generate_dev_ldap_dir(mode: str, extra_users: int=0) -> Dict[str, Dict[str, Sequence[str]]]:
+    mode = mode.lower()
+    names = [
+        ("Zoe", "ldap_ZOE@zulip.com"),
+        ("Othello, the Moor of Venice", "ldap_othello@zulip.com"),
+        ("Iago", "ldap_iago@zulip.com"),
+        ("Prospero from The Tempest", "ldap_prospero@zulip.com"),
+        ("Cordelia Lear", "ldap_cordelia@zulip.com"),
+        ("King Hamlet", "ldap_hamlet@zulip.com"),
+        ("aaron", "ldap_AARON@zulip.com"),
+        ("Polonius", "ldap_polonius@zulip.com"),
+    ]
+    for i in range(extra_users):
+        names.append(('Extra User %d' % (i,), 'ldap_extrauser%d@zulip.com' % (i,)))
+
+    ldap_dir = {}
+    if mode == 'a':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword':  email_username,
+            }
+    elif mode == 'b':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword': email_username,
+            }
+    elif mode == 'c':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword': email_username + '_test',
+                'email': email,
+            }
+
+    return ldap_dir
+
 class ZulipAuthMixin:
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
         """ Get a UserProfile object from the user_profile_id. """
         try:
             return get_user_profile_by_id(user_profile_id)
         except UserProfile.DoesNotExist:
-            return None
-
-class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = None  # type: str
-
-    def get_email_address(self, *args: Any, **kwargs: Any) -> str:
-        raise NotImplementedError
-
-    def get_full_name(self, *args: Any, **kwargs: Any) -> str:
-        raise NotImplementedError
-
-    def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
-        raise NotImplementedError
-
-    @handle_http_errors
-    def do_auth(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
-        """
-        This function is called once the authentication workflow is complete.
-        We override this function to:
-            1. Inject `return_data` and `realm_subdomain` kwargs. These will be
-               used by `authenticate()` functions of backends to make the
-               decision.
-            2. Call the proper authentication function to get the user in
-               `get_authenticated_user`.
-
-        The actual decision on authentication is done in
-        SocialAuthMixin._common_authenticate().
-
-        SocialAuthMixin.get_authenticated_user is expected to be overridden by
-        the derived class to add custom logic for authenticating the user and
-        returning the user.
-        """
-        kwargs['return_data'] = {}
-        subdomain = self.strategy.session_get('subdomain')  # type: ignore # `strategy` comes from Python Social Auth.
-        realm = get_realm(subdomain)
-        kwargs['realm'] = realm
-        user_profile = self.get_authenticated_user(*args, **kwargs)
-        return self.process_do_auth(user_profile, *args, **kwargs)
-
-    def authenticate(self,
-                     realm: Optional[Realm]=None,
-                     storage: Optional[DjangoStorage]=None,
-                     strategy: Optional[DjangoStrategy]=None,
-                     user: Optional[Dict[str, Any]]=None,
-                     return_data: Optional[Dict[str, Any]]=None,
-                     response: Optional[Dict[str, Any]]=None,
-                     backend: Optional[GithubOAuth2]=None
-                     ) -> Optional[UserProfile]:
-        """
-        Django decides which `authenticate` to call by inspecting the
-        arguments. So it's better to create `authenticate` function
-        with well defined arguments.
-
-        Keeping this function separate so that it can easily be
-        overridden.
-        """
-        if user is None:
-            user = {}
-
-        assert return_data is not None
-        assert response is not None
-
-        return self._common_authenticate(self,
-                                         realm=realm,
-                                         storage=storage,
-                                         strategy=strategy,
-                                         user=user,
-                                         return_data=return_data,
-                                         response=response,
-                                         backend=backend)
-
-    def _common_authenticate(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
-        return_data = kwargs.get('return_data', {})
-        realm = kwargs.get("realm")
-        if realm is None:
-            return None
-        if not auth_enabled_helper([self.auth_backend_name], realm):
-            return_data["auth_backend_disabled"] = True
-            return None
-
-        email_address = self.get_email_address(*args, **kwargs)
-        if not email_address:
-            return_data['invalid_email'] = True
-            return None
-
-        return_data["valid_attestation"] = True
-        return common_get_active_user(email_address, realm, return_data)
-
-    def process_do_auth(self, user_profile: UserProfile, *args: Any,
-                        **kwargs: Any) -> Optional[HttpResponse]:
-        # These functions need to be imported here to avoid cyclic
-        # dependency.
-        from zerver.views.auth import (login_or_register_remote_user,
-                                       redirect_to_subdomain_login_url,
-                                       redirect_and_log_into_subdomain)
-
-        return_data = kwargs.get('return_data', {})
-
-        inactive_user = return_data.get('inactive_user')
-        inactive_realm = return_data.get('inactive_realm')
-        invalid_subdomain = return_data.get('invalid_subdomain')
-        invalid_email = return_data.get('invalid_email')
-
-        if inactive_user or inactive_realm:
-            # Redirect to login page. We can't send to registration
-            # workflow with these errors. We will redirect to login page.
-            return None
-
-        if invalid_email:
-            # In case of invalid email, we will end up on registration page.
-            # This seems better than redirecting to login page.
-            logging.warning(
-                "{} got invalid email argument.".format(self.auth_backend_name)
-            )
-            return None
-
-        strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
-        request = strategy.request
-        email_address = self.get_email_address(*args, **kwargs)
-        full_name = self.get_full_name(*args, **kwargs)
-        is_signup = strategy.session_get('is_signup') == '1'
-        redirect_to = strategy.session_get('next')
-
-        mobile_flow_otp = strategy.session_get('mobile_flow_otp')
-        subdomain = strategy.session_get('subdomain')
-        assert subdomain is not None
-        if mobile_flow_otp is not None:
-            return login_or_register_remote_user(request, email_address,
-                                                 user_profile, full_name,
-                                                 invalid_subdomain=bool(invalid_subdomain),
-                                                 mobile_flow_otp=mobile_flow_otp,
-                                                 is_signup=is_signup,
-                                                 redirect_to=redirect_to)
-        realm = get_realm(subdomain)
-        if realm is None:
-            return redirect_to_subdomain_login_url()
-        return redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                               is_signup=is_signup,
-                                               redirect_to=redirect_to)
-
-    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
-        """
-        Returning `None` from this function will redirect the browser
-        to the login page.
-        """
-        try:
-            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
-            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
-        except AuthFailed:
-            return None
-        except SocialAuthBaseException as e:
-            logging.warning(str(e))
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
@@ -331,6 +226,11 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        # We lazily import apiclient as part of optimizing the base
+        # import time for a Zulip management command, since it's only
+        # used in this one code path and takes 30-50ms to import.
+        from apiclient.sample_tools import client as googleapiclient
+        from oauth2client.crypt import AppIdentityError
         if realm is None:
             return None
         if return_data is None:
@@ -366,7 +266,25 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
         return common_get_active_user(email, realm, return_data=return_data)
 
+def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
+    if not ldap_auth_enabled(realm):
+        return False
+
+    # If we don't have an LDAP domain, it's impossible to tell which
+    # accounts are LDAP accounts, so treat all of them as LDAP
+    # accounts
+    if not settings.LDAP_APPEND_DOMAIN:
+        return True
+
+    # Otherwise, check if the email ends with LDAP_APPEND_DOMAIN
+    return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
+
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
+    """Since this inherits from _LDAPUser.AuthenticationFailed, these will
+    be caught and logged at debug level inside django-auth-ldap's authenticate()"""
+    pass
+
+class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
     pass
 
 class ZulipLDAPConfigurationError(Exception):
@@ -395,7 +313,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                raise ZulipLDAPException("Username does not match LDAP domain.")
+                raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
+                    username, settings.LDAP_APPEND_DOMAIN))
             return email_to_username(username)
         return username
 
@@ -407,6 +326,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
+    def __init__(self) -> None:
+        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage # We only use this in development
+            from fakeldap import MockLDAP
+
+            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+            self.mock_initialize = ldap_patcher.start()
+            self.mock_ldap = MockLDAP()
+            self.mock_initialize.return_value = self.mock_ldap
+
+            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                             settings.FAKE_LDAP_EXTRA_USERS)
+
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if realm is None:
@@ -417,23 +348,27 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         try:
             username = self.django_to_ldap_username(username)
-            return ZulipLDAPAuthBackendBase.authenticate(self,
-                                                         username=username,
-                                                         password=password)
-        except ZulipLDAPException:
-            return None  # nocoverage # TODO: this may no longer be possible
+        except ZulipLDAPExceptionOutsideDomain:
+            return_data['outside_ldap_domain'] = True
+            return None
 
-    def get_or_create_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        return ZulipLDAPAuthBackendBase.authenticate(self,
+                                                     request=None,
+                                                     username=username,
+                                                     password=password)
+
+    def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        return_data = {}  # type: Dict[str, Any]
 
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                return_data["ldap_missing_attribute"] = settings.LDAP_EMAIL_ATTR
                 raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
                     settings.LDAP_EMAIL_ATTR,))
 
             username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
-        return_data = {}  # type: Dict[str, Any]
         user_profile = common_get_active_user(username, self._realm, return_data)
         if user_profile is not None:
             # An existing user, successfully authed; return it.
@@ -488,67 +423,217 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
+def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
+                                 *args: Any, **kwargs: Any) -> Optional[UserProfile]:
+    """Responsible for doing the Zulip-account lookup and validation parts
+    of the Zulip Social auth pipeline (similar to the authenticate()
+    methods in most other auth backends in this file).
+    """
+    subdomain = backend.strategy.session_get('subdomain')
+    realm = get_realm(subdomain)
+    if realm is None:
+        return_data["invalid_realm"] = True
+        return None
+    return_data["realm"] = realm
+
+    if not auth_enabled_helper([backend.auth_backend_name], realm):
+        return_data["auth_backend_disabled"] = True
+        return None
+
+    if 'auth_failed_reason' in kwargs.get('response', {}):
+        return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
+        return None
+    elif hasattr(backend, 'get_verified_emails'):
+        # Some social backends, like GitHubAuthBackend, don't guarantee that
+        # the `details` data is validated.
+        verified_emails = backend.get_verified_emails(*args, **kwargs)
+        if len(verified_emails) == 0:
+            # TODO: Provide a nice error message screen to the user
+            # for this case, rather than just logging a warning.
+            logging.warning("Social auth (%s) failed because user has no verified emails" %
+                            (backend.auth_backend_name,))
+            return_data["email_not_verified"] = True
+            return None
+        # TODO: ideally, we'd prompt the user for which email they
+        # want to use with another pipeline stage here.
+        validated_email = verified_emails[0]
+    else:  # nocoverage
+        # This code path isn't used by GitHubAuthBackend
+        validated_email = kwargs["details"].get("email")
+
+    if not validated_email:  # nocoverage
+        # This code path isn't used with GitHubAuthBackend, but may be relevant for other
+        # social auth backends.
+        return_data['invalid_email'] = True
+        return None
+    try:
+        validate_email(validated_email)
+    except ValidationError:
+        return_data['invalid_email'] = True
+        return None
+
+    return_data["valid_attestation"] = True
+    return_data['validated_email'] = validated_email
+    user_profile = common_get_active_user(validated_email, realm, return_data)
+
+    if 'fullname' in kwargs["details"]:
+        return_data["full_name"] = kwargs["details"]["fullname"]
+    else:
+        # If we add support for any of the social auth backends that
+        # don't provide this feature, we'll need to add code here.
+        raise AssertionError("Social auth backend doesn't provide fullname")
+
+    return user_profile
+
+def social_auth_associate_user(
+        backend: BaseAuth,
+        *args: Any,
+        **kwargs: Any) -> Dict[str, Any]:
+    return_data = {}  # type: Dict[str, Any]
+    user_profile = social_associate_user_helper(
+        backend, return_data, *args, **kwargs)
+
+    return {'user_profile': user_profile,
+            'return_data': return_data}
+
+def social_auth_finish(backend: Any,
+                       details: Dict[str, Any],
+                       response: HttpResponse,
+                       *args: Any,
+                       **kwargs: Any) -> Optional[UserProfile]:
+    from zerver.views.auth import (login_or_register_remote_user,
+                                   redirect_and_log_into_subdomain)
+
+    user_profile = kwargs['user_profile']
+    return_data = kwargs['return_data']
+
+    no_verified_email = return_data.get("email_not_verified")
+    auth_backend_disabled = return_data.get('auth_backend_disabled')
+    inactive_user = return_data.get('inactive_user')
+    inactive_realm = return_data.get('inactive_realm')
+    invalid_realm = return_data.get('invalid_realm')
+    invalid_subdomain = return_data.get('invalid_subdomain')
+    invalid_email = return_data.get('invalid_email')
+    auth_failed_reason = return_data.get("social_auth_failed_reason")
+
+    if invalid_realm:
+        from zerver.views.auth import redirect_to_subdomain_login_url
+        return redirect_to_subdomain_login_url()
+    if auth_backend_disabled or inactive_user or inactive_realm or no_verified_email:
+        # Redirect to login page. We can't send to registration
+        # workflow with these errors. We will redirect to login page.
+        return None
+
+    if invalid_email:
+        # In case of invalid email, we will end up on registration page.
+        # This seems better than redirecting to login page.
+        logging.warning(
+            "{} got invalid email argument.".format(backend.auth_backend_name)
+        )
+        return None
+
+    if auth_failed_reason:
+        logging.info(auth_failed_reason)
+        return None
+
+    # Structurally, all the cases where we don't have an authenticated
+    # email for the user should be handled above; this assertion helps
+    # prevent any violations of that contract from resulting in a user
+    # being incorrectly authenticated.
+    assert return_data.get('valid_attestation') is True
+
+    strategy = backend.strategy  # type: ignore # This comes from Python Social Auth.
+    email_address = return_data['validated_email']
+    full_name = return_data['full_name']
+    is_signup = strategy.session_get('is_signup') == '1'
+    redirect_to = strategy.session_get('next')
+    realm = return_data["realm"]
+
+    mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+    if mobile_flow_otp is not None:
+        return login_or_register_remote_user(strategy.request, email_address,
+                                             user_profile, full_name,
+                                             invalid_subdomain=bool(invalid_subdomain),
+                                             mobile_flow_otp=mobile_flow_otp,
+                                             is_signup=is_signup,
+                                             redirect_to=redirect_to)
+    return redirect_and_log_into_subdomain(realm, full_name, email_address,
+                                           is_signup=is_signup,
+                                           redirect_to=redirect_to)
+
+class SocialAuthMixin(ZulipAuthMixin):
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        """This is a small wrapper around the core `auth_complete` method of
+        python-social-auth, designed primarily to prevent 500s for
+        exceptions in the social auth code from situations that are
+        really user errors.  Returning `None` from this function will
+        redirect the browser to the login page.
+        """
+        try:
+            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
+            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+        except AuthFailed as e:
+            # When a user's social authentication fails (e.g. because
+            # they did something funny with reloading in the middle of
+            # the flow), don't throw a 500, just send them back to the
+            # login page and record the event at the info log level.
+            logging.info(str(e))
+            return None
+        except SocialAuthBaseException as e:
+            # Other python-social-auth exceptions are likely
+            # interesting enough that we should log a warning.
+            logging.warning(str(e))
+            return None
+
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
 
-    def get_email_address(self, *args: Any, **kwargs: Any) -> Optional[str]:
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+        access_token = kwargs["response"]["access_token"]
         try:
-            return kwargs['response']['email']
-        except KeyError:  # nocoverage # TODO: investigate
-            return None
+            emails = self._user_data(access_token, '/emails')
+        except (HTTPError, ValueError, TypeError):  # nocoverage
+            # We don't really need an explicit test for this code
+            # path, since the outcome will be the same as any other
+            # case without any verified emails
+            emails = []
 
-    def get_full_name(self, *args: Any, **kwargs: Any) -> str:
-        # In case of any error return an empty string. Name is used by
-        # the registration page to pre-populate the name field. However,
-        # if it is not supplied, our registration process will make sure
-        # that the user enters a valid name.
-        try:
-            name = kwargs['response']['name']
-        except KeyError:
-            name = ''
+        verified_emails = []
+        for email_obj in emails:
+            if not email_obj.get("verified"):
+                continue
+            # TODO: When we add a screen to let the user select an email, remove this line.
+            if not email_obj.get("primary"):
+                continue
+            verified_emails.append(email_obj["email"])
 
-        if name is None:
-            return ''
+        return verified_emails
 
-        return name
-
-    def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
-        """
-        This function is called once the OAuth2 workflow is complete. We
-        override this function to call the proper `do_auth` function depending
-        on whether we are doing individual, team or organization based GitHub
-        authentication. The actual decision on authentication is done in
-        SocialAuthMixin._common_authenticate().
-        """
-        user_profile = None
-
+    def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
+        """This patched user_data function lets us combine together the 3
+        social auth backends into a single Zulip backend for GitHub Oauth2"""
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
         org_name = settings.SOCIAL_AUTH_GITHUB_ORG_NAME
 
-        if (team_id is None and org_name is None):
-            try:
-                user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
-            except AuthFailed:
-                logging.info("User authentication failed.")
-                user_profile = None
-
-        elif (team_id):
+        if team_id is None and org_name is None:
+            # I believe this can't raise AuthFailed, so we don't try to catch it here.
+            return super().user_data(
+                access_token, *args, **kwargs
+            )
+        elif team_id is not None:
             backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
-                user_profile = backend.do_auth(*args, **kwargs)
+                return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
-                logging.info("User is not member of GitHub team.")
-                user_profile = None
-
-        elif (org_name):
+                return dict(auth_failed_reason="GitHub user is not member of required team")
+        elif org_name is not None:
             backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
             try:
-                user_profile = backend.do_auth(*args, **kwargs)
+                return backend.user_data(access_token, *args, **kwargs)
             except AuthFailed:
-                logging.info("User is not member of GitHub organization.")
-                user_profile = None
+                return dict(auth_failed_reason="GitHub user is not member of required organization")
 
-        return user_profile
+        raise AssertionError("Invalid configuration")
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,

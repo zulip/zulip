@@ -86,7 +86,7 @@ function filter_user_ids(filter_text, user_ids) {
 exports.matches_filter = function (filter_text, user_id) {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
-    return (filter_user_ids(filter_text, [user_id]).length === 1);
+    return filter_user_ids(filter_text, [user_id]).length === 1;
 };
 
 function get_num_unread(user_id) {
@@ -100,13 +100,8 @@ exports.info_for = function (user_id) {
     var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
 
-    // if the user is you or a bot, do not show in presence data.
-    if (person.is_bot || person.user_id === page_params.user_id) {
-        return;
-    }
-
     return {
-        href: narrow.pm_with_uri(person.email),
+        href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id: user_id,
         num_unread: get_num_unread(user_id),
@@ -160,14 +155,25 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         user_ids = presence.get_user_ids();
     }
 
+    user_ids = _.filter(user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+
+        if (person) {
+            // if the user is you or a bot, do not show in presence data.
+            if (person.is_bot || person.user_id === page_params.user_id) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+
     user_ids = maybe_shrink_list(user_ids, filter_text);
 
     return exports.sort_users(user_ids);
 };
 
-exports.get_items = function (filter_text) {
-    var user_ids = exports.get_filtered_and_sorted_user_ids(filter_text);
-
+exports.get_items_for_users = function (user_ids) {
     var user_info = _.map(user_ids, exports.info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
         // function.
@@ -185,3 +191,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = buddy_data;
 }
+window.buddy_data = buddy_data;

@@ -6,7 +6,7 @@ jobs:
   "trusty-python-3.4":
     docker:
       # This is built from tools/circleci/images/trusty/Dockerfile .
-      - image: gregprice/circleci:trusty-python-4.test
+      - image: gregprice/circleci:trusty-python-5.test
 
     working_directory: ~/zulip
 
@@ -87,7 +87,7 @@ jobs:
   "xenial-python-3.5":
     docker:
       # This is built from tools/circleci/images/xenial/Dockerfile .
-      - image: gregprice/circleci:xenial-python-3.test
+      - image: gregprice/circleci:xenial-python-4.test
 
     working_directory: ~/zulip
 
@@ -138,9 +138,68 @@ jobs:
             pip install codecov && codecov \
               || echo "Error in uploading coverage reports to codecov.io."
 
+  "bionic-python-3.6":
+    docker:
+      # This is built from tools/circleci/images/bionic/Dockerfile .
+      - image: gregprice/circleci:bionic-python-1.test
+
+    working_directory: ~/zulip
+
+    steps:
+      - checkout
+
+      - run:
+          name: create cache directories
+          command: |
+              dirs=(/srv/zulip-{npm,venv}-cache)
+              sudo mkdir -p "${dirs[@]}"
+              sudo chown -R circleci "${dirs[@]}"
+              # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+              # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+              redis-server --daemonize yes
+
+      - restore_cache:
+          keys:
+          - v1-npm-base.bionic-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      - restore_cache:
+          keys:
+          - v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          name: install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y moreutils
+            rm -f /home/circleci/.gitconfig
+            mispipe "tools/travis/setup-backend" ts
+
+      - save_cache:
+          paths:
+            - /srv/zulip-npm-cache
+          key: v1-npm-base.bionic-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      - save_cache:
+          paths:
+            - /srv/zulip-venv-cache
+          key: v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+
+      - run:
+          name: run backend tests
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            mispipe ./tools/travis/backend ts
+
+      -  run:
+          name: upload coverage report
+          command: |
+            . /srv/zulip-py3-venv/bin/activate
+            pip install codecov && codecov \
+              || echo "Error in uploading coverage reports to codecov.io."
+
+
 workflows:
   version: 2
   build:
     jobs:
       - "trusty-python-3.4"
       - "xenial-python-3.5"
+      - "bionic-python-3.6"

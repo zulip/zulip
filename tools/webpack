@@ -36,6 +36,7 @@ def run_watch(host, port, minify, disable_host_check):
     webpack_args += [
         '--config',
         'tools/webpack.config.ts',
+        '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
         '--host', host,
         '--port', port,
         # We add the hot flag using the cli because it takes care

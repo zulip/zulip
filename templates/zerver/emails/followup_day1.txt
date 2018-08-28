@@ -1,33 +1,40 @@
-Hi there,
+{{ _('Hi there,') }}
 
-Welcome to Zulip! A few tips to get you started:
+{{ _('Welcome to Zulip! A few tips to get you started:') }}
 
+{% trans %}
 * Zulip works best when it's always open, so we suggest pinning a browser
-tab or downloading our desktop and mobile apps (https://zulipchat.com/apps).
+  tab or downloading our desktop and mobile apps (https://zulipchat.com/apps).
+{% endtrans %}
 
-You'll need an Organization URL when installing the apps. That's
-{{ realm_uri }}
+{% trans %}
+To access your account from the apps, enter this Organization URL:
+{% endtrans %}
 
-* Become a Zulip pro with a few keyboard shortcuts:
-  n: Next unread thread
-  r: Reply to message under the blue box
-  c: Start a new topic
+  {{ realm_uri }}
 
-* Check out our guide for new users:
-{% if is_realm_admin %}
-{{ organization_setup_advice_link }}.
-{% else %}
-{{ getting_started_with_zulip_link }}.
-{% endif %}
+* {{ _('Become a Zulip pro with a few keyboard shortcuts:') }}
+  n: {{ _('Next unread thread') }}
+  r: {{ _('Reply to message under the blue box') }}
+  c: {{ _('Start a new topic') }}
 
+{% trans %}
+* Give our guide for new {{ user_role_group }} ({{ getting_started_link }})
+  a spin.
+{% endtrans %}
+
+{% trans %}
 * Zulip combines the real-time ease of chat with the threaded organization
   of email. Zulip is about productivity---making communication fun and
   easy, while avoiding the distracting and disorganized conversations of
   chatrooms. We hope you love using Zulip as much as we do.
+{% endtrans %}
 
-Cheers,
-Team Zulip
+{{ _("Cheers,") }}
+{{ _("Team Zulip") }}
 
+{% trans %}
 PS: Check us out on Twitter (@zulip), star us on GitHub
 (https://github.com/zulip/zulip), or chat with us live on the
 Zulip community server (https://chat.zulip.org)!
+{% endtrans %}

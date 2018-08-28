@@ -6,7 +6,7 @@ set_global('muting_ui', {});
 
 var noop = function () {};
 
-(function test_settings() {
+run_test('settings', () => {
 
     muting.add_muted_topic('frontend', 'js');
     var set_up_ui_called = false;
@@ -18,7 +18,7 @@ var noop = function () {};
     settings_muting.set_up();
 
     var click_handler = $('body').get_on_handler('click', '.settings-unmute-topic');
-    assert.equal(typeof(click_handler), 'function');
+    assert.equal(typeof click_handler, 'function');
 
     var event = {
         stopImmediatePropagation: noop,
@@ -53,4 +53,4 @@ var noop = function () {};
     assert(unmute_called);
     assert(set_up_ui_called);
     assert.equal(data_called, 2);
-}());
+});

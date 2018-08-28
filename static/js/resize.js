@@ -27,13 +27,13 @@ function size_blocks(blocks, usable_height) {
     });
 }
 
-function set_user_list_heights(res, usable_height, user_presences, group_pms) {
+function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms) {
     // Calculate these heights:
-    //    res.user_presences_max_height
+    //    res.buddy_list_wrapper_max_height
     //    res.group_pms_max_height
     var blocks = [
         {
-            real_height: user_presences.prop('scrollHeight'),
+            real_height: buddy_list_wrapper.prop('scrollHeight'),
         },
         {
             real_height: group_pms.prop('scrollHeight'),
@@ -42,7 +42,7 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
 
     size_blocks(blocks, usable_height);
 
-    res.user_presences_max_height = blocks[0].max_height;
+    res.buddy_list_wrapper_max_height = blocks[0].max_height;
     res.group_pms_max_height = blocks[1].max_height;
 }
 
@@ -70,28 +70,31 @@ function get_new_heights() {
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
-    var user_presences = $('#user_presences').expectOne();
+    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
+    var keyboard_popover_shortcut = $('#sidebar-keyboard-shortcuts #keyboard-icon').expectOne();
 
     var usable_height =
         res.right_sidebar_height
         - $("#feedback_section").safeOuterHeight(true)
-        - parseInt(user_presences.css("marginTop"),10)
-        - parseInt(user_presences.css("marginBottom"), 10)
+        - parseInt(buddy_list_wrapper.css("marginTop"),10)
+        - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
         - $("#userlist-header").safeOuterHeight(true)
         - $(".user-list-filter").safeOuterHeight(true)
         - invite_user_link_height
         - parseInt(group_pms.css("marginTop"),10)
         - parseInt(group_pms.css("marginBottom"), 10)
-        - $("#group-pm-header").safeOuterHeight(true);
+        - $("#group-pm-header").safeOuterHeight(true)
+        - keyboard_popover_shortcut.safeOuterHeight(true)
+        - parseInt(keyboard_popover_shortcut.css("marginBottom"), 10);
 
     // set these
-    // res.user_presences_max_height
+    // res.buddy_list_wrapper_max_height
     // res.group_pms_max_height
     set_user_list_heights(
         res,
         usable_height,
-        user_presences,
+        buddy_list_wrapper,
         group_pms
     );
 
@@ -106,11 +109,11 @@ function left_userlist_get_new_heights() {
     var top_navbar_height = $(".header").safeOuterHeight(true);
 
     var stream_filters = $('#stream_filters').expectOne();
-    var user_presences = $('#user_presences').expectOne();
+    var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
 
     var stream_filters_real_height = stream_filters.prop("scrollHeight");
-    var user_list_real_height = user_presences.prop("scrollHeight");
+    var user_list_real_height = buddy_list_wrapper.prop("scrollHeight");
     var group_pms_real_height = group_pms.prop("scrollHeight");
 
     res.bottom_whitespace_height = viewport_height * 0.4;
@@ -129,8 +132,8 @@ function left_userlist_get_new_heights() {
                                 - $(".user-list-filter").safeOuterHeight(true)
                                 - $("#group-pm-header").safeOuterHeight(true)
                                 - parseInt(stream_filters.css("marginBottom"),10)
-                                - parseInt(user_presences.css("marginTop"), 10)
-                                - parseInt(user_presences.css("marginBottom"), 10)
+                                - parseInt(buddy_list_wrapper.css("marginTop"), 10)
+                                - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
                                 - parseInt(group_pms.css("marginTop"), 10)
                                 - parseInt(group_pms.css("marginBottom"), 10)
                                 - 15;
@@ -150,7 +153,7 @@ function left_userlist_get_new_heights() {
     size_blocks(blocks, res.total_leftlist_height);
 
     res.stream_filters_max_height = blocks[0].max_height;
-    res.user_presences_max_height = blocks[1].max_height;
+    res.buddy_list_wrapper_max_height = blocks[1].max_height;
     res.group_pms_max_height = blocks[2].max_height;
 
     res.viewport_height = viewport_height;
@@ -231,7 +234,7 @@ exports.resize_page_components = function () {
             sidebar = $(".bottom_sidebar").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
-            $("#user_presences").css("margin", "0px");
+            $("#buddy_list_wrapper").css("margin", "0px");
             $("#group-pms").css("margin", "0px");
             $("#userlist-toggle").css("display", "none");
             $("#invite-user-link").hide();
@@ -242,7 +245,7 @@ exports.resize_page_components = function () {
             sidebar = $("#right-sidebar").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
-            $("#user_presences").css("margin", '');
+            $("#buddy_list_wrapper").css("margin", '');
             $("#group-pms").css("margin", '');
             $("#userlist-toggle").css("display", '');
             $("#invite-user-link").show();
@@ -252,7 +255,7 @@ exports.resize_page_components = function () {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     exports.resize_bottom_whitespace(h);
-    $("#user_presences").css('max-height', h.user_presences_max_height);
+    $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
@@ -294,3 +297,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = resize;
 }
+window.resize = resize;

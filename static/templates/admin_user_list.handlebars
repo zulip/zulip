@@ -2,6 +2,9 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}" data-email="{{email}}">
     <td>
         <span class="user_name">{{full_name}}</span>
+        <span id="admin_icon" class="{{#unless is_admin}}hide{{/unless}}">
+            &nbsp;<i class="fa fa-bolt" title="{{t 'Organization administrator' }}" aria-label="{{t 'Organization administrator' }}"></i>
+        </span>
     </td>
     <td>
         <span class="email">{{email}}</span>
@@ -30,45 +33,10 @@
             </button>
             {{/if}}
         </span>
-        <span class="user-admin-settings">
-            {{#if is_active_human}}
-                {{#if is_admin}}
-                <button class="button rounded small remove-admin btn-danger">
-                    {{t "Remove admin" }}
-                </button>
-                {{else}}
-                <button class="button rounded small make-admin btn-warning">
-                    {{t "Make admin" }}
-                </button>
-                {{/if}}
-            {{/if}}
-        </span>
         <button class="button rounded small btn-warning open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
-            <i class="icon-vector-pencil"></i>
+            <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>
     </td>
     {{/if}}
-</tr>
-<tr class="user-name-form display-none" data-user-id="{{user_id}}">
-    <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
-        <form class="form-horizontal name-setting">
-            <input type="hidden" name="is_full_name" value="true" />
-            <div class="input-group name_change_container">
-                <label for="full_name">{{t "Full name" }}</label>
-                <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
-            </div>
-            {{#if is_bot}}
-            <div class="input-group edit_bot_owner_container">
-                <label for="bot_owner_select">{{t "Owner" }}</label>
-            </div>
-            {{/if}}
-            <div class="input-group">
-                <button type="submit" class="button rounded sea-green submit_name_changes">
-                    {{t 'Save changes' }}
-                </button>
-                <button type="button" class="button rounded reset_edit_user">{{t 'Cancel' }}</button>
-            </div>
-        </form>
-    </td>
 </tr>
 {{/with}}

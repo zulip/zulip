@@ -76,7 +76,7 @@
         box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
     }
 
-    .nav .dropdown-menu:after {
+    .nav .dropdown-menu::after {
         right: 10px;
     }
 
@@ -167,7 +167,8 @@
         margin-left: 7px;
     }
 
-    #searchbox {
+    #searchbox,
+    #searchbox_legacy {
         margin-left: 42px;
     }
 
@@ -219,12 +220,17 @@
     .navbar-search,
     #tab_bar,
     #searchbox,
-    #search_query,
+    #searchbox_legacy,
     #tab_list li,
     #tab_list,
     .header {
         height: 30px;
         line-height: 30px;
+    }
+
+    #search_query {
+        height: 30px !important;
+        vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button,
@@ -243,13 +249,16 @@
         margin-right: 115px;
     }
 
-    #searchbox .input-append .icon-vector-search {
-        top: 5px;
-    }
+    #searchbox,
+    #searchbox_legacy {
+        .input-append .fa-search {
+            top: 5px;
+        }
 
-    #searchbox .search_button,
-    #searchbox .search_button[disabled]:hover {
-        top: 2px;
+        .search_button,
+        .search_button[disabled]:hover {
+            top: 2px;
+        }
     }
 
     #tab_bar_underpadding {
@@ -350,5 +359,19 @@
         width: calc(90% - 30px);
         left: 5%;
         top: 5%;
+    }
+}
+
+@media only screen and (min-width: 700px) and (max-width: 875px) {
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
+    }
+}
+
+@media only screen and (max-width: 625px) {
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
     }
 }

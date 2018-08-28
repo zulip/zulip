@@ -5,7 +5,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from typing import List, Optional, Set
 
-from zerver.decorator import require_realm_admin, to_non_negative_int
+from zerver.decorator import require_realm_admin, to_non_negative_int, \
+    require_non_guest_human_user
+
 from zerver.lib.actions import do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
     get_default_subs, do_get_user_invites, do_create_multiuse_invite_link
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -16,6 +18,7 @@ from zerver.models import PreregistrationUser, Stream, UserProfile
 
 import re
 
+@require_non_guest_human_user
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          invitee_emails_raw: str=REQ("invitee_emails"),
@@ -97,13 +100,11 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})
 
+@require_realm_admin
 @has_request_variables
 def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserProfile,
                                      stream_ids: List[int]=REQ(validator=check_list(check_int),
                                                                default=[])) -> HttpResponse:
-    if not user_profile.is_realm_admin:
-        return json_error(_("Must be an organization administrator"))
-
     streams = []
     for stream_id in stream_ids:
         try:

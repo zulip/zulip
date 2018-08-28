@@ -22,3 +22,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = tutorial;
 }
+window.tutorial = tutorial;

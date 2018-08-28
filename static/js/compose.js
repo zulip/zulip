@@ -100,6 +100,19 @@ exports.clear_preview_area = function () {
     $("#markdown_preview").show();
 };
 
+function update_stream_button(title) {
+    $("#left_bar_compose_stream_button_big").text(title);
+    $("#left_bar_compose_stream_button_big").prop("title", title);
+}
+
+exports.update_stream_button_for_private = function () {
+    update_stream_button(i18n.t("New stream message"));
+};
+
+exports.update_stream_button_for_stream = function () {
+    update_stream_button(i18n.t("New topic"));
+};
+
 function update_fade() {
     if (!compose_state.composing()) {
         return;
@@ -162,7 +175,7 @@ function create_message_object() {
     }
     return message;
 }
-// Export for testing
+
 exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
@@ -176,6 +189,8 @@ function compose_error(error_text, bad_input) {
         bad_input.focus().select();
     }
 }
+
+exports.compose_error = compose_error;
 
 function nonexistent_stream_reply_error() {
     $("#nonexistent_stream_reply_error").show();
@@ -209,6 +224,8 @@ function clear_compose_box() {
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();
 }
+
+exports.clear_compose_box = clear_compose_box;
 
 exports.send_message_success = function (local_id, message_id, locally_echoed) {
     if (!locally_echoed) {
@@ -279,102 +296,6 @@ exports.send_message = function send_message(request) {
     }
 };
 
-exports.deferred_message_types = {
-    scheduled: {
-        delivery_type: 'send_later',
-        test: /^\/schedule/,
-        slash_command: '/schedule',
-    },
-    reminders: {
-        delivery_type: 'remind',
-        test: /^\/remind/,
-        slash_command: '/remind',
-    },
-};
-
-function is_deferred_delivery(message_content) {
-    var reminders_test = exports.deferred_message_types.reminders.test;
-    var scheduled_test = exports.deferred_message_types.scheduled.test;
-    return (reminders_test.test(message_content) ||
-            scheduled_test.test(message_content));
-}
-
-function patch_request_for_scheduling(request) {
-    var new_request = request;
-    var raw_message = request.content.split('\n');
-    var command_line = raw_message[0];
-    var message = raw_message.slice(1).join('\n');
-
-    var deferred_message_type = _.filter(exports.deferred_message_types, function (props) {
-        return command_line.match(props.test) !== null;
-    })[0];
-    var command = command_line.match(deferred_message_type.test)[0];
-
-    var deliver_at = command_line.slice(command.length + 1);
-
-    if (message.trim() === '' || deliver_at.trim() === '' ||
-        command_line.slice(command.length, command.length + 1) !== ' ') {
-
-        $("#compose-textarea").attr('disabled', false);
-        if (command_line.slice(command.length, command.length + 1) !== ' ') {
-            compose_error(i18n.t('Invalid slash command. Check if you are missing a space after the command.'), $('#compose-textarea'));
-        } else if (deliver_at.trim() === '') {
-            compose_error(i18n.t('Please specify time for your reminder.'), $('#compose-textarea'));
-        } else {
-            compose_error(i18n.t('Your reminder note is empty!'), $('#compose-textarea'));
-        }
-        return;
-    }
-
-    new_request.content = message;
-    new_request.deliver_at = deliver_at;
-    new_request.delivery_type = deferred_message_type.delivery_type;
-    new_request.tz_guess = moment.tz.guess();
-    return new_request;
-}
-
-exports.schedule_message = function schedule_message(request, success, error) {
-    if (request === undefined) {
-        request = create_message_object();
-    }
-
-    if (request.type === "private") {
-        request.to = JSON.stringify(request.to);
-    } else {
-        request.to = JSON.stringify([request.to]);
-    }
-
-    /* success and error callbacks are kind of a package deal here. When scheduling
-    a message either by means of slash command or from message feed, if we need to do
-    something special on success then we will also need to know if our request errored
-    and do something appropriate. Therefore we just check if success callback is not
-    defined and just assume request to be coming from compose box. This is correct
-    because we won't ever actually have success operate in different context than error. */
-    if (success === undefined) {
-        success = function (data) {
-            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
-            $("#compose-textarea").attr('disabled', false);
-            clear_compose_box();
-        };
-        error = function (response) {
-            $("#compose-textarea").attr('disabled', false);
-            compose_error(response, $('#compose-textarea'));
-        };
-        /* We are adding a disable on compose under this block since it actually
-        has its place with the branch of code which does stuff when slash command
-        is incoming from compose_box */
-        $("#compose-textarea").attr('disabled', true);
-    }
-
-    request = patch_request_for_scheduling(request);
-
-    if (request === undefined) {
-        return;
-    }
-
-    transmit.send_message(request, success, error);
-};
-
 exports.enter_with_preview_open = function () {
     exports.clear_preview_area();
     if (page_params.enter_sends) {
@@ -391,21 +312,35 @@ exports.finish = function () {
     exports.clear_private_stream_alert();
     notifications.clear_compose_notifications();
 
-    if (! compose.validate()) {
+    var message_content = compose_state.message_content();
+
+    // Skip normal validation for zcommands, since they aren't
+    // actual messages with recipients; users only send them
+    // from the compose box for convenience sake.
+    if (zcommand.process(message_content)) {
+        exports.do_post_send_tasks();
+        clear_compose_box();
+        return;
+    }
+
+    if (!compose.validate()) {
         return false;
     }
 
-    var message_content = compose_state.message_content();
-    if (is_deferred_delivery(message_content)) {
-        exports.schedule_message();
+    if (reminder.is_deferred_delivery(message_content)) {
+        reminder.schedule_message();
     } else {
         exports.send_message();
     }
+    exports.do_post_send_tasks();
+    return true;
+};
+
+exports.do_post_send_tasks = function () {
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger($.Event('compose_finished.zulip'));
-    return true;
 };
 
 exports.update_email = function (user_id, new_email) {
@@ -511,6 +446,16 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
+function validate_stream_message_announcement_only(stream_name) {
+    // Only allow realm admins to post to announcement_only streams.
+    var is_announcement_only = stream_data.get_announcement_only(stream_name);
+    if (is_announcement_only && !page_params.is_admin) {
+        compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+    return true;
+}
+
 exports.validation_error = function (error_type, stream_name) {
     var response;
 
@@ -555,6 +500,10 @@ function validate_stream_message() {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
         }
+    }
+
+    if (!validate_stream_message_announcement_only(stream_name)) {
+        return false;
     }
 
     // If both `@all` is mentioned and it's in `#announce`, just validate
@@ -606,7 +555,7 @@ function validate_private_message() {
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     var message_content = compose_state.message_content();
-    if (is_deferred_delivery(message_content)) {
+    if (reminder.is_deferred_delivery(message_content)) {
         show_sending_indicator('Scheduling...');
     } else {
         show_sending_indicator();
@@ -628,10 +577,8 @@ exports.validate = function () {
     return validate_stream_message();
 };
 
-exports.handle_keydown = function (event) {
+exports.handle_keydown = function (event, textarea) {
     var code = event.keyCode || event.which;
-    var textarea = $("#compose-textarea");
-    var range = textarea.range();
     var isBold = code === 66;
     var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
@@ -640,34 +587,33 @@ exports.handle_keydown = function (event) {
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? event.metaKey : event.ctrlKey;
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
-        function add_markdown(markdown) {
-            var textarea = $("#compose-textarea");
-            var range = textarea.range();
-            if (!document.execCommand('insertText', false, markdown)) {
-                textarea.range(range.start, range.end).range(markdown);
+        var range = textarea.range();
+        function wrap_text_with_markdown(prefix, suffix) {
+            if (!document.execCommand('insertText', false, prefix + range.text + suffix)) {
+                textarea.range(range.start, range.end).range(prefix + range.text + suffix);
             }
             event.preventDefault();
         }
 
         if (isBold) {
             // ctrl + b: Convert selected text to bold text
-            add_markdown("**" + range.text + "**");
+            wrap_text_with_markdown("**", "**");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 2);
             }
         }
         if (isItalic) {
             // ctrl + i: Convert selected text to italic text
-            add_markdown("*" + range.text + "*");
+            wrap_text_with_markdown("*", "*");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 1);
             }
         }
         if (isLink) {
             // ctrl + l: Insert a link to selected text
-            add_markdown("[" + range.text + "](url)");
+            wrap_text_with_markdown("[", "](url)");
             var position = textarea.caret();
-            var txt = document.getElementById("compose-textarea");
+            var txt = document.getElementById(textarea[0].id);
 
             // Include selected text in between [] parantheses and insert '(url)'
             // where "url" should be automatically selected.
@@ -691,13 +637,18 @@ exports.handle_keydown = function (event) {
     }
 };
 
+exports.handle_keyup = function (event, textarea) {
+    // Set the rtl class if the text has an rtl direction, remove it otherwise
+    rtl.set_rtl_class_for_textarea(textarea);
+};
+
 exports.needs_subscribe_warning = function (email) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
     //  * the stream in the compose box is valid
     //  * the user is not already subscribed to the stream
     //  * the user has no back-door way to see stream messages
-    //    (i.e. bots on public streams)
+    //    (i.e. bots on public/private streams)
     //
     //  You can think of this as roughly answering "is there an
     //  actionable way to subscribe the user and do they actually
@@ -719,8 +670,8 @@ exports.needs_subscribe_warning = function (email) {
         return false;
     }
 
-    if (user.is_bot && !sub.invite_only) {
-        // Bots may receive messages on public streams even if they are
+    if (user.is_bot) {
+        // Bots may receive messages on public/private streams even if they are
         // not subscribed.
         return false;
     }
@@ -737,7 +688,12 @@ exports.needs_subscribe_warning = function (email) {
 exports.initialize = function () {
     $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
     $('#stream,#subject,#private_message_recipient').on('change', update_fade);
-    $('#compose-textarea').on('keydown', exports.handle_keydown);
+    $('#compose-textarea').on('keydown', function (event) {
+        exports.handle_keydown(event, $("#compose-textarea").expectOne());
+    });
+    $('#compose-textarea').on('keyup', function (event) {
+        exports.handle_keyup(event, $("#compose-textarea").expectOne());
+    });
 
     $("#compose form").on("submit", function (e) {
         e.preventDefault();
@@ -776,7 +732,11 @@ exports.initialize = function () {
                 });
 
                 if (existing_invites.indexOf(email) === -1) {
-                    var context = {email: email, name: data.mentioned.full_name};
+                    var context = {
+                        email: email,
+                        name: data.mentioned.full_name,
+                        can_subscribe_other_users: page_params.can_subscribe_other_users,
+                    };
                     var new_row = templates.render("compose-invite-users", context);
                     error_area.append(new_row);
                 }
@@ -846,11 +806,15 @@ exports.initialize = function () {
             }
         }
 
-        function failure() {
-            var error_msg = invite_row.find('.compose_invite_user_error');
-            error_msg.show();
-
+        function failure(error_msg) {
+            exports.clear_invites();
+            compose_error(error_msg, $("#compose-textarea"));
             $(event.target).attr('disabled', true);
+        }
+
+        function xhr_failure(xhr) {
+            var error = JSON.parse(xhr.responseText);
+            failure(error.msg);
         }
 
         var stream_name = compose_state.stream_name();
@@ -859,12 +823,13 @@ exports.initialize = function () {
             // This should only happen if a stream rename occurs
             // before the user clicks.  We could prevent this by
             // putting a stream id in the link.
-            blueslip.warn('Stream no longer exists: ' + stream_name);
-            failure();
+            var error_msg = 'Stream no longer exists: ' + stream_name;
+            blueslip.warn(error_msg);
+            failure(error_msg);
             return;
         }
 
-        stream_edit.invite_user_to_stream(email, sub, success, failure);
+        stream_edit.invite_user_to_stream(email, sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
@@ -1051,3 +1016,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose;
 }
+window.compose = compose;

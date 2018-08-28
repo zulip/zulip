@@ -17,7 +17,7 @@ def get_forward_address() -> str:
     config.read(settings.FORWARD_ADDRESS_CONFIG_FILE)
     try:
         return config.get("DEV_EMAIL", "forward_address")
-    except (configparser.NoSectionError, configparser.NoOptionError) as e:
+    except (configparser.NoSectionError, configparser.NoOptionError):
         return ""
 
 def set_forward_address(forward_address: str) -> None:

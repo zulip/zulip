@@ -60,13 +60,13 @@ exports.make_zblueslip = function (opts) {
     Object.keys(opts).forEach(name => {
         if (!opts[name]) {
             // should just log the message.
-            lib[name] = function (message) {
-                lib.test_logs[name].push(message);
+            lib[name] = function (message, more_info, stack) {
+                lib.test_logs[name].push({message, more_info, stack});
             };
             return;
         }
-        lib[name] = function (message) {
-            lib.test_logs[name].push(message);
+        lib[name] = function (message, more_info, stack) {
+            lib.test_logs[name].push({message, more_info, stack});
             const exact_match_fail = lib.test_data[name].indexOf(message) === -1;
             const string_match_fail = lib.test_data[name].indexOf(message.toString()) === -1;
             if (exact_match_fail && string_match_fail) {
@@ -77,8 +77,15 @@ exports.make_zblueslip = function (opts) {
         };
     });
 
-    // lib.exception_msg = noop;
-    // lib.wrap_function = noop;
+    lib.exception_msg = function (ex) {
+        return ex.message;
+    };
+
+    lib.wrap_function = (f) => {
+        return (...args) => {
+            return f.apply(this, args);
+        };
+    };
 
     return lib;
 };

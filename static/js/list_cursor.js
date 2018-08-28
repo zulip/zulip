@@ -1,15 +1,15 @@
 var list_cursor = function (opts) {
     var self = {};
 
-    var config_ok = (
+    var config_ok =
         opts.highlight_class &&
         opts.list &&
-        opts.list.container &&
+        opts.list.scroll_container_sel &&
         opts.list.find_li &&
         opts.list.first_key &&
         opts.list.prev_key &&
         opts.list.next_key
-    );
+    ;
 
     if (!config_ok) {
         blueslip.error('Programming error');
@@ -43,7 +43,10 @@ var list_cursor = function (opts) {
             return;
         }
 
-        var li = opts.list.find_li({key: key});
+        var li = opts.list.find_li({
+            key: key,
+            force_render: true,
+        });
 
         if (li.length === 0) {
             return;
@@ -61,7 +64,8 @@ var list_cursor = function (opts) {
     };
 
     self.adjust_scroll = function (li) {
-        scroll_util.scroll_element_into_container(li, opts.list.container);
+        var scroll_container = $(opts.list.scroll_container_sel);
+        scroll_util.scroll_element_into_container(li, scroll_container);
     };
 
     self.redraw = function () {
@@ -79,20 +83,20 @@ var list_cursor = function (opts) {
     };
 
     self.go_to = function (key) {
-        if (key === self.curr_key) {
-            return;
-        }
         if (key === undefined) {
             blueslip.error('Caller is not checking keys for list_cursor.go_to');
             return;
         }
+        if (key === self.curr_key) {
+            return;
+        }
         self.clear();
-        self.curr_key = key;
         var row = self.get_row(key);
         if (row === undefined) {
             blueslip.error('Cannot highlight key for list_cursor: ' + key);
             return;
         }
+        self.curr_key = key;
         row.highlight();
     };
 
@@ -138,3 +142,4 @@ var list_cursor = function (opts) {
 if (typeof module !== 'undefined') {
     module.exports = list_cursor;
 }
+window.list_cursor = list_cursor;

@@ -46,7 +46,7 @@ set_global('rows', {
     },
 });
 
-(function test_merge_message_groups() {
+run_test('merge_message_groups', () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
@@ -359,9 +359,9 @@ set_global('rows', {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-}());
+});
 
-(function test_render_windows() {
+run_test('render_windows', () => {
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with
     // start/end) when the pointer moves outside of the window or close
@@ -370,9 +370,12 @@ set_global('rows', {
     var view = (function make_view() {
         var table_name = 'zfilt';
         var filter = new Filter();
-        var opts = {};
 
-        var list = new message_list.MessageList(table_name, filter, opts);
+        var list = new message_list.MessageList({
+            table_name: table_name,
+            filter: filter,
+        });
+
         var view = list.view;
 
         // Stub out functionality that is not core to the rendering window
@@ -475,4 +478,4 @@ set_global('rows', {
 
     verify_move(197, [0, 400]);
     verify_no_move_range(0, 350);
-}());
+});

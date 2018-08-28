@@ -5,7 +5,7 @@ var exports = {};
 
 // You won't find every click handler here, but it's a good place to start!
 
-$(function () {
+exports.initialize = function () {
 
     // MOUSE MOVING VS DRAGGING FOR SELECTION DATA TRACKING
 
@@ -58,22 +58,37 @@ $(function () {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
             target.is("i.edit_content_button") ||
-            (target.is(".highlight") && target.parent().is("a"));
+            target.is(".highlight") && target.parent().is("a");
     }
 
     function initialize_long_tap() {
         var MS_DELAY = 750;
         var meta = {
             touchdown: false,
+            current_target: undefined,
         };
 
         $("#main_div").on("touchstart", ".messagebox", function () {
             meta.touchdown = true;
             meta.invalid = false;
-
+            var id = rows.id($(this).closest(".message_row"));
+            meta.current_target = id;
+            if (!id) {
+                return;
+            }
+            current_msg_list.select_id(id);
             setTimeout(function () {
+                // The algorithm to trigger long tap is that first, we check
+                // whether the message is still touched after MS_DELAY ms and
+                // the user isn't scrolling the messages(see other touch event
+                // handlers to see how these meta variables are handled).
+                // Later we check whether after MS_DELAY the user is still
+                // long touching the same message as it can be possible that
+                // user touched another message within MS_DELAY period.
                 if (meta.touchdown === true && !meta.invalid) {
-                    $(this).trigger("longtap");
+                    if (id === meta.current_target) {
+                        $(this).trigger("longtap");
+                    }
                 }
             }.bind(this), MS_DELAY);
         });
@@ -121,7 +136,7 @@ $(function () {
         // work nearly perfectly.  Once we no longer need to support
         // older browsers, we may be able to use the window.selection
         // API instead.
-        if ((drag.val < 5 && drag.time < 150) || drag.val < 2) {
+        if (drag.val < 5 && drag.time < 150 || drag.val < 2) {
             var row = $(this).closest(".message_row");
             var id = rows.id(row);
 
@@ -166,7 +181,7 @@ $(function () {
 
         var message_id = rows.id($(this).closest(".message_row"));
         var message = message_store.get(message_id);
-        message_flags.toggle_starred(message);
+        message_flags.toggle_starred_and_update_server(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {
@@ -660,6 +675,14 @@ $(function () {
         $('#hotspot_' + hotspot_name + '_icon').remove();
     });
 
+    $('body').on('click', '.hotspot-button', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        hotspots.post_hotspot_as_read('intro_reply');
+        hotspots.close_hotspot_icon($('#hotspot_intro_reply_icon'));
+    });
+
     // stop propagation
     $('body').on('click', '.hotspot.overlay .hotspot-popover', function (e) {
         e.stopPropagation();
@@ -682,7 +705,7 @@ $(function () {
         }
 
         if (compose_state.composing()) {
-            if ($(e.target).is("a")) {
+            if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
                 $("#compose-textarea").focus();
             } else if (!$(e.target).closest(".overlay").length &&
@@ -705,54 +728,11 @@ $(function () {
         e.stopPropagation();
     });
 
-    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
-        var $this = $(this);
-
-        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
-        $this.addClass("active").prev().addClass("no-border");
-
-        var $settings_overlay_container = $("#settings_overlay_container");
-        $settings_overlay_container.find(".right").addClass("show");
-        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
-
-        settings.set_settings_header($(this).attr("data-section"));
-    });
-
-    $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
+    $(".settings-header.mobile .fa-chevron-left").on("click", function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
     });
-
-    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
-        var $this = $(this);
-        var section = $this.data("section");
-        var sel = "[data-name='" + section + "']";
-
-        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
-        $this.addClass("active");
-        $this.prev().addClass("no-border");
-
-        var is_org_section = $this.hasClass("admin");
-
-        if (is_org_section) {
-            window.location.hash = "organization/" + section;
-        } else {
-            window.location.hash = "settings/" + section;
-        }
-
-        $(".settings-section, .settings-wrapper").removeClass("show");
-
-        ui.update_scrollbar($("#settings_content"));
-
-        if (is_org_section) {
-            admin_sections.load_admin_section(section);
-        } else {
-            settings_sections.load_settings_section(section);
-        }
-
-        $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
-    });
-});
+};
 
 return exports;
 
@@ -761,3 +741,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = click_handlers;
 }
+window.click_handlers = click_handlers;

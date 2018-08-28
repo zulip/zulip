@@ -8,14 +8,14 @@
 # See requirements/README.md for more detail.
 
 # Needed to build RTD docs
-sphinx==1.7.4
-sphinx-rtd-theme==0.3.1
+sphinx==1.7.6
+sphinx-rtd-theme==0.4.1
 
 # Needed to build markdown docs
 recommonmark==0.4.0
 
 # Dependencies of Sphinx
-alabaster==0.7.10
+alabaster==0.7.11
 babel==2.5.3
 # Upgrading to the latest version of CommonMark breaks the
 # compatibility with recommonmark.  See

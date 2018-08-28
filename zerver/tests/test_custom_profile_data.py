@@ -8,12 +8,18 @@ from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, get_realm
+    custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
 import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):
     def setUp(self) -> None:
-        self.original_count = len(custom_profile_fields_for_realm(get_realm("zulip").id))
+        self.realm = get_realm("zulip")
+        self.original_count = len(custom_profile_fields_for_realm(self.realm.id))
+
+    def custom_field_exists_in_realm(self, field_id: int) -> bool:
+        fields = custom_profile_fields_for_realm(self.realm.id)
+        field_ids = [field.id for field in fields]
+        return (field_id in field_ids)
 
     def test_list(self) -> None:
         self.login(self.example_email("iago"))
@@ -48,6 +54,11 @@ class CustomProfileFieldTest(ZulipTestCase):
         data["field_type"] = 100
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, u'Name cannot be blank.')
+
+        data["name"] = "*" * 41
+        data["field_type"] = 100
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'name is too long (limit: 40 characters)')
 
         data["name"] = "Phone"
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -119,6 +130,10 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["order"] is not a string')
 
+        data["field_data"] = ujson.dumps({})
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'Field must have at least one choice.')
+
         data["field_data"] = ujson.dumps({
             'python': {'text': 'Python', 'order': '1'},
             'java': {'text': 'Java', 'order': '2'},
@@ -140,11 +155,11 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_delete("/json/realm/profile_fields/100")
         self.assert_json_error(result, 'Field id 100 not found.')
 
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
+        self.assertTrue(self.custom_field_exists_in_realm(field.id))
         result = self.client_delete(
             "/json/realm/profile_fields/{}".format(field.id))
         self.assert_json_success(result)
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count - 1)
+        self.assertFalse(self.custom_field_exists_in_realm(field.id))
 
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
@@ -176,6 +191,13 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertEqual(field.name, 'New phone number')
         self.assertIs(field.hint, '')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': '*' * 41,
+                  'field_type': CustomProfileField.SHORT_TEXT})
+        msg = "name is too long (limit: 40 characters)"
+        self.assert_json_error(result, msg)
 
         result = self.client_patch(
             "/json/realm/profile_fields/{}".format(field.id),
@@ -229,18 +251,16 @@ class CustomProfileFieldTest(ZulipTestCase):
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        try_add_realm_custom_profile_field(realm, u"Phone",
-                                           CustomProfileField.SHORT_TEXT)
+        field_1 = try_add_realm_custom_profile_field(realm, u"Phone",
+                                                     CustomProfileField.SHORT_TEXT)
 
-        field = try_add_realm_custom_profile_field(
-            realm,
-            u"Phone 1",
-            CustomProfileField.SHORT_TEXT
-        )
+        field_2 = try_add_realm_custom_profile_field(realm, u"Phone 1",
+                                                     CustomProfileField.SHORT_TEXT)
 
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count + 2)
+        self.assertTrue(self.custom_field_exists_in_realm(field_1.id))
+        self.assertTrue(self.custom_field_exists_in_realm(field_2.id))
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            "/json/realm/profile_fields/{}".format(field_2.id),
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_error(
             result, u'A field with that name already exists.')
@@ -321,6 +341,38 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_error(result,
                                u"Field id 1234 not found.")
 
+    def test_delete_field_value(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        realm = get_realm("zulip")
+
+        invalid_field_id = 1234
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([invalid_field_id])
+        })
+        self.assert_json_error(result,
+                               u'Field id %d not found.' % (invalid_field_id))
+
+        field = CustomProfileField.objects.get(name="Mentor", realm=realm)
+        data = [{'id': field.id,
+                 'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
+        do_update_user_custom_profile_data(iago, data)
+
+        iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
+        converter = field.FIELD_CONVERTERS[field.field_type]
+        self.assertEqual([self.example_user("aaron").id], converter(iago_value.value))
+
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
+
+        # Don't throw an exception here
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
+
     def test_update_invalid_short_text(self) -> None:
         field_name = "Phone number"
         self.assert_error_update_invalid_value(field_name, 't' * 201,
@@ -338,6 +390,21 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_error_update_invalid_value(field_name, u"not URL",
                                                u"{} is not a URL".format(field_name))
 
+    def test_update_invalid_user_field(self) -> None:
+        field_name = "Mentor"
+        invalid_user_id = 1000
+        self.assert_error_update_invalid_value(field_name, [invalid_user_id],
+                                               u"Invalid user ID: %d"
+                                               % (invalid_user_id))
+
+    def test_create_field_of_type_user(self) -> None:
+        self.login(self.example_email("iago"))
+        data = {"name": "Your mentor",
+                "field_type": CustomProfileField.USER,
+                }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_update_profile_data_successfully(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -348,6 +415,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
             ('GitHub profile', 'https://github.com/ABC'),
+            ('Mentor', [self.example_user("cordelia").id]),
         ]
 
         data = []
@@ -371,8 +439,6 @@ class CustomProfileFieldTest(ZulipTestCase):
             self.assertEqual(field_dict['value'], expected_value[field_dict['id']])
             for k in ['id', 'type', 'name', 'field_data']:
                 self.assertIn(k, field_dict)
-
-            self.assertEqual(len(iago.profile_data), self.original_count)
 
         # Update value of one field.
         field = CustomProfileField.objects.get(name='Biography', realm=realm)
@@ -410,13 +476,13 @@ class CustomProfileFieldTest(ZulipTestCase):
         user_profile = self.example_user('iago')
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str]]]
+        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str, List[int]]]]
         do_update_user_custom_profile_data(user_profile, data)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), self.original_count)
+        self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
 
         do_remove_realm_custom_profile_field(realm, field)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), self.original_count - 1)
+        self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)

@@ -1,4 +1,3 @@
-import fuzzysearch from 'fuzzysearch';
 import blueslip from './../blueslip';
 
 import { path_parts } from './landing-page';
@@ -88,8 +87,8 @@ function update_categories() {
     } else {
         $dropdown_label.text(CATEGORIES[state.category]);
         $dropdown_icon
-            .removeClass('icon-vector-angle-right')
-            .addClass('icon-vector-angle-down');
+            .removeClass('fa-angle-right')
+            .addClass('fa-angle-down');
     }
 
     $('.integration-lozenges').animate(
@@ -117,8 +116,9 @@ var update_integrations = _.debounce(function () {
         }
 
         if (!$integration.hasClass('integration-create-your-own')) {
+            var display_name = INTEGRATIONS[$integration.data('name')];
             var display =
-                fuzzysearch(state.query, $integration.data('name').toLowerCase()) &&
+                common.phrase_match(state.query, display_name) &&
                 ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
                  state.category === 'all');
 
@@ -195,6 +195,7 @@ function hide_catalog_show_integration() {
         $(".extra, #integration-main-text, #integration-search").css("display", "none");
 
         show_integration(doc);
+        $(".main").css("visibility", "visible");
     }
 
     $.get({
@@ -249,22 +250,26 @@ function render(next_state) {
     var previous_state = Object.assign({}, state);
     state = next_state;
 
-    if (previous_state.integration !== next_state.integration) {
-        if (next_state.integration !== null) {
-            hide_catalog_show_integration();
-        } else {
+    if (previous_state.integration !== next_state.integration &&
+        next_state.integration !== null) {
+        hide_catalog_show_integration();
+    } else {
+        if (previous_state.integration !== next_state.integration) {
             hide_integration_show_catalog();
         }
+
+        if (previous_state.category !== next_state.category) {
+            update_categories();
+            update_integrations();
+        }
+
+        if (previous_state.query !== next_state.query) {
+            update_integrations();
+        }
+
+        $(".main").css("visibility", "visible");
     }
 
-    if (previous_state.category !== next_state.category) {
-        update_categories();
-        update_integrations();
-    }
-
-    if (previous_state.query !== next_state.query) {
-        update_integrations();
-    }
 }
 
 function dispatch(action, payload) {
@@ -336,12 +341,12 @@ function integration_events() {
         if ($dropdown_list.css('display') === 'none' &&
             state.category === INITIAL_STATE.category) {
             $('.integration-categories-dropdown i')
-                .removeClass('icon-vector-angle-down')
-                .addClass('icon-vector-angle-right');
+                .removeClass('fa-angle-down')
+                .addClass('fa-angle-right');
         } else {
             $('.integration-categories-dropdown i')
-                .removeClass('icon-vector-angle-right')
-                .addClass('icon-vector-angle-down');
+                .removeClass('fa-angle-right')
+                .addClass('fa-angle-down');
         }
     });
 

@@ -6,7 +6,7 @@ set_global('page_params' , {
 zrequire('XDate', 'xdate');
 zrequire('timerender');
 
-(function test_render_now_returns_today() {
+run_test('render_now_returns_today', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var expected = {
         time_str: i18n.t('Today'),
@@ -17,9 +17,9 @@ zrequire('timerender');
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
-}());
+});
 
-(function test_render_now_returns_yesterday() {
+run_test('render_now_returns_yesterday', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var yesterday = today.clone().addDays(-1);
     var expected = {
@@ -31,9 +31,9 @@ zrequire('timerender');
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
-}());
+});
 
-(function test_render_now_returns_year() {
+run_test('render_now_returns_year', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var year_ago = today.clone().addYears(-1);
     var expected = {
@@ -45,9 +45,9 @@ zrequire('timerender');
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
-}());
+});
 
-(function test_render_now_returns_month_and_day() {
+run_test('render_now_returns_month_and_day', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var three_months_ago = today.clone().addMonths(-3, true);
     var expected = {
@@ -59,9 +59,9 @@ zrequire('timerender');
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
-}());
+});
 
-(function test_render_now_returns_year_with_year_boundary() {
+run_test('render_now_returns_year_with_year_boundary', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var three_months_ago = today.clone().addMonths(-6, true);
     var expected = {
@@ -73,9 +73,9 @@ zrequire('timerender');
     assert.equal(expected.time_str, actual.time_str);
     assert.equal(expected.formal_time_str, actual.formal_time_str);
     assert.equal(expected.needs_update, actual.needs_update);
-}());
+});
 
-(function test_render_date_renders_time_html() {
+run_test('render_date_renders_time_html', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time  = today.clone();
     var expected_html = i18n.t('Today');
@@ -97,9 +97,9 @@ zrequire('timerender');
     assert.equal(expected_html, actual.html());
     assert.equal(attrs.get('title'), 'Friday, April 12, 2019');
     assert.equal(attrs.get('class'), 'timerender0');
-}());
+});
 
-(function test_render_date_renders_time_above_html() {
+run_test('render_date_renders_time_above_html', () => {
     var today = new XDate(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     var message_time = today.clone();
     var message_time_above = today.clone().addDays(-1);
@@ -122,16 +122,16 @@ zrequire('timerender');
 
     timerender.render_date(message_time, message_time_above, today);
     assert.deepEqual(appended_val, expected);
-}());
+});
 
-(function test_get_full_time() {
+run_test('get_full_time', () => {
     var timestamp = 1495091573; // 5/18/2017 7:12:53 AM (UTC+0)
     var expected = '2017-05-18T07:12:53Z'; // ISO 8601 date format
     var actual = timerender.get_full_time(timestamp);
     assert.equal(expected, actual);
-}());
+});
 
-(function test_absolute_time_12_hour() {
+run_test('absolute_time_12_hour', () => {
     set_global('page_params', {
         twenty_four_hour_time: false,
     });
@@ -161,9 +161,9 @@ zrequire('timerender');
     expected = 'May 18, 2017 07:12 AM';
     actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
-}());
+});
 
-(function test_absolute_time_24_hour() {
+run_test('absolute_time_24_hour', () => {
     set_global('page_params', {
         twenty_four_hour_time: true,
     });
@@ -193,9 +193,9 @@ zrequire('timerender');
     expected = 'May 18, 2017 07:12';
     actual = timerender.absolute_time(timestamp, today);
     assert.equal(expected, actual);
-}());
+});
 
-(function test_set_full_datetime() {
+run_test('set_full_datetime', () => {
     var message = {
         timestamp: 1495091573, // 2017-5-18 07:12:53 AM (UTC+0)
     };
@@ -218,9 +218,9 @@ zrequire('timerender');
     timerender.set_full_datetime(message, time_element);
     var actual = attrs.get('title');
     assert.equal(expected, actual);
-}());
+});
 
-(function test_last_seen_status_from_date() {
+run_test('last_seen_status_from_date', () => {
     // Set base_dateto to March 1 2016 12.30 AM (months are zero based)
     var base_date = new XDate(2016, 2, 1, 0, 30);
 
@@ -232,13 +232,13 @@ zrequire('timerender');
     }
 
     assert_same(function (d) { return d.addSeconds(-20); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-1); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-2); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-30); },
                 i18n.t("Last seen 30 minutes ago"));
@@ -270,9 +270,9 @@ zrequire('timerender');
     assert_same(function (d) { return d.addYears(-3); },
                 i18n.t("Last seen on Mar 01, 2013"));
 
-}());
+});
 
-(function test_set_full_datetime() {
+run_test('set_full_datetime', () => {
     var time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
     var time_str = timerender.stringify_time(time);
     var expected = '07:55';
@@ -288,4 +288,4 @@ zrequire('timerender');
     time_str = timerender.stringify_time(time);
     expected = '1:55 PM';
     assert.equal(expected, time_str);
-}());
+});

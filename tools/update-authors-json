@@ -12,11 +12,11 @@ from typing import Any, Dict, List, Optional, Union, cast
 from mypy_extensions import TypedDict
 
 import os
+import shutil
 import sys
 import argparse
 from time import sleep
 from datetime import date
-import subprocess
 
 import requests
 import json
@@ -49,13 +49,13 @@ ContributorsJSON = TypedDict('ContributorsJSON', {
 
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
-    r = requests.get(repo_link)  # type: requests.Response
+    r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
     return r.json() if r.status_code == 200 else None
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
         try:
-            f.write("{}\n".format(json.dumps(json_data)))
+            f.write("{}\n".format(json.dumps(json_data, indent=2, sort_keys=True)))
         except IOError as e:
             print(e)
             sys.exit(1)
@@ -147,7 +147,7 @@ def copy_fixture() -> None:
     Copy test fixture file from zerver/tests/fixtures. This is used to avoid
     constantly fetching data from Github during testing.
     """
-    subprocess.check_call(['cp', FIXTURE_FILE, settings.CONTRIBUTORS_DATA])
+    shutil.copyfile(FIXTURE_FILE, settings.CONTRIBUTORS_DATA)
 
 
 if args.use_fixture:

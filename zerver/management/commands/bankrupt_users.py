@@ -24,7 +24,7 @@ class Command(ZulipBaseCommand):
             except CommandError:
                 print("e-mail %s doesn't exist in the realm %s, skipping" % (email, realm))
                 continue
-            do_mark_all_as_read(user_profile)
+            do_mark_all_as_read(user_profile, self.get_client())
 
             messages = Message.objects.filter(
                 usermessage__user_profile=user_profile).order_by('-id')[:1]

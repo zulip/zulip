@@ -5,38 +5,15 @@ import logging
 import os
 import sys
 import argparse
-import subprocess
-
-from linter_lib.printer import print_err, colors
 
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import lister
+from zulint import lister
+from zulint.command import add_default_linter_arguments, LinterConfig
 from typing import cast, Callable, Dict, Iterator, List
-
-
-def run_parallel(lint_functions):
-    # type: (Dict[str, Callable[[], int]]) -> bool
-    pids = []
-    for name, func in lint_functions.items():
-        pid = os.fork()
-        if pid == 0:
-            logging.info("start " + name)
-            result = func()
-            logging.info("finish " + name)
-            sys.stdout.flush()
-            sys.stderr.flush()
-            os._exit(result)
-        pids.append(pid)
-    failed = False
-
-    for pid in pids:
-        (_, status) = os.waitpid(pid, 0)
-        if status != 0:
-            failed = True
-    return failed
+import random
 
 def run():
     # type: () -> None
@@ -50,15 +27,6 @@ def run():
     parser.add_argument('--no-gitlint',
                         action='store_true',
                         help='Disable gitlint')
-    parser.add_argument('--modified', '-m',
-                        action='store_true',
-                        help='Only check modified files')
-    parser.add_argument('--verbose', '-v',
-                        action='store_true',
-                        help='Print verbose timing output')
-    parser.add_argument('targets',
-                        nargs='*',
-                        help='Specify directories to check')
     limited_tests_group = parser.add_mutually_exclusive_group()
     limited_tests_group.add_argument('--frontend',
                                      action='store_true',
@@ -66,6 +34,7 @@ def run():
     limited_tests_group.add_argument('--backend',
                                      action='store_true',
                                      help='Only check files relevant to backend')
+    add_default_linter_arguments(parser)
     args = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -73,7 +42,7 @@ def run():
     sys.path.insert(0, root_dir)
 
     from tools.linter_lib.custom_check import build_custom_checkers
-    from tools.linter_lib.exclude import EXCLUDED_FILES
+    from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
     from tools.linter_lib.pyflakes import check_pyflakes
     from tools.linter_lib.pep8 import check_pep8
 
@@ -91,7 +60,7 @@ def run():
             sys.exit(1)
 
     backend_file_types = ['py', 'sh', 'pp', 'json', 'md', 'txt', 'text', 'yaml', 'rst']
-    frontend_file_types = ['js', 'css', 'handlebars', 'html']
+    frontend_file_types = ['js', 'css', 'scss', 'handlebars', 'html']
     file_types = backend_file_types + frontend_file_types
     if args.backend:
         file_types = backend_file_types
@@ -115,89 +84,58 @@ def run():
 
     check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
 
-    lint_functions = {}  # type: Dict[str, Callable[[], int]]
-
-    def lint(func):
-        # type: (Callable[[], int]) -> Callable[[], int]
-        lint_functions[func.__name__] = func
-        return func
-
-    def external_linter(name, command, target_langs=[]):
-        # type: (str, List[str], List[str]) -> None
-        """Registers an external linter program to be run as part of the
-        linter.  This program will be passed the subset of files being
-        linted that have extensions in target_langs.  If there are no
-        such files, exits without doing anything.
-
-        If target_langs is empty, just runs the linter unconditionally.
-        """
-        color = next(colors)
-
-        def run_linter():
-            # type: () -> int
-            targets = []  # type: List[str]
-            if len(target_langs) != 0:
-                targets = [target for lang in target_langs for target in by_lang[lang]]
-                if len(targets) == 0:
-                    # If we this linter has a list of languages, and
-                    # no files in those languages are to be checked,
-                    # then we can safely return success without
-                    # invoking the external linter.
-                    return 0
-
-            p = subprocess.Popen(command + targets,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT)
-
-            assert p.stdout  # use of subprocess.PIPE indicates non-None
-            for line in iter(p.stdout.readline, b''):
-                print_err(name, color, line)
-
-            return p.wait()  # Linter exit code
-
-        lint_functions[name] = run_linter
-
-    external_linter('add_class', ['tools/find-add-class'], ['js'])
-    external_linter('css', ['tools/check-css'], ['css'])
-    external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet', '--cache'], ['js'])
-    external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
-                               'static/ts/tslint.json'], ['ts'])
-    external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
-    external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
-    external_linter('urls', ['tools/check-urls'], ['py'])
-    external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
+    linter_config = LinterConfig(by_lang)
+    linter_config.external_linter('add_class', ['tools/find-add-class'], ['js'])
+    linter_config.external_linter('css', ['node', 'node_modules/.bin/stylelint'], ['css', 'scss'])
+    linter_config.external_linter('eslint', ['node', 'node_modules/.bin/eslint',
+                                             '--quiet', '--cache'], ['js'])
+    linter_config.external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
+                                             'static/ts/tslint.json'], ['ts'])
+    linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+    linter_config.external_linter('puppet-lint',
+                                  ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])
+    linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
+    linter_config.external_linter('urls', ['tools/check-urls'], ['py'])
+    linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
 
     # Disabled check for imperative mood until it is stabilized
     if not args.no_gitlint:
-        external_linter('commit_messages', ['tools/commit-message-lint'])
+        linter_config.external_linter('commit_messages', ['tools/commit-message-lint'])
 
-    @lint
+    @linter_config.lint
     def custom_py():
         # type: () -> int
         failed = check_custom_checks_py()
         return 1 if failed else 0
 
-    @lint
+    @linter_config.lint
     def custom_nonpy():
         # type: () -> int
         failed = check_custom_checks_nonpy()
         return 1 if failed else 0
 
-    @lint
+    @linter_config.lint
     def pyflakes():
         # type: () -> int
-        failed = check_pyflakes(args, by_lang)
+        failed = check_pyflakes(by_lang['py'], args)
         return 1 if failed else 0
 
-    @lint
-    def pep8():
+    python_part1 = {x for x in by_lang['py'] if random.randint(0, 1) == 0}
+    python_part2 = {y for y in by_lang['py'] if y not in python_part1}
+
+    @linter_config.lint
+    def pep8_1of2():
         # type: () -> int
-        failed = check_pep8(by_lang['py'])
+        failed = check_pep8(list(python_part1))
         return 1 if failed else 0
 
-    failed = run_parallel(lint_functions)
+    @linter_config.lint
+    def pep8_2of2():
+        # type: () -> int
+        failed = check_pep8(list(python_part2))
+        return 1 if failed else 0
 
-    sys.exit(1 if failed else 0)
+    linter_config.do_lint()
 
 if __name__ == '__main__':
     run()

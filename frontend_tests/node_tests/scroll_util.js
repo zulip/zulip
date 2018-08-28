@@ -1,6 +1,6 @@
 zrequire('scroll_util');
 
-(function test_scroll_delta() {
+run_test('scroll_delta', () => {
     // If we are entirely on-screen, don't scroll
     assert.equal(0, scroll_util.scroll_delta({
         elem_top: 1,
@@ -52,9 +52,9 @@ zrequire('scroll_util');
         container_height: 10,
     }));
 
-}());
+});
 
-(function test_scroll_element_into_container() {
+run_test('scroll_element_into_container', () => {
     const container = (function () {
         var top = 3;
         return {
@@ -69,7 +69,7 @@ zrequire('scroll_util');
     }());
 
     const elem1 = {
-        height: () => 25,
+        innerHeight: () => 25,
         position: () => {
             return {
                 top: 0,
@@ -80,7 +80,7 @@ zrequire('scroll_util');
     assert.equal(container.scrollTop(), 3);
 
     const elem2 = {
-        height: () => 15,
+        innerHeight: () => 15,
         position: () => {
             return {
                 top: 250,
@@ -89,5 +89,5 @@ zrequire('scroll_util');
     };
     scroll_util.scroll_element_into_container(elem2, container);
     assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
-}());
+});
 

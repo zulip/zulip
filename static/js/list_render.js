@@ -1,6 +1,9 @@
 /* eslint indent: "off" */
 
 var list_render = (function () {
+
+    var exports = {};
+
     var DEFAULTS = {
         INITIAL_RENDER_COUNT: 80,
         LOAD_COUNT: 20,
@@ -11,7 +14,7 @@ var list_render = (function () {
     // container: jQuery object to append to.
     // list: The list of items to progressively append.
     // opts: An object of random preferences.
-    var func = function ($container, list, opts) {
+    exports.create = function ($container, list, opts) {
         // this memoizes the results and will return a previously invoked
         // instance's prototype.
         if (opts.name && DEFAULTS.instances[opts.name]) {
@@ -319,54 +322,38 @@ var list_render = (function () {
             DEFAULTS.instances[opts.name] = prototype;
         }
 
+        // Attach click handler to column heads for sorting rows accordingly
+        if (opts.parent_container) {
+            opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+        }
+
         return prototype;
     };
 
-    func.get = function (name) {
+    exports.get = function (name) {
         return DEFAULTS.instances[name] || false;
     };
 
-    // this can delete list render issues and free up memory if needed.
-    func.delete = function (name) {
-        if (DEFAULTS.instances[name]) {
-            delete DEFAULTS.instances[name];
-            return true;
-        }
+    exports.handle_sort = function () {
+        /*
+        one would specify sort parameters like this:
+            - name => sort alphabetic.
+            - age  => sort numeric.
 
-        blueslip.error("The progressive list render instance with the name '" +
-                      name + "' does not exist.");
-        return false;
-    };
+        you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
 
-    return func;
-}());
-
-if (typeof module !== 'undefined') {
-    module.exports = list_render;
-}
-
-$(function () {
-    /*
-    one would specify sort parameters like this:
-        - name => sort alphabetic.
-        - age  => sort numeric.
-
-    you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
-    otherwise it will not know what `list_render` instance to look up.
-
-    <table>
-        <tr>
-            <td data-sort="alphabetic" data-sort-prop="name">
-            <td data-sort="numeric" data-sort-prop="age">
-        </tr>
-    </table>
-    <div class="progressive-table-wrapper" data-list-render="some-list">
         <table>
-            <tbody></tbody>
+            <tr>
+                <td data-sort="alphabetic" data-sort-prop="name">
+                <td data-sort="numeric" data-sort-prop="age">
+            </tr>
         </table>
-    </div>
-    */
-    $("body").on("click", "[data-sort]", function () {
+        <div class="progressive-table-wrapper" data-list-render="some-list">
+            <table>
+                <tbody></tbody>
+            </table>
+        </div>
+        */
         var $this = $(this);
         var sort_type = $this.data("sort");
         var prop_name = $this.data("sort-prop");
@@ -397,5 +384,13 @@ $(function () {
 
         $this.siblings(".active").removeClass("active");
         $this.addClass("active");
-    });
-});
+    };
+
+    return exports;
+}());
+
+if (typeof module !== 'undefined') {
+    module.exports = list_render;
+}
+
+window.list_render = list_render;

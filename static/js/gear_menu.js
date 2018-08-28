@@ -9,7 +9,7 @@ var exports = {};
 var scroll_positions = {};
 
 exports.initialize = function () {
-    i18n.ensure_i18n(admin.show_or_hide_menu_item);
+    admin.show_or_hide_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
@@ -67,3 +67,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = gear_menu;
 }
+window.gear_menu = gear_menu;
