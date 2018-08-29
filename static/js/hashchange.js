@@ -138,8 +138,8 @@ function do_hashchange(from_reload) {
     case "#keyboard-shortcuts":
         info_overlay.show("keyboard-shortcuts");
         break;
-    case "#markdown-help":
-        info_overlay.show("markdown-help");
+    case "#message-formatting":
+        info_overlay.show("message-formatting");
         break;
     case "#search-operators":
         info_overlay.show("search-operators");

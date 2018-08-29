@@ -108,7 +108,7 @@ run_test('basics', () => {
             return switcher;
         case "<div class='ind-tab' data-tab-key='keyboard-shortcuts' data-tab-id='0' tabindex='0'>translated: Keyboard shortcuts</div>":
             return make_tab(0);
-        case "<div class='ind-tab' data-tab-key='markdown-help' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
+        case "<div class='ind-tab' data-tab-key='message-formatting' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
             return make_tab(1);
         case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
             return make_tab(2);
@@ -124,7 +124,7 @@ run_test('basics', () => {
         selected: 0,
         values: [
             { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
-            { label: i18n.t("Message formatting"), key: "markdown-help" },
+            { label: i18n.t("Message formatting"), key: "message-formatting" },
             { label: i18n.t("Search operators"), key: "search-operators" },
         ],
         callback: function (name, key) {
@@ -152,18 +152,18 @@ run_test('basics', () => {
 
     callback_args = undefined;
 
-    widget.goto('markdown-help');
+    widget.goto('message-formatting');
     assert.equal(focused_tab, 1);
     assert.equal(tabs[0].class, 'first');
     assert.equal(tabs[1].class, 'middle selected');
     assert.equal(tabs[2].class, 'last');
-    assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
+    assert.deepEqual(callback_args, ['translated: Message formatting', 'message-formatting']);
     assert.equal(widget.value(), 'translated: Message formatting');
 
     // Go to same tab twice and make sure we get callback.
     callback_args = undefined;
-    widget.goto('markdown-help');
-    assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
+    widget.goto('message-formatting');
+    assert.deepEqual(callback_args, ['translated: Message formatting', 'message-formatting']);
 
     callback_args = undefined;
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);
