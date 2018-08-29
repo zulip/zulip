@@ -12,7 +12,7 @@
 git+https://github.com/zulip/django-bitfield@0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38#egg=django-bitfield==1.9.3+dev.0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip==0.5.3_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@256a17fa945dfe8ba99e90172804e7f68ba5146d#egg=zulip==0.5.3_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip_bots==0.5.3+git&subdirectory=zulip_bots
 alabaster==0.7.11
 apns2==0.4.1
