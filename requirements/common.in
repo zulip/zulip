@@ -172,7 +172,7 @@ pyoembed==0.1.2
 # these tightly, including fetching content not included in the normal
 # release tarballs (which is a bug).  So we need to pin it makes sense
 # to pin a version from Git rather than a release.
--e "git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip==0.5.3_git&subdirectory=zulip"
+-e "git+https://github.com/zulip/python-zulip-api.git@256a17fa945dfe8ba99e90172804e7f68ba5146d#egg=zulip==0.5.3_git&subdirectory=zulip"
 -e "git+https://github.com/zulip/python-zulip-api.git@0.5.3#egg=zulip_bots==0.5.3+git&subdirectory=zulip_bots"
 
 # Used for Hesiod lookups, etc.
