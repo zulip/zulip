@@ -24,6 +24,7 @@
               "setting_name" "enable_stream_push_notifications"
               "is_checked" page_params.enable_stream_push_notifications
               "label" settings_label.enable_stream_push_notifications
+              "push_notifications_tooltip" true
               "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
             {{partial "settings_checkbox"
@@ -67,14 +68,16 @@
             {{partial "settings_checkbox"
               "setting_name" "enable_offline_push_notifications"
               "is_checked" page_params.enable_offline_push_notifications
-              "label" settings_label.enable_offline_push_notifications}}
+              "label" settings_label.enable_offline_push_notifications
+              "push_notifications_tooltip" true}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_online_push_notifications"
               "is_checked" page_params.enable_online_push_notifications
               "is_parent_setting_enabled" page_params.enable_offline_push_notifications
               "is_nested" true
-              "label" settings_label.enable_online_push_notifications}}
+              "label" settings_label.enable_online_push_notifications
+              "push_notifications_tooltip" true}}
         </div>
 
         <div id="other_notifications">

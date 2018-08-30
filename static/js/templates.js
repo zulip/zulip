@@ -62,6 +62,27 @@ Handlebars.registerHelper('if_and', function () {
     return options.fn(this);
 });
 
+Handlebars.registerHelper('unless_a_not_b', function () {
+    // Execute the conditional code if at least one condition is false.
+    // Example usage:
+    //     {{#unless_a_not_b cond1 cond2}}
+    //         <p>a is false or b is true</p>
+    //     {{/unless_a_not_b}}
+    var options = arguments[arguments.length - 1];
+    if (arguments[0] && !arguments[1]) {
+        return options.inverse(this);
+    }
+    return options.fn(this);
+});
+
+Handlebars.registerHelper('if_not_a_or_b_and_not_c', function () {
+    var options = arguments[arguments.length - 1];
+    if (arguments[0] === false || arguments[1] === true && arguments[2] === false) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 Handlebars.registerHelper('if_or', function () {
     // Execute the conditional code if any of the conditions are true.
     // Example usage:
