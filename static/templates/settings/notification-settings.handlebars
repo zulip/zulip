@@ -66,13 +66,16 @@
 
             {{partial "settings_checkbox"
               "setting_name" "enable_offline_push_notifications"
-              "is_checked" page_params.enable_offline_push_notifications
-              "label" settings_label.enable_offline_push_notifications}}
+              "is_checked" page_params.realm_push_notifications_enabled
+              "is_parent_setting_enabled" page_params.realm_push_notifications_enabled
+              "is_nested" false
+              "label" settings_label.enable_offline_push_notifications
+              "hide_tooltip" false}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_online_push_notifications"
-              "is_checked" page_params.enable_online_push_notifications
-              "is_parent_setting_enabled" page_params.enable_offline_push_notifications
+              "is_checked" page_params.realm_push_notifications_enabled
+              "is_parent_setting_enabled" page_params.realm_push_notifications_enabled
               "is_nested" true
               "label" settings_label.enable_online_push_notifications}}
         </div>

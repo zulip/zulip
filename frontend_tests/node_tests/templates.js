@@ -1075,6 +1075,7 @@ run_test('settings_tab', () => {
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
         realm_name_in_notifications: true,
+        realm_push_notifications_enabled: true,
     };
     var page_params = $.extend(page_param_checkbox_options, {
         full_name: "Alyssa P. Hacker", password_auth_enabled: true,
