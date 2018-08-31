@@ -1,7 +1,7 @@
 import datetime
 import mock
 import os
-from typing import Any, Optional
+from typing import Any, Callable, Dict, List, Optional
 import ujson
 import re
 
@@ -47,8 +47,24 @@ def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: A
     customer.subscriptions.data[0].cancel_at_period_end = True
     return customer
 
+def mock_customer_with_account_balance(account_balance: int) -> Callable[[str, List[str]], stripe.Customer]:
+    def customer_with_account_balance(stripe_customer_id: str, expand: List[str]) -> stripe.Customer:
+        stripe_customer = mock_customer_with_subscription()
+        stripe_customer.account_balance = account_balance
+        return stripe_customer
+    return customer_with_account_balance
+
 def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
+
+def mock_invoice_preview_for_downgrade(total: int=-1000) -> Callable[[str, str, Dict[str, Any]], stripe.Invoice]:
+    def invoice_preview(customer: str, subscription: str,
+                        subscription_items: Dict[str, Any]) -> stripe.Invoice:
+        # TODO: Get a better fixture; this is not at all what these look like
+        stripe_invoice = stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
+        stripe_invoice.total = total
+        return stripe_invoice
+    return invoice_preview
 
 # A Kandra is a fictional character that can become anything. Used as a
 # wildcard when testing for equality.
@@ -381,6 +397,82 @@ class StripeTest(ZulipTestCase):
                 side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '25OFF')):
             attach_discount_to_realm(user, 25)
         mock_create_customer.assert_not_called()
+
+    @mock.patch("stripe.Subscription.delete")
+    @mock.patch("stripe.Customer.save")
+    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade())
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_downgrade(self, mock_retrieve_customer: mock.Mock, mock_upcoming_invoice: mock.Mock,
+                       mock_save_customer: mock.Mock, mock_delete_subscription: mock.Mock) -> None:
+        realm = get_realm('zulip')
+        realm.plan_type = Realm.PREMIUM
+        realm.save(update_fields=['plan_type'])
+        Customer.objects.create(
+            realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
+        self.login(self.example_email('iago'))
+        response = self.client_post("/json/billing/downgrade", {})
+        self.assert_json_success(response)
+
+        mock_delete_subscription.assert_called()
+        mock_save_customer.assert_called()
+        realm = get_realm('zulip')
+        self.assertEqual(realm.plan_type, Realm.LIMITED)
+
+    @mock.patch("stripe.Customer.save")
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
+    def test_downgrade_with_no_subscription(
+            self, mock_retrieve_customer: mock.Mock, mock_save_customer: mock.Mock) -> None:
+        realm = get_realm('zulip')
+        Customer.objects.create(
+            realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
+        self.login(self.example_email('iago'))
+        response = self.client_post("/json/billing/downgrade", {})
+        self.assert_json_error_contains(response, 'Please reload')
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
+        mock_save_customer.assert_not_called()
+
+    def test_downgrade_permissions(self) -> None:
+        self.login(self.example_email('hamlet'))
+        response = self.client_post("/json/billing/downgrade", {})
+        self.assert_json_error_contains(response, "Access denied")
+        # billing admin but not realm admin
+        user = self.example_user('hamlet')
+        user.is_billing_admin = True
+        user.save(update_fields=['is_billing_admin'])
+        with mock.patch('zilencer.views.process_downgrade') as mocked1:
+            self.client_post("/json/billing/downgrade", {})
+        mocked1.assert_called()
+        # realm admin but not billing admin
+        user = self.example_user('hamlet')
+        user.is_billing_admin = False
+        user.is_realm_admin = True
+        user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
+        with mock.patch('zilencer.views.process_downgrade') as mocked2:
+            self.client_post("/json/billing/downgrade", {})
+        mocked2.assert_called()
+
+    @mock.patch("stripe.Subscription.delete")
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
+    def test_downgrade_credits(self, mock_retrieve_customer: mock.Mock,
+                               mock_delete_subscription: mock.Mock) -> None:
+        user = self.example_user('iago')
+        self.login(user.email)
+        Customer.objects.create(
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
+        # Check that positive balance is forgiven
+        with mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(1000)):
+            with mock.patch.object(
+                    stripe.Customer, 'save', autospec=True,
+                    side_effect=lambda customer: self.assertEqual(customer.account_balance, 1234)):
+                response = self.client_post("/json/billing/downgrade", {})
+        self.assert_json_success(response)
+        # Check that negative balance is credited
+        with mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(-1000)):
+            with mock.patch.object(
+                    stripe.Customer, 'save', autospec=True,
+                    side_effect=lambda customer: self.assertEqual(customer.account_balance, 234)):
+                response = self.client_post("/json/billing/downgrade", {})
+        self.assert_json_success(response)
 
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)

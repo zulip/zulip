@@ -21,6 +21,9 @@ v1_api_and_json_patterns = [
 
     # Push signup doesn't use the REST API, since there's no auth.
     url('^remotes/server/register$', zilencer.views.register_remote_server),
+
+    url(r'^billing/downgrade$', rest_dispatch,
+        {'POST': 'zilencer.views.downgrade'}),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English

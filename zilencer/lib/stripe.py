@@ -126,6 +126,29 @@ def stripe_get_upcoming_invoice(stripe_customer_id: str) -> stripe.Invoice:
         print(''.join(['"upcoming_invoice": ', str(stripe_invoice), ',']))  # nocoverage
     return stripe_invoice
 
+@catch_stripe_errors
+def stripe_get_invoice_preview_for_downgrade(
+        stripe_customer_id: str, stripe_subscription_id: str,
+        stripe_subscriptionitem_id: str) -> stripe.Invoice:
+    return stripe.Invoice.upcoming(
+        customer=stripe_customer_id, subscription=stripe_subscription_id,
+        subscription_items=[{'id': stripe_subscriptionitem_id, 'quantity': 0}])
+
+def preview_invoice_total_for_downgrade(stripe_customer: stripe.Customer) -> int:
+    stripe_subscription = extract_current_subscription(stripe_customer)
+    if stripe_subscription is None:
+        # Most likely situation is: user A goes to billing page, user B
+        # cancels subscription, user A clicks on "downgrade" or something
+        # else that calls this function.
+        billing_logger.error("Trying to extract subscription item that doesn't exist, for Stripe customer %s"
+                             % (stripe_customer.id,))
+        raise BillingError('downgrade without subscription', BillingError.TRY_RELOADING)
+    for item in stripe_subscription['items']:
+        # There should only be one item, but we can't index into stripe_subscription['items']
+        stripe_subscriptionitem_id = item.id
+    return stripe_get_invoice_preview_for_downgrade(
+        stripe_customer.id, stripe_subscription.id, stripe_subscriptionitem_id).total
+
 # Return type should be Optional[stripe.Subscription], which throws a mypy error.
 # Will fix once we add type stubs for the Stripe API.
 def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
@@ -263,6 +286,22 @@ def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
         do_create_customer(user, coupon=coupon)
     else:
         do_replace_coupon(user, coupon)
+
+@catch_stripe_errors
+def process_downgrade(user: UserProfile) -> None:
+    stripe_customer = stripe_get_customer(
+        Customer.objects.filter(realm=user.realm).first().stripe_customer_id)
+    subscription_balance = preview_invoice_total_for_downgrade(stripe_customer)
+    # If subscription_balance > 0, they owe us money. This is likely due to
+    # people they added in the last day, so we can just forgive it.
+    # Stripe automatically forgives it when we delete the subscription, so nothing we need to do there.
+    if subscription_balance < 0:
+        stripe_customer.account_balance = stripe_customer.account_balance + subscription_balance
+    stripe_subscription = extract_current_subscription(stripe_customer)
+    # Wish these two could be transaction.atomic
+    stripe_subscription.delete()
+    stripe_customer.save()
+    do_change_plan_type(user, Realm.LIMITED)
 
 ## Process RealmAuditLog
 

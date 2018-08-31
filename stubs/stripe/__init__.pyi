@@ -2,7 +2,7 @@ import stripe.error as error
 import stripe.util as util
 from stripe.api_resources.list_object import SubscriptionListObject
 
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Union
 
 api_key: Optional[str]
 
@@ -13,6 +13,7 @@ class Customer:
     source: str
     subscriptions: SubscriptionListObject
     coupon: str
+    account_balance: int
 
     @staticmethod
     def retrieve(customer_id: str, expand: Optional[List[str]]) -> Customer:
@@ -29,9 +30,11 @@ class Customer:
 
 class Invoice:
     amount_due: int
+    total: int
 
     @staticmethod
-    def upcoming(customer: str) -> Invoice:
+    def upcoming(customer: str=..., subscription: str=...,
+                 subscription_items: List[Dict[str, Union[str, int]]]=...) -> Invoice:
         ...
 
 class Subscription:

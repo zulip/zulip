@@ -3029,7 +3029,9 @@ def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
 
     if plan_type == Realm.PREMIUM:
         realm.max_invites = Realm.MAX_INVITES_PREMIUM
-        realm.save(update_fields=['_max_invites'])
+    elif plan_type == Realm.LIMITED:
+        realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+    realm.save(update_fields=['_max_invites'])
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
