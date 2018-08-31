@@ -1,15 +1,4 @@
-{% extends "zerver/base.html" %}
-
-{# A base template for stuff like login, register, etc.
-
-    Not inside the app itself, but covered by the same structure,
-    hence the name.
-#}
-
-{% block porticocustomhead %}
-{{ render_bundle('translations') }}
-{{ render_bundle('portico') }}
-{% endblock %}
+{% extends "zerver/portico.html" %}
 
 {% block content %}
 <div class="portico-container help">
