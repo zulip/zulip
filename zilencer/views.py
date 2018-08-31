@@ -244,6 +244,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     subscription = extract_current_subscription(stripe_customer)
 
+    prorated_charges = stripe_customer.account_balance
     if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
         seat_count = subscription.quantity
@@ -251,12 +252,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
         upcoming_invoice = stripe_get_upcoming_invoice(customer.stripe_customer_id)
-        renewal_amount = subscription.plan.amount * subscription.quantity / 100.
-        prorated_credits = 0
-        prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
-        if prorated_charges < 0:
-            prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
-            prorated_charges = 0  # nocoverage
+        renewal_amount = subscription.plan.amount * subscription.quantity
+        prorated_charges += upcoming_invoice.total - renewal_amount
     # Can only get here by subscribing and then downgrading. We don't support downgrading
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
@@ -264,7 +261,10 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         seat_count = 0
         renewal_date = ''
         renewal_amount = 0
-        prorated_credits = 0
+
+    prorated_credits = 0
+    if prorated_charges < 0:  # nocoverage
+        prorated_credits = -prorated_charges
         prorated_charges = 0
 
     payment_method = None
@@ -275,10 +275,10 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'plan_name': plan_name,
         'seat_count': seat_count,
         'renewal_date': renewal_date,
-        'renewal_amount': '{:,.2f}'.format(renewal_amount),
+        'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
         'payment_method': payment_method,
-        'prorated_charges': '{:,.2f}'.format(prorated_charges),
-        'prorated_credits': '{:,.2f}'.format(prorated_credits),
+        'prorated_charges': '{:,.2f}'.format(prorated_charges / 100.),
+        'prorated_credits': '{:,.2f}'.format(prorated_credits / 100.),
     })
 
     return render(request, 'zilencer/billing.html', context=context)
