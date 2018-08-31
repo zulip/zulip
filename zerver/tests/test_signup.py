@@ -2879,6 +2879,14 @@ class DeactivateUserTest(ZulipTestCase):
         self.assert_json_success(result)
         do_change_is_admin(user, True)
 
+    def test_do_not_deactivate_final_user(self) -> None:
+        realm = get_realm('zulip')
+        UserProfile.objects.filter(realm=realm, is_realm_admin=False).update(is_active=False)
+        email = self.example_email("iago")
+        self.login(email)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_error_contains(result, "Cannot deactivate the only user. You")
+
 class TestLoginPage(ZulipTestCase):
     def test_login_page_wrong_subdomain_error(self) -> None:
         result = self.client_get("/login/?subdomain=1")

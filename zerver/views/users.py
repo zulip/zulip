@@ -46,8 +46,11 @@ def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-
     if user_profile.is_realm_admin and check_last_admin(user_profile):
+        if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
+            return json_error(_(
+                'Cannot deactivate the only user. '
+                'You can deactivate the whole organization though in Organization -> Organization profile.'))
         return json_error(_('Cannot deactivate the only organization administrator'))
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
