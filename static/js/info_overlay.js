@@ -31,7 +31,7 @@ exports.set_up_toggler = function () {
         child_wants_focus: true,
         values: [
             { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
-            { label: i18n.t("Message formatting"), key: "markdown-help" },
+            { label: i18n.t("Message formatting"), key: "message-formatting" },
             { label: i18n.t("Search operators"), key: "search-operators" },
         ],
         callback: function (name, key) {
@@ -46,7 +46,7 @@ exports.set_up_toggler = function () {
     elem.addClass('large');
 
     var modals = _.map(opts.values, function (item) {
-        var key = item.key; // e.g. markdown-help
+        var key = item.key; // e.g. message-formatting
         var modal = $('#' + key).find('.modal-body');
         return modal;
     });

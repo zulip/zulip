@@ -244,14 +244,14 @@ run_test('hash_interactions', () => {
         'info: keyboard-shortcuts',
     ]);
 
-    window.location.hash = '#markdown-help/whatever';
+    window.location.hash = '#message-formatting/whatever';
 
     helper.clear_events();
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
         'trigger event',
-        'info: markdown-help',
+        'info: message-formatting',
     ]);
 
     window.location.hash = '#search-operators/whatever';
