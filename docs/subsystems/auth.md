@@ -79,6 +79,6 @@ information on these modes, refer
   to their usernames (e.g. for `ldapuser1@zulip.com`, the password is
   `ldapuser1`).
 
-- `FAKE_LDAP_EXTRA_USERS` in `zproject/dev_settings.py` can be used to
-generate additional extra users to be added, in addition to the
-8 default LDAP users.
+- `FAKE_LDAP_NUM_USERS` in `zproject/dev_settings.py` can be used to
+specify the number of LDAP users to be added. The default value for
+the number of LDAP users is 8.
