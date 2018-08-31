@@ -91,7 +91,7 @@ exports.initialize = function initialize() {
         // for displaying emojis in emoji picker and composebox
         // typeahead. This logic ensures that we do sprite sheet
         // prefetching for that case.
-        emojiset = 'google';
+        emojiset = 'google-blob';
     }
     // Load the sprite image and octopus image in the background, so
     // that the browser will cache it for later use.

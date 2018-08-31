@@ -272,7 +272,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # GOOGLE_EMOJISET for picking which spritesheet's CSS to
         # include (and thus how to display emojis in the emoji picker
         # and composebox typeahead).
-        emojiset = UserProfile.GOOGLE_EMOJISET
+        emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'emojiset': emojiset,
