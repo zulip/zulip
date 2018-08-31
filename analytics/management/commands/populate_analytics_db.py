@@ -11,6 +11,7 @@ from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
     StreamCount, InstallationCount
+from zerver.lib.actions import do_change_is_admin
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Message, Client, \
     RealmAuditLog, Recipient
@@ -68,6 +69,7 @@ class Command(BaseCommand):
         realm = Realm.objects.create(
             string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
+        do_change_is_admin(shylock, True)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
