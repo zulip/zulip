@@ -3,7 +3,12 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 
+def change_emojiset_choice(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+    UserProfile = apps.get_model('zerver', 'UserProfile')
+    UserProfile.objects.filter(emojiset='google').update(emojiset='google-blob')
 
 class Migration(migrations.Migration):
 
@@ -17,4 +22,7 @@ class Migration(migrations.Migration):
             name='emojiset',
             field=models.CharField(choices=[('google', 'Google modern'), ('google-blob', 'Google classic'), ('twitter', 'Twitter'), ('text', 'Plain text')], default='google-blob', max_length=20),
         ),
+        migrations.RunPython(
+            change_emojiset_choice,
+            reverse_code=migrations.RunPython.noop),
     ]
