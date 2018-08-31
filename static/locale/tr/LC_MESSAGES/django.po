@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-09 00:53+0000\n"
-"PO-Revision-Date: 2018-08-09 00:54+0000\n"
+"POT-Creation-Date: 2018-08-31 23:04+0000\n"
+"PO-Revision-Date: 2018-08-31 23:04+0000\n"
 "Last-Translator: Oktay Altunergil\n"
 "Language-Team: Turkish (http://www.transifex.com/zulip/zulip/language/tr/)\n"
 "MIME-Version: 1.0\n"
@@ -622,7 +622,7 @@ msgid "Navigation"
 msgstr "Navigasyon"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
-#: templates/zerver/app/left_sidebar.html:58
+#: templates/zerver/app/left_sidebar.html:61
 msgid "Search streams"
 msgstr "Kanalları ara"
 
@@ -800,27 +800,27 @@ msgstr "Tüm iletiler"
 msgid "Starred messages"
 msgstr "Yıldızlı iletiler"
 
-#: templates/zerver/app/left_sidebar.html:41
+#: templates/zerver/app/left_sidebar.html:44
 msgid "Mentions"
 msgstr "Anmalar"
 
-#: templates/zerver/app/left_sidebar.html:49
+#: templates/zerver/app/left_sidebar.html:52
 msgid "Subscribed streams"
 msgstr "Abone olunan kanallar"
 
-#: templates/zerver/app/left_sidebar.html:49
+#: templates/zerver/app/left_sidebar.html:52
 msgid "STREAMS"
 msgstr "KANALLAR"
 
-#: templates/zerver/app/left_sidebar.html:50
+#: templates/zerver/app/left_sidebar.html:53
 msgid "Subscribe, add, or configure streams"
 msgstr "Kanallara abone ol, ekle veya yapılandır"
 
-#: templates/zerver/app/left_sidebar.html:51
+#: templates/zerver/app/left_sidebar.html:54
 msgid "Filter streams"
 msgstr "Kanalları süz"
 
-#: templates/zerver/app/left_sidebar.html:54
+#: templates/zerver/app/left_sidebar.html:57
 msgid "All streams"
 msgstr "Tüm kanallar"
 
@@ -1181,7 +1181,7 @@ msgstr "Organizasyon ayarları"
 msgid "Organization permissions"
 msgstr "Organizasyon izinleri"
 
-#: templates/zerver/app/settings_overlay.html:59 zerver/models.py:1477
+#: templates/zerver/app/settings_overlay.html:59 zerver/models.py:1496
 msgid "Custom emoji"
 msgstr "Özel emoji"
 
@@ -2239,7 +2239,7 @@ msgstr "İşlemi bitirmek için e-postanızı kontrol ediniz."
 msgid "(Or don't, but then why did you fill out this form?)"
 msgstr "(Ya da değil, ama neden bu formu doldurdunuz?)"
 
-#: templates/zerver/team.html:166
+#: templates/zerver/team.html:168
 msgid "Avatar"
 msgstr "Avatar"
 
@@ -2292,6 +2292,10 @@ msgid ""
 "page</a>."
 msgstr ""
 
+#: templates/zerver/why-zulip.html:18
+msgid "Why Zulip?"
+msgstr "Neden Zulip?"
+
 #: templates/zerver/zulipchat_migration_tos.html:1
 msgid "Welcome! We think you'll like it here."
 msgstr "Hoşgeldiniz! Burayı seveceğinizi düşünüyoruz."
@@ -2304,7 +2308,7 @@ msgid ""
 "    "
 msgstr "\n    <p>Organizasyonunuz zulip.com'dan zulipchat.com'a taşınmıştır.  Yeni isim, aynı güzel sohbet.  Sadece bir şey daha yapmanız gerekiyor.</p>\n    <h3>Zulip kullanım koşullarını kabul edin</h3>\n    "
 
-#: templates/zilencer/billing.html:22
+#: templates/zilencer/billing.html:28
 msgid "Billing"
 msgstr ""
 
@@ -2343,54 +2347,54 @@ msgid "This API is not available to incoming webhook bots."
 msgstr "Bu API gelen webhook botlarına müsait değildir."
 
 #: zerver/decorator.py:235
-msgid "Account not active"
-msgstr "Hesap faal değil"
-
-#: zerver/decorator.py:238
 msgid "This organization has been deactivated"
 msgstr "Bu organizasyon devre dışıdır"
 
-#: zerver/decorator.py:252
+#: zerver/decorator.py:237
+msgid "Account is deactivated"
+msgstr ""
+
+#: zerver/decorator.py:251
 msgid "Account is not associated with this subdomain"
 msgstr "Hesap bu alt alanla ilişkilendirilmedi"
 
-#: zerver/decorator.py:258 zerver/decorator.py:263
+#: zerver/decorator.py:257 zerver/decorator.py:262
 msgid "Invalid API key"
 msgstr "Geçersiz API anahtarı"
 
-#: zerver/decorator.py:436 zerver/decorator.py:498
+#: zerver/decorator.py:435 zerver/decorator.py:497
 msgid "This endpoint does not accept bot requests."
 msgstr "Bu endpoint bot istemlerini kabul etmiyor."
 
-#: zerver/decorator.py:478
+#: zerver/decorator.py:477
 msgid "Must be an server administrator"
 msgstr ""
 
-#: zerver/decorator.py:487 zerver/decorator.py:496
+#: zerver/decorator.py:486 zerver/decorator.py:495
 msgid "Not allowed for guest users"
 msgstr ""
 
-#: zerver/decorator.py:573
+#: zerver/decorator.py:572
 msgid "This endpoint requires HTTP basic authentication."
 msgstr "Bu endpoint için HTTP basic authentication gerekiyor."
 
-#: zerver/decorator.py:576
+#: zerver/decorator.py:575
 msgid "Invalid authorization header for basic auth"
 msgstr "Basic auth için geçersiz doğrulama başlığı"
 
-#: zerver/decorator.py:578
+#: zerver/decorator.py:577
 msgid "Missing authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:635
+#: zerver/decorator.py:634
 msgid "Not logged in"
 msgstr "Giriş yapılmamış"
 
-#: zerver/decorator.py:640
+#: zerver/decorator.py:639
 msgid "Webhook bots can only access webhooks"
 msgstr "Webhook botları yalnızca webhooklara ulaşabilirler"
 
-#: zerver/decorator.py:696
+#: zerver/decorator.py:695
 msgid "Access denied"
 msgstr "Erişim engellendi"
 
@@ -2428,7 +2432,7 @@ msgid ""
 "to register for accounts in this organization."
 msgstr "E-post adresiniz, {email}, bu organizasyonda hesap oluşturmak için izin verilmiş alan adlarından birine ait değil."
 
-#: zerver/forms.py:161 zerver/forms.py:174 zerver/lib/actions.py:4351
+#: zerver/forms.py:161 zerver/forms.py:174 zerver/lib/actions.py:4411
 msgid "Please use your real email address."
 msgstr "Lütfen gercek e-posta adresinizi kullanın."
 
@@ -2436,230 +2440,226 @@ msgstr "Lütfen gercek e-posta adresinizi kullanın."
 msgid "Email addresses containing + are not allowed in this organization."
 msgstr ""
 
-#: zerver/forms.py:318
+#: zerver/forms.py:324
 msgid "Token"
 msgstr ""
 
-#: zerver/forms.py:338
+#: zerver/forms.py:344
 msgid "Add up to 10 comma-separated email addresses."
 msgstr "Virgül ile ayrılmış en fazla 10 e-posta adresi ekleyin."
 
-#: zerver/forms.py:343
+#: zerver/forms.py:349
 msgid "Please enter at most 10 emails."
 msgstr "Lütfen en fazla 10 E-posta adresi giriniz."
 
-#: zerver/lib/actions.py:925
+#: zerver/lib/actions.py:909
 msgid "Unable to render message"
 msgstr "İleti sunumu gerçekleştirilemedi"
 
-#: zerver/lib/actions.py:1628
+#: zerver/lib/actions.py:1620
 msgid "Missing parameter: 'to' (recipient)"
 msgstr "Eksik parametre: 'to' (alıcı)"
 
-#: zerver/lib/actions.py:1630
+#: zerver/lib/actions.py:1622
 msgid "Invalid 'op' value (should be start or stop)"
 msgstr "Geçersiz 'op' değeri (start veya stop olmalı)"
 
-#: zerver/lib/actions.py:1641
+#: zerver/lib/actions.py:1633
 #, python-format
 msgid "Welcome to #**%s**."
 msgstr " #**%s** 'e hoşgeldiniz."
 
-#: zerver/lib/actions.py:1644
+#: zerver/lib/actions.py:1636
 msgid "Description"
 msgstr "Tanım"
 
-#: zerver/lib/actions.py:1652
+#: zerver/lib/actions.py:1644
 msgid "hello"
 msgstr "merhaba"
 
-#: zerver/lib/actions.py:1769 zerver/lib/actions.py:4679
-#: zerver/views/messages.py:1174 zerver/views/messages.py:1181
-#: zerver/views/messages.py:1204
+#: zerver/lib/actions.py:1761 zerver/lib/actions.py:4751
+#: zerver/views/messages.py:1170 zerver/views/messages.py:1177
+#: zerver/views/messages.py:1200
 msgid "User not authorized for this query"
 msgstr "Kullanıcı bu sorgu için yetkilendirilmemiş"
 
-#: zerver/lib/actions.py:1794
+#: zerver/lib/actions.py:1786
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr "'%s' artık Zulip kullanmıyor."
 
-#: zerver/lib/actions.py:1800
+#: zerver/lib/actions.py:1792
 msgid "You can't send private messages outside of your organization."
 msgstr "Özel iletilerinizi organizasyonunuzun dışına gönderemezsiniz."
 
-#: zerver/lib/actions.py:1928 zerver/lib/streams.py:107
+#: zerver/lib/actions.py:1920 zerver/lib/streams.py:107
 #: zerver/lib/streams.py:163
 #, python-format
 msgid "Invalid stream name '%s'"
 msgstr "Geçersiz kanal adı  '%s'"
 
-#: zerver/lib/actions.py:1930
+#: zerver/lib/actions.py:1922
 #, python-format
 msgid "Stream name too long (limit: %s characters)."
 msgstr "Kanal adı çok uzun (sınır: %s karakter)"
 
-#: zerver/lib/actions.py:1933
+#: zerver/lib/actions.py:1925
 #, python-format
 msgid "Stream name '%s' contains NULL (0x00) characters."
 msgstr "Kanal adı '%s' içinde NULL karakterler (0x00) bulunuyor."
 
-#: zerver/lib/actions.py:1937
+#: zerver/lib/actions.py:1929
 #, python-format
 msgid "Invalid default stream group name '%s'"
 msgstr "Geçersiz varsayılan kanal grubu adı '%s'"
 
-#: zerver/lib/actions.py:1939
+#: zerver/lib/actions.py:1931
 #, python-format
 msgid "Default stream group name too long (limit: %s characters)"
 msgstr "Varsayılan kanal grubu adı çok uzun (sınır: %s karakter)"
 
-#: zerver/lib/actions.py:1943
+#: zerver/lib/actions.py:1935
 #, python-format
 msgid "Default stream group name '%s' contains NULL (0x00) characters."
 msgstr "Varsayılan kanal grup adı '%s' NULL karekterler (0x00) içeriyor."
 
-#: zerver/lib/actions.py:2022
-msgid "Message must not be empty"
-msgstr "İleti boş olmamalıdır"
-
-#: zerver/lib/actions.py:2024
-msgid "Message must not contain null bytes"
-msgstr "İleti null byte içermemelidir"
-
-#: zerver/lib/actions.py:2053
+#: zerver/lib/actions.py:2009
 msgid "Only organization administrators can send to this stream."
 msgstr ""
 
-#: zerver/lib/actions.py:2076
+#: zerver/lib/actions.py:2038
 #, python-format
 msgid "Not authorized to send to stream '%s'"
 msgstr " '%s' kanalına ileti gönderme yetkisi yok"
 
-#: zerver/lib/actions.py:2082
+#: zerver/lib/actions.py:2054
+msgid "Message must not be empty"
+msgstr "İleti boş olmamalıdır"
+
+#: zerver/lib/actions.py:2056
+msgid "Message must not contain null bytes"
+msgstr "İleti null byte içermemelidir"
+
+#: zerver/lib/actions.py:2093
 msgid "Message must have recipients"
 msgstr "İletinin alıcıları olmalıdı"
 
-#: zerver/lib/actions.py:2094 zerver/lib/addressee.py:107
-#: zerver/lib/outgoing_webhook.py:145
-msgid "Invalid message type"
-msgstr "Geçersiz ileti türu"
-
-#: zerver/lib/actions.py:2121
+#: zerver/lib/actions.py:2134
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/lib/actions.py:2125
+#: zerver/lib/actions.py:2138
 #, python-format
 msgid "Widgets: %s"
 msgstr ""
 
-#: zerver/lib/actions.py:2312
+#: zerver/lib/actions.py:2325
 msgid "Subscriber data is not available for this stream"
 msgstr "Bu kanal için abone bilgisi mevcut değil"
 
-#: zerver/lib/actions.py:2319
+#: zerver/lib/actions.py:2332
 msgid "Unable to retrieve subscribers for private stream"
 msgstr ""
 
-#: zerver/lib/actions.py:3005 zerver/lib/users.py:153 zerver/lib/users.py:167
-msgid "Insufficient permission"
-msgstr "Yetersiz izin"
-
-#: zerver/lib/actions.py:3277
+#: zerver/lib/actions.py:3302
 #, python-format
 msgid "Invalid default stream group %s"
 msgstr "Geçersiz varsayılan kanal grubu %s"
 
-#: zerver/lib/actions.py:3333 zerver/lib/actions.py:3352
+#: zerver/lib/actions.py:3358 zerver/lib/actions.py:3377
 #, python-format
 msgid ""
 "'%(stream_name)s' is a default stream and cannot be added to "
 "'%(group_name)s'"
 msgstr "'%(stream_name)s' varsayılan bir kanal ve '%(group_name)s' e eklenemez"
 
-#: zerver/lib/actions.py:3340
+#: zerver/lib/actions.py:3365
 #, python-format
 msgid "Default stream group '%(group_name)s' already exists"
 msgstr "'%(group_name)s' adlı varsayılan kanal grubu zaten mevcut"
 
-#: zerver/lib/actions.py:3356
+#: zerver/lib/actions.py:3381
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is already present in default stream group "
 "'%(group_name)s'"
 msgstr "'%(stream_name)s' kanalı halihazırda varsayılan kanal grubu '%(group_name)s' içinde"
 
-#: zerver/lib/actions.py:3368
+#: zerver/lib/actions.py:3393
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is not present in default stream group "
 "'%(group_name)s'"
 msgstr "'%(stream_name)s' kanalı varsayılan kanal grubu '%(group_name)s' içinde değil"
 
-#: zerver/lib/actions.py:3378
+#: zerver/lib/actions.py:3403
 #, python-format
 msgid "This default stream group is already named '%s'"
 msgstr "Varsayılan kanal grubuna halihazırda '%s' ismi verilmiş"
 
-#: zerver/lib/actions.py:3381
+#: zerver/lib/actions.py:3406
 #, python-format
 msgid "Default stream group '%s' already exists"
 msgstr "Varsayılan kanal grubu '%s' halihazırda mevcut"
 
-#: zerver/lib/actions.py:3632 zerver/lib/actions.py:3634
-#: zerver/lib/message.py:495 zerver/lib/message.py:501
+#: zerver/lib/actions.py:3684
+#, python-format
+msgid "Invalid flag: '%s'"
+msgstr ""
+
+#: zerver/lib/actions.py:3693 zerver/lib/actions.py:3695
+#: zerver/lib/message.py:499 zerver/lib/message.py:505
 msgid "Invalid message(s)"
 msgstr "Geçersiz ileti(ler)"
 
-#: zerver/lib/actions.py:4344
+#: zerver/lib/actions.py:4404
 msgid "Invalid address."
 msgstr "Geçersiz adres."
 
-#: zerver/lib/actions.py:4349
+#: zerver/lib/actions.py:4409
 msgid "Outside your domain."
 msgstr "Sizin alanınız dışında."
 
-#: zerver/lib/actions.py:4353 zerver/views/users.py:443
+#: zerver/lib/actions.py:4413 zerver/views/users.py:443
 msgid "Email addresses containing + are not allowed."
 msgstr ""
 
-#: zerver/lib/actions.py:4358
+#: zerver/lib/actions.py:4418
 msgid "Already has an account."
 msgstr "Zaten bir hesabı var."
 
-#: zerver/lib/actions.py:4384
+#: zerver/lib/actions.py:4444
 #, python-format
 msgid ""
 "You do not have enough remaining invites. Please contact %s to have your "
 "limit raised. No invitations were sent."
 msgstr "Daha fazla davetiyeniz bulunmuyor. Lütfen davetiye sayısı sınırınızın yükseltilmesi için %s ile temas kurunuz. Herhangi bir davetiye gönderilmedi."
 
-#: zerver/lib/actions.py:4419
+#: zerver/lib/actions.py:4491
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr "Hesabınız bu organizasyon adına davetiye göndermek için çok yenidir. Bir organizasyon yöneticisi veya daha uzun süreli bir başka kullanıcıdan yardım alınız."
 
-#: zerver/lib/actions.py:4439
+#: zerver/lib/actions.py:4511
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "E-postaların bazıları doğrulanamadığından bu kisilere davetiye gönderilemedi. Geri kalan herkesin davetiyesi gönderildi!"
 
-#: zerver/lib/actions.py:4444
+#: zerver/lib/actions.py:4516
 msgid "We weren't able to invite anyone."
 msgstr "Kimseyi davet edemedik."
 
-#: zerver/lib/actions.py:4468
+#: zerver/lib/actions.py:4540
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "Bu adreslerden bazıları zaten Zülip'i kullanıyor, bu yüzden onlara bir davet göndermedik. Diğer herkese davetiye gönderildi!"
 
-#: zerver/lib/actions.py:4822
+#: zerver/lib/actions.py:4894
 msgid "Invalid order mapping."
 msgstr ""
 
-#: zerver/lib/actions.py:4862 zerver/lib/actions.py:4873
+#: zerver/lib/actions.py:4941 zerver/lib/actions.py:4952
 #, python-format
 msgid "User group '%s' already exists."
 msgstr "Kullanıcı grubu '%s' halihazırda mevcut."
@@ -2677,11 +2677,15 @@ msgstr "Birden çok kanala gönderilemiyor"
 msgid "Missing stream"
 msgstr "Kanal eksik"
 
+#: zerver/lib/addressee.py:107 zerver/lib/outgoing_webhook.py:147
+msgid "Invalid message type"
+msgstr "Geçersiz ileti türu"
+
 #: zerver/lib/addressee.py:112
 msgid "Missing topic"
 msgstr "Konu eksik"
 
-#: zerver/lib/addressee.py:115 zerver/views/messages.py:1349
+#: zerver/lib/addressee.py:115 zerver/views/messages.py:1345
 #: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:22
 msgid "Topic can't be empty"
 msgstr "Konu boş olamaz"
@@ -2756,7 +2760,7 @@ msgstr "Geçersiz emoji türü."
 msgid "Must be an organization administrator or emoji author"
 msgstr "Organizasyon yöneticisi veya emoji tasarımcısı olmalı"
 
-#: zerver/lib/emoji.py:112 zerver/models.py:476
+#: zerver/lib/emoji.py:112 zerver/models.py:486
 msgid "Invalid characters in emoji name"
 msgstr "Emoji adında geçersiz karakterler"
 
@@ -2764,11 +2768,11 @@ msgstr "Emoji adında geçersiz karakterler"
 msgid "Invalid type parameter"
 msgstr "Geçersiz tür parametresi"
 
-#: zerver/lib/events.py:660
+#: zerver/lib/events.py:671
 msgid "Could not allocate event queue"
 msgstr "Olay sırası atanamadı"
 
-#: zerver/lib/exceptions.py:151
+#: zerver/lib/exceptions.py:138
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
 msgstr "'{stream}' akışı  mevcut değil"
@@ -2872,25 +2876,25 @@ msgstr "İnteraktif botlar"
 msgid "Operator %s not supported."
 msgstr "%soperatörü desteklenmiyor."
 
-#: zerver/lib/notifications.py:507
+#: zerver/lib/notifications.py:509
 msgid "admins"
 msgstr ""
 
-#: zerver/lib/notifications.py:511
+#: zerver/lib/notifications.py:513
 msgid "members"
 msgstr ""
 
-#: zerver/lib/push_notifications.py:307
+#: zerver/lib/push_notifications.py:311
 msgid "Received 500 from push notification bouncer"
 msgstr "Received 500 from push notification bouncer"
 
-#: zerver/lib/push_notifications.py:315
+#: zerver/lib/push_notifications.py:319
 #, python-format
 msgid "Push notifications bouncer error: %s"
 msgstr "Push notifications bouncer error: %s"
 
 #. error
-#: zerver/lib/push_notifications.py:403 zilencer/views.py:128
+#: zerver/lib/push_notifications.py:407 zilencer/views.py:128
 msgid "Token does not exist"
 msgstr "Jeton (token) bulunamadı"
 
@@ -2994,6 +2998,10 @@ msgstr "Geçersiz kullanıcı No: %s"
 #: zerver/lib/users.py:149 zerver/lib/users.py:151
 msgid "No such bot"
 msgstr "Böyle bot yok"
+
+#: zerver/lib/users.py:153 zerver/lib/users.py:167
+msgid "Insufficient permission"
+msgstr "Yetersiz izin"
 
 #: zerver/lib/users.py:161 zerver/lib/users.py:163 zerver/views/presence.py:29
 msgid "No such user"
@@ -3128,54 +3136,54 @@ msgstr "CSRF Hatası: {reason}"
 msgid "API usage exceeded rate limit"
 msgstr "API kullanım sınırı aşıldı"
 
-#: zerver/models.py:1476
+#: zerver/models.py:1495
 msgid "Unicode emoji"
 msgstr "Unicode emoji"
 
-#: zerver/models.py:1478
+#: zerver/models.py:1497
 msgid "Zulip extra emoji"
 msgstr "Zulip ekstra emoji"
 
-#: zerver/models.py:2221
+#: zerver/models.py:2265
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2225
+#: zerver/models.py:2269
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2228
+#: zerver/models.py:2272
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2256
-msgid "Choice"
+#: zerver/models.py:2301
+msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:2259
-msgid "User"
+#: zerver/models.py:2304
+msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:2271
+#: zerver/models.py:2316
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2272
+#: zerver/models.py:2317
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2273
-msgid "Date"
-msgstr "Tarih"
-
-#: zerver/models.py:2274
-msgid "URL"
+#: zerver/models.py:2318
+msgid "Date picker"
 msgstr ""
 
-#: zerver/signals.py:82
+#: zerver/models.py:2319
+msgid "Link"
+msgstr ""
+
+#: zerver/signals.py:89
 msgid "Unknown IP address"
 msgstr "Bilinmeyen IP adresi"
 
@@ -3289,24 +3297,27 @@ msgstr "Alt alan gerekli"
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr "GOOGLE_CLIENT_ID ayarlanmamış"
 
-#: zerver/views/custom_profile_fields.py:42
-#: zerver/views/custom_profile_fields.py:89
+#: zerver/views/custom_profile_fields.py:37
 msgid "Name cannot be blank."
 msgstr "İsim boş bırakılamaz."
 
-#: zerver/views/custom_profile_fields.py:50
+#: zerver/views/custom_profile_fields.py:59
 msgid "Invalid field type."
 msgstr "Geçersiz alan türü."
 
-#: zerver/views/custom_profile_fields.py:66
-#: zerver/views/custom_profile_fields.py:109
+#: zerver/views/custom_profile_fields.py:63
+msgid "Field must have at least one choice."
+msgstr ""
+
+#: zerver/views/custom_profile_fields.py:79
+#: zerver/views/custom_profile_fields.py:117
 msgid "A field with that name already exists."
 msgstr "Bu adla bir alan halihazırda mevcut."
 
-#: zerver/views/custom_profile_fields.py:74
-#: zerver/views/custom_profile_fields.py:103
-#: zerver/views/custom_profile_fields.py:129
-#: zerver/views/custom_profile_fields.py:152
+#: zerver/views/custom_profile_fields.py:87
+#: zerver/views/custom_profile_fields.py:111
+#: zerver/views/custom_profile_fields.py:137
+#: zerver/views/custom_profile_fields.py:162
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr "Field id {id} bulunamadı."
@@ -3338,74 +3349,74 @@ msgstr "Böyle bir davetiye yok"
 msgid "Invalid stream id {}. No invites were sent."
 msgstr "Geçersiz kanal id {}. Herhangi bir davetiye gönderilmedi."
 
-#: zerver/views/messages.py:64
+#: zerver/views/messages.py:65
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
 msgstr "Geçersiz odaklama operatörü: {desc}"
 
-#: zerver/views/messages.py:700
+#: zerver/views/messages.py:696
 msgid "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."
 msgstr ""
 
-#: zerver/views/messages.py:1024
+#: zerver/views/messages.py:1020
 #, python-format
 msgid "No such topic '%s'"
 msgstr " '%s' konusu bulunamadı"
 
-#: zerver/views/messages.py:1134
+#: zerver/views/messages.py:1130
 msgid "Invalid time format"
 msgstr ""
 
-#: zerver/views/messages.py:1144
+#: zerver/views/messages.py:1140
 msgid "Time must be in the future."
 msgstr ""
 
-#: zerver/views/messages.py:1184
+#: zerver/views/messages.py:1180
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr "Bilinmeyen organizasyon '%s'"
 
-#: zerver/views/messages.py:1202
+#: zerver/views/messages.py:1198
 msgid "Missing sender"
 msgstr "Eksik gönderici"
 
-#: zerver/views/messages.py:1208
+#: zerver/views/messages.py:1204
 msgid "Invalid mirrored message"
 msgstr "Geçersiz kopyalanmış ileti"
 
-#: zerver/views/messages.py:1210
+#: zerver/views/messages.py:1206
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr "Bu organizasyonda Zephyr kopyalamaya (mirroring) izin verilmemektedir"
 
-#: zerver/views/messages.py:1216
+#: zerver/views/messages.py:1212
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr "Geciktirmeli ileti teslimi işleminde deliver_at eksik"
 
-#: zerver/views/messages.py:1283
+#: zerver/views/messages.py:1279
 msgid "Message edit history is disabled in this organization"
 msgstr "Bu organizasyonda ileti değiştirme tarihçesi tutulmuyor"
 
-#: zerver/views/messages.py:1303
+#: zerver/views/messages.py:1299
 msgid "Your organization has turned off message editing"
 msgstr "Organizasyonunuz ileti değiştirmeye izin vermiyor"
 
-#: zerver/views/messages.py:1321
+#: zerver/views/messages.py:1317
 msgid "You don't have permission to edit this message"
 msgstr "Bu mesajı düzenleme izniniz yok"
 
-#: zerver/views/messages.py:1332 zerver/views/messages.py:1342
+#: zerver/views/messages.py:1328 zerver/views/messages.py:1338
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/views/messages.py:1345
+#: zerver/views/messages.py:1341
 msgid "Nothing to change"
 msgstr "Değiştirilecek bir şey yok"
 
-#: zerver/views/messages.py:1401 zerver/views/messages.py:1404
+#: zerver/views/messages.py:1397 zerver/views/messages.py:1400
 msgid "You don't have permission to delete this message"
 msgstr ""
 
-#: zerver/views/messages.py:1412
+#: zerver/views/messages.py:1408
 msgid "The time limit for deleting this message has passed"
 msgstr ""
 
@@ -3414,8 +3425,8 @@ msgid "Topic already muted"
 msgstr "Konu halihazırda sessize alınmış"
 
 #: zerver/views/muting.py:28
-msgid "Topic is not there in the muted_topics list"
-msgstr "Konu sessize alınmış konular listesinde mevcut değil"
+msgid "Topic is not muted"
+msgstr ""
 
 #: zerver/views/pointer.py:21
 msgid "Invalid message ID"
@@ -3465,7 +3476,7 @@ msgstr "Tepki halihazırda mevcut."
 msgid "Reaction does not exist"
 msgstr "Tepki mevcut değil."
 
-#: zerver/views/realm.py:68 zerver/views/user_settings.py:129
+#: zerver/views/realm.py:68 zerver/views/user_settings.py:130
 #, python-format
 msgid "Invalid language '%s'"
 msgstr "Geçersiz dil '%s'"
@@ -3509,7 +3520,7 @@ msgid "You must upload exactly one file."
 msgstr "Bir ve yalnızca bir dosya yüklemelisiniz"
 
 #: zerver/views/realm_emoji.py:36 zerver/views/realm_icon.py:22
-#: zerver/views/upload.py:74 zerver/views/user_settings.py:185
+#: zerver/views/upload.py:74 zerver/views/user_settings.py:187
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
 msgstr "Yüklenen dosya izin verilen %s MB'den daha büyük"
@@ -3526,13 +3537,13 @@ msgstr "Süzgeç bulunamadı"
 msgid "You must upload exactly one icon."
 msgstr "Tam olarak bir simge yüklemeniz gerekir."
 
-#: zerver/views/registration.py:380
+#: zerver/views/registration.py:378
 msgid "The organization creation link has expired or is not valid."
 msgstr "Kuruluş oluşturma bağlantısı sona erdi veya geçerli değil."
 
-#: zerver/views/registration.py:385
-msgid "New organization creation disabled."
-msgstr "Yeni organizasyon oluşturma devre dışı bırakılmış."
+#: zerver/views/registration.py:383
+msgid "New organization creation disabled"
+msgstr ""
 
 #: zerver/views/streams.py:49
 #, python-brace-format
@@ -3551,7 +3562,7 @@ msgstr " \"op\" için seçilen değer geçersiz. Lütfen \"add\" veya \"remove\"
 msgid "Stream already has that name!"
 msgstr "Kanal halihazırda bu isme sahip!"
 
-#: zerver/views/streams.py:193 zerver/views/user_groups.py:69
+#: zerver/views/streams.py:193 zerver/views/user_groups.py:76
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Gerçekleştirilecek bir eylem yok. Lütfen \"ekle\" veya \"sil\" işlemlerinden en az birini seçiniz."
 
@@ -3561,33 +3572,36 @@ msgstr "Bu eylem için yönetici yetkisi gerekiyor"
 
 #: zerver/views/streams.py:265
 #, python-format
-msgid "Hi there! @**%s** just subscribed you to the stream #**%s**."
+msgid ""
+"Hi there! @**%(full_name)s** just subscribed you to the stream "
+"#**%(stream_name)s**."
 msgstr ""
 
-#: zerver/views/streams.py:268
+#: zerver/views/streams.py:269
 #, python-format
-msgid "Hi there! @**%s** just subscribed you to the following streams:"
+msgid ""
+"Hi there! @**%(full_name)s** just subscribed you to the following streams:"
 msgstr ""
 
-#: zerver/views/streams.py:308
+#: zerver/views/streams.py:309
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr "(%s) kanalına ulaşılamadı."
 
-#: zerver/views/streams.py:314
+#: zerver/views/streams.py:315
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
 
-#: zerver/views/streams.py:316
+#: zerver/views/streams.py:317
 msgid "Your account is too new to modify other users' subscriptions."
 msgstr ""
 
-#: zerver/views/streams.py:521
+#: zerver/views/streams.py:522
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr "Bilinmeyen abonelik özelliği:  %s"
 
-#: zerver/views/streams.py:525
+#: zerver/views/streams.py:526
 #, python-format
 msgid "Not subscribed to stream id %d"
 msgstr "%d kanalına abone değilsiniz"
@@ -3617,24 +3631,24 @@ msgstr "Yüklenecek bir dosya belirtmelisiniz"
 msgid "You may only upload one file at a time"
 msgstr "Aynı anda yalnızca bir dosya yükleyebilirsiniz"
 
-#: zerver/views/user_groups.py:38
+#: zerver/views/user_groups.py:45
 msgid "No new data supplied"
 msgstr "Verilen yeni veri yok"
 
-#: zerver/views/user_groups.py:45
+#: zerver/views/user_groups.py:52
 msgid "Name successfully updated."
 msgstr "Ad başarıyla güncellendi."
 
-#: zerver/views/user_groups.py:49
+#: zerver/views/user_groups.py:56
 msgid "Description successfully updated."
 msgstr "Açıklama başarıyla güncellendi."
 
-#: zerver/views/user_groups.py:90
+#: zerver/views/user_groups.py:97
 #, python-format
 msgid "User %s is already a member of this group"
 msgstr "%s kullanıcısı halihazırda bu grubun bir üyesi"
 
-#: zerver/views/user_groups.py:105
+#: zerver/views/user_groups.py:112
 #, python-format
 msgid "There is no member '%s' in this user group"
 msgstr "'%s' kullanıcı grubunda üye yok"
@@ -3659,17 +3673,17 @@ msgstr "Yanlış parola!"
 msgid "Check your email for a confirmation link. "
 msgstr "E-postanızda bir onay bağlantısı olup olmadığını kontrol edin."
 
-#: zerver/views/user_settings.py:133
+#: zerver/views/user_settings.py:134
 #, python-format
 msgid "Invalid timezone '%s'"
 msgstr "Geçersiz zaman dilimi '%s'"
 
-#: zerver/views/user_settings.py:137
+#: zerver/views/user_settings.py:138
 #, python-format
 msgid "Invalid emojiset '%s'"
 msgstr "Geçersiz emojiset '%s'"
 
-#: zerver/views/user_settings.py:181
+#: zerver/views/user_settings.py:183
 msgid "You must upload exactly one avatar."
 msgstr "Tam olarak bir avatar resmi yüklemelisin."
 
@@ -3772,13 +3786,17 @@ msgstr "Slack Mesajı"
 msgid "Unknown WordPress webhook action: "
 msgstr "Bilinmeyen WordPress webhook işlemi:"
 
-#: zilencer/lib/stripe.py:68
+#: zilencer/lib/stripe.py:71
 #, python-format
-msgid "Something went wrong. Please contact %s)"
+msgid "Something went wrong. Please contact %s."
 msgstr ""
 
-#: zilencer/lib/stripe.py:69
+#: zilencer/lib/stripe.py:72
 msgid "Something went wrong. Please reload the page."
+msgstr ""
+
+#: zilencer/lib/stripe.py:111
+msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 
 #. error
