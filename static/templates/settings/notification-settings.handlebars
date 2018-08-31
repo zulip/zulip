@@ -22,9 +22,11 @@
 
             {{partial "settings_checkbox"
               "setting_name" "enable_stream_push_notifications"
-              "is_checked" page_params.enable_stream_push_notifications
+              "is_parent_setting_enabled" page_params.realm_push_notifications_enabled
+              "is_nested" false
+              "is_checked" page_params.realm_push_notifications_enabled
               "label" settings_label.enable_stream_push_notifications
-              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+              "hide_tooltip" false}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_stream_email_notifications"

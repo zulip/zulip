@@ -12,4 +12,8 @@
         {{{label}}}
     </label>
     {{{end_content}}}
+    {{#is_false hide_tooltip}}
+    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.realm_push_notifications_enabled}}style="display:none"{{/if}}  data-toggle="tooltip"
+      title="{{t 'The server is not configured for push notifications' }}"></i>
+    {{/is_false}}
 </div>
