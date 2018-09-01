@@ -72,8 +72,7 @@ class ThumbnailTest(ZulipTestCase):
         # Test full size custom emoji image (for emoji link in messages case).
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_emoji_url))
         self.assertEqual(result.status_code, 302, result)
-        expected_part_url = get_file_path_urlpart(custom_emoji_url)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(custom_emoji_url, result.url)
 
         # Tests the /api/v1/thumbnail api endpoint with standard API auth
         self.logout()
@@ -215,8 +214,7 @@ class ThumbnailTest(ZulipTestCase):
         # Test full size custom emoji image (for emoji link in messages case).
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_emoji_url))
         self.assertEqual(result.status_code, 302, result)
-        expected_part_url = get_file_path_urlpart(custom_emoji_url)
-        self.assertIn(expected_part_url, result.url)
+        self.assertIn(custom_emoji_url, result.url)
 
         # Tests the /api/v1/thumbnail api endpoint with HTTP basic auth.
         self.logout()
