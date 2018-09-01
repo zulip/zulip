@@ -22,7 +22,7 @@ def user_uploads_or_external(url: str) -> bool:
     return url.startswith('http') or url.lstrip('/').startswith('user_uploads/')
 
 def get_source_type(url: str) -> str:
-    if not (url.startswith('/user_uploads/') or url.startswith('/user_avatars/')):
+    if not url.startswith('/user_uploads/'):
         return THUMBOR_EXTERNAL_TYPE
 
     local_uploads_dir = settings.LOCAL_UPLOADS_DIR
@@ -39,8 +39,7 @@ def generate_thumbnail_url(path: str, size: str='0x0') -> str:
             return get_camo_url(path)
         return path
 
-    # Ignore thumbnailing for static resources.
-    if path.startswith('/static/'):
+    if not user_uploads_or_external(path):
         return path
 
     source_type = get_source_type(path)
