@@ -2148,6 +2148,19 @@ input.new-organization-button {
 #devtools-page {
     max-width: 800px;
     margin: 0 auto;
+    padding-top: 100px;
+
+    p {
+        font-size: 1.2em;
+        margin: 0 0 20px;
+        line-height: 1.4;
+    }
+
+    ul li {
+        font-size: 1.2em;
+        line-height: 1.6;
+        margin-bottom: 5px;
+    }
 }
 
 .portico-page.error {
