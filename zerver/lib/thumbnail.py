@@ -18,6 +18,9 @@ from zerver.lib.camo import get_camo_url
 def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
+def user_uploads_or_external(url: str) -> bool:
+    return url.startswith('http') or url.lstrip('/').startswith('user_uploads/')
+
 def get_source_type(url: str) -> str:
     if not (url.startswith('/user_uploads/') or url.startswith('/user_avatars/')):
         return THUMBOR_EXTERNAL_TYPE
