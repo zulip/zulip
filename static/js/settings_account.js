@@ -447,11 +447,11 @@ exports.set_up = function () {
         }, 5000);
     });
 
-    $("#show_my_user_profile_modal").on('click', function (e) {
+    $("#show_my_user_profile_modal").on('click', function () {
         overlays.close_overlay("settings");
         var user = people.get_person_from_user_id(people.my_current_user_id());
         setTimeout(function () {
-            popovers.show_user_profile(e.target, user);
+            popovers.show_user_profile(user);
         }, 100);
     });
 
