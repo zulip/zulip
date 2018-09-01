@@ -16,12 +16,12 @@ class Customer:
     account_balance: int
 
     @staticmethod
-    def retrieve(customer_id: str, expand: Optional[List[str]]) -> Customer:
+    def retrieve(customer_id: str=..., expand: Optional[List[str]]=...) -> Customer:
         ...
 
     @staticmethod
-    def create(description: str, email: str, metadata: Dict[str, Any],
-               source: Optional[str], coupon: Optional[str]) -> Customer:
+    def create(description: str=..., email: str=..., metadata: Dict[str, Any]=...,
+               source: Optional[str]=..., coupon: Optional[str]=...) -> Customer:
         ...
 
     @staticmethod
@@ -46,8 +46,8 @@ class Subscription:
     quantity: int
 
     @staticmethod
-    def create(customer: str, billing: str, items: List[Dict[str, Any]],
-               prorate: bool, tax_percent: float) -> Subscription:
+    def create(customer: str=..., billing: str=..., items: List[Dict[str, Any]]=...,
+               prorate: bool=..., tax_percent: float=...) -> Subscription:
         ...
 
 class Card:
@@ -57,20 +57,20 @@ class Plan:
     id: str
 
     @staticmethod
-    def create(currency: str, interval: str, product: str, amount: int,
-               billing_scheme: str, nickname: str, usage_type: str) -> Plan:
+    def create(currency: str=..., interval: str=..., product: str=..., amount: int=...,
+               billing_scheme: str=..., nickname: str=..., usage_type: str=...) -> Plan:
         ...
 
 class Product:
     id: str
 
     @staticmethod
-    def create(name: str, type: str, statement_descriptor: str, unit_label: str) -> Product:
+    def create(name: str=..., type: str=..., statement_descriptor: str=..., unit_label: str=...) -> Product:
         ...
 
 class Coupon:
     id: str
 
     @staticmethod
-    def create(duration: str, name: str, percent_off: int) -> Coupon:
+    def create(duration: str=..., name: str=..., percent_off: int=...) -> Coupon:
         ...
