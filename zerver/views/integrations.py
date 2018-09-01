@@ -71,17 +71,9 @@ class MarkdownDirectoryView(ApiURLView):
         return self.path_template % (article,)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        article = kwargs["article"]
         context = super().get_context_data()  # type: Dict[str, Any]
-        path = self.get_path(article)
-        try:
-            loader.get_template(path)
-            context["article"] = path
-        except loader.TemplateDoesNotExist:
-            context["article"] = self.get_path("missing")
-
         # For disabling the "Back to home" on the homepage
-        context["not_index_page"] = not path.endswith("/index.md")
+        context["not_index_page"] = True
         if self.path_template == '/zerver/help/%s.md':
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
@@ -102,6 +94,20 @@ class MarkdownDirectoryView(ApiURLView):
         context["api_uri_context"] = api_uri_context
         return context
 
+class MarkdownDirectoryArticleView(MarkdownDirectoryView):
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data()  # type: Dict[str, Any]
+        article = kwargs["article"]
+        path = self.get_path(article)
+        try:
+            loader.get_template(path)
+            context["article"] = path
+        except loader.TemplateDoesNotExist:
+            context["article"] = self.get_path("missing")
+        context["not_index_page"] = not path.endswith("/index.md")
+        return context
+
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
         path = self.get_path(article)
         result = super().get(self, article=article)
@@ -114,6 +120,12 @@ class MarkdownDirectoryView(ApiURLView):
             result.status_code = 404
         return result
 
+class MarkdownDirectorySearchView(MarkdownDirectoryView):
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context['search_results'] = ["result1", "result2"]
+        return context
 
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))

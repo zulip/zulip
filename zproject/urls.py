@@ -8,7 +8,8 @@ import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, APIView, MarkdownDirectoryView
+from zerver.views.integrations import (IntegrationView, APIView, MarkdownDirectoryArticleView,
+                                       MarkdownDirectorySearchView)
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.webhooks import github_dispatcher
 
@@ -624,13 +625,20 @@ urls += [
 # Python Social Auth
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
+# User documentation search
+urls += [url(r'^help/search$',
+             MarkdownDirectorySearchView.as_view(template_name='zerver/documentation_search.html',
+                                                 path_template='/zerver/help/%s.md'))]
+urls += [url(r'^api/search$',
+             MarkdownDirectorySearchView.as_view(template_name='zerver/documentation_search.html',
+                                                 path_template='/zerver/api/%s.md'))]
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$',
-             MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
-                                           path_template='/zerver/help/%s.md'))]
+             MarkdownDirectoryArticleView.as_view(template_name='zerver/documentation_article.html',
+                                                  path_template='/zerver/help/%s.md'))]
 urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
-             MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
-                                           path_template='/zerver/api/%s.md'))]
+             MarkdownDirectoryArticleView.as_view(template_name='zerver/documentation_article.html',
+                                                  path_template='/zerver/api/%s.md'))]
 
 # Two Factor urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:

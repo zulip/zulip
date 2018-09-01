@@ -93,6 +93,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/api/add-subscriptions', 'authorization_errors_fatal')
         self._test('/api/create-user', 'zuliprc-admin')
         self._test('/api/remove-subscriptions', 'not_subscribed')
+        self._test('/api/search', 'Hello')
+        self._test('/help/search', 'Hello')
         self._test('/team/', 'industry veterans')
         self._test('/history/', 'Cambridge, Massachusetts')
         # Test the i18n version of one of these pages.
