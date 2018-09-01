@@ -180,8 +180,10 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
 
     def get_avatar(avatar_upload_list: List[str]) -> int:
         avatar_url = avatar_upload_list[0]
-        image_path = avatar_upload_list[1]
-        original_image_path = avatar_upload_list[2]
+
+        image_path = os.path.join(avatar_dir, avatar_original_list[1])
+        original_image_path = os.path.join(avatar_dir, avatar_original_list[2])
+
         response = requests.get(avatar_url + size_url_suffix, stream=True)
         with open(image_path, 'wb') as image_file:
             shutil.copyfileobj(response.raw, image_file)
@@ -197,8 +199,8 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
         avatar_url = avatar['path']
         avatar_original = dict(avatar)
 
-        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
-        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
+        image_path = ('%s.png' % (avatar_hash))
+        original_image_path = ('%s.original' % (avatar_hash))
 
         avatar_upload_list.append([avatar_url, image_path, original_image_path])
         # We don't add the size field here in avatar's records.json,
