@@ -177,7 +177,7 @@ def unsign_and_check_upgrade_parameters(user: UserProfile, plan_nickname: str,
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
-    if not settings.DEVELOPMENT:
+    if not settings.BILLING_ENABLED:
         return render(request, "404.html")
 
     user = request.user
