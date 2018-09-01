@@ -1780,6 +1780,19 @@ def get_user_including_cross_realm(email: str, realm: Optional[Realm]=None) -> U
 def get_system_bot(email: str) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
 
+def get_user_by_id_in_realm_including_cross_realm(
+        uid: int,
+        realm: Realm
+) -> UserProfile:
+    user_profile = get_user_profile_by_id(uid)
+    if user_profile.realm == realm:
+        return user_profile
+
+    if user_profile.email in settings.CROSS_REALM_BOT_EMAILS:
+        return user_profile
+
+    raise UserProfile.DoesNotExist()
+
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600*24*7)
 def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(

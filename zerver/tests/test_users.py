@@ -21,7 +21,8 @@ from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, UserHotspot, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     get_source_profile, Message, get_context_for_message, \
-    ScheduledEmail, check_valid_user_ids
+    ScheduledEmail, check_valid_user_ids, \
+    get_user_by_id_in_realm_including_cross_realm
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -520,6 +521,37 @@ class UserProfileTest(ZulipTestCase):
 
         hotspots = list(UserHotspot.objects.filter(user=iago).values_list('hotspot', flat=True))
         self.assertEqual(hotspots, hotspots_completed)
+
+    def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
+        realm = get_realm('zulip')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        bot = self.example_user('welcome_bot')
+
+        # Pass in the ID of a cross-realm bot and a valid realm
+        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
+            bot.id, realm)
+        self.assertEqual(cross_realm_bot.email, bot.email)
+        self.assertEqual(cross_realm_bot.id, bot.id)
+
+        # Pass in the ID of a cross-realm bot but with a invalid realm,
+        # note that the realm should be irrelevant here
+        cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(
+            bot.id, get_realm('invalid'))
+        self.assertEqual(cross_realm_bot.email, bot.email)
+        self.assertEqual(cross_realm_bot.id, bot.id)
+
+        # Pass in the ID of a non-cross-realm user with a realm
+        user_profile = get_user_by_id_in_realm_including_cross_realm(
+            othello.id, realm)
+        self.assertEqual(user_profile.email, othello.email)
+        self.assertEqual(user_profile.id, othello.id)
+
+        # If the realm doesn't match, or if the ID is not that of a
+        # cross-realm bot, UserProfile.DoesNotExist is raised
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_id_in_realm_including_cross_realm(
+                hamlet.id, get_realm('invalid'))
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
