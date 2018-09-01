@@ -299,8 +299,21 @@ def process_downgrade(user: UserProfile) -> None:
         stripe_customer.account_balance = stripe_customer.account_balance + subscription_balance
     stripe_subscription = extract_current_subscription(stripe_customer)
     # Wish these two could be transaction.atomic
-    stripe_subscription.delete()
+    stripe_subscription = stripe_subscription.delete()
     stripe_customer.save()
+    with transaction.atomic():
+        user.realm.has_seat_based_plan = False
+        user.realm.save(update_fields=['has_seat_based_plan'])
+        RealmAuditLog.objects.create(
+            realm=user.realm,
+            acting_user=user,
+            event_type=RealmAuditLog.STRIPE_PLAN_CHANGED,
+            event_time=timestamp_to_datetime(stripe_subscription.canceled_at),
+            extra_data=ujson.dumps({'plan': None, 'quantity': stripe_subscription.quantity}))
+    # Doing this last, since it results in user-visible confirmation (via
+    # product changes) that the downgrade succeeded.
+    # Keeping it out of the transaction.atomic block because it will
+    # eventually have a lot of stuff going on.
     do_change_plan_type(user, Realm.LIMITED)
 
 ## Process RealmAuditLog
@@ -384,6 +397,9 @@ def run_billing_processor_one_step(processor: BillingProcessor) -> bool:
         process_billing_log_entry(processor, log_row)
         return True
     except Exception as e:
+        # Possible errors include processing subscription quantity entries
+        # after downgrade, since the downgrade code doesn't check that
+        # billing processor is up to date
         billing_logger.error("Error on log_row.realm=%s, event_type=%s, log_row.id=%s, "
                              "processor.id=%s, processor.realm=%s" % (
                                  processor.log_row.realm.string_id, processor.log_row.event_type,

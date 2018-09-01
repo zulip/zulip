@@ -405,17 +405,25 @@ class StripeTest(ZulipTestCase):
     def test_downgrade(self, mock_retrieve_customer: mock.Mock, mock_upcoming_invoice: mock.Mock,
                        mock_save_customer: mock.Mock, mock_delete_subscription: mock.Mock) -> None:
         realm = get_realm('zulip')
+        realm.has_seat_based_plan = True
         realm.plan_type = Realm.PREMIUM
-        realm.save(update_fields=['plan_type'])
+        realm.save(update_fields=['has_seat_based_plan', 'plan_type'])
         Customer.objects.create(
             realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
-        self.login(self.example_email('iago'))
+        user = self.example_user('iago')
+        self.login(user.email)
         response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
 
         mock_delete_subscription.assert_called()
         mock_save_customer.assert_called()
         realm = get_realm('zulip')
+        self.assertFalse(realm.has_seat_based_plan)
+        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
+                                 .values_list('event_type', flat=True).order_by('id'))
+        # TODO: once we have proper mocks, test for event_time and extra_data in STRIPE_PLAN_CHANGED
+        self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_PLAN_CHANGED,
+                                             RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
         self.assertEqual(realm.plan_type, Realm.LIMITED)
 
     @mock.patch("stripe.Customer.save")
