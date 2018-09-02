@@ -22,12 +22,12 @@
                 {{! topic link }}
                 <a class="message_label_clickable narrows_by_topic"
                     href="{{topic_url}}"
-                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;{{/tr}}">
-                    {{#if use_match_properties}}
-                    {{{match_topic}}}
-                    {{else}}
-                    {{topic}}
-                    {{/if}}
+                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;{{/tr}}">
+                    {{~#if use_match_properties~}}
+                    {{~ match_subject ~}}
+                    {{~ else ~}}
+                    {{~ subject ~}}
+                    {{~/if~}}
                 </a>
                 <!-- The missing whitespace on the next line is a hack; ideally, would be user-select: none. -->
             </span><span class="recipient_bar_controls no-select">

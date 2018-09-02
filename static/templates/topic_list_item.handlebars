@@ -1,7 +1,7 @@
 <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
     <span class='topic-box'>
         <a href='{{url}}' class="topic-name" title="{{topic_name}}">
-            {{topic_name}}
+            {{~ topic_name ~}}
         </a>
         <div class="topic-unread-count {{#if is_zero}}zero_count{{/if}}">
             <div class="value">{{unread}}</div>

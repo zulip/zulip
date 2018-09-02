@@ -210,6 +210,7 @@ li.active-sub-filter {
 .topic-name {
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
+    white-space: pre;
 }
 
 .left-sidebar li a.topic-name:hover {

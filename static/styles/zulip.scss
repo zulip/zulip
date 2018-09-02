@@ -804,6 +804,10 @@ td.pointer {
     line-height: 17px;
 }
 
+.stream_topic .message_label_clickable {
+    white-space: pre;
+}
+
 .recipient_row_date {
     position: absolute;
     right: 0;
