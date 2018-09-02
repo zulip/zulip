@@ -1,4 +1,4 @@
-<div class="input-group {{#is_false unless}}control-label-disabled{{/is_false}}">
+<div class="input-group {{#if is_nested}}disableable{{/if}} {{#is_false unless}}control-label-disabled{{/is_false}}">
     <label class="checkbox">
         <input type="checkbox" class="inline-block" name="{{setting_name}}"
           id="{{prefix}}{{setting_name}}"
