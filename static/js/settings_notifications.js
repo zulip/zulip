@@ -90,6 +90,7 @@ exports.set_up = function () {
     $("#enable_offline_push_notifications").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "enable_online_push_notifications", true);
     });
+
 };
 
 exports.update_page = function () {
