@@ -47,20 +47,12 @@
               "is_checked" page_params.enable_desktop_notifications
               "label" settings_label.enable_desktop_notifications}}
 
-            <div class="input-group disableable {{#unless page_params.enable_desktop_notifications}}control-label-disabled{{/unless}}">
-                <label class="checkbox">
-                    <input type="checkbox" name="pm_content_in_desktop_notifications"
-                      id="pm_content_in_desktop_notifications"
-                      {{#unless page_params.enable_desktop_notifications}}disabled="disabled"{{/unless}}
-                      {{#if page_params.pm_content_in_desktop_notifications}}
-                      checked="checked"
-                      {{/if}} />
-                    <span></span>
-                </label>
-                <label for="pm_content_in_desktop_notifications" id="pm_content_in_desktop_notifications_label" class="inline-block">
-                    {{settings_label.pm_content_in_desktop_notifications}}
-                </label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "pm_content_in_desktop_notifications"
+              "is_checked" page_params.pm_content_in_desktop_notifications
+              "is_parent_setting_enabled" page_params.enable_desktop_notifications
+              "is_nested" true
+              "label" settings_label.pm_content_in_desktop_notifications}}
 
             {{partial "settings_checkbox"
               "setting_name" "enable_sounds"
@@ -77,19 +69,12 @@
               "is_checked" page_params.enable_offline_push_notifications
               "label" settings_label.enable_offline_push_notifications}}
 
-            <div class="input-group disableable {{#unless page_params.enable_offline_push_notifications}}control-label-disabled{{/unless}}">
-                <label class="checkbox">
-                    <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
-                      {{#unless page_params.enable_offline_push_notifications}}disabled="disabled"{{/unless}}
-                      {{#if page_params.enable_online_push_notifications}}
-                      checked="checked"
-                      {{/if}} />
-                    <span></span>
-                </label>
-                <label for="enable_online_push_notifications" id="enable_online_push_notifications_label" class="inline-block">
-                    {{settings_label.enable_online_push_notifications}}
-                </label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "enable_online_push_notifications"
+              "is_checked" page_params.enable_online_push_notifications
+              "is_parent_setting_enabled" page_params.enable_offline_push_notifications
+              "is_nested" true
+              "label" settings_label.enable_online_push_notifications}}
         </div>
 
         <div id="other_notifications">
