@@ -504,6 +504,21 @@ exports.set_up = function () {
         setTimeout(function () {
             popovers.show_user_profile(user);
         }, 100);
+
+        // If user opened the "preview profile" modal from user
+        // settings, then closing preview profile modal should
+        // send them back to the settings modal.
+        $('body').one('hidden.bs.modal', '#user-profile-modal', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            popovers.hide_user_profile();
+
+            setTimeout(function () {
+                if (!overlays.settings_open()) {
+                    overlays.open_settings();
+                }
+            }, 100);
+        });
     });
 
 
