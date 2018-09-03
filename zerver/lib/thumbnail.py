@@ -49,7 +49,7 @@ def generate_thumbnail_url(path: str, size: str='0x0') -> str:
         width=width,
         height=height,
         smart=True,
-        filters=['no_upscale()'],
+        filters=['no_upscale()', 'sharpen(2.2,0.8,false)'],
         image_url=image_url
     )
 
