@@ -54,7 +54,7 @@ class ThumbnailTest(ZulipTestCase):
         # Test thumbnail size.
         result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
-        expected_part_url = get_file_path_urlpart(uri, '0x100')
+        expected_part_url = get_file_path_urlpart(uri, '0x300')
         self.assertIn(expected_part_url, result.url)
 
         # Test custom emoji urls in Zulip messages.
@@ -105,7 +105,7 @@ class ThumbnailTest(ZulipTestCase):
             # Test thumbnail size.
             result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test api endpoint with standard API authentication.
@@ -114,7 +114,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.api_get(user_profile.email,
                                   "/thumbnail?url=%s&size=thumbnail" % (quoted_url,))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test api endpoint with legacy API authentication.
@@ -122,7 +122,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
                 quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test a second logged-in user; they should also be able to access it
@@ -130,7 +130,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
                 quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test with another user trying to access image using thumbor.
@@ -179,7 +179,7 @@ class ThumbnailTest(ZulipTestCase):
         # Test thumbnail size.
         result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
-        expected_part_url = get_file_path_urlpart(uri, '0x100')
+        expected_part_url = get_file_path_urlpart(uri, '0x300')
         self.assertIn(expected_part_url, result.url)
 
         # Test with a unicode filename.
@@ -333,12 +333,12 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(base, uri[:len(base)])
 
         # Test with size supplied as a query parameter.
-        # size=thumbnail should return a 0x100 sized image.
+        # size=thumbnail should return a 0x300 sized image.
         # size=full should return the original resolution image.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
-        expected_part_url = get_file_path_urlpart(uri, '0x100')
+        expected_part_url = get_file_path_urlpart(uri, '0x300')
         self.assertIn(expected_part_url, result.url)
 
         result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
