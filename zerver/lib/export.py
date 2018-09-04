@@ -120,6 +120,7 @@ ALL_ZULIP_TABLES = {
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
     'zerver_mutedtopic',
+    'zerver_embeddeddocarticle'
 }
 
 NON_EXPORTED_TABLES = {
@@ -187,6 +188,9 @@ NON_EXPORTED_TABLES = {
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',
     'zerver_submessage',
+
+    # This table is populated from the codebase, not user data
+    'zerver_embeddeddocarticle'
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }

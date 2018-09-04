@@ -2459,3 +2459,8 @@ class BotConfigData(models.Model):
 
     class Meta(object):
         unique_together = ("bot_profile", "key")
+
+class EmbeddedDocArticle(models.Model):
+    directory = models.TextField()  # type: str
+    title = models.TextField()  # type: str
+    body = models.TextField()  # type: str

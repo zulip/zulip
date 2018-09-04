@@ -10,12 +10,13 @@ from django.http import HttpResponse
 from typing import Any, Dict, List
 
 from zproject.settings import DEPLOY_ROOT
+from zerver.lib.embedded_docs import import_markdown_directory
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
-from zerver.models import Realm, get_realm
+from zerver.models import Realm, get_realm, EmbeddedDocArticle
 from zerver.views.integrations import (
     add_api_uri_context,
     add_integrations_context,
@@ -202,6 +203,15 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('<strong>Manage streams</strong>', str(result.content))
         self.assertNotIn('/#streams', str(result.content))
+
+class SearchTest(ZulipTestCase):
+    def test_load_directory(self) -> None:
+        import_markdown_directory('/zerver/help/')
+        result = EmbeddedDocArticle.objects.filter(title__iexact="change-the-time-format.md")
+        self.assertEqual(len(result), 1)
+
+    def test_search_loaded_directory(self) -> None:
+        pass
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
