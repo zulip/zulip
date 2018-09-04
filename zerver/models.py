@@ -2464,3 +2464,6 @@ class EmbeddedDocArticle(models.Model):
     directory = models.TextField()  # type: str
     title = models.TextField()  # type: str
     body = models.TextField()  # type: str
+
+    class Meta:
+        unique_together = ('directory', 'title')

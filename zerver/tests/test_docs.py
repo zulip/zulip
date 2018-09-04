@@ -206,7 +206,11 @@ class HelpTest(ZulipTestCase):
 
 class SearchTest(ZulipTestCase):
     def test_load_directory(self) -> None:
-        import_markdown_directory('/zerver/help/')
+        import_markdown_directory('/zerver/help')
+        result = EmbeddedDocArticle.objects.filter(title__iexact="change-the-time-format.md")
+        self.assertEqual(len(result), 1)
+        # Do it again, and make sure it doesn't duplicate.
+        import_markdown_directory('/zerver/help')
         result = EmbeddedDocArticle.objects.filter(title__iexact="change-the-time-format.md")
         self.assertEqual(len(result), 1)
 
