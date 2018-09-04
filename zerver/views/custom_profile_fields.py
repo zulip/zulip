@@ -24,6 +24,7 @@ from zerver.lib.validator import (check_dict, check_list, check_int,
 from zerver.models import (custom_profile_fields_for_realm, UserProfile, CustomProfileFieldValue,
                            CustomProfileField, custom_profile_fields_for_realm)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.users import validate_user_custom_profile_data
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
@@ -154,34 +155,8 @@ def update_user_custom_profile_data(
         user_profile: UserProfile,
         data: List[Dict[str, Union[int, str, List[int]]]]=REQ(validator=check_list(
             check_dict([('id', check_int)])))) -> HttpResponse:
-    for item in data:
-        field_id = item['id']
-        try:
-            field = CustomProfileField.objects.get(id=field_id)
-        except CustomProfileField.DoesNotExist:
-            return json_error(_('Field id {id} not found.').format(id=field_id))
 
-        validators = CustomProfileField.FIELD_VALIDATORS
-        field_type = field.field_type
-        var_name = '{}'.format(field.name)
-        value = item['value']
-        if field_type in validators:
-            validator = validators[field_type]
-            result = validator(var_name, value)
-        elif field_type == CustomProfileField.CHOICE:
-            choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
-            field_data = field.field_data
-            result = choice_field_validator(var_name, field_data, value)
-        elif field_type == CustomProfileField.USER:
-            user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-            result = user_field_validator(user_profile.realm.id, cast(List[int], value),
-                                          False)
-        else:
-            raise AssertionError("Invalid field type")
-
-        if result is not None:
-            return json_error(result)
-
+    validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
     return json_success()

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union, cast
 
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
@@ -9,7 +9,8 @@ from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_i
 from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm
+    get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm, \
+    CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -200,3 +201,34 @@ def get_api_key(user_profile: UserProfile) -> str:
 def get_all_api_keys(user_profile: UserProfile) -> List[str]:
     # Users can only have one API key for now
     return [user_profile.api_key]
+
+def validate_user_custom_profile_data(realm_id: int,
+                                      profile_data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
+    # This function validate all custom field values according to their field type.
+    for item in profile_data:
+        field_id = item['id']
+        try:
+            field = CustomProfileField.objects.get(id=field_id)
+        except CustomProfileField.DoesNotExist:
+            raise JsonableError(_('Field id {id} not found.').format(id=field_id))
+
+        validators = CustomProfileField.FIELD_VALIDATORS
+        field_type = field.field_type
+        var_name = '{}'.format(field.name)
+        value = item['value']
+        if field_type in validators:
+            validator = validators[field_type]
+            result = validator(var_name, value)
+        elif field_type == CustomProfileField.CHOICE:
+            choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
+            field_data = field.field_data
+            result = choice_field_validator(var_name, field_data, value)
+        elif field_type == CustomProfileField.USER:
+            user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
+            result = user_field_validator(realm_id, cast(List[int], value),
+                                          False)
+        else:
+            raise AssertionError("Invalid field type")
+
+        if result is not None:
+            raise JsonableError(result)
