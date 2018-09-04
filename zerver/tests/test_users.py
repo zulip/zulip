@@ -22,7 +22,7 @@ from zerver.models import UserProfile, Recipient, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     get_source_profile, Message, get_context_for_message, \
     ScheduledEmail, check_valid_user_ids, \
-    get_user_by_id_in_realm_including_cross_realm
+    get_user_by_id_in_realm_including_cross_realm, CustomProfileField
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -61,7 +61,6 @@ def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
 
 class PermissionTest(ZulipTestCase):
-
     def test_do_change_is_admin(self) -> None:
         """
         Ensures change_is_admin raises an AssertionError when invalid permissions
@@ -342,6 +341,78 @@ class PermissionTest(ZulipTestCase):
         person = events[1]['event']['person']
         self.assertEqual(person['email'], polonius.email)
         self.assertFalse(person['is_guest'])
+
+    def test_admin_user_can_change_profile_data(self) -> None:
+        realm = get_realm('zulip')
+        self.login(self.example_email("iago"))
+        new_profile_data = []
+        cordelia = self.example_user("cordelia")
+
+        # Test for all type of data
+        fields = {
+            'Phone number': 'short text data',
+            'Biography': 'long text data',
+            'Favorite food': 'short text data',
+            'Favorite editor': 'vim',
+            'Birthday': '1909-3-5',
+            'GitHub profile': 'https://github.com/ABC',
+            'Mentor': [cordelia.id],
+        }
+
+        for field_name in fields:
+            field = CustomProfileField.objects.get(name=field_name, realm=realm)
+            new_profile_data.append({
+                'id': field.id,
+                'value': fields[field_name],
+            })
+
+        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                   {'profile_data': ujson.dumps(new_profile_data)})
+        self.assert_json_success(result)
+
+        cordelia = self.example_user("cordelia")
+        for field_dict in cordelia.profile_data:
+            self.assertEqual(field_dict['value'], fields[field_dict['name']])  # type: ignore # Reason in comment
+            # Invalid index type for dict key, it must be str but field_dict values can be anything
+
+        # Test admin user cannot set invalid profile data
+        invalid_fields = [
+            ('Favorite editor', 'invalid choice', "'invalid choice' is not a valid choice for 'Favorite editor'."),
+            ('Birthday', '1909-34-55', "Birthday is not a date"),
+            ('GitHub profile', 'not url', "GitHub profile is not a URL"),
+            ('Mentor', "not list of user ids", "User IDs is not a list"),
+        ]
+
+        for field_name, field_value, error_msg in invalid_fields:
+            new_profile_data = []
+            field = CustomProfileField.objects.get(name=field_name, realm=realm)
+            new_profile_data.append({
+                'id': field.id,
+                'value': field_value,
+            })
+
+            result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                       {'profile_data': ujson.dumps(new_profile_data)})
+            self.assert_json_error(result, error_msg)
+
+    def test_non_admin_user_cannot_change_profile_data(self) -> None:
+        self.login(self.example_email("cordelia"))
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+
+        new_profile_data = []
+        field = CustomProfileField.objects.get(name="Biography", realm=realm)
+        new_profile_data.append({
+            'id': field.id,
+            'value': "New hamlet Biography",
+        })
+        result = self.client_patch('/json/users/{}'.format(hamlet.id),
+                                   {'profile_data': ujson.dumps(new_profile_data)})
+        self.assert_json_error(result, 'Insufficient permission')
+
+        result = self.client_patch('/json/users/{}'.format(self.example_user("cordelia").id),
+                                   {'profile_data': ujson.dumps(new_profile_data)})
+        self.assert_json_error(result, 'Insufficient permission')
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:

@@ -18,7 +18,8 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest
+    do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest, \
+    do_update_user_custom_profile_data
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -28,10 +29,11 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.users import get_api_key
-from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
+from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id, add_service, access_user_by_id, check_bot_name_available
+    access_bot_by_id, add_service, access_user_by_id, check_bot_name_available, \
+    validate_user_custom_profile_data
 from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user, Service, get_user_including_cross_realm, \
@@ -79,7 +81,10 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool),
-                        is_guest: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
+                        is_guest: Optional[bool]=REQ(default=None, validator=check_bool),
+                        profile_data: List[Dict[str, Union[int, str, List[int]]]]=
+                        REQ(default=None,
+                            validator=check_list(check_dict([('id', check_int)])))) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     # This condition is a bit complicated, because the user could
@@ -104,6 +109,10 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
         check_change_full_name(target, full_name, user_profile)
+
+    if profile_data is not None:
+        validate_user_custom_profile_data(target.realm.id, profile_data)
+        do_update_user_custom_profile_data(target, profile_data)
 
     return json_success()
 
