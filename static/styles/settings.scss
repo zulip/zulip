@@ -1463,7 +1463,8 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
-#account-settings {
+#account-settings,
+#user-info-form-modal {
     .user-role button {
         cursor: default;
     }
