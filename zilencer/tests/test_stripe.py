@@ -158,7 +158,7 @@ class StripeTest(ZulipTestCase):
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
             (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.STRIPE_CARD_ADDED, timestamp_to_datetime(self.customer_created)),
+            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(self.customer_created)),
             (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created)),
             (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
@@ -233,7 +233,7 @@ class StripeTest(ZulipTestCase):
                                               'requires_billing_update')[:5])[::-1]
         self.assertEqual(audit_log_entries, [
             (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created), False),
-            (RealmAuditLog.STRIPE_CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
+            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created), False),
             (RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, timestamp_to_datetime(self.subscription_created), True),
             (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra(), False),
@@ -262,7 +262,7 @@ class StripeTest(ZulipTestCase):
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
         self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
-                                             RealmAuditLog.STRIPE_CARD_ADDED])
+                                             RealmAuditLog.STRIPE_CARD_CHANGED])
         # Check that we did not update Realm
         realm = get_realm("zulip")
         self.assertFalse(realm.has_seat_based_plan)
@@ -288,8 +288,8 @@ class StripeTest(ZulipTestCase):
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
         self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
-                                             RealmAuditLog.STRIPE_CARD_ADDED,
-                                             RealmAuditLog.STRIPE_CARD_ADDED,
+                                             RealmAuditLog.STRIPE_CARD_CHANGED,
+                                             RealmAuditLog.STRIPE_CARD_CHANGED,
                                              RealmAuditLog.STRIPE_PLAN_CHANGED,
                                              RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
         # Check that we correctly updated Realm

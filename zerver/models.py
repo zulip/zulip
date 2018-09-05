@@ -2202,7 +2202,7 @@ class RealmAuditLog(models.Model):
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
     STRIPE_CUSTOMER_CREATED = 'stripe_customer_created'
-    STRIPE_CARD_ADDED = 'stripe_card_added'
+    STRIPE_CARD_CHANGED = 'stripe_card_changed'
     STRIPE_PLAN_CHANGED = 'stripe_plan_changed'
     STRIPE_PLAN_QUANTITY_RESET = 'stripe_plan_quantity_reset'
 

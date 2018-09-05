@@ -185,7 +185,7 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
             event_time=event_time)
         if stripe_token is not None:
             RealmAuditLog.objects.create(
-                realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+                realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
                 event_time=event_time)
         Customer.objects.create(realm=realm, stripe_customer_id=stripe_customer.id)
         user.is_billing_admin = True
@@ -201,7 +201,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
     # invoices: https://stripe.com/docs/api#update_customer
     updated_stripe_customer = stripe_customer.save()
     RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
         event_time=timezone_now())
     return updated_stripe_customer
 
