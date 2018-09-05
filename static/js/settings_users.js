@@ -369,6 +369,12 @@ exports.on_load_success = function (realm_people_data) {
         }
 
         var user_info_form_modal = open_user_info_form_modal(person);
+        var element = "#user-info-form-modal .custom-profile-field-form";
+        $(element).html("");
+        settings_account.append_custom_profile_fields(element, user_id);
+        settings_account.initialize_custom_date_type_fields(element);
+        var fields_user_pills = settings_account.intialize_custom_user_type_fields(element, user_id,
+                                                                                   true, false);
 
         var url;
         var data;
@@ -391,11 +397,33 @@ exports.on_load_success = function (realm_people_data) {
                     data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
+                var new_profile_data = [];
+                $("#user-info-form-modal .custom_user_field_value").each(function () {
+                    // Remove duplicate datepicker input element genearted flatpicker library
+                    if (!$(this).hasClass("form-control")) {
+                        new_profile_data.push({
+                            id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                            value: $(this).val(),
+                        });
+                    }
+                });
+                // Append user type field values also
+                _.each(fields_user_pills, function (field_pills, field_id) {
+                    if (field_pills) {
+                        var user_ids = user_pill.get_user_ids(field_pills);
+                        new_profile_data.push({
+                            id: parseInt(field_id, 10),
+                            value: user_ids,
+                        });
+                    }
+                });
+
                 url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                     is_admin: JSON.stringify(user_role_select_value === 'admin'),
                     is_guest: JSON.stringify(user_role_select_value === 'guest'),
+                    profile_data: JSON.stringify(new_profile_data),
                 };
             }
 
