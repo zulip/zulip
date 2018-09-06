@@ -18,9 +18,10 @@ os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
 
-def run(quiet):
+def build_for_prod_or_casper(quiet):
     # type: (bool) -> None
     """Builds for production, writing the output to disk"""
+
     webpack_args = ['node', 'node_modules/.bin/webpack-cli',
                     '--config', 'tools/webpack.config.ts', '-p',
                     '--env', 'production']
@@ -29,9 +30,13 @@ def run(quiet):
         print('Starting webpack compilation')
     subprocess.check_call(webpack_args)
 
-def run_watch(host, port, minify, disable_host_check):
+def build_for_dev_server(host, port, minify, disable_host_check):
     # type: (str, str, bool, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
+
+    # This is our most dynamic configuration, which we use for our
+    # dev server.  The key piece here is that we identify changes to
+    # files as devs make edits and serve new assets on the fly.
     webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
     webpack_args += [
         '--config',
@@ -50,9 +55,18 @@ def run_watch(host, port, minify, disable_host_check):
         webpack_args.append('--disable-host-check')
     subprocess.Popen(webpack_args)
 
-def run_test():
+def build_for_most_tests():
     # type: () -> None
     """Generates a stub asset stat file for django so backend test can render a page"""
+
+    # Tests like test-backend, test-api, and test-home-documentation use
+    # our "test" configuration.  The one exception is Casper, which uses
+    # our production configuration.
+    #
+    # It's not completely clear why we don't also use the same
+    # configuration for ALL tests, but figuring out the full history here
+    # was out of the scope of the effort here to add some comments and
+    # clean up names.
     entries = {}
     with open('tools/webpack.assets.json') as json_data:
         for entry in json.load(json_data).keys():
@@ -96,9 +110,11 @@ parser.add_argument('--disable-host-check',
                     help='Disable host check for webpack-dev-server')
 
 args = parser.parse_args()
-if args.test:
-    run_test()
+if "CASPER_TESTS" in os.environ:
+    build_for_prod_or_casper(args.quiet)
+elif args.test:
+    build_for_most_tests()
 elif args.watch:
-    run_watch(args.host, args.port, args.minify, args.disable_host_check)
+    build_for_dev_server(args.host, args.port, args.minify, args.disable_host_check)
 else:
-    run(args.quiet)
+    build_for_prod_or_casper(args.quiet)

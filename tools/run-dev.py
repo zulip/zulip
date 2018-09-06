@@ -162,7 +162,7 @@ if options.test:
     # system, so this model lets us run the casper tests with a running
     # development server.
     subprocess.check_call(['./tools/compile-handlebars-templates'])
-    subprocess.check_call(['./tools/webpack', '--quiet'])
+    subprocess.check_call(['./tools/webpack', '--quiet', '--test'])
 else:
     cmds.append(['./tools/compile-handlebars-templates', 'forever'])
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
