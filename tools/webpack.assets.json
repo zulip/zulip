@@ -16,6 +16,9 @@
         "./static/js/scroll_bar.js",
         "./static/templates/compiled.js"
     ],
+    "billing": [
+        "./static/styles/billing.scss"
+    ],
     "portico": [
         "./static/js/portico/header.js",
         "./static/styles/portico-styles.scss"
