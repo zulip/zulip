@@ -140,6 +140,12 @@
         }
     }
 
+    .stripe-button-el:disabled {
+        span {
+            background: none;
+        }
+    }
+
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;
