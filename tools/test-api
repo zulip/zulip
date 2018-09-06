@@ -26,7 +26,7 @@ from zerver.lib.actions import do_create_user
 from zerver.lib.users import get_api_key
 from zerver.models import get_user, get_realm
 
-usage = """test-js-with-casper [options]"""
+usage = """test-api [options]"""
 parser = argparse.ArgumentParser(usage)
 parser.add_argument('--force', dest='force',
                     action="store_true",
