@@ -22,17 +22,25 @@ class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
         self.last_update = None  # type: Optional[float]
+        self.data = None
 
     def reload(self) -> None:
         # Because importing yamole (and in turn, yaml) takes
         # significant time, and we only use python-yaml for our API
         # docs, importing it lazily here is a significant optimization
         # to `manage.py` startup.
+        #
+        # There is a bit of a race here...we may have two processes
+        # accessing this module level object and both trying to
+        # populate self.data at the same time.  Hopefully this will
+        # only cause some extra processing at startup and not data
+        # corruption.
         from yamole import YamoleParser
-        self.last_update = os.path.getmtime(self.path)
         with open(self.path) as f:
             yaml_parser = YamoleParser(f)
+
         self.data = yaml_parser.data
+        self.last_update = os.path.getmtime(self.path)
 
     def spec(self) -> Dict[str, Any]:
         """Reload the OpenAPI file if it has been modified after the last time
@@ -43,6 +51,7 @@ class OpenAPISpec():
         # earlier version than the current one
         if self.last_update != last_modified:
             self.reload()
+        assert(self.data)
         return self.data
 
 class SchemaError(Exception):
