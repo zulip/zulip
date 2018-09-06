@@ -17,6 +17,7 @@ import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
 import zerver.lib.bugdown.nested_code_blocks
+import zerver.lib.bugdown.tabbed_sections
 import zerver.lib.bugdown.help_settings_links
 import zerver.lib.bugdown.help_relative_links
 import zerver.lib.bugdown.help_emoticon_translations_table
@@ -109,6 +110,7 @@ def render_markdown_path(markdown_file_path: str,
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.api_code_examples.makeExtension(),
             zerver.lib.bugdown.nested_code_blocks.makeExtension(),
+            zerver.lib.bugdown.tabbed_sections.makeExtension(),
             zerver.lib.bugdown.help_settings_links.makeExtension(),
             zerver.lib.bugdown.help_relative_links.makeExtension(),
             zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),

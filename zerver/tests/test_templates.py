@@ -218,6 +218,65 @@ class TemplateTestCase(ZulipTestCase):
         self.assertEqual(content_sans_whitespace,
                          'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
+    def test_markdown_tabbed_sections_extension(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_tabbed_sections.md"
+        }
+        content = template.render(context)
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+
+        # Note that the expected HTML has a lot of stray <p> tags. This is a
+        # consequence of how the Markdown renderer converts newlines to HTML
+        # and how elements are delimited by newlines and so forth. However,
+        # stray <p> tags are usually matched with closing tags by HTML renderers
+        # so this doesn't affect the final rendered UI in any visible way.
+        expected_html = """
+header
+
+<h1 id="heading">Heading</h1>
+<p>
+  <div class="code-section" markdown="1">
+    <ul class="nav">
+      <li data-language="ios">iOS</li>
+      <li data-language="desktop-web">Desktop/Web</li>
+    </ul>
+    <div class="blocks">
+      <div data-language="ios" markdown="1"></p>
+        <p>iOS instructions</p>
+      <p></div>
+      <div data-language="desktop-web" markdown="1"></p>
+        <p>Desktop/browser instructions</p>
+      <p></div>
+    </div>
+  </div>
+</p>
+
+<h2 id="heading-2">Heading 2</h2>
+<p>
+  <div class="code-section" markdown="1">
+    <ul class="nav">
+      <li data-language="desktop-web">Desktop/Web</li>
+      <li data-language="android">Android</li>
+    </ul>
+    <div class="blocks">
+      <div data-language="desktop-web" markdown="1"></p>
+        <p>Desktop/browser instructions</p>
+      <p></div>
+      <div data-language="android" markdown="1"></p>
+        <p>Android instructions</p>
+      <p></div>
+    </div>
+  </div>
+</p>
+
+footer
+"""
+
+        expected_html_sans_whitespace = expected_html.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         expected_html_sans_whitespace)
+
     def test_encoded_unicode_decimals_in_markdown_template(self) -> None:
         template = get_template("tests/test_unicode_decimals.html")
         context = {'unescape_rendered_html': False}
