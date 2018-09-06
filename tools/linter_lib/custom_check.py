@@ -254,6 +254,7 @@ def build_custom_checkers(by_lang):
              # External modules that don't include channel.js
              'static/js/stats/',
              'static/js/portico/',
+             'static/js/billing/',
          ]),
          'good_lines': ['channel.get(...)'],
          'bad_lines': ['$.get()', '$.post()', '$.ajax()']},
@@ -700,6 +701,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/app/home.html',
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
+             'templates/zilencer/billing.html',
 
              # Miscellaneous violations to be cleaned up
              'static/templates/user_info_popover_title.handlebars',

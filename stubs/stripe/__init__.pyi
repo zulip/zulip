@@ -14,6 +14,7 @@ class Customer:
     subscriptions: SubscriptionListObject
     coupon: str
     account_balance: int
+    email: str
 
     @staticmethod
     def retrieve(customer_id: str=..., expand: Optional[List[str]]=...) -> Customer:

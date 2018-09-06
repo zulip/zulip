@@ -482,6 +482,45 @@ class StripeTest(ZulipTestCase):
                 response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
 
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_replace_payment_source(self, mock_retrieve_customer: mock.Mock) -> None:
+        user = self.example_user("iago")
+        self.login(user.email)
+        Customer.objects.create(realm=user.realm, stripe_customer_id=self.stripe_customer_id)
+        with mock.patch.object(stripe.Customer, 'save', autospec=True,
+                               side_effect=lambda customer: self.assertEqual(customer.source, "new_token")):
+            result = self.client_post("/json/billing/sources/change",
+                                      {'stripe_token': ujson.dumps("new_token")})
+        self.assert_json_success(result)
+        log_entry = RealmAuditLog.objects.order_by('-id').first()
+        self.assertEqual(user, log_entry.acting_user)
+        self.assertEqual(RealmAuditLog.STRIPE_CARD_CHANGED, log_entry.event_type)
+
+    def test_update_payment_source_permissions(self) -> None:
+        # This can be removed / merged with e.g. test_downgrade_permissions
+        # once we have a decorator that handles billing page permissions
+        self.login(self.example_email('hamlet'))
+        response = self.client_post("/json/billing/sources/change",
+                                    {'stripe_token': ujson.dumps('token')})
+        self.assert_json_error_contains(response, "Access denied")
+        # billing admin but not realm admin
+        user = self.example_user('hamlet')
+        user.is_billing_admin = True
+        user.save(update_fields=['is_billing_admin'])
+        with mock.patch('zilencer.views.do_replace_payment_source') as mocked1:
+            self.client_post("/json/billing/sources/change",
+                             {'stripe_token': ujson.dumps('token')})
+        mocked1.assert_called()
+        # realm admin but not billing admin
+        user = self.example_user('hamlet')
+        user.is_billing_admin = False
+        user.is_realm_admin = True
+        user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
+        with mock.patch('zilencer.views.do_replace_payment_source') as mocked2:
+            self.client_post("/json/billing/sources/change",
+                             {'stripe_token': ujson.dumps('token')})
+        mocked2.assert_called()
+
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)

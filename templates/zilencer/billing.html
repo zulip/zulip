@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ render_bundle('landing-page') }}
 {{ render_bundle('billing') }}
+<script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -18,13 +19,7 @@
 
         <div class="page-content">
             <div class="main">
-
-                {% if error_message %}
-                <div class="alert alert-danger" id="error-message-box">
-                    {{ error_message }}
-                </div>
-                {% endif %}
-
+                <div class="alert alert-danger" id="error-message-box"></div>
                 <h1>{{ _("Billing") }}</h1>
                 {% if admin_access %}
                 <ul class="nav nav-tabs" id="billing-tabs">
@@ -43,8 +38,29 @@
                         <p>You have <strong>${{ prorated_credits }}</strong> in prorated credits that will be automatically applied to your next bill.</p>
                         {% endif %}
                     </div>
-                    <div class="tab-pane" id="payment-method">
-                        <p>Your current payment method is <strong>{{ payment_method }}</strong>.</p>
+                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
+                        <div id="payment-section">
+                            <p>Your current payment method is <strong>{{ payment_method }}</strong>.</p>
+                            <button id="update-card-button" class="stripe-button-el">
+                                <span id="update-card-button-span">Update card</span>
+                            </button>
+                        </div>
+                        <div id="loading-section">
+                            <div class="updating-card-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                    <g transform="translate(-297.14285,-466.64792)">
+                                        <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                                        <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div id="updating_card_indicator"></div>
+                        </div>
+                        <div id="card-updated-message" class="alert alert-success">
+                            Card updated. The page will now reload.
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="loading">
                     </div>
                 </div>
 
@@ -52,12 +68,6 @@
                     <p>Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> for billing history or to make changes to your subscription.</p>
                 </div>
 
-                <script>
-                $('#billing-tabs a').click(function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                })
-                </script>
                 {% else %}
                 <p>
                     You must be an organization administrator or a

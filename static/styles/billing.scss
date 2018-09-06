@@ -149,5 +149,60 @@
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;
+        display: none;
+    }
+
+    #loading-section {
+        display: none;
+        min-height: 55px;
+    }
+
+    #card-updated-message {
+        text-align: center;
+        display: none;
+    }
+
+    #update-card-button-span {
+        display: block;
+        min-height: 30px;
+    }
+
+    .updating-card-logo {
+        margin: 0 auto;
+        width: 24px;
+        height: 24px;
+    }
+
+    .updating-card-logo svg circle {
+        fill: #444;
+        stroke: #444;
+    }
+
+    .updating-card-logo svg path {
+        fill: #fff;
+        stroke: #fff;
+    }
+
+    #updating_card_indicator {
+        margin: 10px auto;
+    }
+
+    #updating_card_indicator_box_container {
+        position: absolute;
+        left: 50%;
+    }
+
+    #updating_card_indicator_box {
+        position: relative;
+        left: -50%;
+        top: -41px;
+        z-index: 1;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+    }
+
+    .loading_indicator_text {
+        margin-left: -75px;
     }
 }

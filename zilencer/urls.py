@@ -24,6 +24,8 @@ v1_api_and_json_patterns = [
 
     url(r'^billing/downgrade$', rest_dispatch,
         {'POST': 'zilencer.views.downgrade'}),
+    url(r'billing/sources/change', rest_dispatch,
+        {'POST': 'zilencer.views.replace_payment_source'}),
 ]
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English

@@ -28,7 +28,7 @@ from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, stripe_get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
-    unsign_string, BillingError, process_downgrade
+    unsign_string, BillingError, process_downgrade, do_replace_payment_source
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -279,6 +279,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'payment_method': payment_method,
         'prorated_charges': '{:,.2f}'.format(prorated_charges / 100.),
         'prorated_credits': '{:,.2f}'.format(prorated_credits / 100.),
+        'publishable_key': STRIPE_PUBLISHABLE_KEY,
+        'stripe_email': stripe_customer.email,
     })
 
     return render(request, 'zilencer/billing.html', context=context)
@@ -288,6 +290,17 @@ def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:
         return json_error(_('Access denied'))
     try:
         process_downgrade(user)
+    except BillingError as e:
+        return json_error(e.message, data={'error_description': e.description})
+    return json_success()
+
+@has_request_variables
+def replace_payment_source(request: HttpRequest, user: UserProfile,
+                           stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
+    if not user.is_realm_admin and not user.is_billing_admin:
+        return json_error(_("Access denied"))
+    try:
+        do_replace_payment_source(user, stripe_token)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     return json_success()

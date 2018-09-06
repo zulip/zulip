@@ -17,6 +17,11 @@
         "./static/templates/compiled.js"
     ],
     "billing": [
+        "./static/js/billing/billing.js",
+        "./node_modules/handlebars/dist/handlebars.runtime.js",
+        "./static/js/templates.js",
+        "./static/templates/compiled.js",
+        "./static/js/loading.js",
         "./static/styles/billing.scss"
     ],
     "portico": [
