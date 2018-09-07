@@ -268,20 +268,7 @@ exports.show_user_profile = function (user) {
     ui.set_up_scrollbar($("#user-profile-modal #body"));
     $("#user-profile-modal").modal("show");
 
-    page_params.custom_profile_fields.forEach(function (field) {
-        var field_value_raw = people.get_custom_profile_data(user.user_id, field.id);
-
-        if (field.type === field_types.USER.id && field_value_raw) {
-            var field_value = JSON.parse(field_value_raw);
-            var pill_container = $('#user-profile-modal #content .pill-container[data-field-id="' + field.id + '"]');
-            var pills = user_pill.create_pills(pill_container);
-
-            field_value.forEach(function (user_id) {
-                var user = people.get_person_from_user_id(user_id);
-                user_pill.append_user(user, pills);
-            });
-        }
-    });
+    settings_account.intialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
 };
 
 function get_user_info_popover_items() {
