@@ -18,7 +18,8 @@ from django.utils.timezone import utc as timezone_utc
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, activity_change_requires_seat_update
+    do_activate_user, do_reactivate_user, activity_change_requires_seat_update, \
+    do_create_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
@@ -27,8 +28,10 @@ from corporate.lib.stripe import catch_stripe_errors, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT, do_create_customer, \
+    process_downgrade
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
+from corporate.views import payment_method_string
 import corporate.urls
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
@@ -636,6 +639,56 @@ class StripeTest(ZulipTestCase):
 
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
+
+    # This tests both the payment method string, and also is a very basic
+    # test that the various upgrade paths involving non-standard payment
+    # histories don't throw errors
+    @mock_stripe("Token.create", "Customer.retrieve", "Customer.create", "Subscription.create",
+                 "Subscription.delete")
+    def test_payment_method_string(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock,
+                                   mock1: Mock) -> None:
+        # If you signup with a card, we should show your card as the payment method
+        # Already tested in test_initial_upgrade
+
+        # If you pay by invoice, your payment method should be
+        # "Billed by invoice", even if you have a card on file
+        user = self.example_user("hamlet")
+        do_create_customer(user, stripe_create_token().id)
+        self.login(user.email)
+        self.client_post("/upgrade/", {'invoiced_seat_count': 123,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL})
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
+
+        # If you signup with a card and then downgrade, we still have your
+        # card on file, and should show it
+        realm = do_create_realm('realm1', 'realm1')
+        user = do_create_user('name@realm1.com', 'password', realm, 'name', 'name')
+        self.login(user.email, password='password', realm=realm)
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL}, HTTP_HOST=realm.host)
+        with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
+            process_downgrade(user)
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual('Card ending in 4242', payment_method_string(stripe_customer))
+
+        # If you signup via invoice, and then downgrade immediately, the
+        # default_source is in a weird intermediate state.
+        realm = do_create_realm('realm2', 'realm2')
+        user = do_create_user('name@realm2.com', 'password', realm, 'name', 'name')
+        self.login(user.email, password='password', realm=realm)
+        self.client_post("/upgrade/", {'invoiced_seat_count': 123,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL}, HTTP_HOST=realm.host)
+        with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
+            process_downgrade(user)
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertIn('Unknown payment method.', payment_method_string(stripe_customer))
 
     @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
     @patch("stripe.Customer.create", side_effect=mock_create_customer)

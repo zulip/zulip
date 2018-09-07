@@ -8,7 +8,7 @@ from typing import Optional, Any, Dict, List, Union
 api_key: Optional[str]
 
 class Customer:
-    default_source: Source
+    default_source: Union[Card, Source]
     created: int
     id: str
     source: str
@@ -77,6 +77,10 @@ class Subscription:
 
     @staticmethod
     def save(subscription: Subscription, idempotency_key: str=...) -> Subscription:
+        ...
+
+    @staticmethod
+    def delete(subscription: Subscription) -> Subscription:
         ...
 
 class Source:
