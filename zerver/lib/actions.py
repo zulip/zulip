@@ -126,7 +126,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
-    claim_attachment, delete_message_image, upload_emoji_image
+    claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image
 from zerver.lib.str_utils import NonBinaryStr
 from zerver.tornado.event_queue import request_event_queue, send_event
 from zerver.lib.types import ProfileFieldData
@@ -3021,6 +3021,9 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> No
                     person=payload),
                active_user_ids(user_profile.realm_id))
 
+def do_delete_avatar_image(user: UserProfile) -> None:
+    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR)
+    delete_avatar_image(user)
 
 def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> None:
     realm.icon_source = icon_source
