@@ -153,6 +153,20 @@
                                     <span>{{ _('Statistics') }}</span>
                                 </a>
                             </li>
+                            {% if show_plans %}
+                            <li role="presentation">
+                                <a href="/plans" role="menuitem">
+                                    <i class="fa fa-rocket" aria-hidden="true"></i> {{ _('Plans and pricing') }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if show_billing %}
+                            <li role="presentation">
+                                <a href="/billing" role="menuitem">
+                                    <i class="fa fa-credit-card" aria-hidden="true"></i> {{ _('Billing') }}
+                                </a>
+                            </li>
+                            {% endif %}
                             <li class="divider" role="presentation"></li>
                             {% if enable_feedback %}
                             <li role="presentation">

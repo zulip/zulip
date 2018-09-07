@@ -248,6 +248,17 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if user_profile.is_guest:
         show_invites = False
 
+    show_billing = False
+    show_plans = False
+    if settings.ZILENCER_ENABLED:
+        from zilencer.models import Customer
+        if user_profile.is_billing_admin or user_profile.is_realm_admin:
+            customer = Customer.objects.filter(realm=user_profile.realm).first()
+            if customer is not None and customer.has_billing_relationship:
+                show_billing = True
+        if user_profile.realm.plan_type == Realm.LIMITED:
+            show_plans = True
+
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
 
     page_params['translation_data'] = {}
@@ -273,6 +284,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'pipeline': settings.PIPELINE_ENABLED,
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
+                               'show_billing': show_billing,
+                               'show_plans': show_plans,
                                'is_admin': user_profile.is_realm_admin,
                                'is_guest': user_profile.is_guest,
                                'show_webathena': user_profile.realm.webathena_enabled,
