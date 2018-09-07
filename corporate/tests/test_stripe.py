@@ -26,7 +26,8 @@ from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
-    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer
+    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
 import corporate.urls
 
@@ -205,6 +206,13 @@ def mock_stripe(*mocked_function_names: str,
 class Kandra(object):
     def __eq__(self, other: Any) -> bool:
         return True
+
+def process_all_billing_log_entries() -> None:
+    assert not RealmAuditLog.objects.get(pk=1).requires_billing_update
+    processor = BillingProcessor.objects.create(
+        log_row=RealmAuditLog.objects.get(pk=1), realm=None, state=BillingProcessor.DONE)
+    while run_billing_processor_one_step(processor):
+        pass
 
 class StripeTest(ZulipTestCase):
     @mock_stripe("Product.create", "Plan.create", "Coupon.create", generate=False)
@@ -467,6 +475,30 @@ class StripeTest(ZulipTestCase):
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
 
+    def test_upgrade_with_insufficient_invoiced_seat_count(self) -> None:
+        self.login(self.example_email("hamlet"))
+        # Test invoicing for less than MIN_INVOICED_SEAT_COUNT
+        response = self.client_post("/upgrade/", {
+            'invoiced_seat_count': self.quantity,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': Plan.CLOUD_ANNUAL
+        })
+        self.assert_in_success_response(["Upgrade to Zulip Standard",
+                                         "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
+        self.assertEqual(response['error_description'], 'lowball seat count')
+        # Test invoicing for less than your user count
+        with patch("corporate.views.MIN_INVOICED_SEAT_COUNT", 3):
+            response = self.client_post("/upgrade/", {
+                'invoiced_seat_count': self.quantity - 1,
+                'signed_seat_count': self.signed_seat_count,
+                'salt': self.salt,
+                'plan': Plan.CLOUD_ANNUAL
+            })
+        self.assert_in_success_response(["Upgrade to Zulip Standard",
+                                         "at least %d users" % (self.quantity,)], response)
+        self.assertEqual(response['error_description'], 'lowball seat count')
+
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock1: Mock) -> None:
         self.login(self.example_email("hamlet"))
@@ -480,6 +512,69 @@ class StripeTest(ZulipTestCase):
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "Something went wrong. Please contact"], response)
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
+
+    @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
+                 "Customer.retrieve", "Invoice.list")
+    def test_upgrade_billing_by_invoice(self, mock5: Mock, mock4: Mock, mock3: Mock,
+                                        mock2: Mock, mock1: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        self.client_post("/upgrade/", {
+            'invoiced_seat_count': 123,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': Plan.CLOUD_ANNUAL})
+        process_all_billing_log_entries()
+
+        # Check that we correctly created a Customer in Stripe
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual(stripe_customer.email, user.email)
+        # It can take a second for Stripe to attach the source to the
+        # customer, and in particular it may not be attached at the time
+        # stripe_get_customer is called above, causing test flakes.
+        # So commenting the next line out, but leaving it here so future readers know what
+        # is supposed to happen here (e.g. the default_source is not None as it would be if
+        # we had not added a Subscription).
+        # self.assertEqual(stripe_customer.default_source.type, 'ach_credit_transfer')
+
+        # Check that we correctly created a Subscription in Stripe
+        stripe_subscription = extract_current_subscription(stripe_customer)
+        self.assertEqual(stripe_subscription.billing, 'send_invoice')
+        self.assertEqual(stripe_subscription.days_until_due, DEFAULT_INVOICE_DAYS_UNTIL_DUE)
+        self.assertEqual(stripe_subscription.plan.id,
+                         Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id)
+        self.assertEqual(stripe_subscription.quantity, get_seat_count(user.realm))
+        self.assertEqual(stripe_subscription.status, 'active')
+        # Check that we correctly created an initial Invoice in Stripe
+        for stripe_invoice in stripe.Invoice.list(customer=stripe_customer.id, limit=1):
+            self.assertTrue(stripe_invoice.auto_advance)
+            self.assertEqual(stripe_invoice.billing, 'send_invoice')
+            self.assertEqual(stripe_invoice.billing_reason, 'subscription_create')
+            # Transitions to 'open' after 1-2 hours
+            self.assertEqual(stripe_invoice.status, 'draft')
+            # Very important. Check that we're invoicing for 123, and not get_seat_count
+            self.assertEqual(stripe_invoice.amount_due, 8000*123)
+
+        # Check that we correctly updated Realm
+        realm = get_realm("zulip")
+        self.assertTrue(realm.has_seat_based_plan)
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
+        # Check that we created a Customer in Zulip
+        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=stripe_customer.id,
+                                                    realm=realm).count())
+        # Check that RealmAuditLog has STRIPE_PLAN_QUANTITY_RESET, and doesn't have STRIPE_CARD_CHANGED
+        audit_log_entries = list(RealmAuditLog.objects.order_by('-id')
+                                 .values_list('event_type', 'event_time',
+                                              'requires_billing_update')[:4])[::-1]
+        self.assertEqual(audit_log_entries, [
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(stripe_customer.created), False),
+            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(stripe_subscription.created), False),
+            (RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, timestamp_to_datetime(stripe_subscription.created), True),
+            (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra(), False),
+        ])
+        self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
+            {'quantity': self.quantity})
 
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     def test_redirect_for_billing_home(self, mock_customer_with_subscription: Mock) -> None:
@@ -532,7 +627,7 @@ class StripeTest(ZulipTestCase):
         with self.assertRaisesRegex(BillingError, 'subscribing with existing subscription'):
             do_subscribe_customer_to_plan(self.example_user("iago"),
                                           mock_customer_with_subscription(),
-                                          self.stripe_plan_id, self.quantity, 0)
+                                          self.stripe_plan_id, self.quantity, 0, True)
 
     def test_sign_string(self) -> None:
         string = "abc"

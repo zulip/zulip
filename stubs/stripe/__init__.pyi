@@ -8,7 +8,7 @@ from typing import Optional, Any, Dict, List, Union
 api_key: Optional[str]
 
 class Customer:
-    default_source: Card
+    default_source: Source
     created: int
     id: str
     source: str
@@ -43,7 +43,12 @@ class Customer:
 
 
 class Invoice:
+    auto_advance: bool
     amount_due: int
+    billing: str
+    billing_reason: str
+    default_source: Source
+    status: str
     total: int
 
     @staticmethod
@@ -51,16 +56,22 @@ class Invoice:
                  subscription_items: List[Dict[str, Union[str, int]]]=...) -> Invoice:
         ...
 
+    @staticmethod
+    def list(customer: str=..., limit: Optional[int]=...) -> List[Invoice]:
+        ...
+
 class Subscription:
     created: int
     status: str
     canceled_at: int
     cancel_at_period_end: bool
+    days_until_due: Optional[int]
     proration_date: int
     quantity: int
 
     @staticmethod
-    def create(customer: str=..., billing: str=..., items: List[Dict[str, Any]]=...,
+    def create(customer: str=..., billing: str=..., days_until_due: Optional[int]=...,
+               items: List[Dict[str, Any]]=...,
                prorate: bool=..., tax_percent: float=...) -> Subscription:
         ...
 
@@ -68,9 +79,15 @@ class Subscription:
     def save(subscription: Subscription, idempotency_key: str=...) -> Subscription:
         ...
 
+class Source:
+    id: str
+    object: str
+    type: str
+
 class Card:
     id: str
     last4: str
+    object: str
 
 class Plan:
     id: str
