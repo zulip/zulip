@@ -981,3 +981,36 @@ button.login-google-button {
     height: 45px;
     width: 325px;
 }
+
+#submit_button.inactive {
+    display: inline-block;
+    vertical-align: top;
+    padding: 15px 22px 13px 22px;
+    font-family: "Source Sans Pro";
+    font-size: 1.2rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: #fff;
+    background-color: azure;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#submit_button.active {
+    display: inline-block;
+    vertical-align: top;
+    padding: 15px 22px 13px 22px;
+    font-family: "Source Sans Pro";
+    font-size: 1.2rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: #fff;
+    background-color: #313e4e;
+    border: none;
+    transition: all 0.3s ease;
+}
+#submit_button.active :hover {
+    background-color: #515e5e;
+}

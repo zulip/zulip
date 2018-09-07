@@ -196,6 +196,7 @@ import "js/panels.js";
 import 'js/settings_ui.js';
 import 'js/search_pill.js';
 import 'js/search_pill_widget.js';
+import 'js/find_account.js';
 
 // Import Styles
 

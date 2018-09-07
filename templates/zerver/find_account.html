@@ -1,13 +1,11 @@
 {% extends "zerver/portico.html" %}
 
 {% block portico_content %}
-
 <div class="app find-account-page flex full-page">
     <div class="inline-block new-style">
         <div class="lead">
             <h1 class="get-started">{{ _("Find your Zulip accounts") }}…</h1>
         </div>
-
         <div class="app-main find-account-page-container white-box">
             {% if emails %}
             <div id="results">
@@ -36,11 +34,12 @@
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
+                        <script type="text/javascript" src="/static/js/find_account.js"></script>
                         <div class="inline-block relative">
-                            <input type="text" autofocus id="emails" name="emails" required />
+                            <input type="text" autofocus id="emails" required />
                             <label for="id_username">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <button id = "submit_button" type="submit" class="inactive">{{ _('Find accounts') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>
@@ -55,4 +54,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
