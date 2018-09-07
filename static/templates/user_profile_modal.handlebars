@@ -41,7 +41,7 @@
         <hr>
         <div id="content">
             {{#each profile_data}}
-            <div data-type="{{this.type}}" class="field-section">
+            <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
                 <div class="name">{{this.name}}</div>
                 {{#if this.is_user_field}}
                 <div class="pill-container not-editable" data-field-id="{{this.id}}">
