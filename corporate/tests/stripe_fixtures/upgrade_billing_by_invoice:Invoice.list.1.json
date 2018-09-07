@@ -13,15 +13,15 @@
       "charge": null,
       "currency": "usd",
       "customer": "cus_NORMALIZED0001",
-      "date": 1542524017,
+      "date": 1542837182,
       "default_source": null,
       "description": "",
       "discount": null,
-      "due_date": 1545116017,
+      "due_date": 1545429182,
       "ending_balance": null,
       "finalized_at": null,
       "hosted_invoice_url": null,
-      "id": "in_1DXkA1Gh0CmXqmnwNApgkOR1",
+      "id": "in_1DZ3d4Gh0CmXqmnwkmKtmDPG",
       "invoice_pdf": null,
       "lines": {
         "data": [
@@ -35,8 +35,8 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1574060017,
-              "start": 1542524017
+              "end": 1574373182,
+              "start": 1542837182
             },
             "plan": {
               "active": true,
@@ -69,7 +69,7 @@
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/in_1DXkA1Gh0CmXqmnwNApgkOR1/lines"
+        "url": "/v1/invoices/in_1DZ3d4Gh0CmXqmnwkmKtmDPG/lines"
       },
       "livemode": false,
       "metadata": {},
@@ -78,8 +78,8 @@
       "object": "invoice",
       "paid": false,
       "payment_intent": null,
-      "period_end": 1542524017,
-      "period_start": 1542524017,
+      "period_end": 1542837182,
+      "period_start": 1542837182,
       "receipt_number": null,
       "starting_balance": 0,
       "statement_descriptor": null,
@@ -89,7 +89,7 @@
       "tax": 0,
       "tax_percent": 0.0,
       "total": 984000,
-      "webhooks_delivered_at": 1542524017
+      "webhooks_delivered_at": 1542837182
     }
   ],
   "has_more": false,

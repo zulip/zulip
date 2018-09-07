@@ -514,9 +514,9 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
     @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
-                 "Customer.retrieve", "Invoice.list")
-    def test_upgrade_billing_by_invoice(self, mock5: Mock, mock4: Mock, mock3: Mock,
-                                        mock2: Mock, mock1: Mock) -> None:
+                 "Customer.retrieve", "Invoice.list", "Invoice.upcoming")
+    def test_upgrade_billing_by_invoice(self, mock6: Mock, mock5: Mock, mock4: Mock,
+                                        mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         self.client_post("/upgrade/", {
@@ -524,6 +524,12 @@ class StripeTest(ZulipTestCase):
             'signed_seat_count': self.signed_seat_count,
             'salt': self.salt,
             'plan': Plan.CLOUD_ANNUAL})
+        # Check /billing has the correct information
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        for substring in ['Your plan will renew on', '${:,}.00'.format(80 * 123,),
+                          'Billed by invoice']:
+            self.assert_in_response(substring, response)
         process_all_billing_log_entries()
 
         # Check that we correctly created a Customer in Stripe

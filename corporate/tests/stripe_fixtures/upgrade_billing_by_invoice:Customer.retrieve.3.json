@@ -2,7 +2,51 @@
   "account_balance": 0,
   "created": 1542837181,
   "currency": "usd",
-  "default_source": null,
+  "default_source": {
+    "ach_credit_transfer": {
+      "account_number": "test_27e69f415194",
+      "bank_name": "TEST BANK",
+      "fingerprint": "NORMALIZED000001",
+      "refund_account_holder_name": null,
+      "refund_account_holder_type": null,
+      "refund_account_number": null,
+      "refund_routing_number": null,
+      "routing_number": "110000000",
+      "swift_code": "TSTEZ122"
+    },
+    "amount": null,
+    "client_secret": "src_client_secret_E15oTZpSccloFoaMbalCbbJH",
+    "created": 1542837186,
+    "currency": "usd",
+    "customer": "cus_NORMALIZED0001",
+    "flow": "receiver",
+    "id": "src_1DZ3d8Gh0CmXqmnwDkYEYJqN",
+    "livemode": false,
+    "metadata": {},
+    "object": "source",
+    "owner": {
+      "address": null,
+      "email": "amount_0@stripe.com",
+      "name": null,
+      "phone": null,
+      "verified_address": null,
+      "verified_email": null,
+      "verified_name": null,
+      "verified_phone": null
+    },
+    "receiver": {
+      "address": "110000000-test_27e69f415194",
+      "amount_charged": 0,
+      "amount_received": 0,
+      "amount_returned": 0,
+      "refund_attributes_method": "email",
+      "refund_attributes_status": "missing"
+    },
+    "statement_descriptor": null,
+    "status": "pending",
+    "type": "ach_credit_transfer",
+    "usage": "reusable"
+  },
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
@@ -17,10 +61,56 @@
   "object": "customer",
   "shipping": null,
   "sources": {
-    "data": [],
+    "data": [
+      {
+        "ach_credit_transfer": {
+          "account_number": "test_27e69f415194",
+          "bank_name": "TEST BANK",
+          "fingerprint": "NORMALIZED000001",
+          "refund_account_holder_name": null,
+          "refund_account_holder_type": null,
+          "refund_account_number": null,
+          "refund_routing_number": null,
+          "routing_number": "110000000",
+          "swift_code": "TSTEZ122"
+        },
+        "amount": null,
+        "client_secret": "src_client_secret_E15oTZpSccloFoaMbalCbbJH",
+        "created": 1542837186,
+        "currency": "usd",
+        "customer": "cus_NORMALIZED0001",
+        "flow": "receiver",
+        "id": "src_1DZ3d8Gh0CmXqmnwDkYEYJqN",
+        "livemode": false,
+        "metadata": {},
+        "object": "source",
+        "owner": {
+          "address": null,
+          "email": "amount_0@stripe.com",
+          "name": null,
+          "phone": null,
+          "verified_address": null,
+          "verified_email": null,
+          "verified_name": null,
+          "verified_phone": null
+        },
+        "receiver": {
+          "address": "110000000-test_27e69f415194",
+          "amount_charged": 0,
+          "amount_received": 0,
+          "amount_returned": 0,
+          "refund_attributes_method": "email",
+          "refund_attributes_status": "missing"
+        },
+        "statement_descriptor": null,
+        "status": "pending",
+        "type": "ach_credit_transfer",
+        "usage": "reusable"
+      }
+    ],
     "has_more": false,
     "object": "list",
-    "total_count": 0,
+    "total_count": 1,
     "url": "/v1/customers/cus_NORMALIZED0001/sources"
   },
   "subscriptions": {
@@ -68,7 +158,7 @@
                 "trial_period_days": null,
                 "usage_type": "licensed"
               },
-              "quantity": 123,
+              "quantity": 8,
               "subscription": "sub_NORMALIZED0001"
             }
           ],
@@ -101,8 +191,8 @@
           "trial_period_days": null,
           "usage_type": "licensed"
         },
-        "quantity": 123,
-        "start": 1542837182,
+        "quantity": 8,
+        "start": 1542837187,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 import logging
 
 from django.core import signing
@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _, ugettext as err_
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.conf import settings
+import stripe
 
 from zerver.decorator import zulip_login_required, require_billing_access
 from zerver.lib.request import REQ, has_request_variables
@@ -39,6 +40,23 @@ def unsign_and_check_upgrade_parameters(user: UserProfile, plan_nickname: str,
                                % (user.id, user.realm.id, user.realm.string_id))
         raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
     return plan, seat_count
+
+def payment_method_string(stripe_customer: stripe.Customer) -> str:
+    subscription = extract_current_subscription(stripe_customer)
+    if subscription is not None:
+        if subscription.billing == "charge_automatically":
+            stripe_source = stripe_customer.default_source
+            if stripe_source is not None:
+                if stripe_source.object == "card":
+                    return "Card ending in %(last4)s" % {'last4': cast(stripe.Card, stripe_source).last4}
+                if stripe_source.object == "bank_account":  # nocoverage
+                    return "Bank account ending in %(last4)s" % \
+                           {'last4': cast(stripe.BankAccount, stripe_source).last4}
+
+        if subscription.billing == "send_invoice":
+            return "Billed by invoice"
+
+    return ""  # nocoverage
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
@@ -136,20 +154,12 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_date = ''
         renewal_amount = 0
 
-    payment_method = None
-    stripe_source = stripe_customer.default_source
-    if stripe_source is not None:
-        if stripe_source.object == 'card':
-            # To fix mypy error, set Customer.default_source: Union[Source, Card] in stubs and debug
-            payment_method = "Card ending in %(last4)s" % \
-                             {'last4': stripe_source.last4}  # type: ignore # see above
-
     context.update({
         'plan_name': plan_name,
         'seat_count': seat_count,
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
-        'payment_method': payment_method,
+        'payment_method': payment_method_string(stripe_customer),
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'stripe_email': stripe_customer.email,
     })

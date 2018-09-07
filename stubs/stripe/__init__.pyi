@@ -8,7 +8,7 @@ from typing import Optional, Any, Dict, List, Union
 api_key: Optional[str]
 
 class Customer:
-    default_source: Source
+    default_source: Union[Card, Source, BankAccount]
     created: int
     id: str
     source: str
@@ -85,6 +85,11 @@ class Source:
     type: str
 
 class Card:
+    id: str
+    last4: str
+    object: str
+
+class BankAccount:
     id: str
     last4: str
     object: str
