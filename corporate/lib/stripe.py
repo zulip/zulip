@@ -270,6 +270,8 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int,
     # stripe if we can
     elif stripe_token is not None:
         stripe_customer = do_replace_payment_source(user, stripe_token)
+    else:
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     do_subscribe_customer_to_plan(
         user=user,
         stripe_customer=stripe_customer,
@@ -301,7 +303,7 @@ def process_downgrade(user: UserProfile) -> None:
         stripe_customer.account_balance = stripe_customer.account_balance + subscription_balance
     stripe_subscription = extract_current_subscription(stripe_customer)
     # Wish these two could be transaction.atomic
-    stripe_subscription = stripe_subscription.delete()
+    stripe_subscription = stripe.Subscription.delete(stripe_subscription)
     stripe.Customer.save(stripe_customer)
     with transaction.atomic():
         user.realm.has_seat_based_plan = False

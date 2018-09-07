@@ -1,5 +1,6 @@
-from typing import Any, Dict, Optional, Tuple
 import logging
+import stripe
+from typing import Any, Dict, Optional, Tuple, cast
 
 from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -39,6 +40,25 @@ def unsign_and_check_upgrade_parameters(user: UserProfile, plan_nickname: str,
                                % (user.id, user.realm.id, user.realm.string_id))
         raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
     return plan, seat_count
+
+def payment_method_string(stripe_customer: stripe.Customer) -> str:
+    subscription = extract_current_subscription(stripe_customer)
+    if subscription is not None and subscription.billing == "send_invoice":
+        return _("Billed by invoice")
+    stripe_source = stripe_customer.default_source
+    # In case of e.g. an expired card
+    if stripe_source is None:  # nocoverage
+        return _("No payment method on file")
+    if stripe_source.object == "card":
+        return _("Card ending in %(last4)s" % {'last4': cast(stripe.Card, stripe_source).last4})
+    # You can get here if e.g. you sign up to pay by invoice, and then
+    # immediately downgrade. In that case, stripe_source.object == 'source',
+    # and stripe_source.type = 'ach_credit_transfer'.
+    # Using a catch-all error message here since there might be one-off stuff we
+    # do for a particular customer that would land them here. E.g. by default we
+    # don't support ACH for automatic payments, but in theory we could add it for
+    # a customer via the Stripe dashboard.
+    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
@@ -136,20 +156,12 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_date = ''
         renewal_amount = 0
 
-    payment_method = None
-    stripe_source = stripe_customer.default_source
-    if stripe_source is not None:
-        if stripe_source.object == 'card':
-            # To fix mypy error, set Customer.default_source: Union[Source, Card] in stubs and debug
-            payment_method = "Card ending in %(last4)s" % \
-                             {'last4': stripe_source.last4}  # type: ignore # see above
-
     context.update({
         'plan_name': plan_name,
         'seat_count': seat_count,
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
-        'payment_method': payment_method,
+        'payment_method': payment_method_string(stripe_customer),
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'stripe_email': stripe_customer.email,
     })
