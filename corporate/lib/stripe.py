@@ -34,6 +34,9 @@ log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
+MIN_INVOICED_SEAT_COUNT = 30
+DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
+
 def get_seat_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
@@ -202,7 +205,7 @@ def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
 
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Customer, stripe_plan_id: str,
-                                  seat_count: int, tax_percent: float) -> None:
+                                  seat_count: int, tax_percent: float, charge_automatically: bool) -> None:
     if extract_current_subscription(stripe_customer) is not None:
         # Most likely due to two people in the org going to the billing page,
         # and then both upgrading their plan. We don't send clients
@@ -212,6 +215,12 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
     customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+    if charge_automatically:
+        billing_method = 'charge_automatically'
+        days_until_due = None
+    else:
+        billing_method = 'send_invoice'
+        days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
     # Note that there is a race condition here, where if two users upgrade at exactly the
     # same time, they will have two subscriptions, and get charged twice. We could try to
     # reduce the chance of it with a well-designed idempotency_key, but it's not easy since
@@ -222,7 +231,8 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
     # Otherwise we should expect it to throw a stripe.error.
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
-        billing='charge_automatically',
+        billing=billing_method,
+        days_until_due=days_until_due,
         items=[{
             'plan': stripe_plan_id,
             'quantity': seat_count,
@@ -239,7 +249,8 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
             acting_user=user,
             event_type=RealmAuditLog.STRIPE_PLAN_CHANGED,
             event_time=timestamp_to_datetime(stripe_subscription.created),
-            extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count}))
+            extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count,
+                                    'billing_method': billing_method}))
 
         current_seat_count = get_seat_count(customer.realm)
         if seat_count != current_seat_count:
@@ -250,11 +261,14 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
 
-def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stripe_token: str) -> None:
+def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int,
+                            stripe_token: Optional[str]) -> None:
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
         stripe_customer = do_create_customer(user, stripe_token=stripe_token)
-    else:
+    # elif instead of if since we want to avoid doing two round trips to
+    # stripe if we can
+    elif stripe_token is not None:
         stripe_customer = do_replace_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(
         user=user,
@@ -263,7 +277,8 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
         seat_count=seat_count,
         # TODO: billing address details are passed to us in the request;
         # use that to calculate taxes.
-        tax_percent=0)
+        tax_percent=0,
+        charge_automatically=(stripe_token is not None))
     do_change_plan_type(user, Realm.STANDARD)
 
 def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:

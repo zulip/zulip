@@ -18,7 +18,8 @@ from zerver.models import UserProfile, Realm
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, upcoming_invoice_total, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
-    unsign_string, BillingError, process_downgrade, do_replace_payment_source
+    unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
+    MIN_INVOICED_SEAT_COUNT
 from corporate.models import Customer, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
@@ -56,7 +57,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         try:
             plan, seat_count = unsign_and_check_upgrade_parameters(
                 user, request.POST['plan'], request.POST['signed_seat_count'], request.POST['salt'])
-            process_initial_upgrade(user, plan, seat_count, request.POST['stripeToken'])
+            if 'invoiced_seat_count' in request.POST:
+                min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
+                if int(request.POST['invoiced_seat_count']) < min_required_seat_count:
+                    raise BillingError(
+                        'lowball seat count',
+                        "You must invoice for at least %d users." % (min_required_seat_count,))
+                seat_count = int(request.POST['invoiced_seat_count'])
+            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripeToken', None))
         except BillingError as e:
             error_message = e.message
             error_description = e.description
@@ -129,8 +137,12 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_amount = 0
 
     payment_method = None
-    if stripe_customer.default_source is not None:
-        payment_method = "Card ending in %(last4)s" % {'last4': stripe_customer.default_source.last4}
+    stripe_source = stripe_customer.default_source
+    if stripe_source is not None:
+        if stripe_source.object == 'card':
+            # To fix mypy error, set Customer.default_source: Union[Source, Card] in stubs and debug
+            payment_method = "Card ending in %(last4)s" % \
+                             {'last4': stripe_source.last4}  # type: ignore # see above
 
     context.update({
         'plan_name': plan_name,
