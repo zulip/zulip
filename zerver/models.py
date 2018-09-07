@@ -625,7 +625,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@', '\t', '\n', '\0', '\r']
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
     DEFAULT_BOT = 1
     """
