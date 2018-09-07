@@ -167,6 +167,9 @@ class ZulipUploadBackend:
                             target_user_profile: UserProfile) -> None:
         raise NotImplementedError()
 
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        raise NotImplementedError()
+
     def delete_message_image(self, path_id: str) -> bool:
         raise NotImplementedError()
 
@@ -359,6 +362,14 @@ class S3UploadBackend(ZulipUploadBackend):
         self.write_avatar_images(s3_file_name, target_user_profile,
                                  image_data, content_type)
 
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        path_id = user_avatar_path(user)
+        bucket_name = settings.S3_AVATAR_BUCKET
+
+        self.delete_file_from_s3(path_id + ".original", bucket_name)
+        self.delete_file_from_s3(path_id + "-medium.png", bucket_name)
+        self.delete_file_from_s3(path_id, bucket_name)
+
     def get_avatar_key(self, file_name: str) -> Key:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket_name = settings.S3_AVATAR_BUCKET
@@ -530,6 +541,13 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         image_data = user_file.read()
         self.write_avatar_images(file_path, image_data)
+
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        path_id = user_avatar_path(user)
+
+        delete_local_file("avatars", path_id + ".original")
+        delete_local_file("avatars", path_id + ".png")
+        delete_local_file("avatars", path_id + "-medium.png")
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         # ?x=x allows templates to append additional parameters with &s
