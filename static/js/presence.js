@@ -103,10 +103,6 @@ exports.set_info = function (presences, server_timestamp) {
     _.each(presences, function (info, this_email) {
         var person = people.get_by_email(this_email);
 
-        if (people.is_current_user(this_email)) {
-            return;
-        }
-
         if (person === undefined) {
             if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't
@@ -143,10 +139,7 @@ exports.update_info_for_small_realm = function () {
 
     _.each(persons, function (person) {
         var user_id = person.user_id;
-
-        if (people.is_my_user_id(user_id)) {
-            return;
-        }
+        var status = "offline";
 
         if (presence_info[user_id]) {
             // this is normal, we have data for active
@@ -159,8 +152,12 @@ exports.update_info_for_small_realm = function () {
             return;
         }
 
+        if (people.is_my_user_id(user_id)) {
+            status = "active";
+        }
+
         presence_info[user_id] = {
-            status: "offline",
+            status: status,
             mobile: false,
             last_active: undefined,
         };

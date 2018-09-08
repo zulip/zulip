@@ -381,10 +381,6 @@ exports.initialize = function () {
 };
 
 exports.set_user_status = function (email, info, server_time) {
-    if (people.is_current_user(email)) {
-        return;
-    }
-
     var user_id = people.get_user_id(email);
     if (!user_id) {
         blueslip.warn('unknown email: ' + email);

@@ -341,6 +341,7 @@ run_test('presence_list_full_update', () => {
     assert.deepEqual(user_ids, [
         fred.user_id,
         jill.user_id,
+        me.user_id,
         norbert.user_id,
         zoe.user_id,
         alice.user_id,
@@ -788,11 +789,12 @@ run_test('set_user_status', () => {
         inserted = true;
     };
 
-    presence.presence_info[alice.user_id] = undefined;
+    presence.presence_info[me.user_id] = undefined;
     activity.set_user_status(me.email, info, server_time);
-    assert(!inserted);
+    assert(inserted);
+    assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
 
-    assert.equal(presence.presence_info[alice.user_id], undefined);
+    presence.presence_info[alice.user_id] = undefined;
     activity.set_user_status(alice.email, info, server_time);
     assert(inserted);
 

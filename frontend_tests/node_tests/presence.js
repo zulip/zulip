@@ -178,11 +178,14 @@ run_test('set_presence_info', () => {
                      { status: 'idle', mobile: false, last_active: 500}
     );
 
+    assert.deepEqual(presence.presence_info[me.user_id],
+                     { status: 'active', mobile: false, last_active: 500}
+    );
+
     assert.deepEqual(presence.presence_info[zoe.user_id],
                      { status: 'offline', mobile: false, last_active: undefined}
     );
 
-    assert(!presence.presence_info[me.user_id]);
     assert(!presence.presence_info[bot.user_id]);
 
     // Make it seem like realm has a lot of people

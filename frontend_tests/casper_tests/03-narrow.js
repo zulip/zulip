@@ -473,6 +473,7 @@ function assert_not_selected(name) {
 // User search at the right sidebar
 casper.then(function () {
     casper.test.info('Search users using right sidebar');
+    assert_in_list('Iago');
     assert_in_list('Cordelia Lear');
     assert_in_list('King Hamlet');
     assert_in_list('aaron');
@@ -490,7 +491,8 @@ casper.then(function () {
 
 casper.waitForSelector('#user_presences .highlighted_user', function () {
     casper.test.info('Suggestion highlighting - initial situation');
-    assert_selected('Cordelia Lear');
+    assert_selected('Iago');
+    assert_not_selected('Cordelia Lear');
     assert_not_selected('King Hamlet');
     assert_not_selected('aaron');
 });
@@ -502,14 +504,23 @@ casper.then(function () {
                         casper.page.event.key[key],
                         {keepFocus: true});
     }
-    arrow('Down'); // Cordelia -> Hamlet
-    arrow('Up'); // Hamlet -> Cordelia
-    arrow('Up'); // already at top
-    arrow('Down'); // Cordelia -> Hamlet
+
+    // go down 2, up 3 (which is really 2), then down 2
+    //    Iago
+    //    Cordelia
+    //    Hamlet
+    arrow('Down');
+    arrow('Down');
+    arrow('Up');
+    arrow('Up');
+    arrow('Up'); // does nothing
+    arrow('Down');
+    arrow('Down');
 });
 
 casper.waitForSelector('#user_presences li.highlighted_user [data-name="King Hamlet"]', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
+    assert_not_selected('Iago');
     assert_not_selected('Cordelia Lear');
     assert_selected('King Hamlet');
 });
