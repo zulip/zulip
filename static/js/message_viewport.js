@@ -267,15 +267,12 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
     });
 };
 
-exports.user_initiated_animate_scroll = function (scroll_amount) {
+exports.scroll_message_feed = function (scroll_amount) {
     pointer.suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
-    in_stoppable_autoscroll = false; // defensive
 
     var viewport_offset = exports.scrollTop();
 
-    exports.message_pane.animate({
-        scrollTop: viewport_offset + scroll_amount,
-    });
+    exports.message_pane.scrollTop(viewport_offset + scroll_amount);
 };
 
 exports.recenter_view = function (message, opts) {
