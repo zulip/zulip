@@ -161,6 +161,13 @@ run_test('set_presence_info', () => {
         },
     };
 
+    presences[me.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
     presence.set_info(presences, base_time);
 
     assert.deepEqual(presence.presence_info[alice.user_id],
@@ -175,6 +182,7 @@ run_test('set_presence_info', () => {
                      { status: 'offline', mobile: false, last_active: undefined}
     );
 
+    assert(!presence.presence_info[me.user_id]);
     assert(!presence.presence_info[bot.user_id]);
 
     // Make it seem like realm has a lot of people
