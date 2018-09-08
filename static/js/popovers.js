@@ -689,6 +689,7 @@ exports.register_click_handlers = function () {
         var name = people.get_person_from_user_id(user_id).full_name;
         compose_ui.insert_syntax_and_focus('@**' + name + '**');
         popovers.hide_user_sidebar_popover();
+        popovers.hide_userlist_sidebar();
         e.stopPropagation();
         e.preventDefault();
     });
