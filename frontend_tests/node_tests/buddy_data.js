@@ -10,9 +10,7 @@ zrequire('buddy_data');
 // activity.js, but we should feel free to add direct tests
 // here.
 
-
-
-run_test('make_people', () => {
+function make_people() {
     _.each(_.range(1000, 2000), (i) => {
         const person = {
             user_id: i,
@@ -21,7 +19,17 @@ run_test('make_people', () => {
         };
         people.add_in_realm(person);
     });
-});
+
+    const bot = {
+        user_id: 55555,
+        full_name: 'Red Herring Bot',
+        email: 'bot@example.com',
+        is_bot: true,
+    };
+    people.add_in_realm(bot);
+}
+
+make_people();
 
 run_test('activate_people', () => {
     const server_time = 9999;

@@ -161,8 +161,8 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         var person = people.get_person_from_user_id(user_id);
 
         if (person) {
-            // if the user is you or a bot, do not show in presence data.
-            if (person.is_bot || person.user_id === page_params.user_id) {
+            // if the user is bot, do not show in presence data.
+            if (person.is_bot) {
                 return false;
             }
         }
