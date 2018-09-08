@@ -164,7 +164,7 @@ exports.maybe_scroll_up_selected_message = function () {
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
-        message_viewport.user_initiated_animate_scroll(cover + 20);
+        message_viewport.scroll_message_feed(cover + 20);
     }
 };
 
