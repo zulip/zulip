@@ -30,7 +30,9 @@ var fade_config = {
     },
 };
 
-function level(status) {
+function level(user_id) {
+    var status = presence.get_status(user_id);
+
     switch (status) {
     case 'active':
         return 1;
@@ -42,8 +44,8 @@ function level(status) {
 }
 
 exports.compare_function = function (a, b) {
-    var level_a = level(presence.get_status(a));
-    var level_b = level(presence.get_status(b));
+    var level_a = level(a);
+    var level_b = level(b);
     var diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
@@ -118,7 +120,7 @@ exports.get_item = function (user_id) {
 
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange cirle
-    return level(presence.get_status(user_id)) <= 2;
+    return level(user_id) <= 2;
 }
 
 function maybe_shrink_list(user_ids, filter_text) {
