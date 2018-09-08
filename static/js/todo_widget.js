@@ -2,7 +2,7 @@ var todo_widget = (function () {
 
 var exports = {};
 
-exports.task_data_holder = function (is_my_task_list) {
+exports.task_data_holder = function () {
     var self = {};
 
     var all_tasks = [];
@@ -40,7 +40,7 @@ exports.task_data_holder = function (is_my_task_list) {
                 };
                 my_idx += 1;
 
-                if (is_my_task_list && !self.check_task.task_exists(task)) {
+                if (!self.check_task.task_exists(task)) {
                     return event;
                 }
                 return;
@@ -76,10 +76,7 @@ exports.task_data_holder = function (is_my_task_list) {
                     key: key,
                 };
 
-                if (is_my_task_list) {
-                    return event;
-                }
-                return;
+                return event;
             },
 
             inbound: function (sender_id, data) {
@@ -122,8 +119,7 @@ exports.activate = function (opts) {
     var elem = opts.elem;
     var callback = opts.callback;
 
-    var is_my_task_list = people.is_my_user_id(opts.message.sender_id);
-    var task_data = exports.task_data_holder(is_my_task_list);
+    var task_data = exports.task_data_holder();
 
     function render() {
         var html = templates.render('todo-widget');
@@ -156,11 +152,6 @@ exports.activate = function (opts) {
         var html = templates.render('todo-widget-tasks', widget_data);
         elem.find('ul.todo-widget').html(html);
         elem.find(".widget-error").text('');
-
-        if (!is_my_task_list) {
-            elem.find(".add-task-bar").hide();
-            elem.find("button.task").attr('disabled', true);
-        }
 
         elem.find("button.task").on('click', function (e) {
             e.stopPropagation();
