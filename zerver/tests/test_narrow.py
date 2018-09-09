@@ -1705,6 +1705,19 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error(result,
                                    "Missing '%s' argument" % (required_args[i][0],))
 
+    def test_get_messages_limits(self) -> None:
+        """
+        A call to GET /json/messages requesting more than
+        MAX_MESSAGES_PER_FETCH messages returns an error message.
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_get("/json/messages", dict(anchor=1, num_before=3000, num_after=3000))
+        self.assert_json_error(result, "Too many messages requested (maximum 5000).")
+        result = self.client_get("/json/messages", dict(anchor=1, num_before=6000, num_after=0))
+        self.assert_json_error(result, "Too many messages requested (maximum 5000).")
+        result = self.client_get("/json/messages", dict(anchor=1, num_before=0, num_after=6000))
+        self.assert_json_error(result, "Too many messages requested (maximum 5000).")
+
     def test_bad_int_params(self) -> None:
         """
         num_before, num_after, and narrow must all be non-negative

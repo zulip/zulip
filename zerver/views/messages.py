@@ -52,6 +52,7 @@ import ujson
 import datetime
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
+MAX_MESSAGES_PER_FETCH = 5000
 
 class BadNarrowOperator(JsonableError):
     code = ErrorCode.BAD_NARROW
@@ -694,6 +695,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
     if anchor is None and not use_first_unread_anchor:
         return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
+    if num_before + num_after > MAX_MESSAGES_PER_FETCH:
+        return json_error(_("Too many messages requested (maximum %s)."
+                            % (MAX_MESSAGES_PER_FETCH,)))
     include_history = ok_to_include_history(narrow, user_profile)
 
     if include_history:
