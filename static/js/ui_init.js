@@ -321,6 +321,8 @@ $(function () {
     compose_fade.initialize();
     pm_list.initialize();
     stream_list.initialize();
+    topic_list.initialize();
+    topic_zoom.initialize();
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();

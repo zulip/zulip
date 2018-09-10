@@ -176,6 +176,7 @@
         "topic_data": false,
         "topic_generator": false,
         "topic_list": false,
+        "topic_zoom": false,
         "transmit": false,
         "tutorial": false,
         "typeahead_helper": false,
