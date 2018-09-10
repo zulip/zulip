@@ -153,9 +153,11 @@ exports.get_stream_li = function (stream_id) {
     return li;
 };
 
-function zoom_in(options) {
-    popovers.hide_all();
-    topic_list.zoom_in();
+exports.zoom_in_topics = function (options) {
+    // This only does stream-related tasks related to zooming
+    // in to more topics, which is basically hiding all the
+    // other streams.
+
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
 
     // Hide stream list titles and pinned stream splitter
@@ -176,19 +178,9 @@ function zoom_in(options) {
             elt.hide();
         }
     });
-}
+};
 
-function zoom_out(options) {
-    popovers.hide_all();
-    topic_list.zoom_out();
-    exports.show_all_streams();
-
-    if (options.stream_li) {
-        exports.scroll_stream_into_view(options.stream_li);
-    }
-}
-
-exports.show_all_streams = function () {
+exports.zoom_out_topics = function () {
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -357,7 +349,7 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
 
 function clear_topics() {
     topic_list.close();
-    exports.show_all_streams();
+    exports.zoom_out_topics();
 }
 
 exports.get_sidebar_stream_topic_info  = function (filter) {
@@ -482,14 +474,6 @@ function actually_update_streams_for_search() {
 var update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 exports.initialize = function () {
-    // TODO, Eventually topic_list won't be a big singleton,
-    // and we can create more component-based click handlers for
-    // each stream.
-    topic_list.set_click_handlers({
-        zoom_in: zoom_in,
-        zoom_out: zoom_out,
-    });
-
     $(document).on('subscription_add_done.zulip', function (event) {
         exports.create_sidebar_row(event.sub);
         exports.build_stream_list();

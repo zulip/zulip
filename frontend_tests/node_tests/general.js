@@ -706,7 +706,7 @@ run_test('stream_list', () => {
     const topic_list_helper = make_topic_list_helper();
 
     var streams_shown;
-    stream_list.show_all_streams = () => {
+    stream_list.zoom_out_topics = () => {
         streams_shown = true;
     };
 

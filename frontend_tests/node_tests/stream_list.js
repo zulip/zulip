@@ -233,37 +233,11 @@ function initialize_stream_data() {
     add_row(carSub);
 }
 
-function test_helper() {
-    var events = [];
-
-    return {
-        redirect: (module_name, func_name) => {
-            const full_name = module_name + '.' + func_name;
-            global[module_name][func_name] = () => {
-                events.push(full_name);
-            };
-        },
-        events: events,
-    };
-}
-
 function elem($obj) {
     return {to_$: () => $obj};
 }
 
 run_test('zoom_in_and_zoom_out', () => {
-    var helper;
-
-    var callbacks;
-    topic_list.set_click_handlers = (opts) => {
-        callbacks = opts;
-    };
-
-    helper = test_helper();
-
-    helper.redirect('popovers', 'hide_all');
-    helper.redirect('topic_list', 'zoom_in');
-
     var label1 = $.create('label1 stub');
     var label2 = $.create('label2 stub');
 
@@ -307,12 +281,7 @@ run_test('zoom_in_and_zoom_out', () => {
     };
     stream_list.initialize();
 
-    callbacks.zoom_in({stream_id: 42});
-
-    assert.deepEqual(helper.events, [
-        'popovers.hide_all',
-        'topic_list.zoom_in',
-    ]);
+    stream_list.zoom_in_topics({stream_id: 42});
 
     assert(!label1.visible());
     assert(!label2.visible());
@@ -321,24 +290,13 @@ run_test('zoom_in_and_zoom_out', () => {
     assert(!stream_li2.visible());
     assert($('#streams_list').hasClass('zoom-in'));
 
-    helper = test_helper();
-    helper.redirect('popovers', 'hide_all');
-    helper.redirect('topic_list', 'zoom_out');
-    helper.redirect('scroll_util', 'scroll_element_into_container');
-
     $('#stream_filters li.narrow-filter').show = () => {
         stream_li1.show();
         stream_li2.show();
     };
 
     stream_li1.length = 1;
-    callbacks.zoom_out({stream_li: stream_li1});
-
-    assert.deepEqual(helper.events, [
-        'popovers.hide_all',
-        'topic_list.zoom_out',
-        'scroll_util.scroll_element_into_container',
-    ]);
+    stream_list.zoom_out_topics({stream_li: stream_li1});
 
     assert(label1.visible());
     assert(label2.visible());
@@ -363,7 +321,7 @@ run_test('narrowing', () => {
     topic_list.remove_expanded_topics = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
-    stream_list.show_all_streams = noop;
+    stream_list.zoom_out_topics = noop;
     scroll_util.scroll_element_into_container = noop;
 
     var scrollbar_updated = false;

@@ -197,6 +197,15 @@ exports.active_stream_id = function () {
     return active_widget.get_stream_id();
 };
 
+exports.get_stream_li = function () {
+    if (!active_widget) {
+        return;
+    }
+
+    var stream_li = active_widget.get_parent();
+    return stream_li;
+};
+
 exports.need_to_show_no_more_topics = function (stream_id) {
     // This function is important, and the use case here is kind of
     // subtle.  We do complete redraws of the topic list when new
@@ -267,25 +276,7 @@ exports.zoom_in = function () {
     topic_data.get_server_history(stream_id, on_success);
 };
 
-exports.set_click_handlers = function (callbacks) {
-    $('#stream_filters').on('click', '.show-more-topics', function (e) {
-        callbacks.zoom_in({
-            stream_id: active_widget.get_stream_id(),
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $('.show-all-streams').on('click', function (e) {
-        callbacks.zoom_out({
-            stream_li: active_widget.get_parent(),
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
+exports.initialize = function () {
     $('#stream_filters').on('click', '.topic-box', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
