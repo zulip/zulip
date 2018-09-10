@@ -264,6 +264,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
     WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
+    WebhookIntegration('appveyor', ['continuous-integration'], display_name='AppVeyor'),
     WebhookIntegration('beanstalk', ['version-control'], stream_name='commits'),
     WebhookIntegration('basecamp', ['project-management']),
     WebhookIntegration('beeminder', ['misc'], display_name='Beeminder'),
