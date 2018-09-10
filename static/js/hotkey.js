@@ -278,7 +278,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    search.clear_search();
+    narrow.deactivate();
     return true;
 };
 

@@ -51,7 +51,7 @@ run_test('update_button_visibility', () => {
     assert(!search_button.prop('disabled'));
 });
 
-run_test('initizalize', () => {
+run_test('initialize', () => {
     const search_query_box = $('#search_query');
     const searchbox_form = $('#searchbox_form');
     const search_button = $('.search_button');
@@ -243,21 +243,6 @@ run_test('initizalize', () => {
             callback();
             assert.equal(search_query_box.val(), 'ver');
         }
-    };
-
-    $('#search_exit').on = (event, callback) => {
-        assert.equal(event, 'click');
-        let is_deactivated = false;
-        let is_blurred = false;
-        narrow.deactivate = () => {
-            is_deactivated = true;
-        };
-        search_query_box.blur = () => {
-            is_blurred = true;
-        };
-        callback();
-        assert(is_blurred);
-        assert(is_deactivated);
     };
 
     search.initialize();

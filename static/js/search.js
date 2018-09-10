@@ -160,7 +160,7 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_exit').on('click', exports.clear_search);
+    $('#search_exit').on('click', narrow.deactivate);
 
     search_query_box.on('focus', exports.focus_search);
     search_query_box.on('blur' , function () {
@@ -212,11 +212,10 @@ exports.initiate_search = function () {
     }
 };
 
-exports.clear_search = function () {
-    narrow.deactivate();
-
+exports.clear_search_form = function () {
+    $('#search_query').val('');
     $('#search_query').blur();
-    exports.update_button_visibility();
+    $('.search_button').prop('disabled', true);
 };
 
 return exports;
