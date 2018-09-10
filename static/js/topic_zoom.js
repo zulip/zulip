@@ -2,6 +2,8 @@ var topic_zoom = (function () {
 
 var exports = {};
 
+var zoomed_in = false;
+
 function zoom_in() {
     var stream_id = topic_list.active_stream_id();
 
@@ -10,6 +12,8 @@ function zoom_in() {
     stream_list.zoom_in_topics({
         stream_id: stream_id,
     });
+
+    zoomed_in = true;
 }
 
 function zoom_out() {
@@ -22,11 +26,18 @@ function zoom_out() {
     if (stream_li) {
         stream_list.scroll_stream_into_view(stream_li);
     }
+
+    zoomed_in = false;
 }
 
 exports.clear_topics = function () {
     topic_list.close();
-    stream_list.zoom_out_topics();
+
+    if (zoomed_in) {
+        stream_list.zoom_out_topics();
+    }
+
+    zoomed_in = false;
 };
 
 exports.initialize = function () {

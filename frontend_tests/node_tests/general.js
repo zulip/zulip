@@ -707,15 +707,9 @@ run_test('stream_list', () => {
     const sidebar_helper = make_sidebar_helper();
     const topic_list_helper = make_topic_list_helper();
 
-    var streams_shown;
-    stream_list.zoom_out_topics = () => {
-        streams_shown = true;
-    };
 
     // This is what we are testing!
     stream_list.update_streams_sidebar();
-
-    assert(streams_shown);
 
     jquery_helper.verify_actions();
     sidebar_helper.verify_actions();
