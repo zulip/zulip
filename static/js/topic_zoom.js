@@ -31,10 +31,16 @@ function zoom_out() {
 }
 
 exports.clear_topics = function () {
+    var stream_li = topic_list.get_stream_li();
+
     topic_list.close();
 
     if (zoomed_in) {
         stream_list.zoom_out_topics();
+
+        if (stream_li) {
+            stream_list.scroll_stream_into_view(stream_li);
+        }
     }
 
     zoomed_in = false;
