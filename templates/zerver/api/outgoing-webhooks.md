@@ -109,15 +109,38 @@ is helpful to distinguish deliberate non-responses from bugs.)
 
 ### Example incoming payload
 
+This is an example of the JSON payload that the Zulip server will `POST`
+to your server:
+
 {generate_code_example|zulip-outgoing-webhook-payload|fixture}
+
+### Example response payloads
+
+Here's an example of the JSON your server should respond with if
+you would not like to send a response message:
+
+```
+{
+    "response_not_required": true
+}
+```
+
+Here's an example of the JSON your server should respond with if
+you would like to send a response message:
+
+```
+{
+    "content": "Hey, we just received something from Zulip!"
+}
+```
 
 ## Slack-format webhook format
 
-This interface translates the Zulip's outgoing webhook's request into
-Slack's outgoing webhook request.  Hence the outgoing webhook bot
-would be able to post data to URLs which support Slack's outgoing
-webhooks.  Here's how we fill in the fields that a Slack format
-webhook expects:
+This interface translates Zulip's outgoing webhook's request into
+the format that Slack expects.  Hence the outgoing webhook bot
+would be able to post data to URLs which support Slack-style
+webhook payloads.  Here's how we fill in the fields that a
+Slack-format webhook expects:
 
 <table class="table">
     <thead>
