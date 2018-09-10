@@ -656,6 +656,7 @@ function make_topic_list_helper() {
     // care about the implementation details of topic_list for
     // now, just that it is invoked properly.
     topic_list.active_stream_id = () => undefined;
+    topic_list.get_stream_li = () => undefined;
 
     var topic_list_closed;
     topic_list.close = () => {
