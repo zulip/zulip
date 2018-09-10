@@ -16,6 +16,7 @@ zrequire('stream_data');
 zrequire('scroll_util');
 zrequire('list_cursor');
 zrequire('stream_list');
+zrequire('topic_zoom');
 
 stream_color.initialize();
 

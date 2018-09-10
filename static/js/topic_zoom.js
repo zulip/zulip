@@ -24,6 +24,11 @@ function zoom_out() {
     }
 }
 
+exports.clear_topics = function () {
+    topic_list.close();
+    stream_list.zoom_out_topics();
+};
+
 exports.initialize = function () {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
         zoom_in();
