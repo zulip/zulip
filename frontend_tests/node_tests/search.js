@@ -23,6 +23,18 @@ search_pill.append_search_string = noop;
 
 global.patch_builtin('setTimeout', func => func());
 
+run_test('clear_search_form', () => {
+    $('#search_query').val('noise');
+    $('#search_query').focus();
+    $('.search_button').prop('disabled', false);
+
+    search.clear_search_form();
+
+    assert.equal($('#search_query').is_focused(), false);
+    assert.equal($('#search_query').val(), '');
+    assert.equal($('.search_button').prop('disabled'), true);
+});
+
 run_test('update_button_visibility', () => {
     const search_query = $('#search_query');
     const search_button = $('.search_button');
@@ -273,22 +285,17 @@ run_test('initizalize', () => {
         }
     };
 
-    $('#search_exit').on = (event, callback) => {
-        assert.equal(event, 'click');
-        let is_deactivated = false;
-        let is_blurred = false;
-        narrow.deactivate = () => {
-            is_deactivated = true;
-        };
-        search_query_box.blur = () => {
-            is_blurred = true;
-        };
-        callback();
-        assert(is_blurred);
-        assert(is_deactivated);
+    let is_deactivated;
+    narrow.deactivate = () => {
+        is_deactivated = true;
     };
 
     search.initialize();
+
+    const search_exit_callback = $('#search_exit').get_on_handler('click');
+
+    search_exit_callback();
+    assert(is_deactivated);
 });
 
 run_test('initiate_search', () => {

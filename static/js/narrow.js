@@ -601,6 +601,7 @@ exports.by_recipient = function (target_id, opts) {
 };
 
 exports.deactivate = function () {
+    search.clear_search_form();
     if (narrow_state.filter() === undefined) {
         return;
     }
@@ -629,7 +630,6 @@ exports.deactivate = function () {
     current_msg_list = home_msg_list;
     condense.condense_and_collapse($("#zhome div.message_row"));
 
-    $('#search_query').val('');
     message_scroll.hide_indicators();
     hashchange.save_narrow();
 
