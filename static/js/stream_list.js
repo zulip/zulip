@@ -347,11 +347,6 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     }
 };
 
-function clear_topics() {
-    topic_list.close();
-    exports.zoom_out_topics();
-}
-
 exports.get_sidebar_stream_topic_info  = function (filter) {
     var result = {
         stream_id: undefined,
@@ -394,7 +389,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
     var stream_id = info.stream_id;
 
     if (!stream_id) {
-        clear_topics();
+        topic_zoom.clear_topics();
         return;
     }
 
@@ -407,7 +402,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
         // evidence that this assumption breaks down for some users,
         // but we are not clear why it happens.
         blueslip.error('No stream_li for subscribed stream ' + stream_id);
-        clear_topics();
+        topic_zoom.clear_topics();
         return;
     }
 
@@ -416,7 +411,7 @@ exports.update_stream_sidebar_for_narrow = function (filter) {
     }
 
     if (stream_id !== topic_list.active_stream_id()) {
-        clear_topics();
+        topic_zoom.clear_topics();
     }
 
     topic_list.rebuild(stream_li, stream_id);
@@ -435,7 +430,7 @@ exports.handle_narrow_activated = function (filter) {
 
 exports.handle_narrow_deactivated = function () {
     deselect_stream_items();
-    clear_topics();
+    topic_zoom.clear_topics();
 };
 
 function focus_stream_filter(e) {

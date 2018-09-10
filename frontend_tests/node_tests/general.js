@@ -700,6 +700,8 @@ function make_sidebar_helper() {
     };
 }
 
+zrequire('topic_zoom');
+
 run_test('stream_list', () => {
     const jquery_helper = make_jquery_helper();
     const sidebar_helper = make_sidebar_helper();
