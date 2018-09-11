@@ -4,6 +4,10 @@ var exports = {};
 
 var zoomed_in = false;
 
+exports.is_zoomed_in = function () {
+    return zoomed_in;
+};
+
 function zoom_in() {
     var stream_id = topic_list.active_stream_id();
 
@@ -16,7 +20,7 @@ function zoom_in() {
     zoomed_in = true;
 }
 
-function zoom_out() {
+exports.zoom_out = function () {
     var stream_li = topic_list.get_stream_li();
 
     popovers.hide_all();
@@ -28,7 +32,7 @@ function zoom_out() {
     }
 
     zoomed_in = false;
-}
+};
 
 exports.clear_topics = function () {
     var stream_li = topic_list.get_stream_li();
@@ -55,7 +59,7 @@ exports.initialize = function () {
     });
 
     $('.show-all-streams').on('click', function (e) {
-        zoom_out();
+        exports.zoom_out();
 
         e.preventDefault();
         e.stopPropagation();
