@@ -1283,6 +1283,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 message=message['message'],
                 um_eligible_user_ids=message['um_eligible_user_ids'],
                 long_term_idle_user_ids=message['long_term_idle_user_ids'],
+                stream_push_user_ids = message['stream_push_user_ids'],
+                stream_email_user_ids = message['stream_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
             )
 
@@ -1437,9 +1439,10 @@ class UserMessageLite:
 def create_user_messages(message: Message,
                          um_eligible_user_ids: Set[int],
                          long_term_idle_user_ids: Set[int],
+                         stream_push_user_ids: Set[int],
+                         stream_email_user_ids: Set[int],
                          mentioned_user_ids: Set[int]) -> List[UserMessageLite]:
     ums_to_create = []
-
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
             user_profile_id=user_profile_id,
@@ -1465,9 +1468,27 @@ def create_user_messages(message: Message,
         if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
             um.flags |= UserMessage.flags.is_private
 
+    # For long_term_idle (aka soft-deactivated) users, we are allowed
+    # to optimize by lazily not creating UserMessage rows that would
+    # have the default 0 flag set (since the soft-reactivation logic
+    # knows how to create those when the user comes back).  We need to
+    # create the UserMessage rows for these long_term_idle users
+    # non-lazily in a few cases:
+    #
+    # * There are nonzero flags (e.g. the user was mentioned), since
+    #   that case is rare and this saves a lot of complexity in
+    #   soft-reactivation.
+    #
+    # * If the user is going to be notified (e.g. they get push/email
+    #   notifications for every message on a stream), since in that
+    #   case the notifications code will call `access_message` on the
+    #   message to re-verify permissions, and for private streams,
+    #   will get an error if the UserMessage row doesn't exist yet.
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
+                um.user_profile_id not in stream_push_user_ids and
+                um.user_profile_id not in stream_email_user_ids and
                 message.is_stream_message() and
                 int(um.flags) == 0):
             continue
