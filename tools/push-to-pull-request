@@ -22,6 +22,7 @@ EOF
 }
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
+pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
 
 pr_id="$1"
 remote="${2:-"$remote_default"}"
@@ -89,5 +90,16 @@ fi
 pr_head_repo_fq="$(pr_jq -r .head.repo.full_name)"
 pr_head_refname="$(pr_jq -r .head.ref)"
 
+tracking_ref=
+if [ -n "$pseudo_remote" ]; then
+    tracking_ref=$(git rev-parse -q --verify --symbolic refs/remotes/"$pseudo_remote"/"$pr_id" || echo)
+fi
+
 set -x
-exec git push git@github.com:"$pr_head_repo_fq" +@:"$pr_head_refname"
+git push git@github.com:"$pr_head_repo_fq" +@:"$pr_head_refname"
+
+{ set +x; } 2>&-
+if [ -n "$tracking_ref" ]; then
+    set -x
+    git update-ref "$tracking_ref" @
+fi
