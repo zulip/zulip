@@ -278,6 +278,11 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
+    if (topic_zoom.is_zoomed_in()) {
+        topic_zoom.zoom_out();
+        return true;
+    }
+
     narrow.deactivate();
     return true;
 };
