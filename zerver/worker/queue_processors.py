@@ -308,7 +308,8 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, data: Mapping[str, Any]) -> None:
         if data.get("type", "add") == "remove":
             handle_remove_push_notification(data['user_profile_id'], data['message_id'])
-        handle_push_notification(data['user_profile_id'], data)
+        else:
+            handle_push_notification(data['user_profile_id'], data)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
