@@ -86,11 +86,11 @@
 #global_filters li:hover,
 #stream_filters li:hover,
 #stream_filters li.highlighted_stream {
-    background-color: hsl(93, 19%, 88%);
+    background-color: hsl(214, 18%, 92%);
 }
 
 #stream_filters li.active-sub-filter:hover {
-    background-color: hsl(120, 11%, 82%);
+    background-color: hsl(214, 18%, 92%);
 }
 
 ul.filters {
@@ -110,7 +110,7 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: hsl(202, 56%, 91%);
+    background: hsl(211, 100%, 95%);
     position: relative;
 }
 

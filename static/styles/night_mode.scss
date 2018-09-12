@@ -264,11 +264,11 @@ on a dark background, and don't change the dark labels dark either. */
     #group-pms li:hover,
     #user_presences li:hover,
     #user_presences li.highlighted_user {
-        background-color: hsla(136, 25%, 73%, 0.2);
+        background-color: hsla(208, 25%, 73%, 0.2);
     }
 
     #stream_filters li.active-sub-filter:hover {
-        background-color: hsla(136, 25%, 73%, 0.5);
+        background-color: hsla(208, 25%, 73%, 0.2);
     }
 
     .floating_recipient .recipient_row {
