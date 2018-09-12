@@ -299,19 +299,24 @@ exports.set_up = function () {
         }
         var user_group = user_groups.get_user_group_from_id(group_id);
         var btn = $(this);
-        channel.del({
-            url: "/json/user_groups/" + group_id,
-            data: {
-                id: group_id,
-            },
-            success: function () {
-                user_groups.remove(user_group);
-                settings_user_groups.reload();
-            },
-            error: function () {
-                btn.text(i18n.t("Failed!"));
-            },
-        });
+
+        function delete_user_group() {
+            channel.del({
+                url: "/json/user_groups/" + group_id,
+                data: {
+                    id: group_id,
+                },
+                success: function () {
+                    user_groups.remove(user_group);
+                    settings_user_groups.reload();
+                },
+                error: function () {
+                    btn.text(i18n.t("Failed!"));
+                },
+            });
+        }
+
+        delete_user_group();
     });
 
     $('#user-groups').on('keypress', '.user-group h4 > span', function (e) {
