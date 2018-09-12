@@ -4,6 +4,7 @@ zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
+set_global('confirm_dialog', {});
 
 var noop = function () {};
 
@@ -585,6 +586,10 @@ run_test('on_events', () => {
             fake_this.text(i18n.t('fake-text'));
             opts.error();
             assert.equal(fake_this.text(), 'translated: Failed!');
+        };
+
+        confirm_dialog.launch = (conf) => {
+            conf.on_click();
         };
 
         handler.call(fake_this);

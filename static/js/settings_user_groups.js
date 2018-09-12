@@ -316,7 +316,20 @@ exports.set_up = function () {
             });
         }
 
-        delete_user_group();
+        // This is mostly important for styling concerns.
+        var modal_parent = $('#settings_content');
+
+        var html_body = templates.render('confirm_delete_user', {
+            group_name: user_group.name,
+        });
+
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: i18n.t('Delete user group'),
+            html_body: html_body,
+            html_yes_button: i18n.t('Delete'),
+            on_click: delete_user_group,
+        });
     });
 
     $('#user-groups').on('keypress', '.user-group h4 > span', function (e) {
