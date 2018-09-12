@@ -177,7 +177,7 @@ body {
 }
 
 .help .sidebar.slide h2::before {
-    display: inline-block;
+    display: block;
     font: normal normal normal 14px/1 FontAwesome;
     font-size: inherit;
     text-rendering: auto;
@@ -186,6 +186,7 @@ body {
 
     content: "\f107";
     margin-right: 5px;
+    float: right;
 
     opacity: 0.5;
 }
