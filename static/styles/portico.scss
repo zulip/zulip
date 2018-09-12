@@ -160,10 +160,16 @@ body {
     font-size: 1.25em;
     line-height: 1.5;
     margin-bottom: 0px;
+    border-bottom: 1px solid #fff;
 }
 
 .help .sidebar h1:not(:first-of-type) {
     margin-top: 20px;
+}
+
+.help .sidebar h1:first-of-type,
+.help .sidebar h1.home-link {
+    border-bottom: none;
 }
 
 .help .sidebar h2 {
