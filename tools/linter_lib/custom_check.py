@@ -194,6 +194,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '[.]html[(]',
          'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',
          'exclude': ['static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
+                     'static/js/confirm_dialog.js',
                      'frontend_tests/'],
          'description': 'Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.'},
         {'pattern': '["\']json/',

@@ -1445,6 +1445,7 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
     margin: 10px;
 }
 
+#confirm_dialog_modal,
 #deactivation_user_modal.fade.in {
     top: calc(50% - 120px);
 }
