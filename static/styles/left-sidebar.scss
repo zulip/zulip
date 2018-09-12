@@ -171,14 +171,13 @@ li.active-sub-filter {
 .topic-unread-count,
 .private_message_count {
     float: right;
-    background: hsl(105, 2%, 50%);
     padding: 0 4px;
     height: 16px;
     line-height: 16px;
-    color: hsl(0, 0%, 100%);
     font-size: 12px;
-    font-weight: normal;
+    font-weight: 700;
     letter-spacing: 0.6px;
+    border: 1px solid #bfbfbf;
     border-radius: 4px;
 }
 
