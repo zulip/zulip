@@ -244,7 +244,13 @@ def main(options):
         print("No changes to apt dependencies, so skipping apt operations.")
 
     # Here we install node.
-    run(["sudo", "-H", "scripts/lib/install-node"])
+    proxy_env = [
+        "env",
+        "http_proxy=" + os.environ.get("http_proxy", ""),
+        "https_proxy=" + os.environ.get("https_proxy", ""),
+        "no_proxy=" + os.environ.get("no_proxy", ""),
+    ]
+    run(["sudo", "-H"] + proxy_env + ["scripts/lib/install-node"])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
