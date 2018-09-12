@@ -76,5 +76,6 @@
         "./static/styles/zulip.scss",
         "./static/styles/media.scss",
         "./static/styles/archive.scss"
-    ]
+    ],
+    "find-account": "./static/js/portico/find_account.js"
 }

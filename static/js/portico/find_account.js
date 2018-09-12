@@ -4,7 +4,7 @@ function validateEmail(email) {
 }
 
 function update() {
-    var values = document.getElementsByName('emails')[0].value.split(',');
+    var values = document.getElementById('emails').value.split(',');
     var check = 1;
     for (var i = 0; i < values.length ; i += 1) {
         if (validateEmail(values[i])) {

@@ -1,5 +1,10 @@
 {% extends "zerver/portico.html" %}
 
+{% block customhead %}
+{{ super() }}
+{{ render_bundle('find-account') }}
+{% endblock %}
+
 {% block portico_content %}
 <div class="app find-account-page flex full-page">
     <div class="inline-block new-style">
@@ -34,7 +39,6 @@
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
-                        <script type="text/javascript" src="/static/js/find_account.js"></script>
                         <div class="inline-block relative">
                             <input type="text" autofocus id="emails" required />
                             <label for="id_username">{{ _('Email addresses') }}</label>
