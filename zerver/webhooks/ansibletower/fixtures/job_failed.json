@@ -1,0 +1,28 @@
+{
+    "status": "failed",
+    "credential": null,
+    "name": "System - Updates - Ubuntu",
+    "started": "2018-09-13T19:05:18.276217+00:00",
+    "extra_vars": "{}",
+    "traceback": "",
+    "friendly_name": "Job",
+    "created_by": "admin",
+    "project": "AWX - Ansible Playbooks",
+    "url": "http://awx.example.co.uk/#/jobs/playbook/2722",
+    "finished": "2018-09-13T19:05:29.927509+00:00",
+    "hosts": {
+      "chat.example.co.uk": {
+        "skipped": 0,
+        "ok": 0,
+        "changed": 0,
+        "dark": 1,
+        "failed": true,
+        "processed": 1,
+        "failures": 0
+      }
+    },
+    "playbook": "system-updates/run-apt-updates.yml",
+    "limit": "os-ubuntu",
+    "id": 2722,
+    "inventory": "Production Servers"
+}

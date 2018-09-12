@@ -1,0 +1,64 @@
+{
+    "status": "successful",
+    "credential": "AWX - SSH",
+    "name": "System - Deploy - Zabbix Agent",
+    "started": "2018-09-11T19:19:10.153888+00:00",
+    "extra_vars": "{}",
+    "traceback": "",
+    "friendly_name": "Job",
+    "created_by": "None",
+    "project": "AWX - Ansible Playbooks",
+    "url": "http://awx.example.co.uk/#/jobs/playbook/2674",
+    "finished": "2018-09-11T19:21:41.187605+00:00",
+    "hosts": {
+      "gitlab.example.co.uk": {
+        "skipped": 29,
+        "ok": 15,
+        "changed": 0,
+        "dark": 0,
+        "failed": false,
+        "processed": 1,
+        "failures": 0
+      },
+      "chat.example.co.uk": {
+        "skipped": 28,
+        "ok": 16,
+        "changed": 0,
+        "dark": 0,
+        "failed": false,
+        "processed": 1,
+        "failures": 0
+      },
+      "devops.example.co.uk": {
+        "skipped": 31,
+        "ok": 13,
+        "changed": 0,
+        "dark": 0,
+        "failed": false,
+        "processed": 1,
+        "failures": 0
+      },
+      "ipa.example.co.uk": {
+        "skipped": 31,
+        "ok": 13,
+        "changed": 0,
+        "dark": 0,
+        "failed": false,
+        "processed": 1,
+        "failures": 0
+      },
+      "mail.example.co.uk": {
+        "skipped": 31,
+        "ok": 13,
+        "changed": 0,
+        "dark": 0,
+        "failed": false,
+        "processed": 1,
+        "failures": 0
+      }
+    },
+    "playbook": "system-zabbix-agent/deploy-zabbix-agent.yml",
+    "limit": "!system-awx",
+    "id": 2674,
+    "inventory": "Production Servers"
+}

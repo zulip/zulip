@@ -262,6 +262,7 @@ EMBEDDED_BOTS = [
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
+    WebhookIntegration('ansibletower', ['deployment'], display_name='Ansible Tower'),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
     WebhookIntegration('beanstalk', ['version-control'], stream_name='commits'),
     WebhookIntegration('basecamp', ['project-management']),
