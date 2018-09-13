@@ -7,9 +7,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
 from zerver.models import Message, Realm, Recipient, UserProfile, UserMessage, ArchivedUserMessage, \
     ArchivedMessage, Attachment, ArchivedAttachment
-from zerver.lib.retention import get_expired_messages, move_message_to_archive
+from zerver.lib.retention import get_expired_messages, move_messages_to_archive
 
-from typing import Any, List
+from typing import Any, List, Tuple
 
 
 class TestRetentionLib(ZulipTestCase):
@@ -120,65 +120,89 @@ class TestMoveMessageToArchive(ZulipTestCase):
         dummy_files = [
             ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
             ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
-            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
+            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size),
+            ('hello.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt', sample_size),
+            ('new.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py', sample_size)
         ]
         user_profile = self.example_user('hamlet')
         for file_name, path_id, size in dummy_files:
             create_attachment(file_name, path_id, user_profile, size)
 
-    def _check_messages_before_archiving(self, msg_id: int) -> List[int]:
-        user_messages_ids_before = list(UserMessage.objects.filter(
-            message_id=msg_id).order_by('id').values_list('id', flat=True))
+    def _check_messages_before_archiving(self, msg_ids: List[int]) -> Tuple[List[int], List[int]]:
+        user_msgs_ids_before  = list(UserMessage.objects.filter(
+            message_id__in=msg_ids).order_by('id').values_list('id', flat=True))
+        all_msgs_ids_before = list(Message.objects.filter().order_by('id').values_list('id', flat=True))
         self.assertEqual(ArchivedUserMessage.objects.count(), 0)
         self.assertEqual(ArchivedMessage.objects.count(), 0)
-        return user_messages_ids_before
+        return (user_msgs_ids_before,  all_msgs_ids_before)
 
-    def _check_messages_after_archiving(self, msg_id: int, user_msgs_ids_before: List[int]) -> None:
-        self.assertEqual(ArchivedMessage.objects.filter(id=msg_id).count(), 1)
-        self.assertEqual(Message.objects.filter(id=msg_id).count(), 0)
-        self.assertEqual(UserMessage.objects.filter(message_id=msg_id).count(), 0)
-        arc_user_messages_ids_after = list(ArchivedUserMessage.objects.filter(
-            message_id=msg_id).order_by('id').values_list('id', flat=True))
+    def _check_messages_after_archiving(self, msg_ids: List[int], user_msgs_ids_before: List[int],
+                                        all_msgs_ids_before: List[int]) -> None:
+        self.assertEqual(ArchivedMessage.objects.all().count(), len(msg_ids))
+        self.assertEqual(Message.objects.filter().count(), len(all_msgs_ids_before) - len(msg_ids))
+        self.assertEqual(UserMessage.objects.filter(message_id__in=msg_ids).count(), 0)
+        arc_user_messages_ids_after = list(ArchivedUserMessage.objects.filter().order_by('id').values_list('id', flat=True))
         self.assertEqual(arc_user_messages_ids_after, user_msgs_ids_before)
 
-    def test_personal_message_archiving(self) -> None:
-        msg_id = self.send_personal_message(self.sender, self.recipient)
-        user_messages_ids_before = self._check_messages_before_archiving(msg_id)
-        move_message_to_archive(message_id=msg_id)
-        self._check_messages_after_archiving(msg_id, user_messages_ids_before)
+    def test_personal_messages_archiving(self) -> None:
+        msg_ids = []
+        for i in range(0, 3):
+            msg_ids.append(self.send_personal_message(self.sender, self.recipient))
+        (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving(msg_ids)
+        move_messages_to_archive(message_ids=msg_ids)
+        self._check_messages_after_archiving(msg_ids, user_msgs_ids_before, all_msgs_ids_before)
 
-    def test_stream_message_archiving(self) -> None:
-        msg_id = self.send_stream_message(self.sender, "Verona")
-        user_messages_ids_before = self._check_messages_before_archiving(msg_id)
-        move_message_to_archive(message_id=msg_id)
-        self._check_messages_after_archiving(msg_id, user_messages_ids_before)
+    def test_stream_messages_archiving(self) -> None:
+        msg_ids = []
+        for i in range(0, 3):
+            msg_ids.append(self.send_stream_message(self.sender, "Verona"))
+        (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving(msg_ids)
+        move_messages_to_archive(message_ids=msg_ids)
+        self._check_messages_after_archiving(msg_ids, user_msgs_ids_before, all_msgs_ids_before)
 
-    def test_archiving_message_second_time(self) -> None:
-        msg_id = self.send_stream_message(self.sender, "Verona")
-        user_messages_ids_before = self._check_messages_before_archiving(msg_id)
-        move_message_to_archive(message_id=msg_id)
-        self._check_messages_after_archiving(msg_id, user_messages_ids_before)
+    def test_archiving_messages_second_time(self) -> None:
+        msg_ids = []
+        for i in range(0, 3):
+            msg_ids.append(self.send_stream_message(self.sender, "Verona"))
+        (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving(msg_ids)
+        move_messages_to_archive(message_ids=msg_ids)
+        self._check_messages_after_archiving(msg_ids, user_msgs_ids_before, all_msgs_ids_before)
         with self.assertRaises(Message.DoesNotExist):
-            move_message_to_archive(message_id=msg_id)
+            move_messages_to_archive(message_ids=msg_ids)
 
-    def test_archiving_message_with_attachment(self) -> None:
+    def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
-        body = """Some files here ...[zulip.txt](
+        body1 = """Some files here ...[zulip.txt](
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
             Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
         """
-        msg_id = self.send_personal_message(self.sender, self.recipient, body)
-        user_messages_ids_before = self._check_messages_before_archiving(msg_id)
-        attachments_ids_before = list(Attachment.objects.filter(
-            messages__id=msg_id).order_by("id").values_list("id", flat=True))
+        body2 = """Some files here
+            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
+            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+        """
+        msg_ids = []
+        msg_ids.append(self.send_personal_message(self.sender, self.recipient, body1))
+        msg_ids.append(self.send_personal_message(self.sender, self.recipient, body2))
+
+        attachment_id_to_message_ids = {}
+        attachments = Attachment.objects.filter(messages__id__in=msg_ids)
+        for attachment in attachments:
+            attachment_id_to_message_ids[attachment.id] = [message.id for message in attachment.messages.all()]
+
+        (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving(msg_ids)
+        attachments_ids_before = list(attachments.order_by("id").values_list("id", flat=True))
         self.assertEqual(ArchivedAttachment.objects.count(), 0)
-        move_message_to_archive(message_id=msg_id)
-        self._check_messages_after_archiving(msg_id, user_messages_ids_before)
+        move_messages_to_archive(message_ids=msg_ids)
+        self._check_messages_after_archiving(msg_ids, user_msgs_ids_before, all_msgs_ids_before)
         self.assertEqual(Attachment.objects.count(), 0)
-        arc_attachments_ids_after = list(ArchivedAttachment.objects.filter(
-            messages__id=msg_id).order_by("id").values_list("id", flat=True))
+        archived_attachments = ArchivedAttachment.objects.filter(messages__id__in=msg_ids)
+        arc_attachments_ids_after = list(archived_attachments.order_by("id").values_list("id", flat=True))
         self.assertEqual(attachments_ids_before, arc_attachments_ids_after)
+        for attachment in archived_attachments:
+            self.assertEqual(attachment_id_to_message_ids[attachment.id],
+                             [message.id for message in attachment.messages.all()])
 
     def test_archiving_message_with_shared_attachment(self) -> None:
         # Check do not removing attachments which is used in other messages.
@@ -186,7 +210,9 @@ class TestMoveMessageToArchive(ZulipTestCase):
         body = """Some files here ...[zulip.txt](
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
             http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
+            Some more.... http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
         """
         msg_id = self.send_personal_message(self.sender, self.recipient, body)
 
@@ -197,15 +223,15 @@ class TestMoveMessageToArchive(ZulipTestCase):
             content=body,
         )
 
-        user_messages_ids_before = self._check_messages_before_archiving(msg_id)
+        (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving([msg_id])
         attachments_ids_before = list(Attachment.objects.filter(
             messages__id=msg_id).order_by("id").values_list("id", flat=True))
         self.assertEqual(ArchivedAttachment.objects.count(), 0)
-        move_message_to_archive(message_id=msg_id)
-        self._check_messages_after_archiving(msg_id, user_messages_ids_before)
-        self.assertEqual(Attachment.objects.count(), 3)
+        move_messages_to_archive(message_ids=[msg_id])
+        self._check_messages_after_archiving([msg_id], user_msgs_ids_before, all_msgs_ids_before)
+        self.assertEqual(Attachment.objects.count(), 5)
         arc_attachments_ids_after = list(ArchivedAttachment.objects.filter(
             messages__id=msg_id).order_by("id").values_list("id", flat=True))
         self.assertEqual(attachments_ids_before, arc_attachments_ids_after)
-        move_message_to_archive(message_id=msg_id_shared_attachments)
+        move_messages_to_archive(message_ids=[msg_id_shared_attachments])
         self.assertEqual(Attachment.objects.count(), 0)
