@@ -36,7 +36,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     3. user_map, which is a dictionary to map from gitter user id to zulip user id
     """
     NOW = float(timezone_now().timestamp())
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')  # type: List[ZerverFieldsT]
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW)  # type: List[ZerverFieldsT]
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)

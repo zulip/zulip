@@ -65,9 +65,8 @@ class GitterImporter(ZulipTestCase):
 
         realm = read_file('realm.json')
 
-        # test realm
-        self.assertEqual('Organization imported from Gitter!',
-                         realm['zerver_realm'][0]['description'])
+        # test realm exists
+        self.assertTrue(realm['zerver_realm'][0]['allow_edit_history'])
 
         # test users
         exported_user_ids = get_set(realm['zerver_userprofile'], 'id')

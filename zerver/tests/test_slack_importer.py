@@ -100,7 +100,7 @@ class SlackImporter(ZulipTestCase):
         realm_id = 2
         realm_subdomain = "test-realm"
         time = float(timezone_now().timestamp())
-        test_realm = build_zerver_realm(realm_id, realm_subdomain, time, 'Slack')  # type: List[Dict[str, Any]]
+        test_realm = build_zerver_realm(realm_id, realm_subdomain, time)  # type: List[Dict[str, Any]]
         test_zerver_realm_dict = test_realm[0]
 
         self.assertEqual(test_zerver_realm_dict['id'], realm_id)
@@ -350,7 +350,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_userpresence'], [])
         self.assertEqual(realm['zerver_stream'], [])
         self.assertEqual(realm['zerver_userprofile'], [])
-        self.assertEqual(realm['zerver_realm'][0]['description'], 'Organization imported from Slack!')
+        # test realm exists
+        self.assertTrue(realm['zerver_realm'][0]['allow_edit_history'])
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {'subtype': 'file', 'type': 'message',

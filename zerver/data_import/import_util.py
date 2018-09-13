@@ -16,11 +16,9 @@ from zerver.lib.parallel import run_parallel
 # stubs
 ZerverFieldsT = Dict[str, Any]
 
-def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
-                       other_product: str) -> List[ZerverFieldsT]:
+def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float) -> List[ZerverFieldsT]:
     realm = Realm(id=realm_id, date_created=time,
-                  name=realm_subdomain, string_id=realm_subdomain,
-                  description=("Organization imported from %s!" % (other_product)))
+                  name=realm_subdomain, string_id=realm_subdomain)
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
     realm_dict = model_to_dict(realm, exclude='authentication_methods')
     realm_dict['authentication_methods'] = auth_methods
