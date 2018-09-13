@@ -44,7 +44,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.lib.retention import move_message_to_archive
+from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -4052,13 +4052,13 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
 
     ums = [{'id': um.user_profile_id} for um in
            UserMessage.objects.filter(message=message.id)]
-    move_message_to_archive(message.id)
+    move_messages_to_archive([message.id])
     send_event(event, ums)
 
 def do_delete_messages(user: UserProfile) -> None:
-    messages = Message.objects.filter(sender=user)
-    for message in messages:
-        move_message_to_archive(message.id)
+    message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')
+    if message_ids:
+        move_messages_to_archive(message_ids)
 
 def get_streams_traffic(stream_ids: Set[int]) -> Dict[int, int]:
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
