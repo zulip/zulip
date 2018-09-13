@@ -2223,6 +2223,10 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.message_inline_image img {
+    cursor: zoom-in;
+}
+
 .rtl .twitter-image img,
 .rtl .message_inline_image img,
 .rtl .message_inline_ref img {
