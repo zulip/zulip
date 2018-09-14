@@ -10,10 +10,6 @@ As an organization administrator, you can always make a public stream
 private, but you must be subscribed to a private stream in order to make it
 public.
 
-!!! tip ""
-    Be careful making a private stream public. All past messages will become
-    accessible, even if the stream previously had protected history.
-
 {!go-to-stream-via-all-streams.md!}
 
 4. Find the privacy description under the stream name and description on the
@@ -22,3 +18,7 @@ public.
 5. Select a privacy level.
 
 6. Click **Save changes**.
+
+!!! tip ""
+    Be careful making a private stream public. All past messages will become
+    accessible, even if the stream previously had protected history.
