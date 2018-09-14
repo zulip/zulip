@@ -18,4 +18,4 @@ change who is allowed to add bots.
 
 ## Related articles
 
-[Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
