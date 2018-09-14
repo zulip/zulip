@@ -27,13 +27,16 @@ Email support@zulipchat.com with `gitter_data.zip` and your desired
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
+If you've already created a test organization at
+`<subdomain>.zulipchat.com`, let us know, and we can rename the old
+organization first.
+
 ### Import into a new Zulip server
 
-!!! warn ""
-    Because the Gitter import tool is very new, we recommend first
-    upgrading your new Zulip server to the latest `master` branch,
-    using [upgrade-zulip-from-git][upgrade-zulip-from-git] to avoid
-    bugs in the earliest versions of the Gitter import tool.
+Because the Gitter import tool is very new, we recommend first
+upgrading your new Zulip server to the latest `master` branch,
+using [upgrade-zulip-from-git][upgrade-zulip-from-git] to avoid
+bugs in the earliest versions of the Gitter import tool.
 
 Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands.

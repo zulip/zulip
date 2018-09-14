@@ -4,8 +4,9 @@
 
 By default, users are not required to specify a topic in stream messages; if
 a user sends a message without a topic, the message's topic is displayed as
-**(no topic)**. If
-[message editing](/help/configure-message-editing-and-deletion) is enabled,
+**(no topic)**.
+
+If [message editing](/help/configure-message-editing-and-deletion) is enabled,
 any other user can then edit the topic of such a message to set a topic,
 even if [community topic editing](/help/community-topic-edits) is otherwise off.
 

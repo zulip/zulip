@@ -8,7 +8,7 @@ To properly remove a user’s access to a Zulip organization, it does not
 suffice to change their password or deactivate their account in an external
 email system, since the user’s API key and bot API keys will still be
 active. Instead, you need to deactivate the user’s account using the Zulip
-organization administration interface.
+administrative interface.
 
 {settings_tab|user-list-admin}
 

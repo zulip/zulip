@@ -8,7 +8,8 @@ images and/or website links.
 
 {settings_tab|organization-settings}
 
-2. Under **Message feed**, toggle **Show previews of uploaded and linked images** and/or
-**Show previews of linked websites**.
+1. Under **Message feed**, toggle **Show previews of uploaded and linked images**.
+
+1. Under **Message feed**, toggle **Show previews of linked websites**.
 
 {!save-changes.md!}

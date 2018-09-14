@@ -54,7 +54,7 @@ The [on-premises section](#gdpr-compliance-on-premises) of this page
 discusses how the Zulip on-premises software works in relation to GDPR
 compliance.
 
-[mobile-push](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html)
+[mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 
 ## Zulip Cloud's subprocessors
 
@@ -128,8 +128,8 @@ In addition to the features described above that are available in
 Zulip Cloud (which are also available on-premises), the following tools
 may be useful:
 
-* The Zulip server comes with a command-line tool, `manage.py
-  export_single_user`, which is a variant of the main server
+* The Zulip server comes with a command-line tool, `manage.py export_single_user`,
+  which is a variant of the main server
   [export tool](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
   that exports a single Zulip user's account details,
   preferences, stream subscriptions, and message history in a
