@@ -102,7 +102,7 @@ from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now as timezone_now
 
-from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.models import Confirmation, create_confirmation_link, generate_key
 from confirmation import settings as confirmation_settings
 
 from zerver.lib.bulk_create import bulk_create_users
@@ -734,6 +734,21 @@ def do_reactivate_realm(realm: Realm) -> None:
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED, event_time=event_time)
+
+def do_scrub_realm(realm: Realm) -> None:
+    users = UserProfile.objects.filter(realm=realm)
+    for user in users:
+        do_delete_messages(user)
+        do_delete_avatar_image(user)
+        user.full_name = "Scrubbed {}".format(generate_key()[:15])
+        user.email = "scrubbed-{}@{}".format(generate_key()[:15], realm.host)
+        user.save(update_fields=["full_name", "email"])
+
+    do_remove_realm_custom_profile_fields(realm)
+    Attachment.objects.filter(realm=realm).delete()
+
+    RealmAuditLog.objects.create(realm=realm, event_time=timezone_now(),
+                                 event_type=RealmAuditLog.REALM_SCRUBBED)
 
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
@@ -4040,6 +4055,11 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
     move_message_to_archive(message.id)
     send_event(event, ums)
 
+def do_delete_messages(user: UserProfile) -> None:
+    messages = Message.objects.filter(sender=user)
+    for message in messages:
+        move_message_to_archive(message.id)
+
 def get_streams_traffic(stream_ids: Set[int]) -> Dict[int, int]:
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
     traffic_from = timezone_now() - datetime.timedelta(days=28)
@@ -4901,6 +4921,9 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     """
     field.delete()
     notify_realm_custom_profile_fields(realm, 'delete')
+
+def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
+    CustomProfileField.objects.filter(realm=realm).delete()
 
 def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileField,
                                           name: str, hint: str='',

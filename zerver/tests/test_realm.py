@@ -1,6 +1,7 @@
 
 import datetime
 import ujson
+import re
 
 from django.http import HttpResponse
 from mock import patch
@@ -12,13 +13,16 @@ from zerver.lib.actions import (
     do_deactivate_realm,
     do_deactivate_stream,
     do_create_realm,
+    do_scrub_realm,
+    create_stream_if_needed,
 )
 
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_runner import slow
-from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream
+from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream, \
+    CustomProfileField, Message, UserMessage, Attachment
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
@@ -433,3 +437,68 @@ class RealmAPITest(ZulipTestCase):
         realm = self.update_with_api('message_content_delete_limit_seconds', 600)
         self.assertEqual(realm.allow_message_deleting, True)
         self.assertEqual(realm.message_content_delete_limit_seconds, 600)
+
+class ScrubRealmTest(ZulipTestCase):
+    def test_scrub_realm(self) -> None:
+        zulip = get_realm("zulip")
+        lear = get_realm("lear")
+
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        cordelia = self.lear_user("cordelia")
+        king = self.lear_user("king")
+
+        create_stream_if_needed(lear, "Shakespeare")
+
+        self.subscribe(cordelia, "Shakespeare")
+        self.subscribe(king, "Shakespeare")
+
+        Message.objects.all().delete()
+        UserMessage.objects.all().delete()
+
+        for i in range(5):
+            self.send_stream_message(iago.email, "Scotland")
+            self.send_stream_message(othello.email, "Scotland")
+            self.send_stream_message(cordelia.email, "Shakespeare", sender_realm="lear")
+            self.send_stream_message(king.email, "Shakespeare", sender_realm="lear")
+
+        Attachment.objects.filter(realm=zulip).delete()
+        Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt")
+        Attachment.objects.create(realm=zulip, owner=othello, path_id="a/b/temp2.txt")
+
+        Attachment.objects.filter(realm=lear).delete()
+        Attachment.objects.create(realm=lear, owner=cordelia, path_id="c/d/temp1.txt")
+        Attachment.objects.create(realm=lear, owner=king, path_id="c/d/temp2.txt")
+
+        CustomProfileField.objects.create(realm=lear)
+
+        self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 10)
+        self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 20)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 20)
+
+        self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
+
+        do_scrub_realm(zulip)
+
+        self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
+        self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[iago, othello]).count(), 0)
+        self.assertEqual(UserMessage.objects.filter(user_profile__in=[cordelia, king]).count(), 20)
+
+        self.assertEqual(Attachment.objects.filter(realm=zulip).count(), 0)
+        self.assertEqual(Attachment.objects.filter(realm=lear).count(), 2)
+
+        self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
+        self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)
+
+        zulip_users = UserProfile.objects.filter(realm=zulip)
+        for user in zulip_users:
+            self.assertTrue(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
+            self.assertTrue(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))
+
+        lear_users = UserProfile.objects.filter(realm=lear)
+        for user in lear_users:
+            self.assertIsNone(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
+            self.assertIsNone(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))

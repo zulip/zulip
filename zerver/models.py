@@ -2243,6 +2243,7 @@ class RealmAuditLog(models.Model):
 
     REALM_DEACTIVATED = 'realm_deactivated'
     REALM_REACTIVATED = 'realm_reactivated'
+    REALM_SCRUBBED = 'realm_scrubbed'
     REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
