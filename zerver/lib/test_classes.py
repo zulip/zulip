@@ -222,6 +222,11 @@ class ZulipTestCase(TestCase):
         espuser="espuser@mit.edu",
     )
 
+    lear_user_map = dict(
+        cordelia="cordelia@zulip.com",
+        king="king@lear.org"
+    )
+
     # Non-registered test users
     nonreg_user_map = dict(
         test='test@zulip.com',
@@ -245,6 +250,10 @@ class ZulipTestCase(TestCase):
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
         return get_user(email, get_realm('zephyr'))
+
+    def lear_user(self, name: str) -> UserProfile:
+        email = self.lear_user_map[name]
+        return get_user(email, get_realm('lear'))
 
     def nonreg_email(self, name: str) -> str:
         return self.nonreg_user_map[name]
