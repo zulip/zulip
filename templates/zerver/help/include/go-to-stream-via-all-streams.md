@@ -2,4 +2,6 @@
 
 1. Select **Manage streams**.
 
-1. Click **All streams** in the upper left. Select a stream.
+1. Click **All streams** in the upper left.
+
+1. Select a stream.
