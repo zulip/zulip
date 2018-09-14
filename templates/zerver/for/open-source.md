@@ -25,6 +25,12 @@ Allow anyone to
 You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
 in your readme document.
 
+### Moderate your community
+
+Moderation is a big part of making an open community work. Zulip was built
+for open communities from the beginning and comes with
+[moderation tools](/help/moderating-open-organizations) out of the box.
+
 ### Authenticate with GitHub
 
 Allow (or require) users to
@@ -55,12 +61,6 @@ Efficiently refer to issues or code reviews with notation like `#1234` or
 `T1234`. You can set up any regex as a
 [custom linkification filter](/help/add-a-custom-linkification-filter) for
 your organization.
-
-### Enforce a code of conduct
-
-Link to your community norms or give other instructions right on your Zulip
-registration page. Admins can delete messages and deactivate (ban) users at
-any time.
 
 ### Hundreds of integrations
 

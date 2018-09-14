@@ -114,6 +114,7 @@
 * [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
+* [Moderating open organizations](/help/moderating-open-organizations)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [GDPR Compliance](/help/gdpr-compliance)
 
