@@ -14,7 +14,8 @@ from zerver.lib.webhooks.git import EMPTY_SHA, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
-    get_push_tag_event_message, get_remove_branch_event_message
+    get_push_tag_event_message, get_remove_branch_event_message, \
+    get_confidential_issue_event_message
 from zerver.models import UserProfile
 
 
@@ -88,6 +89,34 @@ def get_issue_event_body(payload: Dict[str, Any], action: str,
         title=payload['object_attributes'].get('title') if include_title else None
     )
 
+def get_confidential_issue_created_event_body(payload: Dict[str, Any],
+                                              include_title: Optional[bool]=False) -> str:
+    description = payload['object_attributes'].get('description')
+    # Filter out multiline hidden comments
+    if description is not None:
+        description = re.sub('<!--.*?-->', '', description, 0, re.DOTALL)
+        description = description.rstrip()
+
+    return get_confidential_issue_event_message(
+        get_issue_user_name(payload),
+        'created',
+        get_object_url(payload),
+        payload['object_attributes'].get('iid'),
+        description,
+        get_objects_assignee(payload),
+        title=payload['object_attributes'].get('title') if include_title else None
+    )
+
+def get_confidential_issue_event_body(payload: Dict[str, Any], action: str,
+                                      include_title: Optional[bool]=False) -> str:
+    return get_confidential_issue_event_message(
+        get_issue_user_name(payload),
+        action,
+        get_object_url(payload),
+        payload['object_attributes'].get('iid'),
+        title=payload['object_attributes'].get('title') if include_title else None
+    )
+
 def get_merge_request_updated_event_body(payload: Dict[str, Any],
                                          include_title: Optional[bool]=False) -> str:
     if payload['object_attributes'].get('oldrev'):
@@ -133,6 +162,11 @@ def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
     assignee_object = payload.get('assignee')
     if assignee_object:
         return assignee_object.get('name')
+    else:
+        assignee_object = payload.get('assignees')
+        if assignee_object:
+            for assignee in payload.get('assignees'):
+                return assignee['name']
     return None
 
 def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
@@ -181,6 +215,25 @@ def get_commented_issue_event_body(payload: Dict[str, Any],
         payload['issue'].get('iid'),
         message=comment['note'],
         type='Issue',
+        title=payload.get('issue').get('title') if include_title else None
+    )
+
+def get_commented_confidential_issue_event_body(payload: Dict[str, Any],
+                                                include_title: Optional[bool]=False) -> str:
+    comment = payload['object_attributes']
+    action = u'[commented]({}) on'.format(comment['url'])
+    url = u'{}/issues/{}'.format(
+        payload['project'].get('web_url'),
+        payload['issue'].get('iid')
+    )
+
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        url,
+        payload['issue'].get('iid'),
+        message=comment['note'],
+        type='Confidential Issue',
         title=payload.get('issue').get('title') if include_title else None
     )
 
@@ -275,9 +328,14 @@ EVENT_FUNCTION_MAPPER = {
     'Issue Hook close': partial(get_issue_event_body, action='closed'),
     'Issue Hook reopen': partial(get_issue_event_body, action='reopened'),
     'Issue Hook update': partial(get_issue_event_body, action='updated'),
+    'Confidential Issue Hook open': get_confidential_issue_created_event_body,
+    'Confidential Issue Hook close': partial(get_confidential_issue_event_body, action='closed'),
+    'Confidential Issue Hook reopen': partial(get_confidential_issue_event_body, action='reopened'),
+    'Confidential Issue Hook update': partial(get_confidential_issue_event_body, action='updated'),
     'Note Hook Commit': get_commented_commit_event_body,
     'Note Hook MergeRequest': get_commented_merge_request_event_body,
     'Note Hook Issue': get_commented_issue_event_body,
+    'Confidential Note Hook Issue': get_commented_confidential_issue_event_body,
     'Note Hook Snippet': get_commented_snippet_event_body,
     'Merge Request Hook approved': partial(get_merge_request_event_body, action='approved'),
     'Merge Request Hook open': partial(get_merge_request_open_or_updated_body, action='created'),
@@ -339,10 +397,24 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             id=payload['object_attributes'].get('iid'),
             title=payload['object_attributes'].get('title')
         )
+    elif event.startswith('Confidential Issue Hook'):
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='Confidential Issue',
+            id=payload['object_attributes'].get('iid'),
+            title=payload['object_attributes'].get('title')
+        )
     elif event == 'Note Hook Issue':
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
+            id=payload['issue'].get('iid'),
+            title=payload['issue'].get('title')
+        )
+    elif event == 'Confidential Note Hook Issue':
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='Confidential Issue',
             id=payload['issue'].get('iid'),
             title=payload['issue'].get('title')
         )
@@ -367,12 +439,12 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
     # if there is no 'action' attribute, then this is a test payload
     # and we should ignore it
     event = validate_extract_webhook_http_header(request, 'X_GITLAB_EVENT', 'GitLab')
-    if event in ['Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
+    if event in ['Confidential Issue Hook', 'Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
         action = payload['object_attributes'].get('action')
         if action is None:
             return 'Test Hook'
         event = "{} {}".format(event, action)
-    elif event == 'Note Hook':
+    elif event in ['Confidential Note Hook', 'Note Hook']:
         action = payload['object_attributes'].get('noteable_type')
         event = "{} {}".format(event, action)
     elif event == 'Push Hook':

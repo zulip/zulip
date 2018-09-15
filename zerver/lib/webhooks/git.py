@@ -175,6 +175,24 @@ def get_issue_event_message(user_name: str,
         title=title,
     )
 
+def get_confidential_issue_event_message(user_name: str,
+                                         action: str,
+                                         url: str,
+                                         number: Optional[int]=None,
+                                         message: Optional[str]=None,
+                                         assignee: Optional[str]=None,
+                                         title: Optional[str]=None) -> str:
+    return get_pull_request_event_message(
+        user_name,
+        action,
+        url,
+        number,
+        message=message,
+        assignee=assignee,
+        type='Confidential Issue',
+        title=title,
+    )
+
 def get_push_tag_event_message(user_name: str,
                                tag_name: str,
                                tag_url: Optional[str]=None,
