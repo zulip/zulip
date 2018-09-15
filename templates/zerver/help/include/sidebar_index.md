@@ -106,8 +106,8 @@
 # Zulip administration
 
 ## Organization basics
+* [Review your organization's settings](/help/review-your-organization-settings)
 * [Create your organization profile](/help/create-your-organization-profile)
-* [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)

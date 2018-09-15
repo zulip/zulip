@@ -7,7 +7,7 @@ great start with Zulip.
 ## Configure your Zulip organization
 
 Review and potentially
-[tweak the organization settings](/help/change-your-organization-settings)
+[tweak the organization settings](/help/review-your-organization-settings)
 to match your organization’s needs.
 
 - Set a policy for who can join the organization.  If you’re setting
