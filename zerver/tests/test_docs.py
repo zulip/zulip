@@ -173,17 +173,27 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
 
-    def test_html_settings_links_help_docs(self) -> None:
+    def test_help_settings_links(self) -> None:
         result = self.client_get('/help/change-the-time-format')
         self.assertIn('Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get('/help/change-the-time-format',
-                                     subdomain="")
+            result = self.client_get('/help/change-the-time-format', subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn('<strong>Display settings</strong>', str(result.content))
-        self.assertNotIn('click <a href="/#settings/display-settings">Display settings</a>', str(result.content))
+        self.assertNotIn('/#settings', str(result.content))
+
+    def test_help_relative_links(self) -> None:
+        result = self.client_get('/help/analytics')
+        self.assertIn('<a href="/stats">Statistics</a>', str(result.content))
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get('/help/analytics', subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('<strong>Statistics</strong>', str(result.content))
+        self.assertNotIn('/stats', str(result.content))
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:

@@ -1,9 +1,9 @@
 # Analytics
 
-Zulip provides [analytics](/stats) for tracking various statistics about your
-organization to create a holistic view of its communications. All graphs are
-fully updated once a day, except for the **Messages sent over time** graph,
-which is updated once an hour.
+Zulip provides detailed analytics to help you see how you and your team are
+using Zulip.
+
+{relative|gear|stats}
 
 ## Messages sent over time
 

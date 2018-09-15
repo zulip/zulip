@@ -4,6 +4,10 @@ from typing import Any, Dict, List, Optional, Union
 from typing.re import Match
 from markdown.preprocessors import Preprocessor
 
+# There is a lot of duplicated code between this file and
+# help_relative_links.py. So if you're making a change here consider making
+# it there as well.
+
 REGEXP = re.compile(r'\{settings_tab\|(?P<setting_identifier>.*?)\}')
 
 link_mapping = {
