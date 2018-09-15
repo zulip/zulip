@@ -8,8 +8,8 @@ To install the latest stable release (recommended for most users),
 find your operating system below.  If you're interested in an early
 look at the newest features, consider the [beta releases](#beta-releases).
 
-<!-- This heading is linked to directly from /apps; change with caution -->
-## Installing on macOS
+{start_tabs}
+{tab|mac}
 
 ### Disk image (recommended)
 <!-- TODO why zip? -->
@@ -27,8 +27,7 @@ The app will update automatically to future versions.
 The app will update automatically to future versions. `brew upgrade` will
 also work, if you prefer.
 
-<!-- This heading is linked to directly from /apps; change with caution -->
-## Installing on Windows
+{tab|windows}
 
 ### Web installer (recommended)
 
@@ -48,8 +47,7 @@ The app will update automatically to future versions.
 The app will NOT update automatically. You can repeat these steps to upgrade
 to future versions. <!-- TODO fact check -->
 
-<!-- This heading is linked to directly from /apps; change with caution -->
-## Installing on Linux
+{tab|linux}
 
 ### apt (Ubuntu or Debian 8+)
 
@@ -82,6 +80,8 @@ No installer is necessary; this file is the Zulip app. The app will NOT
 update automatically. You can repeat these steps to upgrade to future versions.
 
 <!-- TODO why dpkg? -->
+
+{end_tabs}
 
 ## Beta releases
 
