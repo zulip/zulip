@@ -34,6 +34,8 @@ DIV_TAB_CONTENT_TEMPLATE = """
 </div>
 """.strip()
 
+# If adding new entries here, also check if you need to update
+# tabbed-instructions.js
 TAB_DISPLAY_NAMES = {
     'desktop-web': 'Desktop/Web',
     'ios': 'iOS',
