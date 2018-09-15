@@ -1,15 +1,12 @@
 # View the Markdown source of a message
 
-When someone in your your Zulip organization sends a message, you can view the
-Markdown source of the message to learn more about the message's formatting or
-reuse the message's Markdown source in a reply.
+You can view the Markdown source of a message to learn how the message was
+formatted, or to copy the Markdown source for a reply.
 
 {!message-actions.md!}
 {!down-chevron.md!}
 
-3. Click on the **View source** option from the actions dropdown to view the
-markdown source of a message.
+3. Click **View source**.
 
 !!! tip ""
-    You can also view the Markdown source of your own messages if they are too
-    old to edit.
+    You can also view the Markdown source of your own past messages.

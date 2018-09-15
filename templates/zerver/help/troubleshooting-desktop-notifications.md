@@ -1,6 +1,6 @@
 # Troubleshooting desktop notifications
 
-First, make sure you are getting
+First, make sure you have enabled
 [desktop notifications for PMs](/help/pm-mention-alert-notifications) or for the
 [stream](/help/stream-notifications) you are testing with.
 

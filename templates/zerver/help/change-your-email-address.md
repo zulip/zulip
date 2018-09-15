@@ -14,8 +14,8 @@ Organization adminstrators can
 
 4. You will receive a confirmation email within a few minutes. Open it and click **Confirm email change**.
 
-    !!! warn ""
-        **Note:** If you are unable to click on the button with your email address, check
-        that your organization allows email changes. Follow the steps at
-        [prevent users from changing their names](/help/restrict-name-and-email-changes)
-        to view your organization's settings.
+!!! warn ""
+    **Note:** If you are unable to click on the button with your email address, check
+    that your organization allows email changes. Follow the steps at
+    [prevent users from changing their names](/help/restrict-name-and-email-changes)
+    to view your organization's settings.
