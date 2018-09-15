@@ -1,16 +1,14 @@
 # Move the users list to the left sidebar
 
-By default, the **Users** list is displayed on the right sidebar located at the
-right of the Zulip window. However, on devices with narrow screen widths of
-under 1165 pixels, the right sidebar is hidden to save space. If you would like
-to see the **Users** list on your mobile device, you can choose to move it to
-the left side of the screen under the **Streams** section in the left sidebar.
+By default, the **User list** is displayed in the right sidebar, to the
+right of the main message pane. However, in narrower windows (1025 pixels and
+smaller) the right sidebar is hidden to save space.
 
-You can easily change the location of the **Users** list by following a few
-steps.
+You can choose to move the **User list** to the left hand side, under the
+**Stream list**, in narrower windows.
 
 {settings_tab|display-settings}
 
-2. Select the option labeled
-    **User list on left sidebar in narrow windows**, then reload the page
-    in order for the change to take effect.
+2. Under **Display settings**, select **User list on left sidebar in narrow windows**.
+
+3. Reload the page.
