@@ -39,6 +39,9 @@ TAB_DISPLAY_NAMES = {
     'desktop-web': 'Desktop/browser',
     'ios': 'iOS',
     'android': 'Android',
+    'mac': 'macOS',
+    'windows': 'Windows',
+    'linux': 'Linux',
 }
 
 class TabbedSectionsGenerator(Extension):
