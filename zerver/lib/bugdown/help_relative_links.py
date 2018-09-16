@@ -22,6 +22,7 @@ gear_info = {
     'stats': ['Statistics', '/stats'],
     'plans': ['Plans and pricing', '/plans'],
     'billing': ['Billing', '/billing'],
+    'invite': ['Invite users', '/#invite'],
 }
 
 gear_instructions = """

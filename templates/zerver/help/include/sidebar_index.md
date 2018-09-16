@@ -61,8 +61,8 @@
 * [Private messages and group PMs](/help/view-your-pms-and-group-pms)
 
 ## People
+* [Invite users](/help/invite-users)
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
-* [Invite another user](/help/invite-a-friend-to-zulip)
 * [View someone's profile](/help/view-someones-profile)
 
 ## Streams & topics
