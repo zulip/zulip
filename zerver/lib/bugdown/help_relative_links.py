@@ -38,8 +38,30 @@ def gear_handle_match(key: str) -> str:
         item = '**%s**' % (gear_info[key][0],)
     return gear_instructions % {'item': item}
 
+
+stream_info = {
+    'all': ['All streams', '/#streams/all'],
+    'subscribed': ['Your streams', '/#streams/subscribed'],
+}
+
+stream_instructions_no_link = """
+1. From your desktop, click on the **gear**
+   (<i class="icon-vector-cog"></i>) in the upper right corner.
+
+1. Click **Manage streams**.
+"""
+
+def stream_handle_match(key: str) -> str:
+    if relative_help_links:
+        return "1. Go to [%s](%s)." % (stream_info[key][0], stream_info[key][1])
+    if key == 'all':
+        return stream_instructions_no_link + "\n\n1. Click **All streams** in the upper left."
+    return stream_instructions_no_link
+
+
 LINK_TYPE_HANDLERS = {
     'gear': gear_handle_match,
+    'stream': stream_handle_match,
 }
 
 class RelativeLinksHelpExtension(markdown.Extension):
