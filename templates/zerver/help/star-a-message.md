@@ -1,4 +1,5 @@
 # Star a message
+
 Starring messages is a good way to keep track of important messages, such as
 tasks you need to go back to or documents you reference often.
 
@@ -6,14 +7,8 @@ tasks you need to go back to or documents you reference often.
 
 1. Click the star (<i class="icon-vector-star-empty"></i>) icon.
 
-2. After starring a message, a filled star (<i class="icon-vector-star"></i>)
-icon appears next to the timestamp of the message, confirming that the message has been
-starred.
+You can access your starred messages by clicking **Starred Messages** in the
+left sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
 
-    You can click on the filled star (<i class="icon-vector-star"></i>) icon
-    next to a starred message to unstar the message.
-
-!!! tip ""
-    You can narrow your view to show all starred messages by searching for
-    messages with the search operator `is:starred` or clicking on the
-    **Starred Messages** option on the left sidebar.
+Starred messages have a filled in star (<i class="icon-vector-star"></i>) to
+their right. Click on it to unstar the message.
