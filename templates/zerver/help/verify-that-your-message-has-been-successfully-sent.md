@@ -24,9 +24,7 @@ Follow the following steps to to see this in action.
 
 1. Disconnect your computer from the Internet.
 
-2. Send a message by following the instructions located
-[here](/help/send-a-stream-message) for public streams or
-[here](/help/send-a-private-message) for private messages.
+2. [Compose a message](/help/compose-and-reply) and click **Send**.
 
 3. After you send your message, it will appear below all the previous
 messages, but with no timestamp.  If the browser gets an error from

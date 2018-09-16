@@ -23,9 +23,6 @@
 
 ## Sending messages
 * [Compose and reply](/help/compose-and-reply)
-* [Send a stream message](/help/send-a-stream-message)
-* [Private messages](/help/send-a-private-message)
-* [Group private messages](/help/send-a-group-of-people-a-private-message)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
@@ -40,7 +37,6 @@
 * [Status messages](/help/format-your-message-using-markdown#status-messages)
 * [@-mention a user](/help/at-mention-a-team-member)
 * [Write in a different language](/help/send-a-message-in-a-different-language)
-* [Reply to a message](/help/reply-to-a-message)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
