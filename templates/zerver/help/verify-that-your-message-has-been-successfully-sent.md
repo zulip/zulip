@@ -38,8 +38,6 @@ error in your browser window.
 5. A few seconds later, your message will be updated to contain the
 timestamp on the right side of the message body.
 
-    ![Message time](/static/images/help/message-exact-time.png)
-
 Zulip is designed to store locally echoed message content in local
 storage and replay it when your browser reconnects to the Internet.
 This should ensure that messages that users thought they had sent get
