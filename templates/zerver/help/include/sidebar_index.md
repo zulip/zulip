@@ -69,7 +69,6 @@
 * [About streams and topics](/help/about-streams-and-topics)
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
-* [View your stream subscriptions](/help/browse-and-subscribe-to-streams#browse-streams)
 * [Add someone to a stream](/help/add-or-remove-users-from-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
