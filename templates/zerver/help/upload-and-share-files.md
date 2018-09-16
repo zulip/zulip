@@ -22,7 +22,7 @@ files will simply have a link displayed.
 
 !!! tip ""
     You can view and [manage your uploaded files](/help/manage-your-uploaded-files)
-    in the [Uploaded files](/#settings/uploaded-files) {!settings.md!}
+    in the [Uploaded files](/#settings/uploaded-files) tab.
 
 ## Link Behavior
 

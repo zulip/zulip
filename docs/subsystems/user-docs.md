@@ -337,26 +337,6 @@ describing the settings they modified.
     your notification settings.
     ```
 
-### **Settings** `{!settings.md!}` macro
-
-* **About:** Links to the **Edit Settings** documentation. Usually preceded by
-a link to a particular section on the **Settings** page.
-
-* **Contents:**
-    ```md
-    tab on the [Settings](/help/edit-settings) page.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    1. Go to the [Notifications](/#settings/notifications)
-    {!settings.md!}
-    ```
-    ```md
-    1. Go to the [Notifications](/#settings/notifications) tab on the
-    [Settings](/help/edit-settings) page.
-    ```
-
 ### **Stream actions** `{!stream-actions.md!}` macro
 
 * **About:** Navigate to the stream actions menu from the left sidebar.
