@@ -1,13 +1,12 @@
 # Collapse a message
 
-Zulip allows you to collapse messages by hiding their contents to reduce message
-clutter.
+Collapse messages that you don't want to see. Zulip sometimes automatically
+partially collapses long messages. This feature is different, and will fully
+remove the message content from view.
 
 {!message-actions-menu.md!}
 
-3. Click on the **Collapse** option from the actions dropdown to collapse a
-message.
+3. Click on **Collapse**.
 
-!!! tip ""
-    To uncollapse a message, click the **[More...]** hyperlink near the
-    bottom of a collapsed message.
+To un-collapse a message, click **[More...]** at the bottom of the collapsed
+message.
