@@ -13,7 +13,9 @@ messages and topics in the stream may or may not continue to work.
 In most cases, we recommend [renaming streams](/help/rename-a-stream) rather
 than deleting them.
 
-{!go-to-stream-via-all-streams.md!}
+{relative|stream|all}
+
+1. Select a stream.
 
 1. On the right, click **Delete**.
 

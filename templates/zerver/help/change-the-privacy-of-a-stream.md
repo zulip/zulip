@@ -10,7 +10,9 @@ As an organization administrator, you can always make a public stream
 private, but you must be subscribed to a private stream in order to make it
 public.
 
-{!go-to-stream-via-all-streams.md!}
+{relative|stream|all}
+
+1. Select a stream.
 
 4. Find the privacy description under the stream name and description on the
    right. Click **[Change]**.
