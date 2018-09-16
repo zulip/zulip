@@ -19,7 +19,7 @@ they also cannot read or send messages to the stream.
 
 Users are subscribed to specific streams in the organization by default,
 such as the #announce stream. Users can easily
-[view messages](/help/reading-messages-by-stream-or-topic) from a specific stream;
+view messages from a specific stream;
 in addition, they can
 [browse](/help/browse-and-subscribe-to-streams) their stream
 subscriptions using the Zulip stream browser.
