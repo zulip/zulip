@@ -168,11 +168,6 @@ class DocPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 404)
 
 class HelpTest(ZulipTestCase):
-    def test_html_settings_links(self) -> None:
-        result = self.client_get('/help/message-a-stream-by-email')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
-
     def test_help_settings_links(self) -> None:
         result = self.client_get('/help/change-the-time-format')
         self.assertIn('Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content))
@@ -184,7 +179,7 @@ class HelpTest(ZulipTestCase):
         self.assertIn('<strong>Display settings</strong>', str(result.content))
         self.assertNotIn('/#settings', str(result.content))
 
-    def test_help_relative_links(self) -> None:
+    def test_help_relative_links_for_gear(self) -> None:
         result = self.client_get('/help/analytics')
         self.assertIn('<a href="/stats">Statistics</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
@@ -194,6 +189,17 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('<strong>Statistics</strong>', str(result.content))
         self.assertNotIn('/stats', str(result.content))
+
+    def test_help_relative_links_for_stream(self) -> None:
+        result = self.client_get('/help/message-a-stream-by-email')
+        self.assertIn('<a href="/#streams/subscribed">Your streams</a>', str(result.content))
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get('/help/message-a-stream-by-email', subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('<strong>Manage streams</strong>', str(result.content))
+        self.assertNotIn('/#streams', str(result.content))
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
