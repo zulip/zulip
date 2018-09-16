@@ -55,8 +55,7 @@ changed by an organization administrator.
 
 To delete a message:
 
-{!message-actions.md!}
-{!down-chevron.md!}
+{!message-actions-menu.md!}
 
 2. Select the **Delete message** option from the dropdown to delete that message.
 

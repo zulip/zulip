@@ -9,8 +9,7 @@ Organization administrators can
 
 ## View a message's edit history
 
-{!message-actions.md!}
-{!down-chevron.md!}
+{!message-actions-menu.md!}
 
 1. Click **View edit history**.
 

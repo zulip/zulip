@@ -3,8 +3,7 @@
 You can view the Markdown source of a message to learn how the message was
 formatted, or to copy the Markdown source for a reply.
 
-{!message-actions.md!}
-{!down-chevron.md!}
+{!message-actions-menu.md!}
 
 3. Click **View source**.
 

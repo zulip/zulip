@@ -22,7 +22,7 @@ Muted topics still appear in the left sidebar, though they are grayed out.
 
 1. Find a message belonging to the topic that you wish to mute or unmute.
 
-{!message-actions.md!} down chevron (<i class="icon-vector-chevron-down"></i>).
+{!message-actions-menu.md!}
 
 1. Select **Mute (or unmute) the topic <topic name\>**.
 

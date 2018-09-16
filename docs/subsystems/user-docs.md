@@ -257,6 +257,10 @@ icon to reveal an actions dropdown.
 
 First step to navigating to the on-hover message actions.
 
+### **Message actions menu** `{!message-actions-menu.md!}` macro
+
+Navigate to the message actions menu.
+
 ### **Save changes** `{!save-changes.md!}` macro
 
 Save changes after modifying organization settings.

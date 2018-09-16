@@ -17,8 +17,7 @@ message to the specified stream under the specified topic by pressing the
 Enter key or clicking the **Send** button, depending on your settings.
 
 ## Reply to a message through the message actions dropdown
-{!message-actions.md!}
-{!down-chevron.md!}
+{!message-actions-menu.md!}
 
 2. Select the **Reply** option from the dropdown to reply to the selected
 message. A message compose box will appear with the **Stream** (outlined in red

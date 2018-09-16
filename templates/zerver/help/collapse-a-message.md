@@ -3,8 +3,7 @@
 Zulip allows you to collapse messages by hiding their contents to reduce message
 clutter.
 
-{!message-actions.md!}
-{!down-chevron.md!}
+{!message-actions-menu.md!}
 
 3. Click on the **Collapse** option from the actions dropdown to collapse a
 message.
