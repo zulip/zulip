@@ -54,7 +54,7 @@
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Emoji reactions](/help/add-an-emoji-reaction-to-a-message)
-* [Share a message or conversation](/help/share-a-message-or-conversation)
+* [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
 

@@ -51,7 +51,7 @@ or explain a complicated point. Full LaTeX support as well.
 
 ### Permalink from issues to chat
 
-[Permalink to Zulip conversations](/help/share-a-message-or-conversation)
+[Permalink to Zulip conversations](/help/link-to-a-message-or-conversation)
 from your issue tracker. Zulip’s topic-based threading keeps conversations
 coherent and organized.
 
