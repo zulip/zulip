@@ -8,9 +8,6 @@ scale may be applicable now.
 Note that most organization settings are visible to all users, though
 generally only organization administrators can interact with them.
 
-1. From your desktop, click on the **gear**
-   (<i class="icon-vector-cog"></i>) in the upper right corner.
-
-1. Select **Manage organization**.
+{relative|gear|manage-organization}
 
 1. Click on each tab on the left.
