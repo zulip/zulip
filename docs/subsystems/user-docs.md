@@ -273,36 +273,6 @@ immediately after the title.
     changing the stream's accessibility.
     ```
 
-### **All streams** `{!all-streams.md!}` macro
-
-* **About:** Explains how to view all streams in the organization on the
-**Streams** page. Usually formatted as a tip and preceded by the
-[**Streams** macro](#streams-subscriptions-md-macro) and the
-[**Filter streams** macro](#filter-streams-filter-streams-md-macro).
-
-* **Contents:**
-    ```md
-        If you wish to see streams that you aren't subscribed to, click on the
-            **All streams** tab; the tab will turn gray upon doing so.
-    ```
-
-* **Example usage and rendering:**
-
-    ```md
-    {!subscriptions.md!}
-    {!filter-streams.md!}
-        !!! tip ""
-        {!all-streams.md!}
-    ```
-    ```md
-    1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Streams](/#streams) page. You can search for specific streams by entering the
-    name of the stream in the **Filter streams** input.
-        !!! tip ""
-            If you wish to see streams that you aren't subscribed to, click on the
-            **All streams** tab; the tab will turn gray upon doing so.
-    ```
-
 ### **Down chevron** `{!down-chevron.md!}` macro
 
 * **About:** Instructs readers to click on the down chevron (<i class="fa
@@ -324,29 +294,6 @@ macro](#message-actions-message-actions-md-macro).
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
-    ```
-
-### **Filter streams** `{!filter-streams.md!}` macro
-
-* **About:** Explains how to search for specific streams in the
-  **Streams** page using the **Filter streams** input. Usually preceded by
-  the [**Streams** macro](#streams-subscriptions-md-macro).
-
-* **Contents:**
-    ```md
-    You can search for specific streams by entering the name of the stream in
-    the **Filter streams** input.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!subscriptions.md!}
-    {!filter-streams.md!}
-    ```
-    ```md
-    1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Streams](/#streams) page. You can search for specific streams by entering the
-    name of the stream in the **Filter streams** input.
     ```
 
 ### **Message actions** `{!message-actions.md!}` macro
@@ -412,101 +359,7 @@ a link to a particular section on the **Settings** page.
 
 ### **Stream actions** `{!stream-actions.md!}` macro
 
-* **About:** Explains how to view the actions of stream. Usually followed by the an
-instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
-
-* **Contents:**
-    ```md
-    1. On the left sidebar in the **Streams** section, hover over a stream to reveal
-    a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
-    the stream name.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!stream-actions.md!}
-
-    1. Click on the {!down-chevron.md!}
-    ```
-
-    ```md
-    1. On the left sidebar in the **Streams** section, hover over a stream to reveal
-    a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
-    the stream name.
-
-    2. Click on the down chevron (<i class="fa fa-chevron-down"></i>)
-    icon to reveal an actions dropdown.
-    ```
-
-### **Stream settings** `{!stream-settings.md!}` macro
-
-* **About:** Notifies readers about the changes in the
-  **Streams** page when a stream is selected; usually followed
-  by an instruction.
-
-* **Contents:**
-    ```md
-    the right side of the [Streams](/#streams) page, labeled
-    **Stream settings**, will now display the selected stream's settings.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    1. Click on the stream you want to edit; {!stream-settings.md!}
-    ```
-    ```md
-    1. Click on the stream you want to edit; the right side of the
-    [Streams](/#streams) page, labeled **Stream settings**, will
-    now display the selected stream's settings.
-    ```
-
-### **Stream settings scroll** `{!stream-settings.md!}` macro
-
-* **About:** Instructs readers to scroll down to a particular section on the
-**Streams** page after making sure their cursors are hovering above the
-**Streams Settings** section.
-
-* **Contents:**
-    ```md
-    1. After making sure that your cursor is hovering over the **Streams Settings**
-    section, scroll down to the
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!stream-settings-scroll.md!} **Stream membership** section. This section
-    shows the usernames and emails of all users that are currently subscribed to the
-    selected stream.
-    ```
-    ```md
-    1. After making sure that your cursor is hovering over the **Streams Settings**
-    section, scroll down to the **Stream membership** section. This section
-    shows the usernames and emails of all users that are currently subscribed to the
-    selected stream.
-    ```
-
-### **Streams** `{!subscriptions.md!}` macro
-
-* **About:** Used in documentation that direct users to the **Streams** page.
-Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
-
-* **Contents:**
-    ```md
-    1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on
-    the [Streams](/#streams) page.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!subscriptions.md!}
-    {!filter-streams.md!}
-    ```
-    ```md
-    1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Streams](/#streams) page. You can search for specific streams by entering the
-    name of the stream in the **Filter streams** input.
-    ```
-
+* **About:** Navigate to the stream actions menu from the left sidebar.
 
 ### Tips and warnings
 
