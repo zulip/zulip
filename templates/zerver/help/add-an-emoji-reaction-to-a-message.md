@@ -13,7 +13,8 @@ open the emoji reactions picker quickly without using a mouse.
 
     !!! tip ""
         For messages that you sent, the picker to add a reaction is
-        instead accessed by clicking the {!down-chevron.md!}
+        instead accessed by clicking the down chevron
+        (<i class="icon-vector-chevron-down"></i>).
 
 3. Locate the emoji you want to choose as your reaction in the emoji
 reactions picker pop-up by using the arrow keys, the scroll-bar on the

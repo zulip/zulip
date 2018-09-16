@@ -248,11 +248,6 @@ The source for macros is the Markdown files under
 
 Notes that the feature is only available to organization administrators.
 
-### **Down chevron** `{!down-chevron.md!}` macro
-
-Click on the down chevron (<i class="fa fa-chevron-down"></i>)
-icon to reveal an actions dropdown.
-
 ### **Message actions** `{!message-actions.md!}` macro
 
 First step to navigating to the on-hover message actions.
