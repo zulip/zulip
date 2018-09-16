@@ -84,7 +84,7 @@
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Digest emails](/help/configure-email-digest-notifications)
-* [Add an alert word](/help/add-an-alert-word)
+* [Alert words](/help/add-an-alert-word)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 
