@@ -53,7 +53,7 @@
 * [See all images in a narrow](/help/viewing-images#see-all-images-in-a-narrow)
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
-* [Emoji reactions](/help/add-an-emoji-reaction-to-a-message)
+* [Emoji reactions](/help/emoji-reactions)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
