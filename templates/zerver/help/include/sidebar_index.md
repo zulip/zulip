@@ -83,7 +83,6 @@
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Digest emails](/help/configure-email-digest-notifications)
 * [Alert words](/help/add-an-alert-word)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
