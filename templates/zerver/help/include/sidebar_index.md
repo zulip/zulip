@@ -26,7 +26,7 @@
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
-* [Emoji](/help/add-emoji)
+* [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Video calls](/help/start-a-call)
 * [Share and upload files](/help/upload-and-share-files)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)

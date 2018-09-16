@@ -27,8 +27,8 @@ are treated the same as spaces.
 You can replace a default emoji by adding a custom emoji of the same
 name. If an emoji has several names, you must use the emoji's primary name
 to replace it. You can find the primary name of an emoji by hovering over it
-in the [emoji picker](/help/add-emoji), while the search box is empty (you
-may have to scroll down a bit to find it).
+in the [emoji picker](/help/emoji-and-emoticons#select-from-the-emoji-picker),
+while the search box is empty (you may have to scroll down a bit to find it).
 
 ## Delete a custom emoji
 
