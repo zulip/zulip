@@ -9,3 +9,7 @@ formatted, or to copy the Markdown source for a reply.
 
 !!! tip ""
     You can also view the Markdown source of your own past messages.
+
+## Related articles
+
+* [Format messages using Markdown](/help/format-your-message-using-markdown)
