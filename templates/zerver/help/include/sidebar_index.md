@@ -22,6 +22,7 @@
 * [Zulip glossary](/help/zulip-glossary)
 
 ## Sending messages
+* [Compose and reply](/help/compose-and-reply)
 * [Send a stream message](/help/send-a-stream-message)
 * [Private messages](/help/send-a-private-message)
 * [Group private messages](/help/send-a-group-of-people-a-private-message)
