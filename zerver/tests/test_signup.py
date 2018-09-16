@@ -176,7 +176,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
@@ -221,7 +221,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
@@ -248,7 +248,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
@@ -279,7 +279,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
@@ -299,7 +299,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
@@ -344,7 +344,7 @@ class PasswordResetTest(ZulipTestCase):
             "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
-        self.assert_in_response("Check your email to finish the process.", result)
+        self.assert_in_response("Check your email in a few minutes to finish the process.", result)
 
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
