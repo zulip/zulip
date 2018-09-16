@@ -21,12 +21,12 @@ Users are subscribed to specific streams in the organization by default,
 such as the #announce stream. Users can easily
 [view messages](/help/reading-messages-by-stream-or-topic) from a specific stream;
 in addition, they can
-[browse](/help/browse-and-subscribe-to-streams#browse-streams) their stream
+[browse](/help/browse-and-subscribe-to-streams) their stream
 subscriptions using the Zulip stream browser.
 
 If they wish to read messages from a stream that they're not subscribed to,
 users can choose to
-[join](/help/browse-and-subscribe-to-streams#subscribing-to-streams) a
+[join](/help/browse-and-subscribe-to-streams) a
 stream. Similarly, if they are not interested in the topics being discussed
 in a stream, users can choose to
 [unsubscribe](/help/unsubscribe-from-a-stream) from a stream.  Users can

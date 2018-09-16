@@ -74,7 +74,7 @@ font-weight: 800">#</span>) icon, and private streams are represented by a lock
     * Clicking the magnifying glass (<i class="icon-vector-search"></i>) icon
     reveals an input that allows you to search for streams.
     * Clicking the cog (<i class="icon-vector-cog"></i>) icon allows you to
-    [navigate](/help/browse-and-subscribe-to-streams#browse-streams) to the
+    [navigate](/help/browse-and-subscribe-to-streams) to the
     [Streams](/#streams) page.
 * Hovering over a stream in the **Streams** section reveals a
 chevron that allows you to modify the stream's settings when you click on it.
