@@ -36,7 +36,6 @@
 <!-- What to do if the server returns an error -->
 * [Status messages](/help/format-your-message-using-markdown#status-messages)
 * [@-mention a user](/help/at-mention-a-team-member)
-* [Write in a different language](/help/send-a-message-in-a-different-language)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
