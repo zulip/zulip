@@ -9,7 +9,7 @@
 * [Change your email address](/help/change-your-email-address)
 * [Edit your profile](/help/edit-your-profile)
 * [Manage your password](/help/change-your-password)
-* [Edit your settings](/help/change-your-settings)
+* [Review your settings](/help/review-your-settings)
 * [Set your avatar](/help/change-your-avatar)
 * [Change your default language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-time-format)
