@@ -9,8 +9,9 @@ minutes of when you send them. Organization administrators can change the
 time limit, remove the time limit, or remove the ability to edit messages
 entirely.
 
-{!message-actions.md!} pencil (<i class="icon-vector-pencil"></i>) icon
-to reveal a message editing box.
+{!message-actions.md!}
+
+1. Click the pencil (<i class="icon-vector-pencil"></i>) icon.
 
 2. After making the changes to your message in the message editing box, click
 the **Save** button to save the changes you made to your message.

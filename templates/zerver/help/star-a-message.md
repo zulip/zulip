@@ -2,7 +2,9 @@
 Starring messages is a good way to keep track of important messages, such as
 tasks you need to go back to or documents you reference often.
 
-{!message-actions.md!} star (<i class="icon-vector-star-empty"></i>) icon.
+{!message-actions.md!}
+
+1. Click the star (<i class="icon-vector-star-empty"></i>) icon.
 
 2. After starring a message, a filled star (<i class="icon-vector-star"></i>)
 icon appears next to the timestamp of the message, confirming that the message has been

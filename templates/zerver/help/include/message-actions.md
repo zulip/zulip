@@ -1,1 +1,1 @@
-1. Hover over the message to reveal three icons on the right. Select the
+1. Hover over a message to reveal three icons on the right.

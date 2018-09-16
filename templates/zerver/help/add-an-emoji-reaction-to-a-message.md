@@ -5,7 +5,9 @@ an emoji reaction.
 
 1. Locate the message you want to react to in the message table.
 
-{!message-actions.md!} smiley face (<i class="icon-vector-smile"></i>)
+{!message-actions.md!}
+
+1. Click the smiley face (<i class="icon-vector-smile"></i>)
 icon to reveal the emoji reactions picker.  Or, use the `:` hotkey to
 open the emoji reactions picker quickly without using a mouse.
 
