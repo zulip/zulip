@@ -6,7 +6,9 @@ Anyone subscribed to a stream can add users to that stream. Additionally,
 anyone can add users to a public stream, whether or not they are subscribed
 to the stream.
 
-{!go-to-stream-via-all-streams.md!}
+{relative|stream|all}
+
+1. Select a stream.
 
 1. Under **Stream membership**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
@@ -23,7 +25,9 @@ Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-
 Organization administrators can also unsubscribe *other* users from any stream,
 including streams the admin is not subscribed to.
 
-{!go-to-stream-via-all-streams.md!}
+{relative|stream|all}
+
+1. Select a stream.
 
 1. Under **Stream membership**, find the user you would like to remove.
 
