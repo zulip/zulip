@@ -29,7 +29,6 @@
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Video calls](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
-* [Manage your uploaded files](/help/manage-your-uploaded-files)
 <!-- Automatically link to an external issue tracker (improve wording) -->
 * [Enable pressing Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify a message was sent](/help/verify-that-your-message-has-been-successfully-sent)
@@ -83,6 +82,7 @@
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
+* [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [View emoji as text](/help/view-emoji-as-text)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
