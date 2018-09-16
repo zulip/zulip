@@ -11,7 +11,7 @@ they may have already read the message.
     You can view any messages calling your attention by clicking on the
     **Mentions** filters in the left sidebar.
 
-1. Compose a [new message or reply](/help/reply-to-a-message).
+{!start-composing.md!}
 2. In the **Compose your message here...** field, type `@` followed by the
 email address or part of the username of the user you want to @-mention.
 When you begin typing an email address or username, autocomplete suggestions

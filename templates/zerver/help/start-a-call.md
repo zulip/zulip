@@ -1,6 +1,6 @@
 # Start a video call
 
-1. Compose a [new message or reply](/help/reply-to-a-message).
+{!start-composing.md!}
 
 2. Click the video-camera (<i class="fa fa-video-camera"></i>) icon in the
 bottom left corner of the compose box. This will insert a link like

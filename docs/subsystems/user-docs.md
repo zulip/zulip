@@ -264,6 +264,10 @@ Save changes after modifying organization settings.
 
 Navigate to the stream actions menu from the left sidebar.
 
+### **Start composing** `{!start-composing.md!}` macro
+
+Open the compose box.
+
 ### Tips and warnings
 
 A **tip** is any suggestion for the user that is not part of the main set of
