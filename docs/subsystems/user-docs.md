@@ -242,104 +242,28 @@ repeated content in our documentation.
 
 The source for macros is the Markdown files under
 `templates/zerver/help/include` in the
-[main Zulip server repository](https://github.com/zulip/zulip). If you find
-multiple instances of particular content in the documentation, you can
-always create a new macro by adding a new file to that folder.
+[main Zulip server repository](https://github.com/zulip/zulip).
 
 ### **Administrator only feature** `{!admin-only.md!}` macro
 
-* **About:** Creates a note the feature discussed in the documentation is
-only available to organization administrators. It should be placed
-immediately after the title.
-
-* **Contents:**
-    ```md
-    !!! warn ""
-        **Note:** This feature can only be controlled by organization administrators.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!admin-only.md!}
-
-    Follow the following steps to change who can join your stream by changing the stream's
-    accessibility.
-    ```
-    ```md
-    !!! warn ""
-        **Note:** This feature can only be controlled by organization administrators.
-
-    Follow the following steps to change who can join your stream by
-    changing the stream's accessibility.
-    ```
+Notes that the feature is only available to organization administrators.
 
 ### **Down chevron** `{!down-chevron.md!}` macro
 
-* **About:** Instructs readers to click on the down chevron (<i class="fa
-fa-chevron-down"></i>) icon to reveal an actions dropdown; usually preceded by
-an command, such as the [**Message actions**
-macro](#message-actions-message-actions-md-macro).
-
-* **Contents:**
-    ```md
-    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!message-actions.md!}
-    {!down-chevron.md!}
-    ```
-    ```md
-    1. Hover over a message to replace the message's timestamp with its message
-    actions, represented by three icons. From the icons that appear, select the
-    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
-    ```
+Click on the down chevron (<i class="fa fa-chevron-down"></i>)
+icon to reveal an actions dropdown.
 
 ### **Message actions** `{!message-actions.md!}` macro
 
-* **About:** Explains how to view the actions of message. Usually followed by an instruction
-to click a specific icon, such as the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
-
-* **Contents:**
-    ```md
-    1. Hover over the message to reveal three icons on the right. Select the
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!message-actions.md!}
-    {!down-chevron.md!}
-    ```
-    ```md
-    1. Hover over the message to reveal three icons on the right. Select the
-    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
-    ```
+First step to navigating to the on-hover message actions.
 
 ### **Save changes** `{!save-changes.md!}` macro
 
-* **About:** Used in documentation that requests users to save their changes
-by pressing the **Save changes** button. Usually followed by a phrase
-describing the settings they modified.
-
-* **Contents:**
-    ```md
-    1. Click on the **Save changes** button to save any changes you made to
-    your
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!save-changes.md!} notification settings.
-    ```
-    ```md
-    1. Click on the **Save changes** button to save any changes you made to
-    your notification settings.
-    ```
+Save changes after modifying organization settings.
 
 ### **Stream actions** `{!stream-actions.md!}` macro
 
-* **About:** Navigate to the stream actions menu from the left sidebar.
+Navigate to the stream actions menu from the left sidebar.
 
 ### Tips and warnings
 
