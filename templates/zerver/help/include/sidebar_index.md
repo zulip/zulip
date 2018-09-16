@@ -20,7 +20,6 @@
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
 * [Zulip glossary](/help/zulip-glossary)
-* [The Zulip browser window](/help/the-zulip-browser-window)
 
 ## Sending messages
 * [Send a stream message](/help/send-a-stream-message)
