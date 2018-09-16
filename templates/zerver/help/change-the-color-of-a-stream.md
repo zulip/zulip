@@ -9,8 +9,6 @@ through the left sidebar.
 
 {!stream-actions.md!}
 
-2. Click on the {!down-chevron.md!}
-
 3. Select the **Choose custom color** option from the actions dropdown.
 
 4. The stream will change colors in the left sidebar, confirming the success of

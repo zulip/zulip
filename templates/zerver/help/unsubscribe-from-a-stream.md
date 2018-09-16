@@ -26,8 +26,7 @@ through the stream sidebar.
 
 {!stream-actions.md!}
 
-2. Click on the {!down-chevron.md!} Select the **Unsubscribe** option from the
-actions dropdown.
+2. Select the **Unsubscribe** option from the actions dropdown.
 
 3. Upon selecting the **Unsubscribe** option, the selected stream will disappear
 from the left sidebar, confirming the success of your unsubscribing from the

@@ -15,16 +15,12 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {!stream-actions.md!}
 
-2. Click on the down chevron (<i class="icon-vector-chevron-down"></i>).
-
 3. Select **Mute the stream (stream name)**.
 
 
 ## Unmute a stream
 
 {!stream-actions.md!}
-
-2. Click on the down chevron (<i class="icon-vector-chevron-down"></i>).
 
 3. Select the **Unmute the stream (stream name)**.
 

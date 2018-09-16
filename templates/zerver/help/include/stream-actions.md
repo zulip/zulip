@@ -1,2 +1,3 @@
-1. On the left sidebar, hover over a stream name to reveal
-a down chevron (<i class="icon-vector-chevron-down"></i>) to the right.
+1. Hover over a stream in the left sidebar.
+
+1. Click on the down chevron (<i class="icon-vector-chevron-down"></i>).

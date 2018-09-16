@@ -10,7 +10,7 @@ If you want to quickly pin a single stream, you can do so through the stream sid
 
 {!stream-actions.md!}
 
-2. Click on the {!down-chevron.md!} Select the **Pin stream (stream name) to top**
+2. Select the **Pin stream (stream name) to top**
 option from the actions dropdown.
 
 3. Upon selecting the **Pin stream (stream name) to top** option, the selected
