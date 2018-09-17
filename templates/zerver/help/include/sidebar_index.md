@@ -30,7 +30,7 @@
 * [Video calls](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
 <!-- Automatically link to an external issue tracker (improve wording) -->
-* [Enable pressing Enter to send](/help/enable-or-disable-pressing-enter-to-send)
+* [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-that-your-message-has-been-successfully-sent)
 <!-- What to do if the server returns an error -->
 * [Status messages](/help/format-your-message-using-markdown#status-messages)
