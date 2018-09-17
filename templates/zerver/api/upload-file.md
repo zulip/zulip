@@ -5,21 +5,11 @@ Upload a single file and get the corresponding URI.
 `POST {{ api_url }}/v1/user_uploads`
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-</ul>
-<div class="blocks">
 
-<div data-language="python" markdown="1">
-
+{start_tabs}
+{tab|python}
 {generate_code_example(python)|/user_uploads:post|example}
-
-</div>
-
-</div>
-
-</div>
+{end_tabs}
 
 ## Arguments
 

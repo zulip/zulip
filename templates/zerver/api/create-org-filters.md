@@ -6,14 +6,12 @@ Establish patterns in the messages that should be automatically linkified.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
+{start_tabs}
+{tab|python}
 
-<div data-language="curl" markdown="1">
+{generate_code_example(python)|/realm/filters:post|example}
+
+{tab|curl}
 
 ```
 curl -X POST {{ api_url }}/v1/realm/filters \
@@ -22,17 +20,7 @@ curl -X POST {{ api_url }}/v1/realm/filters \
     -d "url_format_string=https://github.com/zulip/zulip/issues/%(id)s"
 ```
 
-</div>
-
-<div data-language="python" markdown="1">
-
-{generate_code_example(python)|/realm/filters:post|example}
-
-</div>
-
-</div>
-
-</div>
+{end_tabs}
 
 ## Arguments
 

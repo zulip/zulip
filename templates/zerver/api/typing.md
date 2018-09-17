@@ -9,32 +9,13 @@ for details on Zulip's typing notifications protocol.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
-
-<div data-language="curl" markdown="1">
-
-```
-curl -X POST {{ api_url }}/v1/typing \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "op=start" \
-    -d 'to="iago@zulip.com","polonius@zulip.com"'
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/typing:post|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -54,11 +35,17 @@ zulip(config).then((client) => {
     return client.typing.send(typingParams);
 }).then(console.log);
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -X POST {{ api_url }}/v1/typing \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "op=start" \
+    -d 'to="iago@zulip.com","polonius@zulip.com"'
+```
+
+{end_tabs}
 
 ## Arguments
 

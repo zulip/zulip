@@ -51,7 +51,8 @@
     "help": [
             "./node_modules/simplebar/dist/simplebar.css",
             "./node_modules/simplebar/dist/simplebar.js",
-            "./static/js/portico/help.js"
+            "./static/js/portico/help.js",
+            "./static/js/portico/tabbed-instructions.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
     "landing-page": [
