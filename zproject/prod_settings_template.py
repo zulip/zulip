@@ -415,7 +415,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # To sync names for existing users; you may want to run this in a cron
 # job to pick up name changes made on your LDAP server.
 import ldap
-from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, LDAPSearchUnion
 
 # URI of your LDAP server. If set, LDAP is used to prepopulate a user's name in
 # Zulip. Example: "ldaps://ldap.example.com"
@@ -429,9 +429,13 @@ AUTH_LDAP_SERVER_URI = ""
 AUTH_LDAP_BIND_DN = ""
 
 # Specify the search base and the property to filter on that corresponds to the
-# username.
+# username.  One can use LDAPSearchUnion to do the union of multiple LDAP searches.
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+#AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
+#    LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+#    LDAPSearch("ou=otherusers,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+#)
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
