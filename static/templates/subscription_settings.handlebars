@@ -19,7 +19,7 @@
             </div>
             <div class="button-group">
                 {{#if is_admin}}
-                <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}">{{t 'Delete' }} <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 {{/if}}
                 <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)" {{#unless should_display_subscription_button}}style="display: none"{{/unless}}>
                     {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
