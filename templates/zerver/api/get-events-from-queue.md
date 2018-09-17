@@ -6,26 +6,9 @@ This endpoint allows you to receive new events from
 [a registered event queue](/api/register-queue).
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl -G {{ api_url }}/v1/events \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-    -d "queue_id=1375801870:2942" \
-    -d "last_event_id=-1"
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 ```
 #!/usr/bin/env python
@@ -48,9 +31,8 @@ print(client.get_events(
 `call_on_each_message` and `call_on_each_event` will automatically register
 a queue for you.
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -77,11 +59,17 @@ zulip(config).then((client) => {
     });
 });
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -G {{ api_url }}/v1/events \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d "queue_id=1375801870:2942" \
+    -d "last_event_id=-1"
+```
+
+{end_tabs}
 
 ## Arguments
 

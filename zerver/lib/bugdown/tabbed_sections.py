@@ -43,6 +43,10 @@ TAB_DISPLAY_NAMES = {
     'mac': 'macOS',
     'windows': 'Windows',
     'linux': 'Linux',
+    'python': 'Python',
+    'js': 'JavaScript',
+    'curl': 'curl',
+    'zulip-send': 'zulip-send',
 }
 
 class TabbedSectionsGenerator(Extension):

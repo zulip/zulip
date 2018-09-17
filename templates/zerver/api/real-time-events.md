@@ -26,13 +26,9 @@ instead use the raw [register](/api/register-queue) and
 [events](/api/get-events-from-queue) endpoints.
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-</ul>
-<div class="blocks">
 
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 ```
 #!/usr/bin/env python
@@ -52,9 +48,7 @@ client.call_on_each_message(lambda msg: sys.stdout.write(str(msg) + "\n"))
 client.call_on_each_event(lambda event: sys.stdout.write(str(event) + "\n"))
 ```
 
-</div>
-</div>
-</div>
+{end_tabs}
 
 ## Arguments
 

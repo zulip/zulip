@@ -46,31 +46,14 @@ works, avoids clients needing to worry about large classes of
 potentially messy races, etc.
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl {{ api_url }}/v1/register \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-    -d 'event_types=["message"]'
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/register:post|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -89,11 +72,16 @@ zulip(config).then((client) => {
 });
 
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl {{ api_url }}/v1/register \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d 'event_types=["message"]'
+```
+
+{end_tabs}
 
 ## Arguments
 
