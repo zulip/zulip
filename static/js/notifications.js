@@ -502,7 +502,7 @@ exports.received_messages = function (messages) {
 
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + ">" + message.subject;
+        return message.stream + " > " + message.subject;
     }
     if (message.display_recipient.length > 2) {
         return "group PM with " + message.display_reply_to;
