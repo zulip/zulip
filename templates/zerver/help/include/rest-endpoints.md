@@ -32,9 +32,6 @@
 #### Server & organizations
 
 * [Create organization filters](/api/create-org-filters)
-
-#### Server & organizations
-
 * [Get server settings](/api/server-settings)
 
 #### Real-time events
@@ -42,4 +39,3 @@
 * [Register an event queue](/api/register-queue)
 * [Get events from an event queue](/api/get-events-from-queue)
 * [Delete an event queue](/api/delete-queue)
-
