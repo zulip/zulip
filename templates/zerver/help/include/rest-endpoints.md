@@ -31,11 +31,11 @@
 
 #### Server & organizations
 
-* [Create organization filters](/api/create-org-filters)
-
-#### Server & organizations
-
 * [Get server settings](/api/server-settings)
+* [List organization filters](/api/list-org-filters)
+* [Create organization filters](/api/create-org-filters)
+* [Remove organization filters](/api/remove-org-filters)
+* [Get all custom emoji](/api/get-org-emoji)
 
 #### Real-time events
 * [Real time events API](/api/real-time-events)

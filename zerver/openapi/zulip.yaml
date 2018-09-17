@@ -1219,7 +1219,84 @@ paths:
                           "msg": "Topic is not muted",
                           "result": "error"
                       }
+  /realm/emoji:
+    get:
+      description: Get all the custom emoji in the user's realm.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    emoji:
+                      type: object
+                      description: An object that contains `emoji` objects,
+                        each identified with their emoji ID as the key.
+                - example:
+                    {
+                        "result": "success",
+                        "msg": "",
+                        "emoji": {
+                            "1": {
+                                "id": "1",
+                                "name": "green_tick",
+                                "source_url": "/user_avatars/1/emoji/images/1.png",
+                                "deactivated": false,
+                                "author": {
+                                    "id": 5,
+                                    "email": "iago@zulip.com",
+                                    "full_name": "Iago"
+                                }
+                            }
+                        }
+                    }
   /realm/filters:
+    get:
+      description: Fetch all the filters set up for the user's organization.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    filters:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type:
+                            anyOf:
+                            - string
+                            - integer
+                      description: An array of sub-arrays, each representing
+                        one of the filters set up in the organization. Each of
+                        these tuples contain the pattern, the formatted URL and
+                        the filter's ID, in that order.
+                        See [Create organization
+                        filters](/api/create-org-filters#create-organization-filters)
+                        for details on what does each field mean.
+                - example:
+                    {
+                        "msg": "",
+                        "filters": [
+                            [
+                                "#(?P<id>[0-9]+)",
+                                "https://github.com/zulip/zulip/issues/%(id)s",
+                                1
+                            ]
+                        ],
+                        "result": "success"
+                    }
     post:
       description: Establish patterns in the messages that should be
         automatically linkified.
@@ -1262,6 +1339,26 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
+  /realm/filters/<filter_id>:
+    delete:
+      description: Remove an organization filter.
+      parameters:
+      - name: filter_id
+        in: path
+        description: The ID of the filter that you want to remove.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
   /register:
     post:
       description: This powerful endpoint can be used to register a Zulip

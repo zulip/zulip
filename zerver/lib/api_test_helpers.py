@@ -154,6 +154,16 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+def get_realm_filters(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch all the filters in this organization
+    result = client.get_realm_filters()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
+
 def add_realm_filter(client):
     # type: (Client) -> None
 
@@ -165,6 +175,16 @@ def add_realm_filter(client):
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
+
+def remove_realm_filter(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Remove the organization filter with ID 42
+    result = client.remove_realm_filter(42)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters/<filter_id>', 'delete', '200')
 
 def get_profile(client):
     # type: (Client) -> None
@@ -526,6 +546,15 @@ def get_message_history(client, message_id):
     validate_against_openapi_schema(result, '/messages/{message_id}/history',
                                     'get', '200')
 
+def get_realm_emoji(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    result = client.get_realm_emoji()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/emoji', 'GET', '200')
+
 def register_queue(client):
     # type: (Client) -> str
 
@@ -654,7 +683,10 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users:get': get_members,
+    '/realm/emoji:get': get_realm_emoji,
+    '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
+    '/realm/filters/<filter_id>:delete': remove_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/server_settings:get': get_server_settings,
@@ -766,8 +798,11 @@ def test_queues(client):
 def test_server_organizations(client):
     # type: (Client) -> None
 
+    get_realm_filters(client)
     add_realm_filter(client)
     get_server_settings(client)
+    remove_realm_filter(client)
+    get_realm_emoji(client)
 
 def test_errors(client):
     # type: (Client) -> None
