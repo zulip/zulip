@@ -423,8 +423,10 @@ run_test('insert_remove', () => {
 
     assert.equal(pill_input.text(), 'chartreuse, mauve');
 
+    assert.equal(widget.is_pending(), true);
     widget.clear_text();
     assert.equal(pill_input.text(), '');
+    assert.equal(widget.is_pending(), false);
 
     var BACKSPACE = 8;
     var key_handler = container.get_on_handler('keydown', '.input');

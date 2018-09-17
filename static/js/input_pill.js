@@ -61,6 +61,14 @@ exports.create = function (opts) {
             store.$input.text("");
         },
 
+        is_pending: function () {
+            // This function returns true if we have text
+            // in out widget that hasn't been turned into
+            // pills.  We use it to decide things like
+            // whether we're ready to send typing indicators.
+            return store.$input.text().trim() !== '';
+        },
+
         create_item: function (text) {
             var existing_items = funcs.items();
             var item = store.create_item_from_text(text, existing_items);
@@ -372,6 +380,7 @@ exports.create = function (opts) {
 
         clear: funcs.removeAllPills.bind(funcs),
         clear_text: funcs.clear_text,
+        is_pending: funcs.is_pending,
     };
 
     return prototype;
