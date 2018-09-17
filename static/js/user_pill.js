@@ -76,6 +76,21 @@ exports.get_user_ids = function (pill_widget) {
     return user_ids;
 };
 
+exports.has_unconverted_data = function (pill_widget) {
+    // This returns true if we either have text that hasn't been
+    // turned into pills or email-only pills (for Zephyr).
+    if (pill_widget.is_pending()) {
+        return true;
+    }
+
+    var items = pill_widget.items();
+    var has_unknown_items = _.any(items, function (item) {
+        return item.user_id === undefined;
+    });
+
+    return has_unknown_items;
+};
+
 exports.typeahead_source = function (pill_widget) {
     var items = people.get_realm_persons();
     var taken_user_ids = exports.get_user_ids(pill_widget);

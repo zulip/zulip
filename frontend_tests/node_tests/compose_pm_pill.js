@@ -152,3 +152,32 @@ run_test('pills', () => {
     assert(appendValue_called);
     assert(text_cleared);
 });
+
+run_test('has_unconverted_data', () => {
+    compose_pm_pill.widget = {
+        is_pending: () => true,
+    };
+
+    // If the pill itself has pending data, we have unconverted
+    // data.
+    assert.equal(compose_pm_pill.has_unconverted_data(), true);
+
+    compose_pm_pill.widget = {
+        is_pending: () => false,
+        items: () => [{user_id: 99}],
+    };
+
+    // Our pill is complete and all items containt user_id, so
+    // we do NOT have unconverted data.
+    assert.equal(compose_pm_pill.has_unconverted_data(), false);
+
+    compose_pm_pill.widget = {
+        is_pending: () => false,
+        items: () => [{user_id: 99}, {email: 'random@mit.edu'}],
+    };
+
+    // One of our items only knows email (as in a bridge-with-zephyr
+    // scenario where we might not have registered the user yet), so
+    // we have some unconverted data.
+    assert.equal(compose_pm_pill.has_unconverted_data(), true);
+});

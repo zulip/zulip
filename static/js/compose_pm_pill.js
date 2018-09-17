@@ -41,6 +41,10 @@ exports.get_user_ids = function () {
     return user_pill.get_user_ids(exports.widget);
 };
 
+exports.has_unconverted_data = function () {
+    return user_pill.has_unconverted_data(exports.widget);
+};
+
 exports.get_user_ids_string = function () {
     var user_ids = exports.get_user_ids();
     var sorted_user_ids = util.sorted_ids(user_ids);
