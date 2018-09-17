@@ -5,30 +5,14 @@ Get all streams that the user is subscribed to.
 `GET {{ api_url }}/v1/users/me/subscriptions`
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl {{ api_url }}/v1/users/me/subscriptions \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|get-subscribed-streams|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 
 ```js
@@ -45,11 +29,15 @@ zulip(config).then((client) => {
 });
 
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl {{ api_url }}/v1/users/me/subscriptions \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+```
+
+{end_tabs}
 
 ## Arguments
 

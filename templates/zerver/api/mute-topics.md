@@ -8,14 +8,12 @@ UI, and are not included in the user's unread count totals.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
+{start_tabs}
+{tab|python}
 
-<div data-language="curl" markdown="1">
+{generate_code_example(python)|/users/me/subscriptions/muted_topics:patch|example}
+
+{tab|curl}
 
 ```
 curl -X PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics \
@@ -25,17 +23,7 @@ curl -X PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics \
     -d "op=add"
 ```
 
-</div>
-
-<div data-language="python" markdown="1">
-
-{generate_code_example(python)|/users/me/subscriptions/muted_topics:patch|example}
-
-</div>
-
-</div>
-
-</div>
+{end_tabs}
 
 ## Arguments
 

@@ -5,42 +5,14 @@ Unsubscribe yourself or other users from one or more streams.
 `DELETE {{ api_url }}/v1/users/me/subcriptions`
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl -X "DELETE" {{ api_url }}/v1/users/me/subscriptions \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'subscriptions=["Denmark"]'
-```
-
-You may specify the `principals` argument like so:
-
-```
-curl -X "DELETE" {{ api_url }}/v1/users/me/subscriptions \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'subscriptions=["Denmark"]' \
-    -d 'principals=["ZOE@zulip.com"]'
-```
-
-**Note**: Unsubscribing another user from a stream requires
-administrative privileges.
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/users/me/subscriptions:delete|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -65,11 +37,28 @@ zulip(config).then((client) => {
     client.users.me.subscriptions.remove(zoeParams).then(console.log);
 });
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -X "DELETE" {{ api_url }}/v1/users/me/subscriptions \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d 'subscriptions=["Denmark"]'
+```
+
+You may specify the `principals` argument like so:
+
+```
+curl -X "DELETE" {{ api_url }}/v1/users/me/subscriptions \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d 'subscriptions=["Denmark"]' \
+    -d 'principals=["ZOE@zulip.com"]'
+```
+
+**Note**: Unsubscribing another user from a stream requires
+administrative privileges.
+
+{end_tabs}
 
 ## Arguments
 

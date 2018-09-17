@@ -30,36 +30,13 @@ avoid generating very large HTTP responses.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
-
-<div data-language="curl" markdown="1">
-
-```
-curl {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "anchor=42" \
-    -d "use_first_unread_anchor=false" \
-    -d "num_before=3" \
-    -d "num_after=14" \
-    -d "narrow=[{\"operator\":\"stream\", \"operand\":\"party\"}]" \
-
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/messages:get|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -82,11 +59,21 @@ zulip(config).then((client) => {
     return client.messages.retrieve(readParams);
 }).then(console.log);
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl {{ api_url }}/v1/messages \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "anchor=42" \
+    -d "use_first_unread_anchor=false" \
+    -d "num_before=3" \
+    -d "num_after=14" \
+    -d "narrow=[{\"operator\":\"stream\", \"operand\":\"party\"}]" \
+
+```
+
+{end_tabs}
 
 ## Arguments
 

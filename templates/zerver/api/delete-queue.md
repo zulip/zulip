@@ -5,32 +5,16 @@ Delete a previously registered queue.
 `DELETE {{ api_url }}/v1/events`
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl -X "DELETE" {{ api_url }}/v1/events \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
-    -d 'queue_id=1515096410:1'
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/events:delete|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+
 ```js
 const zulip = require('zulip-js');
 
@@ -54,11 +38,16 @@ zulip(config).then((client) => {
 });
 
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -X "DELETE" {{ api_url }}/v1/events \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d 'queue_id=1515096410:1'
+```
+
+{end_tabs}
 
 ## Arguments
 

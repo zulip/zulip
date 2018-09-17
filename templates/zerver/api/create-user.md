@@ -7,35 +7,14 @@ Create a new user in a realm.
 `POST {{ api_url }}/v1/users`
 
 ## Usage examples
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
 
-<div data-language="curl" markdown="1">
-
-```
-curl {{ api_url }}/v1/users \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "email=newbie@zulip.com" \
-    -d "full_name=New User" \
-    -d "short_name=newbie" \
-    -d "password=temp"
-
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/users:post|example(admin_config=True)}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -56,11 +35,20 @@ zulip(config).then((client) => {
     client.users.create(params).then(console.log);
 });
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl {{ api_url }}/v1/users \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "email=newbie@zulip.com" \
+    -d "full_name=New User" \
+    -d "short_name=newbie" \
+    -d "password=temp"
+
+```
+
+{end_tabs}
 
 ## Arguments
 
