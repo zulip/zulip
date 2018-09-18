@@ -60,7 +60,7 @@ Problems with Zulip's accessibility should be reported as
 label.  This label can be added by entering the following text in a separate
 comment on the issue:
 
-    @zulipbot label "area: accessibility"
+    @zulipbot add "area: accessibility"
 
 If you want to help make Zulip more accessible, here is a list of the
 [currently open accessibility issues][accessibility-issues].

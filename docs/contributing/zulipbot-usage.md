@@ -28,11 +28,11 @@ to claim; **@zulipbot** will assign you to the issue and label the issue as
     `@zulipbot abandon` to abandon an issue.
 
 * **Label your issues** — Add appropriate labels to issues that you opened by
-including `@zulipbot label` in an issue comment or the body of your issue
+including `@zulipbot add` in an issue comment or the body of your issue
 followed by the desired labels enclosed within double quotes (`""`).
 
     * For example, to add the **bug** and **help wanted** labels to your
-    issue, comment or include `@zulipbot label "bug" "help wanted"` in the
+    issue, comment or include `@zulipbot add "bug" "help wanted"` in the
     issue body.
 
     * You'll receive an error message if you try to add any labels to your issue
