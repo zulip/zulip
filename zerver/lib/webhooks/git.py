@@ -36,6 +36,8 @@ REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}"
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = "{user_name} {action} [{type}{id} {title}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
+PULL_REQUEST_OR_ISSUE_MULTIPLE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {})"
+PULL_REQUEST_OR_ISSUE_MULTIPLE_ASSIGNEE_INFO_LIMIT = 3
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "\nfrom `{target}` to `{base}`"
 
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
@@ -124,6 +126,7 @@ def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
 def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
                                    message: Optional[str]=None, assignee: Optional[str]=None,
+                                   assignees: Optional[List[Dict[str, Any]]]=None,
                                    type: Optional[str]='PR', title: Optional[str]=None) -> str:
     kwargs = {
         'user_name': user_name,
@@ -138,6 +141,28 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
         main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE.format(**kwargs)
     else:
         main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
+
+    if assignees:
+        if len(assignees) > 1:
+            assignees_details = "{}".format(assignees[0].get('name'))
+
+            if len(assignees) > 3:
+                for user in assignees[1:PULL_REQUEST_OR_ISSUE_MULTIPLE_ASSIGNEE_INFO_LIMIT]:
+                    assignees_details = "{}, {}".format(assignees_details, user.get('name'))
+                others_number_of_assignees = (len(assignees)
+                                              - PULL_REQUEST_OR_ISSUE_MULTIPLE_ASSIGNEE_INFO_LIMIT)
+                assignees_details = "{} and {} others".format(assignees_details, others_number_of_assignees)
+            else:
+                for user in assignees[1:-1]:
+                    assignees_details = "{}, {}".format(assignees_details, user.get('name'))
+                if len(assignees_details) > 1:
+                    assignees_details = "{} and {}".format(assignees_details, assignees[-1].get('name'))
+
+            main_message += PULL_REQUEST_OR_ISSUE_MULTIPLE_ASSIGNEE_INFO_TEMPLATE.format(assignees_details)
+        else:
+            main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
+                assignee=assignees[0].get('name')
+            )
 
     if assignee:
         main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
@@ -163,6 +188,7 @@ def get_issue_event_message(user_name: str,
                             number: Optional[int]=None,
                             message: Optional[str]=None,
                             assignee: Optional[str]=None,
+                            assignees: Optional[List[Dict[str, Any]]]=None,
                             title: Optional[str]=None) -> str:
     return get_pull_request_event_message(
         user_name,
@@ -171,6 +197,7 @@ def get_issue_event_message(user_name: str,
         number,
         message=message,
         assignee=assignee,
+        assignees=assignees,
         type='Issue',
         title=title,
     )

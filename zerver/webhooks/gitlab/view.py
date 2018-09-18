@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, List
 from inspect import signature
 import re
 
@@ -74,7 +74,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
         description,
-        get_objects_assignee(payload),
+        assignees=get_objects_assignees(payload),
         title=payload['object_attributes'].get('title') if include_title else None
     )
 
@@ -124,15 +124,29 @@ def get_merge_request_open_or_updated_body(payload: Dict[str, Any], action: str,
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
         pull_request.get('description'),
-        get_objects_assignee(payload),
+        assignees=get_objects_assignees(payload),
         type='MR',
         title=payload['object_attributes'].get('title') if include_title else None
     )
 
-def get_objects_assignee(payload: Dict[str, Any]) -> Optional[str]:
+def get_objects_assignees(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    assignees_data = []
     assignee_object = payload.get('assignee')
     if assignee_object:
-        return assignee_object.get('name')
+        assignees_object = payload.get('assignee')
+        if assignees_object:
+            assignees_data.append({
+                "name": assignees_object['username']
+            })
+            return assignees_data
+    else:
+        assignees_object = payload.get('assignees')
+        if assignees_object:
+            for assignee in payload.get('assignees'):
+                assignees_data.append({
+                    "name": assignee.get('username')
+                })
+            return assignees_data
     return None
 
 def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
