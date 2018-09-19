@@ -1971,7 +1971,8 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
     return do_send_messages([message])[0]
 
 def check_schedule_message(sender: UserProfile, client: Client,
-                           message_type_name: str, message_to: Sequence[str],
+                           message_type_name: str,
+                           message_to: Union[Sequence[str], Sequence[int]],
                            topic_name: Optional[str], message_content: str,
                            delivery_type: str, deliver_at: datetime.datetime,
                            realm: Optional[Realm]=None,
