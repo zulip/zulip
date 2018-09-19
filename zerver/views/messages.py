@@ -1166,7 +1166,8 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def handle_deferred_message(sender: UserProfile, client: Client,
-                            message_type_name: str, message_to: Sequence[str],
+                            message_type_name: str,
+                            message_to: Union[Sequence[str], Sequence[int]],
                             topic_name: Optional[str],
                             message_content: str, delivery_type: str,
                             defer_until: str, tz_guess: str,
