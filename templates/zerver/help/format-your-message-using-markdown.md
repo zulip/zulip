@@ -1,187 +1,210 @@
-# Format your message using Markdown
+# Format your messages
 
 Zulip uses a variant of
-[GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
-(GFM) to allow you to easily format your messages.
+[GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+to allow you to easily format your messages.
 
-## Summary
-
-To see a summary of message formatting in Zulip, click the A (<i
-class="icon-vector-font"></i>) icon located in the bottom left corner of
-your messaging box. You can alternatively click the cog (<i
-class="icon-vector-cog"></i>) icon in the top right corner of the right
-sidebar and choose **Message formatting** from the dropdown menu that
-appears.
-
-![Message formatting modal](/static/images/help/message-formatting-summary.png)
+* [Emphasis](#emphasis)
+* [Lists](#lists)
+* [Links and images](#links)
+* [Code and TeX](#code)
+* [Quotes](#quotes)
+* [Emoji and emoticons](#emoji-and-emoticons)
+* [Mentions](#mentions)
+* [Status messages](#status-messages)
+* [Tables](#tables)
+* [Paragraphs and lines](#paragraphs-and-lines)
 
 ## Emphasis
 
-You can surround your text with a combination of asterisks `*` and
-tildes `~` to emphasize words or phrases in your messages.
+```
+**bold**, *italic*, and ~~strikethrough~~ text
+***~~All three at once~~***
+```
 
-### Italics
+![](/static/images/help/markdown-emphasis.png)
 
-For italics, surround your text with `*asterisks*`.
-
-![Italicized text](/static/images/help/italics-screenshot.png)
-
-### Bold
-
-For bold text, surround your text with `**two asterisks**`.
-
-![Bold text](/static/images/help/bold-screenshot.png)
-
-### Strikethrough
-
-For strikethrough text, surround your text with `~~two tildes~~`.
-
-![Strikethrough text](/static/images/help/strikethrough-screenshot.png)
-
-### Extra emphasis
-
-To add more variety, flavor, and emphasis to your messages, you can
-combine different styles of formatting.
-
-![Extra emphasized text](/static/images/help/extra-emphasis-screenshot.png)
-
-## Links
-
-To include hyperlinks in your messages, you can either enter the
-link's URL address directly or surround the link's display text
-with`[brackets]` and the URL address of the link in `(parentheses)`
-immediately after.
-
-![Link](/static/images/help/link-screenshot.png)
-
-Zulip currently does not support image embedding through links.
-
-## Stream Links
-
-To link to another stream in one of your messages, you can either type
-`#streamName` and click the stream name in the popup, or you can start
-with `#` and surround your message with double asteriks `**`.
-
-![Stream Links](/static/images/help/stream-link-screenshot.png)
 
 ## Lists
 
-Begin each item in your list with `* an asterisk followed by a space`
-to include lists in your messages.
+Bulleted lists
+```
+* bulleted lists
+  * with sub-bullets too
+  * sub-bullets start with 2 spaces
+    * start sub-sub-bullets with 4 spaces
+* multi
+line
+bullet
+- dashes and
++ pluses are ok too
+```
 
-![Lists](/static/images/help/lists-screenshot.png)
+![](/static/images/help/markdown-bullets.png)
 
-!!! tip ""
-    You can add nested bullets within lists by adding two spaces before each
-    nested bullet.
+Numbered lists
 
-Numbered lists in which each item begins with the same number will
-have the numbers automatically edited to increment (e.g. if every line
-starts with `3.`, it'll go 3, 4, 5, ...).
+```
+1. numbered lists
+1. increment automatically
+1. one more
+```
 
-![Numbered lists](/static/images/help/numbered-lists-screenshot.png)
+![](/static/images/help/markdown-numbered-lists.png)
 
-## Emojis
 
-Zulip features a variety of emojis provided by the
-[Noto Project](https://code.google.com/p/noto/). To include emojis in
-your messages, surround the emoji phrase with `:colons:`.
+## Links
 
-A dropdown will appear with suggested emojis as you enter the emoji phrase.
+Zulip auto-linkifies URLs and valid stream names. You can also add a
+[custom linkifier](/help/add-a-custom-linkification-filter) to link
+patterns like `#1234` to your ticketing system.
 
-![Emojis](/static/images/help/emojis-screenshot.png)
+```
+Auto-detected URL: zulipchat.com
+Named link: [Zulip homepage](zulipchat.com)
+Stream: #**announce**
+Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
+```
 
-A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/).
+![](/static/images/help/markdown-links.png)
 
-## Mentions
+## Images
 
-To call the attention of another member, you can alert them by typing
-`@**username**`
+See [Share and upload files](/help/share-and-upload-files) to learn more
+about dropping, pasting, and attaching images.
 
-If you type `@` and then begin typing the user's email address or the
-user's name, the system will offer you auto-completion suggestions.
+```
+[A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
+```
 
-![Mentions](/static/images/help/mention-screenshot.png)
-
-Typing `@**all**` will alert all users in the stream, and a
-confirmation message will appear.
-
-![Mention All](/static/images/help/all-confirm.png)
-
-For more information on mentions, visit [here](/help/at-mention-a-team-member).
-
-## Status Messages
-
-You can send messages that display your name and profile before a string by
-beginning a message with `/me`. You can utilize this feature to send status
-messages or other messages written in a similar third-person voice.
-
-For example, if your username is **Cordelia Lear** and you send the message
-`/me is now away`, your message will be displayed as:
-
-![Status message](/static/images/help/status-message.png)
+![](/static/images/help/markdown-image.png)
 
 ## Code
 
-You can surround a portion of code with `` `back-ticks` `` to display it as
-inline code.
+~~~
+Inline: `let x = 5`
 
-![Inline code](/static/images/help/inline-code-screenshot.png)
+Code block:
+```
+def f(x):
+   return x+1
+```
 
-Multi-line blocks of code are either:
+Syntax highlighting:
+```python
+def fib(n):
+    # TODO: base case
+    return fib(n-1) + fib(n-2)
+```
+~~~
 
-- Fenced by lines with three back-ticks (` ``` `).
-- Fenced by lines with three tildes (`~~~`).
-- Indented with four spaces.
+![](/static/images/help/markdown-code.png)
 
-![No code syntax highlighting](/static/images/help/no-syntax.png)
+You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
 
-Zulip also supports syntax highlighting of multi-line code blocks using
-[Pygments](http://pygments.org). To add syntax highlighting to a multi-line code
-block, add the language's **first**
-[Pygments short name](http://pygments.org/docs/lexers/) after the first set of
-back-ticks; as you type out a code block's short name, a dropdown with short
-name suggestions will appear.
+Zulip supports syntax highlighting for hundreds of languages, and a
+typeahead will pop up when you start typing after the ` ``` `. If you can't
+find your language, search for it [here](http://pygments.org/docs/lexers)
+and try the **short names** listed for the lexers for your language.
 
-!!! warn ""
-    **Note:** You can only specify the language's short name in fenced code
-    blocks. It is not possible to use the syntax highlighter in blocks
-    indented with spaces.
+## Latex
+~~~
+Inline: $$O(n^2)$$
 
-![Python syntax highlighting](/static/images/help/python-syntax.png)
+Displayed:
+```tex
+\int_a^b f(t)\, dt = F(b) - F(a)
+```
+~~~
 
-![JavaScript syntax highlighting](/static/images/help/javascript-syntax.png)
-
-![Rust syntax highlighting](/static/images/help/rust-syntax.png)
-
-![C# syntax highlighting](/static/images/help/csharp-syntax.png)
+![](/static/images/help/markdown-latex.png)
 
 ## Quotes
 
-To insert quotes, you can either add a greater-than symbol ```>``` and
-a space before your phrase or submit it as a quote block by following
-the code syntax highlighting format.
+~~~
+> a multi-line
+quote on two lines
 
-![Quotes](/static/images/help/quotes-screenshot.png)
+normal text
 
-## TeX math
+```quote
+A multi-paragraph
 
-You can display mathematical symbols, expressions and equations using Zulip's
-[TeX](http://www.tug.org/interest.html#doc) typesetting implementation,
-based on [KaTeX](https://github.com/Khan/KaTeX).
+quote in two paragraphs
+```
+~~~
 
-!!! tip ""
-    Visit the [KaTeX Wiki](https://khan.github.io/KaTeX/docs/supported.html)
-    to view a complete of compatible commands.
+![](/static/images/help/markdown-quotes.png)
 
-Surround elements in valid TeX syntax with `$$two dollar signs$$` to display it
-as inline content.
+## Emoji and emoticons
 
-![Inline TeX](/static/images/help/inline-tex-screenshot.png)
+To translate emoticons into emoji, you'll need to
+[enable emoticon translations](/help/enable-emoticon-translations).
+You can also [add custom emoji](/help/add-custom-emoji).
 
-Also, you can show expressions, such as expanded integrals, in TeX
-*display mode* to present them fully-sized in the center of the messages by
-fencing them with three back-ticks ` ``` ` or tildes `~~~`, with **math**,
-**tex** or **latex** immediately after the first set of back-ticks.
+```
+:octopus: :heart: :zulip: :)
+```
 
-![Display mode TeX](/static/images/help/display-mode-tex-screenshot.png)
+![](/static/images/help/markdown-emoji.png)
+
+## Mentions
+
+Learn more about at-mentions [here](/help/at-mention-a-team-member).
+The numbers will be added automatically by the typeahead if needed for disambiguation
+
+```
+Users: @**Polonius** or @**Zoe|2132** (two asterisks)
+User group: @*support team* (one asterisk)
+```
+
+![](/static/images/help/markdown-mentions.png)
+
+## Status Messages
+
+```
+/me is away
+```
+
+![](/static/images/help/markdown-status.png)
+
+## Tables
+
+The initial pipes (`|`) are optional if every entry in the first column is non-empty.
+The header separators (`---`) must be at least three dashes long.
+
+```
+|| yes | no | maybe
+|---|---|:---:|------:
+| A | left-aligned | centered | right-aligned
+| B |     extra      spaces      |  are |  ok
+| C | **bold** *italic* ~~strikethrough~~  :smile:  ||
+```
+
+![](/static/images/help/markdown-table.png)
+
+## Paragraphs and lines
+
+```
+One blank space for a new paragraph
+New line, same paragraph
+
+New paragraph
+
+---, ***, or ___ for a horizontal line
+Over the line
+
+---
+
+Under the line
+```
+
+![](/static/images/help/markdown-paragraph.png)
+
+## In-app help
+
+A summary of the formatting syntax is available in-app.
+
+{!start-composing.md!}
+
+1. Click the A (<i class="fa fa-font"></i>) icon at the bottom of the compose box.
