@@ -11,7 +11,7 @@ from sqlalchemy.sql import compiler
 from zerver.models import (
     Realm, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
-    Reaction, UserMessage, get_stream_recipient,
+    Reaction, UserMessage, get_stream_recipient, Message
 )
 from zerver.lib.message import (
     MessageDict,
@@ -506,13 +506,15 @@ class PostProcessTest(ZulipTestCase):
         def verify(in_ids: List[int],
                    num_before: int,
                    num_after: int,
+                   first_visible_message_id: int,
                    anchor: int,
                    anchored_to_left: bool,
                    anchored_to_right: bool,
                    out_ids: List[int],
                    found_anchor: bool,
                    found_oldest: bool,
-                   found_newest: bool) -> None:
+                   found_newest: bool,
+                   history_limited: bool) -> None:
             in_rows = [[row_id] for row_id in in_ids]
             out_rows = [[row_id] for row_id in out_ids]
 
@@ -523,21 +525,80 @@ class PostProcessTest(ZulipTestCase):
                 anchor=anchor,
                 anchored_to_left=anchored_to_left,
                 anchored_to_right=anchored_to_right,
+                first_visible_message_id=first_visible_message_id,
             )
 
             self.assertEqual(info['rows'], out_rows)
             self.assertEqual(info['found_anchor'], found_anchor)
             self.assertEqual(info['found_newest'], found_newest)
             self.assertEqual(info['found_oldest'], found_oldest)
+            self.assertEqual(info['history_limited'], history_limited)
 
-        # typical 2-sided query
+        # typical 2-sided query, with a bunch of tests for different
+        # values of first_visible_message_id.
         anchor = 10
         verify(
             in_ids=[8, 9, anchor, 11, 12],
             num_before=2, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[8, 9, 10, 11, 12],
-            found_anchor=True, found_oldest=False, found_newest=False,
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=8,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[8, 9, 10, 11, 12],
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=9,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[9, 10, 11, 12],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=10,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[10, 11, 12],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=11,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[11, 12],
+            found_anchor=False, found_oldest=True,
+            found_newest=False, history_limited=True,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=12,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[12],
+            found_anchor=False, found_oldest=True,
+            found_newest=True, history_limited=True,
+        )
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            first_visible_message_id=13,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[],
+            found_anchor=False, found_oldest=True,
+            found_newest=True, history_limited=True,
         )
 
         # typical 2-sided query missing anchor and grabbing an extra row
@@ -546,8 +607,28 @@ class PostProcessTest(ZulipTestCase):
             in_ids=[7, 9, 11, 13, 15],
             num_before=2, num_after=2,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            first_visible_message_id=0,
             out_ids=[7, 9, 11, 13],
-            found_anchor=False, found_oldest=False, found_newest=False,
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[7, 9, 11, 13, 15],
+            num_before=2, num_after=2,
+            first_visible_message_id=10,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[11, 13],
+            found_anchor=False, found_oldest=True,
+            found_newest=False, history_limited=True,
+        )
+        verify(
+            in_ids=[7, 9, 11, 13, 15],
+            num_before=2, num_after=2,
+            first_visible_message_id=9,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[9, 11, 13],
+            found_anchor=False, found_oldest=True,
+            found_newest=False, history_limited=True,
         )
 
         # 2-sided query with old anchor
@@ -555,9 +636,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[50, anchor, 150, 200],
             num_before=2, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[50, 100, 150, 200],
-            found_anchor=True, found_oldest=True, found_newest=False,
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[50, anchor, 150, 200],
+            num_before=2, num_after=2,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[100, 150, 200],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
         )
 
         # 2-sided query with new anchor
@@ -565,9 +657,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[700, 800, anchor, 1000],
             num_before=2, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[700, 800, 900, 1000],
-            found_anchor=True, found_oldest=False, found_newest=True,
+            found_anchor=True, found_oldest=False,
+            found_newest=True, history_limited=False,
+        )
+        verify(
+            in_ids=[700, 800, anchor, 1000],
+            num_before=2, num_after=2,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[900, 1000],
+            found_anchor=True, found_oldest=True,
+            found_newest=True, history_limited=True,
         )
 
         # left-sided query with old anchor
@@ -575,9 +678,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[50, anchor],
             num_before=2, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[50, 100],
-            found_anchor=True, found_oldest=True, found_newest=False,
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[50, anchor],
+            num_before=2, num_after=0,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[100],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
         )
 
         # left-sided query with new anchor
@@ -585,9 +699,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[700, 800, anchor],
             num_before=2, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[700, 800, 900],
-            found_anchor=True, found_oldest=False, found_newest=False,
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[700, 800, anchor],
+            num_before=2, num_after=0,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[900],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
         )
 
         # left-sided query with new anchor and extra row
@@ -595,9 +720,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[600, 700, 800, anchor],
             num_before=2, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[700, 800, 900],
-            found_anchor=True, found_oldest=False, found_newest=False,
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[600, 700, 800, anchor],
+            num_before=2, num_after=0,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[900],
+            found_anchor=True, found_oldest=True,
+            found_newest=False, history_limited=True,
         )
 
         # left-sided query anchored to the right
@@ -605,9 +741,29 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[900, 1000],
             num_before=2, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=True,
             out_ids=[900, 1000],
-            found_anchor=False, found_oldest=False, found_newest=True,
+            found_anchor=False, found_oldest=False,
+            found_newest=True, history_limited=False,
+        )
+        verify(
+            in_ids=[900, 1000],
+            num_before=2, num_after=0,
+            first_visible_message_id=1000,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=True,
+            out_ids=[1000],
+            found_anchor=False, found_oldest=True,
+            found_newest=True, history_limited=True,
+        )
+        verify(
+            in_ids=[900, 1000],
+            num_before=2, num_after=0,
+            first_visible_message_id=1100,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=True,
+            out_ids=[],
+            found_anchor=False, found_oldest=True,
+            found_newest=True, history_limited=True,
         )
 
         # right-sided query with old anchor
@@ -615,9 +771,30 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[anchor, 200, 300, 400],
             num_before=0, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[100, 200, 300],
-            found_anchor=True, found_oldest=False, found_newest=False,
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[anchor, 200, 300, 400],
+            num_before=0, num_after=2,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[100, 200, 300],
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[anchor, 200, 300, 400],
+            num_before=0, num_after=2,
+            first_visible_message_id=300,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[300, 400],
+            found_anchor=False, found_oldest=False,
+            # BUG: history_limited should be False here.
+            found_newest=False, history_limited=False,
         )
 
         # right-sided query with new anchor
@@ -625,9 +802,20 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[anchor, 1000],
             num_before=0, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[900, 1000],
-            found_anchor=True, found_oldest=False, found_newest=True,
+            found_anchor=True, found_oldest=False,
+            found_newest=True, history_limited=False,
+        )
+        verify(
+            in_ids=[anchor, 1000],
+            num_before=0, num_after=2,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[900, 1000],
+            found_anchor=True, found_oldest=False,
+            found_newest=True, history_limited=False,
         )
 
         # right-sided query with non-matching anchor
@@ -635,9 +823,39 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[1000, 1100, 1200],
             num_before=0, num_after=2,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[1000, 1100],
-            found_anchor=False, found_oldest=False, found_newest=False,
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[1000, 1100, 1200],
+            num_before=0, num_after=2,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1000, 1100],
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[1000, 1100, 1200],
+            num_before=0, num_after=2,
+            first_visible_message_id=1000,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1000, 1100],
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False,
+        )
+        verify(
+            in_ids=[1000, 1100, 1200],
+            num_before=0, num_after=2,
+            first_visible_message_id=1100,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1100, 1200],
+            found_anchor=False, found_oldest=False,
+            # BUG: history_limited should be False here.
+            found_newest=False, history_limited=False,
         )
 
         # targeted query that finds row
@@ -645,9 +863,29 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[1000],
             num_before=0, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[1000],
-            found_anchor=True, found_oldest=False, found_newest=False,
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False
+        )
+        verify(
+            in_ids=[1000],
+            num_before=0, num_after=0,
+            first_visible_message_id=anchor,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1000],
+            found_anchor=True, found_oldest=False,
+            found_newest=False, history_limited=False
+        )
+        verify(
+            in_ids=[1000],
+            num_before=0, num_after=0,
+            first_visible_message_id=1100,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[],
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False,
         )
 
         # targeted query that finds nothing
@@ -655,9 +893,11 @@ class PostProcessTest(ZulipTestCase):
         verify(
             in_ids=[],
             num_before=0, num_after=0,
+            first_visible_message_id=0,
             anchor=anchor, anchored_to_left=False, anchored_to_right=False,
             out_ids=[],
-            found_anchor=False, found_oldest=False, found_newest=False,
+            found_anchor=False, found_oldest=False,
+            found_newest=False, history_limited=False
         )
 
 class GetOldMessagesTest(ZulipTestCase):
@@ -1572,6 +1812,8 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.login(self.example_email("hamlet"))
 
+        Message.objects.all().delete()
+
         message_ids = []
         for i in range(10):
             message_ids.append(self.send_stream_message(self.example_email("cordelia"), "Verona"))
@@ -1582,6 +1824,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids)
 
         with first_visible_id_as(message_ids[5]):
@@ -1591,6 +1834,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], True)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], True)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[2]):
@@ -1600,6 +1844,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], True)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], True)
         messages_matches_ids(messages, message_ids[2:7])
 
         with first_visible_id_as(message_ids[9] + 1):
@@ -1610,6 +1855,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], True)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], True)
 
         data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=5)
 
@@ -1617,6 +1863,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[7]):
@@ -1626,6 +1873,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids[7:])
 
         with first_visible_id_as(message_ids[2]):
@@ -1635,6 +1883,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids[2:7])
 
         with first_visible_id_as(message_ids[9] + 1):
@@ -1644,6 +1893,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
         self.assert_length(messages, 0)
 
         data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
@@ -1652,6 +1902,15 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
+        messages_matches_ids(messages, message_ids)
+
+        data = self.get_messages_response(anchor=message_ids[5], num_before=10, num_after=10)
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids)
 
         with first_visible_id_as(message_ids[5]):
@@ -1661,7 +1920,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], True)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], True)
         messages_matches_ids(messages, message_ids[5:])
+
+        with first_visible_id_as(message_ids[5]):
+            data = self.get_messages_response(anchor=message_ids[2], num_before=5, num_after=3)
+
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], True)
+        messages_matches_ids(messages, message_ids[5:8])
 
         with first_visible_id_as(message_ids[5]):
             data = self.get_messages_response(anchor=message_ids[2], num_before=10, num_after=10)
@@ -1679,6 +1949,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], True)
         self.assertEqual(data['found_newest'], True)
+        self.assertEqual(data['history_limited'], True)
         self.assert_length(messages, 0)
 
         with first_visible_id_as(message_ids[5]):
@@ -1688,6 +1959,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], True)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
         messages_matches_ids(messages, message_ids[5:6])
 
         with first_visible_id_as(message_ids[5]):
@@ -1697,6 +1969,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data['found_anchor'], False)
         self.assertEqual(data['found_oldest'], False)
         self.assertEqual(data['found_newest'], False)
+        self.assertEqual(data['history_limited'], False)
         self.assert_length(messages, 0)
 
     def test_missing_params(self) -> None:
@@ -1997,13 +2270,12 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = queries[0]['sql']
         self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
         self.assertIn('ORDER BY message_id ASC', sql)
-
-        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id <= %d' % (
-            user_profile.id, first_visible_message_id, first_unread_message_id + 1
+        cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
+            user_profile.id, first_unread_message_id - 1
         )
         self.assertIn(cond, sql)
-        cond = 'WHERE user_profile_id = %d AND message_id >= %d AND message_id >= %d' % (
-            user_profile.id, first_visible_message_id, first_visible_message_id
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
+            user_profile.id, first_visible_message_id
         )
         self.assertIn(cond, sql)
 
@@ -2027,12 +2299,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         sql = queries[0]['sql']
 
-        # An upper limit is not needed here.
         self.assertNotIn('AND message_id <=', sql)
-
-        # We should have no lower bound since get_first_visible_message_id
-        # returns 0 by default (we only restrict realms for certain paid
-        # plans).
         self.assertNotIn('AND message_id >=', sql)
 
         first_visible_message_id = 5
@@ -2041,9 +2308,8 @@ class GetOldMessagesTest(ZulipTestCase):
                 get_messages_backend(request, user_profile)
             queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
             sql = queries[0]['sql']
-
-            m = re.findall(r'AND message_id >= (\d+)', str(sql))
-            self.assertEqual(m, [str(first_visible_message_id)])
+            self.assertNotIn('AND message_id <=', sql)
+            self.assertNotIn('AND message_id >=', sql)
 
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:
         """

@@ -598,10 +598,6 @@ def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
                           query: Query,
                           narrow: List[Dict[str, Any]]) -> Tuple[Query, bool]:
-    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    if first_visible_message_id > 0:
-        query = query.where(inner_msg_id_col >= first_visible_message_id)
-
     is_search = False  # for now
 
     if narrow is None:
@@ -770,6 +766,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if anchored_to_right:
         num_after = None
 
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
     query = limit_query_to_range(
         query=query,
         num_before=num_before,
@@ -778,6 +775,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         anchored_to_left=anchored_to_left,
         anchored_to_right=anchored_to_right,
         id_col=inner_msg_id_col,
+        first_visible_message_id=first_visible_message_id,
     )
 
     main_query = alias(query)
@@ -793,6 +791,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         anchor=anchor,
         anchored_to_left=anchored_to_left,
         anchored_to_right=anchored_to_right,
+        first_visible_message_id=first_visible_message_id,
     )
 
     rows = query_info['rows']
@@ -857,6 +856,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         found_anchor=query_info['found_anchor'],
         found_oldest=query_info['found_oldest'],
         found_newest=query_info['found_newest'],
+        history_limited=query_info['history_limited'],
         anchor=anchor,
     )
     return json_success(ret)
@@ -867,7 +867,8 @@ def limit_query_to_range(query: Query,
                          anchor: int,
                          anchored_to_left: bool,
                          anchored_to_right: bool,
-                         id_col: ColumnElement) -> Query:
+                         id_col: ColumnElement,
+                         first_visible_message_id: int) -> Query:
     '''
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
@@ -891,7 +892,7 @@ def limit_query_to_range(query: Query,
     # actually may fetch an extra row at one of the extremes.
     if need_both_sides:
         before_anchor = anchor - 1
-        after_anchor = anchor
+        after_anchor = max(anchor, first_visible_message_id)
         before_limit = num_before
         after_limit = num_after + 1
     elif need_before_query:
@@ -900,7 +901,7 @@ def limit_query_to_range(query: Query,
         if not anchored_to_right:
             before_limit += 1
     elif need_after_query:
-        after_anchor = anchor
+        after_anchor = max(anchor, first_visible_message_id)
         after_limit = num_after + 1
 
     if need_before_query:
@@ -945,7 +946,8 @@ def post_process_limited_query(rows: List[Any],
                                num_after: int,
                                anchor: int,
                                anchored_to_left: bool,
-                               anchored_to_right: bool) -> Dict[str, Any]:
+                               anchored_to_right: bool,
+                               first_visible_message_id: int) -> Dict[str, Any]:
     # Our queries may have fetched extra rows if they added
     # "headroom" to the limits, but we want to truncate those
     # rows.
@@ -954,15 +956,22 @@ def post_process_limited_query(rows: List[Any],
     # num_after, we want to know found_oldest and found_newest, so
     # that the clients will know that they got complete results.
 
+    if first_visible_message_id > 0:
+        visible_rows = [r for r in rows if r[0] >= first_visible_message_id]
+    else:
+        visible_rows = rows
+
+    rows_limited = len(visible_rows) != len(rows)
+
     if anchored_to_right:
         num_after = 0
-        before_rows = rows[:]
+        before_rows = visible_rows[:]
         anchor_rows = []  # type: List[Any]
         after_rows = []  # type: List[Any]
     else:
-        before_rows = [r for r in rows if r[0] < anchor]
-        anchor_rows = [r for r in rows if r[0] == anchor]
-        after_rows = [r for r in rows if r[0] > anchor]
+        before_rows = [r for r in visible_rows if r[0] < anchor]
+        anchor_rows = [r for r in visible_rows if r[0] == anchor]
+        after_rows = [r for r in visible_rows if r[0] > anchor]
 
     if num_before:
         before_rows = before_rows[-1 * num_before:]
@@ -970,17 +979,30 @@ def post_process_limited_query(rows: List[Any],
     if num_after:
         after_rows = after_rows[:num_after]
 
-    rows = before_rows + anchor_rows + after_rows
+    visible_rows = before_rows + anchor_rows + after_rows
 
     found_anchor = len(anchor_rows) == 1
     found_oldest = anchored_to_left or (len(before_rows) < num_before)
     found_newest = anchored_to_right or (len(after_rows) < num_after)
+    # BUG: history_limited is incorrect False in the event that we had
+    # to bump `anchor` up due to first_visible_message_id, and there
+    # were actually older messages.  This may be a rare event in the
+    # context where history_limited is relevant, because it can only
+    # happen in one-sided queries with no num_before (see tests tagged
+    # BUG in PostProcessTest for examples), and we don't generally do
+    # those from the UI, so this might be OK for now.
+    #
+    # The correct fix for this probably involves e.g. making a
+    # `before_query` when we increase `anchor` just to confirm whether
+    # messages were hidden.
+    history_limited = rows_limited and found_oldest
 
     return dict(
-        rows=rows,
+        rows=visible_rows,
         found_anchor=found_anchor,
         found_newest=found_newest,
         found_oldest=found_oldest,
+        history_limited=history_limited,
     )
 
 @has_request_variables

@@ -387,6 +387,11 @@ paths:
                       description: Whether the anchor message is included in the response.
                         If the message with the ID specified in the request does not exist or
                         did not match the narrow, this will be false.
+                    history_limited:
+                      type: boolean
+                      description: Whether the message history was limited due to plan restrictions.
+                        This flag is set to `true` only when the oldest messages(`found_oldest`)
+                        matching the narrow is fetched.
                     messages:
                       type: array
                       items:
