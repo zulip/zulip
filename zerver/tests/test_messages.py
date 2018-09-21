@@ -61,6 +61,7 @@ from zerver.lib.test_helpers import (
     most_recent_message,
     most_recent_usermessage,
     queries_captured,
+    get_subscription,
 )
 
 from zerver.lib.test_classes import (
@@ -3582,6 +3583,21 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, message)
+
+        # Test that sending a message to a stream with soft deactivated user
+        # and push/email notifications on creates a UserMessage row for the
+        # deactivated user.
+        sub = get_subscription(stream_name, long_term_idle_user)
+        sub.push_notifications = True
+        sub.save()
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test private stream message'
+        send_stream_message(message)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_last_um_content(long_term_idle_user, message)
+        sub.push_notifications = False
+        sub.save()
 
         # Test sending a private message to soft deactivated user creates
         # UserMessage row.

@@ -1283,6 +1283,8 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 message=message['message'],
                 um_eligible_user_ids=message['um_eligible_user_ids'],
                 long_term_idle_user_ids=message['long_term_idle_user_ids'],
+                stream_push_user_ids = message['stream_push_user_ids'],
+                stream_email_user_ids = message['stream_email_user_ids'],
                 mentioned_user_ids=mentioned_user_ids,
             )
 
@@ -1437,9 +1439,10 @@ class UserMessageLite:
 def create_user_messages(message: Message,
                          um_eligible_user_ids: Set[int],
                          long_term_idle_user_ids: Set[int],
+                         stream_push_user_ids: Set[int],
+                         stream_email_user_ids: Set[int],
                          mentioned_user_ids: Set[int]) -> List[UserMessageLite]:
     ums_to_create = []
-
     for user_profile_id in um_eligible_user_ids:
         um = UserMessageLite(
             user_profile_id=user_profile_id,
@@ -1465,9 +1468,21 @@ def create_user_messages(message: Message,
         if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
             um.flags |= UserMessage.flags.is_private
 
+    # Issue `#10397`: It was discovered that soft-deactivated users
+    # don't get mobile push notifications for messages on private
+    # streams that they have configured to send push notifications.
+    # Reason: `handle_push_notification` calls `access_message`, and
+    # that logic assumes that a user who is a recipient of a message
+    # has an associated UserMessage row. Those UserMessage rows are
+    # created lazily for soft-deactivated users, so they might not
+    # exist (yet) until the user comes back.
+    # Solution: Ensure that userMessage row is created for
+    # stream_push_user_ids and stream_email_user_ids in the below loop.
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
+                um.user_profile_id not in stream_push_user_ids and
+                um.user_profile_id not in stream_email_user_ids and
                 message.is_stream_message() and
                 int(um.flags) == 0):
             continue
