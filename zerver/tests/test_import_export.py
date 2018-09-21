@@ -77,6 +77,7 @@ from zerver.models import (
     BotStorageData,
     BotConfigData,
     get_active_streams,
+    get_realm,
     get_stream,
     get_stream_recipient,
     get_personal_recipient,
@@ -803,3 +804,19 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(original_image_key.key, avatar_path_id)
         image_data = original_image_key.get_contents_as_string()
         self.assertEqual(image_data, test_image_data)
+
+    def test_plan_type(self) -> None:
+        realm = get_realm('zulip')
+        realm.plan_type = Realm.PREMIUM
+        realm.save(update_fields=['plan_type'])
+
+        self._setup_export_files()
+        self._export_realm(realm)
+
+        with patch('logging.info'):
+            with self.settings(BILLING_ENABLED=True):
+                realm = do_import_realm('var/test-export', 'test-zulip-1')
+                self.assertTrue(realm.plan_type, Realm.LIMITED)
+            with self.settings(BILLING_ENABLED=False):
+                realm = do_import_realm('var/test-export', 'test-zulip-2')
+                self.assertTrue(realm.plan_type, Realm.SELF_HOSTED)
