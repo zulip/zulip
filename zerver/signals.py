@@ -53,6 +53,8 @@ def get_device_os(user_agent: str) -> Optional[str]:
         return "iOS"
     elif "like mac os x" in user_agent:
         return "iOS"
+    elif "cros" in user_agent:
+        return "ChromeOS"
     else:
         return None
 
