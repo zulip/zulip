@@ -99,11 +99,11 @@ below, and add more to your repertoire as needed.
 
 * **Send message**: `Enter`, `Tab` then `Enter`, and/or `Ctrl` + `Enter`,
   depending on your settings. See
-  [enable or disable pressing enter to send](https://zulipchat.com/help/enable-or-disable-pressing-enter-to-send).
+  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
 
 * **Insert new line**: `Enter`, or `Shift` + `Enter`, depending on your
   settings. See
-  [enable or disable pressing enter to send](https://zulipchat.com/help/enable-or-disable-pressing-enter-to-send).
+  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
 
 * **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
   the unsent message as a draft.
