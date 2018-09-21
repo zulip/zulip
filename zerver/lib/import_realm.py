@@ -621,6 +621,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
+    bulk_import_client(data, Client, 'zerver_client')
+
     # We don't import the Stream model yet, since it depends on Realm,
     # which isn't imported yet.  But we need the Stream model IDs for
     # notifications_stream.
@@ -652,7 +654,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         signup_notifications_stream_id = None
     realm.signup_notifications_stream_id = None
     realm.save()
-    bulk_import_client(data, Client, 'zerver_client')
 
     # Email tokens will automatically be randomly generated when the
     # Stream objects are created by Django.
