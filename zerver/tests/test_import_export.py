@@ -355,11 +355,11 @@ class ImportExportTest(ZulipTestCase):
 
         # Test uploads
         fields = attachment_path_id.split('/')
-        fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[1], fields[2]))
+        fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[0], fields[1], fields[2]))
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
         records = full_data['uploads_dir_records']
-        self.assertEqual(records[0]['path'], os.path.join(fields[1], fields[2]))
+        self.assertEqual(records[0]['path'], os.path.join(fields[0], fields[1], fields[2]))
         self.assertEqual(records[0]['s3_path'], attachment_path_id)
         check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
