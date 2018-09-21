@@ -665,6 +665,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         logging.info("Adding to ID map: %s %s" % (item['id'], get_system_bot(item['email']).id))
         new_user_id = get_system_bot(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
+        new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
+        update_id_map(table='recipient', old_id=item['recipient_id'], new_id=new_recipient_id)
 
     # Merge in zerver_userprofile_mirrordummy
     data['zerver_userprofile'] = data['zerver_userprofile'] + data['zerver_userprofile_mirrordummy']

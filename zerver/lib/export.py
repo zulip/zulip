@@ -786,15 +786,22 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
 
 def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
+    response['zerver_userprofile_crossrealm'] = []
 
     if realm.string_id == settings.SYSTEM_BOT_REALM:
-        response['zerver_userprofile_crossrealm'] = []
-    else:
-        response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
+        return
+
+    for bot_user in [
             get_system_bot(settings.NOTIFICATION_BOT),
             get_system_bot(settings.EMAIL_GATEWAY_BOT),
             get_system_bot(settings.WELCOME_BOT),
-        ]]
+    ]:
+        recipient_id = Recipient.objects.get(type_id=bot_user.id, type=Recipient.PERSONAL).id
+        response['zerver_userprofile_crossrealm'].append(dict(
+            email=bot_user.email,
+            id=bot_user.id,
+            recipient_id=recipient_id,
+        ))
 
 def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[int]) -> None:
     filter_args = {'realm_id': realm_id}
