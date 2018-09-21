@@ -659,6 +659,12 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     realm.signup_notifications_stream_id = signup_notifications_stream_id
     realm.save()
 
+    if settings.BILLING_ENABLED:
+        realm.plan_type = Realm.LIMITED
+    else:
+        realm.plan_type = Realm.SELF_HOSTED
+    realm.save()
+
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
