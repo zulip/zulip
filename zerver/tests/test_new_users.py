@@ -153,6 +153,9 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
              '<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari'
              '/<WebKit Rev> Edge/<EdgeHTML Rev>.'
              '<Windows Build>', 'Edge', 'Windows'),
+            ('Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36'
+             '(KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36',
+             'Chrome', 'ChromeOS'),
             ('', None, None),
         ]
 
