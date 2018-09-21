@@ -107,20 +107,10 @@
               "is_checked" page_params.enable_login_emails
               "label" settings_label.enable_login_emails}}
 
-            <div class="input-group {{#unless page_params.enable_offline_email_notifications}}control-label-disabled{{/unless}}">
-                <label class="checkbox">
-                    <input type="checkbox" name="message_content_in_email_notifications"
-                      id="message_content_in_email_notifications"
-                      {{#unless page_params.enable_offline_email_notifications}}disabled="disabled"{{/unless}}
-                      {{#if page_params.message_content_in_email_notifications}}
-                      checked="checked"
-                      {{/if}} />
-                    <span></span>
-                </label>
-                <label for="message_content_in_email_notifications" id="message_content_in_email_notifications_label" class="inline-block">
-                    {{settings_label.message_content_in_email_notifications}}
-                </label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "message_content_in_email_notifications"
+              "is_checked" page_params.message_content_in_email_notifications
+              "label" settings_label.message_content_in_email_notifications}}
 
             {{partial "settings_checkbox"
               "setting_name" "realm_name_in_notifications"
