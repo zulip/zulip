@@ -636,6 +636,11 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_model_ids(Realm, data, 'realm')
 
     realm = Realm(**data['zerver_realm'][0])
+    if settings.BILLING_ENABLED:
+        realm.plan_type = Realm.LIMITED
+    else:
+        realm.plan_type = Realm.SELF_HOSTED
+
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
     else:
