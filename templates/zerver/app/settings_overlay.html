@@ -91,6 +91,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% if is_admin %}
                 <li tabindex="0" data-section="user-list-admin">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Users') }}</div>
@@ -98,6 +99,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% endif %}
                 {% if is_admin %}
                 <li tabindex="0" data-section="deactivated-users-admin">
                     <i class="icon fa fa-trash-o" aria-hidden="true"></i>
