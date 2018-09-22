@@ -21,16 +21,13 @@ from zerver.webhooks.github_legacy.view import build_message_from_gitlog
 def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        try:
-            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
-            if auth_type.lower() == "basic":
-                email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
-                email = email.replace('%40', '@')
-                credentials = u"%s:%s" % (email, api_key)
-                encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf8')  # type: str
-                request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
-        except Exception:
-            pass
+        auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
+        if auth_type.lower() == "basic":
+            email, api_key = base64.b64decode(encoded_value).decode('utf-8').split(":")
+            email = email.replace('%40', '@')
+            credentials = u"%s:%s" % (email, api_key)
+            encoded_credentials = base64.b64encode(credentials.encode('utf-8')).decode('utf8')  # type: str
+            request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
 
         return view_func(request, *args, **kwargs)
 
