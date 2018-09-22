@@ -229,9 +229,10 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
     commit_api_url = payload['commit_status']['links']['commit']['href']
     commit_id = commit_api_url.split('/')[-1]
 
-    commit_info = "{}/commits/{}".format(
-        get_repository_url(payload['repository']),
-        commit_id
+    commit_info = "[{short_commit_id}]({repo_url}/commits/{commit_id})".format(
+        repo_url=get_repository_url(payload['repository']),
+        short_commit_id=commit_id[:7],
+        commit_id=commit_id
     )
 
     return BITBUCKET_COMMIT_STATUS_CHANGED_BODY.format(
