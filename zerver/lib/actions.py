@@ -1950,7 +1950,8 @@ def check_send_private_message(sender: UserProfile, client: Client,
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender: UserProfile, client: Client, message_type_name: str,
-                       message_to: Sequence[str], topic_name: Optional[str],
+                       message_to: Union[Sequence[int], Sequence[str]],
+                       topic_name: Optional[str],
                        message_content: str, realm: Optional[Realm]=None,
                        forged: bool=False, forged_timestamp: Optional[float]=None,
                        forwarder_user_profile: Optional[UserProfile]=None,
