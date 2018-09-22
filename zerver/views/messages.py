@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Any, Callable, Iterable, \
-    Optional, Tuple, Union, Sequence
+    Optional, Tuple, Union, Sequence, cast
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import has_request_variables, \
@@ -1207,7 +1207,8 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
-                         message_to: List[str]=REQ('to', converter=extract_recipients, default=[]),
+                         message_to: Union[Sequence[int], Sequence[str]]=REQ(
+                             'to', converter=extract_recipients, default=[]),
                          forged: bool=REQ(default=False),
                          topic_name: Optional[str]=REQ_topic(),
                          message_content: str=REQ('content'),
@@ -1252,6 +1253,17 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
             return json_error(_("User not authorized for this query"))
+
+        # For now, mirroring only works with recipient emails, not for
+        # recipient user IDs.
+        if not all(isinstance(to_item, str) for to_item in message_to):
+            return json_error(_("Mirroring not allowed with recipient user IDs"))
+
+        # We need this manual cast so that mypy doesn't complain about
+        # create_mirrored_message_users not being able to accept a Sequence[int]
+        # type parameter.
+        message_to = cast(Sequence[str], message_to)
+
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
