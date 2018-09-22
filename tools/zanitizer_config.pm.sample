@@ -8,7 +8,7 @@ sub scrub_text {
     s/hunter2/xxxxxxx/g;
 }
 
-sub keep_file {
+sub scrub_filename {
     if (m%^secret-directory/% || m%settings\.ini$%) {
         undef $_;
     } else {
