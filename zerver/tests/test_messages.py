@@ -1395,6 +1395,26 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": self.example_email("othello")})
         self.assert_json_success(result)
 
+    def test_personal_message_by_id(self) -> None:
+        """
+        Sending a personal message to a valid user ID is successful.
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "client": "test suite",
+                "to": ujson.dumps([self.example_user("othello").id])
+            }
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual("Test message", msg.content)
+        self.assertEqual(msg.recipient_id, self.example_user("othello").id)
+
     def test_personal_message_copying_self(self) -> None:
         """
         Sending a personal message to yourself plus another user is successful,
@@ -1714,6 +1734,22 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": email},
                                   subdomain="notzephyr")
         self.assert_json_error(result, "Zephyr mirroring is not allowed in this organization")
+
+    @mock.patch("zerver.views.messages.create_mirrored_message_users")
+    def test_send_message_when_client_is_zephyr_mirror_but_recipient_is_user_id(
+            self, create_mirrored_message_users_mock: Any) -> None:
+        create_mirrored_message_users_mock.return_value = (True, True)
+        user = self.mit_user("starnine")
+        user_id = user.id
+        user_email = user.email
+        self.login(user_email, realm=get_realm("zephyr"))
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "sender": self.mit_email("sipbtest"),
+                                                     "content": "Test message",
+                                                     "client": "zephyr_mirror",
+                                                     "to": ujson.dumps([user_id])},
+                                  subdomain="zephyr")
+        self.assert_json_error(result, "Mirroring not allowed with recipient user IDs")
 
     def test_send_message_irc_mirror(self) -> None:
         self.login(self.example_email('hamlet'))
