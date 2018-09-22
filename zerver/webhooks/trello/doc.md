@@ -23,12 +23,11 @@ Get Zulip notifications from your Trello boards!
       **Developer API Keys**, click on the **Token** link. Click on **Allow**.
       Note down the token generated.
 
-1.  [Trello's webhook API][webhooks] does not have a web configuration
-    UI, so outgoing notifications from Trello have to be configured
-    using the Trello API.  We provide a convenient Python script that
-    you can use to configure Trello's webhook API for Zulip.
+You're now going to need to run a Trello configuration script from a
+computer (any computer) connected to the internet. It won't make any changes
+to the computer.
 
-    Make sure you have a working copy of Python. If you're running
+1.  Make sure you have a working copy of Python. If you're running
     macOS or Linux, you very likely already do. If you're running
     Windows you may or may not.  If you don't have Python, follow the
     installation instructions
@@ -56,8 +55,15 @@ Get Zulip notifications from your Trello boards!
 1. You can delete `zulip_trello.py` from your computer if you'd like.
 
 [2]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip/integrations/trello/zulip_trello.py
-[webhooks]: https://developers.trello.com/page/webhooks
 
 {!congrats.md!}
 
 ![](/static/images/integrations/trello/001.png)
+
+**Advanced**
+
+You can learn more about Trello's webhooks via their
+[webhook API documentation](https://developers.trello.com/page/webhooks).
+
+Trello does not provide a web interface for their outgoing notifications, so
+any webhook configuration must be done through their API.
