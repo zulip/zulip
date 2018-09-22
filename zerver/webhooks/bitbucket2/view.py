@@ -226,13 +226,13 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     )
 
 def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
-    commit_id = re.match('.*/commit/(?P<commit_id>[A-Za-z0-9]*$)',
-                         payload['commit_status']['links']['commit']['href'])
-    if commit_id:
-        commit_info = "{}/{}".format(get_repository_url(payload['repository']),
-                                     commit_id.group('commit_id'))
-    else:
-        commit_info = 'commit'
+    commit_api_url = payload['commit_status']['links']['commit']['href']
+    commit_id = commit_api_url.split('/')[-1]
+
+    commit_info = "{}/{}".format(
+        get_repository_url(payload['repository']),
+        commit_id
+    )
 
     return BITBUCKET_COMMIT_STATUS_CHANGED_BODY.format(
         key=payload['commit_status']['key'],
@@ -331,9 +331,7 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str:
     elif change.get('closed'):
         tag = change['old']
         action = 'removed'
-    else:
-        tag = change['new']
-        action = None
+
     return get_push_tag_event_message(
         get_user_username(payload),
         tag.get('name'),
@@ -365,9 +363,6 @@ def get_repo_updated_body(payload: Dict[str, Any]) -> str:
             body += message
 
     return body
-
-def get_pull_request_title(pullrequest_payload: Dict[str, Any]) -> str:
-    return pullrequest_payload['title']
 
 def get_pull_request_url(pullrequest_payload: Dict[str, Any]) -> str:
     return pullrequest_payload['links']['html']['href']
