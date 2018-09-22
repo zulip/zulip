@@ -229,7 +229,7 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
     commit_api_url = payload['commit_status']['links']['commit']['href']
     commit_id = commit_api_url.split('/')[-1]
 
-    commit_info = "{}/{}".format(
+    commit_info = "{}/commits/{}".format(
         get_repository_url(payload['repository']),
         commit_id
     )
