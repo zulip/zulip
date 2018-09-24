@@ -775,9 +775,8 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                   'email_template': 'welcome-bot@%s',
                   'name': 'Welcome Bot'}]
 
-REALM_INTERNAL_BOTS = [{'var_name': 'REMINDER_BOT',
-                        'email_template': 'reminder-bot@%s',
-                        'name': 'Reminder Bot'}]
+# Bots that are created for each realm like the reminder-bot goes here.
+REALM_INTERNAL_BOTS = []
 
 if PRODUCTION:
     INTERNAL_BOTS += [
