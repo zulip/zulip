@@ -68,7 +68,7 @@
     border-radius: 50%;
     border: 1px solid;
     float: left;
-    position: absolute;
+    position: relative;
     top: 5px;
 }
 
@@ -103,7 +103,7 @@
 #user_presences a,
 #group-pms a {
     color: inherit;
-    margin-left: 20px;
+    margin-left: 0px;
 }
 
 #invite-user-link i {
