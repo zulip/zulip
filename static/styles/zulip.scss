@@ -1170,6 +1170,10 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
+.m-l-10 {
+    margin-left: 10px;
+}
+
 .message_failed,
 .message_local {
     display: inline-block;
@@ -1178,7 +1182,9 @@ td.pointer {
 }
 
 .message_failed {
+    left: 20px;
     font-weight: bold;
+    opacity: 1 !important;
     color: hsl(0, 100%, 50%);
     position: relative;
 }
