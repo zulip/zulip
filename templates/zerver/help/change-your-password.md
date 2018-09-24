@@ -12,7 +12,7 @@ account.
 
 2. Below the **Password** field, click **Forgot password**.
 
-3. Enter your email address, and click **Reset password**.
+3. Enter your email address, and click **Send reset link**.
 
 4. You will receive a confirmation email within a few minutes. Open it and click **Reset password**.
 
