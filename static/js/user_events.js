@@ -37,6 +37,7 @@ exports.update_person = function update(person) {
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
         if (people.is_my_user_id(person.user_id)) {
+            page_params.full_name = person.full_name;
             settings_account.update_full_name(person.full_name);
         }
     }
