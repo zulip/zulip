@@ -339,9 +339,9 @@ html {
 
     width: 280px;
 
-    border: 2px solid hsl(0, 0%, 86%);
+    border: 1px solid hsl(0, 0%, 86%);
     box-shadow: none;
-    border-radius: 0px;
+    border-radius: 4px;
 
     transition: border 0.3s ease;
 }
@@ -352,10 +352,10 @@ html {
 
 .new-style .input-box label {
     position: absolute;
-    top: 0px;
-    left: 0%;
+    top: 0;
+    left: 0;
 
-    margin-top: 5px;
+    margin-top: 1px;
 
     transition: all 0.3s ease;
 }
@@ -381,7 +381,7 @@ html {
 .new-style .input-box input[type=text]:focus,
 .new-style .input-box input[type=email]:focus,
 .new-style .input-box input[type=password]:focus {
-    border: 2px solid hsl(0, 0%, 53%);
+    border: 1px solid hsl(0, 0%, 53%);
 }
 
 .new-style .input-box label,
@@ -446,6 +446,7 @@ html {
     background-color: hsl(213, 23%, 25%);
 
     border: none;
+    border-radius: 4px;
 
     transition: all 0.3s ease;
 }
