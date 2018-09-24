@@ -1234,6 +1234,9 @@ run_test('subscription_settings', () => {
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('private stream') > 0);
 
+    var is_announcement_only = $(html).find("input[name=is-announcement-only]");
+    assert.equal(is_announcement_only.prop('checked'), false);
+
     var anchor = $(html).find(".change-stream-privacy:first");
     assert.equal(anchor.text(), "[translated: Change]");
 });
@@ -1250,9 +1253,6 @@ run_test('subscription_stream_privacy_modal', () => {
     assert.equal(other_options[0].value, 'public');
     assert.equal(other_options[1].value, 'invite-only-public-history');
     assert.equal(other_options[2].value, 'invite-only');
-
-    var is_announcement_only = $(html).find("input[name=is-announcement-only]");
-    assert.equal(is_announcement_only.prop('checked'), false);
 
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));

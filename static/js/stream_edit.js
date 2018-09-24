@@ -343,24 +343,38 @@ function redraw_privacy_related_stuff(sub_row, sub) {
 function change_stream_privacy(e) {
     e.stopPropagation();
 
-    var stream_id = $(e.target).data("stream-id");
+    var privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
+    var stream_id;
+    // function call from admin posting option or general privacy option
+    if (privacy_setting === undefined) {
+        stream_id = get_stream_id(e.target);
+    } else {
+        stream_id = $(e.target).data("stream-id");
+    }
+
     var sub = stream_data.get_sub_by_id(stream_id);
 
-    var privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
-    var is_announcement_only = $('#stream_privacy_modal input[name=is-announcement-only]').prop('checked');
+    var is_announcement_only = $('#stream_posting_privacy input[name=is-announcement-only]').prop('checked');
 
     var invite_only;
     var history_public_to_subscribers;
 
-    if (privacy_setting === 'invite-only') {
-        invite_only = true;
-        history_public_to_subscribers = false;
-    } else if (privacy_setting === 'invite-only-public-history') {
-        invite_only = true;
-        history_public_to_subscribers = true;
+    if (privacy_setting === undefined) {
+        // use previous values
+        invite_only = sub.invite_only;
+        history_public_to_subscribers = sub.history_public_to_subscribers;
     } else {
-        invite_only = false;
-        history_public_to_subscribers = true;
+        is_announcement_only = sub.is_announcement_only;
+        if (privacy_setting === 'invite-only') {
+            invite_only = true;
+            history_public_to_subscribers = false;
+        } else if (privacy_setting === 'invite-only-public-history') {
+            invite_only = true;
+            history_public_to_subscribers = true;
+        } else {
+            invite_only = false;
+            history_public_to_subscribers = true;
+        }
     }
 
     $(".stream_change_property_info").hide();
@@ -533,6 +547,9 @@ exports.initialize = function () {
     });
 
     $("#subscriptions_table").on('click', '#change-stream-privacy-button',
+                                 change_stream_privacy);
+
+    $("#subscriptions_table").on('click', '#stream_posting_privacy',
                                  change_stream_privacy);
 
     $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {

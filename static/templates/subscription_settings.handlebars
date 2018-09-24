@@ -39,6 +39,13 @@
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
+        <div id="stream_posting_privacy" data-stream-id="{{stream_id}}" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>
+            <label>
+                <input type="checkbox" name="is-announcement-only" value="is-announcement-only" {{#if is_announcement_only}}checked{{/if}}/>
+                <span class="is-announcement-only">{{t "Only administrators can post." }}</span>
+            </label>
+        </div>
+        <br>
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">
                 <ul class="grey-box">
