@@ -250,8 +250,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     show_billing = False
     show_plans = False
-    if settings.ZILENCER_ENABLED:
-        from zilencer.models import Customer
+    if settings.CORPORATE_ENABLED:
+        from corporate.models import Customer
         if user_profile.is_billing_admin or user_profile.is_realm_admin:
             customer = Customer.objects.filter(realm=user_profile.realm).first()
             if customer is not None and customer.has_billing_relationship:

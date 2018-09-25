@@ -17,7 +17,7 @@ from zerver.lib.context_managers import lockfile
 from zerver.lib.management import sleep_forever
 from corporate.lib.stripe import StripeConnectionError, \
     run_billing_processor_one_step
-from zilencer.models import BillingProcessor
+from corporate.models import BillingProcessor
 
 class Command(BaseCommand):
     help = """Run BillingProcessors, to sync billing-relevant updates into Stripe.

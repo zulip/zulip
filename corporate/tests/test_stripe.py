@@ -21,7 +21,7 @@ from corporate.lib.stripe import catch_stripe_errors, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
     BillingError, StripeCardError, StripeConnectionError
-from zilencer.models import Customer, Plan, Coupon, BillingProcessor
+from corporate.models import Customer, Plan, Coupon, BillingProcessor
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)

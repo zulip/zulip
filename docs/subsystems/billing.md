@@ -12,7 +12,7 @@ To set up the development environment to work on the billing code:
 
 It is safe to run `manage.py setup_stripe` multiple times.
 
-Nearly all the billing-relevant code lives in `zilencer/`.
+Nearly all the billing-relevant code lives in `corporate/`.
 
 ## General architecture
 

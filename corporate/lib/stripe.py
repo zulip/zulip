@@ -18,7 +18,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
-from zilencer.models import Customer, Plan, Coupon, BillingProcessor
+from corporate.models import Customer, Plan, Coupon, BillingProcessor
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')

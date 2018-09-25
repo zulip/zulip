@@ -1,5 +1,5 @@
 from zerver.lib.management import ZulipBaseCommand
-from zilencer.models import Plan, Coupon, Customer
+from corporate.models import Plan, Coupon, Customer
 from zproject.settings import get_secret
 
 from typing import Any
