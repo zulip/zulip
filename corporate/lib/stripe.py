@@ -48,7 +48,7 @@ log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 #   Then you can run e.g. `M-x mark-whole-buffer` and `M-x indent-region` in emacs
 #   to prettify the file (and make 4 space indents).
 # * Copy out the customer id, plan id, and quantity values into
-#   zilencer.tests.test_stripe.StripeTest.setUp.
+#   corporate.tests.test_stripe.StripeTest.setUp.
 # * Set PRINT_STRIPE_FIXTURE_DATA to False
 PRINT_STRIPE_FIXTURE_DATA = False
 
