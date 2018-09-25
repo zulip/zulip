@@ -82,7 +82,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'cloud_annual_price': 80,
         'cloud_annual_price_per_month': 6.67,
     }  # type: Dict[str, Any]
-    response = render(request, 'zilencer/upgrade.html', context=context)
+    response = render(request, 'corporate/upgrade.html', context=context)
     response['error_description'] = error_description
     return response
 
@@ -102,7 +102,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
     if not user.is_realm_admin and not user.is_billing_admin:
         context = {'admin_access': False}  # type: Dict[str, Any]
-        return render(request, 'zilencer/billing.html', context=context)
+        return render(request, 'corporate/billing.html', context=context)
     context = {'admin_access': True}
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
@@ -147,7 +147,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'stripe_email': stripe_customer.email,
     })
 
-    return render(request, 'zilencer/billing.html', context=context)
+    return render(request, 'corporate/billing.html', context=context)
 
 def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:
     if not user.is_realm_admin and not user.is_billing_admin:

@@ -626,8 +626,8 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<button aria-label="foo"></button>']},
         {'pattern': 'script src="http',
          'description': "Don't directly load dependencies from CDNs.  See docs/subsystems/front-end-build-process.md",
-         'exclude': set(["templates/zilencer/billing.html", "templates/zerver/hello.html",
-                         "templates/zilencer/upgrade.html"]),
+         'exclude': set(["templates/corporate/billing.html", "templates/zerver/hello.html",
+                         "templates/corporate/upgrade.html"]),
          'good_lines': ["{{ render_bundle('landing-page') }}"],
          'bad_lines': ['<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>']},
         {'pattern': "title='[^{]",
@@ -701,7 +701,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/app/home.html',
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
-             'templates/zilencer/billing.html',
+             'templates/corporate/billing.html',
 
              # Miscellaneous violations to be cleaned up
              'static/templates/user_info_popover_title.handlebars',
