@@ -372,15 +372,15 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 #
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
-#
-# For detailed instructions, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
 
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, LDAPSearchUnion
 
 ########
 # LDAP integration, part 1: Connecting to the LDAP server.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
 
 # The LDAP server to connect to.  Setting this enables Zulip
 # automatically fetching each new user's name from LDAP.
@@ -399,23 +399,33 @@ AUTH_LDAP_BIND_DN = ""
 
 ########
 # LDAP integration, part 2: Mapping user info from LDAP to Zulip.
+#
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
 
 # The LDAP search query to find a given user.
 #
 # The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
-# filter, the string `%(user)s` is a Python placeholder; the Zulip
-# server will replace this with the user's Zulip username.  For more
-# details and alternatives, see the Zulip documentation:
-#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+# filter, the string `%(user)s` is a Python placeholder.  The Zulip
+# server will replace this with the user's Zulip username, i.e. the
+# name they type into the Zulip login form.
+#
+# For more details and alternatives, see the documentation linked above.
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
-# If the value of a user's "uid" (or similar) property is not their email
-# address, specify the domain to append here.
+# Domain to combine with a user's username to figure out their email address.
+#
+# If users log in as e.g. "sam" when their email address is "sam@example.com",
+# set this to "example.com".  If users log in with their full email addresses,
+# leave as None; if the username -> email address mapping isn't so simple,
+# leave as None and see LDAP_EMAIL_ATTR.
 LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 
-# If username and email are two different LDAP attributes, specify the
-# attribute to get the user's email address from LDAP here.
+# LDAP attribute to find a user's email address.
+#
+# Leave as None if users log in with their email addresses,
+# or if using LDAP_APPEND_DOMAIN.
 LDAP_EMAIL_ATTR = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
