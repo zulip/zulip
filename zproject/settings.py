@@ -573,6 +573,7 @@ if USING_PGROONGA:
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
+CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.

@@ -23,7 +23,7 @@ from zerver.models import (
     flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
-from zilencer.models import Customer
+from corporate.models import Customer
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
