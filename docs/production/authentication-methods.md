@@ -52,30 +52,38 @@ In either configuration, you will need to do the following:
      `auth_ldap_bind_password`.  For example: `auth_ldap_bind_password
      = abcd1234`.
 
-2. Tell Zulip how to map the information it needs about users from how
-   it's stored in your LDAP server.  There are three supported ways to
-   setup the username and/or email mapping:
+2. Decide how you want to map the information in your LDAP database to
+   users' experience in Zulip.  For each Zulip user, two closely
+   related concepts are:
+   * their **email address**.  Zulip needs this in order to send, for
+     example, a notification when they're offline and another user
+     sends a PM.
+   * their **Zulip username**.  This means the name the user types into the
+     Zulip login form.  You might choose for this to be the user's
+     email address (`sam@example.com`), or look like a traditional
+     "username" (`sam`), or be something else entirely, depending on
+     your environment.
 
-   A. If users' email addresses are in LDAP and used as username, set
-      ```
-      LDAP_APPEND_DOMAIN = None
-      AUTH_LDAP_USER_SEARCH to lookup users by email address
-      ```
+   Either or both of these might be an attribute of the user records
+   in your LDAP database.
 
-   B. If LDAP only has usernames but email addresses are of the form
-      `username@example.com`, you should set:
-      ```
-      LDAP_APPEND_DOMAIN = example.com and
-      AUTH_LDAP_USER_SEARCH to lookup users by username
-      ```
+3. Tell Zulip how to map the user information in your LDAP database to
+   the form it needs.  There are three supported ways to set up the
+   username and/or email mapping:
 
-   C. If LDAP usernames are completely unrelated to email addresses,
-      you should set:
-      ```
-      LDAP_EMAIL_ATTR = "email"
-      LDAP_APPEND_DOMAIN = None
-      AUTH_LDAP_USER_SEARCH to lookup users by username
-      ```
+   (A) Using email addresses as usernames, if LDAP has each user's
+      email address.  To do this, just set `AUTH_LDAP_USER_SEARCH` to
+      query by email address.
+
+   (B) Using LDAP usernames as Zulip usernames, with email addresses
+      formed consistently like `sam` -> `sam@example.com`.  To do
+      this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP username, and
+      `LDAP_APPEND_DOMAIN = "example.com"`.
+
+   (C) Using LDAP usernames as Zulip usernames, with email addresses
+      taken from some other attribute in LDAP (for example, `email`).
+      To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
+      username, and `LDAP_EMAIL_ATTR = "email"`.
 
 You can quickly test whether your configuration works by running:
 ```
