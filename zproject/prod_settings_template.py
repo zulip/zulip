@@ -382,12 +382,13 @@ from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, LDAPSearchUnio
 ########
 # LDAP integration, part 1: Connecting to the LDAP server.
 
-# URI of your LDAP server. If set, LDAP is used to prepopulate a user's name in
-# Zulip. Example: "ldaps://ldap.example.com"
+# The LDAP server to connect to.  Setting this enables Zulip
+# automatically fetching each new user's name from LDAP.
+# Example: "ldaps://ldap.example.com"
 AUTH_LDAP_SERVER_URI = ""
 
-# This DN will be used to bind to your server. If unset, anonymous
-# binds are performed.
+# The DN of the user to bind as (i.e., authenticate as) in order to
+# query LDAP.  If unset, Zulip does an anonymous bind.
 AUTH_LDAP_BIND_DN = ""
 
 # Passwords and secrets are not stored in this file.  The password
@@ -399,14 +400,15 @@ AUTH_LDAP_BIND_DN = ""
 ########
 # LDAP integration, part 2: Mapping user info from LDAP to Zulip.
 
-# Specify the search base and the property to filter on that corresponds to the
-# username.  One can use LDAPSearchUnion to do the union of multiple LDAP searches.
+# The LDAP search query to find a given user.
+#
+# The arguments to `LDAPSearch` are (base DN, scope, filter).  In the
+# filter, the string `%(user)s` is a Python placeholder; the Zulip
+# server will replace this with the user's Zulip username.  For more
+# details and alternatives, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-#AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
-#    LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
-#    LDAPSearch("ou=otherusers,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
-#)
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.
@@ -417,6 +419,10 @@ LDAP_APPEND_DOMAIN = None  # type: Optional[str]
 LDAP_EMAIL_ATTR = None  # type: Optional[str]
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
+#
+# The format is `zulip_name: ldap_name`; each entry maps a Zulip
+# concept (on the left) to the LDAP attribute name (on the right) your
+# LDAP database uses for the same concept.
 AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",

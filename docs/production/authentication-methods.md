@@ -81,22 +81,34 @@ You can quickly test whether your configuration works by running:
 ```
   ./manage.py query_ldap username@example.com
 ```
-From the root of your Zulip installation; if your configuration is working
+from the root of your Zulip installation.  If your configuration is working,
 that will output the full name for your user.
 
-**If you are using LDAP for authentication**, you will need to enable
-the zproject.backends.ZulipLDAPAuthBackend auth backend in
-AUTHENTICATION_BACKENDS above.  After doing so, you should be able
-to login to Zulip by entering your email address and LDAP password
-on the Zulip login form.
+**If you are using LDAP for authentication**: you will need to enable
+the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
+`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing
+so (and as always [restarting the Zulip server](settings.html) to ensure
+your settings changes take effect), you should be able to log into
+Zulip by entering your email address and LDAP password on the Zulip
+login form.
 
-**If you are using LDAP to populate names in Zulip**, once you finish
+**If you are using LDAP to populate names in Zulip**: once you finish
 configuring this integration, you will need to run:
 ```
   ./manage.py sync_ldap_user_data
 ```
-To sync names for existing users; you may want to run this in a cron
+to sync names for existing users.  You may want to run this in a cron
 job to pick up name changes made on your LDAP server.
+
+### Multiple LDAP searches
+
+To do the union of multiple LDAP searches, use `LDAPSearchUnion`.  For example:
+```
+AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
+    LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+    LDAPSearch("ou=otherusers,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+)
+```
 
 ## Apache-based SSO with `REMOTE_USER`
 
