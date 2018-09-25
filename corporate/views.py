@@ -15,7 +15,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
-from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
+from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, stripe_get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source

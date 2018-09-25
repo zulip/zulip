@@ -28,7 +28,7 @@ BILLING_LOG_PATH = os.path.join('/var/log/zulip'
                                 if not settings.DEVELOPMENT
                                 else settings.DEVELOPMENT_LOG_DIRECTORY,
                                 'billing.log')
-billing_logger = logging.getLogger('zilencer.stripe')
+billing_logger = logging.getLogger('corporate.stripe')
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 

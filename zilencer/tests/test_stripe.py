@@ -16,7 +16,7 @@ from zerver.lib.actions import do_deactivate_user, do_create_user, \
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
-from zilencer.lib.stripe import catch_stripe_errors, \
+from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
@@ -95,7 +95,7 @@ class StripeTest(ZulipTestCase):
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
         return match.group(1) if match else None
 
-    @mock.patch("zilencer.lib.stripe.billing_logger.error")
+    @mock.patch("corporate.lib.stripe.billing_logger.error")
     def test_catch_stripe_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
@@ -210,7 +210,7 @@ class StripeTest(ZulipTestCase):
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
         response = self.client_get("/upgrade/")
-        with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
+        with mock.patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {
                 'stripeToken': self.token,
                 'signed_seat_count': self.get_signed_seat_count_from_response(response),
@@ -545,7 +545,7 @@ class StripeTest(ZulipTestCase):
         # Test STRIPE_PLAN_QUANTITY_RESET
         new_seat_count = 123
         # change the seat count while the user is going through the upgrade flow
-        with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
+        with mock.patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {'stripeToken': self.token,
                                            'signed_seat_count': self.signed_seat_count,
                                            'salt': self.salt,
@@ -682,14 +682,14 @@ class BillingProcessorTest(ZulipTestCase):
             realm=second_realm, log_row=entry1, state=BillingProcessor.STARTED)
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
         Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
-        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity'):
+        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity'):
             # test return values
             self.assertTrue(run_billing_processor_one_step(processor))
             self.assertTrue(run_billing_processor_one_step(realm_processor))
         # test no processors get added or deleted
         self.assertEqual(2, BillingProcessor.objects.count())
 
-    @mock.patch("zilencer.lib.stripe.billing_logger.error")
+    @mock.patch("corporate.lib.stripe.billing_logger.error")
     def test_run_billing_processor_with_card_error(self, mock_billing_logger_error: mock.Mock) -> None:
         second_realm = Realm.objects.create(string_id='second', name='second')
         entry1 = self.add_log_entry(realm=second_realm)
@@ -699,7 +699,7 @@ class BillingProcessorTest(ZulipTestCase):
         Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
 
         # card error on global processor should create a new realm processor
-        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
                         side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
             self.assertTrue(run_billing_processor_one_step(processor))
         self.assertEqual(2, BillingProcessor.objects.count())
@@ -713,7 +713,7 @@ class BillingProcessorTest(ZulipTestCase):
         realm_processor = BillingProcessor.objects.filter(realm=second_realm).first()
         realm_processor.state = BillingProcessor.STARTED
         realm_processor.save()
-        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
                         side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
             self.assertTrue(run_billing_processor_one_step(realm_processor))
         self.assertEqual(2, BillingProcessor.objects.count())
@@ -721,7 +721,7 @@ class BillingProcessorTest(ZulipTestCase):
             realm=second_realm, log_row=entry1, state=BillingProcessor.STALLED).exists())
         mock_billing_logger_error.assert_called()
 
-    @mock.patch("zilencer.lib.stripe.billing_logger.error")
+    @mock.patch("corporate.lib.stripe.billing_logger.error")
     def test_run_billing_processor_with_uncaught_error(self, mock_billing_logger_error: mock.Mock) -> None:
         # This tests three different things:
         # * That run_billing_processor_one_step passes through exceptions that
@@ -733,7 +733,7 @@ class BillingProcessorTest(ZulipTestCase):
         processor = BillingProcessor.objects.create(
             log_row=entry1, state=BillingProcessor.DONE)
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
-        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
                         side_effect=stripe.error.StripeError('message', 'param', 'code', json_body={})):
             with self.assertRaises(BillingError):
                 run_billing_processor_one_step(processor)

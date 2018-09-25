@@ -29,7 +29,7 @@ target_fully_covered = {path for target in [
     'zerver/*.py',
     'zerver/lib/*.py',
     # stripe.py handles billing
-    'zilencer/lib/stripe.py',
+    'corporate/lib/stripe.py',
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',

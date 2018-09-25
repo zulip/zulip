@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.management import sleep_forever
-from zilencer.lib.stripe import StripeConnectionError, \
+from corporate.lib.stripe import StripeConnectionError, \
     run_billing_processor_one_step
 from zilencer.models import BillingProcessor
 

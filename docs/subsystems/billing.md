@@ -18,7 +18,7 @@ Nearly all the billing-relevant code lives in `zilencer/`.
 
 Notes:
 * Anything that talks directly to Stripe should go in
-  `zilencer/lib/stripe.py`.
+  `corporate/lib/stripe.py`.
 * We generally try to store billing-related data in Stripe, rather than in
   Zulip database tables. We'd rather pay the penalty of making extra stripe
   API requests than deal with keeping two sources of data in sync.
