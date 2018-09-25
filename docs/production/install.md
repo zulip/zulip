@@ -41,7 +41,7 @@ To set up Zulip with the most common configuration, you can run the
 installer as follows:
 
 ```
-sudo -i  # If not already root
+sudo -s  # If not already root
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
