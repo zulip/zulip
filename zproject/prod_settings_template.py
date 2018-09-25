@@ -373,49 +373,14 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
 #
-# In either configuration, you will need to do the following:
-#
-# * Fill in the LDAP configuration options below so that Zulip can
-# connect to your LDAP server
-#
-# * Setup the mapping between LDAP attributes and Zulip.
-# There are three supported ways to setup the username and/or email mapping:
-#
-#   (A) If users' email addresses are in LDAP and used as username, set
-#       LDAP_APPEND_DOMAIN = None
-#       AUTH_LDAP_USER_SEARCH to lookup users by email address
-#
-#   (B) If LDAP only has usernames but email addresses are of the form
-#       username@example.com, you should set:
-#       LDAP_APPEND_DOMAIN = example.com and
-#       AUTH_LDAP_USER_SEARCH to lookup users by username
-#
-#   (C) If LDAP usernames are completely unrelated to email addresses,
-#       you should set:
-#       LDAP_EMAIL_ATTR = "email"
-#       LDAP_APPEND_DOMAIN = None
-#       AUTH_LDAP_USER_SEARCH to lookup users by username
-#
-# You can quickly test whether your configuration works by running:
-#   ./manage.py query_ldap username@example.com
-# From the root of your Zulip installation; if your configuration is working
-# that will output the full name for your user.
-#
-# -------------------------------------------------------------
-#
-# If you are using LDAP for authentication, you will need to enable
-# the zproject.backends.ZulipLDAPAuthBackend auth backend in
-# AUTHENTICATION_BACKENDS above.  After doing so, you should be able
-# to login to Zulip by entering your email address and LDAP password
-# on the Zulip login form.
-#
-# If you are using LDAP to populate names in Zulip, once you finish
-# configuring this integration, you will need to run:
-#   ./manage.py sync_ldap_user_data
-# To sync names for existing users; you may want to run this in a cron
-# job to pick up name changes made on your LDAP server.
+# For detailed instructions, see the Zulip documentation:
+#   https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap
+
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType, LDAPSearchUnion
+
+########
+# LDAP integration, part 1: Connecting to the LDAP server.
 
 # URI of your LDAP server. If set, LDAP is used to prepopulate a user's name in
 # Zulip. Example: "ldaps://ldap.example.com"
@@ -423,10 +388,16 @@ AUTH_LDAP_SERVER_URI = ""
 
 # This DN will be used to bind to your server. If unset, anonymous
 # binds are performed.
-#
-# If set, you need to specify the password in zulip-secrets.conf ,
-# as 'auth_ldap_bind_password'.
 AUTH_LDAP_BIND_DN = ""
+
+# Passwords and secrets are not stored in this file.  The password
+# corresponding to AUTH_LDAP_BIND_DN goes in `/etc/zulip/zulip-secrets.conf`.
+# In that file, set `auth_ldap_bind_password`.  For example:
+#   auth_ldap_bind_password = abcd1234
+
+
+########
+# LDAP integration, part 2: Mapping user info from LDAP to Zulip.
 
 # Specify the search base and the property to filter on that corresponds to the
 # username.  One can use LDAPSearchUnion to do the union of multiple LDAP searches.
