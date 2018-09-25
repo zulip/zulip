@@ -49,7 +49,7 @@ ERROR_BOT = "error-bot@zulip.com"
 # SLOW_QUERY_LOGS_STREAM = "errors"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
-EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
+EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
 CAMO_URI = ''
 

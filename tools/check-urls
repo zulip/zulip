@@ -10,7 +10,8 @@ def check_urls():
                  'zproject/dev_urls.py',
                  'zproject/legacy_urls.py',
                  'analytics/urls.py',
-                 'zilencer/urls.py']
+                 'zilencer/urls.py',
+                 'corporate/urls.py']
 
     pattern_1 = r"\s+\[?url\(.+,\s*'.+'\s*,\s*.*\)"
     pattern_2 = r'\s+\[?url\(.+,\s*".+"\s*,\s*.*\)'

@@ -447,7 +447,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.is_billing_admin = True
         user.save(update_fields=['is_billing_admin'])
-        with mock.patch('zilencer.views.process_downgrade') as mocked1:
+        with mock.patch('corporate.views.process_downgrade') as mocked1:
             self.client_post("/json/billing/downgrade", {})
         mocked1.assert_called()
         # realm admin but not billing admin
@@ -455,7 +455,7 @@ class StripeTest(ZulipTestCase):
         user.is_billing_admin = False
         user.is_realm_admin = True
         user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with mock.patch('zilencer.views.process_downgrade') as mocked2:
+        with mock.patch('corporate.views.process_downgrade') as mocked2:
             self.client_post("/json/billing/downgrade", {})
         mocked2.assert_called()
 
@@ -507,7 +507,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.is_billing_admin = True
         user.save(update_fields=['is_billing_admin'])
-        with mock.patch('zilencer.views.do_replace_payment_source') as mocked1:
+        with mock.patch('corporate.views.do_replace_payment_source') as mocked1:
             self.client_post("/json/billing/sources/change",
                              {'stripe_token': ujson.dumps('token')})
         mocked1.assert_called()
@@ -516,7 +516,7 @@ class StripeTest(ZulipTestCase):
         user.is_billing_admin = False
         user.is_realm_admin = True
         user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with mock.patch('zilencer.views.do_replace_payment_source') as mocked2:
+        with mock.patch('corporate.views.do_replace_payment_source') as mocked2:
             self.client_post("/json/billing/sources/change",
                              {'stripe_token': ujson.dumps('token')})
         mocked2.assert_called()
