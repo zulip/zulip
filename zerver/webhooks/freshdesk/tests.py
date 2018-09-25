@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from mock import MagicMock, patch
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class FreshdeskHookTests(WebhookTestCase):
@@ -36,6 +38,19 @@ Status: **Resolved** => **Waiting on Customer**"""
         self.api_stream_message(self.TEST_USER_EMAIL, 'status_changed', expected_subject, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
+    def test_status_change_fixture_without_required_key(self) -> None:
+        """
+        A fixture without the requisite keys should raise JsonableError.
+        """
+        self.url = self.build_webhook_url()
+        payload = self.get_body('status_changed_fixture_with_missing_key')
+        kwargs = {
+            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'content_type': 'application/x-www-form-urlencoded',
+        }
+        result = self.client_post(self.url, payload, **kwargs)
+        self.assert_json_error(result, 'Missing key triggered_event in JSON')
+
     def test_priority_change(self) -> None:
         """
         Messages are generated when a ticket's priority changes through
@@ -47,6 +62,22 @@ Status: **Resolved** => **Waiting on Customer**"""
 Priority: **High** => **Low**"""
         self.api_stream_message(self.TEST_USER_EMAIL, 'priority_changed', expected_subject, expected_message,
                                 content_type="application/x-www-form-urlencoded")
+
+    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    def test_unknown_event_payload_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        """
+        Ignore unknown event payloads.
+        """
+        self.url = self.build_webhook_url()
+        payload = self.get_body('unknown_payload')
+        kwargs = {
+            'HTTP_AUTHORIZATION': self.encode_credentials(self.TEST_USER_EMAIL),
+            'content_type': 'application/x-www-form-urlencoded',
+        }
+        result = self.client_post(self.url, payload, **kwargs)
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
 
     def note_change(self, fixture: str, note_type: str) -> None:
         """

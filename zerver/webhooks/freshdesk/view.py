@@ -38,12 +38,13 @@ def property_name(property: str, index: int) -> str:
                 "Waiting on Customer", "Job Application", "Monthly"]
     priorities = ["", "Low", "Medium", "High", "Urgent"]
 
+    name = ""
     if property == "status":
-        return statuses[index] if index < len(statuses) else str(index)
+        name = statuses[index] if index < len(statuses) else str(index)
     elif property == "priority":
-        return priorities[index] if index < len(priorities) else str(index)
-    else:
-        raise ValueError("Unknown property")
+        name = priorities[index] if index < len(priorities) else str(index)
+
+    return name
 
 
 def parse_freshdesk_event(event_string: str) -> List[str]:
