@@ -23,7 +23,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     email_not_system_bot, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm
+    CreateUserForm, FindMyTeamForm, RealmRedirectForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
@@ -515,3 +515,15 @@ def find_account(request: HttpRequest) -> HttpResponse:
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
                            'emails': emails},)
+
+def realm_redirect(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = RealmRedirectForm(request.POST)
+        if form.is_valid():
+            subdomain = form.cleaned_data['subdomain']
+            realm = get_realm(subdomain)
+            return redirect(urllib.parse.urljoin(realm.uri, request.GET.get("next", "")))
+    else:
+        form = RealmRedirectForm()
+
+    return render(request, 'zerver/realm_redirect.html', context={'form': form})

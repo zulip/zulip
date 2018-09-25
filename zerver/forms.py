@@ -349,3 +349,12 @@ class FindMyTeamForm(forms.Form):
             raise forms.ValidationError(_("Please enter at most 10 emails."))
 
         return emails
+
+class RealmRedirectForm(forms.Form):
+    subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=True)
+
+    def clean_subdomain(self) -> str:
+        subdomain = self.cleaned_data['subdomain']
+        if get_realm(subdomain) is None:
+            raise ValidationError(_("We couldn't find that Zulip organization."))
+        return subdomain

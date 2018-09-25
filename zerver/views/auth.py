@@ -601,7 +601,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     elif request.user.is_authenticated:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse('zerver.views.registration.find_account')
+        redirect_url = reverse('zerver.views.registration.realm_redirect')
+        if request.method == "GET":
+            redirect_url = "{}?{}".format(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)

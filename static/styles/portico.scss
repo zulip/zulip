@@ -2169,3 +2169,21 @@ input.new-organization-button {
     margin-top: 20px;
     padding-right: 10px;
 }
+
+#realm_redirect_subdomain {
+    text-align: right;
+    position: relative;
+    padding-right: 10px;
+}
+
+#realm_redirect_external_host {
+    font-size: 20px;
+    top: 13px;
+    left: 5px;
+    position: relative;
+}
+
+#realm_redirect_description {
+    top: 15px;
+    position: relative;
+}
