@@ -3,5 +3,3 @@
     **Incoming webhook** as the **Bot type**:
 
     ![](/static/images/help/bot_types.png)
-
-    Fill out the rest of the fields, and click **Create bot**.
