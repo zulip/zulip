@@ -13,8 +13,7 @@ settings. There are two ways to achieve that:
    [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
    set up in your host machine.
 
-A `.zuliprc` file is a plain text document that has the same format as
-Microsft Windows INI files. It looks like this:
+A `.zuliprc` file is a plain text document that looks like this:
 
 ```
 [api]

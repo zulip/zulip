@@ -1,7 +1,7 @@
 # Installation instructions
 
 Zulip's REST API is easy to work with directly, but there are API
-libraries available for various popular languages.
+libraries available for a few popular languages.
 
 The Python library is the most advanced (and has tools for easily
 writing interactive bots that react to messages), so we recommend it

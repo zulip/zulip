@@ -1,7 +1,7 @@
 # Error Handling
 
-Zulip's API will always return a JSON format response.  Like any good
-API, the HTTP status code indicates whether the request was successful
+Zulip's API will always return a JSON format response.
+The HTTP status code indicates whether the request was successful
 (200 = success, 40x = user error, 50x = server error).  Every response
 will contain at least two keys: `msg` (a human-readable error message)
 and `result`, which will be either `error` or `success` (this is
