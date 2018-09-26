@@ -921,7 +921,7 @@ input[type=checkbox].inline-block {
 .edit_bot_form .control-label {
     width: 10em;
     text-align: left;
-    margin-right: 5px;
+    margin-right: 0px;
 }
 
 #upload_avatar_spinner,
@@ -1594,7 +1594,6 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
-
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1630,6 +1629,12 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
+    }
+}
+
+@media (max-width: 410px) {
+    #get_api_key_button {
+        margin-top: 5px;
     }
 }
 
