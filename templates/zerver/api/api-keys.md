@@ -1,28 +1,34 @@
 # API keys
 
-You can create bots on your [settings page](/#settings).
-Once you have a bot, you can use its email and API key to send messages.
+An **API key** is how a bot identifies itself to Zulip. Anyone with a
+bot's API key can impersonate the bot, so be careful with it!
 
-Create a bot:
+## Get a bot's API key
 
-<img class="screenshot" src="/static/images/api/create-bot.png" />
+{settings_tab|your-bots}
 
-Look for the bot's email and API key:
+1. Click **Active bots**.
 
-<img class="screenshot" src="/static/images/api/bot-key.png" />
+1. Find your bot. The bot's API key is under **API KEY**.
 
-If you prefer to send messages as your own user, you can also find your API key on your [settings page](/#settings):
+## Get your API key
 
-<img class="screenshot" src="/static/images/api/user-api-key.png" />
+Anyone with your API key can impersonate you, so be doubly careful with it.
 
-When using our Python bindings, you may either specify the user
-and API key for each Client object that you initialize, or let the binding look for
-them in your `~/.zuliprc`. An automatically generated default version can be found in
-your bot's details:
+{settings_tab|your-account}
 
-<img class="screenshot" src="/static/images/api/download-zuliprc.png" />
+1. Under **API key**, click **Show/change your API key**.
 
-Another alternative is manually creating your own `.zuliprc` file, or setting
-environment variables that are equivalent. You can find out more about these
-methods [here](/api/configuring-python-bindings).
+1. Enter your password, and click **Get API key**. If you never had a
+   password, click **Never had one? Forgotten it?** and follow the
+   instructions from there.
 
+1. Copy your API key.
+
+## Invalidate an API key
+
+To invalidate a key, follow the instructions above, and click
+**Generate new API key** or click the **refresh**
+(<i class="fa fa-refresh"></i>) icon as appropriate.
+
+This will generate a new key for you or the bot, and invalidate the old one.

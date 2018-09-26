@@ -77,7 +77,7 @@ class DocPageTest(ZulipTestCase):
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
         self._test('/api/', 'The Zulip API')
-        self._test('/api/api-keys', 'you can use its email and API key')
+        self._test('/api/api-keys', 'be careful with it')
         self._test('/api/installation-instructions', 'No download required!')
         self._test('/api/send-message', 'steal away your hearts')
         self._test('/api/render-message', '**foo**')
