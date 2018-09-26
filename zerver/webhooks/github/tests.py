@@ -145,6 +145,13 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.send_and_test_stream_message('opened_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
+    def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
+        expected_subject = u"Scheduler / PR #4 Improve README"
+        expected_message = u"eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4)(assigned to eeshangarg)\nfrom `improve-readme-2` to `master`"
+        self.send_and_test_stream_message('opened_pull_request_with_preassigned_assignee',
+                                          expected_subject, expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_subject = u"notifications"
