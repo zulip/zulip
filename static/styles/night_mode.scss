@@ -116,7 +116,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #search_arrows .pill:focus,
     .pm_recipient .pill-container .pill:focus {
-        color: #fff;
+        color: hsl(0, 0%, 100%);
         border: 1px solid hsla(176, 78%, 28%, 0.6);
         background: hsla(176, 49%, 42%, 0.4);
     }
@@ -513,9 +513,9 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     #bots_lists_navbar .active a {
-        color: #ddd;
+        color: hsl(0, 0%, 87%);
         background-color: hsl(212, 28%, 18%);
-        border-color: #ddd;
+        border-color: hsl(0, 0%, 87%);
         border-bottom-color: transparent;
     }
 

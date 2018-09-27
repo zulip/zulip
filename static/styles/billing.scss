@@ -39,7 +39,7 @@
     }
 
     .tab-content {
-        border: 1px solid #ddd;
+        border: 1px solid hsl(0, 0%, 87%);
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
         padding: 20px;
@@ -174,13 +174,13 @@
     }
 
     .updating-card-logo svg circle {
-        fill: #444;
-        stroke: #444;
+        fill: hsl(0, 0%, 27%);
+        stroke: hsl(0, 0%, 27%);
     }
 
     .updating-card-logo svg path {
-        fill: #fff;
-        stroke: #fff;
+        fill: hsl(0, 0%, 100%);
+        stroke: hsl(0, 0%, 100%);
     }
 
     #updating_card_indicator {
