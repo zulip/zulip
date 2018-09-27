@@ -28,7 +28,7 @@
         cancelText: "cancel",
         chooseText: "choose",
         preferredFormat: false,
-        className: "",
+        className: "new-style",
         showAlpha: false,
         theme: "sp-light",
         palette: ['fff', '000'],
@@ -95,7 +95,7 @@
                     "<div class='sp-initial sp-thumb sp-cf'></div>",
                     "<div class='sp-button-container sp-cf'>",
                         "<a class='sp-cancel' href='#'></a>",
-                        "<button class='sp-choose'></button>",
+                        "<button class='sp-choose button rounded sea-green small'></button>",
                     "</div>",
                 "</div>",
             "</div>"

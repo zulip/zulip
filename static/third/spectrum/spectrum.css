@@ -346,6 +346,9 @@ License: MIT
 .sp-button-container {
     float: right;
 }
+.sp-button-container {
+    margin-top: 10px;
+}
 
 /* Replacer (the little preview div that shows up instead of the <input>) */
 .sp-replacer {
@@ -357,9 +360,10 @@ License: MIT
     *zoom: 1;
     *display: inline;
     border: solid 1px #91765d;
-    background: #eee;
     color: #333;
     vertical-align: middle;
+    background: #ededed;
+    border-radius: 4px;
 }
 .sp-replacer:hover, .sp-replacer.sp-active {
     border-color: #F0C49B;
@@ -403,64 +407,14 @@ License: MIT
 
 
 /* Buttons: http://hellohappy.org/css3-buttons/ */
-.sp-container button {
-  background-color: #eeeeee;
-  background-image: -webkit-linear-gradient(top, #eeeeee, #cccccc);
-  background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
-  background-image: -ms-linear-gradient(top, #eeeeee, #cccccc);
-  background-image: -o-linear-gradient(top, #eeeeee, #cccccc);
-  background-image: -ms-linear-gradient(top, #eeeeee, #cccccc);
-  background-image: linear-gradient(to bottom, #eeeeee, #cccccc);
-  border: 1px solid #ccc;
-  border-bottom: 1px solid #bbb;
-  border-radius: 3px;
-  color: #333;
-  font-size: 14px;
-  line-height: 1;
-  padding: 5px 4px;
-  text-align: center;
-  text-shadow: 0 1px 0 #eee;
-  vertical-align: middle;
-}
-.sp-container button:hover {
-    background-color: #dddddd;
-    background-image: -webkit-linear-gradient(top, #dddddd, #bbbbbb);
-    background-image: -moz-linear-gradient(top, #dddddd, #bbbbbb);
-    background-image: -ms-linear-gradient(top, #dddddd, #bbbbbb);
-    background-image: -o-linear-gradient(top, #dddddd, #bbbbbb);
-    background-image: -ms-linear-gradient(top, #dddddd, #bbbbbb);
-    background-image: linear-gradient(to bottom, #dddddd, #bbbbbb);
-    border: 1px solid #bbb;
-    border-bottom: 1px solid #999;
-    cursor: pointer;
-    text-shadow: 0 1px 0 #ddd;
-}
-.sp-container button:active {
-    border: 1px solid #aaa;
-    border-bottom: 1px solid #888;
-    -webkit-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
-    -moz-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
-    -ms-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
-    -o-box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
-    box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee;
-}
+
 .sp-cancel
 {
-    font-size: 11px;
-    color: #d93f3f !important;
-    margin:0;
-    padding:2px;
+    padding: 5px;
     margin-right: 5px;
     vertical-align: middle;
     text-decoration:none;
-
 }
-.sp-cancel:hover
-{
-    color: #d93f3f !important;
-    text-decoration: underline;
-}
-
 
 .sp-palette span:hover, .sp-palette span.sp-thumb-active
 {
