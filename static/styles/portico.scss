@@ -929,6 +929,10 @@ a.bottom-signup-button {
     font-weight: 400;
     font-size: 0.8em;
     opacity: 0.8;
+    p {
+        /* Avoid double-applying the 1.2em font-size here */
+        font-size: 1em;
+    }
 }
 
 .team .core-team {
@@ -1044,7 +1048,8 @@ input#terminal:checked ~ #tab-terminal {
 .tab-loading,
 .last-updated {
     color: #aaa;
-    font-size: 0.8em;
+    font-size: 0.9em !important;
+    padding-top: 30px;
     text-align: center;
 }
 
