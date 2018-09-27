@@ -117,6 +117,16 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [Issue #2](https://github.com/baxterthehacker/public-repo/issues/2)\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.send_and_test_stream_message('issue_comment', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='issue_comment')
 
+    def test_issue_comment_deleted_msg(self) -> None:
+        expected_subject = u"Scheduler / Issue #5 This is a new issue"
+        expected_message = u"eeshangarg deleted a [comment](https://github.com/eeshangarg/Scheduler/issues/5#issuecomment-425164194) on [Issue #5](https://github.com/eeshangarg/Scheduler/issues/5)\n\n~~~ quote\nThis is a comment on this new issue.\n~~~"
+        self.send_and_test_stream_message(
+            'issue_comment_deleted',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITHUB_EVENT='issue_comment'
+        )
+
     def test_issue_comment_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_subject = u"notifications"
