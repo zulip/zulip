@@ -94,14 +94,13 @@ ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 #
 # Three modes are allowed, and each will setup Zulip and the fake LDAP
 # database in a way appropriate for the corresponding mode described
-# in zproject/prod_settings_template.py:
+# in https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 #   (A) If users' email addresses are in LDAP and used as username.
 #   (B) If LDAP only has usernames but email addresses are of the form
 #       username@example.com
 #   (C) If LDAP usernames are completely unrelated to email addresses.
 #
-# In any case, the LDAP user account data is available in:
-#    zerver/tests/fixtures/ldap_dir.json
+# Fake LDAP data has e.g. ("ldapuser1", "ldapuser1@zulip.com") for username/email.
 FAKE_LDAP_MODE = None  # type: Optional[str]
 # FAKE_LDAP_NUM_USERS = 8
 

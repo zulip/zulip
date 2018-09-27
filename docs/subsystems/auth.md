@@ -66,8 +66,8 @@ actual flows for LDAP configuration.
 
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
 `zproject/dev_settings.py` to one of the following options.  For more
-information on these modes, refer
-`zproject/prod_settings_template.py`.:
+information on these modes, refer to
+[our production docs](../production/authentication-methods.html#ldap-including-active-directory):
   - `a`: If users' email addresses are in LDAP and used as username.
   - `b`: If LDAP only has usernames but email addresses are of the form
   username@example.com
