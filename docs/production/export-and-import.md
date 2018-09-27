@@ -84,7 +84,7 @@ your imported Zulip organization.
 cd /tmp
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
-./manage.py import --import-into-nonempty <subdomain> /tmp/zulip-export-zcmpxfm6
+./manage.py import <subdomain> /tmp/zulip-export-zcmpxfm6
 ./manage reactivate_realm -r ''  # Reactivates the organization
 ```
 

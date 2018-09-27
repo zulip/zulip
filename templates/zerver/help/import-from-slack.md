@@ -67,7 +67,7 @@ Zulip organization.
 ```
 cd /home/zulip/deployments/current
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
-./manage.py import --import-into-nonempty <subdomain> converted_slack_data
+./manage.py import <subdomain> converted_slack_data
 ```
 
 {!import-login.md!}

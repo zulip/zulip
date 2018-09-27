@@ -61,7 +61,7 @@ you'd like for your imported Zulip organization.
 
 ```
 ./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
-./manage.py import --destroy-rebuild-database <subdomain> converted_gitter_data
+./manage.py import <subdomain> converted_gitter_data
 ```
 
 {!import-login.md!}
