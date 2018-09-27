@@ -100,7 +100,6 @@ not_yet_fully_covered = {
     'zerver/data_import/gitter.py',
     'zerver/data_import/import_util.py',
     # Webhook integrations with incomplete coverage
-    'zerver/webhooks/github/view.py',
     'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/gitlab/view.py',
     'zerver/webhooks/greenhouse/view.py',
