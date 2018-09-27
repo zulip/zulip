@@ -21,14 +21,13 @@ email and password.
 When first setting up your Zulip server, this method must be used for
 creating the initial realm and user.  You can disable it after that.
 
-## Plug-and-play SSO (Google, GitHub, LDAP)
+## Plug-and-play SSO (Google, GitHub)
 
 With just a few lines of configuration, your Zulip server can
 authenticate users with any of several single-sign-on (SSO)
 authentication providers:
 * Google accounts, with `GoogleMobileOauth2Backend`
 * GitHub accounts, with `GitHubAuthBackend`
-* Your LDAP server, with `ZulipLDAPAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details

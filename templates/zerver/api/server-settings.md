@@ -54,7 +54,7 @@ curl {{ api_url }}/v1/server_settings \
 * `realm_description`: HTML description of the organization, as configured by
   the [organization profile](/help/create-your-organization-profile).
 
-[ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-ldap
+[ldap-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 
 Please note that not all of these attributes are guaranteed to appear in a
 response, for two reasons:

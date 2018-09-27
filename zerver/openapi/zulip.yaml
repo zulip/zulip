@@ -1411,7 +1411,7 @@ paths:
                       type: boolean
                       description: Whether usernames should have an email
                         address format. This is important if your server has
-                        [LDAP authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-ldap)
+                        [LDAP authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory)
                         enabled with a username and password combination.
                     realm_uri:
                       type: string
