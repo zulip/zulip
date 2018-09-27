@@ -241,17 +241,19 @@ def get_release_body(payload: Dict[str, Any]) -> str:
 
 def get_page_build_body(payload: Dict[str, Any]) -> str:
     build = payload['build']
-    action = build['status']
-    if action == 'null':
-        action = u'has yet to be built'
-    elif action == 'building':
-        action = u'is being building'
-    elif action == 'errored':
-        action = u'is errored{}'.format(
-            CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
-        )
-    else:
-        action = u'is {}'.format(action)
+    status = build['status']
+    actions = {
+        'null': 'has yet to be built',
+        'building': 'is being built',
+        'errored': 'has failed{}',
+        'built': 'has finished building',
+    }
+
+    action = actions.get(status, 'is {}'.format(status))
+    action.format(
+        CONTENT_MESSAGE_TEMPLATE.format(message=build['error']['message'])
+    )
+
     return u"Github Pages build, trigerred by {}, {}".format(
         payload['build']['pusher']['login'],
         action

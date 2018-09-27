@@ -211,7 +211,7 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('release', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='release')
 
     def test_page_build_msg(self) -> None:
-        expected_message = u"Github Pages build, trigerred by baxterthehacker, is built"
+        expected_message = u"Github Pages build, trigerred by baxterthehacker, has finished building"
         self.send_and_test_stream_message('page_build', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='page_build')
 
     def test_status_msg(self) -> None:
