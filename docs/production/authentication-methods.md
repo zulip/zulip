@@ -34,6 +34,90 @@ Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
 are documented in your `settings.py`.
 
+```eval_rst
+.. _ldap:
+```
+## LDAP (including Active Directory)
+
+Zulip supports retrieving information about users via LDAP, and
+optionally using LDAP as an authentication mechanism.
+
+In either configuration, you will need to do the following:
+
+1. Tell Zulip how to connect to your LDAP server:
+   * Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
+     integration, part 1: Connecting to the LDAP server".
+   * If a password is required, put it in
+     `/etc/zulip/zulip-secrets.conf` by setting
+     `auth_ldap_bind_password`.  For example: `auth_ldap_bind_password
+     = abcd1234`.
+
+2. Decide how you want to map the information in your LDAP database to
+   users' experience in Zulip.  For each Zulip user, two closely
+   related concepts are:
+   * their **email address**.  Zulip needs this in order to send, for
+     example, a notification when they're offline and another user
+     sends a PM.
+   * their **Zulip username**.  This means the name the user types into the
+     Zulip login form.  You might choose for this to be the user's
+     email address (`sam@example.com`), or look like a traditional
+     "username" (`sam`), or be something else entirely, depending on
+     your environment.
+
+   Either or both of these might be an attribute of the user records
+   in your LDAP database.
+
+3. Tell Zulip how to map the user information in your LDAP database to
+   the form it needs.  There are three supported ways to set up the
+   username and/or email mapping:
+
+   (A) Using email addresses as usernames, if LDAP has each user's
+      email address.  To do this, just set `AUTH_LDAP_USER_SEARCH` to
+      query by email address.
+
+   (B) Using LDAP usernames as Zulip usernames, with email addresses
+      formed consistently like `sam` -> `sam@example.com`.  To do
+      this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP username, and
+      `LDAP_APPEND_DOMAIN = "example.com"`.
+
+   (C) Using LDAP usernames as Zulip usernames, with email addresses
+      taken from some other attribute in LDAP (for example, `email`).
+      To do this, set `AUTH_LDAP_USER_SEARCH` to query by LDAP
+      username, and `LDAP_EMAIL_ATTR = "email"`.
+
+You can quickly test whether your configuration works by running:
+```
+  ./manage.py query_ldap username@example.com
+```
+from the root of your Zulip installation.  If your configuration is working,
+that will output the full name for your user.
+
+**If you are using LDAP for authentication**: you will need to enable
+the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
+`AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing
+so (and as always [restarting the Zulip server](settings.html) to ensure
+your settings changes take effect), you should be able to log into
+Zulip by entering your email address and LDAP password on the Zulip
+login form.
+
+**If you are using LDAP to populate names in Zulip**: once you finish
+configuring this integration, you will need to run:
+```
+  ./manage.py sync_ldap_user_data
+```
+to sync names for existing users.  You may want to run this in a cron
+job to pick up name changes made on your LDAP server.
+
+### Multiple LDAP searches
+
+To do the union of multiple LDAP searches, use `LDAPSearchUnion`.  For example:
+```
+AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
+    LDAPSearch("ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+    LDAPSearch("ou=otherusers,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"),
+)
+```
+
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy

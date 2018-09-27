@@ -138,6 +138,8 @@ DEFAULT_SETTINGS = {
     # LDAP auth
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
+    # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS below if unset.
+    'AUTH_LDAP_CONNECTION_OPTIONS': {},
     # Disable django-auth-ldap caching, to prevent problems with OU changes.
     'AUTH_LDAP_CACHE_TIMEOUT': 0,
     # Development-only settings for fake LDAP authentication; used to
@@ -1309,6 +1311,21 @@ else:
     POPULATE_PROFILE_VIA_LDAP = (
         'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or
         POPULATE_PROFILE_VIA_LDAP)
+
+if POPULATE_PROFILE_VIA_LDAP:
+    import ldap
+    if (AUTH_LDAP_BIND_DN
+        and ldap.OPT_REFERRALS not in AUTH_LDAP_CONNECTION_OPTIONS):
+        # The default behavior of python-ldap (without setting option
+        # `ldap.OPT_REFERRALS`) is to follow referrals, but anonymously.
+        # If our original query was non-anonymous, that's unlikely to
+        # work; skip the referral.
+        #
+        # The common case of this is that the server is Active Directory,
+        # it's already given us the answer we need, and the referral is
+        # just speculation about someplace else that has data our query
+        # could in principle match.
+        AUTH_LDAP_CONNECTION_OPTIONS[ldap.OPT_REFERRALS] = 0
 
 if REGISTER_LINK_DISABLED is None:
     # The default for REGISTER_LINK_DISABLED is a bit more
