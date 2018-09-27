@@ -62,6 +62,7 @@ from zerver.lib.topic_mutes import (
 )
 from zerver.lib.users import (
     bulk_get_users,
+    check_bot_name_available,
     check_full_name,
     get_api_key,
     user_ids_to_users
@@ -2938,6 +2939,22 @@ def check_change_full_name(user_profile: UserProfile, full_name_raw: str,
     new_full_name = check_full_name(full_name_raw)
     do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name
+
+def check_change_bot_full_name(user_profile: UserProfile, full_name_raw: str,
+                               acting_user: UserProfile) -> None:
+    new_full_name = check_full_name(full_name_raw)
+
+    if new_full_name == user_profile.full_name:
+        # Our web app will try to patch full_name even if the user didn't
+        # modify the name in the form.  We just silently ignore those
+        # situations.
+        return
+
+    check_bot_name_available(
+        realm_id=user_profile.realm_id,
+        full_name=new_full_name,
+    )
+    do_change_full_name(user_profile, new_full_name, acting_user)
 
 def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
                         acting_user: UserProfile) -> None:

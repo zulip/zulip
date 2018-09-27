@@ -168,12 +168,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.create_bot()
         self.assert_num_bots_equal(1)
 
+        # The short_name is used in the email, which we call
+        # "Username" for legacy reasons.
         bot_info = dict(
-            full_name='Duplicate',
+            full_name='whatever',
             short_name='hambot',
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Username already in use')
+
+        dup_full_name = 'The Bot of Hamlet'
+
+        bot_info = dict(
+            full_name=dup_full_name,
+            short_name='whatever',
+        )
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Name is already in use!')
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = 'hambot-bot@zulip.testserver'
@@ -712,6 +723,56 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
+
+    def test_patch_bot_full_name_in_use(self) -> None:
+        self.login(self.example_email('hamlet'))
+
+        original_name = 'The Bot of Hamlet'
+
+        bot_info = {
+            'full_name': original_name,
+            'short_name': 'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = 'hambot-bot@zulip.testserver'
+        bot = self.get_bot_user(bot_email)
+        url = "/json/bots/{}".format(bot.id)
+
+        # It doesn't matter whether a name is taken by a human
+        # or a bot, we can't use it.
+        already_taken_name = self.example_user('cordelia').full_name
+
+        bot_info = {
+            'full_name': already_taken_name,
+        }
+        result = self.client_patch(url, bot_info)
+        self.assert_json_error(result, "Name is already in use!")
+
+        # We can use our own name (with extra whitespace), and the
+        # server should silently do nothing.
+        original_name_with_padding = '   ' + original_name + ' '
+        bot_info = {
+            'full_name': original_name_with_padding,
+        }
+        result = self.client_patch(url, bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user(bot_email)
+        self.assertEqual(bot.full_name, original_name)
+
+        # And let's do a sanity check with an actual name change
+        # after our various attempts that either failed or did
+        # nothing.
+        bot_info = {
+            'full_name': 'Hal',
+        }
+        result = self.client_patch(url, bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user(bot_email)
+        self.assertEqual(bot.full_name, 'Hal')
 
     def test_patch_bot_full_name_non_bot(self) -> None:
         self.login(self.example_email('iago'))

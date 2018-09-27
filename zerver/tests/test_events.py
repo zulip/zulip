@@ -1769,6 +1769,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         action = lambda: self.create_bot('test_outgoing_webhook',
+                                         full_name='Outgoing Webhook Bot',
                                          payload_url=ujson.dumps('https://foo.bar.com'),
                                          interface_type=Service.GENERIC,
                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
@@ -1779,6 +1780,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         action = lambda: self.create_bot('test_embedded',
+                                         full_name='Embedded Bot',
                                          service_name='helloworld',
                                          config_data=ujson.dumps({'foo': 'bar'}),
                                          bot_type=UserProfile.EMBEDDED_BOT)
@@ -1887,7 +1889,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         self.user_profile = self.example_user('aaron')
         owner = self.example_user('hamlet')
-        bot = self.create_bot('test1')
+        bot = self.create_bot('test1', full_name='Test1 Testerson')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.do_test(action)
         error = change_bot_owner_checker('events[0]', events[0])
@@ -1914,7 +1916,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         previous_owner = self.example_user('aaron')
         self.user_profile = self.example_user('hamlet')
-        bot = self.create_test_bot('test2', previous_owner)
+        bot = self.create_test_bot('test2', previous_owner, full_name='Test2 Testerson')
         action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
         events = self.do_test(action)
         error = change_bot_owner_checker('events[0]', events[0])
