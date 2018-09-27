@@ -122,7 +122,7 @@ def get_issue_comment_body(payload: Dict[str, Any],
     if action == 'created':
         action = '[commented]'
     else:
-        action = '{} a [comment]'
+        action = '{} a [comment]'.format(action)
     action += '({}) on'.format(comment['html_url'])
 
     return get_issue_event_message(
