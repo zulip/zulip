@@ -219,7 +219,7 @@ body.night-mode .codehilite pre {
 }
 
 body.night-mode .codehilite .hll {
-    background-color: #222;
+    background-color: hsl(0, 0%, 13%);
 }
 
 body.night-mode .codehilite .err {
@@ -245,7 +245,7 @@ body.night-mode .codehilite .gd {
 }
 
 body.night-mode .codehilite .ge {
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     font-style: italic;
 }
 
@@ -258,7 +258,7 @@ body.night-mode .codehilite .go {
 }
 
 body.night-mode .codehilite .gs {
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
     font-weight: 700;
 }
 
@@ -325,7 +325,7 @@ body.night-mode .codehilite .nl,
 body.night-mode .codehilite .nx,
 body.night-mode .codehilite .py,
 body.night-mode .codehilite .w {
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
 }
 
 body.night-mode .codehilite .n,

@@ -94,13 +94,13 @@ p.n-margin {
 }
 
 .top-messages-logo svg circle {
-    fill: #444;
-    stroke: #444;
+    fill: hsl(0, 0%, 27%);
+    stroke: hsl(0, 0%, 27%);
 }
 
 .top-messages-logo svg path {
-    fill: #fff;
-    stroke: #fff;
+    fill: hsl(0, 0%, 100%);
+    stroke: hsl(0, 0%, 100%);
 }
 
 #unmute_muted_topic_notification {
@@ -234,7 +234,7 @@ p.n-margin {
     margin: 0px auto;
     padding: 0px;
     position: relative;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .app-main {
@@ -1245,7 +1245,7 @@ a.message_label_clickable:hover {
 .dark_background a:hover,
 a.dark_background:hover,
 .dark_background {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
 }
 
 .dark_background a.message_label_clickable:hover {
@@ -1738,7 +1738,7 @@ blockquote p {
 }
 
 .typeahead.dropdown-menu .active {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .typeahead.dropdown-menu .unsubscribed_icon {
@@ -2608,7 +2608,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
     width: 33%;
     border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid hsl(0, 0%, 100%);
     margin: 0px 5px 0px 5px;
 }
 
@@ -2639,7 +2639,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     width: 50%;
     height: 0px;
     border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid hsl(0, 0%, 100%);
 }
 
 .sub-unsub-message span::before,
@@ -2865,7 +2865,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 100%;
     top: 0;
 
-    background: linear-gradient(0deg, #fff, transparent 10%);
+    background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 10%);
 }
 
 @media (max-width: 600px) {
@@ -2933,7 +2933,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 10px;
     border-radius: 6px;
     background-color: hsl(0, 0%, 30%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     transition: visibility 0.2s ease-out, opacity 0.2s linear;
 
     ::after {

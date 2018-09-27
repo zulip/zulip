@@ -31,8 +31,8 @@ p {
     margin: 10px 0px;
     padding: 20px;
 
-    border: 2px solid #eee;
-    background-color: #fff;
+    border: 2px solid hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .analytics-page-header {
@@ -187,7 +187,7 @@ hr {
     font-size: 0.8em;
     font-weight: 400;
     text-align: center;
-    color: #aaa;
+    color: hsl(0, 0%, 67%);
 }
 
 @keyframes spinner {
@@ -207,8 +207,8 @@ hr {
     margin-top: -15px;
     margin-left: -15px;
     border-radius: 50%;
-    border: 1px solid #ccc;
-    border-top-color: #07d;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-top-color: hsl(155, 93%, 42%);
     animation: spinner 1s linear infinite;
 }
 
