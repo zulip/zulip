@@ -43,7 +43,13 @@ optionally using LDAP as an authentication mechanism.
 
 In either configuration, you will need to do the following:
 
-1. Tell Zulip how to connect to your LDAP server:
+1. Create your organization and first administrator account using
+   another authentication backend (usually `EmailAuthBackend`).  LDAP
+   authentication does not support organization creation at this time;
+   but you can disable `EmailAuthBackend` once you have created the
+   organization.
+
+2. Tell Zulip how to connect to your LDAP server:
    * Fill out the section of your `/etc/zulip/settings.py` headed "LDAP
      integration, part 1: Connecting to the LDAP server".
    * If a password is required, put it in
@@ -51,8 +57,8 @@ In either configuration, you will need to do the following:
      `auth_ldap_bind_password`.  For example: `auth_ldap_bind_password
      = abcd1234`.
 
-2. Decide how you want to map the information in your LDAP database to
-   users' experience in Zulip.  For each Zulip user, two closely
+3. Decide how you want to map the information in your LDAP database to
+   users' account data in Zulip.  For each Zulip user, two closely
    related concepts are:
    * their **email address**.  Zulip needs this in order to send, for
      example, a notification when they're offline and another user
@@ -66,7 +72,7 @@ In either configuration, you will need to do the following:
    Either or both of these might be an attribute of the user records
    in your LDAP database.
 
-3. Tell Zulip how to map the user information in your LDAP database to
+4. Tell Zulip how to map the user information in your LDAP database to
    the form it needs.  There are three supported ways to set up the
    username and/or email mapping:
 
@@ -85,11 +91,14 @@ In either configuration, you will need to do the following:
       username, and `LDAP_EMAIL_ATTR = "email"`.
 
 You can quickly test whether your configuration works by running:
+
 ```
-  ./manage.py query_ldap username@example.com
+  ./manage.py query_ldap username
 ```
-from the root of your Zulip installation.  If your configuration is working,
-that will output the full name for your user.
+
+from the root of your Zulip installation.  If your configuration is
+working, that will output the full name for your user (and that user's
+email address, if it isn't the same as the "Zulip username").
 
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
