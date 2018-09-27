@@ -23,6 +23,16 @@ def check_full_name(full_name_raw: str) -> str:
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
+def check_bot_name_available(realm_id: int, full_name: str) -> None:
+    dup_exists = UserProfile.objects.filter(
+        realm_id=realm_id,
+        full_name=full_name.strip(),
+        is_active=True,
+    ).exists()
+
+    if dup_exists:
+        raise JsonableError(_("Name is already in use!"))
+
 def check_short_name(short_name_raw: str) -> str:
     short_name = short_name_raw.strip()
     if len(short_name) == 0:

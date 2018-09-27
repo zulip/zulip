@@ -18,7 +18,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data
+    do_update_bot_config_data, check_change_bot_full_name
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -31,7 +31,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id, add_service, access_user_by_id
+    access_bot_by_id, add_service, access_user_by_id, check_bot_name_available
 from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
@@ -151,7 +151,7 @@ def patch_bot_backend(
     bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:
-        check_change_full_name(bot, full_name, user_profile)
+        check_change_bot_full_name(bot, full_name, user_profile)
     if bot_owner_id is not None:
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
@@ -267,6 +267,12 @@ def add_bot_backend(
         return json_error(_("Username already in use"))
     except UserProfile.DoesNotExist:
         pass
+
+    check_bot_name_available(
+        realm_id=user_profile.realm_id,
+        full_name=full_name,
+    )
+
     check_bot_creation_policy(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
