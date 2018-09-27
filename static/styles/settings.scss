@@ -1436,7 +1436,8 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 }
 
 #account-settings #show_my_user_profile_modal i {
-    padding-left: 5px;
+    padding-left: 2px;
+    vertical-align: middle;
 }
 
 #settings_page #change_password_modal .change_password_info,
