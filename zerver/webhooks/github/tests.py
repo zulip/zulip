@@ -218,6 +218,15 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success"
         self.send_and_test_stream_message('status', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='status')
 
+    def test_status_with_target_url_msg(self) -> None:
+        expected_message = u"[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)"
+        self.send_and_test_stream_message(
+            'status_with_target_url',
+            self.EXPECTED_SUBJECT_REPO_EVENTS,
+            expected_message,
+            HTTP_X_GITHUB_EVENT='status'
+        )
+
     def test_pull_request_review_msg(self) -> None:
         expected_message = u"baxterthehacker submitted [PR Review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)"
         self.send_and_test_stream_message('pull_request_review', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request_review')
