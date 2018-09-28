@@ -75,6 +75,7 @@
 * [Alert words](/help/add-an-alert-word)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
+* [Test mobile notifications](/help/test-mobile-notifications)
 
 ## Tools & customization
 * [Bots and integrations](/help/bots-and-integrations)

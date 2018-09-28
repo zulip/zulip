@@ -41,7 +41,7 @@ Congratulations!  You've successfully setup the service.
 If you'd like to verify that everything is working, you can do the
 following.  Please follow the instructions carefully:
 
-* [Configure mobile push notifications to always be sent][notification-settings]
+* [Configure mobile push notifications to always be sent][mobile-notifications-always]
   (normally they're only sent if you're idle, which isn't ideal for
   this sort of testing).
 * On an Android device, download and login to the
@@ -55,7 +55,7 @@ Zulip only sends push notifications for private messages sent by other
 users and messages mentioning you).  A push notification should appear
 in the Android notification area.
 
-[notification-settings]: https://zulipchat.com/help/configure-mobile-notifications
+[mobile-notifications-always]: https://zulipchat.com/help/test-mobile-notifications
 
 ## Updating your server's registration
 
