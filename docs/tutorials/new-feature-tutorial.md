@@ -668,9 +668,9 @@ stored. For information on writing user documentation, see
 
 For a more concrete example of writing documentation for a new
 feature, see [an example commit in the Zulip repo][example-commit]
-that documented a new realm feature, [the current source][example-current-source],
+that documented a realm feature, [the current source][example-current-source],
 and [the final rendered documentation][example-docs].
 
-[example-commit]: https://github.com/zulip/zulip/commit/5b4d9774e02a45e43465b0a28ffb3d9b373c9098
-[example-current-source]: https://github.com/zulip/zulip/blob/master/templates/zerver/help/only-allow-admins-to-invite-new-users.md
-[example-docs]: https://chat.zulip.org/help/only-allow-admins-to-invite-new-users
+[example-commit]: https://github.com/zulip/zulip/commit/ce1875533e27a6ec5aab02260dde5f76976ff326
+[example-current-source]: https://github.com/zulip/zulip/blob/master/templates/zerver/help/manage-who-can-join-and-invite.md
+[example-docs]: https://chat.zulip.org/help/manage-who-can-join-and-invite
