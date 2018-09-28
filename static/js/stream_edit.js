@@ -502,7 +502,7 @@ exports.delete_stream = function (stream_id, alert_element, stream_row) {
 };
 
 exports.initialize = function () {
-    $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {
+    $("#main_div").on("click", ".stream_sub_unsub_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
