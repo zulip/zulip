@@ -10,7 +10,9 @@ Device: {{ device_browser if device_browser else 'an unknown browser' }} on {{ d
 IP Address: {{ device_ip }}
 
 If you do not recognize this login activity, or think your account may have
-been compromised, please contact us immediately at {{ support_email }}.
+been compromised, please reset your password at
+{{ realm_uri }}/accounts/password/reset/
+or contact us immediately at {{ support_email }}.
 
 If you recognize this login activity, you can archive this notice.
 
