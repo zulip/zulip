@@ -53,12 +53,6 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         for d in raw_data
     ]
 
-    flat_data = [
-        d
-        for d in flat_data
-        if not d['is_deleted']
-    ]
-
     def _is_realm_admin(v: str) -> bool:
         if v == 'user':
             return False
@@ -82,6 +76,7 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         timezone = in_dict['timezone']
 
         date_joined = int(timezone_now().timestamp())
+        is_active = not in_dict['is_deleted']
 
         # unmapped fields:
         #    title - Developer, Project Manager, etc.
@@ -95,6 +90,7 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
             email=email,
             full_name=full_name,
             id=id,
+            is_active=is_active,
             is_realm_admin=is_realm_admin,
             realm_id=realm_id,
             short_name=short_name,
@@ -115,12 +111,6 @@ def convert_room_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         for d in raw_data
     ]
 
-    flat_data = [
-        d
-        for d in flat_data
-        if not d['is_archived']
-    ]
-
     def invite_only(v: str) -> bool:
         if v == 'public':
             return False
@@ -137,7 +127,7 @@ def convert_room_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
             name=in_dict['name'],
             description=in_dict['topic'],
             stream_id=in_dict['id'],
-            deactivated=False,
+            deactivated=in_dict['is_archived'],
             invite_only=invite_only(in_dict['privacy']),
         )
 
