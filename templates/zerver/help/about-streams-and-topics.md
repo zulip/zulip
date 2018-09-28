@@ -1,66 +1,52 @@
-# About streams and topics
+# Streams and topics
 
-In Zulip, conversations are organized by conversation **streams** and
-**topics**.
+In Zulip, streams determine who gets a message. Topics tell you what the
+message is about.
 
-## About streams
-On Zulip, users communicate with each other in group chats by sending
-messages to streams, which are similar to conversation threads.
+| Conversation model | Who gets it | What it's about
+|---|---|---
+| Zulip | Stream | Topic
+| Email | Mailing list | Subject line
+| Slack/IRC | Channel | -
 
-Streams are either:
+One big difference is that Zulip organizations typically have more streams
+than they would email lists, and Zulip topics are much shorter than email
+subject lines. Here is what it looks like in Zulip.
 
-* **Public** - Public streams are for open discussions. Any Zulip user can
-join any public stream in the organization, and they can view the complete
-message history of any public stream without joining the stream.
-* **Private** - Private streams are for confidential discussions and are
-only visible to users who've been invited to subscribe to them. Users who
-are not members of a private stream cannot subscribe to the stream, and
-they also cannot read or send messages to the stream.
+![](/static/images/help/streams-and-topics.png)
 
-Users are subscribed to specific streams in the organization by default,
-such as the #announce stream. Users can easily
-view messages from a specific stream;
-in addition, they can
-[browse](/help/browse-and-subscribe-to-streams) their stream
-subscriptions using the Zulip stream browser.
+Streams and topics are the hardest part of Zulip to grasp, but also the most
+rewarding part of using Zulip.
 
-If they wish to read messages from a stream that they're not subscribed to,
-users can choose to
-[join](/help/browse-and-subscribe-to-streams) a
-stream. Similarly, if they are not interested in the topics being discussed
-in a stream, users can choose to
-[unsubscribe](/help/unsubscribe-from-a-stream) from a stream.  Users can
-also customize their stream settings; they can:
+If you ever find yourself stuck on writing a topic, just pretend you're
+sending an email, with the topic as the subject line. After a few days
+you'll get used to a more Zulip-y way of doing things, and your topics will
+naturally become shorter (2-3 words is optimum) and take less thought to type.
 
-* [pin a stream](/help/pin-a-stream)
-* [change the color of streams](/help/change-the-color-of-a-stream)
-* [enable notifications for stream](/help/stream-notifications)
-* [muting notification for streams](/help/mute-a-stream)
+## Why topics?
 
-If enabled by the organization administrators, users can
-[create](/help/create-a-stream) streams and
-[invite](/help/add-or-remove-users-from-a-stream) other users to a stream.
+Learning how to chat with topics has a bit of a learning curve, anywhere
+from a few minutes to a few days. Why bother with something so
+complicated?
 
-Only organization administrators can modify a stream; they can:
+The short answer is that most users spend many hours a day on chat. A little
+investment up front pays huge dividends in access to a more powerful
+communication paradigm.
+A longer answer is [here](https://zulipchat.com/why-zulip).
 
-* [rename a stream](/help/rename-a-stream)
-* [delete a stream](/help/delete-a-stream)
-* [change the description of a stream](/help/change-the-stream-description)
-* [remove users from a stream](/help/add-or-remove-users-from-a-stream#remove-someone-from-a-stream)
-* [change the privacy of a stream](/help/change-the-privacy-of-a-stream)
+## Replying
 
-## About topics
+When replying to a message, the stream and topic are conveniently
+pre-filled. Click on a message to reply, or type `r` to reply to the message
+under the blue box.
 
-In each stream, messages are sorted by topics. Topics are specific,
-fine-grained subjects that fit with the overall subject of the stream that
-they're sent to. Topics ensure sequential messages about the same thing are
-threaded together, allowing for better reception for users.
+## Further reading
 
-!!! tip ""
-    The best stream topics are short and specific. For example, for a bug
-    tracker integration, a good topic would be the bug number; for an
-    integration like Nagios, the service would serve as a good topic.
+* [Setting up streams for your organization](/help/getting-your-organization-started-with-zulip#create-streams)
 
-Users can easily [change the topics](/help/change-the-topic-of-a-message) of
-the messages that they sent if they sent the message to the wrong topic or
-if some messages in a topic have gone off-topic.
+* [Browsing and joining streams](/help/browse-and-subscribe-to-streams)
+
+* [Public and private streams (stream permissions)](/help/stream-permissions)
+
+* Browse the articles under **Streams & topics** and
+  **Stream management** on the left sidebar.
