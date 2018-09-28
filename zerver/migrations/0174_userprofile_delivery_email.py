@@ -15,6 +15,7 @@ def copy_email_field(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ('zerver', '0173_support_seat_based_plans'),
