@@ -425,6 +425,19 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
     return upload_list
 
+def build_realm_emoji(realm_id: int,
+                      name: str,
+                      id: int,
+                      file_name: str) -> ZerverFieldsT:
+    return model_to_dict(
+        RealmEmoji(
+            realm_id=realm_id,
+            name=name,
+            id=id,
+            file_name=file_name,
+        )
+    )
+
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
                    emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
     """

@@ -2,6 +2,7 @@ import base64
 import json
 import logging
 import os
+import shutil
 import subprocess
 
 from typing import Any, Dict, List
@@ -11,11 +12,13 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
+    RealmEmoji,
     UserProfile,
 )
 
 from zerver.data_import.import_util import (
     build_realm,
+    build_realm_emoji,
     build_recipients,
     build_stream,
     build_subscriptions,
@@ -212,6 +215,109 @@ def write_avatar_data(raw_user_data: List[ZerverFieldsT],
 
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
 
+def write_emoticon_data(realm_id: int,
+                        data_dir: str,
+                        output_dir: str) -> List[ZerverFieldsT]:
+    '''
+    This function does most of the work for processing emoticons, the bulk
+    of which is copying files.  We also write a json file with metadata.
+    Finally, we return a list of RealmEmoji dicts to our caller.
+
+    In our data_dir we have a pretty simple setup:
+
+        emoticons.json - has very simple metadata on emojis:
+
+          {
+            "Emoticon": {
+              "id": 9875487,
+              "path": "emoticons/yasss.jpg",
+              "shortcut": "yasss"
+            }
+          },
+          {
+            "Emoticon": {
+              "id": 718017,
+              "path": "emoticons/yayyyyy.gif",
+              "shortcut": "yayyyyy"
+            }
+          }
+
+        emoticons/ - contains a bunch of image files:
+
+            slytherinsnake.gif
+            spanishinquisition.jpg
+            sparkle.png
+            spiderman.gif
+            stableparrot.gif
+            stalkerparrot.gif
+            supergirl.png
+            superman.png
+
+    We move all the relevant files to Zulip's more nested
+    directory structure.
+    '''
+
+    logging.info('Starting to process emoticons')
+
+    fn = 'emoticons.json'
+    data_file = os.path.join(data_dir, fn)
+    data = json.load(open(data_file))
+
+    flat_data = [
+        dict(
+            path=d['Emoticon']['path'],
+            name=d['Emoticon']['shortcut'],
+        )
+        for d in data
+    ]
+
+    emoji_folder = os.path.join(output_dir, 'emoji')
+    os.makedirs(emoji_folder, exist_ok=True)
+
+    def process(data: ZerverFieldsT) -> ZerverFieldsT:
+        source_sub_path = data['path']
+        source_fn = os.path.basename(source_sub_path)
+        source_path = os.path.join(data_dir, source_sub_path)
+
+        # Use our template from RealmEmoji
+        # PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
+        target_fn = source_fn
+        target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm_id,
+            emoji_file_name=target_fn,
+        )
+        target_path = os.path.join(emoji_folder, target_sub_path)
+
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+        source_path = os.path.abspath(source_path)
+        target_path = os.path.abspath(target_path)
+
+        shutil.copyfile(source_path, target_path)
+
+        return dict(
+            path=target_path,
+            file_name=target_fn,
+            realm_id=realm_id,
+            name=data['name'],
+        )
+
+    emoji_records = list(map(process, flat_data))
+    create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
+
+    realmemoji = [
+        build_realm_emoji(
+            realm_id=realm_id,
+            name=rec['name'],
+            id=i+1,
+            file_name=rec['file_name'],
+        )
+        for i, rec in enumerate(emoji_records)
+    ]
+    logging.info('Done processing emoticons')
+
+    return realmemoji
+
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
@@ -246,6 +352,13 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
         zerver_stream=zerver_stream,
     )
     realm['zerver_subscription'] = zerver_subscription
+
+    zerver_realmemoji = write_emoticon_data(
+        realm_id=realm_id,
+        data_dir=input_data_dir,
+        output_dir=output_dir,
+    )
+    realm['zerver_realmemoji'] = zerver_realmemoji
 
     create_converted_data_files(realm, output_dir, '/realm.json')
 
