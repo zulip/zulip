@@ -5,7 +5,7 @@ We talk about Slack in the discussion below, but the problems apply equally
 to other apps with Slack’s conversation model, including Hipchat, IRC,
 Mattermost, Discord, Spark, and others.
 
-## Slack channels are a huge waste of your time
+## Reading busy Slack channels is extremely inefficient
 
 Anyone who wakes up to this frequently can tell you it is not fun.
 
@@ -15,7 +15,7 @@ The lack of organization and context in Slack channels means that anyone
 using Slack heavily has to manually scan through hundreds of messages a day
 to find the content that is relevant to them.
 
-## Senior people rarely use Slack channels
+## Senior people rarely use large Slack channels
 
 Slack channels are even worse for managers and other people involved in
 multiple projects. Even modest usage of Slack leads to more channel messages
