@@ -56,6 +56,8 @@ function render_attachments_ui() {
         parent_container: $('#attachments-settings').expectOne(),
     }).init();
 
+    list.sort('numeric', 'create_time');
+
     list.add_sort_function("mentioned-in", function (a, b) {
         var a_m = a.messages[0];
         var b_m = b.messages[0];
