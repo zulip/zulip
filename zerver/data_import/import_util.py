@@ -231,6 +231,22 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: 
             zerver_usermessage.append(usermessage)
     return usermessage_id
 
+def build_user_message(id: int,
+                       user_id: int,
+                       message_id: int,
+                       is_mentioned: bool) -> ZerverFieldsT:
+    flags_mask = 1  # For read
+    if is_mentioned:
+        flags_mask += 8  # For mentioned
+
+    usermessage = dict(
+        id=id,
+        user_profile=user_id,
+        message=message_id,
+        flags_mask=flags_mask,
+    )
+    return usermessage
+
 def build_defaultstream(realm_id: int, stream_id: int,
                         defaultstream_id: int) -> ZerverFieldsT:
     defaultstream = dict(
