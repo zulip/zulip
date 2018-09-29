@@ -1,11 +1,13 @@
 import base64
+import dateutil
+import glob
 import json
 import logging
 import os
 import shutil
 import subprocess
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -13,22 +15,41 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
     RealmEmoji,
+    Recipient,
     UserProfile,
 )
 
 from zerver.data_import.import_util import (
+    build_message,
     build_realm,
     build_realm_emoji,
     build_recipients,
     build_stream,
     build_subscriptions,
     build_user,
+    build_user_message,
     build_zerver_realm,
     write_avatar_png,
 )
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
+
+def str_date_to_float(date_str: str) -> float:
+    '''
+        Dates look like this:
+
+        "2018-08-08T14:23:54Z 626267"
+    '''
+
+    parts = date_str.split(' ')
+    time_str = parts[0].replace('T', ' ')
+    date_time = dateutil.parser.parse(time_str)
+    timestamp = date_time.timestamp()
+    if len(parts) == 2:
+        microseconds = int(parts[1])
+        timestamp += microseconds / 1000000.0
+    return timestamp
 
 def untar_input_file(tar_file: str) -> str:
     data_dir = tar_file.replace('.tar', '')
@@ -318,6 +339,137 @@ def write_emoticon_data(realm_id: int,
 
     return realmemoji
 
+def write_message_data(realm_id: int,
+                       zerver_recipient: List[ZerverFieldsT],
+                       zerver_subscription: List[ZerverFieldsT],
+                       zerver_userprofile: List[ZerverFieldsT],
+                       data_dir: str,
+                       output_dir: str) -> None:
+    room_dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
+    history_files = glob.glob(room_dir_glob)
+
+    user_map = {
+        user['id']: user
+        for user in zerver_userprofile
+    }
+
+    def fix_mentions(content: str,
+                     mention_user_ids: List[int]) -> str:
+        for user_id in mention_user_ids:
+            user = user_map[user_id]
+            hipchat_mention = '@{short_name}'.format(**user)
+            zulip_mention = '@**{full_name}**'.format(**user)
+            content = content.replace(hipchat_mention, zulip_mention)
+
+        content = content.replace('@here', '@**all**')
+        return content
+
+    def process(fn: str) -> List[ZerverFieldsT]:
+        rooms_dir = os.path.dirname(fn)
+        room_id = os.path.basename(rooms_dir)
+        stream_id = int(room_id)
+        data = json.load(open(fn))
+
+        flat_data = [
+            d['UserMessage']
+            for d in data
+        ]
+
+        return [
+            dict(
+                stream_id=stream_id,
+                sender_id=d['sender']['id'],
+                content=d['message'],
+                mention_user_ids=d['mentions'],
+                pub_date=str_date_to_float(d['timestamp']),
+            )
+            for d in flat_data
+        ]
+
+    raw_messages = [
+        message
+        for fn in history_files
+        for message in process(fn)
+    ]
+
+    stream_id_to_recipient_id = {
+        d['type_id']: d['id']
+        for d in zerver_recipient
+        if d['type'] == Recipient.STREAM
+    }
+
+    mention_map = dict()  # type: Dict[int, Set[int]]
+
+    def make_message(message_id: int, raw_message: ZerverFieldsT) -> ZerverFieldsT:
+        # One side effect here:
+        mention_map[message_id] = set(raw_message['mention_user_ids'])
+
+        content = fix_mentions(
+            content=raw_message['content'],
+            mention_user_ids=raw_message['mention_user_ids'],
+        )
+        pub_date = raw_message['pub_date']
+        stream_id = raw_message['stream_id']
+        recipient_id = stream_id_to_recipient_id[stream_id]
+        rendered_content = None
+        subject = 'archived'
+        user_id = raw_message['sender_id']
+
+        return build_message(
+            content=content,
+            message_id=message_id,
+            pub_date=pub_date,
+            recipient_id=recipient_id,
+            rendered_content=rendered_content,
+            subject=subject,
+            user_id=user_id,
+        )
+
+    zerver_message = [
+        make_message(
+            message_id=i+1,
+            raw_message=raw_message
+        )
+        for i, raw_message
+        in enumerate(raw_messages)
+    ]
+
+    subscriber_map = dict()  # type: Dict[int, Set[int]]
+    for sub in zerver_subscription:
+        user_id = sub['user_profile']
+        recipient_id = sub['recipient']
+        if recipient_id not in subscriber_map:
+            subscriber_map[recipient_id] = set()
+        subscriber_map[recipient_id].add(user_id)
+
+    zerver_usermessage = []
+    usermessage_id = 1
+
+    for message in zerver_message:
+        message_id = message['id']
+        recipient_id = message['recipient']
+        mention_user_ids = mention_map[message_id]
+        user_ids = subscriber_map.get(recipient_id, set())
+        for user_id in user_ids:
+            is_mentioned = user_id in mention_user_ids
+            user_message = build_user_message(
+                id=usermessage_id,
+                user_id=user_id,
+                message_id=message_id,
+                is_mentioned=is_mentioned,
+            )
+            zerver_usermessage.append(user_message)
+            usermessage_id += 1
+
+    message_json = dict(
+        zerver_message=zerver_message,
+        zerver_usermessage=zerver_usermessage,
+    )
+
+    dump_file_id = 1
+    message_file = "/messages-%06d.json" % (dump_file_id,)
+    create_converted_data_files(message_json, output_dir, message_file)
+
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
@@ -361,6 +513,15 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     realm['zerver_realmemoji'] = zerver_realmemoji
 
     create_converted_data_files(realm, output_dir, '/realm.json')
+
+    write_message_data(
+        realm_id=realm_id,
+        zerver_recipient=zerver_recipient,
+        zerver_subscription=zerver_subscription,
+        zerver_userprofile=zerver_userprofile,
+        data_dir=input_data_dir,
+        output_dir=output_dir,
+    )
 
     write_avatar_data(
         raw_user_data=raw_user_data,
