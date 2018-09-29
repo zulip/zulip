@@ -138,8 +138,13 @@
             <h3>{{t "User avatar" }}</h3>
 
             <div class="inline-block">
-                <div id="user-settings-avatar">
+                <div id="user-settings-avatar" class="avatar_container">
                     <img id="user-avatar-block" src="{{ page_params.avatar_url_medium }}" />
+                    <div class="avatar_overlay" id="user_avatar_upload_button" title="{{t "Upload new avatar" }}">
+                        <div id="user_avatar_delete_button" class="remove_avatar_icon" title="{{t "Delete avatar" }}">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
                     <div id="user-avatar-source">
                         <a href="https://en.gravatar.com/" target="_blank" class="white-color">{{t "Avatar from Gravatar" }}</a>
                     </div>
@@ -148,13 +153,7 @@
                 <div id="upload_avatar_spinner"></div>
             </div>
             <div class="avatar-controls">
-                <button class="button rounded sea-green w-200 block" id="user_avatar_upload_button">
-                    {{t 'Upload new avatar' }}
-                </button>
                 <div id="user_avatar_file_input_error" class="text-error"></div>
-                <button class="button rounded btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">
-                    {{t 'Delete avatar' }}
-                </button>
             </div>
         </div>
         <div class="clear-float"></div>
