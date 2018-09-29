@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -20,6 +21,7 @@ from zerver.data_import.import_util import (
     build_subscriptions,
     build_user,
     build_zerver_realm,
+    write_avatar_png,
 )
 
 # stubs
@@ -61,11 +63,6 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         else:
             raise Exception('unexpected value')
 
-    '''
-    TODO:
-        avatar
-    '''
-
     def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
         delivery_email = in_dict['email']
         email = in_dict['email']
@@ -84,7 +81,7 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         #    created - we just use "now"
         #    roles - we just use account_type
         return build_user(
-            avatar_source='G',
+            avatar_source='U',
             date_joined=date_joined,
             delivery_email=delivery_email,
             email=email,
@@ -98,6 +95,43 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         )
 
     return list(map(process, flat_data))
+
+def convert_avatar_data(avatar_folder: str,
+                        raw_data: List[ZerverFieldsT],
+                        realm_id: int) -> List[ZerverFieldsT]:
+    '''
+    This code is pretty specific to how Hipchat sends us data.
+    They give us the avatar payloads in base64 in users.json.
+
+    We process avatars in our own pass of that data, rather
+    than doing it while we're getting other user data.  I
+    chose to keep this separate, as otherwise you have a lot
+    of extraneous data getting passed around.
+
+    This code has MAJOR SIDE EFFECTS--namely writing a bunch
+    of files to the avatars directory.
+    '''
+
+    flat_data = [
+        d['User']
+        for d in raw_data
+    ]
+
+    def process(raw_user: ZerverFieldsT) -> ZerverFieldsT:
+        avatar_payload = raw_user['avatar']
+        bits = base64.b64decode(avatar_payload)
+        user_id = raw_user['id']
+
+        metadata = write_avatar_png(
+            avatar_folder=avatar_folder,
+            realm_id=realm_id,
+            user_id=user_id,
+            bits=bits,
+        )
+        return metadata
+
+    avatar_records = list(map(process, flat_data))
+    return avatar_records
 
 def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'rooms.json'
@@ -163,11 +197,19 @@ def write_upload_data(output_dir: str, realm_id: int) -> None:
     create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
     create_converted_data_files(attachment, output_dir, '/attachment.json')
 
-def write_avatar_data(output_dir: str, realm_id: int) -> None:
-    avatar_records = []  # type: List[ZerverFieldsT]
+def write_avatar_data(raw_user_data: List[ZerverFieldsT],
+                      output_dir: str,
+                      realm_id: int) -> None:
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
+
+    avatar_records = convert_avatar_data(
+        avatar_folder=avatar_folder,
+        raw_data=raw_user_data,
+        realm_id=realm_id,
+    )
+
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
 
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
@@ -208,6 +250,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     create_converted_data_files(realm, output_dir, '/realm.json')
 
     write_avatar_data(
+        raw_user_data=raw_user_data,
         output_dir=output_dir,
         realm_id=realm_id,
     )
