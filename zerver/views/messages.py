@@ -1472,7 +1472,7 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
         else:
             search_fields[message_id] = dict(
                 match_content=rendered_content,
-                match_subject=subject
+                match_subject=escape_html(subject),
             )
 
     return json_success({"messages": search_fields})
