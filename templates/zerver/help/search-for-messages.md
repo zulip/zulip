@@ -1,136 +1,75 @@
 # Searching for messages
 
-In Zulip, you can find specific messages by using the search bar (highlighted in
-red in the image below) at the top of your screen. This feature allows you to
-narrow your view to show specific messages using search constraints called
-**operators**.
+Zulip has a powerful search engine under its hood. Search for messages using
+the search bar at the top of the screen.
 
-![Search bar](/static/images/help/search-bar.png)
+## Example
 
-Operators are short phrases in the format `operator:operand` where `operand`
-represents the criteria that fits the specified operator. Operators allow you to
-instantly find messages that meet the specified criteria, such as messages that
-belong to a specific stream or topic.
+* `stream:design has:link is:starred new logo`
 
-It is important to note that spaces in `operand` must be replaced with
-`+`.  Multiple search operators can be used in a single query by
-separating each operator with spaces in your search bar. For example,
-a query like `stream:announce topic:zulip near:1` would show the
-very oldest messages in a that stream and topic.
+Searches for messages in `#design` that have a link, that you starred, and
+that have the words `new` and `logo`.
 
-By default, search will only display messages that you actually
-received.  However, if your search operators include narrowing to a
-public stream, you have full access to that stream's history, and thus
-can search messages from before you subscribed to the stream (or even
-joined your Zulip organization).
+The permalink for that search (web only) will look something like
+`https://your-zulip-url/#narrow/stream/123-design/has/link/is/starred/search/new.20logo`.
 
-## Features and limitations
+## List of operators
 
-* Search hits include morphological variants by default; for example, if you
-search for messages that contain "walking", you’ll also find messages that
-contain "walk", "walks", "walked", etc.
-* Searches are case-insensitive.
-* Searching by date currently is not possible.
-* When pressing space in the search bar, a dropdown menu with autocompletion
-  suggestions appears. Clicking on one of its items narrows your search to the
-  stream/topic/criterion described by the item.
+As you start typing, Zulip will suggest possible operator completions.
+Operators can be used with keywords, or on their own. For example,
 
-## Search operators
+* `stream:design logo` will search for the word `logo` within `#design`
+* `stream:design` will navigate to `#design`
 
-To see a list of all search operators in Zulip, click the search (<i
-class="icon-vector-search"></i>) icon on the left side of the search bar.
-You can alternatively click the cog (<i class="icon-vector-cog"></i>) icon
-in the top right corner of the right sidebar and choose **Search help**
-from the dropdown menu that appears.
+Here is the **full list of search operators**.
 
-![Search help](/static/images/help/search-help.png)
+* `stream:design`: Search within the stream `#design`.
+* `stream:design topic:emoji+picker`: Search within the topic `emoji picker`.
+* `is:private`: Search all your private messages.
+* `pm-with:ada@zulip.com`: Search 1-on-1 messages with Ada.
+* `group-pm-with:ada@zulip.com`: Search group private messages that
+  include Ada.
+* `sender:ada@zulip.com`: Search messages sent by Ada.
+* `sender:me`: Search sent messages.
+* `near:12345`: Show messages around the message with ID `12345`.
+* `id:12345`: Show only message `12345`.
 
-Listed below are all Zulip search operators.
+* `is:alerted`: See [alert words](/help/add-an-alert-word).
+* `is:mentioned`: See [@-mentions](/help/at-mention-a-team-member).
+* `is:starred`: See [starred messages](/help/star-a-message).
+* `is:unread`
+* `has:link`
+* `has:image`
+* `has:attachment`
 
-* `stream:foobar` - This operator narrows the view to show only
-  messages in the stream `foobar`
-* `topic:foo+bar` - This operator narrows the view to show only
-  messages with the topic `foo bar`. It is important to note that the
-  complete topic name must be entered, if else, no results will be shown.
-* `pm-with:foo@bar.com` - This operator narrows the view to show only
-  private messages sent from the user with the email address
-  `foo@bar.com`.
-* `group-pm-with:foo@bar.com` - This operator narrows the view to show
-  all group private messages in groups that contain both you and the
-  user with email address `foo@bar.com`. This operator does not show
-  1:1 private messages between you and the user with email address
-  `foo@bar.com`
-* `sender:foo@bar.com` - This operator narrows the view to show all
-  messages sent by the user with the email address `foo@bar.com`.
-* `sender:me` - This operator narrows the view to show all messages sent by you.
-* `near:xxxxx` - This operator narrows the view to show the message
-  with the ID `xxxxx` as well as a few messages sent before and after
-  the message.
-* `id:xxxxx` - This operator narrows the view to show only the message with the
-ID `xxxxx`.
-* `is:alerted` - This operator narrows the view to show messages with alert
-words. You can [add alert words](/help/add-an-alert-word) in the
-[Settings](/#settings) page.
-* `is:mentioned` - This operator narrows the view to show messages that mention
-you.
-* `is:private` - This operator narrows the view to show all private messages
-that you've received.
-* `is:starred` - This operator narrows the view to show all messages that you've
-starred.
-* `is:unread` - This operator narrows the view to show all messages that you
-haven't read.
-* `has:link` - This operator narrows the view to show all messages that contain
-any links.
-* `has:image` - This operator narrows the view to show all messages that contain
-any images.
-* `has:attachment` - This operator narrows the view to show all messages that
-contain any attachments or uploads.
-* `keyword` - This operator narrows the view to show all messages containing the
-`keyword`.
+## Words and phrases
 
-    !!! warn ""
-        **Warning:** Some common words, such as "a", "the", and "or", might be
-        handled as [stop words](https://en.wikipedia.org/wiki/Stop_words) — the
-        search tool will ignore them because they appear in too many messages to
-        be useful. **This can lead to no results being found at all!**
+Most searches consist of a list of operators followed by a list of keywords.
 
-* `key phrase` - This operator narrows the view to show all messages containing
-all of the words in `key phrase`.
-* `"key phrase"` - This operator narrows the view to show all messages
-containing the exact phrase `key phrase`.
-(The difference between `keyword`, `key phrase` and `"key phrase"` is better
-explained [below](#difference-between-keyword-key-phrase-and-key-phrase)).
-* `-operator:operand` - This operator narrows the view to exclude messages with the operator `operand`
-    * For example, `-topic:foobar` narrows the view to exclude messages with the topic `foobar`.
+* `new logo`: Search for messages with both `new` and `logo`.
+* `"new logo"`: Search for messages with the phrase `"new logo"`.
 
-### Difference between `keyword`, `key phrase`, and `"key phrase"`
+Zulip does some basic stemming, so `wave` will match `waves` and
+`waving`. Keywords are case-insensitive, so `wave` will also match `Wave`.
 
-* `keyword` is an operator that consists of one word. It narrows the view to show all the messages that contain
-that one word.
-* `key phrase` is an operator that consists of multiple words. It narrows the view to show all the messages that
-contain all of the words in that phrase, regardless of the order.
-* `"key phrase"` is an operator that consists of multiple words surrounded by quotation marks ( `"` ). It narrows
-the view to show all the messages that contain the key phrase in the exact same order.
+Emoji are included in searches, so if you search for `octopus` it will
+include messages with
+<img src="/static/generated/emoji/images-google-64/1f419.png" alt="octopus"
+class="emoji-small"/>.
 
-For example, if there are 3 messages containing "Cheese", "I like cheese" and
-"Like cheese I":
 
-* the operator `cheese` would show all three messages.
-* the operator `I like cheese` would only show the messages containing "I like
-    cheese" and "Like cheese I".
-* the operator `"I like cheese"` would only show the message containing "I like
-    cheese".
+Note that Zulip ignores common words like `a`, `the`, and about 100
+others. A quirk in Zulip's current implementation means that if all of your
+keywords are ignored, we'll return 0 search results.
 
-## Keyboard shortcuts
+## Other notes
 
-Listed below are some Zulip keyboard shortcuts that will aid you in conducting a search.
+* By default, search only displays messages that you actually
+  received. However, if your search is restricted to a stream where you have
+  [access to stream history](/help/stream-permissions), you can search for
+  messages from before you subscribed to the stream (or even joined your
+  Zulip organization).
 
-* **Initiate a search** `/` - This shortcut moves the user's cursor to
-  the message search bar at the top of the window to allow them to
-  begin searching for messages belonging to a specific topic, stream,
-  view, etc. in the organization.
-* **Clear a search** `Esc` - This shortcut clears the search bar of
-  any search criteria that was previously entered. This action can also be
-  achieved by clicking the x (<i class="icon-vector-remove"></i>) icon to the
-  right of the search bar or the home (<i class="icon-vector-home"></i>) icon to
-  the left of the search bar.
+* To see the list of search operators in-app, click the **gear** (<i
+  class="icon-vector-cog"></i>) icon in the upper right, and select
+  **Search operators**.
