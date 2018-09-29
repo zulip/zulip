@@ -309,6 +309,9 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     1. avatar_list: List of avatars to be mapped in avatars records.json file
     2. avatar_dir: Folder where the downloaded avatars are saved
     3. realm_id: Realm ID.
+
+    We use this for Slack and Gitter conversions, where avatars need to be
+    downloaded.  For simpler conversions see write_avatar_png.
     """
 
     def get_avatar(avatar_upload_list: List[str]) -> int:
@@ -353,6 +356,37 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
 
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
+
+def write_avatar_png(avatar_folder: str,
+                     realm_id: int,
+                     user_id: int,
+                     bits: bytes) -> ZerverFieldsT:
+    '''
+    Use this function for conversions like Hipchat where
+    the bits for the .png file come in something like
+    a users.json file, and where we don't have to
+    fetch avatar images externally.
+    '''
+    avatar_hash = user_avatar_path_from_ids(
+        user_profile_id=user_id,
+        realm_id=realm_id,
+    )
+
+    image_fn = avatar_hash + '.original'
+    image_path = os.path.join(avatar_folder, image_fn)
+
+    with open(image_path, 'wb') as image_file:
+        image_file.write(bits)
+
+    # Return metadata that eventually goes in records.json.
+    metadata = dict(
+        path=image_path,
+        s3_path=image_path,
+        realm_id=realm_id,
+        user_profile_id=user_id,
+    )
+
+    return metadata
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
                     threads: int) -> List[ZerverFieldsT]:
