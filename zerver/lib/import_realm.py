@@ -113,7 +113,7 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                     if message['rendered_content']:
                         message['rendered_content'] = message['rendered_content'].replace(key, value)
 
-def create_subscription_events(data: TableData, table: TableName) -> None:
+def create_subscription_events(data: TableData, table: TableName, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
     this function creates RealmAuditLog objects for `subscription_created`
@@ -137,13 +137,13 @@ def create_subscription_events(data: TableData, table: TableName) -> None:
         if recipient.type != Recipient.STREAM:
             continue
 
-        stream = Stream.objects.get(id=recipient.type_id)
-        user = UserProfile.objects.get(id=item['user_profile_id'])
+        stream_id = recipient.type_id
+        user_id = item['user_profile_id']
 
-        all_subscription_logs.append(RealmAuditLog(realm=user.realm,
-                                                   acting_user=user,
-                                                   modified_user=user,
-                                                   modified_stream=stream,
+        all_subscription_logs.append(RealmAuditLog(realm_id=realm_id,
+                                                   acting_user_id=user_id,
+                                                   modified_user_id=user_id,
+                                                   modified_stream_id=stream_id,
                                                    event_last_message_id=event_last_message_id,
                                                    event_time=event_time,
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED))
@@ -745,7 +745,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         update_model_ids(RealmAuditLog, data, related_table="realmauditlog")
         bulk_import_model(data, RealmAuditLog)
     else:
-        create_subscription_events(data, 'zerver_subscription')
+        logging.info('about to call create_subscription_events')
+        create_subscription_events(
+            data=data,
+            table='zerver_subscription',
+            realm_id=realm.id,
+        )
+        logging.info('done with create_subscription_events')
 
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
