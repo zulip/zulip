@@ -1004,6 +1004,16 @@ input[type=checkbox].inline-block {
     float: right;
 }
 
+.flex-container lab {
+display: flex;
+flex-direction: row;
+}
+
+.flex-container .btn {
+display: inline-flex;
+padding-left: 0px;
+}
+
 .open-user-form {
     min-width: initial !important;
 }
@@ -1629,12 +1639,6 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
-    }
-}
-
-@media (max-width: 410px) {
-    #get_api_key_button {
-        margin-top: 5px;
     }
 }
 

@@ -200,12 +200,16 @@
             <p>{{t "Please re-enter your password to confirm your identity." }}
               <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
             <form class="form-horizontal" id="get_api_key_form">
-                <div class="control-group">
+                <div class="control-group flex-container">
+                  <div class="lab">
                     <label for="password" class="control-label">{{t "Current password" }}</label>
                     <input type="password" autocomplete="off"
                       name="password" id="get_api_key_password" value="" />
+                  </div>
+                  <div class="btn">
                     <button type="submit" name="view_api_key" id="get_api_key_button"
                       class="button sea-green">{{t 'Get API key' }}</button>
+                  </div>
                 </div>
             </form>
         </div>
