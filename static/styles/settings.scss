@@ -1009,6 +1009,14 @@ input[type=checkbox].inline-block {
     min-width: initial !important;
 }
 
+#api_key_buttons {
+    display: inline-flex;
+}
+
+#api_key_buttons .regenerate_api_key {
+    margin-right: 5px;
+}
+
 .right.show .emoji_alt_code {
     font-size: 1.2em;
 }
@@ -1597,7 +1605,6 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
-
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1633,6 +1640,14 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
+    }
+}
+
+@media (max-width: 450px) {
+    #api_key_buttons,
+    #download_zuliprc {
+        flex-direction: column;
+        margin-top: 5px;
     }
 }
 
