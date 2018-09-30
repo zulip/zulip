@@ -150,6 +150,14 @@ function initialize_kitchen_sink_stuff() {
         row.removeClass("sender_name_hovered");
     });
 
+    $("#main_div").on("mouseenter", ".youtube-video a", function () {
+        $(this).addClass("fa fa-play");
+    });
+
+    $("#main_div").on("mouseleave", ".youtube-video a", function () {
+        $(this).removeClass("fa fa-play");
+    });
+
     $("#subscriptions_table").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });
