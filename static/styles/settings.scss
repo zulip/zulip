@@ -1008,6 +1008,10 @@ input[type=checkbox].inline-block {
     min-width: initial !important;
 }
 
+.flexbox div {
+    display: inline-flex;
+}
+
 .right.show .emoji_alt_code {
     font-size: 1.2em;
 }
@@ -1595,7 +1599,6 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
-
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1631,6 +1634,14 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
+    }
+}
+
+@media (max-width: 450px) {
+    .flexbox .download {
+        display: inline-flex;
+        flex-direction: column;
+        margin-top: 5px;
     }
 }
 
