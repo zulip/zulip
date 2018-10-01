@@ -9,6 +9,15 @@
     <td>
         <span class="email">{{email}}</span>
     </td>
+    <td>
+        <span class="user_role">
+            {{#if is_admin}}
+            {{t "Administrator" }}
+            {{else}}
+            {{t "Member" }}
+            {{/if}}
+        </span>
+    </td>
     {{#if is_bot}}
     <td>
         <span class="owner">{{bot_owner}}</span>
