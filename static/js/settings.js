@@ -18,7 +18,7 @@ var header_map = {
     "deactivated-users-admin": i18n.t("Deactivated users"),
     "bot-list-admin": i18n.t("Bot list"),
     "default-streams-list": i18n.t("Default streams"),
-    "filter-settings": i18n.t("Filter settings"),
+    "filter-settings": i18n.t("Linkifiers"),
     "invites-list-admin": i18n.t("Invitations"),
     "user-groups-admin": i18n.t("User groups"),
     "profile-field-settings": i18n.t("Profile field settings"),
