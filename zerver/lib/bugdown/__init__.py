@@ -286,6 +286,40 @@ def add_embed(root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
 
+def add_video(
+        root: Element,
+        url: str,
+        link: str,
+        title: Optional[str]=None,
+        desc: Optional[str]=None,
+        class_attr: str="message_inline_video",
+        data_id: Optional[str]=None,
+        insertion_index: Optional[int]=None
+) -> None:
+    title = title if title is not None else url_filename(link)
+    title = title if title else ""
+    desc = desc if desc is not None else ""
+
+    if insertion_index is not None:
+        div = markdown.util.etree.Element("div")
+        root.insert(insertion_index, div)
+    else:
+        div = markdown.util.etree.SubElement(root, "div")
+
+    div.set("class", class_attr)
+    video = markdown.util.etree.SubElement(div, "video")
+    video.set("src", url)
+    video.set("class", "inline_video")
+    video.set("controls", "true")
+    video.set("preload", "metadata")
+    if class_attr == "message_inline_ref":
+        summary_div = markdown.util.etree.SubElement(div, "div")
+        title_div = markdown.util.etree.SubElement(summary_div, "div")
+        title_div.set("class", "message_inline_image_title")
+        title_div.text = title
+        desc_div = markdown.util.etree.SubElement(summary_div, "desc")
+        desc_div.set("class", "message_inline_image_desc")
+
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
     if settings.TEST_SUITE:
