@@ -2171,6 +2171,23 @@ div.floating_recipient {
     border: none !important;
 }
 
+.message_inline_video {
+    position: relative;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    height: 360px;
+    display: block !important;
+    border: none !important;
+}
+
+.inline_video {
+    position: relative;
+    height: 360px;
+    max-width: 90%;
+    display: block !important;
+    border: none !important;
+}
+
 .rtl .twitter-image,
 .rtl .message_inline_image {
     margin-left: unset;
