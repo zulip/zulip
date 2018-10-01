@@ -843,6 +843,48 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         else:
             # If none of the above criteria match, fall back to old behavior
             add_a(root, actual_url, url, title=text)
+    
+    def handle_video_inlining(self, root: Element, found_url: ResultWithFamily) -> None:
+        grandparent = found_url.family.grandparent
+        parent = found_url.family.parent
+        ahref_element = found_url.family.child
+        (url, text) = found_url.result
+        actual_url = url
+
+        # url != text usually implies a named link, which we opt not to remove
+        url_eq_text = (url == text)
+
+        if parent.tag == 'li':
+            add_video(parent, self.get_actual_image_url(url), url, title=text)
+            if not parent.text and not ahref_element.tail and url_eq_text:
+                parent.remove(ahref_element)
+
+        elif parent.tag == 'p':
+            parent_index = None
+            for index, uncle in enumerate(grandparent.getchildren()):
+                if uncle is parent:
+                    parent_index = index
+                    break
+
+            if parent_index is not None:
+                ins_index = self.find_proper_insertion_index(grandparent, parent, parent_index)
+                add_video(grandparent, actual_url, url, title=text, insertion_index=ins_index)
+
+            else:
+                # We're not inserting after parent, since parent not found.
+                # Append to end of list of grandparent's children as normal
+                add_video(grandparent, actual_url, url, title=text)
+
+            # If link is alone in a paragraph, delete paragraph containing it
+            if (len(parent.getchildren()) == 1 and
+                    (not parent.text or parent.text == "\n") and
+                    not ahref_element.tail and
+                    url_eq_text):
+                grandparent.remove(parent)
+
+        else:
+            # If none of the above criteria match, fall back to old behavior
+            add_video(root, actual_url, url, title=text)
 
     def find_proper_insertion_index(self, grandparent: Element, parent: Element,
                                     parent_index_in_grandparent: int) -> int:
