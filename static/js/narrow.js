@@ -92,7 +92,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     notifications.redraw_title();
-
+    notifications.hide_history_limit_message();
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
@@ -658,6 +658,7 @@ function handle_post_narrow_deactivate_processes() {
     tab_bar.initialize();
     exports.narrow_title = "home";
     notifications.redraw_title();
+    notifications.hide_or_show_history_limit_message(home_msg_list);
 }
 
 exports.deactivate = function () {

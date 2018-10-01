@@ -85,6 +85,20 @@ p.n-margin {
     z-index: 102;
 }
 
+.history-limited-box {
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+    display: none;
+    height: 28x;
+    font-size: 16px;
+    margin: 0 auto 12px;
+    padding: 5px;
+    p {
+        margin: 0;
+    }
+}
+
 .top-messages-logo {
     width: 24px;
     height: 24px;

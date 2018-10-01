@@ -83,6 +83,8 @@ function test_helper() {
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_stream_button_for_stream');
     stub('compose', 'update_stream_button_for_private');
+    stub('notifications', 'hide_history_limit_message');
+    stub('notifications', 'hide_or_show_history_limit_message');
 
     blueslip.debug = noop;
 
@@ -202,6 +204,7 @@ run_test('basics', () => {
     helper.assert_events([
         'notifications.clear_compose_notifications',
         'notifications.redraw_title',
+        'notifications.hide_history_limit_message',
         'ui_util.change_tab_to',
         'message_scroll.hide_indicators',
         'unread_ops.process_visible',
@@ -234,6 +237,7 @@ run_test('basics', () => {
     cont();
     helper.assert_events([
         'report narrow times',
+        'notifications.hide_or_show_history_limit_message',
     ]);
 
 });
