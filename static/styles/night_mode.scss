@@ -402,7 +402,8 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Popover: */
-    .hotspot.overlay .hotspot-popover {
+    .hotspot.overlay .hotspot-popover,
+    #hotspot_intro_reply_icon {
         border-color: hsla(0, 0%, 0%, 0.2) !important;
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
@@ -444,6 +445,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
+    #hotspot_intro_reply_icon,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
         background-color: hsl(212, 28%, 18%);
     }
