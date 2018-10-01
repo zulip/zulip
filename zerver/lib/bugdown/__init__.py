@@ -524,6 +524,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
+    
+    def is_video(self, url: str) -> bool:
+        # if not video_preview_enabled_for_realm():
+        #     return False
+        parsed_url = urllib.parse.urlparse(url)
+        for ext in [".mov", ".mp4", ".webm"]:
+            if parsed_url.path.lower().endswith(ext):
+                return True
+        return False
 
     def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
