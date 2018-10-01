@@ -27,6 +27,9 @@ set_global('message_util', {});
 set_global('message_store', {});
 set_global('muting', {});
 set_global('narrow_state', {});
+set_global('notifications', {
+    hide_or_show_history_limit_message: () => {},
+});
 set_global('pm_list', {});
 set_global('resize', {});
 set_global('server_events', {});

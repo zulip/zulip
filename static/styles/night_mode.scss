@@ -460,6 +460,10 @@ on a dark background, and don't change the dark labels dark either. */
         stroke: hsl(0, 0%, 100%);
     }
 
+    .history-limited-box {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
     #unmute_muted_topic_notification,
     .message_content code,
     .message_edit_content code,

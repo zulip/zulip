@@ -181,6 +181,29 @@ exports.redraw_title = function () {
     }
 };
 
+exports.show_history_limit_message = function () {
+    $(".top-messages-logo").hide();
+    $(".history-limited-box").show();
+    narrow.hide_empty_narrow_message();
+};
+
+exports.hide_history_limit_message = function () {
+    $(".top-messages-logo").show();
+    $(".history-limited-box").hide();
+};
+
+exports.hide_or_show_history_limit_message = function (msg_list) {
+    if (msg_list !== current_msg_list) {
+        return;
+    }
+
+    if (msg_list.fetch_status.history_limited()) {
+        notifications.show_history_limit_message();
+    } else {
+        notifications.hide_history_limit_message();
+    }
+};
+
 function flash_pms() {
     // When you have unread PMs, toggle the favicon between the unread count and
     // a special icon indicating that you have unread PMs.
