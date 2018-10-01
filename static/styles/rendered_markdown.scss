@@ -192,6 +192,23 @@
         font-weight: bold;
     }
 
+    .message_inline_video {
+        position: relative;
+        margin-bottom: 5px;
+        margin-left: 5px;
+        height: 360px;
+        display: block !important;
+        border: none !important;
+    }
+
+    .inline_video {
+        position: relative;
+        height: 360px;
+        max-width: 90%;
+        display: block !important;
+        border: none !important;
+    }
+
     .twitter-image,
     .message_inline_image {
         position: relative;
