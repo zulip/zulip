@@ -524,7 +524,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
-    
+
     def is_video(self, url: str) -> bool:
         # if not video_preview_enabled_for_realm():
         #     return False
@@ -843,7 +843,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         else:
             # If none of the above criteria match, fall back to old behavior
             add_a(root, actual_url, url, title=text)
-    
+
     def handle_video_inlining(self, root: Element, found_url: ResultWithFamily) -> None:
         grandparent = found_url.family.grandparent
         parent = found_url.family.parent
@@ -930,6 +930,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not self.is_absolute_url(url):
                 if self.is_image(url):
                     self.handle_image_inlining(root, found_url)
+                if self.is_video(url):
+                    self.handle_video_inlining(root, found_url)
                 # We don't have a strong use case for doing url preview for relative links.
                 continue
 
@@ -948,6 +950,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             if self.is_image(url):
                 self.handle_image_inlining(root, found_url)
+                continue
+            if self.is_video(url):
+                self.handle_video_inlining(root, found_url)
                 continue
             if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
