@@ -66,6 +66,7 @@ function get_messages_success(data, opts) {
         if (opts.msg_list === home_msg_list) {
             message_list.all.fetch_status.finish_older_batch(data);
         }
+        notifications.hide_or_show_history_limit_message(opts.msg_list);
     }
 
     if (opts.num_after > 0) {
@@ -226,6 +227,7 @@ exports.maybe_load_older_messages = function (opts) {
         num_before: consts.backward_batch_size,
         cont: function () {
             opts.hide_loading();
+            notifications.hide_or_show_history_limit_message(msg_list);
         },
     });
 };
