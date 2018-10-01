@@ -320,6 +320,11 @@
       "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "inline_video",
+      "input": "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov",
+      "expected_output": "<div class=\"message_inline_video\"><video class=\"inline_video\" controls=\"true\" preload=\"metadata\" src=\"https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov\"></video></div>"
+    },
+    {
       "name": "nl2br",
       "input": "test\nbar",
       "expected_output": "<p>test<br>\nbar</p>",
@@ -866,11 +871,6 @@
       "http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg"
     ],
     [
-      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov",
-      "<p>%s</p>",
-      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov"
-    ],
-    [
       "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel",
       "<p>%s</p>",
       "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel"
@@ -989,11 +989,6 @@
       "hash it http://foo.com/blah_(wikipedia)_blah#cite-1",
       "<p>hash it %s</p>",
       "http://foo.com/blah_(wikipedia)_blah#cite-1"
-    ],
-    [
-      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov",
-      "<p>%s</p>",
-      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov"
     ],
     [
       "https://metacpan.org/module/Image::Resize::OpenCV",
