@@ -2,9 +2,6 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}" data-email="{{email}}">
     <td>
         <span class="user_name">{{full_name}}</span>
-        <span id="admin_icon" class="{{#unless is_admin}}hide{{/unless}}">
-            &nbsp;<i class="fa fa-bolt" title="{{t 'Organization administrator' }}" aria-label="{{t 'Organization administrator' }}"></i>
-        </span>
     </td>
     <td>
         <span class="email">{{email}}</span>
