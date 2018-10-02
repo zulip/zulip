@@ -248,18 +248,22 @@
     width: 350px;
     max-width: 95%;
     box-shadow: 0 5px 10px rgba(133, 136, 142, 0.1);
-    border: 1px solid #f2f2f2;
     border-radius: 4px;
     background: #f9f9f9;
     margin: 0 auto;
     position: relative;
 }
 
-.hotspot-inline-top {
-    height: 10px;
+.hotspot-inline-top .hotspot-title {
+    background: #00b08d;
+    margin: 0;
+    color: hsl(0, 0%, 100%);
+    font-weight: 600;
+    line-height: 24px;
+    padding: 5px 13px;
+    font-size: 1.15em;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
-    background-color: #43ad90;
 }
 
 .hotspot-inline-left {
@@ -276,6 +280,7 @@
 
 #hotspot_intro_reply_icon {
     position: relative;
+    background: hsl(0, 0%, 100%);
     top: 50%;
     transform: perspective(1px) translateY(-75%);
 }
