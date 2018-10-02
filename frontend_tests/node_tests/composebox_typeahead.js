@@ -1247,8 +1247,9 @@ run_test('typeahead_results', () => {
 
     assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
                                {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
-    assert_emoji_matches('da_', []);
-    assert_emoji_matches('da ', []);
+    assert_emoji_matches('da_', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('da ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('da nomatch', []);
     assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('japanese__post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
@@ -1260,16 +1261,16 @@ run_test('typeahead_results', () => {
     assert_mentions_matches('cordelia   le    ', []);
     assert_mentions_matches('King ', [hamlet, lear]);
     assert_mentions_matches('King H', [hamlet]);
-    assert_mentions_matches('King L', [lear]);
-    assert_mentions_matches('delia lear', []);
-    assert_mentions_matches('Mark Tw', [twin1, twin2]);
+    assert_mentions_matches('King L', [lear, hamlet]);
+    assert_mentions_matches('King e', [hamlet, lear]);
+    assert_mentions_matches('delia lr', []);
     // Autocomplete user group mentions by group name.
     assert_mentions_matches('hamletchar', [hamletcharacters]);
     // Autocomplete user group mentions by group descriptions.
     assert_mentions_matches('characters   ', [hamletcharacters]);
     assert_mentions_matches('characters   of   ', [hamletcharacters]);
-    assert_mentions_matches('characters o ', []);
-    assert_mentions_matches('haracters of   hamlet', []);
+    assert_mentions_matches('characters o ', [hamletcharacters]);
+    assert_mentions_matches('haracters of   hamlet', [hamletcharacters]);
     assert_mentions_matches('of hamlet', []);
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches('den', [denmark_stream, sweden_stream]);

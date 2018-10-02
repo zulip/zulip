@@ -37,9 +37,8 @@ function query_matches_string(query, source_str, split_char) {
     // match where query is a substring of one of the target characters.
     if (query.indexOf(split_char) > 0) {
         // If there's a whitespace character in the query, then we
-        // require a perfect prefix match (e.g. for 'ab cd ef',
-        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-        // ef', etc.).
+        // require a substring match (e.g. for 'ab cd ef',
+        // query needs to be e.g. 'ab c' or 'a c e', not 'cdx ef').
 
         var escaped_split_char = split_char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
         // Split on multiple split characters (e,g. multiple whitespaces).
@@ -49,19 +48,15 @@ function query_matches_string(query, source_str, split_char) {
         var sources = source_str.split(multiple_split_char_regex);
         var i;
 
-        for (i = 0; i < queries.length - 1; i += 1) {
-            if (sources[i] !== queries[i]) {
+        for (i = 0; i < queries.length; i += 1) {
+            if (sources[i] === undefined) {
+                return false;
+            }
+            if (sources[i].indexOf(queries[i]) === -1) {
                 return false;
             }
         }
-
-        // This block is effectively a final iteration of the last
-        // loop.  What differs is that for the last word, a
-        // partial match at the beginning of the word is OK.
-        if (sources[i] === undefined) {
-            return false;
-        }
-        return sources[i].indexOf(queries[i]) === 0;
+        return true;
     }
 
     // For a single token, the match can be anywhere in the string.
