@@ -40,8 +40,13 @@ function query_matches_string(query, source_str, split_char) {
         // require a perfect prefix match (e.g. for 'ab cd ef',
         // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
         // ef', etc.).
-        var queries = query.split(split_char);
-        var sources = source_str.split(split_char);
+
+        var escaped_split_char = split_char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        // Split on multiple split characters (e,g. multiple whitespaces).
+        // "a   b   " will be split into ["a", "b", ""]
+        var multiple_split_char_regex = new RegExp(escaped_split_char + '+', "g");
+        var queries = query.split(multiple_split_char_regex);
+        var sources = source_str.split(multiple_split_char_regex);
         var i;
 
         for (i = 0; i < queries.length - 1; i += 1) {

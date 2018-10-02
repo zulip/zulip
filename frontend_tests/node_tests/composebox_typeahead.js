@@ -1251,13 +1251,13 @@ run_test('typeahead_results', () => {
     assert_emoji_matches('da ', []);
     assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
-    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
-    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
+    assert_emoji_matches('japanese__post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
+    assert_emoji_matches('japanese   post   ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
     assert_emoji_matches('notaemoji', []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches('cordelia', [cordelia]);
-    assert_mentions_matches('cordelia le', [cordelia]);
-    assert_mentions_matches('cordelia le ', []);
+    assert_mentions_matches('cordelia   le', [cordelia]);
+    assert_mentions_matches('cordelia   le    ', []);
     assert_mentions_matches('King ', [hamlet, lear]);
     assert_mentions_matches('King H', [hamlet]);
     assert_mentions_matches('King L', [lear]);
@@ -1266,17 +1266,17 @@ run_test('typeahead_results', () => {
     // Autocomplete user group mentions by group name.
     assert_mentions_matches('hamletchar', [hamletcharacters]);
     // Autocomplete user group mentions by group descriptions.
-    assert_mentions_matches('characters ', [hamletcharacters]);
-    assert_mentions_matches('characters of ', [hamletcharacters]);
+    assert_mentions_matches('characters   ', [hamletcharacters]);
+    assert_mentions_matches('characters   of   ', [hamletcharacters]);
     assert_mentions_matches('characters o ', []);
-    assert_mentions_matches('haracters of hamlet', []);
+    assert_mentions_matches('haracters of   hamlet', []);
     assert_mentions_matches('of hamlet', []);
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches('den', [denmark_stream, sweden_stream]);
     assert_stream_matches('denmark', [denmark_stream]);
-    assert_stream_matches('denmark ', []);
+    assert_stream_matches('denmark   ', []);
     assert_stream_matches('den ', []);
     assert_stream_matches('cold', [sweden_stream, denmark_stream]);
-    assert_stream_matches('the ', [netherland_stream]);
+    assert_stream_matches('the   ', [netherland_stream]);
     assert_stream_matches('city', [netherland_stream]);
 });
