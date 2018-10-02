@@ -8,7 +8,7 @@ from typing import List, Dict, Any, Optional
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment, Stream, Message
+    Attachment, Stream, Message, UserProfile
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
@@ -25,6 +25,35 @@ def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
     realm_dict = model_to_dict(realm, exclude='authentication_methods')
     realm_dict['authentication_methods'] = auth_methods
     return[realm_dict]
+
+def build_user(avatar_source: str,
+               date_joined: Any,
+               delivery_email: str,
+               email: str,
+               full_name: str,
+               id: int,
+               is_active: bool,
+               is_realm_admin: bool,
+               realm_id: int,
+               short_name: str,
+               timezone: str) -> ZerverFieldsT:
+    pointer = -1
+    obj = UserProfile(
+        avatar_source=avatar_source,
+        date_joined=date_joined,
+        delivery_email=delivery_email,
+        email=email,
+        full_name=full_name,
+        id=id,
+        is_active=is_active,
+        is_realm_admin=is_realm_admin,
+        pointer=pointer,
+        realm_id=realm_id,
+        short_name=short_name,
+        timezone=timezone,
+    )
+    dct = model_to_dict(obj)
+    return dct
 
 def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
                  timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
@@ -49,6 +78,73 @@ def build_subscription(recipient_id: int, user_id: int,
     subscription_dict['recipient'] = recipient_id
     return subscription_dict
 
+def build_subscriptions(
+        zerver_userprofile: List[ZerverFieldsT],
+        zerver_recipient: List[ZerverFieldsT],
+        zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+    '''
+    This function is only used for Hipchat now, but it may apply to
+    future conversions.  We often don't get full subscriber data in
+    the Hipchat export, so this function just autosubscribes all
+    users to every public stream.  This returns a list of Subscription
+    dicts.
+
+    This function also creates personal subscriptions.
+
+    If you need more fine tuning on how to subscribe folks, look
+    at the code in slack.py.
+    '''
+    subscriptions = []  # type: List[ZerverFieldsT]
+
+    public_stream_ids = {
+        stream['id']
+        for stream in zerver_stream
+        if not stream['invite_only']
+    }
+
+    public_stream_recipient_ids = {
+        recipient['id']
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.STREAM
+        and recipient['type_id'] in public_stream_ids
+    }
+
+    user_ids = [
+        user['id']
+        for user in zerver_userprofile
+    ]
+
+    subscription_id = 1
+
+    for recipient_id in public_stream_recipient_ids:
+        for user_id in user_ids:
+            subscription = build_subscription(
+                recipient_id=recipient_id,
+                user_id=user_id,
+                subscription_id=subscription_id,
+            )
+            subscriptions.append(subscription)
+            subscription_id += 1
+
+    personal_recipients = [
+        recipient
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.PERSONAL
+    ]
+
+    for recipient in personal_recipients:
+        recipient_id = recipient['id']
+        user_id = recipient['type_id']
+        subscription = build_subscription(
+            recipient_id=recipient_id,
+            user_id=user_id,
+            subscription_id=subscription_id,
+        )
+        subscriptions.append(subscription)
+        subscription_id += 1
+
+    return subscriptions
+
 def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
     recipient = Recipient(
         type_id=type_id,  # stream id
@@ -56,6 +152,43 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
         type=type)
     recipient_dict = model_to_dict(recipient)
     return recipient_dict
+
+def build_recipients(zerver_userprofile: List[ZerverFieldsT],
+                     zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+    '''
+    As of this writing, we only use this in the HipChat
+    conversion.  The Slack and Gitter conversions do it more
+    tightly integrated with creating other objects.
+    '''
+
+    recipient_id = 1
+    recipients = []
+
+    for user in zerver_userprofile:
+        type_id = user['id']
+        type = Recipient.PERSONAL
+        recipient = Recipient(
+            type_id=type_id,
+            id=recipient_id,
+            type=type,
+        )
+        recipient_dict = model_to_dict(recipient)
+        recipients.append(recipient_dict)
+        recipient_id += 1
+
+    for stream in zerver_stream:
+        type_id = stream['id']
+        type = Recipient.STREAM
+        recipient = Recipient(
+            type_id=type_id,
+            id=recipient_id,
+            type=type,
+        )
+        recipient_dict = model_to_dict(recipient)
+        recipients.append(recipient_dict)
+        recipient_id += 1
+
+    return recipients
 
 def build_realm(zerver_realm: List[ZerverFieldsT], realm_id: int,
                 domain_name: str) -> ZerverFieldsT:
@@ -97,6 +230,22 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: 
             usermessage_id += 1
             zerver_usermessage.append(usermessage)
     return usermessage_id
+
+def build_user_message(id: int,
+                       user_id: int,
+                       message_id: int,
+                       is_mentioned: bool) -> ZerverFieldsT:
+    flags_mask = 1  # For read
+    if is_mentioned:
+        flags_mask += 8  # For mentioned
+
+    usermessage = dict(
+        id=id,
+        user_profile=user_id,
+        message=message_id,
+        flags_mask=flags_mask,
+    )
+    return usermessage
 
 def build_defaultstream(realm_id: int, stream_id: int,
                         defaultstream_id: int) -> ZerverFieldsT:
@@ -176,6 +325,9 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     1. avatar_list: List of avatars to be mapped in avatars records.json file
     2. avatar_dir: Folder where the downloaded avatars are saved
     3. realm_id: Realm ID.
+
+    We use this for Slack and Gitter conversions, where avatars need to be
+    downloaded.  For simpler conversions see write_avatar_png.
     """
 
     def get_avatar(avatar_upload_list: List[str]) -> int:
@@ -221,6 +373,37 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
 
+def write_avatar_png(avatar_folder: str,
+                     realm_id: int,
+                     user_id: int,
+                     bits: bytes) -> ZerverFieldsT:
+    '''
+    Use this function for conversions like Hipchat where
+    the bits for the .png file come in something like
+    a users.json file, and where we don't have to
+    fetch avatar images externally.
+    '''
+    avatar_hash = user_avatar_path_from_ids(
+        user_profile_id=user_id,
+        realm_id=realm_id,
+    )
+
+    image_fn = avatar_hash + '.original'
+    image_path = os.path.join(avatar_folder, image_fn)
+
+    with open(image_path, 'wb') as image_file:
+        image_file.write(bits)
+
+    # Return metadata that eventually goes in records.json.
+    metadata = dict(
+        path=image_path,
+        s3_path=image_path,
+        realm_id=realm_id,
+        user_profile_id=user_id,
+    )
+
+    return metadata
+
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
                     threads: int) -> List[ZerverFieldsT]:
     """
@@ -257,6 +440,19 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
 
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
     return upload_list
+
+def build_realm_emoji(realm_id: int,
+                      name: str,
+                      id: int,
+                      file_name: str) -> ZerverFieldsT:
+    return model_to_dict(
+        RealmEmoji(
+            realm_id=realm_id,
+            name=name,
+            id=id,
+            file_name=file_name,
+        )
+    )
 
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
                    emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
