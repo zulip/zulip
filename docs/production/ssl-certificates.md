@@ -15,12 +15,31 @@ files into place at the following paths:
 * `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
 
 Your certificate file should contain not only your own certificate but
-its full chain, including any intermediate certificates used by your
-CA.  See the [nginx documentation][nginx-chains] for details on what
-this means and how to do it and test it.  If you're missing part of
-the chain, your server may work with some browsers but not others.
+its **full chain, including any intermediate certificates** used by
+your CA.  See the [nginx documentation][nginx-chains] for details on
+what this means.  If you're missing part of the chain, your server may
+work with some browsers, but not others and not the Zulip Android app.
 
 [nginx-chains]: http://nginx.org/en/docs/http/configuring_https_servers.html#chains
+
+### Testing
+
+Just trying in a browser is not an adequate test, because some
+browsers ignore errors that others don't.
+
+Two good tests include:
+
+* If your server is accessible from the public Internet, use the [SSL
+  Labs tester][ssllabs-tester].  Be sure to check for "Chain issues";
+  if any, your certificate file is missing intermediate certificates.
+
+* Alternatively, run a command like `curl -SsI https://zulip.example.com`
+  (using your server's URL) from a machine that can reach your server.
+  Make sure that on the same machine, `curl -SsI
+  https://incomplete-chain.badssl.com` gives an error; `curl` on some
+  machines, including Macs, will accept incomplete chains.
+
+[ssllabs-tester]: https://www.ssllabs.com/ssltest/analyze.html
 
 ## Certbot (recommended)
 
