@@ -1027,7 +1027,7 @@ ZULIP_PATHS = [
     ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
     ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
-    ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
+    ("JSON_PERSISTENT_QUEUE_FILENAME_PATTERN", "/home/zulip/tornado/event_queues%s.json"),
     ("EMAIL_LOG_PATH", "/var/log/zulip/send_email.log"),
     ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
     ("EMAIL_DELIVERER_LOG_PATH", "/var/log/zulip/email-deliverer.log"),
