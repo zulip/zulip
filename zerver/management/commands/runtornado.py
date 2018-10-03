@@ -105,7 +105,7 @@ class Command(BaseCommand):
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
 
-                setup_event_queue()
+                setup_event_queue(int(port))
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
 

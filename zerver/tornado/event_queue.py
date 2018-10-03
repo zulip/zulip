@@ -393,7 +393,7 @@ def do_gc_event_queues(to_remove: AbstractSet[str], affected_users: AbstractSet[
             cb(clients[id].user_profile_id, clients[id], clients[id].user_profile_id not in user_clients)
         del clients[id]
 
-def gc_event_queues() -> None:
+def gc_event_queues(port: int) -> None:
     start = time.time()
     to_remove = set()  # type: Set[str]
     affected_users = set()  # type: Set[int]
@@ -410,29 +410,34 @@ def gc_event_queues() -> None:
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     if settings.PRODUCTION:
-        logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+        logging.info(('Tornado %d removed %d idle event queues owned by %d users in %.3fs.' +
                       '  Now %d active queues, %s')
-                     % (len(to_remove), len(affected_users), time.time() - start,
+                     % (port, len(to_remove), len(affected_users), time.time() - start,
                         len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
-def persistent_queue_filename(last: bool=False) -> str:
+def persistent_queue_filename(port: int, last: bool=False) -> str:
+    if settings.TORNADO_PROCESSES == 1:
+        # Use non-port-aware, legacy version.
+        if last:
+            return "/var/tmp/event_queues.json.last"
+        return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('',)
     if last:
-        return "/var/tmp/event_queues.json.last"
-    return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('',)
+        return "/var/tmp/event_queues.%d.last.json" % (port,)
+    return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('.' + str(port),)
 
-def dump_event_queues() -> None:
+def dump_event_queues(port: int) -> None:
     start = time.time()
 
-    with open(persistent_queue_filename(), "w") as stored_queues:
+    with open(persistent_queue_filename(port), "w") as stored_queues:
         ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
                    stored_queues)
 
-    logging.info('Tornado dumped %d event queues in %.3fs'
-                 % (len(clients), time.time() - start))
+    logging.info('Tornado %d dumped %d event queues in %.3fs'
+                 % (port, len(clients), time.time() - start))
 
-def load_event_queues() -> None:
+def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
@@ -440,13 +445,13 @@ def load_event_queues() -> None:
     # file reading from the loading so that we don't silently fail if we get
     # bad input.
     try:
-        with open(persistent_queue_filename(), "r") as stored_queues:
+        with open(persistent_queue_filename(port), "r") as stored_queues:
             json_data = stored_queues.read()
         try:
             clients = dict((qid, ClientDescriptor.from_dict(client))
                            for (qid, client) in ujson.loads(json_data))
         except Exception:
-            logging.exception("Could not deserialize event queues")
+            logging.exception("Tornado %d could not deserialize event queues" % (port,))
     except (IOError, EOFError):
         pass
 
@@ -455,8 +460,8 @@ def load_event_queues() -> None:
 
         add_to_client_dicts(client)
 
-    logging.info('Tornado loaded %d event queues in %.3fs'
-                 % (len(clients), time.time() - start))
+    logging.info('Tornado %d loaded %d event queues in %.3fs'
+                 % (port, len(clients), time.time() - start))
 
 def send_restart_events(immediate: bool=False) -> None:
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)  # type: Dict[str, Any]
@@ -466,22 +471,22 @@ def send_restart_events(immediate: bool=False) -> None:
         if client.accepts_event(event):
             client.add_event(event.copy())
 
-def setup_event_queue() -> None:
+def setup_event_queue(port: int) -> None:
     if not settings.TEST_SUITE:
-        load_event_queues()
-        atexit.register(dump_event_queues)
+        load_event_queues(port)
+        atexit.register(dump_event_queues, port)
         # Make sure we dump event queues even if we exit via signal
         signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
-        tornado.autoreload.add_reload_hook(dump_event_queues)
+        tornado.autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
     try:
-        os.rename(persistent_queue_filename(), persistent_queue_filename(last=True))
+        os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
     except OSError:
         pass
 
     # Set up event queue garbage collection
     ioloop = tornado.ioloop.IOLoop.instance()
-    pc = tornado.ioloop.PeriodicCallback(gc_event_queues,
+    pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port),
                                          EVENT_QUEUE_GC_FREQ_MSECS, ioloop)
     pc.start()
 
