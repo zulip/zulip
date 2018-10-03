@@ -987,9 +987,6 @@ def send_notification_http(data: Mapping[str, Any]) -> None:
     else:
         process_notification(data)
 
-def send_notification(data: Dict[str, Any]) -> None:
-    queue_json_publish("notify_tornado", data, send_notification_http)
-
 def send_event(event: Mapping[str, Any],
                users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
     """`users` is a list of user IDs, or in the case of `message` type
