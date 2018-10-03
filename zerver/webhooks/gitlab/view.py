@@ -261,9 +261,6 @@ def get_branch_name(payload: Dict[str, Any]) -> str:
 def get_tag_name(payload: Dict[str, Any]) -> str:
     return payload['ref'].replace('refs/tags/', '')
 
-def get_object_iid(payload: Dict[str, Any]) -> str:
-    return payload['object_attributes']['iid']
-
 def get_object_url(payload: Dict[str, Any]) -> str:
     return payload['object_attributes']['url']
 
@@ -364,13 +361,9 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
     return get_repo_name(payload)
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]) -> Optional[str]:
-    # if there is no 'action' attribute, then this is a test payload
-    # and we should ignore it
     event = validate_extract_webhook_http_header(request, 'X_GITLAB_EVENT', 'GitLab')
     if event in ['Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
         action = payload['object_attributes'].get('action')
-        if action is None:
-            return 'Test Hook'
         event = "{} {}".format(event, action)
     elif event == 'Note Hook':
         action = payload['object_attributes'].get('noteable_type')
