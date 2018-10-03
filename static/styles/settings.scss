@@ -1008,8 +1008,12 @@ input[type=checkbox].inline-block {
     min-width: initial !important;
 }
 
-.flexbox div {
+.flexbox {
     display: inline-flex;
+}
+
+.flexbox .regenerate_api_key {
+    margin-right: 5px;
 }
 
 .right.show .emoji_alt_code {
@@ -1638,8 +1642,8 @@ input[type=text]#settings_search {
 }
 
 @media (max-width: 450px) {
-    .flexbox .download {
-        display: inline-flex;
+    .flexbox,
+    #download_zuliprc {
         flex-direction: column;
         margin-top: 5px;
     }
