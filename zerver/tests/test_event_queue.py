@@ -11,7 +11,7 @@ from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
     allocate_client_descriptor, process_message_event, \
-    get_client_descriptor, missedmessage_hook
+    get_client_descriptor, missedmessage_hook, persistent_queue_filename
 from zerver.tornado.views import get_events
 
 class MissedMessageNotificationsTest(ZulipTestCase):
@@ -319,3 +319,17 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         change_subscription_properties(user_profile, stream, sub,
                                        {'push_notifications': True,
                                         'in_home_view': True})
+
+class FileReloadLogicTest(ZulipTestCase):
+    def test_persistent_queue_filename(self) -> None:
+        with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/var/tmp/event_queues%s.json"):
+            self.assertEqual(persistent_queue_filename(9993),
+                             "/var/tmp/event_queues.json")
+            self.assertEqual(persistent_queue_filename(9993, last=True),
+                             "/var/tmp/event_queues.json.last")
+        with self.settings(JSON_PERSISTENT_QUEUE_FILENAME_PATTERN="/var/tmp/event_queues%s.json",
+                           TORNADO_PROCESSES=4):
+            self.assertEqual(persistent_queue_filename(9993),
+                             "/var/tmp/event_queues.9993.json")
+            self.assertEqual(persistent_queue_filename(9993, last=True),
+                             "/var/tmp/event_queues.9993.last.json")
