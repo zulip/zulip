@@ -417,10 +417,15 @@ def gc_event_queues() -> None:
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
+def persistent_queue_filename(last=False) -> str:
+    if last:
+        return "/var/tmp/event_queues.json.last"
+    return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('',)
+
 def dump_event_queues() -> None:
     start = time.time()
 
-    with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
+    with open(persistent_queue_filename(), "w") as stored_queues:
         ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
                    stored_queues)
 
@@ -435,7 +440,7 @@ def load_event_queues() -> None:
     # file reading from the loading so that we don't silently fail if we get
     # bad input.
     try:
-        with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
+        with open(persistent_queue_filename(), "r") as stored_queues:
             json_data = stored_queues.read()
         try:
             clients = dict((qid, ClientDescriptor.from_dict(client))
@@ -470,7 +475,7 @@ def setup_event_queue() -> None:
         tornado.autoreload.add_reload_hook(dump_event_queues)
 
     try:
-        os.rename(settings.JSON_PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.json.last")
+        os.rename(persistent_queue_filename(), persistent_queue_filename(last=True))
     except OSError:
         pass
 
