@@ -130,6 +130,8 @@ IGNORED_PHRASES = [
     r"leafy green vegetable",
     # Subdomain placeholder
     r"your-organization-url",
+    # Contact Us heading
+    r"Contact Us"
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

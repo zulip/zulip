@@ -6,12 +6,13 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
+from django.core.mail import EmailMessage
 from itertools import zip_longest
 
 from zerver.context_processors import get_realm_from_request
 from zerver.decorator import zulip_login_required, process_client, \
     redirect_to_login
-from zerver.forms import ToSForm
+from zerver.forms import ToSForm, ContactForm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
@@ -29,6 +30,8 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.send_email import FromAddress
+from zerver.lib.feedback import handle_contact_form_response, contact_form_is_open
 from two_factor.utils import default_device
 
 import calendar
@@ -312,3 +315,30 @@ def plans_view(request: HttpRequest) -> HttpResponse:
         if not request.user.is_authenticated():
             return redirect_to_login(next="plans")
     return render(request, "zerver/plans.html")
+
+def contact(request: HttpRequest) -> HttpResponse:
+    message_recieved = False
+
+    if not contact_form_is_open():
+        return render(request, 'zerver/contact.html', {"daily_limit_exceeded": True})
+
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            message_recieved = True
+            sender_email = form.cleaned_data["email"]
+            sender_full_name = form.cleaned_data["full_name"]
+            content = form.cleaned_data["content"]
+            handle_contact_form_response(sender_email, sender_full_name, content)
+    else:
+        if request.user.is_authenticated:
+            form = ContactForm(initial={"email": request.user.email,
+                                        "full_name": request.user.full_name})
+        else:
+            form = ContactForm()
+
+    ctx = {
+        "form": form,
+        "message_recieved": message_recieved,
+    }
+    return render(request, 'zerver/contact.html', ctx)

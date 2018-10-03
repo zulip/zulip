@@ -493,6 +493,9 @@ i18n_urls = [
     url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', zerver.views.home.plans_view, name='plans'),
 
+    # Contact page
+    url(r'^contact/$', zerver.views.home.contact, name='zerver.views.home.contact'),
+
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),

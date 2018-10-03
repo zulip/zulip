@@ -358,3 +358,8 @@ class RealmRedirectForm(forms.Form):
         if get_realm(subdomain) is None:
             raise ValidationError(_("We couldn't find that Zulip organization."))
         return subdomain
+
+class ContactForm(forms.Form):
+    full_name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    content = forms.CharField(widget=forms.Textarea)

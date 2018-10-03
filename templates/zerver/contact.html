@@ -1,0 +1,46 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+<div class="portico-landing why-page">
+    <div class="hero small-hero">
+        <h1 class="center">{% trans %}Contact Us{% endtrans %}</h1>
+    </div>
+    <div class="main contact-form">
+        <div class="padded-content">
+            {% if message_recieved %}
+            <div class="alert alert-success">
+                <p>Thanks for reaching out! You should hear from us within 1 business day.</p>
+            </div>
+            {% elif daily_limit_exceeded %}
+            <div class="alert alert-danger">
+                <p>We have closed the support form temporarily. Please email at {{support_email}} to contact us. </p>
+            </div>
+            {% else %}
+            <div class="inner-content">
+                <div class="new-style">
+                    <form id="contact_form" name="email_form" action="/contact/" method="post" enctype='multipart/form-data'>
+                        {{ csrf_input }}
+                        <div class="input-box">
+                            <input type="text" autofocus id="name" name="full_name" placeholder="{{ _('Name') }}" value="{% if form.full_name.value() %}{{ form.full_name.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
+                            <br>
+                            <input type="email" autofocus id="email" name="email" placeholder="{{ _('Email') }}" value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
+                            <br>
+                            <textarea name="content" placeholder="{{ _('How can we help?') }}" required></textarea>
+                        </div>
+                        <br>
+                        <button type="submit">{{ _('Submit') }}</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

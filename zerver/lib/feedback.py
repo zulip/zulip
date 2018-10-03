@@ -10,6 +10,7 @@ from zerver.models import get_realm, get_system_bot, \
     UserProfile, Realm
 
 import time
+from datetime import datetime
 
 client = get_redis_client()
 
@@ -77,3 +78,22 @@ def handle_feedback(event: Mapping[str, Any]) -> None:
         msg.send()
     if settings.FEEDBACK_STREAM is not None:
         deliver_feedback_by_zulip(event)
+
+def contact_form_is_open() -> bool:
+    day = datetime.today().day
+    return not client.exists(day) or int(client.get(day)) < 100
+
+def handle_contact_form_response(sender_email: str, sender_full_name: str, content: str) -> None:
+    # Limit the number of emails we send to 100 a day.
+    day = datetime.today().day
+    client.incr(day)
+    client.expire(day, 60 * 60 * 24)
+
+    to_email = FromAddress.SUPPORT
+
+    subject = "Zulip support request from {}".format(sender_email)
+    from_email = '"{}" <{}>'.format(sender_full_name, to_email)
+    headers = {'Reply-To': '"{}" <{}>'.format(sender_full_name, sender_email)}
+
+    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
+    msg.send()

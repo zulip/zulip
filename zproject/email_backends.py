@@ -63,8 +63,10 @@ class EmailLogBackEnd(BaseEmailBackend):
     def log_email(self, email: EmailMultiAlternatives) -> None:
         """Used in development to record sent emails in a nice HTML log"""
         html_message = 'Missing HTML message'
-        if len(email.alternatives) > 0:
+        if hasattr(email, "alternatives") and len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]
+        else:
+            html_message = email.body
 
         context = {
             'subject': email.subject,

@@ -87,6 +87,27 @@ html {
     font-weight: normal;
 }
 
+.contact-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .input-box input[type=text],
+    .input-box input[type=email],
+    .input-box textarea {
+        width: 500px !important;
+    }
+    .input-box textarea {
+        height: 100px !important;
+    }
+    .alert {
+        margin-bottom: 100px;
+        p {
+            padding: 25px 20px 10px 20px;
+        }
+    }
+}
+
 .new-style .inline-block {
     text-align: left;
 }
@@ -327,7 +348,8 @@ html {
 
 .new-style .input-box input[type=text],
 .new-style .input-box input[type=email],
-.new-style .input-box input[type=password] {
+.new-style .input-box input[type=password],
+.new-style .input-box textarea {
     padding: 9px 32px 11px 12px;
     margin: 25px 0 4px;
 
@@ -372,7 +394,8 @@ html {
 
 .new-style .input-box input[type=text]:focus:invalid,
 .new-style .input-box input[type=email]:focus:invalid,
-.new-style .input-box input[type=password]:focus:invalid {
+.new-style .input-box input[type=password]:focus:invalid,
+.new-style .input-box textarea:focus:invalid {
     box-shadow: none;
     color: hsl(0, 0%, 27%);
 }
@@ -383,13 +406,18 @@ html {
     border: 1px solid hsl(0, 0%, 53%);
 }
 
+.new-style .input-box textarea:focus {
+    border: 1px solid hsl(0, 0%, 53%) !important;
+}
+
 .new-style .input-box label,
 .new-style .input-box input[type=text]:focus + label,
 .new-style .input-box input[type=email]:focus + label,
 .new-style .input-box input[type=password]:focus + label,
 .new-style .input-box input[type=text]:valid + label,
 .new-style .input-box input[type=email]:valid + label,
-.new-style .input-box input[type=password]:valid + label {
+.new-style .input-box input[type=password]:valid + label,
+.new-style .input-box textarea:valid + label {
     left: 0px;
     transform: translateY(-0px) translateX(0px);
     pointer-events: auto;
