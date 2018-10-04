@@ -731,9 +731,40 @@ class TestAPNs(PushNotificationTest):
         self.assertEqual(
             apn.modernize_apns_payload(payload),
             payload)
-            
+
 class TestGetAPNsPayload(PushNotificationTest):
-    def test_get_apns_payload(self) -> None:
+    def test_get_apns_payload_personal_message(self) -> None:
+        user_profile = self.example_user("othello")
+        message_id = self.send_personal_message(
+            self.example_email('hamlet'),
+            self.example_email('othello'),
+            'Content of personal message',
+        )
+        message = Message.objects.get(id=message_id)
+        message.trigger = 'private_message'
+        payload = apn.get_apns_payload(user_profile, message)
+        expected = {
+            'alert': {
+                'title': 'King Hamlet',
+                'subtitle': '',
+                'body': message.content,
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'private',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_apns_payload_huddle_message(self) -> None:
         user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
             self.sender.email,
@@ -743,7 +774,8 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
-                'title': "New private group message from King Hamlet",
+                'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
+                'subtitle': 'King Hamlet:',
                 'body': message.content,
             },
             'badge': 0,
@@ -765,7 +797,38 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_apns_payload_stream(self):
+    def test_get_apns_payload_stream_message(self):
+        # type: () -> None
+        user_profile = self.example_user("hamlet")
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.trigger = 'push_stream_notify'
+        message.stream_name = 'Verona'
+        payload = apn.get_apns_payload(user_profile, message)
+        expected = {
+            'alert': {
+                'title': '#Verona > Test Message',
+                'subtitle': 'King Hamlet:',
+                'body': message.content,
+            },
+            'badge': 0,
+            'custom': {
+                'zulip': {
+                    'message_ids': [message.id],
+                    'recipient_type': 'stream',
+                    'sender_email': 'hamlet@zulip.com',
+                    'sender_id': 4,
+                    "stream": apn.get_display_recipient(message.recipient),
+                    "topic": message.subject,
+                    'server': settings.EXTERNAL_HOST,
+                    'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
+                }
+            }
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_apns_payload_stream_mention(self):
         # type: () -> None
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
@@ -775,7 +838,8 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
-                'title': "New mention from King Hamlet",
+                'title': '#Verona > Test Message',
+                'subtitle': 'King Hamlet mentioned you:',
                 'body': message.content,
             },
             'badge': 0,
@@ -806,7 +870,8 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
-                'title': "New private group message from King Hamlet",
+                'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
+                'subtitle': "King Hamlet:",
                 'body': "***REDACTED***",
             },
             'badge': 0,
