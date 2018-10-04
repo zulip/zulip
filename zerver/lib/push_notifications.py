@@ -10,7 +10,7 @@ import re
 import time
 import random
 
-from typing import Any, Dict, List, Optional, SupportsInt, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, SupportsInt, Tuple, Type, Union, cast
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -429,7 +429,7 @@ def push_notifications_enabled() -> bool:
         return True
     return False
 
-def get_alert_from_message(message: Message) -> str:
+def get_gcm_alert(message: Message) -> str:
     """
     Determine what alert string to display based on the missed messages.
     """
@@ -519,6 +519,30 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
 
     return data
 
+def get_apns_alert_title(message: Message) -> str:
+    """
+    On an iOS notification, this is the first bolded line.
+    """
+    if message.recipient.type == Recipient.HUDDLE:
+        recipients = cast(List[Dict[str, Any]], get_display_recipient(message.recipient))
+        return ', '.join(sorted(r['full_name'] for r in recipients))
+    elif message.is_stream_message():
+        return "#%s > %s" % (message.stream_name, message.topic_name(),)
+    else:
+        # For all other messages, particularly personal PMs, we just show the sender name.
+        return message.sender.full_name + " says:"
+
+def get_apns_alert_subtitle(message: Message) -> str:
+    """
+    On an iOS notification, this is the second bolded line.
+    """
+    if message.trigger == "mentioned":
+        return message.sender.full_name + " mentioned you:"
+    elif message.recipient.type == Recipient.PERSONAL:
+        return ""
+    else:
+        return message.sender.full_name + " says:"
+
 def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     zulip_data = get_common_payload(message)
     zulip_data.update({
@@ -528,7 +552,8 @@ def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, A
     content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
     apns_data = {
         'alert': {
-            'title': get_alert_from_message(message),
+            'title': get_apns_alert_title(message),
+            'subtitle': get_apns_alert_subtitle(message),
             'body': content,
         },
         'badge': 0,  # TODO: set badge count in a better way
@@ -542,7 +567,7 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     data.update({
         'user': user_profile.email,
         'event': 'message',
-        'alert': get_alert_from_message(message),
+        'alert': get_gcm_alert(message),
         'zulip_message_id': message.id,  # message_id is reserved for CCS
         'time': datetime_to_timestamp(message.pub_date),
         'content': content,
