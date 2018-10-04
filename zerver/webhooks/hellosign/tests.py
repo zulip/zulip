@@ -9,16 +9,30 @@ class HelloSignHookTests(WebhookTestCase):
 
     def test_signatures_message(self) -> None:
         expected_subject = "NDA with Acme Co."
-        expected_message = ("The NDA with Acme Co. is awaiting the signature of "
-                            "Jack and was just signed by Jill.")
+        expected_message = ("The `NDA with Acme Co.` document is awaiting the signature of "
+                            "Jack, and was just signed by Jill.")
         self.send_and_test_stream_message('signatures', expected_subject, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_signatures_message_signed_by_one(self) -> None:
+        expected_subject = "NDA with Acme Co."
+        expected_message = ("The `NDA with Acme Co.` document was just signed by Jill.")
+        self.send_and_test_stream_message('signatures_signed_by_one_signatory',
+                                          expected_subject, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_signatures_message_with_four_signatories(self) -> None:
+        expected_subject = "Signature doc"
+        expected_message = ("The `Signature doc` document is awaiting the signature of "
+                            "Eeshan Garg, John Smith, Jane Doe, and Stephen Strange.")
+        self.send_and_test_stream_message('signatures_with_four_signatories', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_signatures_message_with_own_subject(self) -> None:
         expected_subject = "Our own subject."
         self.url = self.build_webhook_url(topic=expected_subject)
-        expected_message = ("The NDA with Acme Co. is awaiting the signature of "
-                            "Jack and was just signed by Jill.")
+        expected_message = ("The `NDA with Acme Co.` document is awaiting the signature of "
+                            "Jack, and was just signed by Jill.")
         self.send_and_test_stream_message('signatures_with_own_subject', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded", topic=expected_subject)
 
