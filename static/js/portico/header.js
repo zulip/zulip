@@ -1,5 +1,5 @@
 $(function () {
-    $('.portico-header a .logout').on('click', function () {
+    $('.portico-header li.logout').on('click', function () {
         $('#logout_form').submit();
         return false;
     });
