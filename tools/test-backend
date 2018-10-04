@@ -102,7 +102,6 @@ not_yet_fully_covered = {
     # Webhook integrations with incomplete coverage
     'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/greenhouse/view.py',
-    'zerver/webhooks/hellosign/view.py',
     'zerver/webhooks/ifttt/view.py',
     'zerver/webhooks/jira/view.py',
     'zerver/webhooks/librato/view.py',
