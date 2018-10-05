@@ -142,77 +142,87 @@ ul.remind_me_popover .remind_icon {
     position: relative;
 }
 
-.user-profile-modal-avatar {
-    display: inline-block;
-    height: 180px;
-    width: 180px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 5px;
-    margin-right: 10px;
-    border: 1px solid hsla(0, 0%, 0%, 0.2);
-}
-
-.user-profile-modal-name-email-section {
-    display: inline-block;
-    vertical-align: top;
-}
-
-.user-profile-modal-name {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 5px;
-}
-
-.user-profile-modal-email {
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.user-profile-modal-hr {
-    border: 1px solid #ededed;
-    margin: 5px 0;
-}
-
-.user-profile-key-value-section {
-    margin-top: 8px;
-}
-
-.user-profile-modal-content {
-    margin-top: 10px;
-}
-
-.user-profile-modal-field-name {
-    color: #8b8b8b;
-}
-
-.user-profile-modal-field-value {
-    font-size: 15px;
-}
-
-.user-profile-key-value-section[data-type="2"] .user-profile-modal-field-value {
-    white-space: pre-line;
-    overflow-wrap: break-word;
-}
-
 #user-profile-modal {
     border-radius: 4px;
-}
 
-#user-profile-modal-body {
-    padding-bottom: 10px;
-    padding-top: 4px;
-    margin-bottom: 10px;
-    margin-top: 10px;
-}
+    #body {
+        padding-bottom: 10px;
+        padding-top: 4px;
+        margin-bottom: 10px;
+        margin-top: 10px;
+    }
 
-#user-profile-modal #user-profile-modal-body .exit-sign {
-    font-size: 1.5rem;
-}
+    #exit-sign {
+        font-size: 1.5rem;
+    }
 
-.user-profile-modal-edit-button {
-    font-size: 18px;
-    margin-left: 10px;
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        margin-right: 10px;
+        border: 1px solid hsla(0, 0%, 0%, 0.2);
+    }
+
+    #default-section {
+        font-size: 15px;
+        display: inline-block;
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 5px;
+
+            .name {
+                color: hsl(0, 0%, 55%);
+                display: inline-block;
+                min-width: 120px;
+            }
+        }
+
+        #date-joined {
+            margin-bottom: 15px;
+        }
+
+        #name {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 5px;
+
+            #edit-button {
+                font-size: 18px;
+                margin-left: 10px;
+            }
+        }
+    }
+
+    hr {
+        border: 1px solid hsl(0, 0%, 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        margin-top: 10px;
+
+        .field-section {
+            margin-top: 8px;
+
+            .name {
+                color: hsl(0, 0%, 55%);
+            }
+
+            .value {
+                font-size: 15px;
+            }
+
+            &[data-type="2"] .value {
+                white-space: pre-line;
+                overflow-wrap: break-word;
+            }
+        }
+    }
 }
 
 .message-info-popover {
@@ -244,7 +254,7 @@ ul.remind_me_popover .remind_icon {
     }
 
     .message-info-popover .popover-inner {
-        background-color: #fff;
+        background-color: hsl(0, 0%, 100%);
         pointer-events: all;
     }
 
