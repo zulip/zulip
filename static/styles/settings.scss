@@ -899,19 +899,6 @@ input[type=checkbox].inline-block {
     margin: 10px 0px 5px 0px;
 }
 
-.edit_bot_email {
-    font-weight: 400;
-    font-size: 18px;
-    text-align: left;
-    margin-top: 0px;
-    margin-bottom: 10px;
-
-    overflow: hidden;
-    max-height: 1.1em;
-    text-overflow: ellipsis;
-    white-space: pre;
-}
-
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
 #get_api_key_box .control-label,
