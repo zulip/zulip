@@ -159,6 +159,7 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
+    'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
