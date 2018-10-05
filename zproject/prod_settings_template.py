@@ -114,6 +114,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
+    # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
@@ -178,6 +179,23 @@ AUTHENTICATION_BACKENDS = (
 # to include this subdomain.
 #
 #SOCIAL_AUTH_SUBDOMAIN = 'auth'
+
+
+########
+# Azure Active Directory OAuth.
+#
+# To set up Microsoft Azure AD authentication, you'll need to do the following:
+#
+# (1) Register an OAuth2 application with Microsoft at:
+# https://apps.dev.microsoft.com
+# Generate a new password under Application Secrets
+# Generate a new platform (web) under Platforms. For Redirect URL, enter:
+#   https://zulip.example.com/complete/azuread-oauth2/
+# Add User.Read permission under Microsoft Graph Permissions
+#
+# (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
+# (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
+#SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
 
 ########
 # SSO via REMOTE_USER.
