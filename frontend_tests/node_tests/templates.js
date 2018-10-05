@@ -1536,7 +1536,7 @@ run_test('user_profile_modal', () => {
     };
 
     var html = render('user_profile_modal', args);
-    var div = $(html).find(".user-profile-modal-email");
+    var div = $(html).find("#email .value");
     assert.equal(div.text().trim(), 'iago@zulip.com');
 });
 

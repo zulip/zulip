@@ -206,12 +206,12 @@ exports.get_user_time_preferences = function (user_id) {
         if (page_params.twenty_four_hour_time) {
             return {
                 timezone: user_timezone,
-                format: "HH:mm",
+                format: "H:mm",
             };
         }
         return {
             timezone: user_timezone,
-            format: "hh:mm A",
+            format: "h:mm A",
         };
     }
 };
