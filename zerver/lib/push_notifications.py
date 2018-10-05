@@ -440,11 +440,8 @@ def get_alert_from_message(message: Message) -> str:
         return "New private message from %s" % (sender_str,)
     elif message.is_stream_message() and message.trigger == 'mentioned':
         return "New mention from %s" % (sender_str,)
-    elif (message.is_stream_message() and
-            (message.trigger == 'stream_push_notify' and message.stream_name)):
+    else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
         return "New stream message from %s in %s" % (sender_str, message.stream_name,)
-    else:
-        return "New Zulip mentions and private messages from %s" % (sender_str,)
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: LH.HtmlElement) -> str:
