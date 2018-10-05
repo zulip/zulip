@@ -210,34 +210,19 @@ exports.show_user_profile = function (element, user) {
         profile_data.push(profile_field);
     });
 
-    var time_preferance = people.get_user_time_preferences(user.user_id);
-
-    if (time_preferance) {
-        profile_data.push({
-            name: i18n.t("User timezone"),
-            value: time_preferance.timezone,
-        });
-    }
-
-    profile_data.push({
-        name: i18n.t("Date joined"),
-        value: moment(user.date_joined).format(localFormat),
-    });
-    profile_data.push({
-        name: i18n.t("Last seen"),
-        value: user_last_seen_time_status(user.user_id),
-    });
-
     var args = {
         full_name: user.full_name,
         email: user.email,
         profile_data: profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
+        date_joined: moment(user.date_joined).format(localFormat),
+        last_seen: user_last_seen_time_status(user.user_id),
+        user_time: people.get_user_time(user.user_id),
     };
 
     $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
-    ui.set_up_scrollbar($("#user-profile-modal-body"));
+    ui.set_up_scrollbar($("#user-profile-modal #body"));
     $("#user-profile-modal").modal("show");
 
     page_params.custom_profile_fields.forEach(function (field) {
@@ -245,7 +230,7 @@ exports.show_user_profile = function (element, user) {
 
         if (field.type === field_types.USER.id && field_value_raw) {
             var field_value = JSON.parse(field_value_raw);
-            var pill_container = $('.user-profile-modal-content .pill-container[data-field-id="' + field.id + '"]');
+            var pill_container = $('#user-profile-modal #content .pill-container[data-field-id="' + field.id + '"]');
             var pills = user_pill.create_pills(pill_container);
 
             field_value.forEach(function (user_id) {
@@ -714,7 +699,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('body').on('click', '#user-profile-modal-body .user-profile-modal-edit-button', function () {
+    $('body').on('click', '#user-profile-modal #name #edit-button', function () {
         exports.hide_user_profile();
     });
 
