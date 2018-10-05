@@ -731,42 +731,7 @@ class TestAPNs(PushNotificationTest):
         self.assertEqual(
             apn.modernize_apns_payload(payload),
             payload)
-
-class TestGetAlertFromMessage(PushNotificationTest):
-    def test_get_alert_from_private_group_message(self) -> None:
-        message = self.get_message(Recipient.HUDDLE)
-        message.trigger = 'private_message'
-        alert = apn.get_alert_from_message(message)
-        self.assertEqual(alert, "New private group message from King Hamlet")
-
-    def test_get_alert_from_private_message(self) -> None:
-        message = self.get_message(Recipient.PERSONAL)
-        message.trigger = 'private_message'
-        alert = apn.get_alert_from_message(message)
-        self.assertEqual(alert, "New private message from King Hamlet")
-
-    def test_get_alert_from_mention(self) -> None:
-        message = self.get_message(Recipient.STREAM)
-        message.trigger = 'mentioned'
-        alert = apn.get_alert_from_message(message)
-        self.assertEqual(alert, "New mention from King Hamlet")
-
-    def test_get_alert_from_stream_message(self) -> None:
-        message = self.get_message(Recipient.STREAM)
-        message.trigger = 'stream_push_notify'
-        message.stream_name = 'Denmark'
-        alert = apn.get_alert_from_message(message)
-        self.assertEqual(alert, "New stream message from King Hamlet in Denmark")
-
-    def test_get_alert_from_other_message(self) -> None:
-        message = self.get_message(0)
-        message.trigger = 'stream_push_notify'
-        alert = apn.get_alert_from_message(message)
-        alert = apn.get_alert_from_message(self.get_message(0))
-        self.assertEqual(alert,
-                         "New Zulip mentions and private messages from King "
-                         "Hamlet")
-
+            
 class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload(self) -> None:
         user_profile = self.example_user("othello")
