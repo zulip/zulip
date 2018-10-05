@@ -145,7 +145,7 @@ class Realm(models.Model):
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
-    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
+    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser', u'AzureAD']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
     # User-visible display name and description used on e.g. the organization homepage

@@ -28,6 +28,7 @@ authenticate users with any of several single-sign-on (SSO)
 authentication providers:
 * Google accounts, with `GoogleMobileOauth2Backend`
 * GitHub accounts, with `GitHubAuthBackend`
+* Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details

@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
+from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
 from social_core.utils import handle_http_errors
@@ -65,6 +66,9 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
+
+def azuread_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['AzureAD'], realm)
 
 def remote_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['RemoteUser'], realm)
@@ -644,6 +648,9 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
+
+class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
+    auth_backend_name = "AzureAD"
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
