@@ -44,8 +44,8 @@
 }
 
 .poll-vote {
-    color: #3c906e;
-    border-color: #9dc8b7;
+    color: hsl(156, 41%, 40%);
+    border-color: hsl(156, 28%, 70%);
     margin-right: 4px;
     background-color: white;
 }
@@ -54,17 +54,17 @@ button.task {
     height: 20px;
     width: 20px;
     background-color: transparent;
-    border-color: #9dc8b7;
+    border-color: hsl(156, 28%, 70%);
     margin-right: 4px;
     border-radius: 3px;
 }
 
 button.task:hover {
-    border: 1px solid #2988a4;
+    border: 1px solid hsl(194, 60%, 40%);
 }
 
 button.task-completed {
-    border-color: #b9cec6;
+    border-color: hsl(157, 18%, 77%);
     padding: 0px;
 }
 
@@ -73,7 +73,7 @@ img.task-completed {
 }
 
 .poll-vote:hover {
-    border-color: #59a687;
+    border-color: hsl(156, 30%, 50%);
 }
 
 input.add-task,
@@ -90,7 +90,7 @@ button.add-task,
 button.poll-comment,
 button.poll-question {
     border-radius: 3px;
-    border: 1px solid #cccccc;
+    border: 1px solid hsl(0, 0%, 80%);
     background-color: white;
     width: 100px;
 }
@@ -98,10 +98,10 @@ button.poll-question {
 button.add-task:hover,
 button.poll-comment:hover,
 button.poll-question:hover {
-    border-color: #999999;
+    border-color: hsl(0, 0%, 60%);
 }
 
 .widget-error {
-    color: #b94a48;
+    color: hsl(1, 45%, 50%);
     font-size: 12px;
 }

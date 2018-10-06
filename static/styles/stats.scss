@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Source Sans Pro', 'Helvetica Neue', sans-serif !important;
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 
     -webkit-font-smoothing: antialiased;
 }
@@ -66,11 +66,11 @@ hr {
 }
 
 .buttons button {
-    background-color: #f0f0f0;
+    background-color: hsl(0, 0%, 94%);
 }
 
 .buttons button.selected {
-    background-color: #d8d8d8;
+    background-color: hsl(0, 0%, 85%);
 }
 
 .pie-chart .buttons {

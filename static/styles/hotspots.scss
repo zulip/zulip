@@ -134,7 +134,7 @@
     font-size: 1.15em;
     font-weight: 600;
     color: #fff;
-    background-color: #43ad90;
+    background-color: hsl(164, 44%, 47%);
     border-radius: 4px;
     white-space: normal;
     padding: 7px 20px;
@@ -142,7 +142,7 @@
 }
 
 .hotspot-confirm:hover {
-    background-color: #5cc0a5;
+    background-color: hsl(164, 44%, 56%);
 }
 
 .hotspot.overlay .hotspot-confirm {
@@ -249,13 +249,13 @@
     max-width: 95%;
     box-shadow: 0 5px 10px rgba(133, 136, 142, 0.1);
     border-radius: 4px;
-    background: #f9f9f9;
+    background: hsl(0, 0%, 98%);
     margin: 0 auto;
     position: relative;
 }
 
 .hotspot-inline-top .hotspot-title {
-    background: #00b08d;
+    background: hsl(168, 100%, 35%);
     margin: 0;
     color: hsl(0, 0%, 100%);
     font-weight: 600;

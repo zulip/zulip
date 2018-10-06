@@ -1849,7 +1849,7 @@ nav a .no-style {
 }
 
 .modal-bg {
-    background: #f9f9f9;
+    background: hsl(0, 0%, 98%);
 }
 
 #searchbox {
@@ -2913,7 +2913,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .email_copied,
 .user_popover_email i:hover {
-    color: #53c1ae;
+    color: hsl(170, 47%, 54%);
 }
 
 .email_copied i {
@@ -2932,7 +2932,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     left: -50%;
     top: 10px;
     border-radius: 6px;
-    background-color: #4c4c4c;
+    background-color: hsl(0, 0%, 30%);
     color: #fff;
     transition: visibility 0.2s ease-out, opacity 0.2s linear;
 
@@ -2945,7 +2945,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-width: 7px;
         border-style: solid;
         border-color: transparent;
-        border-bottom: #4c4c4c solid 7px;
+        border-bottom: hsl(0, 0%, 30%) solid 7px;
     }
 }
 
@@ -2974,7 +2974,7 @@ div.message_content td.tictactoe {
 }
 
 div.message_content button.tictactoe-square {
-    background-color: #81bba4;
+    background-color: hsl(156, 30%, 62%);
     width: 40px;
     height: 40px;
     border: none;
@@ -2984,11 +2984,11 @@ div.message_content button.tictactoe-square {
 }
 
 div.message_content button.tictactoe-square:hover {
-    background-color: #808c87;
+    background-color: hsl(155, 5%, 53%);
 }
 
 div.message_content button.tictactoe-square:disabled {
-    background-color: #beded1;
+    background-color: hsl(156, 33%, 81%);
 }
 
 // Hide the up and down arrows in the Flatpickr datepicker year
