@@ -1401,7 +1401,7 @@ input[type=checkbox].inline-block {
 }
 
 body:not(.night-mode) #account-settings .custom_user_field .datepicker {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 #settings_page .custom_user_field textarea {
@@ -1590,7 +1590,7 @@ input[type=text]#settings_search {
 }
 
 .subsection-failed-status p {
-    background: #f2dede;
+    background: hsl(0, 43%, 91%);
     padding: 2px 6px;
     border-radius: 4px;
     margin: 0 0 0 5px;

@@ -376,7 +376,7 @@ on a dark background, and don't change the dark labels dark either. */
     .alert.alert-success {
         color: inherit;
         background-color: hsla(161, 60%, 46%, 0.20);
-        border-color: #1e9e7f;
+        border-color: hsl(165, 68%, 37%);
     }
 
     .alert.alert-error,
@@ -501,11 +501,11 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .email_tooltip {
-        background-color: #404c59;
+        background-color: hsl(211, 16%, 30%);
     }
 
     .email_tooltip::after {
-        border-bottom-color: #404c59 !important;
+        border-bottom-color: hsl(211, 16%, 30%) !important;
     }
 
     .ps__rail-y {

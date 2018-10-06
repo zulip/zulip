@@ -1,5 +1,5 @@
 body {
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .noscroll {
@@ -104,7 +104,7 @@ body {
 .code-section .blocks {
     padding: 20px;
 
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
     border: 1px solid #ddd;
 
     border-radius: 0px 4px 4px 4px;
@@ -343,7 +343,7 @@ ol > li > div.codehilite,
 }
 
 li div.codehilite {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.integrations ol ul {
@@ -743,7 +743,7 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover {
-    background: linear-gradient(to bottom, #08c, #0077b3);
+    background: linear-gradient(to bottom, #08c, hsl(200, 100%, 35%));
     transition: none;
 }
 
@@ -1190,14 +1190,14 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .btn-user {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(169, 44%, 54%);
     border-style: solid;
     color: hsl(170, 40%, 41%);
 }
 
 .btn-admin {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(198, 100%, 48%);
     border-style: solid;
     color: hsl(207, 89%, 54%);
@@ -1746,7 +1746,7 @@ input.new-organization-button {
 .error_page {
     padding: 20px 0px;
     min-height: calc(100vh - 290px);
-    background-color: #c9e9e0;
+    background-color: hsl(163, 42%, 85%);
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
 
@@ -1764,10 +1764,10 @@ input.new-organization-button {
 
 .error_page .errorbox {
     margin: auto;
-    border: 2px solid #44a98c;
+    border: 2px solid hsl(163, 43%, 46%);
     max-width: 500px;
     background-color: white;
-    box-shadow: 0 0 4px #44a98c;
+    box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 18px;
 }
 
@@ -1776,7 +1776,7 @@ input.new-organization-button {
 }
 
 .error_page p {
-    color: #333333;
+    color: hsl(0, 0%, 20%);
 }
 
 .error_page .errorcontent {
@@ -1785,7 +1785,7 @@ input.new-organization-button {
 }
 
 .error_page .lead {
-    color: #39a688;
+    color: hsl(163, 49%, 44%);
     font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
