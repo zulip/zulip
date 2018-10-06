@@ -31,36 +31,34 @@ If you've already created a test organization at
 `<subdomain>.zulipchat.com`, let us know, and we can rename the old
 organization first.
 
-### Import into a new Zulip server
+### Import into a self-hosted Zulip server
 
-Because the Gitter import tool is very new, we recommend first
-upgrading your new Zulip server to the latest `master` branch,
-using [upgrade-zulip-from-git][upgrade-zulip-from-git] to avoid
-bugs in the earliest versions of the Gitter import tool.
+Because the import tool is very new, you will need to
+upgrade your Zulip server to the latest `master` branch,
+using [upgrade-zulip-from-git][upgrade-zulip-from-git].
 
-Log in to a shell on your Zulip server as the `zulip` user. Run the
-following commands.
+Log in to a shell on your Zulip server as the `zulip` user. To import with
+the most common configuration, run the following commands, replacing
+`<token>` with the value generated above.
 
 ```
+cd /home/zulip/deployments/current
 ./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
-./manage.py import --destroy-rebuild-database '' converted_gitter_data
+./manage.py import '' converted_gitter_data
 ```
 
-!!! warn ""
-    **Warning:** This will destroy all existing data in your Zulip server
+This could take several minutes to run, depending on how much data you're
+importing.
 
-### Import into an existing Zulip server
+**Import options**
 
-If you already have some organizations hosted on your Zulip server,
-and want to add import your Gitter data as a new Zulip organization,
-you can use the following procedure.
-
-Log in to your Zulip server as the `zulip` user. Run the following
-commands, replacing `<subdomain>` with the subdomain of the URL
-you'd like for your imported Zulip organization.
+The commands above create an imported organization on the root domain
+(`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
+custom subdomain, e.g. if you already have an existing organization on the
+root domain. Replace the last line above with the following, after replacing
+`<subdomain>` with the desired subdomain.
 
 ```
-./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
 ./manage.py import <subdomain> converted_gitter_data
 ```
 
