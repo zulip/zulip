@@ -12,6 +12,15 @@ var create_stylesheet = function () {
     return stylesheet;
 };
 
+var create_flatpickr_stylesheet = function () {
+    var stylesheet = document.createElement('link');
+    stylesheet.type = "text/css";
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'https://npmcdn.com/flatpickr/dist/themes/material_green.css';
+
+    return stylesheet;
+};
+
 // this transforms an object into CSS. The top level keys of the object are
 // the CSS selectors and the second level keys are attributes which should have
 // valid CSS values.
@@ -76,19 +85,25 @@ var object_to_css = function (object) {
         stylesheet.appendChild(document.createTextNode(css));
     }
 
+    var head = document.head || document.getElementsByTagName('head')[0];
     // append the stylesheet.
-    (document.head || document.getElementsByTagName('head')[0]).appendChild(stylesheet);
+    head.appendChild(stylesheet);
+
+    var flatpickr = create_flatpickr_stylesheet();
+    head.appendChild(flatpickr);
 
     exports.enable = function () {
         // we can also query for this in the DOM with the
         // `.night-mode-stylesheet` class.
         stylesheet.disabled = false;
         $("body").addClass("night-mode");
+        flatpickr.href = 'https://npmcdn.com/flatpickr/dist/themes/dark.css';
     };
 
     exports.disable = function () {
         stylesheet.disabled = true;
         $("body").removeClass("night-mode");
+        flatpickr.href = 'https://npmcdn.com/flatpickr/dist/themes/material_green.css';
     };
 }());
 

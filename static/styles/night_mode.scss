@@ -252,6 +252,7 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(199, 33%, 46%, 0.2);
     }
 
+    input.numInput[type="text"],
     #streamlist-toggle-button,
     #userlist-toggle-button {
         color: inherit;
