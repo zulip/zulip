@@ -100,6 +100,7 @@
 * [Review your organization's settings](/help/review-your-organization-settings)
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
+* [Import from HipChat](/help/import-from-hipchat)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
 * [Manage who can join](/help/manage-who-can-join-and-invite)
