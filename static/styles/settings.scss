@@ -899,19 +899,6 @@ input[type=checkbox].inline-block {
     margin: 10px 0px 5px 0px;
 }
 
-.edit_bot_email {
-    font-weight: 400;
-    font-size: 18px;
-    text-align: left;
-    margin-top: 0px;
-    margin-bottom: 10px;
-
-    overflow: hidden;
-    max-height: 1.1em;
-    text-overflow: ellipsis;
-    white-space: pre;
-}
-
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
 #get_api_key_box .control-label,
@@ -920,8 +907,8 @@ input[type=checkbox].inline-block {
 .admin-profile-field-form .control-label,
 .edit_bot_form .control-label {
     width: 10em;
-    text-align: right;
-    margin-right: 20px;
+    text-align: left;
+    margin-right: 5px;
 }
 
 #upload_avatar_spinner,
@@ -1006,6 +993,10 @@ input[type=checkbox].inline-block {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+.flexbox div {
+    display: inline-flex;
 }
 
 .right.show .emoji_alt_code {
@@ -1595,7 +1586,6 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
-
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1631,6 +1621,14 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
+    }
+}
+
+@media (max-width: 450px) {
+    .flexbox .download {
+        display: inline-flex;
+        flex-direction: column;
+        margin-top: 5px;
     }
 }
 

@@ -10,7 +10,6 @@ import datetime
 from email.utils import parseaddr, formataddr
 import logging
 import ujson
-
 import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 

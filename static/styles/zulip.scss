@@ -2218,7 +2218,7 @@ div.floating_recipient {
     height: auto;
     max-height: 100%;
     float: left;
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 .message_inline_image img {
@@ -2243,6 +2243,8 @@ li .message_inline_image img {
 
 .message_inline_image_title {
     font-weight: bold;
+    position: relative;
+    top: 15px;
 }
 
 .katex-html {
