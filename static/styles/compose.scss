@@ -69,7 +69,7 @@
 }
 
 .compose_table .message_header_colorblock.message_header_private_message {
-    background: hsl(0, 0%, 27%);
+    background-color: hsl(0, 0%, 27%);
 }
 
 .compose_table .right_part {
@@ -156,7 +156,7 @@ table.compose_table {
     z-index: 2;
     width: 100%;
 
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
 }
 
 #compose-container {
@@ -276,7 +276,7 @@ div[id^="message-edit-send-status"],
     position: relative;
     margin-bottom: 6px;
 
-    background: hsla(152, 51%, 63%, 0.25);
+    background-color: hsla(152, 51%, 63%, 0.25);
     border: 1px solid hsla(0, 0%, 0%, 0.1);
     border-radius: 4px;
 }

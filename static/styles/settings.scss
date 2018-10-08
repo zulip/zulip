@@ -375,7 +375,7 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button:hover {
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 61%);
     color: hsl(0, 0%, 18%);
 }
@@ -422,7 +422,7 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button.save-button.saving {
-    background: hsl(156, 14%, 40%);
+    background-color: hsl(156, 14%, 40%);
     border-color: hsl(156, 14%, 40%);
 }
 
@@ -559,7 +559,7 @@ input[type=checkbox].inline-block {
     height: auto !important;
     width: auto !important;
 
-    background: transparent;
+    background-color: transparent;
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
@@ -1590,7 +1590,7 @@ input[type=text]#settings_search {
 }
 
 .subsection-failed-status p {
-    background: hsl(0, 43%, 91%);
+    background-color: hsl(0, 43%, 91%);
     padding: 2px 6px;
     border-radius: 4px;
     margin: 0 0 0 5px;

@@ -607,12 +607,12 @@ form#add_new_subscription {
 
 .stream-row::-moz-selection,
 .stream-row .icon .hashtag::-moz-selection {
-    background: transparent;
+    background-color: transparent;
 }
 
 .stream-row::selection,
 .stream-row .icon .hashtag::selection {
-    background: transparent;
+    background-color: transparent;
 }
 
 .stream-row .check {
@@ -771,7 +771,7 @@ form#add_new_subscription {
     display: flex !important;
     justify-content: center;
     align-items: center;
-    background: hsla(0, 0%, 100%, 0.9);
+    background-color: hsla(0, 0%, 100%, 0.9);
     z-index: 1;
 }
 

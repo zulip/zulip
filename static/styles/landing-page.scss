@@ -839,7 +839,7 @@ nav ul li.active::after {
     margin-top: 0px;
     padding: 12px 20px;
 
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     border: 2px solid hsl(0, 0%, 100%);
 
     font-size: 1.2em;
@@ -1360,7 +1360,7 @@ nav ul li.active::after {
     height: 520px;
     margin: 20px auto;
     padding: 30px 20px;
-    background: rgba(246, 247, 249, 0.6);
+    background-color: rgba(246, 247, 249, 0.6);
     background: linear-gradient(rgba(246, 247, 249, 0.4), rgba(246, 247, 249, 0.9));
     border-radius: 12px;
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.02);
@@ -1372,7 +1372,7 @@ nav ul li.active::after {
     font-size: 1.2rem;
     font-weight: 400;
     color: white;
-    background: hsl(185, 38%, 55%);
+    background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
     border: 0;
@@ -1387,7 +1387,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-inner .start-button:hover {
-    background: rgb(37, 177, 151);
+    background-color: rgb(37, 177, 151);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -1546,14 +1546,14 @@ nav ul li.active::after {
     font-weight: 400;
     color: white;
 
-    background: hsl(185, 38%, 55%);
+    background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
     border: 0;
 }
 
 .tour .carousel-inner button.call-to-action:hover {
-    background: rgb(37, 177, 151);
+    background-color: rgb(37, 177, 151);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -1598,7 +1598,7 @@ nav ul li.active::after {
     margin-left: 10px;
     text-indent: -999px;
     cursor: pointer;
-    background: hsl(222, 12%, 66%);
+    background-color: hsl(222, 12%, 66%);
     transition: background .1s ease;
 }
 
@@ -1623,7 +1623,7 @@ nav ul li.active::after {
 }
 
 .carousel-indicators li.active {
-    background: hsl(220, 23%, 33%);
+    background-color: hsl(220, 23%, 33%);
 }
 
 .portico-landing.hello .testimonials {
@@ -1798,7 +1798,7 @@ nav ul li.active::after {
     padding: 200px 80px 100px 80px;
     margin-top: -50px;
 
-    background: hsl(177, 52%, 55%);
+    background-color: hsl(177, 52%, 55%);
     background: -webkit-linear-gradient(145deg, hsl(169, 65%, 42%), hsl(191, 55%, 54%));
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
 
@@ -1942,7 +1942,7 @@ nav ul li.active::after {
     color: hsl(220, 15%, 66%);
 
     border: 1px solid hsl(220, 15%, 66%);
-    background: transparent;
+    background-color: transparent;
 
     transition: all 0.2s ease;
 }
@@ -2142,7 +2142,7 @@ nav ul li.active::after {
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
 
-    background: hsl(153, 32%, 55%);
+    background-color: hsl(153, 32%, 55%);
     color: hsl(0, 0%, 100%);
 }
 
@@ -2198,7 +2198,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main blockquote {
-    background: white;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(168, 24%, 51%);
     padding: 20px 30px;
     margin-top: 20px;
@@ -2280,7 +2280,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .testimonials {
-    background: hsl(168, 43%, 24%);
+    background-color: hsl(168, 43%, 24%);
     color: hsl(0, 0%, 100%);
     margin-bottom: 40px;
 }
@@ -2968,7 +2968,7 @@ nav ul li.active::after {
     margin-top: -2px;
     width: calc(100% - 300px - 50px);
 
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     opacity: 0;
     transform: translateY(300px);
 

@@ -194,11 +194,11 @@ p.n-margin {
 }
 
 #panels .alert.alert-info {
-    background: hsl(170, 46%, 54%);
+    background-color: hsl(170, 46%, 54%);
 }
 
 #panels .alert.alert-info.red {
-    background: hsl(0, 46%, 54%);
+    background-color: hsl(0, 46%, 54%);
 }
 
 #panels .alert .close {
@@ -880,7 +880,7 @@ td.pointer {
 }
 
 .summary_row_private_message .summary_colorblock {
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
 }
 
 .messages-expand,
@@ -1074,7 +1074,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background: hsl(107, 74%, 29%);
+    background-color: hsl(107, 74%, 29%);
     width: 3px;
     height: 100%;
     box-shadow: inset 0px -1px 0px 0px hsl(0, 0%, 100%);
@@ -1709,7 +1709,7 @@ blockquote p {
     height: 12px;
     min-width: 12px;
     line-height: 12px;
-    background: hsl(0, 100%, 20%);
+    background-color: hsl(0, 100%, 20%);
     top: 4px;
     right: 4px;
     border: 1px solid hsl(0, 0%, 93%);
@@ -1849,7 +1849,7 @@ nav a .no-style {
 }
 
 .modal-bg {
-    background: hsl(0, 0%, 98%);
+    background-color: hsl(0, 0%, 98%);
 }
 
 #searchbox {
@@ -2070,7 +2070,7 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
 }
 
 .recipient_row.sticky {
@@ -2252,7 +2252,7 @@ li .message_inline_image img {
     padding: 5px 8px 5px 10px;
     font-size: 12px;
     border-radius: 4px;
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
     color: hsl(0, 0%, 100%);
     opacity: 0.7;
 }
@@ -2723,7 +2723,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .user-group-mention,
 .user-mention {
-    background: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 93%);
     border-radius: 3px;
     padding: 0 0.2em;
     box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
@@ -2741,7 +2741,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .user-mention-me {
-    background: hsl(112, 88%, 87%);
+    background-color: hsl(112, 88%, 87%);
 }
 
 .alert-word {
@@ -2768,7 +2768,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     left: 0;
     top: 0;
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
     z-index: 20000;
 }
 

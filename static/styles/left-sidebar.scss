@@ -110,7 +110,7 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: hsl(202, 56%, 91%);
+    background-color: hsl(202, 56%, 91%);
     position: relative;
 }
 
@@ -171,7 +171,7 @@ li.active-sub-filter {
 .topic-unread-count,
 .private_message_count {
     float: right;
-    background: hsl(105, 2%, 50%);
+    background-color: hsl(105, 2%, 50%);
     padding: 0 4px;
     height: 16px;
     line-height: 16px;
