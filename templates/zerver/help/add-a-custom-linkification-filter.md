@@ -2,17 +2,17 @@
 
 {!admin-only.md!}
 
-Linkification filters make it easy to refer to issues or tickets in third
+Linkification filters or Linkifiers make it easy to refer to issues or tickets in third
 party issue trackers, like GitHub, Salesforce, Zendesk, and others.
 For instance, you can add a filter that automatically turns `#2468`
 into a link to `https://github.com/zulip/zulip/issues/2468`.
 
 {settings_tab|filter-settings}
 
-1. Under **Add a new filter**, enter a **Regular expression** and
+1. Under **Add a new linkifier**, enter a **Regular expression** and
 **URL format string**.
 
-1. Click **Add filter**.
+1. Click **Add linkifier**.
 
 !!! tip ""
 

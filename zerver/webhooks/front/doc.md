@@ -13,7 +13,7 @@ be notified about. Set the URL of the target webhook to the URL
 constructed above.
 
 1. Go to the **Settings** page of your Zulip organization. Click on the
-**Filter settings** tab, and add a new filter. Set the pattern to
+**Linkifiers** tab, and add a new linkifier. Set the pattern to
 `cnv_(?P<id>[0-9a-z]+)`. Set the URL format string to
 `https://app.frontapp.com/open/cnv_%(id)s`. This step is necessary to map
 Front conversations to topics in Zulip.

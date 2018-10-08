@@ -41,7 +41,7 @@ link_mapping = {
     'bot-list-admin': ['Manage organization', 'Bots', '/#organization/bot-list-admin'],
     'default-streams-list': ['Manage organization', 'Default streams',
                              '/#organization/default-streams-list'],
-    'filter-settings': ['Manage organization', 'Filter settings',
+    'filter-settings': ['Manage organization', 'Linkifiers',
                         '/#organization/filter-settings'],
     'profile-field-settings': ['Manage organization', 'Custom profile fields',
                                '/#organization/profile-field-settings'],
