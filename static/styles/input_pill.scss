@@ -22,14 +22,14 @@
     border: 1px solid hsla(0, 0%, 0%, 0.15);
 
     border-radius: 4px;
-    background: hsla(0, 0%, 0%, 0.07);
+    background-color: hsla(0, 0%, 0%, 0.07);
     cursor: pointer;
 }
 
 .pill-container .pill:focus {
     color: hsl(0, 0%, 100%);
     border: 1px solid hsl(176, 78%, 28%);
-    background: hsl(176, 49%, 42%);
+    background-color: hsl(176, 49%, 42%);
     outline: none;
 }
 
@@ -46,7 +46,7 @@
 .pill-container.not-editable .pill:focus {
     color: inherit;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
-    background: hsla(0, 0%, 0%, 0.07);
+    background-color: hsla(0, 0%, 0%, 0.07);
 }
 
 .pill-container.not-editable .pill .exit {

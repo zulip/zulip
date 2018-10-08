@@ -704,7 +704,7 @@ input.text-error {
     list-style-type: none;
     width: 200px;
 
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     padding: 5px 0px;
 
     border-radius: 4px;
@@ -759,7 +759,7 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover a {
-    background: transparent;
+    background-color: transparent;
     color: hsl(0, 0%, 100%);
 }
 
@@ -878,7 +878,7 @@ a.bottom-signup-button {
 }
 
 .table.table-striped {
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -1063,7 +1063,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .integration-lozenge-static:hover {
     box-shadow: none;
-    background: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 93%);
 }
 
 .integration-lozenge .integration-link:hover {
@@ -1537,7 +1537,7 @@ input.new-organization-button {
 .markdown .content {
     padding: 30px;
     max-width: 768px;
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
 }
 
 .markdown a {

@@ -11,7 +11,7 @@
     margin: -12.5px 0 0 -12.5px;
     border-radius: 50%;
     position: absolute;
-    background: hsla(196, 100%, 82%, 0.3);
+    background-color: hsla(196, 100%, 82%, 0.3);
     border: 2px solid hsl(215, 47%, 50%);
     top: 50%;
     left: 50%;
@@ -24,7 +24,7 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     border-radius: 50%;
     border: 1px solid hsl(205, 100%, 70%);
     animation: pulsate 1.5s ease-out;
@@ -249,13 +249,13 @@
     max-width: 95%;
     box-shadow: 0 5px 10px rgba(133, 136, 142, 0.1);
     border-radius: 4px;
-    background: hsl(0, 0%, 98%);
+    background-color: hsl(0, 0%, 98%);
     margin: 0 auto;
     position: relative;
 }
 
 .hotspot-inline-top .hotspot-title {
-    background: hsl(168, 100%, 35%);
+    background-color: hsl(168, 100%, 35%);
     margin: 0;
     color: hsl(0, 0%, 100%);
     font-weight: 600;
@@ -280,7 +280,7 @@
 
 #hotspot_intro_reply_icon {
     position: relative;
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     top: 50%;
     transform: perspective(1px) translateY(-75%);
 }
