@@ -134,14 +134,15 @@ def send_response_message(bot_id: str, message: Dict[str, Any], response_message
     recipient_type_name = message['type']
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm
+    client = get_client('OutgoingWebhookResponse')
 
     if recipient_type_name == 'stream':
         recipients = [message['display_recipient']]
-        check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
+        check_send_message(bot_user, client, recipient_type_name, recipients,
                            message['subject'], response_message_content, realm)
     elif recipient_type_name == 'private':
         recipients = [recipient['email'] for recipient in message['display_recipient']]
-        check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
+        check_send_message(bot_user, client, recipient_type_name, recipients,
                            None, response_message_content, realm)
     else:
         raise JsonableError(_("Invalid message type"))
