@@ -138,14 +138,22 @@ def send_response_message(bot_id: str, message: Dict[str, Any], response_message
 
     if message_type == 'stream':
         recipients = [message['display_recipient']]
-        check_send_message(bot_user, client, message_type, recipients,
-                           message['subject'], response_message_content, realm)
+        topic_name = message['subject']
     elif message_type == 'private':
         recipients = [recipient['email'] for recipient in message['display_recipient']]
-        check_send_message(bot_user, client, message_type, recipients,
-                           None, response_message_content, realm)
+        topic_name = None
     else:
         raise JsonableError(_("Invalid message type"))
+
+    check_send_message(
+        sender=bot_user,
+        client=client,
+        message_type_name=message_type,
+        message_to=recipients,
+        topic_name=topic_name,
+        message_content=response_message_content,
+        realm=realm,
+    )
 
 def succeed_with_message(event: Dict[str, Any], success_message: str) -> None:
     success_message = "Success! " + success_message
