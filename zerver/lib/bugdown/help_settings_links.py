@@ -51,7 +51,7 @@ link_mapping = {
 
 settings_markdown = """
 1. From your desktop, click on the **gear**
-   (<i class="icon-vector-cog"></i>) in the upper right corner.
+   (<i class="fas fa-cog"></i>) in the upper right corner.
 
 1. Select **%(setting_type_name)s**.
 

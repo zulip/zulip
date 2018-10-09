@@ -24,4 +24,4 @@ is visible and available for anyone to use.
 
 Depending on the type of bot you're creating, you may need to download its
 `.zuliprc` configuration file. For that, click the **download**
-(<i class="icon-vector-download-alt"></i>) icon under the bot's name.
+(<i class="fa fa-download"></i>) icon under the bot's name.

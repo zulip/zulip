@@ -11,7 +11,7 @@ Organization administrators can always change any user's name.
 {settings_tab|user-list-admin}
 
 1. Find the user you would like to manage. Click the **pencil**
-(<i class="icon-vector-pencil"></i>) to the right of their name.
+(<i class="fa fa-pencil"></i>) to the right of their name.
 
 1. Under **Full name**, enter a new name.
 

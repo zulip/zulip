@@ -9,11 +9,11 @@ underneath the message.
 
 {!message-actions.md!}
 
-1. Click the smiley face (<i class="icon-vector-smile"></i>) icon.
+1. Click the smiley face (<i class="fa fa-smile-o"></i>) icon.
 
     !!! tip ""
         For messages that you sent, click the down chevron
-        (<i class="icon-vector-chevron-down"></i>) and then
+        (<i class="fa fa-chevron-down"></i>) and then
         **Add emoji reaction**.
 
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji

@@ -11,7 +11,7 @@ you never lose your work. Drafts are saved for **30 days**.
 ## Desktop and web
 
 To **save a draft**, simply close the compose box. You can hit `Esc`, click
-the <i class="icon-vector-remove"></i> in the upper right corner of the
+the <i class="fa fa-remove"></i> in the upper right corner of the
 compose box, or click on an empty part of the app.
 
 To **view your drafts**, click on `Drafts` at the bottom of the screen.

@@ -27,7 +27,7 @@ gear_info = {
 
 gear_instructions = """
 1. From your desktop, click on the **gear**
-   (<i class="icon-vector-cog"></i>) in the upper right corner.
+   (<i class="fas fa-cog"></i>) in the upper right corner.
 
 1. Select %(item)s.
 """
@@ -47,7 +47,7 @@ stream_info = {
 
 stream_instructions_no_link = """
 1. From your desktop, click on the **gear**
-   (<i class="icon-vector-cog"></i>) in the upper right corner.
+   (<i class="fas fa-cog"></i>) in the upper right corner.
 
 1. Click **Manage streams**.
 """

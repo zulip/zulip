@@ -11,7 +11,7 @@ a single website.
 
 ## Desktop
 
-1. Click on the **gear** (<i class="icon-vector-cog"></i>) icon in the lower left corner.
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
 
 2. Select the **Network** tab.
 
