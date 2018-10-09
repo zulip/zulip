@@ -503,10 +503,10 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>')
 
-        msg = 'Test: https://developer.github.com/assets/images/hero-circuit-bg.png'
+        msg = 'Test: https://developer.github.com/assets/images/icon-circle-ci.png'
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
+        self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/icon-circle-ci.png" target="_blank" title="https://developer.github.com/assets/images/icon-circle-ci.png">https://developer.github.com/assets/images/icon-circle-ci.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/icon-circle-ci.png" target="_blank" title="https://developer.github.com/assets/images/icon-circle-ci.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Ficon-circle-ci.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Ficon-circle-ci.png&amp;size=thumbnail"></a></div>')
 
     def test_twitter_id_extraction(self) -> None:
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
@@ -1186,12 +1186,7 @@ class BugdownTest(ZulipTestCase):
             converted,
             '<p>'
             '<a href="https://example.com/testimage.png" target="_blank" title="https://example.com/testimage.png">My favorite image</a>'
-            '</p>\n'
-            '<div class="message_inline_image">'
-            '<a href="https://example.com/testimage.png" target="_blank" title="My favorite image">'
-            '<img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fexample.com%2Ftestimage.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fexample.com%2Ftestimage.png&amp;size=thumbnail">'
-            '</a>'
-            '</div>'
+            '</p>'
         )
 
     def test_mit_rendering(self) -> None:
