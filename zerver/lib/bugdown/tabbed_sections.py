@@ -47,6 +47,9 @@ TAB_DISPLAY_NAMES = {
     'js': 'JavaScript',
     'curl': 'curl',
     'zulip-send': 'zulip-send',
+
+    'cloud': 'HipChat Cloud',
+    'server': 'HipChat Server or Data Center',
 }
 
 class TabbedSectionsGenerator(Extension):
