@@ -1690,6 +1690,13 @@ input.new-organization-button {
     font-weight: 600;
 }
 
+.markdown .warn p::before {
+    display: inline-block;
+    content: "\f071 ";
+    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+    font-weight: 600;
+}
+
 .markdown .keyboard_tip::before {
     display: inline;
     content: "\f11c   Keyboard Shortcut:  ";
