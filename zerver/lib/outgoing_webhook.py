@@ -40,13 +40,13 @@ class OutgoingWebhookServiceInterface:
     def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
         raise NotImplementedError()
 
-    # Given a successful outgoing webhook REST operation, returns two-element tuple
-    # whose left-hand value contains a success dictionary
-    # to sent back to the user (or None if no success message should be sent)
-    # and right-hand value contains a failure message
-    # to sent back to the user (or None if no failure message should be sent)
+    # Given a successful outgoing webhook REST operation, return
+    # a dictionary with `content` and other relevant fields.
+    # The main use case for this function is to massage data from
+    # various APIs to have similar data structures.
+    # It also allows bots to explictly set response_not_required.
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         raise NotImplementedError()
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
@@ -64,18 +64,18 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return rest_operation, json.dumps(request_data)
 
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         response_json = json.loads(response.text)
 
         if "response_not_required" in response_json and response_json['response_not_required']:
-            return None, None
+            return None
+
         if "response_string" in response_json:
-            success_data = dict(
-                response_string=str(response_json['response_string']),
-            )
-            return success_data, None
-        else:
-            return None, None
+            content = str(response_json['response_string'])
+            success_data = dict(response_string=content)
+            return success_data
+
+        return None
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -106,14 +106,15 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return rest_operation, request_data
 
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         response_json = json.loads(response.text)
+
         if "text" in response_json:
-            response_string = response_json['text']
-            success_data = dict(response_string=response_string)
-            return success_data, None
-        else:
-            return None, None
+            content = response_json['text']
+            success_data = dict(response_string=content)
+            return success_data
+
+        return None
 
 AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
     GENERIC_INTERFACE: GenericOutgoingWebhookService,
@@ -226,7 +227,7 @@ def request_retry(event: Dict[str, Any],
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
                              response: Response) -> None:
-    success_data, _ = service_handler.process_success(response, event)
+    success_data = service_handler.process_success(response, event)
 
     if success_data is None:
         return

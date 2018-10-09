@@ -38,15 +38,15 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def test_process_success(self) -> None:
         response = mock.Mock(spec=Response)
         response.text = json.dumps({"response_not_required": True})
-        success_response, _ = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
         response.text = json.dumps({"response_string": 'test_content'})
-        success_response, _ = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, dict(response_string='test_content'))
 
         response.text = json.dumps({})
-        success_response, _ = self.handler.process_success(response, self.event)
+        success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
 mock_service = Service()
@@ -125,9 +125,9 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     def test_process_success(self) -> None:
         response = mock.Mock(spec=Response)
         response.text = json.dumps({"response_not_required": True})
-        success_response, _ = self.handler.process_success(response, self.stream_message_event)
+        success_response = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, None)
 
         response.text = json.dumps({"text": 'test_content'})
-        success_response, _ = self.handler.process_success(response, self.stream_message_event)
+        success_response = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, dict(response_string='test_content'))
