@@ -2225,6 +2225,11 @@ div.floating_recipient {
     cursor: zoom-in;
 }
 
+.youtube-video img,
+.vimeo-video img {
+    cursor: pointer;
+}
+
 .rtl .twitter-image img,
 .rtl .message_inline_image img,
 .rtl .message_inline_ref img {
@@ -2239,6 +2244,17 @@ div.floating_recipient {
 
 li .message_inline_image img {
     float: none;
+}
+
+.youtube-video .fa-play::before {
+    position: absolute;
+    margin: 32px 0 0 45px;
+    padding: 5px 8px 5px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    background: hsl(0, 0%, 0%);
+    color: hsl(0, 0%, 100%);
+    opacity: 0.7;
 }
 
 .message_inline_image_title {
