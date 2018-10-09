@@ -1,6 +1,6 @@
-# General User Guide Documentation
+# User documentation
 
-Our goal is for Zulip to have complete, high-quality user-appealing
+Our goal is for Zulip to have complete, high-quality
 documentation about Zulip's features and how to perform certain tasks, such
 as setting up an organization.
 
@@ -50,97 +50,19 @@ rendered.
 Writing documentation is a different form of writing than most people have
 experience with.
 
-When you write user-appealing documentation, keep in mind that most users
-don't care about how the underlying code works; they simply want to know
-how a feature works or how they can do something.
+Tips for adding a new article:
 
-Think of writing user documentation as writing a recipe; you're trying to
-direct your readers how to cook a dish while introducing them to the dish
-itself, yet you shouldn't go into detail about the scientific processes that
-allow you to cook your dish.
+* Find an existing article in the same section of the help documentation,
+  and copy the format, wording, style, etc as closely as you can.
 
-By keeping these thoughts in mind, you'll be able to write better
-user guide documentation.
+* Fewer words is better than more. Many Zulip users have English as a second
+  language.
 
-### Title
+* Try to put yourself in the shoes of a new Zulip user. What would you want
+  to know?
 
-The title of your documentation should be a brief summary of your
-documentation. Your title should be formatted as a heading by prepending
-your title with a `#`.
-
-The title of your documentation needs to be included under a fitting section
-in `templates/zerver/help/sidebar.md` so users can access it from the user
-documentation index.
-
-### Introduction
-
-By writing a brief introduction of what you will be discussing in your
-documentation, users will gain a better understanding of your document. For
-example, if you are writing about a feature, you could describe what the
-feature allows users to do. Your introduction should be no longer than two
-paragraphs.
-
-### Directions
-
-If you are guiding a user on how to perform a certain task in Zulip, it is
-best to explain the process through a series of numbered steps. Your
-documentation's goal is to direct users on how to do something so that they
-achieve their goals. Thus, steps should be as detailed yet concise as
-possible.
-
-For example, if you tried to explain copying and pasting text, you could
-describe it in the following steps:
-
-```
-1. Highlight the text you want to copy.
-
-2. Press CTRL+C to copy the highlighted text.
-
-3. Move your cursor to the location where you want to paste the text.
-
-4. Press CTRL+V to paste the copied text.
-```
-
-You can continue steps with additional notes or instructions by breaking the
-line and indenting the next line, which is especially useful for including
-images within a single step.
-
-```
-1. Do something.
-
-    You can also do this.
-```
-
-A general tip for breaking up a process is whenever a user interacts with
-the Zulip UI (e.g.: click a button, refresh the page), a new step should be
-created.
-
-### Sections
-
-If you are documenting multiple processes in your documentation, such as how
-to perform a task by using several different features, you should
-differentiate the processes by dividing them into sections using headings.
-Like the title, your section headings should give a brief description of the
-processes you describe.
-
-All subsequent subsections should be appended with an increasing number of
-`#`'s to make the headings smaller.
-
-```
-# Title
-
-## Section 1
-
-### Subsection 1
-
-### Subsection 2
-
-## Section 2
-
-### Subsection 1
-```
-
-Always leave a blank line on either side of a section heading.
+* The goal of user-facing documentation is not to be comprehensive. The goal
+  is to give the right bits of information for the intended audience.
 
 ### User interface
 
@@ -187,8 +109,8 @@ Zulip browser window in a screenshot; instead, it should only show
 relevant parts of the app.  In addition, the screenshot should always
 come *after* the text that describes it, never before.
 
-Images are often formatted as continuations of steps and must be indented on
-a new line to be formatted this way.
+Images are often a part of a numbered step and must be indented four spaces
+to be formatted correctly.
 
 ### Icons
 
@@ -244,29 +166,22 @@ The source for macros is the Markdown files under
 `templates/zerver/help/include` in the
 [main Zulip server repository](https://github.com/zulip/zulip).
 
-### **Administrator only feature** `{!admin-only.md!}` macro
+* **Administrator only feature** `{!admin-only.md!}`: Notes that the feature
+  is only available to organization administrators.
 
-Notes that the feature is only available to organization administrators.
+* **Message actions** `{!message-actions.md!}`: First step to navigating to
+  the on-hover message actions.
 
-### **Message actions** `{!message-actions.md!}` macro
+* **Message actions menu** `{!message-actions-menu.md!}`: Navigate to the
+  message actions menu.
 
-First step to navigating to the on-hover message actions.
+* **Save changes** `{!save-changes.md!}`: Save changes after modifying
+  organization settings.
 
-### **Message actions menu** `{!message-actions-menu.md!}` macro
+* **Stream actions** `{!stream-actions.md!}`: Navigate to the stream actions
+  menu from the left sidebar.
 
-Navigate to the message actions menu.
-
-### **Save changes** `{!save-changes.md!}` macro
-
-Save changes after modifying organization settings.
-
-### **Stream actions** `{!stream-actions.md!}` macro
-
-Navigate to the stream actions menu from the left sidebar.
-
-### **Start composing** `{!start-composing.md!}` macro
-
-Open the compose box.
+* **Start composing** `{!start-composing.md!}`: Open the compose box.
 
 ### Tips and warnings
 
@@ -294,50 +209,3 @@ Tips are more common than warnings.
 All tips/warnings should appear inside tip/warning blocks. There should be
 only one tip/warning inside each block.They usually be formatted as a
 continuation of a numbered step.
-
-## Documentation template
-
-Here is a template for writing user documentation that follows the
-guidelines listed in this document. It demonstrates the proper formatting of
-several features discussed above.
-
-You can always look at previously-written documentation in the
-`templates/zerver/help` folder as a reference for writing your
-documentation.
-
-```
-# Title of documentation
-
-This paragraph briefly summarizes the documentation. Please remember to
-replace this paragraph with an appropriate description of the documentation.
-
-## Writing documentation as a series of steps
-
-1. This is the first step of the documentation.
-
-    ![First step](/static/images/help/image1.png)
-
-2. This is the second step of the documentation.
-
-    Here's an additional note about the second step. Click on the star (<i
-    class="fa fa-star-half-o"></i>) icon to learn more about it.
-
-3. This is the third step of the documentation.
-
-    !!! tip ""
-        You can always add more steps to your documentation!
-
-## Writing documentation to introduce a feature
-
-If necessary, you can add another section to your documentation. Sections
-can be used to differentiate different methods of performing a task or
-describing a related task.
-
-![Feature](../static/images/help/feature.png)
-
-You can also conclude your documentation with some final notes.
-
-!!! warn ""
-    **Note:** This is only a documentation template; you can always deviate
-    **from this template to suit your documentation needs.
-```
