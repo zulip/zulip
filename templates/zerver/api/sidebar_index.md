@@ -7,7 +7,6 @@
 
 * [Overview](/api/incoming-webhooks-overview)
 * [Walkthrough](/api/webhook-walkthrough)
-* [Documenting integrations](/api/integration-docs-guide)
 
 ## Interactive bots (beta)
 

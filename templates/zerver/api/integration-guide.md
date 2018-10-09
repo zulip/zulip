@@ -15,8 +15,10 @@ On this page you'll find:
 * Details about writing [Python script and plugin
   integrations](#python-script-and-plugin-integrations).
 * A guide to
-  [documenting your integration](integration-docs-guide) is on a
+  [documenting your integration][integration-docs-guide] is on a
   separate page.
+
+[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
 
 A detailed walkthrough of a simple "Hello World" integration can be
 found in the [incoming webhook walkthrough](webhook-walkthrough).

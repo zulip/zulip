@@ -43,4 +43,5 @@ Subsystems Documentation
    billing
    documentation
    user-docs
+   integration-docs
    widgets

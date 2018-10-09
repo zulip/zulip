@@ -67,7 +67,6 @@ md_macro_extension = None  # type: Optional[Any]
 # they contain a macro, it is always used literally for documenting
 # the macro system.
 docs_without_macros = [
-    "integration-docs-guide.md",
     "webhook-walkthrough.md",
 ]
 

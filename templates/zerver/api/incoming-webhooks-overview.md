@@ -54,7 +54,7 @@ For a quick guide, read on.
     credentials for the service.
 
 * Finally, write documentation for the integration; there's a
-  [detailed guide](integration-docs-guide).
+  [detailed guide][integration-docs-guide].
 
 ## Files that need to be created
 
@@ -64,11 +64,11 @@ below are for a webhook named 'MyWebHook'.
 * `static/images/integrations/logos/mywebhook.svg`: An image to represent
   your integration in the user interface. Generally this should be the logo of the
   platform/server/product you are integrating. See [Documenting your
-  integration](integration-docs-guide) for details.
+  integration][integration-docs-guide] for details.
 * `static/images/integrations/mywebbook/001.svg`: A screen capture of your
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
-  integration](integration-docs-guide) for details.
+  integration][integration-docs-guide] for details.
 * `zerver/webhooks/mywebhook/fixtures/messagetype.json`: Sample json payload data
   used by tests. Add one fixture file per type of message supported by your
   integration. See [Testing and writing tests](
@@ -81,7 +81,9 @@ below are for a webhook named 'MyWebHook'.
   webbook. See [Testing and writing tests](
   https://zulip.readthedocs.io/en/latest/testing/testing.html) for details.
 * `zerver/webhooks/mywebhook/doc.html`: Add end-user documentation. See
-  [Documenting your integration](integration-docs-guide) for details.
+  [Documenting your integration][integration-docs-guide] for details.
+
+[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
 
 ## Files that need to be updated
 

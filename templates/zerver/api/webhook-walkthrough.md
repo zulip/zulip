@@ -372,9 +372,11 @@ Markdown/Jinja2 framework that includes macros for common instructions in
 Zulip's webhooks/integrations documentation.
 
 See
-[our guide on documenting an integration](integration-docs-guide)
+[our guide on documenting an integration][integration-docs-guide]
 for further details, including how to easily create the message
 screenshot.
+
+[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
 
 ## Step 5: Preparing a pull request to zulip/zulip
 
