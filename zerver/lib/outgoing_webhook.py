@@ -71,8 +71,9 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return None
 
         if "response_string" in response_json:
-            response_string = str(response_json['response_string'])
-            success_data = dict(response_string=response_string)
+            # We are deprecating response_string.
+            content = str(response_json['response_string'])
+            success_data = dict(content=content)
             return success_data
 
         if "content" in response_json:
@@ -116,7 +117,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         if "text" in response_json:
             content = response_json['text']
-            success_data = dict(response_string=content)
+            success_data = dict(content=content)
             return success_data
 
         return None
@@ -262,12 +263,7 @@ def process_success_response(event: Dict[str, Any],
     if success_data is None:
         return
 
-    response_string = success_data.get('response_string')
-    if response_string:
-        # For legacy reasons, we prepend "Success!"
-        content = "Success! " + response_string
-    else:
-        content = success_data.get('content')
+    content = success_data.get('content')
 
     if content is None:
         return
