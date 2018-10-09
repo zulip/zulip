@@ -75,6 +75,7 @@ run_test('get_editability', () => {
         realm_allow_community_topic_editing: true,
         realm_allow_message_editing: true,
         realm_message_content_edit_limit_seconds: 0,
+        is_admin: false,
     };
     message.timestamp = current_timestamp - 60;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
@@ -88,6 +89,14 @@ run_test('get_editability', () => {
 
     message.sent_by_me = false;
     global.page_params.realm_allow_community_topic_editing = false;
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    message.sent_by_me = false;
+    global.page_params.realm_allow_community_topic_editing = false;
+    global.page_params.is_admin = true;
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    global.page_params.realm_allow_message_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 });
 

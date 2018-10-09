@@ -2467,14 +2467,14 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_error(id_, 'D', "Your organization has turned off message editing")
 
-        # non-admin users cannot edit topics sent > 24 hrs ago
+        # non-admin users can edit message topic any time
         message.pub_date = message.pub_date - datetime.timedelta(seconds=90000)
         message.save()
         self.login(self.example_email("iago"))
         set_message_editing_params(True, 0, True)
         do_edit_message_assert_success(id_, 'E')
         self.login(self.example_email("cordelia"))
-        do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has passed")
+        do_edit_message_assert_success(id_, 'F')
 
         # anyone should be able to edit "no topic" indefinitely
         message.subject = "(no topic)"

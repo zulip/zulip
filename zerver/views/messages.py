@@ -1327,16 +1327,6 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    # If there is a change to the topic, check that the user is allowed to
-    # edit it and that it has not been too long. If this is not the user who
-    # sent the message, they are not the admin, and the time limit for editing
-    # topics is passed, raise an error.
-    if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
-            not is_no_topic_msg:
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
-        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message has passed"))
-
     if subject is None and content is None:
         return json_error(_("Nothing to change"))
     if subject is not None:
