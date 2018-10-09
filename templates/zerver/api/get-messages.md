@@ -14,8 +14,7 @@ this endpoint to fetch the messages matching any search query that is
 supported by Zulip's powerful full-text search backend.
 
 When a narrow is not specified, it can be used to fetch a user's
-entire message history (though we recommend paginating to 1000
-messages at a time).
+message history (We recommend paginating to 1000 messages at a time).
 
 In either case, you specify an `anchor` message (or ask the server to
 calculate the first unread message for you and use that as the
@@ -26,7 +25,9 @@ whether there are more messages matching the query that were not
 returned due to the `num_before` and `num_after` limits.
 
 We recommend using `num_before <= 1000` and `num_after <= 1000` to
-avoid generating very large HTTP responses.
+avoid generating very large HTTP responses. A maximum of 5000 messages
+can be obtained per request; attempting to exceed this will result in an
+error.
 
 ## Usage examples
 

@@ -778,6 +778,15 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand=self.example_email("othello"))])))
 
+    def test_get_messages_limits(self) -> None:
+        """
+        A call to GET /json/messages requesting more than 5000 messages returns an error message.
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.get_messages_response(num_before=3000, num_after=3000)
+        self.assertEqual(result['result'], "error")
+        self.assertEqual(result['msg'], "Total number of messages requested exceeds maximum (5000).")
+
     def test_client_avatar(self) -> None:
         """
         The client_gravatar flag determines whether we send avatar_url.
