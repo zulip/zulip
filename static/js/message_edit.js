@@ -20,9 +20,27 @@ function is_topic_editable(message, edit_limit_seconds_buffer) {
     var now = new XDate();
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
 
-    // TODO: Change hardcoded value (24 hrs) to be realm setting
-    return message.sent_by_me || page_params.realm_allow_community_topic_editing
-        && 86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) > 0;
+    if (!page_params.realm_allow_message_editing) {
+        // If message editing is disabled, so is topic editing.
+        return false;
+    }
+    // Organization admins and message senders can edit message topics indefinitely.
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (message.sent_by_me) {
+        return true;
+    }
+
+    if (!page_params.realm_allow_community_topic_editing) {
+        // If you're another non-admin user, you need community topic editing enabled.
+        return false;
+    }
+
+    // If you're using community topic editing, there's a deadline.
+    // TODO: Change hardcoded value (24 hrs) to be realm setting.  Currently, it is
+    // DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
+    return 86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) > 0;
 }
 
 function get_editability(message, edit_limit_seconds_buffer) {
