@@ -40,13 +40,13 @@ class OutgoingWebhookServiceInterface:
     def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
         raise NotImplementedError()
 
-    # Given a successful outgoing webhook REST operation, returns two-element tuple
-    # whose left-hand value contains a success message
-    # to sent back to the user (or None if no success message should be sent)
-    # and right-hand value contains a failure message
-    # to sent back to the user (or None if no failure message should be sent)
+    # Given a successful outgoing webhook REST operation, return
+    # a dictionary with `content` and other relevant fields.
+    # The main use case for this function is to massage data from
+    # various APIs to have similar data structures.
+    # It also allows bots to explictly set response_not_required.
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         raise NotImplementedError()
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
@@ -64,15 +64,23 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return rest_operation, json.dumps(request_data)
 
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         response_json = json.loads(response.text)
 
         if "response_not_required" in response_json and response_json['response_not_required']:
-            return None, None
+            return None
+
         if "response_string" in response_json:
-            return str(response_json['response_string']), None
-        else:
-            return None, None
+            response_string = str(response_json['response_string'])
+            success_data = dict(response_string=response_string)
+            return success_data
+
+        if "content" in response_json:
+            content = str(response_json['content'])
+            success_data = dict(content=content)
+            return success_data
+
+        return None
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
@@ -103,12 +111,15 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return rest_operation, request_data
 
     def process_success(self, response: Response,
-                        event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         response_json = json.loads(response.text)
+
         if "text" in response_json:
-            return response_json["text"], None
-        else:
-            return None, None
+            content = response_json['text']
+            success_data = dict(response_string=content)
+            return success_data
+
+        return None
 
 AVAILABLE_OUTGOING_WEBHOOK_INTERFACES = {
     GENERIC_INTERFACE: GenericOutgoingWebhookService,
@@ -130,29 +141,54 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
                                                 service_name=service.name)
     return service_interface
 
-def send_response_message(bot_id: str, message: Dict[str, Any], response_message_content: str) -> None:
-    recipient_type_name = message['type']
+def send_response_message(bot_id: str, message_info: Dict[str, Any], response_data: Dict[str, Any]) -> None:
+    """
+    bot_id is the user_id of the bot sending the response
+
+    message_info is used to address the message and should have these fields:
+        type - "stream" or "private"
+        display_recipient - like we have in other message events
+        subject - the topic name (if relevant)
+
+    response_data is what the bot wants to send back and has these fields:
+        content - raw markdown content for Zulip to render
+    """
+
+    message_type = message_info['type']
+    display_recipient = message_info['display_recipient']
+    topic_name = message_info.get('subject')
+
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm
+    client = get_client('OutgoingWebhookResponse')
 
-    if recipient_type_name == 'stream':
-        recipients = [message['display_recipient']]
-        check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
-                           message['subject'], response_message_content, realm)
-    elif recipient_type_name == 'private':
-        recipients = [recipient['email'] for recipient in message['display_recipient']]
-        check_send_message(bot_user, get_client("OutgoingWebhookResponse"), recipient_type_name, recipients,
-                           None, response_message_content, realm)
+    content = response_data.get('content')
+    if not content:
+        raise JsonableError(_("Missing content"))
+
+    if message_type == 'stream':
+        message_to = [display_recipient]
+    elif message_type == 'private':
+        message_to = [recipient['email'] for recipient in display_recipient]
     else:
         raise JsonableError(_("Invalid message type"))
 
-def succeed_with_message(event: Dict[str, Any], success_message: str) -> None:
-    success_message = "Success! " + success_message
-    send_response_message(event['user_profile_id'], event['message'], success_message)
+    check_send_message(
+        sender=bot_user,
+        client=client,
+        message_type_name=message_type,
+        message_to=message_to,
+        topic_name=topic_name,
+        message_content=content,
+        realm=realm,
+    )
 
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
-    failure_message = "Failure! " + failure_message
-    send_response_message(event['user_profile_id'], event['message'], failure_message)
+    bot_id = event['user_profile_id']
+    message_info = event['message']
+    content = "Failure! " + failure_message
+    response_data = dict(content=content)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
@@ -181,8 +217,7 @@ def notify_bot_owner(event: Dict[str, Any],
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
-    message_info = {'display_recipient': [{'email': bot_owner.email}],
-                    'type': 'private'}
+
     notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
     if status_code:
         notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
@@ -193,7 +228,13 @@ def notify_bot_owner(event: Dict[str, Any],
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
                                 "of type %s occurred:\n```\n%s\n```" % (
                                     type(exception).__name__, str(exception))
-    send_response_message(bot_id, message_info, notification_message)
+
+    message_info = dict(
+        type='private',
+        display_recipient=[dict(email=bot_owner.email)],
+    )
+    response_data = dict(content=notification_message)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def request_retry(event: Dict[str, Any],
                   request_data: Dict[str, Any],
@@ -216,9 +257,25 @@ def request_retry(event: Dict[str, Any],
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
                              response: Response) -> None:
-    success_message, _ = service_handler.process_success(response, event)
-    if success_message is not None:
-        succeed_with_message(event, success_message)
+    success_data = service_handler.process_success(response, event)
+
+    if success_data is None:
+        return
+
+    response_string = success_data.get('response_string')
+    if response_string:
+        # For legacy reasons, we prepend "Success!"
+        content = "Success! " + response_string
+    else:
+        content = success_data.get('content')
+
+    if content is None:
+        return
+
+    bot_id = event['user_profile_id']
+    message_info = event['message']
+    response_data = dict(content=content)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def do_rest_call(rest_operation: Dict[str, Any],
                  request_data: Optional[Dict[str, Any]],

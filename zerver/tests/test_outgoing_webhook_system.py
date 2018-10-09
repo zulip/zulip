@@ -27,8 +27,13 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
     raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response: Response, event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-        return "Success!", None
+    def process_success(self, response: Response, event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        # Our tests don't really look at the content yet.
+        # They just ensure we use the "success" codepath.
+        success_data = dict(
+            response_string="whatever",
+        )
+        return success_data
 
 service_handler = MockServiceHandler(None, None, None, None)
 
@@ -57,12 +62,12 @@ class DoRestCallTests(ZulipTestCase):
         self.bot_user = self.example_user('outgoing_webhook_bot')
         logging.disable(logging.WARNING)
 
-    @mock.patch('zerver.lib.outgoing_webhook.succeed_with_message')
-    def test_successful_request(self, mock_succeed_with_message: mock.Mock) -> None:
+    @mock.patch('zerver.lib.outgoing_webhook.send_response_message')
+    def test_successful_request(self, mock_send: mock.Mock) -> None:
         response = ResponseMock(200)
         with mock.patch('requests.request', return_value=response):
             do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
-            self.assertTrue(mock_succeed_with_message.called)
+            self.assertTrue(mock_send.called)
 
     def test_retry_request(self: mock.Mock) -> None:
         response = ResponseMock(500)
