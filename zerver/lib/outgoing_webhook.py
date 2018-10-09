@@ -131,18 +131,18 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
     return service_interface
 
 def send_response_message(bot_id: str, message: Dict[str, Any], response_message_content: str) -> None:
-    recipient_type_name = message['type']
+    message_type = message['type']
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm
     client = get_client('OutgoingWebhookResponse')
 
-    if recipient_type_name == 'stream':
+    if message_type == 'stream':
         recipients = [message['display_recipient']]
-        check_send_message(bot_user, client, recipient_type_name, recipients,
+        check_send_message(bot_user, client, message_type, recipients,
                            message['subject'], response_message_content, realm)
-    elif recipient_type_name == 'private':
+    elif message_type == 'private':
         recipients = [recipient['email'] for recipient in message['display_recipient']]
-        check_send_message(bot_user, client, recipient_type_name, recipients,
+        check_send_message(bot_user, client, message_type, recipients,
                            None, response_message_content, realm)
     else:
         raise JsonableError(_("Invalid message type"))
