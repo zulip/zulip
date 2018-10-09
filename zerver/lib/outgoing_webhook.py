@@ -71,8 +71,13 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return None
 
         if "response_string" in response_json:
-            content = str(response_json['response_string'])
-            success_data = dict(response_string=content)
+            response_string = str(response_json['response_string'])
+            success_data = dict(response_string=response_string)
+            return success_data
+
+        if "content" in response_json:
+            content = str(response_json['content'])
+            success_data = dict(content=content)
             return success_data
 
         return None
@@ -257,11 +262,15 @@ def process_success_response(event: Dict[str, Any],
     if success_data is None:
         return
 
-    success_message = success_data.get('response_string')
-    if success_message is None:
-        return
+    response_string = success_data.get('response_string')
+    if response_string:
+        # For legacy reasons, we prepend "Success!"
+        content = "Success! " + response_string
+    else:
+        content = success_data.get('content')
 
-    content = "Success! " + success_message
+    if content is None:
+        return
 
     bot_id = event['user_profile_id']
     message_info = event['message']
