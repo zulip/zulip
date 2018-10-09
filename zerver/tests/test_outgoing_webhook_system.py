@@ -27,13 +27,13 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
     raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response: Response, event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    def process_success(self, response: Response, event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # Our tests don't really look at the content yet.
         # They just ensure we use the "success" codepath.
         success_data = dict(
             response_string="whatever",
         )
-        return success_data, None
+        return success_data
 
 service_handler = MockServiceHandler(None, None, None, None)
 
