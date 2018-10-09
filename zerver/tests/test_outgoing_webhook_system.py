@@ -31,7 +31,7 @@ class MockServiceHandler(OutgoingWebhookServiceInterface):
         # Our tests don't really look at the content yet.
         # They just ensure we use the "success" codepath.
         success_data = dict(
-            response_string="whatever",
+            content="whatever",
         )
         return success_data
 
@@ -136,7 +136,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.send_personal_message(self.user_profile.email, self.bot_profile.email,
                                    content="foo")
         last_message = self.get_last_message()
-        self.assertEqual(last_message.content, "Success! Hidley ho, I'm a webhook responding!")
+        self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         display_recipient = get_display_recipient(last_message.recipient)
         # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
@@ -151,7 +151,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
                                  content="@**{}** foo".format(self.bot_profile.full_name),
                                  topic_name="bar")
         last_message = self.get_last_message()
-        self.assertEqual(last_message.content, "Success! Hidley ho, I'm a webhook responding!")
+        self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         self.assertEqual(last_message.subject, "bar")
         display_recipient = get_display_recipient(last_message.recipient)
