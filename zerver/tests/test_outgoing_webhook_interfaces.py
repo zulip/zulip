@@ -15,8 +15,13 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         self.event = {
             u'command': '@**test**',
+            u'user_profile_id': 12,
             u'message': {
+                'id': 100,
                 'content': '@**test**',
+                'type': 'stream',
+                'display_recipient': 'integrations',
+                'subject': 'test_subject',
             },
             u'trigger': 'mention',
         }
@@ -49,6 +54,18 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         success_response, _ = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
+    @mock.patch('logging.warning')
+    def test_process_response_with_decode_error(self, mock_logger: mock.Mock) -> None:
+        response = mock.Mock(spec=Response)
+        response.text = "{"
+        success_message, failure_message = self.handler.process_success(response, self.event)
+        self.assertEqual(success_message, None)
+        self.assertEqual(failure_message, "Your outgoing webhook bot nagios-receive-bot@zulip.com "
+                                          "sent an outgoing HTTP request for "
+                                          "[this message](http://zulip.testserver/#narrow/stream/None-integrations/subject/test_subject/near/100), "
+                                          "but the HTTP was not in JSON format. Here's the content of the response:\n```\n{\n```")
+        mock_logger.assert_called_once()
+
 mock_service = Service()
 
 class TestSlackOutgoingWebhookService(ZulipTestCase):
@@ -60,6 +77,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             u'service_name': 'test-service',
             u'trigger': 'mention',
             u'message': {
+                'id': 101,
                 'content': 'test_content',
                 'type': 'stream',
                 'sender_realm_str': 'zulip',
@@ -69,6 +87,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'timestamp': 123456,
                 'sender_id': 21,
                 'sender_full_name': 'Sample User',
+                'subject': 'test_subject',
             }
         }
 
@@ -131,3 +150,15 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         response.text = json.dumps({"text": 'test_content'})
         success_response, _ = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, 'test_content')
+
+    @mock.patch('logging.warning')
+    def test_process_response_with_decode_error(self, mock_logger: mock.Mock) -> None:
+        response = mock.Mock(spec=Response)
+        response.text = "{"
+        success_message, failure_message = self.handler.process_success(response, self.event)
+        self.assertEqual(success_message, None)
+        self.assertEqual(failure_message, "Your Slack-format outgoing webhook bot "
+                                          "nagios-receive-bot@zulip.com sent an outgoing HTTP request for "
+                                          "[this message](http://zulip.testserver/#narrow/stream/123-integrations/subject/test_subject/near/101), "
+                                          "but the HTTP was not in JSON format. Here's the content of the response:\n```\n{\n```")
+        mock_logger.assert_called_once()

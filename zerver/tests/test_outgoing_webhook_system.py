@@ -10,6 +10,8 @@ from django.test import override_settings
 from requests import Response
 from typing import Any, Dict, Tuple, Optional
 
+from mock import MagicMock
+
 from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInterface
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
@@ -117,6 +119,23 @@ When trying to send a request to the webhook service, an exception of type Reque
 I'm a generic exception :(
 ```''')
         self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+
+    @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
+    def test_process_success_response_failed(self, mock_fail_with_message: mock.Mock) -> None:
+        response = ResponseMock(200)
+        service_handler = MagicMock()
+        service_handler.process_success = MagicMock(return_value=(None, "Fail!"))
+        with mock.patch('requests.request', return_value=response):
+            do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
+            bot_owner_notification = self.get_last_message()
+            self.assertTrue(mock_fail_with_message.called)
+            self.assertEqual(bot_owner_notification.content,
+                             '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
+Your outgoing webhook bot outgoing-webhook@zulip.com sent an outgoing HTTP request for [this message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/), but received an error from the HTTP server:
+```
+Fail!
+```''')
+            self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def setUp(self) -> None:
