@@ -43,7 +43,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         response.text = json.dumps({"response_string": 'test_content'})
         success_response, _ = self.handler.process_success(response, self.event)
-        self.assertEqual(success_response, 'test_content')
+        self.assertEqual(success_response, dict(response_string='test_content'))
 
         response.text = json.dumps({})
         success_response, _ = self.handler.process_success(response, self.event)
@@ -130,4 +130,4 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
         response.text = json.dumps({"text": 'test_content'})
         success_response, _ = self.handler.process_success(response, self.stream_message_event)
-        self.assertEqual(success_response, 'test_content')
+        self.assertEqual(success_response, dict(response_string='test_content'))
