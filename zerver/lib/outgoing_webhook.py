@@ -136,18 +136,35 @@ def get_outgoing_webhook_service_handler(service: Service) -> Any:
                                                 service_name=service.name)
     return service_interface
 
-def send_response_message(bot_id: str, message: Dict[str, Any], response_message_content: str) -> None:
-    message_type = message['type']
+def send_response_message(bot_id: str, message_info: Dict[str, Any], response_data: Dict[str, Any]) -> None:
+    """
+    bot_id is the user_id of the bot sending the response
+
+    message_info is used to address the message and should have these fields:
+        type - "stream" or "private"
+        display_recipient - like we have in other message events
+        subject - the topic name (if relevant)
+
+    response_data is what the bot wants to send back and has these fields:
+        content - raw markdown content for Zulip to render
+    """
+
+    message_type = message_info['type']
+    display_recipient = message_info['display_recipient']
+    topic_name = message_info.get('subject')
+
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm
     client = get_client('OutgoingWebhookResponse')
 
+    content = response_data.get('content')
+    if not content:
+        raise JsonableError(_("Missing content"))
+
     if message_type == 'stream':
-        recipients = [message['display_recipient']]
-        topic_name = message['subject']
+        message_to = [display_recipient]
     elif message_type == 'private':
-        recipients = [recipient['email'] for recipient in message['display_recipient']]
-        topic_name = None
+        message_to = [recipient['email'] for recipient in display_recipient]
     else:
         raise JsonableError(_("Invalid message type"))
 
@@ -155,15 +172,18 @@ def send_response_message(bot_id: str, message: Dict[str, Any], response_message
         sender=bot_user,
         client=client,
         message_type_name=message_type,
-        message_to=recipients,
+        message_to=message_to,
         topic_name=topic_name,
-        message_content=response_message_content,
+        message_content=content,
         realm=realm,
     )
 
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
-    failure_message = "Failure! " + failure_message
-    send_response_message(event['user_profile_id'], event['message'], failure_message)
+    bot_id = event['user_profile_id']
+    message_info = event['message']
+    content = "Failure! " + failure_message
+    response_data = dict(content=content)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
@@ -192,8 +212,7 @@ def notify_bot_owner(event: Dict[str, Any],
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
-    message_info = {'display_recipient': [{'email': bot_owner.email}],
-                    'type': 'private'}
+
     notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
     if status_code:
         notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
@@ -204,7 +223,13 @@ def notify_bot_owner(event: Dict[str, Any],
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
                                 "of type %s occurred:\n```\n%s\n```" % (
                                     type(exception).__name__, str(exception))
-    send_response_message(bot_id, message_info, notification_message)
+
+    message_info = dict(
+        type='private',
+        display_recipient=[dict(email=bot_owner.email)],
+    )
+    response_data = dict(content=notification_message)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def request_retry(event: Dict[str, Any],
                   request_data: Dict[str, Any],
@@ -236,8 +261,12 @@ def process_success_response(event: Dict[str, Any],
     if success_message is None:
         return
 
-    success_message = "Success! " + success_message
-    send_response_message(event['user_profile_id'], event['message'], success_message)
+    content = "Success! " + success_message
+
+    bot_id = event['user_profile_id']
+    message_info = event['message']
+    response_data = dict(content=content)
+    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def do_rest_call(rest_operation: Dict[str, Any],
                  request_data: Optional[Dict[str, Any]],
