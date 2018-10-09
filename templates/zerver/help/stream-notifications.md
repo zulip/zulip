@@ -26,7 +26,7 @@ you join in the future.
 
 1. Hover over the stream in the left sidebar.
 
-2. Click the down chevron (<i class="icon-vector-chevron-down"></i>) to the
+2. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the
    right of the stream.
 
 3. Click **Stream settings**.

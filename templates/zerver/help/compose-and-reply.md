@@ -51,7 +51,7 @@ the recipient bar to match.
 ### Start a PM with a user
 
 Click on a user's avatar, an @-mention, or on the down chevron
-(<i class="icon-vector-chevron-down"></i>) to the right of their name in the
+(<i class="fa fa-chevron-down"></i>) to the right of their name in the
 right sidebar.
 Click **Send private message**.
 
@@ -60,7 +60,7 @@ Keyboard shortcut: `>`
 ### Reply mentioning user
 
 Click on a user's avatar, an @-mention, or on the down chevron
-(<i class="icon-vector-chevron-down"></i>) to the right of their name in the
+(<i class="fa fa-chevron-down"></i>) to the right of their name in the
 right sidebar.
 Click **Reply mentioning user**.
 

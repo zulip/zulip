@@ -17,7 +17,7 @@ messages and alert words.
 
 1. Hover over a user in the right sidebar.
 
-1. Click the down chevron (<i class="icon-vector-chevron-down"></i>) to the right.
+1. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the right.
 
 1. Select **Reply mentioning user**.
 

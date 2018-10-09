@@ -71,5 +71,5 @@ keywords are ignored, we'll return 0 search results.
   Zulip organization).
 
 * To see the list of search operators in-app, click the **gear** (<i
-  class="icon-vector-cog"></i>) icon in the upper right, and select
+  class="fa fa-cog"></i>) icon in the upper right, and select
   **Search operators**.

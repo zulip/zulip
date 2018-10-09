@@ -13,8 +13,8 @@ Muted topics still appear in the left sidebar, though they are grayed out.
 1. On the left, click on the stream that contains the topic you want to mute or unmute.
 
 2. Hover over the topic to reveal a down chevron
-   (<i class="icon-vector-chevron-down"></i>) to its right.
-   Click on the down chevron (<i class="icon-vector-chevron-down"></i>).
+   (<i class="fa fa-chevron-down"></i>) to its right.
+   Click on the down chevron (<i class="fa fa-chevron-down"></i>).
 
 4. Select **Mute (or unmute) the topic <topic name\>**.
 

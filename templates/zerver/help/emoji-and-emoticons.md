@@ -20,7 +20,7 @@ emoji picker, or hover over the emoji in a message.
 
 {!start-composing.md!}
 
-1. Click the smiley face (<i class="icon-vector-smile"></i>) icon at the
+1. Click the smiley face (<i class="fa fa-smile-o"></i>) icon at the
    bottom of the compose box.
 
 1. Select an emoji. You can type to search, use the arrow keys, or click on

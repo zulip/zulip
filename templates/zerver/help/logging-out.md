@@ -3,21 +3,21 @@
 {start_tabs}
 {tab|desktop-web}
 
-1. Click on the **gear** (<i class="icon-vector-cog"></i>) icon in the upper
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
 right corner.
 
 2. Click **Log out**.
 
 {tab|ios}
 
-1. Tap the menu (<i class="icon-vector-reorder"></i>) icon in the top left
+1. Tap the menu (<i class="fa fa-reorder"></i>) icon in the top left
 corner of the screen.
 
 2. Tap **Log out**.
 
 {tab|android}
 
-1. Tap the overflow ( <i class="icon-vector-ellipsis-vertical"></i> ) icon in
+1. Tap the overflow ( <i class="fa fa-ellipsis-v"></i> ) icon in
 the top right corner of the screen.
 
 2. Tap **Log out**.

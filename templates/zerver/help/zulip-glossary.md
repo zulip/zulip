@@ -29,13 +29,13 @@ that can help you compose your message, such as the **Emojis**, **Attach files**
 
 **Customization** is the process of modifying Zulip's settings to fit a user's
 set of personal preferences. Users can customize their Zulip settings by
-clicking the cog (<i class="icon-vector-cog"></i>) icon in the top right
+clicking the cog (<i class="fa fa-cog"></i>) icon in the top right
 corner of the right sidebar and choose **Settings** from the dropdown menu.
 
 ### down chevron
 
 A **down chevron** is a small downward-facing arrow (<i
-class="icon-vector-chevron-down"></i>) icon next to a message’s
+class="fa fa-chevron-down"></i>) icon next to a message’s
 [timestamp](#timestamp) that appears upon hover, offering contextual options
 when clicked on, such as **View source**, **Reply**, **Collapse**,
 **Mute [this topic]**, and **Link to this conversation**.
@@ -46,7 +46,7 @@ An **emoji** is a small image used to express an idea or emotion in a
 conversation. Emojis can be included in Zulip messages by enclosing an emoji
 phrase (a complete list of emojis can be found
 [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/)) in colons or clicking
-the **smiley face** (<i class="icon-vector-smile"></i>) icon below the
+the **smiley face** (<i class="fa fa-smile-o"></i>) icon below the
 [compose box](#compose-box).
 
 ### emoji reaction
@@ -84,7 +84,7 @@ messages to the user's [subscribed](#subscribing) [streams](#stream) and all of
 the user's private messages in chronological order, excluding messages to muted
 streams and topics. This view is accessible by
 clicking the **All messages** link, Zulip logo in the upper left sidebar, home (<i
-class="icon-vector-home"></i>) icon to the left of the search bar, or pressing
+class="fa fa-home"></i>) icon to the left of the search bar, or pressing
 the escape key.
 
 ### integration
@@ -117,7 +117,7 @@ as if a user is away from the keyboard or busy.
 If enabled by an administrator, users can utilize **message editing** for a few
 minutes after posting a message to edit the content of their recently-posted
 message by hovering to the right of their message's [timestamp](#timestamp) and
-clicking the pencil (<i class="icon-vector-pencil"></i>) icon that appears.
+clicking the pencil (<i class="fa fa-pencil"></i>) icon that appears.
 Zulip labels edited messages with **(EDITED)** next to the username of the
 message writer.
 
@@ -195,7 +195,7 @@ private message recipient list, at the top of a group of messages.
 
 Zulip allows users to mark any important messages they receive as **starred** by
 hovering over the area next to the message's [timestamp](#timestamp) and
-clicking the star (<i class="icon-vector-star-empty"></i>) icon that appears. A
+clicking the star (<i class="fa fa-star-o"></i>) icon that appears. A
 user can easily access messages they’ve starred through the **Starred messages**
 link in the left sidebar or use **is:starred** as a [filter](#filter) or a
 search constraint.

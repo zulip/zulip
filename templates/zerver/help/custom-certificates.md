@@ -26,7 +26,7 @@ before you can connect to your Zulip server. You'll need to get a
 certificate file (should end in `.crt` or `.pem`) from your server
 administrator.
 
-1. Click on the **gear** (<i class="icon-vector-cog"></i>) icon in the lower left corner.
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
 
 2. Select the **Organizations** tab.
 
