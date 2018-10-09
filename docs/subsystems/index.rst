@@ -35,12 +35,12 @@ Subsystems Documentation
    release-checklist
    api-release-checklist
    openapi-api-docs
-   documentation
    conversion
    input-pills
    thumbnailing
    presence
    unread_messages
    billing
+   documentation
    user-docs
    widgets
