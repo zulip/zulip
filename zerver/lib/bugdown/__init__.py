@@ -481,6 +481,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         return url
 
+    def is_content_type_image(self, url: str) -> bool:
+        url = self.get_actual_image_url(url)
+        response = requests.head(url, allow_redirects=True)
+        # FIXME: content type missing, content length zero probably because cached
+        if response.headers.get('Content-Type','image').startswith("image"):
+            return True
+        return False
+
     def is_image(self, url: str) -> bool:
         if not image_preview_enabled_for_realm():
             return False
@@ -861,7 +869,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr,
                       use_thumbnails=False)
                 continue
-            if self.is_image(url):
+            if self.is_image(url) and self.is_content_type_image(url):
                 self.handle_image_inlining(root, found_url)
                 continue
             if get_tweet_id(url) is not None:
