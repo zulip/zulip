@@ -160,10 +160,6 @@ def send_response_message(bot_id: str, message: Dict[str, Any], response_message
         realm=realm,
     )
 
-def succeed_with_message(event: Dict[str, Any], success_message: str) -> None:
-    success_message = "Success! " + success_message
-    send_response_message(event['user_profile_id'], event['message'], success_message)
-
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
@@ -239,7 +235,8 @@ def process_success_response(event: Dict[str, Any],
     if success_message is None:
         return
 
-    succeed_with_message(event, success_message)
+    success_message = "Success! " + success_message
+    send_response_message(event['user_profile_id'], event['message'], success_message)
 
 def do_rest_call(rest_operation: Dict[str, Any],
                  request_data: Optional[Dict[str, Any]],
