@@ -26,6 +26,9 @@ def request_exception_error(http_method: Any, final_url: Any, data: Any, **reque
 def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.Timeout("Time is up!")
 
+def connection_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
+    raise requests.exceptions.ConnectionError()
+
 class MockServiceHandler(OutgoingWebhookServiceInterface):
     def process_success(self, response_json: Dict[str, Any], event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # Our tests don't really look at the content yet.
@@ -94,18 +97,18 @@ The webhook got a response with status code *500*.''')
 The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
-    @mock.patch('logging.info')
-    @mock.patch('requests.request', side_effect=timeout_error)
-    def test_timeout_request(self, mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
-        do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
-        bot_owner_notification = self.get_last_message()
-        self.assertEqual(bot_owner_notification.content,
-                         '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
-When trying to send a request to the webhook service, an exception of type Timeout occurred:
-```
-Time is up!
-```''')
-        self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+    def test_error_handling(self) -> None:
+        def helper(side_effect: Any, error_text: str) -> None:
+            with mock.patch('logging.info'):
+                with mock.patch('requests.request', side_effect=side_effect):
+                    do_rest_call(self.rest_operation, None, self.mock_event, service_handler, None)
+                    bot_owner_notification = self.get_last_message()
+                    self.assertIn(error_text, bot_owner_notification.content)
+                    self.assertIn('triggered', bot_owner_notification.content)
+                    self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+
+        helper(side_effect=timeout_error, error_text='A timeout occurred.')
+        helper(side_effect=connection_error, error_text='A connection error occurred.')
 
     @mock.patch('logging.exception')
     @mock.patch('requests.request', side_effect=request_exception_error)

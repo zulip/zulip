@@ -210,12 +210,15 @@ def notify_bot_owner(event: Dict[str, Any],
                      request_data: Dict[str, Any],
                      status_code: Optional[int]=None,
                      response_content: Optional[AnyStr]=None,
+                     failure_message: Optional[str]=None,
                      exception: Optional[Exception]=None) -> None:
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
 
     notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
+    if failure_message:
+        notification_message += "\n" + failure_message
     if status_code:
         notification_message += "\nThe webhook got a response with status code *%s*." % (status_code,)
     if response_content:
@@ -235,8 +238,7 @@ def notify_bot_owner(event: Dict[str, Any],
 
 def request_retry(event: Dict[str, Any],
                   request_data: Dict[str, Any],
-                  failure_message: str,
-                  exception: Optional[Exception]=None) -> None:
+                  failure_message: Optional[str]=None) -> None:
     def failure_processor(event: Dict[str, Any]) -> None:
         """
         The name of the argument is 'event' on purpose. This argument will hide
@@ -244,8 +246,8 @@ def request_retry(event: Dict[str, Any],
         results in a smaller diff.
         """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
-        fail_with_message(event, "Maximum retries exceeded! " + failure_message)
-        notify_bot_owner(event, request_data, exception=exception)
+        fail_with_message(event, "Bot is unavailable")
+        notify_bot_owner(event, request_data, failure_message=failure_message)
         logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (
             bot_user.email, event['command']))
 
@@ -311,18 +313,17 @@ def do_rest_call(rest_operation: Dict[str, Any],
             fail_with_message(event, failure_message)
             notify_bot_owner(event, request_data, response.status_code, response.content)
 
-    except requests.exceptions.Timeout as e:
+    except requests.exceptions.Timeout:
         logging.info("Trigger event %s on %s timed out. Retrying" % (
             event["command"], event['service_name']))
-        request_retry(event, request_data, 'Unable to connect with the third party.', exception=e)
+        failure_message = "A timeout occurred."
+        request_retry(event, request_data, failure_message=failure_message)
 
-    except requests.exceptions.ConnectionError as e:
-        response_message = ("The message `%s` resulted in a connection error when "
-                            "sending a request to an outgoing "
-                            "webhook! See the Zulip server logs for more information." % (event["command"],))
+    except requests.exceptions.ConnectionError:
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying"
                      % (event["command"], event['service_name']))
-        request_retry(event, request_data, response_message, exception=e)
+        failure_message = "A connection error occurred. Is my bot server down?"
+        request_retry(event, request_data, failure_message=failure_message)
 
     except requests.exceptions.RequestException as e:
         response_message = ("An exception of type *%s* occurred for message `%s`! "
