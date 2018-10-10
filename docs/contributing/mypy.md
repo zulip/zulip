@@ -110,11 +110,23 @@ requirements/mypy.txt`.
 
 ## Running mypy on Zulip's code locally
 
-To run mypy on Zulip's python code, run the command:
+To run mypy on Zulip's python code, you can run the command:
 
     tools/run-mypy
 
-It will output errors in the same style as a compiler would.  For
+You can also run mypy as a long-running daemon (server) process and send
+type-checking requests to the server via the command:
+
+    tools/run-mypy -d
+
+While the mypy daemon is experimental and currently supports macOS and Linux
+only, **we strongly recommend using the daemon** if it is an option. Program
+state from previous runs will be cached in memory and will not have to be
+read from the file system on each run. For a  large codebase like Zulip's
+and a  workflow involving running mypy repeatedly after small edits, using
+the daemon can be *10 or more times faster*.
+
+Mypy will output errors in the same style as a compiler would.  For
 example, if your code has a type error like this:
 
 ```
