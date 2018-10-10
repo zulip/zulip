@@ -18,7 +18,7 @@ On this page you'll find:
   [documenting your integration][integration-docs-guide] is on a
   separate page.
 
-[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
+[integration-docs-guide]: https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html
 
 A detailed walkthrough of a simple "Hello World" integration can be
 found in the [incoming webhook walkthrough](webhook-walkthrough).

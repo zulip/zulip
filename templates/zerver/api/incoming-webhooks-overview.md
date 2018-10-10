@@ -83,7 +83,7 @@ below are for a webhook named 'MyWebHook'.
 * `zerver/webhooks/mywebhook/doc.html`: Add end-user documentation. See
   [Documenting your integration][integration-docs-guide] for details.
 
-[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
+[integration-docs-guide]: https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html
 
 ## Files that need to be updated
 

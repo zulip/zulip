@@ -376,7 +376,7 @@ See
 for further details, including how to easily create the message
 screenshot.
 
-[integration-docs-guide]: https://zulip.readthedocs.io/en/stable/subsystems/integration-docs.html
+[integration-docs-guide]: https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html
 
 ## Step 5: Preparing a pull request to zulip/zulip
 
