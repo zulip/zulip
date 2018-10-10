@@ -481,10 +481,9 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
         for service in services:
             dup_event['service_name'] = str(service.name)
             service_handler = get_outgoing_webhook_service_handler(service)
-            rest_operation, request_data = service_handler.process_event(dup_event)
-            if rest_operation:
+            request_data = service_handler.build_bot_request(dup_event)
+            if request_data:
                 do_rest_call(service.base_url,
-                             rest_operation,
                              request_data,
                              dup_event,
                              service_handler)

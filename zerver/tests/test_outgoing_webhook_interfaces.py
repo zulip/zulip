@@ -59,12 +59,11 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             )
         self.assertTrue(m.called)
 
-    def test_process_event(self) -> None:
-        rest_operation, request_data = self.handler.process_event(self.event)
+    def test_build_bot_request(self) -> None:
+        request_data = self.handler.build_bot_request(self.event)
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-        self.assertEqual(rest_operation['method'], "POST")
         self.assertEqual(request_data['message'], self.event['message'])
 
     def test_process_success(self) -> None:
@@ -125,10 +124,9 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                                                    user_profile=None,
                                                    service_name='test-service')
 
-    def test_process_event_stream_message(self) -> None:
-        rest_operation, request_data = self.handler.process_event(self.stream_message_event)
+    def test_build_bot_request_stream_message(self) -> None:
+        request_data = self.handler.build_bot_request(self.stream_message_event)
 
-        self.assertEqual(rest_operation['method'], 'POST')
         self.assertEqual(request_data[0][1], "abcdef")  # token
         self.assertEqual(request_data[1][1], "zulip")  # team_id
         self.assertEqual(request_data[2][1], "zulip.com")  # team_domain
@@ -143,12 +141,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     @mock.patch('zerver.lib.outgoing_webhook.get_service_profile', return_value=mock_service)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_process_event_private_message(self, mock_fail_with_message: mock.Mock,
-                                           mock_get_service_profile: mock.Mock) -> None:
+    def test_build_bot_request_private_message(self, mock_fail_with_message: mock.Mock,
+                                               mock_get_service_profile: mock.Mock) -> None:
 
-        rest_operation, request_data = self.handler.process_event(self.private_message_event)
+        request_data = self.handler.build_bot_request(self.private_message_event)
         self.assertIsNone(request_data)
-        self.assertIsNone(rest_operation)
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
