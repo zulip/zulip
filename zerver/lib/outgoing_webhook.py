@@ -27,15 +27,7 @@ class OutgoingWebhookServiceInterface:
         self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
 
-    # Given an event that triggers an outgoing webhook operation, returns:
-    # - The REST operation that should be performed
-    # - The body of the request
-    #
-    # The REST operation is a dictionary with the following keys:
-    # - method
-    # - relative_url_path
-    # - request_kwargs
-    def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
+    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
         raise NotImplementedError()
 
     # Given a successful outgoing webhook REST operation, return
@@ -49,16 +41,13 @@ class OutgoingWebhookServiceInterface:
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
-    def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
-        rest_operation = {'method': 'POST',
-                          'relative_url_path': '',
-                          'request_kwargs': {}}
+    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
         request_data = {"data": event['command'],
                         "message": event['message'],
                         "bot_email": self.user_profile.email,
                         "token": self.token,
                         "trigger": event['trigger']}
-        return rest_operation, json.dumps(request_data)
+        return json.dumps(request_data)
 
     def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -80,15 +69,11 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
-    def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
-        rest_operation = {'method': 'POST',
-                          'relative_url_path': '',
-                          'request_kwargs': {}}
-
+    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
         if event['message']['type'] == 'private':
             failure_message = "Slack outgoing webhooks don't support private messages."
             fail_with_message(event, failure_message)
-            return None, None
+            return None
 
         request_data = [("token", self.token),
                         ("team_id", event['message']['sender_realm_str']),
@@ -103,7 +88,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         ("service_id", event['user_profile_id']),
                         ]
 
-        return rest_operation, request_data
+        return request_data
 
     def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -273,28 +258,12 @@ def process_success_response(event: Dict[str, Any],
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def do_rest_call(base_url: str,
-                 rest_operation: Dict[str, Any],
-                 request_data: Optional[Dict[str, Any]],
+                 request_data: Any,
                  event: Dict[str, Any],
                  service_handler: Any,
                  timeout: Any=None) -> None:
-    rest_operation_validator = check_dict([
-        ('method', check_string),
-        ('relative_url_path', check_string),
-        ('request_kwargs', check_dict([])),
-    ])
-
-    error = rest_operation_validator('rest_operation', rest_operation)
-    if error:
-        raise JsonableError(error)
-
-    http_method = rest_operation['method']
-    final_url = urllib.parse.urljoin(base_url, rest_operation['relative_url_path'])
-    request_kwargs = rest_operation['request_kwargs']
-    request_kwargs['timeout'] = timeout
-
     try:
-        response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
+        response = requests.request('POST', base_url, data=request_data, timeout=timeout)
         if str(response.status_code).startswith('2'):
             process_success_response(event, service_handler, response)
         else:

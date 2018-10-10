@@ -58,9 +58,6 @@ class DoRestCallTests(ZulipTestCase):
             'command': '',
             'service_name': ''}
 
-        self.rest_operation = {'method': "POST",
-                               'relative_url_path': "",
-                               'request_kwargs': {}}
         self.bot_user = self.example_user('outgoing_webhook_bot')
         logging.disable(logging.WARNING)
 
@@ -68,7 +65,7 @@ class DoRestCallTests(ZulipTestCase):
     def test_successful_request(self, mock_send: mock.Mock) -> None:
         response = ResponseMock(200)
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('', self.rest_operation, None, self.mock_event, service_handler, None)
+            do_rest_call('', None, self.mock_event, service_handler, None)
             self.assertTrue(mock_send.called)
 
     def test_retry_request(self: mock.Mock) -> None:
@@ -76,7 +73,7 @@ class DoRestCallTests(ZulipTestCase):
 
         self.mock_event['failed_tries'] = 3
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('', self.rest_operation, None, self.mock_event, service_handler, None)
+            do_rest_call('',  None, self.mock_event, service_handler, None)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(bot_owner_notification.content,
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
@@ -88,7 +85,7 @@ The webhook got a response with status code *500*.''')
     def test_fail_request(self, mock_fail_with_message: mock.Mock) -> None:
         response = ResponseMock(400)
         with mock.patch('requests.request', return_value=response):
-            do_rest_call('', self.rest_operation, None, self.mock_event, service_handler, None)
+            do_rest_call('', None, self.mock_event, service_handler, None)
             bot_owner_notification = self.get_last_message()
             self.assertTrue(mock_fail_with_message.called)
             self.assertEqual(bot_owner_notification.content,
@@ -100,7 +97,7 @@ The webhook got a response with status code *400*.''')
         def helper(side_effect: Any, error_text: str) -> None:
             with mock.patch('logging.info'):
                 with mock.patch('requests.request', side_effect=side_effect):
-                    do_rest_call('', self.rest_operation, None, self.mock_event, service_handler, None)
+                    do_rest_call('', None, self.mock_event, service_handler, None)
                     bot_owner_notification = self.get_last_message()
                     self.assertIn(error_text, bot_owner_notification.content)
                     self.assertIn('triggered', bot_owner_notification.content)
@@ -114,7 +111,7 @@ The webhook got a response with status code *400*.''')
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
     def test_request_exception(self, mock_fail_with_message: mock.Mock,
                                mock_requests_request: mock.Mock, mock_logger: mock.Mock) -> None:
-        do_rest_call('', self.rest_operation, None, self.mock_event, service_handler, None)
+        do_rest_call('', None, self.mock_event, service_handler, None)
         bot_owner_notification = self.get_last_message()
         self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
