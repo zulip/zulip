@@ -254,7 +254,12 @@ def request_retry(event: Dict[str, Any],
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
                              response: Response) -> None:
-    response_json = json.loads(response.text)
+    try:
+        response_json = json.loads(response.text)
+    except ValueError:
+        fail_with_message(event, "Invalid JSON in response")
+        return
+
     success_data = service_handler.process_success(response_json, event)
 
     if success_data is None:

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import Any, Dict
+from typing import cast, Any, Dict
 
 import mock
 import json
+import requests
 
 from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
-    SlackOutgoingWebhookService
+    SlackOutgoingWebhookService, process_success_response
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Service, get_realm, get_user
 
@@ -24,6 +25,40 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
                                                      base_url='http://example.domain.com',
                                                      token='abcdef',
                                                      user_profile=self.bot_user)
+
+    def test_process_success_response(self) -> None:
+        class Stub:
+            def __init__(self, text: str) -> None:
+                self.text = text  # type: ignore
+
+        def make_response(text: str) -> requests.Response:
+            return cast(requests.Response, Stub(text=text))
+
+        event = dict(
+            user_profile_id=99,
+            message=dict(type='private')
+        )
+        service_handler = self.handler
+
+        response = make_response(text=json.dumps(dict(content='whatever')))
+
+        with mock.patch('zerver.lib.outgoing_webhook.send_response_message') as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response,
+            )
+        self.assertTrue(m.called)
+
+        response = make_response(text='unparsable text')
+
+        with mock.patch('zerver.lib.outgoing_webhook.fail_with_message') as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response
+            )
+        self.assertTrue(m.called)
 
     def test_process_event(self) -> None:
         rest_operation, request_data = self.handler.process_event(self.event)
