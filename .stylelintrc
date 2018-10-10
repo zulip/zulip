@@ -59,5 +59,8 @@
 
         "comment-whitespace-inside": "always",
         "indentation": 4,
+        
+        # Limit language features
+        "color-no-hex": true,
     }
 }
