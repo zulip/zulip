@@ -45,7 +45,7 @@ class OutgoingWebhookServiceInterface:
     # The main use case for this function is to massage data from
     # various APIs to have similar data structures.
     # It also allows bots to explictly set response_not_required.
-    def process_success(self, response: Response,
+    def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         raise NotImplementedError()
 
@@ -63,10 +63,8 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         "trigger": event['trigger']}
         return rest_operation, json.dumps(request_data)
 
-    def process_success(self, response: Response,
+    def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        response_json = json.loads(response.text)
-
         if "response_not_required" in response_json and response_json['response_not_required']:
             return None
 
@@ -111,10 +109,8 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
         return rest_operation, request_data
 
-    def process_success(self, response: Response,
+    def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        response_json = json.loads(response.text)
-
         if "text" in response_json:
             content = response_json['text']
             success_data = dict(content=content)
@@ -258,7 +254,8 @@ def request_retry(event: Dict[str, Any],
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
                              response: Response) -> None:
-    success_data = service_handler.process_success(response, event)
+    response_json = json.loads(response.text)
+    success_data = service_handler.process_success(response_json, event)
 
     if success_data is None:
         return
