@@ -3,6 +3,7 @@ import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext as err_
@@ -82,21 +83,18 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
 
-    # If a user logged out on a device and failed to unregister,
-    # we should delete any other user associations for this token
-    # & RemoteServer pair
-    RemotePushDeviceToken.objects.filter(
-        token=token, kind=token_kind, server=server).exclude(user_id=user_id).delete()
-
-    # Save or update
-    remote_token, created = RemotePushDeviceToken.objects.update_or_create(
-        user_id=user_id,
-        server=server,
-        kind=token_kind,
-        token=token,
-        defaults=dict(
-            ios_app_id=ios_app_id,
-            last_updated=timezone.now()))
+    try:
+        with transaction.atomic():
+            RemotePushDeviceToken.objects.create(
+                user_id=user_id,
+                server=server,
+                kind=token_kind,
+                token=token,
+                ios_app_id=ios_app_id,
+                # last_updated is to be renamed to date_created.
+                last_updated=timezone.now())
+    except IntegrityError:
+        pass
 
     return json_success()
 

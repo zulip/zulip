@@ -31,7 +31,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     class Meta:
-        unique_together = ("server", "token")
+        unique_together = ("server", "user_id", "kind", "token")
 
     def __str__(self) -> str:
         return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)

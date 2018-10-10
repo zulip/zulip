@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, SupportsInt, Tuple, Type, Union
 from apns2.client import APNsClient
 from apns2.payload import Payload as APNsPayload
 from django.conf import settings
+from django.db import IntegrityError, transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from gcm import GCM
@@ -345,8 +346,7 @@ def add_push_device_token(user_profile: UserProfile,
                           token_str: bytes,
                           kind: int,
                           ios_app_id: Optional[str]=None) -> None:
-
-    logging.info("New push device: %d %r %d %r",
+    logging.info("Registering push device: %d %r %d %r",
                  user_profile.id, token_str, kind, ios_app_id)
 
     # If we're sending things to the push notification bouncer
@@ -367,22 +367,17 @@ def add_push_device_token(user_profile: UserProfile,
         send_to_push_bouncer('POST', 'register', post_data)
         return
 
-    # If another user was previously logged in on the same device and didn't
-    # properly log out, the token will still be registered to the wrong account
-    PushDeviceToken.objects.filter(token=token_str).exclude(user=user_profile).delete()
-
-    # Overwrite with the latest value
-    token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
-                                                           token=token_str,
-                                                           defaults=dict(
-                                                               kind=kind,
-                                                               ios_app_id=ios_app_id))
-    if not created:
-        logging.info("Existing push device updated.")
-        token.last_updated = timezone_now()
-        token.save(update_fields=['last_updated'])
-    else:
-        logging.info("New push device created.")
+    try:
+        with transaction.atomic():
+            PushDeviceToken.objects.create(
+                user_id=user_profile.id,
+                kind=kind,
+                token=token_str,
+                ios_app_id=ios_app_id,
+                # last_updated is to be renamed to date_created.
+                last_updated=timezone_now())
+    except IntegrityError:
+        pass
 
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 

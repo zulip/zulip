@@ -1039,6 +1039,9 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
+
+    # TODO: last_updated should be renamed date_created, since it is
+    # no longer maintained as a last_updated value.
     last_updated = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
     # [optional] Contains the app id of the device if it is an iOS device
@@ -1050,7 +1053,10 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
-    token = models.CharField(max_length=4096, unique=True)  # type: bytes
+    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
+
+    class Meta:
+        unique_together = ("user", "kind", "token")
 
 def generate_email_token_for_stream() -> str:
     return generate_random_token(32)
