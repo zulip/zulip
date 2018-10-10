@@ -22,8 +22,7 @@ from zerver.decorator import JsonableError
 
 class OutgoingWebhookServiceInterface:
 
-    def __init__(self, base_url: str, token: str, user_profile: UserProfile, service_name: str) -> None:
-        self.base_url = base_url  # type: str
+    def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token = token  # type: str
         self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
@@ -34,7 +33,6 @@ class OutgoingWebhookServiceInterface:
     #
     # The REST operation is a dictionary with the following keys:
     # - method
-    # - base_url
     # - relative_url_path
     # - request_kwargs
     def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
@@ -54,7 +52,6 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
-                          'base_url': self.base_url,
                           'request_kwargs': {}}
         request_data = {"data": event['command'],
                         "message": event['message'],
@@ -86,7 +83,6 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def process_event(self, event: Dict[str, Any]) -> Tuple[Dict[str, Any], Any]:
         rest_operation = {'method': 'POST',
                           'relative_url_path': '',
-                          'base_url': self.base_url,
                           'request_kwargs': {}}
 
         if event['message']['type'] == 'private':
@@ -132,8 +128,7 @@ def get_service_interface_class(interface: str) -> Any:
 def get_outgoing_webhook_service_handler(service: Service) -> Any:
 
     service_interface_class = get_service_interface_class(service.interface_name())
-    service_interface = service_interface_class(base_url=service.base_url,
-                                                token=service.token,
+    service_interface = service_interface_class(token=service.token,
                                                 user_profile=service.user_profile,
                                                 service_name=service.name)
     return service_interface
@@ -277,7 +272,8 @@ def process_success_response(event: Dict[str, Any],
     response_data = dict(content=content)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
-def do_rest_call(rest_operation: Dict[str, Any],
+def do_rest_call(base_url: str,
+                 rest_operation: Dict[str, Any],
                  request_data: Optional[Dict[str, Any]],
                  event: Dict[str, Any],
                  service_handler: Any,
@@ -286,7 +282,6 @@ def do_rest_call(rest_operation: Dict[str, Any],
         ('method', check_string),
         ('relative_url_path', check_string),
         ('request_kwargs', check_dict([])),
-        ('base_url', check_string),
     ])
 
     error = rest_operation_validator('rest_operation', rest_operation)
@@ -294,7 +289,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
         raise JsonableError(error)
 
     http_method = rest_operation['method']
-    final_url = urllib.parse.urljoin(rest_operation['base_url'], rest_operation['relative_url_path'])
+    final_url = urllib.parse.urljoin(base_url, rest_operation['relative_url_path'])
     request_kwargs = rest_operation['request_kwargs']
     request_kwargs['timeout'] = timeout
 

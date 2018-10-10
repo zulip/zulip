@@ -22,7 +22,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         }
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.handler = GenericOutgoingWebhookService(service_name='test-service',
-                                                     base_url='http://example.domain.com',
                                                      token='abcdef',
                                                      user_profile=self.bot_user)
 
@@ -65,7 +64,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-        self.assertEqual(rest_operation['base_url'], "http://example.domain.com")
         self.assertEqual(rest_operation['method'], "POST")
         self.assertEqual(request_data['message'], self.event['message'])
 
@@ -123,15 +121,13 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             }
         }
 
-        self.handler = SlackOutgoingWebhookService(base_url='http://example.domain.com',
-                                                   token="abcdef",
+        self.handler = SlackOutgoingWebhookService(token="abcdef",
                                                    user_profile=None,
                                                    service_name='test-service')
 
     def test_process_event_stream_message(self) -> None:
         rest_operation, request_data = self.handler.process_event(self.stream_message_event)
 
-        self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
         self.assertEqual(rest_operation['method'], 'POST')
         self.assertEqual(request_data[0][1], "abcdef")  # token
         self.assertEqual(request_data[1][1], "zulip")  # team_id
