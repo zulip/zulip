@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from typing import Any
+from typing import Any, Dict
 
 import mock
 import json
 
-from requests.models import Response
 from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
     SlackOutgoingWebhookService
 from zerver.lib.test_classes import ZulipTestCase
@@ -36,16 +35,15 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data['message'], self.event['message'])
 
     def test_process_success(self) -> None:
-        response = mock.Mock(spec=Response)
-        response.text = json.dumps({"response_not_required": True})
+        response = dict(response_not_required=True)  # type: Dict[str, Any]
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
-        response.text = json.dumps({"response_string": 'test_content'})
+        response = dict(response_string='test_content')
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, dict(content='test_content'))
 
-        response.text = json.dumps({})
+        response = dict()
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
@@ -123,11 +121,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
-        response = mock.Mock(spec=Response)
-        response.text = json.dumps({"response_not_required": True})
+        response = dict(response_not_required=True)  # type: Dict[str, Any]
         success_response = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, None)
 
-        response.text = json.dumps({"text": 'test_content'})
+        response = dict(text='test_content')
         success_response = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, dict(content='test_content'))
