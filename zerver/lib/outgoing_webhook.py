@@ -260,10 +260,9 @@ def process_success_response(event: Dict[str, Any],
 def do_rest_call(base_url: str,
                  request_data: Any,
                  event: Dict[str, Any],
-                 service_handler: Any,
-                 timeout: Any=None) -> None:
+                 service_handler: Any) -> None:
     try:
-        response = requests.request('POST', base_url, data=request_data, timeout=timeout)
+        response = requests.request('POST', base_url, data=request_data)
         if str(response.status_code).startswith('2'):
             process_success_response(event, service_handler, response)
         else:
