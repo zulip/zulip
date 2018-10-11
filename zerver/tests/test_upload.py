@@ -970,6 +970,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         target_medium_path_id = avatar_disk_path(target_user_profile, medium=True)
         self.assertEqual(open(source_medium_path_id, "rb").read(), open(target_medium_path_id, "rb").read())
 
+    def test_delete_avatar_image(self) -> None:
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        user = self.example_user('hamlet')
+
+        avatar_path_id = avatar_disk_path(user)
+        avatar_original_path_id = avatar_disk_path(user, original=True)
+        avatar_medium_path_id = avatar_disk_path(user, medium=True)
+
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertTrue(os.path.isfile(avatar_path_id))
+        self.assertTrue(os.path.isfile(avatar_original_path_id))
+        self.assertTrue(os.path.isfile(avatar_medium_path_id))
+
+        zerver.lib.actions.do_delete_avatar_image(user)
+
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertFalse(os.path.isfile(avatar_path_id))
+        self.assertFalse(os.path.isfile(avatar_original_path_id))
+        self.assertFalse(os.path.isfile(avatar_medium_path_id))
+
     def test_invalid_avatars(self) -> None:
         """
         A PUT request to /json/users/me/avatar with an invalid file should fail.
@@ -1391,6 +1414,33 @@ class S3Test(ZulipTestCase):
         source_medium_image_data = source_medium_image_key.get_contents_as_string()
         target_medium_image_data = target_medium_image_key.get_contents_as_string()
         self.assertEqual(source_medium_image_data, target_medium_image_data)
+
+    @use_s3_backend
+    def test_delete_avatar_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        user = self.example_user('hamlet')
+
+        avatar_path_id = user_avatar_path(user)
+        avatar_original_image_path_id = avatar_path_id + ".original"
+        avatar_medium_path_id = avatar_path_id + "-medium.png"
+
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertIsNotNone(bucket.get_key(avatar_path_id))
+        self.assertIsNotNone(bucket.get_key(avatar_original_image_path_id))
+        self.assertIsNotNone(bucket.get_key(avatar_medium_path_id))
+
+        zerver.lib.actions.do_delete_avatar_image(user)
+
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertIsNone(bucket.get_key(avatar_path_id))
+        self.assertIsNone(bucket.get_key(avatar_original_image_path_id))
+        self.assertIsNone(bucket.get_key(avatar_medium_path_id))
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:

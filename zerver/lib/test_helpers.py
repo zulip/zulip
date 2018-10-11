@@ -460,10 +460,12 @@ def use_s3_backend(method: FuncT) -> FuncT:
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
+        zerver.lib.actions.upload_backend = S3UploadBackend()
         try:
             return method(*args, **kwargs)
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
+            zerver.lib.actions.upload_backend = LocalUploadBackend()
     return new_method
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
