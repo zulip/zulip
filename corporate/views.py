@@ -19,7 +19,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, stripe_get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source
-from zilencer.models import Customer, Plan
+from corporate.models import Customer, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
