@@ -37,6 +37,13 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         "trigger": event['trigger']}
         return json.dumps(request_data)
 
+    def send_data_to_server(self,
+                            base_url: str,
+                            request_data: Any) -> Response:
+        headers = {'content-type': 'application/json'}
+        response = requests.request('POST', base_url, data=request_data, headers=headers)
+        return response
+
     def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json['response_not_required']:
@@ -77,6 +84,12 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         ]
 
         return request_data
+
+    def send_data_to_server(self,
+                            base_url: str,
+                            request_data: Any) -> Response:
+        response = requests.request('POST', base_url, data=request_data)
+        return response
 
     def process_success(self, response_json: Dict[str, Any],
                         event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -250,7 +263,10 @@ def do_rest_call(base_url: str,
                  event: Dict[str, Any],
                  service_handler: Any) -> None:
     try:
-        response = requests.request('POST', base_url, data=request_data)
+        response = service_handler.send_data_to_server(
+            base_url=base_url,
+            request_data=request_data,
+        )
         if str(response.status_code).startswith('2'):
             process_success_response(event, service_handler, response)
         else:
