@@ -178,6 +178,21 @@ var apps_events = function () {
 var events = function () {
     ScrollTo();
 
+    // Testimonial carousel height resizing
+    $(window).on('resize', function () {
+        // Before resizing, switch to the first element, because it
+        // holds the longest text, use its height as the min-height.
+        var activeTest = $("div.item.active.quote-container").removeClass("active");
+        $("div.quote-container:nth-child(1)").addClass("active");
+
+        $('#quote-carousel').css('min-height', '');
+        var staticHeight = $('#quote-carousel').height();
+        $('#quote-carousel').css('min-height', staticHeight);
+
+        $("div.quote-container:nth-child(1)").removeClass("active");
+        activeTest.addClass("active");
+    });
+
     $("a").click(function (e) {
         // if a user is holding the CMD/CTRL key while clicking a link, they
         // want to open the link in another browser tab which means that we
@@ -270,6 +285,9 @@ var load = function () {
             $this.find('.right.visibility-control').hide();
         }
     });
+
+    var staticHeight = $('#quote-carousel').height();
+    $('#quote-carousel').css('min-height', staticHeight);
 
     // Set up events / categories / search
     events();
