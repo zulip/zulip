@@ -1,12 +1,9 @@
 ## Integrations
 
-* [Overview](/api/integration-guide)
-* [Existing integrations](/integrations)
-
-## Incoming webhooks
-
-* [Overview](/api/incoming-webhooks-overview)
-* [Walkthrough](/api/webhook-walkthrough)
+* [Overview](/api/integrations-overview)
+* [Incoming webhook integrations](/api/incoming-webhooks-overview)
+* [Hello world walkthrough](/api/webhook-walkthrough)
+* [Non-webhook integrations](/api/integration-guide)
 
 ## Interactive bots (beta)
 
