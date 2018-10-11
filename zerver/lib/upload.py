@@ -625,7 +625,7 @@ def upload_avatar_image(user_file: File, acting_user_profile: UserProfile,
                         target_user_profile: UserProfile) -> None:
     upload_backend.upload_avatar_image(user_file, acting_user_profile, target_user_profile)
 
-def delete_avatar_image(user_profile: UserProfile):
+def delete_avatar_image(user_profile: UserProfile) -> None:
     upload_backend.delete_avatar_image(user_profile)
 
 def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
