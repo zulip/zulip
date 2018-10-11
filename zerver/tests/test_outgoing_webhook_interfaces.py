@@ -5,10 +5,12 @@ import mock
 import json
 import requests
 
-from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
-    SlackOutgoingWebhookService, process_success_response
+from zerver.lib.outgoing_webhook import (
+    get_service_interface_class,
+    process_success_response,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Service, get_realm, get_user
+from zerver.models import Service, get_realm, get_user, SLACK_INTERFACE
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
@@ -21,9 +23,10 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             u'trigger': 'mention',
         }
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
-        self.handler = GenericOutgoingWebhookService(service_name='test-service',
-                                                     token='abcdef',
-                                                     user_profile=self.bot_user)
+        service_class = get_service_interface_class('whatever')  # GenericOutgoingWebhookService
+        self.handler = service_class(service_name='test-service',
+                                     token='abcdef',
+                                     user_profile=self.bot_user)
 
     def test_process_success_response(self) -> None:
         class Stub:
@@ -120,9 +123,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             }
         }
 
-        self.handler = SlackOutgoingWebhookService(token="abcdef",
-                                                   user_profile=None,
-                                                   service_name='test-service')
+        service_class = get_service_interface_class(SLACK_INTERFACE)
+        self.handler = service_class(token="abcdef",
+                                     user_profile=None,
+                                     service_name='test-service')
 
     def test_build_bot_request_stream_message(self) -> None:
         request_data = self.handler.build_bot_request(self.stream_message_event)
