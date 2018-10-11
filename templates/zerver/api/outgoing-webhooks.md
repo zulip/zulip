@@ -93,17 +93,21 @@ Some of the important fields in the `message` dict include the following:
 
 A correctly implemented endpoint will do the following:
 
-* For a successful request, it should return receives either a json
-  encoded dictionary, describing how to respond to the user.
-* If the dictionary contains `response_not_required` set to `True`, no
-  response message is sent to the user.
-* If the dictionary contains `response_string` key, the corresponding
-  value is used as the `content` for a Zulip message sent in response;
-  otherwise, a generic default response message is sent.
-* For a failed request, the endpoint should return data on the
-  error.
+* It will calculate a response that we call the "content" of
+  the response.
+* It will encode the content in Zulip's flavor of markdown (or
+  just plain text).
+* It will then make a dictionary with key of "content" and
+  the value being that content.  (Note that "response_string" is
+  a deprecated synonym for "content".)
+* It will encode that dictionary as JSON.
 
-### Example payload
+If the bot code wants to opt out of responding, it can explicitly
+encode a JSON dictionary that contains `response_not_required` set
+to `True`, so that no response message is sent to the user.  (This
+is helpful to distinguish deliberate non-responses from bugs.)
+
+### Example incoming payload
 
 {generate_code_example|zulip-outgoing-webhook-payload|fixture}
 

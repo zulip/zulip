@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-from typing import Any
+from typing import cast, Any, Dict
 
 import mock
 import json
+import requests
 
-from requests.models import Response
-from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
-    SlackOutgoingWebhookService
+from zerver.lib.outgoing_webhook import (
+    get_service_interface_class,
+    process_success_response,
+)
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Service, get_realm, get_user
+from zerver.models import Service, get_realm, get_user, SLACK_INTERFACE
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
@@ -21,31 +23,62 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             u'trigger': 'mention',
         }
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
-        self.handler = GenericOutgoingWebhookService(service_name='test-service',
-                                                     base_url='http://example.domain.com',
-                                                     token='abcdef',
-                                                     user_profile=self.bot_user)
+        service_class = get_service_interface_class('whatever')  # GenericOutgoingWebhookService
+        self.handler = service_class(service_name='test-service',
+                                     token='abcdef',
+                                     user_profile=self.bot_user)
 
-    def test_process_event(self) -> None:
-        rest_operation, request_data = self.handler.process_event(self.event)
+    def test_process_success_response(self) -> None:
+        class Stub:
+            def __init__(self, text: str) -> None:
+                self.text = text  # type: ignore
+
+        def make_response(text: str) -> requests.Response:
+            return cast(requests.Response, Stub(text=text))
+
+        event = dict(
+            user_profile_id=99,
+            message=dict(type='private')
+        )
+        service_handler = self.handler
+
+        response = make_response(text=json.dumps(dict(content='whatever')))
+
+        with mock.patch('zerver.lib.outgoing_webhook.send_response_message') as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response,
+            )
+        self.assertTrue(m.called)
+
+        response = make_response(text='unparsable text')
+
+        with mock.patch('zerver.lib.outgoing_webhook.fail_with_message') as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response
+            )
+        self.assertTrue(m.called)
+
+    def test_build_bot_request(self) -> None:
+        request_data = self.handler.build_bot_request(self.event)
         request_data = json.loads(request_data)
         self.assertEqual(request_data['data'], "@**test**")
         self.assertEqual(request_data['token'], "abcdef")
-        self.assertEqual(rest_operation['base_url'], "http://example.domain.com")
-        self.assertEqual(rest_operation['method'], "POST")
         self.assertEqual(request_data['message'], self.event['message'])
 
     def test_process_success(self) -> None:
-        response = mock.Mock(spec=Response)
-        response.text = json.dumps({"response_not_required": True})
+        response = dict(response_not_required=True)  # type: Dict[str, Any]
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
-        response.text = json.dumps({"response_string": 'test_content'})
+        response = dict(response_string='test_content')
         success_response = self.handler.process_success(response, self.event)
-        self.assertEqual(success_response, dict(response_string='test_content'))
+        self.assertEqual(success_response, dict(content='test_content'))
 
-        response.text = json.dumps({})
+        response = dict()
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
@@ -90,16 +123,14 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             }
         }
 
-        self.handler = SlackOutgoingWebhookService(base_url='http://example.domain.com',
-                                                   token="abcdef",
-                                                   user_profile=None,
-                                                   service_name='test-service')
+        service_class = get_service_interface_class(SLACK_INTERFACE)
+        self.handler = service_class(token="abcdef",
+                                     user_profile=None,
+                                     service_name='test-service')
 
-    def test_process_event_stream_message(self) -> None:
-        rest_operation, request_data = self.handler.process_event(self.stream_message_event)
+    def test_build_bot_request_stream_message(self) -> None:
+        request_data = self.handler.build_bot_request(self.stream_message_event)
 
-        self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
-        self.assertEqual(rest_operation['method'], 'POST')
         self.assertEqual(request_data[0][1], "abcdef")  # token
         self.assertEqual(request_data[1][1], "zulip")  # team_id
         self.assertEqual(request_data[2][1], "zulip.com")  # team_domain
@@ -114,20 +145,18 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     @mock.patch('zerver.lib.outgoing_webhook.get_service_profile', return_value=mock_service)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_process_event_private_message(self, mock_fail_with_message: mock.Mock,
-                                           mock_get_service_profile: mock.Mock) -> None:
+    def test_build_bot_request_private_message(self, mock_fail_with_message: mock.Mock,
+                                               mock_get_service_profile: mock.Mock) -> None:
 
-        rest_operation, request_data = self.handler.process_event(self.private_message_event)
+        request_data = self.handler.build_bot_request(self.private_message_event)
         self.assertIsNone(request_data)
-        self.assertIsNone(rest_operation)
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:
-        response = mock.Mock(spec=Response)
-        response.text = json.dumps({"response_not_required": True})
+        response = dict(response_not_required=True)  # type: Dict[str, Any]
         success_response = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, None)
 
-        response.text = json.dumps({"text": 'test_content'})
+        response = dict(text='test_content')
         success_response = self.handler.process_success(response, self.stream_message_event)
-        self.assertEqual(success_response, dict(response_string='test_content'))
+        self.assertEqual(success_response, dict(content='test_content'))
