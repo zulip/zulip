@@ -89,9 +89,10 @@ class EmailLogBackEnd(BaseEmailBackend):
 
     def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
         for email in email_messages:
-            self.log_email(email)
             if get_forward_address():
                 self.send_email_smtp(email)
-            email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
-            logging.info("Emails sent in development are available at %s" % (email_log_url,))
+            if settings.DEVELOPMENT_LOG_EMAILS:
+                self.log_email(email)
+                email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
+                logging.info("Emails sent in development are available at %s" % (email_log_url,))
         return len(email_messages)

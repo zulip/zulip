@@ -158,3 +158,7 @@ PUSH_NOTIFICATION_BOUNCER_URL = None
 SLOW_QUERY_LOGS_STREAM = None
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
+
+# Logging the emails while running the tests adds them
+# to /emails page.
+DEVELOPMENT_LOG_EMAILS = False
