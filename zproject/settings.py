@@ -1313,8 +1313,7 @@ else:
 
 if POPULATE_PROFILE_VIA_LDAP:
     import ldap
-    if (AUTH_LDAP_BIND_DN
-        and ldap.OPT_REFERRALS not in AUTH_LDAP_CONNECTION_OPTIONS):
+    if (AUTH_LDAP_BIND_DN and ldap.OPT_REFERRALS not in AUTH_LDAP_CONNECTION_OPTIONS):
         # The default behavior of python-ldap (without setting option
         # `ldap.OPT_REFERRALS`) is to follow referrals, but anonymously.
         # If our original query was non-anonymous, that's unlikely to
