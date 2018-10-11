@@ -79,20 +79,13 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         for d in raw_data
     ]
 
-    def _is_realm_admin(v: str) -> bool:
-        if v == 'user':
-            return False
-        elif v == 'admin':
-            return True
-        else:
-            raise Exception('unexpected value')
-
     def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
         delivery_email = in_dict['email']
         email = in_dict['email']
         full_name = in_dict['name']
         id = in_dict['id']
-        is_realm_admin = _is_realm_admin(in_dict['account_type'])
+        is_realm_admin = in_dict['account_type'] == 'admin'
+        is_guest = in_dict['account_type'] == 'guest'
         short_name = in_dict['mention_name']
         timezone = in_dict['timezone']
 
@@ -113,6 +106,7 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
             id=id,
             is_active=is_active,
             is_realm_admin=is_realm_admin,
+            is_guest=is_guest,
             realm_id=realm_id,
             short_name=short_name,
             timezone=timezone,
