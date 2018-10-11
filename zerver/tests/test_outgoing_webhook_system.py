@@ -10,7 +10,12 @@ from django.test import override_settings
 from requests import Response
 from typing import Any, Dict, Tuple, Optional
 
-from zerver.lib.outgoing_webhook import do_rest_call, GenericOutgoingWebhookService
+from zerver.lib.outgoing_webhook import (
+    do_rest_call,
+    GenericOutgoingWebhookService,
+    SlackOutgoingWebhookService,
+)
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
@@ -58,6 +63,12 @@ class DoRestCallTests(ZulipTestCase):
         with mock.patch('requests.request', return_value=response):
             do_rest_call('', None, self.mock_event, service_handler)
             self.assertTrue(mock_send.called)
+
+        for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
+            handler = service_class(None, None, None)
+            with mock.patch('requests.request', return_value=response):
+                do_rest_call('', None, self.mock_event, handler)
+                self.assertTrue(mock_send.called)
 
     def test_retry_request(self: mock.Mock) -> None:
         response = ResponseMock(500)
