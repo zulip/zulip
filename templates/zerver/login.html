@@ -133,7 +133,7 @@
                             {% endif %} <!-- if password_auth_enabled -->
 
                             {% if google_auth_enabled %}
-                            <div class="login-google">
+                            <div class="login-social">
                                 <form id='google_login_form' class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
                                     <button class="login-social-button login-google-button full-width">
@@ -144,7 +144,7 @@
                             {% endif %}
 
                             {% if github_auth_enabled %}
-                            <div class="login-github">
+                            <div class="login-social">
                                 <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
                                     <button class="login-social-button login-github-button github">

@@ -76,7 +76,7 @@ $(function () {
                         {% endif %}
 
                         {% if google_auth_enabled %}
-                        <div class="register-google">
+                        <div class="login-social">
                             <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
                                 <input type='hidden' name='is_signup' value='1' />
                                 <button class="login-social-button login-google-button full-width">
@@ -87,7 +87,7 @@ $(function () {
                         {% endif %}
 
                         {% if github_auth_enabled %}
-                        <div class="login-github">
+                        <div class="login-social">
                             <form class="form-inline github-wrapper" action="{{ url('signup-social', args=('github',)) }}" method="get">
                                 <button class="login-social-button login-github-button full-width">
                                     {{ _('Sign up with %(identity_provider)s', identity_provider="GitHub") }}
