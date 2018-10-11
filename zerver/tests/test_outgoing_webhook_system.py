@@ -10,7 +10,7 @@ from django.test import override_settings
 from requests import Response
 from typing import Any, Dict, Tuple, Optional
 
-from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInterface
+from zerver.lib.outgoing_webhook import do_rest_call, GenericOutgoingWebhookService
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
@@ -29,16 +29,7 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
 def connection_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.ConnectionError()
 
-class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response_json: Dict[str, Any], event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        # Our tests don't really look at the content yet.
-        # They just ensure we use the "success" codepath.
-        success_data = dict(
-            content="whatever",
-        )
-        return success_data
-
-service_handler = MockServiceHandler(None, None, None)
+service_handler = GenericOutgoingWebhookService(None, None, None)
 
 class DoRestCallTests(ZulipTestCase):
     def setUp(self) -> None:
@@ -63,7 +54,7 @@ class DoRestCallTests(ZulipTestCase):
 
     @mock.patch('zerver.lib.outgoing_webhook.send_response_message')
     def test_successful_request(self, mock_send: mock.Mock) -> None:
-        response = ResponseMock(200)
+        response = ResponseMock(200, dict(content='whatever'))
         with mock.patch('requests.request', return_value=response):
             do_rest_call('', None, self.mock_event, service_handler)
             self.assertTrue(mock_send.called)
