@@ -27,18 +27,6 @@ class OutgoingWebhookServiceInterface:
         self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
 
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
-        raise NotImplementedError()
-
-    # Given a successful outgoing webhook REST operation, return
-    # a dictionary with `content` and other relevant fields.
-    # The main use case for this function is to massage data from
-    # various APIs to have similar data structures.
-    # It also allows bots to explictly set response_not_required.
-    def process_success(self, response_json: Dict[str, Any],
-                        event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        raise NotImplementedError()
-
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
