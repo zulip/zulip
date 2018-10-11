@@ -629,8 +629,11 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
-    'GitHub': GitHubAuthBackend,
     'Google': GoogleMobileOauth2Backend,
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
+
+# Authomatically add all of our social auth backends to relevant data structures.
+for social_auth_subclass in SocialAuthMixin.__subclasses__():
+    AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
