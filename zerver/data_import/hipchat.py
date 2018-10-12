@@ -95,6 +95,13 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         short_name = in_dict['mention_name']
         timezone = in_dict['timezone']
 
+        if not email:
+            # Hipchat guest users don't have emails, so
+            # we just fake them.
+            assert(is_guest)
+            email = 'guest-{id}@example.com'.format(id=id)
+            delivery_email = email
+
         date_joined = int(timezone_now().timestamp())
         is_active = not in_dict['is_deleted']
 
