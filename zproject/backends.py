@@ -13,6 +13,7 @@ from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.oauth import BaseOAuth2
 from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
@@ -72,7 +73,7 @@ def remote_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
-    return auth_enabled_helper(['GitHub', 'Google'], realm)
+    return auth_enabled_helper(OAUTH_BACKEND_NAMES, realm)
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -633,7 +634,10 @@ AUTH_BACKEND_NAME_MAP = {
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
+OAUTH_BACKEND_NAMES = ["Google"]  # type: List[str]
 
 # Authomatically add all of our social auth backends to relevant data structures.
 for social_auth_subclass in SocialAuthMixin.__subclasses__():
     AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
+    if issubclass(social_auth_subclass, BaseOAuth2):
+        OAUTH_BACKEND_NAMES.append(social_auth_subclass.auth_backend_name)
