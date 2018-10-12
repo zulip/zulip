@@ -384,6 +384,11 @@ def write_message_data(realm_id: int,
         stream_id = int(room_id)
         data = json.load(open(fn))
 
+        data = [
+            d for d in data
+            if 'UserMessage' in d
+        ]
+
         flat_data = [
             d['UserMessage']
             for d in data
