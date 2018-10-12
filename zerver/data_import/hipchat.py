@@ -97,8 +97,14 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
         #    rooms - no good sample data
         #    created - we just use "now"
         #    roles - we just use account_type
+
+        if in_dict.get('avatar'):
+            avatar_source = 'U'
+        else:
+            avatar_source = 'G'
+
         return build_user(
-            avatar_source='U',
+            avatar_source=avatar_source,
             date_joined=date_joined,
             delivery_email=delivery_email,
             email=email,
@@ -133,6 +139,7 @@ def convert_avatar_data(avatar_folder: str,
     flat_data = [
         d['User']
         for d in raw_data
+        if d.get('avatar')
     ]
 
     def process(raw_user: ZerverFieldsT) -> ZerverFieldsT:
