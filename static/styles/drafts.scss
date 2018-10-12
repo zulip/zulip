@@ -18,7 +18,7 @@
     padding-top: 4px;
     text-align: center;
     text-transform: uppercase;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 .drafts-header h1 {
@@ -31,7 +31,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     cursor: pointer;
 }
 
@@ -56,7 +56,7 @@
     margin-top: calc(45vh - 30px - 1.5em);
     text-align: center;
     font-size: 1.5em;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
 }
@@ -65,7 +65,7 @@
     display: block;
     text-align: center;
     font-size: 1em;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
 }
@@ -112,7 +112,7 @@
 .draft_controls .restore-draft {
     cursor: pointer;
     margin-right: 5px;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     opacity: 0.7;
 }
 
