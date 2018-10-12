@@ -354,13 +354,31 @@ def write_emoticon_data(realm_id: int,
     return realmemoji
 
 def write_message_data(realm_id: int,
+                       message_key: str,
                        zerver_recipient: List[ZerverFieldsT],
                        zerver_subscription: List[ZerverFieldsT],
                        zerver_userprofile: List[ZerverFieldsT],
                        data_dir: str,
                        output_dir: str) -> None:
-    room_dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
-    history_files = glob.glob(room_dir_glob)
+
+    stream_id_to_recipient_id = {
+        d['type_id']: d['id']
+        for d in zerver_recipient
+        if d['type'] == Recipient.STREAM
+    }
+
+    def get_stream_recipient_id(raw_message: ZerverFieldsT) -> int:
+        fn_id = raw_message['fn_id']
+        recipient_id = stream_id_to_recipient_id[fn_id]
+        return recipient_id
+
+
+    if message_key == 'UserMessage':
+        dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
+        get_recipient_id = get_stream_recipient_id
+
+    else:
+        raise Exception('programming error: invalid message_key: ' + message_key)
 
     user_map = {
         user['id']: user
@@ -379,24 +397,19 @@ def write_message_data(realm_id: int,
         return content
 
     def process(fn: str) -> List[ZerverFieldsT]:
-        rooms_dir = os.path.dirname(fn)
-        room_id = os.path.basename(rooms_dir)
-        stream_id = int(room_id)
+        dir = os.path.dirname(fn)
+        fn_id = int(os.path.basename(dir))
         data = json.load(open(fn))
 
-        data = [
-            d for d in data
-            if 'UserMessage' in d
-        ]
-
         flat_data = [
-            d['UserMessage']
+            d[message_key]
             for d in data
+            if message_key in d
         ]
 
         return [
             dict(
-                stream_id=stream_id,
+                fn_id=fn_id,
                 sender_id=d['sender']['id'],
                 content=d['message'],
                 mention_user_ids=d['mentions'],
@@ -405,17 +418,12 @@ def write_message_data(realm_id: int,
             for d in flat_data
         ]
 
+    history_files = glob.glob(dir_glob)
     raw_messages = [
         message
         for fn in history_files
         for message in process(fn)
     ]
-
-    stream_id_to_recipient_id = {
-        d['type_id']: d['id']
-        for d in zerver_recipient
-        if d['type'] == Recipient.STREAM
-    }
 
     mention_map = dict()  # type: Dict[int, Set[int]]
 
@@ -428,8 +436,7 @@ def write_message_data(realm_id: int,
             mention_user_ids=raw_message['mention_user_ids'],
         )
         pub_date = raw_message['pub_date']
-        stream_id = raw_message['stream_id']
-        recipient_id = stream_id_to_recipient_id[stream_id]
+        recipient_id = get_recipient_id(raw_message)
         rendered_content = None
         subject = 'archived'
         user_id = raw_message['sender_id']
@@ -530,14 +537,16 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     create_converted_data_files(realm, output_dir, '/realm.json')
 
-    write_message_data(
-        realm_id=realm_id,
-        zerver_recipient=zerver_recipient,
-        zerver_subscription=zerver_subscription,
-        zerver_userprofile=zerver_userprofile,
-        data_dir=input_data_dir,
-        output_dir=output_dir,
-    )
+    for message_key in ['UserMessage']:
+        write_message_data(
+            realm_id=realm_id,
+            message_key=message_key,
+            zerver_recipient=zerver_recipient,
+            zerver_subscription=zerver_subscription,
+            zerver_userprofile=zerver_userprofile,
+            data_dir=input_data_dir,
+            output_dir=output_dir,
+        )
 
     write_avatar_data(
         raw_user_data=raw_user_data,
