@@ -147,7 +147,7 @@
                             <div class="login-social">
                                 <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
-                                    <button class="login-social-button login-github-button github">
+                                    <button class="login-social-button">
                                         {{ _('Log in with %(identity_provider)s', identity_provider="GitHub") }}
                                     </button>
                                 </form>
