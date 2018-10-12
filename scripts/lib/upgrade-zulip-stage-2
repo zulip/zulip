@@ -5,6 +5,7 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
+import hashlib
 import subprocess
 import os
 import sys
@@ -76,6 +77,18 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node
 # TODO: Do caching to only run this when it has changed.
 subprocess.check_call([os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"),
                        "--production"])
+
+# Unpleasant migration: Remove any legacy deployed copies of
+# images-google-64 from before we renamed that emojiset to
+# "googleblob":
+emoji_path = "/home/zulip/prod-static/generated/emoji/images-google-64/1f32d.png"
+if os.path.exists(emoji_path):
+    with open(emoji_path, "rb") as f:
+        emoji_data = f.read()
+    emoji_sha = hashlib.sha1(emoji_data).hexdigest()
+    if emoji_sha == "47033121dc20b376e0f86f4916969872ad22a293":
+        import shutil
+        shutil.rmtree("/home/zulip/prod-static/generated/emoji/images-google-64")
 
 # And then, building/installing the static assets.
 if args.from_git:
