@@ -81,6 +81,11 @@ exports.save_uncollapsed = function (message) {
 // structures, and triggers a UI rerender.
 exports.update_starred_flag = function (message_id, new_value) {
     var message = message_store.get(message_id);
+    if (message === undefined) {
+        // If we don't have the message locally, do nothing; if later
+        // we fetch it, it'll come with the correct `starred` state.
+        return;
+    }
     message.starred = new_value;
     ui.update_starred_view(message_id, new_value);
 };
