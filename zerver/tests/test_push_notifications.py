@@ -106,6 +106,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         realm.save()
 
         result = self.api_post(self.example_email("hamlet"), endpoint, {'token': token,
+                                                                        'user_id': 15,
                                                                         'token_kind': token_kind},
                                realm="")
         self.assert_json_error(result, "Must validate with valid Zulip server API key")

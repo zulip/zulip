@@ -102,11 +102,13 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
 def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                   token: bytes=REQ(),
                                   token_kind: int=REQ(validator=check_int),
+                                  user_id: int=REQ(),
                                   ios_app_id: Optional[str]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
                                                    kind=token_kind,
+                                                   user_id=user_id,
                                                    server=server).delete()
     if deleted[0] == 0:
         return json_error(err_("Token does not exist"))

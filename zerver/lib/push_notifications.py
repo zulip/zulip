@@ -396,7 +396,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
         return
 
     try:
-        token = PushDeviceToken.objects.get(token=token_str, kind=kind)
+        token = PushDeviceToken.objects.get(token=token_str, kind=kind, user=user_profile)
         token.delete()
     except PushDeviceToken.DoesNotExist:
         raise JsonableError(_("Token does not exist"))
