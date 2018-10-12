@@ -18,6 +18,10 @@ Move the data:
 Test out the realm:
     ./tools/run-dev.py
     go to browser and use your dev url
+
+spec:
+    https://confluence.atlassian.com/hipchatkb/
+    exporting-from-hipchat-server-or-data-center-for-data-portability-950821555.html
 '''
 
 from django.core.management.base import BaseCommand, CommandParser, CommandError
