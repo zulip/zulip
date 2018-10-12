@@ -554,6 +554,8 @@ def social_auth_finish(backend: Any,
                                            redirect_to=redirect_to)
 
 class SocialAuthMixin(ZulipAuthMixin):
+    auth_backend_name = "undeclared"
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
         python-social-auth, designed primarily to prevent 500s for
