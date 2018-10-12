@@ -13,6 +13,7 @@ from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable
 
+from zerver.lib.actions import UserMessageLite, bulk_insert_ums
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -417,6 +418,34 @@ def update_model_ids(model: Any, data: TableData, related_table: TableName) -> N
     for item in range(len(data[table])):
         update_id_map(related_table, old_id_list[item], allocated_id_list[item])
     re_map_foreign_keys(data, table, 'id', related_table=related_table, id_field=True)
+
+def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
+    model = UserMessage
+    table = 'zerver_usermessage'
+    lst = data[table]
+
+    def process_batch(items: List[Dict[str, Any]]) -> None:
+        ums = [
+            UserMessageLite(
+                user_profile_id = item['user_profile_id'],
+                message_id = item['message_id'],
+                flags=item['flags'],
+            )
+            for item in items
+        ]
+        bulk_insert_ums(ums)
+
+    offset = 0
+    chunk_size = 10000
+
+    while True:
+        items = lst[offset:offset+chunk_size]
+        if not items:
+            break
+        process_batch(items)
+        offset += chunk_size
+
+    logging.info("Successfully imported %s from %s[%s]." % (model, table, dump_file_id))
 
 def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str]=None) -> None:
     table = get_db_table(model)
@@ -931,8 +960,9 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_usermessage', 'message', related_table="message")
         re_map_foreign_keys(data, 'zerver_usermessage', 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
+
         update_model_ids(UserMessage, data, 'usermessage')
-        bulk_import_model(data, UserMessage)
+        bulk_import_user_message_data(data, dump_file_id)
         dump_file_id += 1
 
 def import_attachments(data: TableData) -> None:

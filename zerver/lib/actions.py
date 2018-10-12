@@ -1443,10 +1443,10 @@ class UserMessageLite:
     is optimized for the simple use case of inserting a bunch of
     rows into zerver_usermessage.
     '''
-    def __init__(self, user_profile_id: int, message_id: int) -> None:
+    def __init__(self, user_profile_id: int, message_id: int, flags: int) -> None:
         self.user_profile_id = user_profile_id
         self.message_id = message_id
-        self.flags = 0
+        self.flags = flags
 
     def flags_list(self) -> List[str]:
         return UserMessage.flags_list_for_flags(self.flags)
@@ -1462,6 +1462,7 @@ def create_user_messages(message: Message,
         um = UserMessageLite(
             user_profile_id=user_profile_id,
             message_id=message.id,
+            flags=0,
         )
         ums_to_create.append(um)
 
