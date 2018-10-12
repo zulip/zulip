@@ -11,6 +11,16 @@ from zerver.models import (
     get_user_including_cross_realm,
 )
 
+def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
+    frags = email_str.split(',')
+    emails = [s.strip().lower() for s in frags]
+    emails = [email for email in emails if email]
+
+    if len(emails) > 1:
+        emails = [email for email in emails if email != my_email.lower()]
+
+    return emails
+
 def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:

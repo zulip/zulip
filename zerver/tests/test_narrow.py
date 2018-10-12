@@ -202,17 +202,25 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='pm-with', operand=self.example_email("hamlet"), negated=True)
         self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1)')
 
-    def test_add_term_using_pm_with_operator_and_more_than_user_as_operand(self) -> None:
+    def test_add_term_using_pm_with_operator_and_self_and_user_as_operand(self) -> None:
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com')
+        self._do_add_term_test(term, 'WHERE sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2')
+
+    def test_add_term_using_pm_with_operator_more_than_one_user_as_operand(self) -> None:
+        term = dict(operator='pm-with', operand='cordelia@zulip.com, othello@zulip.com')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
-    def test_add_term_using_pm_with_operator_more_than_user_as_operand_and_negated(
+    def test_add_term_using_pm_with_operator_self_and_user_as_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='pm-with', operand='hamlet@zulip.com, othello@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE NOT (sender_id = :sender_id_1 AND recipient_id = :recipient_id_1 OR sender_id = :sender_id_2 AND recipient_id = :recipient_id_2)')
+
+    def test_add_term_using_pm_with_operator_more_than_one_user_as_operand_and_negated(self) -> None:
+        term = dict(operator='pm-with', operand='cordelia@zulip.com, othello@zulip.com', negated=True)
         self._do_add_term_test(term, 'WHERE recipient_id != :recipient_id_1')
 
-    def test_add_term_using_pm_with_operator_with_non_existing_user_as_operand(self) -> None:
-        term = dict(operator='pm-with', operand='non-existing@zulip.com')
+    def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
+        term = dict(operator='pm-with', operand=' ,,, ,,, ,')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
     def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(self) -> None:

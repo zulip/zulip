@@ -20,6 +20,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
     get_user_info_for_message_updates, check_schedule_message
+from zerver.lib.addressee import raw_pm_with_emails
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
     access_message,
@@ -289,11 +290,19 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_pm_with(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
-        if ',' in operand:
+        # This will strip our own email out of the operand
+        # and do other munging.
+        emails = raw_pm_with_emails(
+            email_str=operand,
+            my_email=self.user_profile.email,
+        )
+
+        if len(emails) == 0:
+            raise BadNarrowOperator('empty pm-with clause')
+
+        if len(emails) >= 2:
             # Huddle
             try:
-                # Ignore our own email if it is in this list
-                emails = [e.strip() for e in operand.split(',') if e.strip() != self.user_profile.email]
                 recipient = recipient_for_emails(emails, False,
                                                  self.user_profile, self.user_profile)
             except ValidationError:
@@ -302,8 +311,11 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         else:
             # Personal message
+            target_email = emails[0]
             self_recipient = get_personal_recipient(self.user_profile.id)
-            if operand == self.user_profile.email:
+
+            # PM with self
+            if target_email == self.user_profile.email:
                 # Personals with self
                 cond = and_(column("sender_id") == self.user_profile.id,
                             column("recipient_id") == self_recipient.id)
@@ -311,7 +323,7 @@ class NarrowBuilder:
 
             # Personals with other user; include both directions.
             try:
-                narrow_profile = get_user_including_cross_realm(operand, self.user_realm)
+                narrow_profile = get_user_including_cross_realm(target_email, self.user_realm)
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
