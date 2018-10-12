@@ -665,7 +665,7 @@ td.pointer {
     position: absolute;
     right: -110px;
     font-size: 14px;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
     padding-left: 20px;
@@ -675,7 +675,7 @@ td.pointer {
 }
 
 .private-message .alert-msg {
-    background-color: hsl(192, 19%, 95%);
+    background-color: hsl(192, 20%, 95%);
 }
 
 .include-sender .alert-msg {
@@ -1492,7 +1492,7 @@ blockquote p {
 .messagebox blockquote {
     padding-left: 5px;
     margin-left: 10px;
-    border-left-color: hsl(0, 0%, 86%);
+    border-left-color: hsl(0, 0%, 87%);
 }
 
 .messagebox .rtl blockquote {
@@ -1501,7 +1501,7 @@ blockquote p {
     margin-left: unset;
     margin-right: 10px;
     border-left: unset;
-    border-right: 5px solid hsl(0, 0%, 86%);
+    border-right: 5px solid hsl(0, 0%, 87%);
 }
 
 .bookend {
@@ -1579,7 +1579,7 @@ blockquote p {
     display: inline-block;
     position: relative;
     font-weight: 300;
-    background-color: hsl(0, 0%, 97%);
+    background-color: hsl(0, 0%, 98%);
     margin: 0px;
     padding: 0px;
     text-overflow: ellipsis;
@@ -1778,7 +1778,7 @@ blockquote p {
     right: 10px;
     display: inline-block;
     border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 66%);
+    border-bottom: 7px solid hsl(0, 0%, 67%);
     border-left: 7px solid transparent;
     content: '';
     z-index: 10;
@@ -1839,7 +1839,7 @@ nav .column-left .company-name {
     margin-left: 8px;
     font-size: 1.2rem;
     font-weight: 600;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     letter-spacing: 0.1em;
     cursor: pointer;
 }
@@ -2439,7 +2439,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #invite-user .modal-header {
     padding: 7px 15px;
-    border-color: hsl(0, 0%, 86%);
+    border-color: hsl(0, 0%, 87%);
 }
 
 #invite-user .modal-header .exit {
@@ -2450,7 +2450,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     top: 6px;
     right: 5px;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 #invitee_emails {
@@ -2537,7 +2537,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .twitter-tweet {
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid hsl(0, 0%, 87%);
     padding: .5em .75em;
     margin-bottom: 0.25em;
     word-break: break-word;
@@ -2689,7 +2689,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #message_edit_form a.message-control-button {
     display: inline;
-    color: hsl(0, 0%, 46%);
+    color: hsl(0, 0%, 47%);
     text-decoration: none;
     font-size: 12px;
     width: 12px;
@@ -2913,7 +2913,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .email_copied,
 .user_popover_email i:hover {
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
 }
 
 .email_copied i {

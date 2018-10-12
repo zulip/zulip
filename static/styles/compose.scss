@@ -34,7 +34,7 @@
 
 .alert-draft {
     font-size: 14px;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     padding: 3px 12px;
     font-weight: 400;
     display: none;
@@ -323,7 +323,7 @@ textarea.new_message_textarea,
 
 textarea.new_message_textarea:focus,
 .compose_table .recipient_box:focus {
-    border: 1px solid hsl(0, 0%, 66%);
+    border: 1px solid hsl(0, 0%, 67%);
     box-shadow: none;
     -webkit-box-shadow: none;
 }
@@ -368,7 +368,7 @@ input.recipient_box {
 }
 
 #send_controls .compose_checkbox_label {
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     margin-right: 2px;
 }
 
@@ -379,12 +379,12 @@ input.recipient_box {
     margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);
-    background-color: hsl(170, 47%, 54%);
+    background-color: hsl(170, 48%, 54%);
     color: hsl(0, 0%, 100%);
 }
 
 #compose-send-button:focus {
-    box-shadow: 0px 0px 10px hsl(170, 47%, 54%), 0px 0px 5px hsl(170, 47%, 54%);
+    box-shadow: 0px 0px 10px hsl(170, 48%, 54%), 0px 0px 5px hsl(170, 48%, 54%);
 }
 
 #stream-message,
@@ -459,7 +459,7 @@ input.recipient_box {
 
     margin-top: 5px;
 
-    border: 1px solid hsl(0, 0%, 66%);
+    border: 1px solid hsl(0, 0%, 67%);
     border-radius: 4px;
     background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
@@ -470,7 +470,7 @@ a#undo_markdown_preview {
     text-decoration: none;
     position: relative;
     font-size: 16px;
-    color: hsl(0, 0%, 46%);
+    color: hsl(0, 0%, 47%);
 }
 
 #markdown_preview_spinner {
