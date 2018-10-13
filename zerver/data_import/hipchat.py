@@ -7,7 +7,7 @@ import os
 import shutil
 import subprocess
 
-from typing import Any, Dict, List, Set
+from typing import Any, Callable, Dict, List, Set
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -372,7 +372,6 @@ def write_message_data(realm_id: int,
         recipient_id = stream_id_to_recipient_id[fn_id]
         return recipient_id
 
-
     if message_key == 'UserMessage':
         dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
         get_recipient_id = get_stream_recipient_id
@@ -385,6 +384,26 @@ def write_message_data(realm_id: int,
         for user in zerver_userprofile
     }
 
+    history_files = glob.glob(dir_glob)
+    for fn in history_files:
+        process_message_file(
+            fn=fn,
+            get_recipient_id=get_recipient_id,
+            message_key=message_key,
+            user_map=user_map,
+            zerver_subscription=zerver_subscription,
+            data_dir=data_dir,
+            output_dir=output_dir,
+        )
+
+def process_message_file(fn: str,
+                         get_recipient_id: Callable[[ZerverFieldsT], int],
+                         message_key: str,
+                         user_map: Dict[int, ZerverFieldsT],
+                         zerver_subscription: List[ZerverFieldsT],
+                         data_dir: str,
+                         output_dir: str) -> None:
+
     def fix_mentions(content: str,
                      mention_user_ids: List[int]) -> str:
         for user_id in mention_user_ids:
@@ -396,7 +415,7 @@ def write_message_data(realm_id: int,
         content = content.replace('@here', '@**all**')
         return content
 
-    def process(fn: str) -> List[ZerverFieldsT]:
+    def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
         dir = os.path.dirname(fn)
         fn_id = int(os.path.basename(dir))
         data = json.load(open(fn))
@@ -418,12 +437,7 @@ def write_message_data(realm_id: int,
             for d in flat_data
         ]
 
-    history_files = glob.glob(dir_glob)
-    raw_messages = [
-        message
-        for fn in history_files
-        for message in process(fn)
-    ]
+    raw_messages = get_raw_messages(fn)
 
     mention_map = dict()  # type: Dict[int, Set[int]]
 
@@ -489,7 +503,7 @@ def write_message_data(realm_id: int,
         zerver_usermessage=zerver_usermessage,
     )
 
-    dump_file_id = 1
+    dump_file_id = NEXT_ID('dump_file_id')
     message_file = "/messages-%06d.json" % (dump_file_id,)
     create_converted_data_files(message_json, output_dir, message_file)
 
