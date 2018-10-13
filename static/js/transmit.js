@@ -105,7 +105,7 @@ exports.reply_message = function (opts) {
     if (message.type === 'stream') {
         var stream = message.stream;
 
-        var mention = '@**' + message.sender_full_name + '**';
+        var mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
 
         content = mention + ' ' + content;
 
