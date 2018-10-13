@@ -32,6 +32,11 @@ from zerver.data_import.import_util import (
     write_avatar_png,
 )
 
+from zerver.data_import.sequencer import sequencer
+
+# Create one sequencer for our entire conversion.
+NEXT_ID = sequencer()
+
 # stubs
 ZerverFieldsT = Dict[str, Any]
 
@@ -331,10 +336,10 @@ def write_emoticon_data(realm_id: int,
         build_realm_emoji(
             realm_id=realm_id,
             name=rec['name'],
-            id=i+1,
+            id=NEXT_ID('realmemoji'),
             file_name=rec['file_name'],
         )
-        for i, rec in enumerate(emoji_records)
+        for rec in emoji_records
     ]
     logging.info('Done processing emoticons')
 
@@ -428,11 +433,10 @@ def write_message_data(realm_id: int,
 
     zerver_message = [
         make_message(
-            message_id=i+1,
+            message_id=NEXT_ID('message'),
             raw_message=raw_message
         )
-        for i, raw_message
-        in enumerate(raw_messages)
+        for raw_message in raw_messages
     ]
 
     subscriber_map = dict()  # type: Dict[int, Set[int]]
@@ -444,7 +448,6 @@ def write_message_data(realm_id: int,
         subscriber_map[recipient_id].add(user_id)
 
     zerver_usermessage = []
-    usermessage_id = 1
 
     for message in zerver_message:
         message_id = message['id']
@@ -454,13 +457,12 @@ def write_message_data(realm_id: int,
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
             user_message = build_user_message(
-                id=usermessage_id,
+                id=NEXT_ID('user_message'),
                 user_id=user_id,
                 message_id=message_id,
                 is_mentioned=is_mentioned,
             )
             zerver_usermessage.append(user_message)
-            usermessage_id += 1
 
     message_json = dict(
         zerver_message=zerver_message,
