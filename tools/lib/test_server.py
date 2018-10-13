@@ -29,18 +29,16 @@ def set_up_django(external_host):
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-def assert_server_running(server, log_file):
-    # type: (subprocess.Popen, Optional[str]) -> None
+def assert_server_running(server):
+    # type: (subprocess.Popen) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         message = 'Server died unexpectedly!'
-        if log_file:
-            message += '\nSee %s\n' % (log_file,)
         raise RuntimeError(message)
 
-def server_is_up(server, log_file):
-    # type: (subprocess.Popen, Optional[str]) -> bool
-    assert_server_running(server, log_file)
+def server_is_up(server):
+    # type: (subprocess.Popen) -> bool
+    assert_server_running(server)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
@@ -49,16 +47,8 @@ def server_is_up(server, log_file):
 
 @contextmanager
 def test_server_running(force: bool=False, external_host: str='testserver',
-                        log_file: Optional[str]=None, dots: bool=False, use_db: bool=True
+                        use_db: bool=True
                         ) -> Iterator[None]:
-    log = sys.stdout
-    if log_file:
-        if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
-            log = open(log_file, 'a')
-            log.write('\n\n')
-        else:
-            log = open(log_file, 'w')
-
     set_up_django(external_host)
 
     if use_db:
@@ -68,18 +58,13 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     run_dev_server_command = ['tools/run-dev.py', '--test']
     if force:
         run_dev_server_command.append('--force')
-    server = subprocess.Popen(run_dev_server_command,
-                              stdout=log, stderr=log)
+    server = subprocess.Popen(run_dev_server_command)
 
     try:
         # Wait for the server to start up.
         sys.stdout.write('\nWaiting for test server (may take a while)')
-        if not dots:
-            sys.stdout.write('\n\n')
-        while not server_is_up(server, log_file):
-            if dots:
-                sys.stdout.write('.')
-                sys.stdout.flush()
+        sys.stdout.write('\n\n')
+        while not server_is_up(server):
             time.sleep(0.1)
         sys.stdout.write('\n\n--- SERVER IS UP! ---\n\n')
 
@@ -87,7 +72,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
         yield
 
     finally:
-        assert_server_running(server, log_file)
+        assert_server_running(server)
         server.terminate()
 
 if __name__ == '__main__':

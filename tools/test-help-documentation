@@ -22,11 +22,10 @@ from tools.lib.test_server import test_server_running
 
 os.makedirs('var/help-documentation', exist_ok=True)
 
-LOG_FILE = 'var/help-documentation/server.log'
 external_host = "localhost:9981"
 
-with test_server_running(options.force, external_host, log_file=LOG_FILE,
-                         dots=True, use_db=True):
+with test_server_running(options.force, external_host,
+                         use_db=True):
     ret_help_doc = subprocess.call(('scrapy', 'crawl_with_status', 'help_documentation_crawler'),
                                    cwd='tools/documentation_crawler')
     ret_api_doc = subprocess.call(('scrapy', 'crawl_with_status', 'api_documentation_crawler'),
