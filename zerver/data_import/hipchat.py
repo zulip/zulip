@@ -367,14 +367,30 @@ def write_message_data(realm_id: int,
         if d['type'] == Recipient.STREAM
     }
 
+    user_id_to_recipient_id = {
+        d['type_id']: d['id']
+        for d in zerver_recipient
+        if d['type'] == Recipient.PERSONAL
+    }
+
     def get_stream_recipient_id(raw_message: ZerverFieldsT) -> int:
         fn_id = raw_message['fn_id']
         recipient_id = stream_id_to_recipient_id[fn_id]
         return recipient_id
 
+    def get_pm_recipient_id(raw_message: ZerverFieldsT) -> int:
+        user_id = raw_message['receiver_id']
+        assert(user_id)
+        recipient_id = user_id_to_recipient_id[user_id]
+        return recipient_id
+
     if message_key == 'UserMessage':
         dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
         get_recipient_id = get_stream_recipient_id
+
+    elif message_key == 'PrivateUserMessage':
+        dir_glob = os.path.join(data_dir, 'users', '*', 'history.json')
+        get_recipient_id = get_pm_recipient_id
 
     else:
         raise Exception('programming error: invalid message_key: ' + message_key)
@@ -430,6 +446,7 @@ def process_message_file(fn: str,
             dict(
                 fn_id=fn_id,
                 sender_id=d['sender']['id'],
+                receiver_id=d.get('receiver', {}).get('id'),
                 content=d['message'],
                 mention_user_ids=d['mentions'],
                 pub_date=str_date_to_float(d['timestamp']),
@@ -551,7 +568,8 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     create_converted_data_files(realm, output_dir, '/realm.json')
 
-    for message_key in ['UserMessage']:
+    for message_key in ['UserMessage',
+                        'PrivateUserMessage']:
         write_message_data(
             realm_id=realm_id,
             message_key=message_key,
