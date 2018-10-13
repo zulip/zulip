@@ -246,6 +246,10 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_name_changes_disabled || page_params.is_admin) {
+            if (overlays.is_modal_open()) {
+                overlays.close_active_modal();
+                return;
+            }
             overlays.open_modal('change_full_name_modal');
         }
     });
@@ -253,6 +257,10 @@ exports.set_up = function () {
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        if (overlays.is_modal_open()) {
+            overlays.close_active_modal();
+            return;
+        }
         overlays.open_modal('change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
@@ -387,6 +395,10 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
+            if (overlays.is_modal_open()) {
+                overlays.close_active_modal();
+                return;
+            }
             overlays.open_modal('change_email_modal');
             var email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
