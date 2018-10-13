@@ -207,6 +207,7 @@ run_test('reply_with_mention', () => {
         subject: 'python',
         reply_to: 'bob', // compose.start needs this for dubious reasons
         sender_full_name: 'Bob Roberts',
+        sender_id: 40,
     };
     stub_selected_message(msg);
 
@@ -221,6 +222,25 @@ run_test('reply_with_mention', () => {
     reply_with_mention(opts);
     assert.equal($('#stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts**');
+    assert(compose_state.has_message_content());
+
+    // Test for extended mention syntax
+    var bob_1 = {
+        user_id: 30,
+        email: 'bob1@example.com',
+        full_name: 'Bob Roberts',
+    };
+    people.add_in_realm(bob_1);
+    var bob_2 = {
+        user_id: 40,
+        email: 'bob2@example.com',
+        full_name: 'Bob Roberts',
+    };
+    people.add_in_realm(bob_2);
+
+    reply_with_mention(opts);
+    assert.equal($('#stream').val(), 'devel');
+    assert.equal(syntax_to_insert, '@**Bob Roberts|40**');
     assert(compose_state.has_message_content());
 });
 

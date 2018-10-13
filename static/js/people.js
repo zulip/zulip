@@ -773,6 +773,18 @@ exports.is_duplicate_full_name = function (full_name) {
     return false;
 };
 
+exports.get_mention_syntax = function (full_name, user_id) {
+    var mention = '@**' + full_name;
+    if (!user_id) {
+        blueslip.warn('get_mention_syntax called without user_id.');
+    }
+    if (people.is_duplicate_full_name(full_name) && user_id) {
+        mention += '|' + user_id;
+    }
+    mention += '**';
+    return mention;
+};
+
 exports.add = function add(person) {
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
