@@ -698,6 +698,35 @@ run_test('track_duplicate_full_names', () => {
     assert(!people.is_duplicate_full_name('Stephen King JP'));
 });
 
+run_test('track_duplicate_full_names', () => {
+    var stephen1 = {
+        email: 'stephen-the-author@example.com',
+        user_id: 601,
+        full_name: 'Stephen King',
+    };
+    var stephen2 = {
+        email: 'stephen-the-explorer@example.com',
+        user_id: 602,
+        full_name: 'Stephen King',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 603,
+        full_name: 'Maria Athens',
+    };
+    people.add(stephen1);
+    people.add(stephen2);
+    people.add(maria);
+
+    blueslip.set_test_data('warn', 'get_mention_syntax called without user_id.');
+    assert.equal(people.get_mention_syntax('Stephen King'), '@**Stephen King**');
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
+    assert.equal(people.get_mention_syntax('Stephen King', 601), '@**Stephen King|601**');
+    assert.equal(people.get_mention_syntax('Stephen King', 602), '@**Stephen King|602**');
+    assert.equal(people.get_mention_syntax('Maria Athens', 603), '@**Maria Athens**');
+});
+
 run_test('initialize', () => {
     people.init();
 
