@@ -179,6 +179,7 @@ run_test('reply_message_stream', () => {
         stream: 'social',
         subject: 'lunch',
         sender_full_name: 'Alice',
+        sender_id: 123,
     };
 
     const content = 'hello';
