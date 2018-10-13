@@ -568,6 +568,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     create_converted_data_files(realm, output_dir, '/realm.json')
 
+    logging.info('Start importing message data')
     for message_key in ['UserMessage',
                         'PrivateUserMessage']:
         write_message_data(
@@ -580,6 +581,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             output_dir=output_dir,
         )
 
+    logging.info('Start importing avatar data')
     write_avatar_data(
         raw_user_data=raw_user_data,
         output_dir=output_dir,
@@ -591,4 +593,6 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
         realm_id=realm_id,
     )
 
+    logging.info('Start making tarball')
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
+    logging.info('Done making tarball')
