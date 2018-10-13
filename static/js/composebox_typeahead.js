@@ -455,11 +455,8 @@ exports.content_typeahead_selected = function (item) {
             beginning += '@*' + item.name + '* ';
             $(document).trigger('usermention_completed.zulip', {user_group: item});
         } else {
-            beginning += '@**' + item.full_name;
-            if (people.is_duplicate_full_name(item.full_name)) {
-                beginning += '|' + item.user_id;
-            }
-            beginning += '** ';
+            var mention_text = people.get_mention_syntax(item.full_name, item.user_id);
+            beginning += mention_text + ' ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
     } else if (this.completing === 'stream') {
