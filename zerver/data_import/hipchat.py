@@ -33,6 +33,7 @@ from zerver.data_import.import_util import (
     write_avatar_png,
 )
 
+from zerver.data_import.hipchat_attachment import AttachmentHandler
 from zerver.data_import.sequencer import sequencer
 
 # Create one sequencer for our entire conversion.
@@ -225,16 +226,6 @@ def make_realm(realm_id: int) -> ZerverFieldsT:
 
     return realm
 
-def write_upload_data(output_dir: str, realm_id: int) -> None:
-    uploads_records = []  # type: List[ZerverFieldsT]
-    uploads_folder = os.path.join(output_dir, 'uploads')
-    os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
-
-    attachments = []  # type: List[ZerverFieldsT]
-    attachment = {"zerver_attachment": attachments}
-    create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
-    create_converted_data_files(attachment, output_dir, '/attachment.json')
-
 def write_avatar_data(raw_user_data: List[ZerverFieldsT],
                       output_dir: str,
                       realm_id: int) -> None:
@@ -359,7 +350,8 @@ def write_message_data(realm_id: int,
                        zerver_subscription: List[ZerverFieldsT],
                        zerver_userprofile: List[ZerverFieldsT],
                        data_dir: str,
-                       output_dir: str) -> None:
+                       output_dir: str,
+                       attachment_handler: AttachmentHandler) -> None:
 
     stream_id_to_recipient_id = {
         d['type_id']: d['id']
@@ -387,10 +379,12 @@ def write_message_data(realm_id: int,
     if message_key == 'UserMessage':
         dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
         get_recipient_id = get_stream_recipient_id
+        get_files_dir = lambda fn_id: os.path.join(data_dir, 'rooms', str(fn_id), 'files')
 
     elif message_key == 'PrivateUserMessage':
         dir_glob = os.path.join(data_dir, 'users', '*', 'history.json')
         get_recipient_id = get_pm_recipient_id
+        get_files_dir = lambda fn_id: os.path.join(data_dir, 'users', 'files')
 
     else:
         raise Exception('programming error: invalid message_key: ' + message_key)
@@ -402,23 +396,35 @@ def write_message_data(realm_id: int,
 
     history_files = glob.glob(dir_glob)
     for fn in history_files:
+        dir = os.path.dirname(fn)
+        fn_id = int(os.path.basename(dir))
+        files_dir = get_files_dir(fn_id)
+
         process_message_file(
+            realm_id=realm_id,
             fn=fn,
+            fn_id=fn_id,
+            files_dir=files_dir,
             get_recipient_id=get_recipient_id,
             message_key=message_key,
             user_map=user_map,
             zerver_subscription=zerver_subscription,
             data_dir=data_dir,
             output_dir=output_dir,
+            attachment_handler=attachment_handler,
         )
 
-def process_message_file(fn: str,
+def process_message_file(realm_id: int,
+                         fn: str,
+                         fn_id: int,
+                         files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
                          message_key: str,
                          user_map: Dict[int, ZerverFieldsT],
                          zerver_subscription: List[ZerverFieldsT],
                          data_dir: str,
-                         output_dir: str) -> None:
+                         output_dir: str,
+                         attachment_handler: AttachmentHandler) -> None:
 
     def fix_mentions(content: str,
                      mention_user_ids: List[int]) -> str:
@@ -432,8 +438,6 @@ def process_message_file(fn: str,
         return content
 
     def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
-        dir = os.path.dirname(fn)
-        fn_id = int(os.path.basename(dir))
         data = json.load(open(fn))
 
         flat_data = [
@@ -450,6 +454,8 @@ def process_message_file(fn: str,
                 content=d['message'],
                 mention_user_ids=d['mentions'],
                 pub_date=str_date_to_float(d['timestamp']),
+                attachment=d['attachment'],
+                files_dir=files_dir,
             )
             for d in flat_data
         ]
@@ -472,6 +478,21 @@ def process_message_file(fn: str,
         subject = 'archived'
         user_id = raw_message['sender_id']
 
+        # Another side effect:
+        extra_content = attachment_handler.handle_message_data(
+            realm_id=realm_id,
+            message_id=message_id,
+            sender_id=user_id,
+            attachment=raw_message['attachment'],
+            files_dir=raw_message['files_dir'],
+        )
+
+        if extra_content:
+            has_attachment = True
+            content += '\n' + extra_content
+        else:
+            has_attachment = False
+
         return build_message(
             content=content,
             message_id=message_id,
@@ -480,6 +501,7 @@ def process_message_file(fn: str,
             rendered_content=rendered_content,
             subject=subject,
             user_id=user_id,
+            has_attachment=has_attachment,
         )
 
     zerver_message = [
@@ -526,6 +548,8 @@ def process_message_file(fn: str,
 
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
+
+    attachment_handler = AttachmentHandler()
 
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
@@ -579,6 +603,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             zerver_userprofile=zerver_userprofile,
             data_dir=input_data_dir,
             output_dir=output_dir,
+            attachment_handler=attachment_handler,
         )
 
     logging.info('Start importing avatar data')
@@ -588,7 +613,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
         realm_id=realm_id,
     )
 
-    write_upload_data(
+    attachment_handler.write_info(
         output_dir=output_dir,
         realm_id=realm_id,
     )
