@@ -1,3 +1,4 @@
+import json
 import random
 import requests
 import shutil
@@ -504,3 +505,8 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records
+
+def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
+    output_file = output_dir + file_path
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    json.dump(data, open(output_file, 'w'), indent=4)

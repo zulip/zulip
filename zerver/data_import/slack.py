@@ -24,7 +24,7 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis, build_realm, build_stream, build_message
+    process_emojis, build_realm, build_stream, build_message, create_converted_data_files
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -805,7 +805,3 @@ def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> Any:
         return json_data
     else:
         raise Exception('Something went wrong. Please try again!')
-
-def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
-    output_file = output_dir + file_path
-    json.dump(data, open(output_file, 'w'), indent=4)

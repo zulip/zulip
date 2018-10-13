@@ -18,7 +18,7 @@ from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, process_avatars, build_realm, build_stream, \
-    build_message
+    build_message, create_converted_data_files
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -267,11 +267,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-
-def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
-    output_file = output_dir + file_path
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    json.dump(data, open(output_file, 'w'), indent=4)
 
 def write_data_to_file(output_file: str, data: Any) -> None:
     with open(output_file, "w") as f:

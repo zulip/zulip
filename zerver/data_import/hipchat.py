@@ -29,6 +29,7 @@ from zerver.data_import.import_util import (
     build_user,
     build_user_message,
     build_zerver_realm,
+    create_converted_data_files,
     write_avatar_png,
 )
 
@@ -538,9 +539,3 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
 
     subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
-
-# TODO: everything below is verbatim from slack.py
-
-def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
-    output_file = output_dir + file_path
-    json.dump(data, open(output_file, 'w'), indent=4)
