@@ -5,7 +5,7 @@ import shutil
 import logging
 import os
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
@@ -295,7 +295,7 @@ def build_message(subject: str, pub_date: float, message_id: int, content: str,
 
     return zulip_message_dict
 
-def build_attachment(realm_id: int, message_id: int, attachment_id: int,
+def build_attachment(realm_id: int, message_ids: Set[int], attachment_id: int,
                      user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
                      zerver_attachment: List[ZerverFieldsT]) -> None:
     """
@@ -313,7 +313,7 @@ def build_attachment(realm_id: int, message_id: int, attachment_id: int,
     attachment_dict = model_to_dict(attachment,
                                     exclude=['owner', 'messages', 'realm'])
     attachment_dict['owner'] = user_id
-    attachment_dict['messages'] = [message_id]
+    attachment_dict['messages'] = list(message_ids)
     attachment_dict['realm'] = realm_id
 
     zerver_attachment.append(attachment_dict)

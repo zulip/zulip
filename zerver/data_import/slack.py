@@ -614,7 +614,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                               uploads_list)
 
                 attachment_id = attachment_id_count
-                build_attachment(realm_id, message_id, attachment_id, added_users[user],
+                build_attachment(realm_id, {message_id}, attachment_id, added_users[user],
                                  fileinfo, s3_path, zerver_attachment)
                 attachment_id_count += 1
             # For attachments with link not from slack
