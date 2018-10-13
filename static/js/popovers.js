@@ -672,7 +672,8 @@ exports.register_click_handlers = function () {
         }
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
-        compose_ui.insert_syntax_and_focus('@**' + name + '**');
+        var mention = people.get_mention_syntax(name, user_id);
+        compose_ui.insert_syntax_and_focus(mention);
         popovers.hide_user_sidebar_popover();
         popovers.hide_userlist_sidebar();
         e.stopPropagation();
@@ -685,7 +686,8 @@ exports.register_click_handlers = function () {
         }
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
-        compose_ui.insert_syntax_and_focus('@**' + name + '**');
+        var mention = people.get_mention_syntax(name, user_id);
+        compose_ui.insert_syntax_and_focus(mention);
         popovers.hide_message_info_popover();
         e.stopPropagation();
         e.preventDefault();
