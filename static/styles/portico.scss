@@ -310,7 +310,7 @@ body {
     padding: 3px 6.5px 3px 7.5px;
     margin-right: 5px;
     background-color: hsl(170, 48%, 54%);
-    color: white;
+    color: hsl(0, 0%, 100%);
     border-radius: 100%;
     font-size: 0.9em;
     line-height: 1.1;
@@ -415,11 +415,11 @@ li div.codehilite {
 }
 
 a.title {
-    color: black;
+    color: hsl(0, 0%, 0%);
 }
 
 a.title:hover {
-    color: gray;
+    color: hsl(0, 0%, 50%);
     text-decoration: none;
 }
 
@@ -560,7 +560,7 @@ img.screenshot {
 
 .darker-background {
     background-color: hsl(0, 0%, 28%);
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 .alert-hidden {
@@ -574,8 +574,8 @@ label.text-error {
 }
 
 input.text-error {
-    border-color: red;
-    outline-color: red;
+    border-color: hsl(0, 100%, 50%);
+    outline-color: hsl(0, 100%, 50%);
 }
 
 .portico-container {
@@ -1300,7 +1300,7 @@ input.new-organization-button {
 .main-headline-text {
     display: block;
     text-align: center;
-    color: black;
+    color: hsl(0, 0%, 0%);
     font-weight: 300;
 }
 
@@ -1312,7 +1312,7 @@ input.new-organization-button {
 .main-headline-text .footnote {
     display: block;
     font-size: 18px;
-    color: black;
+    color: hsl(0, 0%, 0%);
     margin-top: 15px;
 }
 
@@ -1766,7 +1766,7 @@ input.new-organization-button {
     margin: auto;
     border: 2px solid hsl(163, 43%, 46%);
     max-width: 500px;
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 18px;
 }

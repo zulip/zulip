@@ -405,7 +405,7 @@ input[type=checkbox] + .inline-block {
 #settings_page .icon-button.primary .icon-button-icon {
     font-size: 15px;
     font-weight: lighter;
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 #settings_page .save-button-controls {
@@ -1041,7 +1041,7 @@ input[type=checkbox].inline-block {
 }
 
 .white-color {
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 #realm-settings-icon {
@@ -1775,7 +1775,7 @@ thead .actions {
 .custom_user_field .pill-container {
     padding: 2px 6px;
     height: 24px;
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .custom_user_field .pill-container:focus-within {

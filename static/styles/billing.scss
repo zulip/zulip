@@ -66,7 +66,7 @@
             &:checked {
                 + .box {
                     background-color: hsl(153, 32%, 55%);
-                    color: white;
+                    color: hsl(0, 0%, 100%);
                     border-color: hsl(152, 33%, 39%);
                 }
             }
@@ -108,7 +108,7 @@
     .stripe-button-el {
         padding: 11px 25px 11px 25px;
         font-weight: 400;
-        color: white;
+        color: hsl(0, 0%, 100%);
         background-color: hsl(185, 38%, 55%);
         background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
         box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);

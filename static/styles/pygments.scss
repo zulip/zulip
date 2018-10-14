@@ -250,11 +250,11 @@ body.night-mode .codehilite .ge {
 }
 
 body.night-mode .codehilite .gr {
-    color: red;
+    color: hsl(0, 100%, 50%);
 }
 
 body.night-mode .codehilite .go {
-    color: gray;
+    color: hsl(0, 0%, 50%);
 }
 
 body.night-mode .codehilite .gs {
@@ -263,7 +263,7 @@ body.night-mode .codehilite .gs {
 }
 
 body.night-mode .codehilite .gu {
-    color: purple;
+    color: hsl(300, 100%, 25%);
     font-weight: 700;
 }
 

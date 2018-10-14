@@ -9,7 +9,7 @@
 
 .widget-choices button {
     font-weight: 700;
-    color: blue;
+    color: hsl(240, 100%, 50%);
 }
 
 .widget-choices-heading {
@@ -36,7 +36,7 @@
 
 .poll-widget .poll-names .todo-widget {
     font-size: 14px;
-    color: green;
+    color: hsl(120, 100%, 25%);
 }
 
 .poll-widget .poll-option {
@@ -47,7 +47,7 @@
     color: hsl(156, 41%, 40%);
     border-color: hsl(156, 28%, 70%);
     margin-right: 4px;
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
 }
 
 button.task {
@@ -91,7 +91,7 @@ button.poll-comment,
 button.poll-question {
     border-radius: 3px;
     border: 1px solid hsl(0, 0%, 80%);
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     width: 100px;
 }
 
