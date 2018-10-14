@@ -34,6 +34,7 @@ from zerver.data_import.import_util import (
 )
 
 from zerver.data_import.hipchat_attachment import AttachmentHandler
+from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.sequencer import sequencer
 
 # Create one sequencer for our entire conversion.
@@ -80,7 +81,9 @@ def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     data = json.load(open(data_file))
     return data
 
-def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[ZerverFieldsT]:
+def convert_user_data(user_handler: UserHandler,
+                      raw_data: List[ZerverFieldsT],
+                      realm_id: int) -> None:
     flat_data = [
         d['User']
         for d in raw_data
@@ -132,7 +135,9 @@ def convert_user_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
             timezone=timezone,
         )
 
-    return list(map(process, flat_data))
+    for raw_item in flat_data:
+        user = process(raw_item)
+        user_handler.add_user(user)
 
 def convert_avatar_data(avatar_folder: str,
                         raw_data: List[ZerverFieldsT],
@@ -348,9 +353,9 @@ def write_message_data(realm_id: int,
                        message_key: str,
                        zerver_recipient: List[ZerverFieldsT],
                        zerver_subscription: List[ZerverFieldsT],
-                       zerver_userprofile: List[ZerverFieldsT],
                        data_dir: str,
                        output_dir: str,
+                       user_handler: UserHandler,
                        attachment_handler: AttachmentHandler) -> None:
 
     stream_id_to_recipient_id = {
@@ -389,11 +394,6 @@ def write_message_data(realm_id: int,
     else:
         raise Exception('programming error: invalid message_key: ' + message_key)
 
-    user_map = {
-        user['id']: user
-        for user in zerver_userprofile
-    }
-
     history_files = glob.glob(dir_glob)
     for fn in history_files:
         dir = os.path.dirname(fn)
@@ -407,10 +407,10 @@ def write_message_data(realm_id: int,
             files_dir=files_dir,
             get_recipient_id=get_recipient_id,
             message_key=message_key,
-            user_map=user_map,
             zerver_subscription=zerver_subscription,
             data_dir=data_dir,
             output_dir=output_dir,
+            user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
 
@@ -420,16 +420,16 @@ def process_message_file(realm_id: int,
                          files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
                          message_key: str,
-                         user_map: Dict[int, ZerverFieldsT],
                          zerver_subscription: List[ZerverFieldsT],
                          data_dir: str,
                          output_dir: str,
+                         user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
 
     def fix_mentions(content: str,
                      mention_user_ids: List[int]) -> str:
         for user_id in mention_user_ids:
-            user = user_map[user_id]
+            user = user_handler.get_user(user_id=user_id)
             hipchat_mention = '@{short_name}'.format(**user)
             zulip_mention = '@**{full_name}**'.format(**user)
             content = content.replace(hipchat_mention, zulip_mention)
@@ -562,17 +562,21 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
     attachment_handler = AttachmentHandler()
+    user_handler = UserHandler()
 
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
 
     # users.json -> UserProfile
     raw_user_data = read_user_data(data_dir=input_data_dir)
-    zerver_userprofile = convert_user_data(
+    convert_user_data(
+        user_handler=user_handler,
         raw_data=raw_user_data,
         realm_id=realm_id,
     )
-    realm['zerver_userprofile'] = zerver_userprofile
+    normal_users = user_handler.get_normal_users()
+    # Don't write zerver_userprofile here, because we
+    # may add more users later.
 
     # streams.json -> Stream
     raw_stream_data = read_room_data(data_dir=input_data_dir)
@@ -583,13 +587,13 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     realm['zerver_stream'] = zerver_stream
 
     zerver_recipient = build_recipients(
-        zerver_userprofile=zerver_userprofile,
+        zerver_userprofile=normal_users,
         zerver_stream=zerver_stream,
     )
     realm['zerver_recipient'] = zerver_recipient
 
     zerver_subscription = build_subscriptions(
-        zerver_userprofile=zerver_userprofile,
+        zerver_userprofile=normal_users,
         zerver_recipient=zerver_recipient,
         zerver_stream=zerver_stream,
     )
@@ -602,8 +606,6 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
     realm['zerver_realmemoji'] = zerver_realmemoji
 
-    create_converted_data_files(realm, output_dir, '/realm.json')
-
     logging.info('Start importing message data')
     for message_key in ['UserMessage',
                         'PrivateUserMessage']:
@@ -612,11 +614,17 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             message_key=message_key,
             zerver_recipient=zerver_recipient,
             zerver_subscription=zerver_subscription,
-            zerver_userprofile=zerver_userprofile,
             data_dir=input_data_dir,
             output_dir=output_dir,
+            user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
+
+    # Order is important here...don't write users until
+    # we process everything else, since we may introduce
+    # mirror users when processing messages.
+    realm['zerver_userprofile'] = user_handler.get_all_users()
+    create_converted_data_files(realm, output_dir, '/realm.json')
 
     logging.info('Start importing avatar data')
     write_avatar_data(
