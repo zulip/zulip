@@ -512,6 +512,25 @@ def process_message_file(realm_id: int,
         for raw_message in raw_messages
     ]
 
+    zerver_usermessage = make_user_messages(
+        zerver_message=zerver_message,
+        zerver_subscription=zerver_subscription,
+        mention_map=mention_map,
+    )
+
+    message_json = dict(
+        zerver_message=zerver_message,
+        zerver_usermessage=zerver_usermessage,
+    )
+
+    dump_file_id = NEXT_ID('dump_file_id')
+    message_file = "/messages-%06d.json" % (dump_file_id,)
+    create_converted_data_files(message_json, output_dir, message_file)
+
+def make_user_messages(zerver_message: List[ZerverFieldsT],
+                       zerver_subscription: List[ZerverFieldsT],
+                       mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
+
     subscriber_map = dict()  # type: Dict[int, Set[int]]
     for sub in zerver_subscription:
         user_id = sub['user_profile']
@@ -537,14 +556,7 @@ def process_message_file(realm_id: int,
             )
             zerver_usermessage.append(user_message)
 
-    message_json = dict(
-        zerver_message=zerver_message,
-        zerver_usermessage=zerver_usermessage,
-    )
-
-    dump_file_id = NEXT_ID('dump_file_id')
-    message_file = "/messages-%06d.json" % (dump_file_id,)
-    create_converted_data_files(message_json, output_dir, message_file)
+    return zerver_usermessage
 
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
