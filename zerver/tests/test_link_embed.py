@@ -16,7 +16,7 @@ from zerver.lib.url_preview.preview import (
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import (
     OpenGraphParser, GenericParser)
-from zerver.lib.cache import cache_set, NotFoundInCache
+from zerver.lib.cache import cache_set, NotFoundInCache, preview_url_cache_key
 
 
 TEST_CACHES = {
@@ -369,5 +369,6 @@ class PreviewTestCase(ZulipTestCase):
             link_embed_data_from_cache(url)
 
         with self.settings(CACHES=TEST_CACHES):
-            cache_set(url, link_embed_data, 'database')
+            key = preview_url_cache_key(url)
+            cache_set(key, link_embed_data, 'database')
             self.assertEqual(link_embed_data, link_embed_data_from_cache(url))

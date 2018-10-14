@@ -293,6 +293,9 @@ def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
 
     return cache_with_key(keyfunc)(func)
 
+def preview_url_cache_key(url: str) -> str:
+    return "preview_url:%s" % (make_safe_digest(url))
+
 def display_recipient_cache_key(recipient_id: int) -> str:
     return "display_recipient_dict:%d" % (recipient_id,)
 
