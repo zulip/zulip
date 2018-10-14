@@ -79,3 +79,6 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
             ret['zephyr_mirror_active'] = False
 
     return json_success(ret)
+
+def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    return json_success(get_status_list(user_profile))
