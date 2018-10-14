@@ -1008,11 +1008,11 @@ input[type=checkbox].inline-block {
     min-width: initial !important;
 }
 
-.flexbox {
+#api_key_buttons {
     display: inline-flex;
 }
 
-.flexbox .regenerate_api_key {
+#api_key_buttons .regenerate_api_key {
     margin-right: 5px;
 }
 
@@ -1642,7 +1642,7 @@ input[type=text]#settings_search {
 }
 
 @media (max-width: 450px) {
-    .flexbox,
+    #api_key_buttons,
     #download_zuliprc {
         flex-direction: column;
         margin-top: 5px;

@@ -212,16 +212,15 @@
         <div id="show_api_key_box">
             <p>{{t "Your API key:" }}</p>
             <p><b><span id="api_key_value"></span></b></p>
-            <div class="flexbox">
+            <div id="api_key_buttons">
                 <button type="submit" class="button white rounded regenerate_api_key">
                     {{t "Generate new API key" }}
                 </button>
                 <a id="download_zuliprc" download="{{zuliprc}}" class="button sea-green">
                     {{t "Download .zuliprc" }}
                 </a>
-                <div id="user_api_key_error text-error">
-                </div>
             </div>
+            <div id="user_api_key_error" class="text-error"></div>
         </div>
         <div class="inline-block">
             <h3>{{t "Deactivate account" }}</h3>
