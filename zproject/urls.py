@@ -116,6 +116,9 @@ v1_api_and_json_patterns = [
     url(r'^realm/deactivate$', rest_dispatch,
         {'POST': 'zerver.views.realm.deactivate_realm'}),
 
+    url(r'^realm/presence$', rest_dispatch,
+        {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
+
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on

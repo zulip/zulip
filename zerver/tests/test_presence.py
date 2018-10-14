@@ -485,3 +485,21 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
             }
         )
+
+class GetRealmStatusesTest(ZulipTestCase):
+    def test_get_statuses(self) -> None:
+        # Setup the test by simulating users reporting their presence data.
+        othello_email = self.example_email("othello")
+        result = self.api_post(othello_email, "/api/v1/users/me/presence", {'status': 'active'},
+                               HTTP_USER_AGENT="ZulipAndroid/1.0")
+
+        hamlet_email = self.example_email("hamlet")
+        result = self.api_post(hamlet_email, "/api/v1/users/me/presence", {'status': 'idle'},
+                               HTTP_USER_AGENT="ZulipDesktop/1.0")
+        self.assert_json_success(result)
+
+        # Check that a bot can fetch the presence data for the realm.
+        result = self.api_get(self.example_email("welcome_bot"), "/api/v1/realm/presence")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(sorted(json['presences'].keys()), [hamlet_email, othello_email])
