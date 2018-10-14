@@ -25,7 +25,8 @@
         {{/if}}
 
         {{#if user_time}}
-        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        <li>{{#tr this}}Local time: {{/tr}}{{ user_time }} </li>
+        <li>{{#tr this}}Last online: {{/tr}}{{ user_last_seen_time_status}} </li>
         {{/if}}
     </div>
     <hr />
