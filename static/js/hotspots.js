@@ -236,6 +236,7 @@ exports.load_new = function (new_hotspots) {
 };
 
 exports.initialize = function () {
+    page_params.hotspots = [];
     exports.load_new(page_params.hotspots);
 };
 

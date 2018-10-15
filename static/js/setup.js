@@ -9,6 +9,7 @@ $(function () {
         // Also disable the tutorial; it's ugly on mobile.
         page_params.needs_tutorial = false;
     }
+    page_params.needs_tutorial = false;
 
     page_params.page_load_time = new Date().getTime();
 
