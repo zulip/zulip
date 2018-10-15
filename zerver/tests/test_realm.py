@@ -497,8 +497,10 @@ class ScrubRealmTest(ZulipTestCase):
         for user in zulip_users:
             self.assertTrue(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
             self.assertTrue(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))
+            self.assertTrue(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.delivery_email))
 
         lear_users = UserProfile.objects.filter(realm=lear)
         for user in lear_users:
             self.assertIsNone(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
             self.assertIsNone(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))
+            self.assertIsNone(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.delivery_email))
