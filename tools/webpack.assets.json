@@ -48,7 +48,6 @@
         "./static/third/bootstrap/css/bootstrap-responsive.css",
         "./node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
         "./node_modules/font-awesome/css/font-awesome.css",
-        "./static/third/fontawesome-legacy.css",
         "./static/generated/icons/style.css",
         "./node_modules/source-sans-pro/source-sans-pro.css",
         "./static/styles/pygments.scss"
