@@ -2,6 +2,7 @@
 import datetime
 import ujson
 import re
+import mock
 
 from django.http import HttpResponse
 from mock import patch
@@ -480,7 +481,8 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
-        do_scrub_realm(zulip)
+        with mock.patch('logging.warning'):
+            do_scrub_realm(zulip)
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
         self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
