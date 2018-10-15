@@ -1,4 +1,4 @@
-<div id="user-profile-modal" class="modal modal-bg fade" tabindex="-1"
+<div id="user-profile-modal" class="modal modal-bg fade{{#unless profile_data.length}} no-fields{{/unless}}" tabindex="-1"
   role="dialog" aria-labelledby="user_profile_modal label" aria-hidden="true">
     <div class="modal-body" id="body">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
@@ -37,20 +37,18 @@
         <hr>
         <div id="content">
             {{#each profile_data}}
-                {{#if this.value}}
-                <div data-type="{{this.type}}" class="field-section">
-                    <div class="name">{{this.name}}</div>
-                    {{#if this.is_user_field}}
-                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                        <div class="input" contenteditable="false" style="display: none;"></div>
-                    </div>
-                    {{else if this.is_link}}
-                    <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
-                    {{else}}
-                    <div class="value">{{this.value}}</div>
-                    {{/if}}
+            <div data-type="{{this.type}}" class="field-section">
+                <div class="name">{{this.name}}</div>
+                {{#if this.is_user_field}}
+                <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                    <div class="input" contenteditable="false" style="display: none;"></div>
                 </div>
+                {{else if this.is_link}}
+                <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
+                {{else}}
+                <div class="value">{{this.value}}</div>
                 {{/if}}
+            </div>
             {{/each}}
         </div>
     </div>

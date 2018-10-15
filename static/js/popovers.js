@@ -206,8 +206,8 @@ exports.show_user_profile = function (element, user) {
             } else {
                 profile_field.value = field_value;
             }
+            profile_data.push(profile_field);
         }
-        profile_data.push(profile_field);
     });
 
     var args = {
