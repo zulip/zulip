@@ -113,10 +113,10 @@ run_test('render_date_renders_time_above_html', () => {
     };
 
     var expected = [
-        '<i class="date-direction icon-vector-caret-up"></i>',
+        '<i class="date-direction fa fa-caret-up"></i>',
         i18n.t('Yesterday'),
         '<hr class="date-line">',
-        '<i class="date-direction icon-vector-caret-down"></i>',
+        '<i class="date-direction fa fa-caret-down"></i>',
         i18n.t('Today'),
     ];
 
