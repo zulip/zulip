@@ -6,7 +6,7 @@ This document briefly explains how to document
 Our API documentation files live under `templates/zerver/api/*`. To
 begin, we recommend using an existing doc file (`render-message.md` is
 a good example) as a template. Make sure you link to your new Markdown
-file in `templates/zerver/help/rest-endpoints.md` , so that it appears
+file in `templates/zerver/help/include/rest-endpoints.md` , so that it appears
 in the index in the left sidebar on the `/api` page.
 
 The markdown framework is the same one used by the
