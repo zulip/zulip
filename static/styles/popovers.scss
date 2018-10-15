@@ -145,13 +145,6 @@ ul.remind_me_popover .remind_icon {
 #user-profile-modal {
     border-radius: 4px;
 
-    #body {
-        padding-bottom: 10px;
-        padding-top: 4px;
-        margin-bottom: 10px;
-        margin-top: 10px;
-    }
-
     #exit-sign {
         font-size: 1.5rem;
     }
@@ -221,6 +214,21 @@ ul.remind_me_popover .remind_icon {
                 white-space: pre-line;
                 overflow-wrap: break-word;
             }
+        }
+    }
+
+    &.no-fields {
+        hr,
+        #content {
+            display: none;
+        }
+    }
+
+    &:not(.no-fields) {
+        #body {
+            padding-bottom: 10px;
+            padding-top: 4px;
+            margin: 10px 0;
         }
     }
 }
