@@ -36,9 +36,10 @@ def build_user(avatar_source: str,
                is_active: bool,
                is_realm_admin: bool,
                is_guest: bool,
+               is_mirror_dummy: bool,
                realm_id: int,
                short_name: str,
-               timezone: str) -> ZerverFieldsT:
+               timezone: Optional[str]) -> ZerverFieldsT:
     pointer = -1
     obj = UserProfile(
         avatar_source=avatar_source,

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import ujson
 
-from typing import Any, Callable, Dict, List, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -100,6 +100,7 @@ def convert_user_data(user_handler: UserHandler,
         id = in_dict['id']
         is_realm_admin = in_dict['account_type'] == 'admin'
         is_guest = in_dict['account_type'] == 'guest'
+        is_mirror_dummy = False
         short_name = in_dict['mention_name']
         timezone = in_dict['timezone']
 
@@ -134,6 +135,7 @@ def convert_user_data(user_handler: UserHandler,
             is_active=is_active,
             is_realm_admin=is_realm_admin,
             is_guest=is_guest,
+            is_mirror_dummy=is_mirror_dummy,
             realm_id=realm_id,
             short_name=short_name,
             timezone=timezone,
@@ -387,7 +389,7 @@ def write_message_data(realm_id: int,
         recipient_id = user_id_to_recipient_id[user_id]
         return recipient_id
 
-    if message_key == 'UserMessage':
+    if message_key in ['UserMessage', 'NotificationMessage']:
         dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
         get_recipient_id = get_stream_recipient_id
         get_files_dir = lambda fn_id: os.path.join(data_dir, 'rooms', str(fn_id), 'files')
@@ -442,19 +444,37 @@ def process_message_file(realm_id: int,
             if message_key in d
         ]
 
-        return [
-            dict(
+        def get_raw_message(d: Dict[str, Any]) -> ZerverFieldsT:
+            if isinstance(d['sender'], str):
+                # Some Hipchat instances just give us a person's
+                # name in the sender field for NotificationMessage.
+                # We turn them into a mirror user.
+                mirror_user = user_handler.get_mirror_user(
+                    realm_id=realm_id,
+                    name=d['sender'],
+                )
+                sender_id = mirror_user['id']
+            else:
+                sender_id = d['sender']['id']
+
+            return dict(
                 fn_id=fn_id,
-                sender_id=d['sender']['id'],
+                sender_id=sender_id,
                 receiver_id=d.get('receiver', {}).get('id'),
                 content=d['message'],
-                mention_user_ids=d['mentions'],
+                mention_user_ids=d.get('mentions', []),
                 pub_date=str_date_to_float(d['timestamp']),
-                attachment=d['attachment'],
+                attachment=d.get('attachment'),
                 files_dir=files_dir,
             )
-            for d in flat_data
-        ]
+
+        raw_messages = []
+
+        for d in flat_data:
+            raw_message = get_raw_message(d)
+            raw_messages.append(raw_message)
+
+        return raw_messages
 
     raw_messages = get_raw_messages(fn)
 
@@ -642,6 +662,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     logging.info('Start importing message data')
     for message_key in ['UserMessage',
+                        'NotificationMessage',
                         'PrivateUserMessage']:
         write_message_data(
             realm_id=realm_id,
