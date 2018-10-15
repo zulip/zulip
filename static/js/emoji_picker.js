@@ -670,7 +670,7 @@ exports.register_click_handlers = function () {
         // element that definitely exists in the page even if the
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
-        // .icon-vector-chevron-down element as the base for the popover.
+        // .fa-chevron-down element as the base for the popover.
         var elem = $(".selected_message .actions_hover")[0];
         emoji_picker.toggle_emoji_popover(elem, msgid);
     });
