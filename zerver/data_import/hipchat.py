@@ -13,6 +13,10 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.utils import (
+    process_list_in_batches,
+)
+
 from zerver.models import (
     RealmEmoji,
     Recipient,
@@ -450,6 +454,33 @@ def process_message_file(realm_id: int,
         ]
 
     raw_messages = get_raw_messages(fn)
+
+    def process_batch(lst: List[Any]) -> None:
+        process_raw_message_batch(
+            realm_id=realm_id,
+            raw_messages=lst,
+            zerver_subscription=zerver_subscription,
+            user_handler=user_handler,
+            attachment_handler=attachment_handler,
+            get_recipient_id=get_recipient_id,
+            output_dir=output_dir,
+        )
+
+    chunk_size = 1000
+
+    process_list_in_batches(
+        lst=raw_messages,
+        chunk_size=chunk_size,
+        process_batch=process_batch,
+    )
+
+def process_raw_message_batch(realm_id: int,
+                              raw_messages: List[Dict[str, Any]],
+                              zerver_subscription: List[ZerverFieldsT],
+                              user_handler: UserHandler,
+                              attachment_handler: AttachmentHandler,
+                              get_recipient_id: Callable[[ZerverFieldsT], int],
+                              output_dir: str) -> None:
 
     def fix_mentions(content: str,
                      mention_user_ids: List[int]) -> str:
