@@ -121,10 +121,10 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
     elem.text("");
     if (rendered_time_above !== undefined) {
         var pieces = [
-            '<i class="date-direction icon-vector-caret-up"></i>',
+            '<i class="date-direction fa fa-caret-up"></i>',
             rendered_time_above.time_str,
             '<hr class="date-line">',
-            '<i class="date-direction icon-vector-caret-down"></i>',
+            '<i class="date-direction fa fa-caret-down"></i>',
             rendered_time.time_str,
         ];
         elem.append(pieces);

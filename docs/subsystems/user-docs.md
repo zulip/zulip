@@ -115,11 +115,11 @@ to be formatted correctly.
 ### Icons
 
 You can refer to features in the Zulip UI by referencing their names
-and their [FontAwesome](http://fontawesome.io) (version 4.7.0) text
-icons within parentheses. **Note:** We are migrating to the modern
-font awesome base class `fa` instead of the older base class
-`icon-vector` when specifying icons. In future we will be removing
-support for the icons with base class `icon-vector`.
+and their [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) text
+icons within parentheses. **Note:** We have completed migrating away from older
+base class `icon-vector` and have dropped support for it. We now only support
+icons from [FontAwesome](https://fontawesome.com/v4.7.0/) (version 4.7.0) which
+make use of `fa` as a base class.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
 class="fa fa-cog"></i>) icon`

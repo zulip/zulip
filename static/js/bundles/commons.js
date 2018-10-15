@@ -14,7 +14,6 @@ import "third/bootstrap/css/bootstrap-btn.css";
 import "third/bootstrap/css/bootstrap-responsive.css";
 import "node_modules/perfect-scrollbar/css/perfect-scrollbar.css";
 import "node_modules/font-awesome/css/font-awesome.css";
-import "third/fontawesome-legacy.css";
 import "generated/icons/style.css";
 import "node_modules/source-sans-pro/source-sans-pro.css";
 import "styles/pygments.scss";

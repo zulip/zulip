@@ -570,7 +570,6 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['background: url(https://example.com/image.png);']},
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
-         'exclude': set(['static/third/fontawesome-legacy.css']),
          'strip': '\n',
          'good_lines': ["    color: white;", "color: white;"],
          'bad_lines': ["  color: white;"]},
