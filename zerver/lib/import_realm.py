@@ -23,7 +23,7 @@ from zerver.lib.message import save_message_rendered_content
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend, guess_type
-from zerver.lib.utils import generate_api_key
+from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
@@ -435,15 +435,13 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
         ]
         bulk_insert_ums(ums)
 
-    offset = 0
     chunk_size = 10000
 
-    while True:
-        items = lst[offset:offset+chunk_size]
-        if not items:
-            break
-        process_batch(items)
-        offset += chunk_size
+    process_list_in_batches(
+        lst=lst,
+        chunk_size=chunk_size,
+        process_batch=process_batch,
+    )
 
     logging.info("Successfully imported %s from %s[%s]." % (model, table, dump_file_id))
 

@@ -177,6 +177,18 @@ def query_chunker(queries: List[Any],
 
         yield [row for row_id, i, row in tup_chunk]
 
+def process_list_in_batches(lst: List[Any],
+                            chunk_size: int,
+                            process_batch: Callable[[List[Any]], None]) -> None:
+    offset = 0
+
+    while True:
+        items = lst[offset:offset+chunk_size]
+        if not items:
+            break
+        process_batch(items)
+        offset += chunk_size
+
 def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     Group elements into list of size `group_size` and fill empty cells with
