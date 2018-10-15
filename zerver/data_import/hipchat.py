@@ -426,17 +426,6 @@ def process_message_file(realm_id: int,
                          user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
 
-    def fix_mentions(content: str,
-                     mention_user_ids: List[int]) -> str:
-        for user_id in mention_user_ids:
-            user = user_handler.get_user(user_id=user_id)
-            hipchat_mention = '@{short_name}'.format(**user)
-            zulip_mention = '@**{full_name}**'.format(**user)
-            content = content.replace(hipchat_mention, zulip_mention)
-
-        content = content.replace('@here', '@**all**')
-        return content
-
     def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
         data = json.load(open(fn))
 
@@ -461,6 +450,17 @@ def process_message_file(realm_id: int,
         ]
 
     raw_messages = get_raw_messages(fn)
+
+    def fix_mentions(content: str,
+                     mention_user_ids: List[int]) -> str:
+        for user_id in mention_user_ids:
+            user = user_handler.get_user(user_id=user_id)
+            hipchat_mention = '@{short_name}'.format(**user)
+            zulip_mention = '@**{full_name}**'.format(**user)
+            content = content.replace(hipchat_mention, zulip_mention)
+
+        content = content.replace('@here', '@**all**')
+        return content
 
     mention_map = dict()  # type: Dict[int, Set[int]]
 
