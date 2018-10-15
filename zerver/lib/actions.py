@@ -742,7 +742,8 @@ def do_scrub_realm(realm: Realm) -> None:
         do_delete_avatar_image(user)
         user.full_name = "Scrubbed {}".format(generate_key()[:15])
         user.email = "scrubbed-{}@{}".format(generate_key()[:15], realm.host)
-        user.save(update_fields=["full_name", "email"])
+        user.delivery_email = "scrubbed-{}@{}".format(generate_key()[:15], realm.host)
+        user.save(update_fields=["full_name", "email", "delivery_email"])
 
     do_remove_realm_custom_profile_fields(realm)
     Attachment.objects.filter(realm=realm).delete()
