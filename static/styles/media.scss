@@ -31,9 +31,9 @@
     }
 
     .column-right.expanded .right-sidebar {
-        background: hsla(0, 0%, 100%, 1.0);
+        background-color: hsla(0, 0%, 100%, 1.0);
         box-shadow: 0px -2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-left: 1px solid hsl(0, 0%, 86%);
+        border-left: 1px solid hsl(0, 0%, 87%);
         margin-top: 40px;
         padding: 10px 15px 0px 15px;
         height: 100%;
@@ -112,9 +112,9 @@
     }
 
     .column-left.expanded .left-sidebar {
-        background: hsla(0, 0%, 100%, 1.0);
+        background-color: hsla(0, 0%, 100%, 1.0);
         box-shadow: 0px 2px 3px 0px hsla(0, 0%, 0%, 0.1);
-        border-right: 1px solid hsl(0, 0%, 86%);
+        border-right: 1px solid hsl(0, 0%, 87%);
         margin-top: 40px;
         padding-top: 10px;
         height: 100%;

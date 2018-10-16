@@ -94,13 +94,13 @@ p.n-margin {
 }
 
 .top-messages-logo svg circle {
-    fill: #444;
-    stroke: #444;
+    fill: hsl(0, 0%, 27%);
+    stroke: hsl(0, 0%, 27%);
 }
 
 .top-messages-logo svg path {
-    fill: #fff;
-    stroke: #fff;
+    fill: hsl(0, 0%, 100%);
+    stroke: hsl(0, 0%, 100%);
 }
 
 #unmute_muted_topic_notification {
@@ -194,11 +194,11 @@ p.n-margin {
 }
 
 #panels .alert.alert-info {
-    background: hsl(170, 46%, 54%);
+    background-color: hsl(170, 46%, 54%);
 }
 
 #panels .alert.alert-info.red {
-    background: hsl(0, 46%, 54%);
+    background-color: hsl(0, 46%, 54%);
 }
 
 #panels .alert .close {
@@ -234,7 +234,7 @@ p.n-margin {
     margin: 0px auto;
     padding: 0px;
     position: relative;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .app-main {
@@ -665,7 +665,7 @@ td.pointer {
     position: absolute;
     right: -110px;
     font-size: 14px;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
     padding-left: 20px;
@@ -675,7 +675,7 @@ td.pointer {
 }
 
 .private-message .alert-msg {
-    background-color: hsl(192, 19%, 95%);
+    background-color: hsl(192, 20%, 95%);
 }
 
 .include-sender .alert-msg {
@@ -880,7 +880,7 @@ td.pointer {
 }
 
 .summary_row_private_message .summary_colorblock {
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
 }
 
 .messages-expand,
@@ -1074,7 +1074,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background: hsl(107, 74%, 29%);
+    background-color: hsl(107, 74%, 29%);
     width: 3px;
     height: 100%;
     box-shadow: inset 0px -1px 0px 0px hsl(0, 0%, 100%);
@@ -1245,7 +1245,7 @@ a.message_label_clickable:hover {
 .dark_background a:hover,
 a.dark_background:hover,
 .dark_background {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
 }
 
 .dark_background a.message_label_clickable:hover {
@@ -1492,7 +1492,7 @@ blockquote p {
 .messagebox blockquote {
     padding-left: 5px;
     margin-left: 10px;
-    border-left-color: hsl(0, 0%, 86%);
+    border-left-color: hsl(0, 0%, 87%);
 }
 
 .messagebox .rtl blockquote {
@@ -1501,7 +1501,7 @@ blockquote p {
     margin-left: unset;
     margin-right: 10px;
     border-left: unset;
-    border-right: 5px solid hsl(0, 0%, 86%);
+    border-right: 5px solid hsl(0, 0%, 87%);
 }
 
 .bookend {
@@ -1579,7 +1579,7 @@ blockquote p {
     display: inline-block;
     position: relative;
     font-weight: 300;
-    background-color: hsl(0, 0%, 97%);
+    background-color: hsl(0, 0%, 98%);
     margin: 0px;
     padding: 0px;
     text-overflow: ellipsis;
@@ -1709,7 +1709,7 @@ blockquote p {
     height: 12px;
     min-width: 12px;
     line-height: 12px;
-    background: hsl(0, 100%, 20%);
+    background-color: hsl(0, 100%, 20%);
     top: 4px;
     right: 4px;
     border: 1px solid hsl(0, 0%, 93%);
@@ -1738,7 +1738,7 @@ blockquote p {
 }
 
 .typeahead.dropdown-menu .active {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .typeahead.dropdown-menu .unsubscribed_icon {
@@ -1778,7 +1778,7 @@ blockquote p {
     right: 10px;
     display: inline-block;
     border-right: 7px solid transparent;
-    border-bottom: 7px solid hsl(0, 0%, 66%);
+    border-bottom: 7px solid hsl(0, 0%, 67%);
     border-left: 7px solid transparent;
     content: '';
     z-index: 10;
@@ -1839,7 +1839,7 @@ nav .column-left .company-name {
     margin-left: 8px;
     font-size: 1.2rem;
     font-weight: 600;
-    color: hsl(170, 47%, 54%);
+    color: hsl(170, 48%, 54%);
     letter-spacing: 0.1em;
     cursor: pointer;
 }
@@ -1849,7 +1849,7 @@ nav a .no-style {
 }
 
 .modal-bg {
-    background: #f9f9f9;
+    background-color: hsl(0, 0%, 98%);
 }
 
 #searchbox {
@@ -2070,7 +2070,7 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: hsl(0, 0%, 88%);
+    background-color: hsl(0, 0%, 88%);
 }
 
 .recipient_row.sticky {
@@ -2252,7 +2252,7 @@ li .message_inline_image img {
     padding: 5px 8px 5px 10px;
     font-size: 12px;
     border-radius: 4px;
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
     color: hsl(0, 0%, 100%);
     opacity: 0.7;
 }
@@ -2439,7 +2439,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #invite-user .modal-header {
     padding: 7px 15px;
-    border-color: hsl(0, 0%, 86%);
+    border-color: hsl(0, 0%, 87%);
 }
 
 #invite-user .modal-header .exit {
@@ -2450,7 +2450,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     top: 6px;
     right: 5px;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 #invitee_emails {
@@ -2537,7 +2537,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .twitter-tweet {
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid hsl(0, 0%, 87%);
     padding: .5em .75em;
     margin-bottom: 0.25em;
     word-break: break-word;
@@ -2608,7 +2608,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
     width: 33%;
     border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid hsl(0, 0%, 100%);
     margin: 0px 5px 0px 5px;
 }
 
@@ -2639,7 +2639,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     width: 50%;
     height: 0px;
     border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid hsl(0, 0%, 100%);
 }
 
 .sub-unsub-message span::before,
@@ -2689,7 +2689,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #message_edit_form a.message-control-button {
     display: inline;
-    color: hsl(0, 0%, 46%);
+    color: hsl(0, 0%, 47%);
     text-decoration: none;
     font-size: 12px;
     width: 12px;
@@ -2723,7 +2723,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .user-group-mention,
 .user-mention {
-    background: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 93%);
     border-radius: 3px;
     padding: 0 0.2em;
     box-shadow: 0px 0px 0px 1px hsl(0, 0%, 80%);
@@ -2741,7 +2741,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .user-mention-me {
-    background: hsl(112, 88%, 87%);
+    background-color: hsl(112, 88%, 87%);
 }
 
 .alert-word {
@@ -2768,7 +2768,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     position: absolute;
     left: 0;
     top: 0;
-    background: hsl(0, 0%, 0%);
+    background-color: hsl(0, 0%, 0%);
     z-index: 20000;
 }
 
@@ -2865,7 +2865,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 100%;
     top: 0;
 
-    background: linear-gradient(0deg, #fff, transparent 10%);
+    background: linear-gradient(0deg, hsl(0, 0%, 100%), transparent 10%);
 }
 
 @media (max-width: 600px) {
@@ -2913,7 +2913,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .email_copied,
 .user_popover_email i:hover {
-    color: #53c1ae;
+    color: hsl(170, 48%, 54%);
 }
 
 .email_copied i {
@@ -2932,8 +2932,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     left: -50%;
     top: 10px;
     border-radius: 6px;
-    background-color: #4c4c4c;
-    color: #fff;
+    background-color: hsl(0, 0%, 30%);
+    color: hsl(0, 0%, 100%);
     transition: visibility 0.2s ease-out, opacity 0.2s linear;
 
     ::after {
@@ -2945,7 +2945,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-width: 7px;
         border-style: solid;
         border-color: transparent;
-        border-bottom: #4c4c4c solid 7px;
+        border-bottom: hsl(0, 0%, 30%) solid 7px;
     }
 }
 
@@ -2974,21 +2974,21 @@ div.message_content td.tictactoe {
 }
 
 div.message_content button.tictactoe-square {
-    background-color: #81bba4;
+    background-color: hsl(156, 30%, 62%);
     width: 40px;
     height: 40px;
     border: none;
     border-radius: 3px;
     font-size: 25px;
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 div.message_content button.tictactoe-square:hover {
-    background-color: #808c87;
+    background-color: hsl(155, 5%, 53%);
 }
 
 div.message_content button.tictactoe-square:disabled {
-    background-color: #beded1;
+    background-color: hsl(156, 33%, 81%);
 }
 
 // Hide the up and down arrows in the Flatpickr datepicker year

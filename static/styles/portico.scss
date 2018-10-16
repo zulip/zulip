@@ -1,5 +1,5 @@
 body {
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .noscroll {
@@ -44,7 +44,7 @@ body {
     padding: 6px 0px;
     height: 29px;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
 
     z-index: 100;
@@ -90,7 +90,7 @@ body {
     padding: 3px 10px;
     margin: 0;
 
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 87%);
     border-bottom: none;
     border-radius: 4px 4px 0px 0px;
 
@@ -104,8 +104,8 @@ body {
 .code-section .blocks {
     padding: 20px;
 
-    background-color: #fafafa;
-    border: 1px solid #ddd;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
 
     border-radius: 0px 4px 4px 4px;
 }
@@ -309,8 +309,8 @@ body {
     vertical-align: top;
     padding: 3px 6.5px 3px 7.5px;
     margin-right: 5px;
-    background-color: hsl(170, 47%, 54%);
-    color: white;
+    background-color: hsl(170, 48%, 54%);
+    color: hsl(0, 0%, 100%);
     border-radius: 100%;
     font-size: 0.9em;
     line-height: 1.1;
@@ -343,7 +343,7 @@ ol > li > div.codehilite,
 }
 
 li div.codehilite {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.integrations ol ul {
@@ -392,7 +392,7 @@ li div.codehilite {
 
     color: hsl(0, 0%, 27%);
 
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
     background-color: hsl(0, 0%, 98%);
 }
@@ -415,11 +415,11 @@ li div.codehilite {
 }
 
 a.title {
-    color: black;
+    color: hsl(0, 0%, 0%);
 }
 
 a.title:hover {
-    color: gray;
+    color: hsl(0, 0%, 50%);
     text-decoration: none;
 }
 
@@ -560,7 +560,7 @@ img.screenshot {
 
 .darker-background {
     background-color: hsl(0, 0%, 28%);
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 .alert-hidden {
@@ -574,8 +574,8 @@ label.text-error {
 }
 
 input.text-error {
-    border-color: red;
-    outline-color: red;
+    border-color: hsl(0, 100%, 50%);
+    outline-color: hsl(0, 100%, 50%);
 }
 
 .portico-container {
@@ -634,7 +634,7 @@ input.text-error {
 }
 
 .footer section ul {
-    color: #aaa;
+    color: hsl(0, 0%, 67%);
 
     list-style-type: none;
     margin-left: 0;
@@ -662,7 +662,7 @@ input.text-error {
 
     font-size: 1.2rem;
     font-weight: 400;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     opacity: 0.5;
 }
 
@@ -677,7 +677,7 @@ input.text-error {
     margin-top: 8px;
     margin-left: 10px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -704,11 +704,11 @@ input.text-error {
     list-style-type: none;
     width: 200px;
 
-    background: #fff;
+    background-color: hsl(0, 0%, 100%);
     padding: 5px 0px;
 
     border-radius: 4px;
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 87%);
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -724,7 +724,7 @@ input.text-error {
     right: 9px;
 
     font-size: 0.5em;
-    color: #ddd;
+    color: hsl(0, 0%, 87%);
 
     line-height: 0;
 
@@ -743,7 +743,7 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover {
-    background: linear-gradient(to bottom, #08c, #0077b3);
+    background: linear-gradient(to bottom, hsl(163, 92%, 39%), hsl(200, 100%, 35%));
     transition: none;
 }
 
@@ -755,12 +755,12 @@ input.text-error {
     font-size: 0.9em;
     font-weight: 400;
 
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 .portico-header .dropdown ul li:hover a {
-    background: transparent;
-    color: #fff;
+    background-color: transparent;
+    color: hsl(0, 0%, 100%);
 }
 
 .portico-header .dropdown ul li a i {
@@ -826,7 +826,7 @@ input.text-error {
 }
 
 a.bottom-signup-button {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
     text-decoration: none !important;
     font-size: 20px;
     padding: 20px;
@@ -878,7 +878,7 @@ a.bottom-signup-button {
 }
 
 .table.table-striped {
-    background: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -975,9 +975,9 @@ a.bottom-signup-button {
 }
 
 .team input:checked + label {
-    border: 1px solid #eee;
+    border: 1px solid hsl(0, 0%, 93%);
     border-top: 2px solid yellowgreen;
-    border-bottom-color: #fff;
+    border-bottom-color: hsl(0, 0%, 100%);
 }
 
 .contributors-list {
@@ -998,7 +998,7 @@ input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
 input#zulipbot:checked ~ #tab-zulipbot,
 input#terminal:checked ~ #tab-terminal {
-    border-top: 1px solid #eee;
+    border-top: 1px solid hsl(0, 0%, 93%);
     padding-top: 20px;
     display: grid;
     grid-gap: 5px;
@@ -1012,13 +1012,13 @@ input#terminal:checked ~ #tab-terminal {
 .contributors .person {
     box-sizing: border-box;
     padding: 10px;
-    border: 1px solid #eee;
+    border: 1px solid hsl(0, 0%, 93%);
     border-radius: 4px;
     transition: all 0.3s ease;
 }
 
 .contributors .person:hover {
-    border: 1px solid #bbb;
+    border: 1px solid hsl(0, 0%, 73%);
 }
 
 .contributors .person .avatar {
@@ -1046,7 +1046,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .tab-loading,
 .last-updated {
-    color: #aaa;
+    color: hsl(0, 0%, 67%);
     font-size: 0.9em !important;
     padding-top: 30px;
     text-align: center;
@@ -1063,7 +1063,7 @@ input#terminal:checked ~ #tab-terminal {
 
 .integration-lozenge-static:hover {
     box-shadow: none;
-    background: hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 93%);
 }
 
 .integration-lozenge .integration-link:hover {
@@ -1190,14 +1190,14 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .btn-user {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(169, 44%, 54%);
     border-style: solid;
     color: hsl(170, 40%, 41%);
 }
 
 .btn-admin {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(198, 100%, 48%);
     border-style: solid;
     color: hsl(207, 89%, 54%);
@@ -1300,7 +1300,7 @@ input.new-organization-button {
 .main-headline-text {
     display: block;
     text-align: center;
-    color: black;
+    color: hsl(0, 0%, 0%);
     font-weight: 300;
 }
 
@@ -1312,7 +1312,7 @@ input.new-organization-button {
 .main-headline-text .footnote {
     display: block;
     font-size: 18px;
-    color: black;
+    color: hsl(0, 0%, 0%);
     margin-top: 15px;
 }
 
@@ -1350,7 +1350,7 @@ input.new-organization-button {
 .footer-navigation li a {
     display: inline-block;
     vertical-align: middle;
-    color: hsl(0, 0%, 46%);
+    color: hsl(0, 0%, 47%);
     font-size: 0.9em;
     font-weight: 400;
     cursor: pointer;
@@ -1373,7 +1373,7 @@ input.new-organization-button {
 
 .top-links a {
     display: inline-block;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     padding: 2px 7px 1px 8px;
     font-weight: 600;
     font-size: 16px;
@@ -1397,7 +1397,7 @@ input.new-organization-button {
 .button-muted {
     display: block;
     font-size: 12px;
-    color: hsl(0, 0%, 86%);
+    color: hsl(0, 0%, 87%);
 }
 
 /* -- password reset container -- */
@@ -1529,7 +1529,7 @@ input.new-organization-button {
 }
 
 .help .markdown {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
 }
@@ -1537,7 +1537,7 @@ input.new-organization-button {
 .markdown .content {
     padding: 30px;
     max-width: 768px;
-    background: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .markdown a {
@@ -1591,7 +1591,7 @@ input.new-organization-button {
 
 .markdown h1,
 .why-page .main h1 {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
@@ -1620,7 +1620,7 @@ input.new-organization-button {
 .markdown img {
     vertical-align: top;
     box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
 }
 
@@ -1746,7 +1746,7 @@ input.new-organization-button {
 .error_page {
     padding: 20px 0px;
     min-height: calc(100vh - 290px);
-    background-color: #c9e9e0;
+    background-color: hsl(163, 42%, 85%);
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
 
@@ -1764,10 +1764,10 @@ input.new-organization-button {
 
 .error_page .errorbox {
     margin: auto;
-    border: 2px solid #44a98c;
+    border: 2px solid hsl(163, 43%, 46%);
     max-width: 500px;
-    background-color: white;
-    box-shadow: 0 0 4px #44a98c;
+    background-color: hsl(0, 0%, 100%);
+    box-shadow: 0 0 4px hsl(163, 43%, 46%);
     font-size: 18px;
 }
 
@@ -1776,7 +1776,7 @@ input.new-organization-button {
 }
 
 .error_page p {
-    color: #333333;
+    color: hsl(0, 0%, 20%);
 }
 
 .error_page .errorcontent {
@@ -1785,7 +1785,7 @@ input.new-organization-button {
 }
 
 .error_page .lead {
-    color: #39a688;
+    color: hsl(163, 49%, 44%);
     font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
@@ -2062,7 +2062,7 @@ input.new-organization-button {
 
 .input-group.grid {
     padding: 10px 0px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 label.label-title {
@@ -2095,7 +2095,7 @@ input.new-organization-button {
     font-weight: 400;
 
     background-color: hsl(207, 55%, 53%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     outline: none;
     border: none;
     border-radius: 2px;
@@ -2119,7 +2119,7 @@ input.new-organization-button {
 
 .button-new.sea-green {
     background-color: hsl(177, 70%, 46%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .float-left {

@@ -88,7 +88,7 @@
     background: -o-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* Opera 11.10+ */
     background: -ms-linear-gradient(top, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* IE10+ */
     background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18', GradientType=0 ); /* IE6-9 */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18', GradientType=0 ); /* IE6-9; filters only work with hex colors */
 }
 
 .user-status-indicator {
@@ -153,7 +153,7 @@
 .group-pms-sidebar-entry .count {
     float: right;
     padding: 0 4px;
-    background: hsl(105, 2%, 50%);
+    background-color: hsl(105, 2%, 50%);
     border-radius: 0px;
     color: hsl(0, 0%, 100%);
     font-size: 12px;

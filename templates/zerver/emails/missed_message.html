@@ -20,9 +20,9 @@
     {% if show_message_content %}
     <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: auto;">
         {% for recipient_block in messages %}
-        <div class='recipient_block' style="{% if not recipient_block.header.stream_message %}background-color: #f0f4f5;{% endif %}border: 1px solid black;margin-bottom: 4px;">
-            <div class='recipient_header' style="{% if recipient_block.header.stream_message %}background-color: #9ecaff;{% else %}color: #ffffff;background-color: #444444;{% endif %}border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
-            <div class='message_content' style="{% if not recipient_block.header.stream_message %}background-color: #f0f4f5;{% endif %}margin-left: 1px;margin-right: 2px;">
+        <div class='recipient_block' style="{% if not recipient_block.header.stream_message %}background-color: hsl(192, 20%, 95%);{% endif %}border: 1px solid black;margin-bottom: 4px;">
+            <div class='recipient_header' style="{% if recipient_block.header.stream_message %}background-color: hsl(213, 100%, 81%);{% else %}color: hsl(0, 0%, 100%);background-color: hsl(0, 0%, 27%);{% endif %}border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content' style="{% if not recipient_block.header.stream_message %}background-color: hsl(192, 20%, 95%);{% endif %}margin-left: 1px;margin-right: 2px;">
                 {% for sender_block in recipient_block.senders %}
                     {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
                     {% for message_block in sender_block.content %}

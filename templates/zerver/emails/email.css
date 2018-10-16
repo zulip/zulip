@@ -6,7 +6,7 @@ img {
 }
 
 body {
-    background: #f5f9f8;
+    background-color: hsl(165, 25%, 97%);
     font-family: sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
@@ -31,7 +31,7 @@ table td {
 }
 
 .body {
-    background: #f5f9f8;
+    background-color: hsl(165, 25%, 97%);
     width: 100%;
 }
 
@@ -51,7 +51,7 @@ table td {
 }
 
 .main {
-    background: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 3px;
     width: 100%;
 }
@@ -73,7 +73,7 @@ table td {
 .footer p,
 .footer span,
 .footer a {
-    color: #999999;
+    color: hsl(0, 0%, 60%);
     font-size: 12px;
     text-align: center;
 }
@@ -86,7 +86,7 @@ h1,
 h2,
 h3,
 h4 {
-    color: #000000;
+    color: hsl(0, 0%, 0%);
     font-family: sans-serif;
     font-weight: 400;
     line-height: 1.4;
@@ -118,16 +118,16 @@ ol li {
 }
 
 a {
-    color: #45a98e;
+    color: hsl(164, 42%, 47%);
     text-decoration: underline;
 }
 
 a:hover {
-    color: #51c6a6;
+    color: hsl(164, 51%, 55%);
 }
 
 .important {
-    border-bottom: 3px solid #d5e4e9;
+    border-bottom: 3px solid hsl(195, 31%, 87%);
 }
 
 .button {
@@ -135,12 +135,12 @@ a:hover {
     padding: 10px 0px;
     margin: 20px auto;
     width: 200px;
-    border: 1px solid #7fd1ba;
-    background: #7fd1ba;
+    border: 1px solid hsl(163, 47%, 66%);
+    background-color: hsl(163, 47%, 66%);
     border-radius: 4px;
     font-size: 16px;
     outline: none;
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
@@ -148,7 +148,7 @@ a:hover {
 }
 
 a.button:hover {
-    color: #ccf7eb;
+    color: hsl(163, 73%, 88%);
     text-decoration: none;
 }
 

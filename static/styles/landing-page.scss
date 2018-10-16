@@ -7,7 +7,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 27%);
     line-height: normal;
 
@@ -151,7 +151,7 @@ button {
 
     font-family: inherit;
     font-size: 0.7em;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 27%);
 
     border-radius: 4px;
@@ -177,7 +177,7 @@ button:active {
 }
 
 button.green {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     background-color: hsl(170, 47%, 53%);
 
     border: 1px solid hsl(169, 45%, 43%);
@@ -185,9 +185,9 @@ button.green {
 
 button.black-disabled {
     cursor: default;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     background-color: transparent;
-    border: 1px solid #888;
+    border: 1px solid hsl(0, 0%, 53%);
 }
 
 button.button.grey-transparent {
@@ -198,9 +198,9 @@ button.button.grey-transparent {
     font-size: 1.1rem;
     font-weight: 400;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     background-color: transparent;
-    border: 1px solid #fff;
+    border: 1px solid hsl(0, 0%, 100%);
 
     transition: all 0.2s ease;
 }
@@ -210,7 +210,7 @@ button.button.grey-transparent:hover {
 }
 
 button.button.grey-transparent:active {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 40%);
 }
 
@@ -219,7 +219,7 @@ button.button.grey-transparent:active {
 nav {
     width: calc(100% - 80px);
     position: absolute;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     padding: 40px;
 
@@ -231,7 +231,7 @@ nav .brand.logo {
 }
 
 nav.white {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 a.silver {
@@ -239,7 +239,7 @@ a.silver {
 }
 
 .silver {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
     opacity: 0.8;
 }
 
@@ -250,35 +250,35 @@ a.silver {
 nav.white li a,
 nav.white li a:hover,
 nav.white li a:visited {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 nav.white ul li.active::after {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 nav.white .brand.logo span {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 nav.white .brand-logo circle {
-    fill: #444 !important;
+    fill: hsl(0, 0%, 27%) !important;
 }
 
 nav.white .brand-logo path {
-    fill: #fff !important;
-    stroke: #fff !important;
+    fill: hsl(0, 0%, 100%) !important;
+    stroke: hsl(0, 0%, 100%) !important;
 }
 
 nav .hamburger {
     display: none;
-    fill: #fff;
+    fill: hsl(0, 0%, 100%);
     cursor: pointer;
     margin-top: 3px;
 }
 
 nav.white .hamburger {
-    fill: #444;
+    fill: hsl(0, 0%, 27%);
 }
 
 nav .content {
@@ -295,7 +295,7 @@ nav .logo span {
     position: relative;
     left: 5px;
     top: 1px;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     font-weight: 600;
     vertical-align: top;
     text-transform: uppercase;
@@ -304,7 +304,7 @@ nav .logo span {
 }
 
 nav.white .brand.logo span {
-    color: #444;
+    color: hsl(0, 0%, 27%);
 }
 
 nav .brand-logo {
@@ -338,7 +338,7 @@ nav ul li {
     display: inline-block;
     margin: 10px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     opacity: 0.7;
     transition: all 0.2s ease;
@@ -348,7 +348,7 @@ nav li a,
 nav li a:hover,
 nav li a:visited {
     text-decoration: none;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     font-size: 1.05em;
 }
@@ -417,7 +417,7 @@ nav ul li.active::after {
     justify-content: space-around;
     margin: 40px auto;
     padding: 0px 30px;
-    color: #2a3241;
+    color: hsl(219, 21%, 21%);
 }
 
 .portico-landing.features-app section.hero {
@@ -432,7 +432,7 @@ nav ul li.active::after {
 
     max-width: none;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     background-color: hsla(0, 0%, 0%, 0.1);
 }
@@ -472,8 +472,8 @@ nav ul li.active::after {
     padding: 50px;
     /* this should only be a thing if the section above is not white */
     margin-top: 0px;
-    background-color: #2a3241;
-    color: #e1eafb;
+    background-color: hsl(219, 21%, 21%);
+    color: hsl(219, 76%, 93%);
 }
 
 .portico-landing.features-app section.keyboard-shortcuts::after {
@@ -507,7 +507,7 @@ nav ul li.active::after {
 
 .portico-landing.features-app section.keyboard-shortcuts a.cta {
     font-size: 1em;
-    color: #8cdbce;
+    color: hsl(170, 52%, 70%);
 }
 
 .portico-landing.features-app section.keyboard-shortcuts img {
@@ -549,7 +549,7 @@ nav ul li.active::after {
     padding: 50px 100px;
     max-width: calc(1000px);
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 10px;
 
     box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
@@ -595,7 +595,7 @@ nav ul li.active::after {
     font-size: 1.2em;
     font-weight: 400;
 
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 .portico-landing.features-app section.notifications .feature-list h3::before {
@@ -688,7 +688,7 @@ nav ul li.active::after {
     position: relative;
     padding: 60px 50px 30px 50px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     overflow: hidden;
 }
@@ -705,19 +705,19 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .gradients .gradient.green {
-    background: linear-gradient(-25deg, transparent 40%, #3fb082);
+    background: linear-gradient(-25deg, transparent 40%, hsl(156, 47%, 47%));
 }
 
 .portico-landing.hello .gradients .gradient.blue {
-    background: linear-gradient(25deg, transparent 40%, #5298b1);
+    background: linear-gradient(25deg, transparent 40%, hsl(196, 38%, 51%));
 }
 
 .portico-landing.hello .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, transparent 20%, #e8d275);
+    background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%));
 }
 
 .portico-landing.hello .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, #fff 0%, transparent 40%);
+    background: linear-gradient(0deg, hsl(0, 0%, 100%) 0%, transparent 40%);
 }
 
 .portico-landing.hello .hero .waves {
@@ -739,7 +739,7 @@ nav ul li.active::after {
     width: 100%;
     height: 100%;
 
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 35%;
 
     opacity: 0.3;
@@ -839,12 +839,12 @@ nav ul li.active::after {
     margin-top: 0px;
     padding: 12px 20px;
 
-    background: #fff;
-    border: 2px solid #fff;
+    background-color: hsl(0, 0%, 100%);
+    border: 2px solid hsl(0, 0%, 100%);
 
     font-size: 1.2em;
     font-weight: 500;
-    color: #679f81;
+    color: hsl(148, 23%, 51%);
 
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
 
@@ -897,7 +897,7 @@ nav ul li.active::after {
 /* -- compare css -- */
 .compare {
     background-color: hsl(163, 22%, 31%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .compare .text-header .text-content h1 {
@@ -940,7 +940,7 @@ nav ul li.active::after {
     font-weight: 600;
     padding: 15px 0px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .compare thead th.normal {
@@ -1012,7 +1012,7 @@ nav ul li.active::after {
 /* -- faq css -- */
 .faqs {
     position: relative;
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .faqs .padded-content {
@@ -1033,7 +1033,7 @@ nav ul li.active::after {
     margin: 50px auto;
     max-width: 700px;
     font-size: 1.2em;
-    color: #3b3d42;
+    color: hsl(223, 6%, 25%);
 }
 
 /* the last faq in the box shouldn't have an extra 50px of margin. */
@@ -1043,7 +1043,7 @@ nav ul li.active::after {
 
 .faqs .faq .question {
     font-weight: 600;
-    color: #525e7a;
+    color: hsl(222, 20%, 40%);
     font-size: 1.1em;
 }
 
@@ -1132,7 +1132,7 @@ nav ul li.active::after {
 }
 
 .screen .navbar {
-    background-color: hsl(170, 47%, 54%);
+    background-color: hsl(170, 48%, 54%);
     padding: 10px;
 }
 
@@ -1160,7 +1160,7 @@ nav ul li.active::after {
     padding: 3px 5px 0px 5px;
     margin: 0px 5px;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
 
     box-shadow: 0px 0px 15px hsla(0, 0%, 0%, 0.01);
@@ -1250,7 +1250,7 @@ nav ul li.active::after {
 .portico-landing.hello .features {
     padding: 50px 0px 100px 0px;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.hello .features .col-2 {
@@ -1282,7 +1282,7 @@ nav ul li.active::after {
     position: relative;
     z-index: 1;
 
-    background-color: #e9ecf1;
+    background-color: hsl(217, 22%, 93%);
 }
 
 .portico-landing.hello .open-source .flex {
@@ -1349,7 +1349,7 @@ nav ul li.active::after {
 }
 
 .portico-landing .tour {
-    color: #000;
+    color: hsl(0, 0%, 0%);
     width: 1200px;
     max-width: 100%;
     margin: 0 auto;
@@ -1360,7 +1360,7 @@ nav ul li.active::after {
     height: 520px;
     margin: 20px auto;
     padding: 30px 20px;
-    background: rgba(246, 247, 249, 0.6);
+    background-color: rgba(246, 247, 249, 0.6);
     background: linear-gradient(rgba(246, 247, 249, 0.4), rgba(246, 247, 249, 0.9));
     border-radius: 12px;
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.02);
@@ -1371,8 +1371,8 @@ nav ul li.active::after {
     padding: 11px 25px 11px 25px;
     font-size: 1.2rem;
     font-weight: 400;
-    color: white;
-    background: #61b1b8;
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
     border: 0;
@@ -1387,7 +1387,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-inner .start-button:hover {
-    background: rgb(37, 177, 151);
+    background-color: rgb(37, 177, 151);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -1397,7 +1397,7 @@ nav ul li.active::after {
     display: block;
     width: 100%;
     max-width: 100%;
-    border: 1px solid #dfdfdf;
+    border: 1px solid hsl(0, 0%, 87%);
     opacity: 0.4;
 }
 
@@ -1440,7 +1440,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-inner img {
-    border: 1px solid #f2f3f4;
+    border: 1px solid hsl(210, 8%, 95%);
 }
 
 .tour .carousel-inner img.centered-image {
@@ -1544,23 +1544,23 @@ nav ul li.active::after {
 
     font-size: 1.2rem;
     font-weight: 400;
-    color: white;
+    color: hsl(0, 0%, 100%);
 
-    background: #61b1b8;
+    background-color: hsl(185, 38%, 55%);
     background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
     border: 0;
 }
 
 .tour .carousel-inner button.call-to-action:hover {
-    background: rgb(37, 177, 151);
+    background-color: rgb(37, 177, 151);
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
 }
 
 .tour .carousel-control {
     background: 0;
     border: 0;
-    color: #747d94;
+    color: hsl(223, 13%, 52%);
     font-size: 2em;
     top: 50%;
     font-weight: 400;
@@ -1569,7 +1569,7 @@ nav ul li.active::after {
 }
 
 .tour .carousel-control:hover {
-    color: #414e68;
+    color: hsl(220, 23%, 33%);
 }
 
 .tour .carousel-control.right {
@@ -1598,7 +1598,7 @@ nav ul li.active::after {
     margin-left: 10px;
     text-indent: -999px;
     cursor: pointer;
-    background: #9fa5b3;
+    background-color: hsl(222, 12%, 66%);
     transition: background .1s ease;
 }
 
@@ -1623,12 +1623,12 @@ nav ul li.active::after {
 }
 
 .carousel-indicators li.active {
-    background: #414e68;
+    background-color: hsl(220, 23%, 33%);
 }
 
 .portico-landing.hello .testimonials {
-    color: #fff;
-    background-color: #23584d;
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(168, 43%, 24%);
 }
 
 .portico-landing.hello .testimonials .text-header .text-content {
@@ -1660,7 +1660,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .testimonials .fa-chevron-left,
 .portico-landing.hello .testimonials .fa-chevron-right {
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     opacity: 0.5;
     position: absolute;
     font-size: 36px;
@@ -1691,7 +1691,7 @@ nav ul li.active::after {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: #ffffff;
+    color: hsl(0, 0%, 100%);
     opacity: 0.7;
     font-weight: 400;
 }
@@ -1741,7 +1741,7 @@ nav ul li.active::after {
     height: 60px;
     width: calc(25% - 44px);
 
-    background-color: hsl(0, 0%, 66%);
+    background-color: hsl(0, 0%, 67%);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -1798,11 +1798,11 @@ nav ul li.active::after {
     padding: 200px 80px 100px 80px;
     margin-top: -50px;
 
-    background: hsl(177, 52%, 55%);
+    background-color: hsl(177, 52%, 55%);
     background: -webkit-linear-gradient(145deg, hsl(169, 65%, 42%), hsl(191, 55%, 54%));
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.hello .apps .triangle {
@@ -1813,16 +1813,16 @@ nav ul li.active::after {
     height: 0;
     border-style: solid;
     border-width: 150px 100vw 0 0;
-    border-color: #fff transparent transparent transparent;
+    border-color: hsl(0, 0%, 100%) transparent transparent transparent;
 }
 
 .portico-landing.hello .apps .arrow {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     font-weight: 400;
 }
 
 .portico-landing.hello .apps .arrow::before {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.hello .apps .left-side,
@@ -1902,7 +1902,7 @@ nav ul li.active::after {
     margin: 10px 5px;
     color: hsl(219, 23%, 33%);
     border-radius: 5px;
-    border: 1px solid #e5eef5;
+    border: 1px solid hsl(206, 44%, 93%);
 }
 
 .portico-landing.hello .integrations .integration-icons .group:hover {
@@ -1942,7 +1942,7 @@ nav ul li.active::after {
     color: hsl(220, 15%, 66%);
 
     border: 1px solid hsl(220, 15%, 66%);
-    background: transparent;
+    background-color: transparent;
 
     transition: all 0.2s ease;
 }
@@ -1978,7 +1978,7 @@ nav ul li.active::after {
 }
 
 .footer.hello li a:hover {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 /* -- apps page -- */
@@ -1988,17 +1988,17 @@ nav ul li.active::after {
 
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.apps .hero {
     position: relative;
 
     padding: 100px 50px 50px 50px;
-    background: linear-gradient(35deg, #003b52, #45b59b);
+    background: linear-gradient(35deg, hsl(197, 100%, 16%), hsl(166, 45%, 49%));
     height: 600px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     overflow: hidden;
 }
@@ -2072,7 +2072,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.apps .other-apps {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     padding: 50px 50px 120px 50px;
 
     text-align: center;
@@ -2097,7 +2097,7 @@ nav ul li.active::after {
     padding: 20px 30px;
     border-radius: 70px;
 
-    color: #ccc;
+    color: hsl(0, 0%, 80%);
 
     font-size: 3em;
     text-align: center;
@@ -2106,8 +2106,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.apps .other-apps .apps .icon:hover {
-    color: #777;
-    background: linear-gradient(-45deg, #d4d4d4, #fafafa);
+    color: hsl(0, 0%, 47%);
+    background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
 }
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
@@ -2132,7 +2132,7 @@ nav ul li.active::after {
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0px;
-    color: #3b3d42;
+    color: hsl(223, 6%, 25%);
 }
 
 .portico-landing.why-page .main {
@@ -2142,8 +2142,8 @@ nav ul li.active::after {
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
 
-    background: #69b190;
-    color: #fff;
+    background-color: hsl(153, 32%, 55%);
+    color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.why-page .hero.small-hero {
@@ -2194,12 +2194,12 @@ nav ul li.active::after {
 
 .portico-landing.why-page .main li strong {
     font-weight: 600;
-    color: #333;
+    color: hsl(0, 0%, 20%);
 }
 
 .portico-landing.why-page .main blockquote {
-    background: white;
-    border-color: #65a195;
+    background-color: hsl(0, 0%, 100%);
+    border-color: hsl(168, 24%, 51%);
     padding: 20px 30px;
     margin-top: 20px;
     font-size: 1.05em;
@@ -2207,7 +2207,7 @@ nav ul li.active::after {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
-        color: #414e68;
+        color: hsl(220, 23%, 33%);
     }
     p:last-child {
         margin-top: 10px;
@@ -2239,7 +2239,7 @@ nav ul li.active::after {
 
     font-size: 0.8em;
     font-weight: normal;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 .portico-landing.why-page .team h2 {
@@ -2280,8 +2280,8 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .testimonials {
-    background: #23584d;
-    color: #fff;
+    background-color: hsl(168, 43%, 24%);
+    color: hsl(0, 0%, 100%);
     margin-bottom: 40px;
 }
 
@@ -2314,7 +2314,7 @@ nav ul li.active::after {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: white;
+    color: hsl(0, 0%, 100%);
     opacity: 0.7;
     font-weight: 400;
     line-height: 140%;
@@ -2346,7 +2346,7 @@ nav ul li.active::after {
 
     -webkit-transform: translateY(50px);
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.hello .apps .screen.android {
@@ -2401,7 +2401,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .apps .screen.ios .main-page {
-    border-color: hsl(0, 0%, 86%);
+    border-color: hsl(0, 0%, 87%);
 }
 
 .portico-landing.hello .apps .screen.android .main-page {
@@ -2419,7 +2419,7 @@ nav ul li.active::after {
     max-width: 1170px;
     margin: 0 auto;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
 
     visibility: hidden;
@@ -2480,7 +2480,7 @@ nav ul li.active::after {
 .portico-landing.integrations .portico-page-subheading {
     font-weight: 400;
     font-size: 1.1em;
-    color: #aaa;
+    color: hsl(0, 0%, 67%);
     line-height: 1.2;
     text-align: center;
 }
@@ -2564,7 +2564,7 @@ nav ul li.active::after {
     margin: 3px 0;
     border-radius: 5px;
     transition: all 0.3s ease;
-    color: #414e67;
+    color: hsl(219, 23%, 33%);
 }
 
 .portico-landing.integrations .integration-categories-sidebar h4.selected,
@@ -2594,7 +2594,7 @@ nav ul li.active::after {
     margin: 7px 5px;
     border-radius: 5px;
     border: 1px solid hsl(208, 46%, 93%);
-    color: #414e67;
+    color: hsl(219, 23%, 33%);
     text-align: center;
     transition: all 0.3s ease;
 }
@@ -2689,7 +2689,7 @@ nav ul li.active::after {
     text-align: center;
     border-radius: 5px;
     transition: all 0.3s ease;
-    color: #414e67;
+    color: hsl(219, 23%, 33%);
 }
 
 .portico-landing.integrations .integration-instruction-block .categories .integration-category:hover {
@@ -2717,19 +2717,19 @@ nav ul li.active::after {
 }
 
 .gradients .gradient.green {
-    background: linear-gradient(-25deg, transparent 40%, #3fb082);
+    background: linear-gradient(-25deg, transparent 40%, hsl(156, 47%, 47%));
 }
 
 .gradients .gradient.blue {
-    background: linear-gradient(25deg, transparent 40%, #5298b1);
+    background: linear-gradient(25deg, transparent 40%, hsl(196, 38%, 51%));
 }
 
 .gradients .gradient.sunburst {
-    background: linear-gradient(5deg, transparent 20%, #e8d275);
+    background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%));
 }
 
 .gradients .gradient.white-fade {
-    background: linear-gradient(0deg, #fff 0%, transparent 40%);
+    background: linear-gradient(0deg, hsl(0, 0%, 100%) 0%, transparent 40%);
 }
 
 /* -- pricing css -- */
@@ -2742,18 +2742,18 @@ nav ul li.active::after {
     font-size: 2.5em;
     margin: 0px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .portico-landing.plans .main .padded-content > h2 {
-    color: #444;
+    color: hsl(0, 0%, 27%);
     text-align: center;
 
     font-size: 1.5em;
 
     margin-bottom: 50px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .pricing-model .pricing-container {
@@ -2769,7 +2769,7 @@ nav ul li.active::after {
     padding: 10px;
     margin-bottom: 3px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 
     font-size: 2em;
     font-weight: 300;
@@ -2787,7 +2787,7 @@ nav ul li.active::after {
 
 
     text-align: left;
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 
     transition-property: all;
     transition-duration: 0.3s;
@@ -2812,14 +2812,14 @@ nav ul li.active::after {
 
 .pricing-model .pricing-container hr {
     border: none;
-    border-bottom: 2px solid #4fc0ad;
+    border-bottom: 2px solid hsl(170, 47%, 53%);
     margin: 15px 0px 15px 0px;
 }
 
 .pricing-model .pricing-container .text-content .description {
     font-size: 0.9em;
     font-weight: 400;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 .pricing-model .pricing-container ul.feature-list {
@@ -2858,7 +2858,7 @@ nav ul li.active::after {
     width: 100%;
     height: 150px;
 
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
 }
 
 .pricing-model .pricing-container .text-content .price::before {
@@ -2870,7 +2870,7 @@ nav ul li.active::after {
 
     font-size: 2rem;
     font-weight: 300;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 .pricing-model .pricing-container .text-content .price {
@@ -2890,7 +2890,7 @@ nav ul li.active::after {
 
     font-size: 0.9em;
     font-weight: 400;
-    color: #888;
+    color: hsl(0, 0%, 53%);
 
     text-align: left;
 }
@@ -2909,7 +2909,7 @@ nav ul li.active::after {
 }
 
 .pricing-model .pricing-container .price-box:focus button {
-    box-shadow: 0px 0px 25px #6acab9;
+    box-shadow: 0px 0px 25px hsl(169, 48%, 60%);
     animation: box-shadow-pulse 2s infinite;
 }
 
@@ -2968,7 +2968,7 @@ nav ul li.active::after {
     margin-top: -2px;
     width: calc(100% - 300px - 50px);
 
-    background: #fff;
+    background-color: hsl(0, 0%, 100%);
     opacity: 0;
     transform: translateY(300px);
 
@@ -2992,7 +2992,7 @@ nav ul li.active::after {
 }
 
 .pricing-overlay.pricing-model .info-box .text-content p {
-    color: #888;
+    color: hsl(0, 0%, 53%);
 }
 
 .pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
@@ -3006,7 +3006,7 @@ nav ul li.active::after {
     display: inline-block;
     width: calc(33% - 21px);
     height: 200px;
-    background-color: #eee;
+    background-color: hsl(0, 0%, 93%);
     margin: 10px;
 }
 
@@ -3015,7 +3015,7 @@ nav ul li.active::after {
     height: 25px;
 
     font-weight: 400;
-    color: #888;
+    color: hsl(0, 0%, 53%);
     font-style: italic;
     text-align: center;
 }
@@ -3026,7 +3026,7 @@ nav ul li.active::after {
 
     float: right;
 
-    background-color: #3ca08d;
+    background-color: hsl(169, 45%, 43%);
 }
 
 @keyframes box-shadow-pulse {
@@ -3204,21 +3204,21 @@ nav ul li.active::after {
     }
 
     nav .logo span {
-        color: #52c2af;
+        color: hsl(170, 48%, 54%);
     }
 
     nav .logo span {
-        color: #fff;
+        color: hsl(0, 0%, 100%);
     }
 
     nav svg.brand-logo circle {
-        fill: #fff !important;
-        stroke: #fff !important;
+        fill: hsl(0, 0%, 100%) !important;
+        stroke: hsl(0, 0%, 100%) !important;
     }
 
     nav svg.brand-logo path {
-        fill: #4e9da0 !important;
-        stroke: #4e9da0 !important;
+        fill: hsl(182, 34%, 47%) !important;
+        stroke: hsl(182, 34%, 47%) !important;
     }
 
     .portico-landing.features-app section .headliner .image {
@@ -3384,8 +3384,8 @@ nav ul li.active::after {
     }
 
     .portico-landing.integrations .integration-categories-dropdown h4 {
-        border-left: 1px solid #e4edf5;
-        border-right: 1px solid #e4edf5;
+        border-left: 1px solid hsl(208, 46%, 93%);
+        border-right: 1px solid hsl(208, 46%, 93%);
         transition: all 0.3s ease;
         font-size: .9em;
     }
@@ -3782,7 +3782,7 @@ nav ul li.active::after {
         width: 300px;
         padding-left: 30px;
 
-        background-color: #fff;
+        background-color: hsl(0, 0%, 100%);
         transform: translate(-350px, 0px);
 
 
@@ -4059,15 +4059,15 @@ nav ul li.active::after {
        want to have the gradients stay darker for longer.
     */
     .gradients .gradient.green {
-        background: linear-gradient(-25deg, transparent 10%, #3fb082 80%);
+        background: linear-gradient(-25deg, transparent 10%, hsl(156, 47%, 47%) 80%);
     }
 
     .gradients .gradient.blue {
-        background: linear-gradient(25deg, transparent 10%, #5298b1 80%);
+        background: linear-gradient(25deg, transparent 10%, hsl(196, 38%, 51%) 80%);
     }
 
     .gradients .gradient.sunburst {
-        background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
+        background: linear-gradient(5deg, transparent 20%, hsl(49, 71%, 68%) 80%);
     }
 }
 

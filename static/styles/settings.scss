@@ -150,7 +150,7 @@ label {
 }
 
 .table tbody {
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 .table-condensed td {
@@ -312,12 +312,12 @@ td .button {
 
 .dynamic-input div:empty::after {
     content: "username";
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 .dynamic-input.bot_user_name div:empty::after {
     content: "bot_user_name";
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 .button,
@@ -369,13 +369,13 @@ input[type=checkbox] + .inline-block {
     font-size: 14px;
     padding: 3px 14px 4px 11px;
     text-decoration: none;
-    color: hsl(0, 0%, 46%);
+    color: hsl(0, 0%, 47%);
     min-width: 80px;
     line-height: 16px;
 }
 
 #settings_page .icon-button:hover {
-    background: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 61%);
     color: hsl(0, 0%, 18%);
 }
@@ -405,7 +405,7 @@ input[type=checkbox] + .inline-block {
 #settings_page .icon-button.primary .icon-button-icon {
     font-size: 15px;
     font-weight: lighter;
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 #settings_page .save-button-controls {
@@ -422,7 +422,7 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button.save-button.saving {
-    background: hsl(156, 14%, 40%);
+    background-color: hsl(156, 14%, 40%);
     border-color: hsl(156, 14%, 40%);
 }
 
@@ -559,7 +559,7 @@ input[type=checkbox].inline-block {
     height: auto !important;
     width: auto !important;
 
-    background: transparent;
+    background-color: transparent;
     border-radius: 4px;
     margin-top: 14px;
     margin-left: 10px;
@@ -693,7 +693,7 @@ input[type=checkbox].inline-block {
 }
 
 .add-new-emoji-box #emoji-file-name {
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 .add-new-profile-field-box button,
@@ -772,7 +772,7 @@ input[type=checkbox].inline-block {
 .bots_list .regenerate_bot_api_key {
     position: relative;
     margin-left: 5px;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     transition: all 0.3s ease;
 }
 
@@ -861,7 +861,7 @@ input[type=checkbox].inline-block {
     font-weight: 300;
     text-transform: uppercase;
     font-weight: 600;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 .bot_error {
@@ -891,7 +891,7 @@ input[type=checkbox].inline-block {
 .edit_bot_form label {
     text-transform: uppercase;
     font-weight: 600;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     margin-top: 5px;
 }
 
@@ -1041,7 +1041,7 @@ input[type=checkbox].inline-block {
 }
 
 .white-color {
-    color: white;
+    color: hsl(0, 0%, 100%);
 }
 
 #realm-settings-icon {
@@ -1146,7 +1146,7 @@ input[type=checkbox].inline-block {
 #user-groups .save-instructions {
     display: none;
     opacity: 0;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     font-size: 0.9em;
 }
 
@@ -1177,7 +1177,7 @@ input[type=checkbox].inline-block {
 
 #settings_page .sidebar .tab-container {
     padding: 6px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 #settings_page .sidebar .normal-settings-list,
@@ -1197,7 +1197,7 @@ input[type=checkbox].inline-block {
 #settings_page .content-wrapper .settings-header {
     width: 100%;
     height: 43px;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 #settings_page .content-wrapper .settings-header h1 .section {
@@ -1214,7 +1214,7 @@ input[type=checkbox].inline-block {
 
 #settings_page .settings-header.mobile {
     display: none;
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 .settings-header.mobile .fa-chevron-left {
@@ -1288,7 +1288,7 @@ input[type=checkbox].inline-block {
     height: calc(100% - 45px);
 
     background-color: hsl(0, 0%, 100%);
-    border-left: 1px solid hsl(0, 0%, 86%);
+    border-left: 1px solid hsl(0, 0%, 87%);
 
     pointer-events: none;
     transition: all 0.3s ease;
@@ -1328,7 +1328,7 @@ input[type=checkbox].inline-block {
 #settings_page .form-sidebar .title {
     padding: 10px 20px;
     background-color: hsl(0, 0%, 98%);
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 #settings_page .form-sidebar .title h1 {
@@ -1354,7 +1354,7 @@ input[type=checkbox].inline-block {
     text-transform: uppercase;
 
     background-color: hsl(180, 6%, 93%);
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 #settings_page .settings-header {
@@ -1374,7 +1374,7 @@ input[type=checkbox].inline-block {
     position: absolute;
     top: 10px;
     right: 10px;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
     cursor: pointer;
 }
 
@@ -1393,7 +1393,7 @@ input[type=checkbox].inline-block {
 }
 
 #account-settings .custom_user_field .field_hint {
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 #settings_page .custom_user_field {
@@ -1401,7 +1401,7 @@ input[type=checkbox].inline-block {
 }
 
 body:not(.night-mode) #account-settings .custom_user_field .datepicker {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 #settings_page .custom_user_field textarea {
@@ -1505,7 +1505,7 @@ input[type=text]#settings_search {
     font-size: 0.9rem;
     padding: 3px 5px;
     outline: none;
-    border: 1px solid hsl(0, 0%, 86%);
+    border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
 }
 
@@ -1513,7 +1513,7 @@ input[type=text]:focus#settings_search {
     box-shadow: none;
     border: 1px solid hsl(0, 0%, 73%);
 
-    border-bottom: 1px solid hsl(0, 0%, 86%);
+    border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 input[type=text]#settings_search {
@@ -1590,7 +1590,7 @@ input[type=text]#settings_search {
 }
 
 .subsection-failed-status p {
-    background: #f2dede;
+    background-color: hsl(0, 43%, 91%);
     padding: 2px 6px;
     border-radius: 4px;
     margin: 0 0 0 5px;
@@ -1714,7 +1714,7 @@ thead .actions {
     display: block;
 
     font-style: italic;
-    color: hsl(0, 0%, 66%);
+    color: hsl(0, 0%, 67%);
 }
 
 .required-text.thick:empty::after {
@@ -1775,7 +1775,7 @@ thead .actions {
 .custom_user_field .pill-container {
     padding: 2px 6px;
     height: 24px;
-    background-color: white;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .custom_user_field .pill-container:focus-within {
