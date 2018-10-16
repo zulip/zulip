@@ -82,6 +82,10 @@ class TaigaHookTests(WebhookTestCase):
         message = u':clipboard: TomaszKolek created task **New Task**.'
         self.send_and_test_stream_message("task_created", u'subject', message)
 
+    def test_taiga_task_changed_user_stories(self) -> None:
+        message = u':calendar: Eeshan Garg added task **Get this task done** to sprint Another one.\n:clipboard: Eeshan Garg moved task **Get this task done** from user story #7 Yaar ne scirra! to #8 A related user story, which is epic.'
+        self.send_and_test_stream_message("task_changed_user_stories", u'subject', message)
+
     def test_taiga_task_changed_status(self) -> None:
         message = u':chart_with_upwards_trend: TomaszKolek changed status of task **New Task** from New to In progress.'
         self.send_and_test_stream_message("task_changed_status", u'subject', message)

@@ -107,7 +107,6 @@ not_yet_fully_covered = {
     'zerver/webhooks/pivotal/view.py',
     'zerver/webhooks/semaphore/view.py',
     'zerver/webhooks/solano/view.py',
-    'zerver/webhooks/taiga/view.py',
     'zerver/webhooks/teamcity/view.py',
     'zerver/webhooks/travis/view.py',
     'zerver/webhooks/zapier/view.py',
