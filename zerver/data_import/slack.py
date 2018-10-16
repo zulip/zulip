@@ -1,5 +1,4 @@
 import os
-import json
 import ujson
 import hashlib
 import sys
@@ -569,7 +568,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 message['text'], users, added_channels, added_users)
         except Exception:
             print("Slack message unexpectedly missing text representation:")
-            print(json.dumps(message, indent=4))
+            print(ujson.dumps(message, indent=4))
             continue
         rendered_content = None
 
@@ -793,8 +792,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     logging.info("Zulip data dump created at %s" % (output_dir))
 
 def get_data_file(path: str) -> Any:
-    data = json.load(open(path))
-    return data
+    with open(path, "r") as fp:
+        data = ujson.load(fp)
+        return data
 
 def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> Any:
     data = requests.get('%s?token=%s' % (slack_api_url, token))

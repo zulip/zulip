@@ -1,11 +1,11 @@
 import base64
 import dateutil
 import glob
-import json
 import logging
 import os
 import shutil
 import subprocess
+import ujson
 
 from typing import Any, Callable, Dict, List, Set
 
@@ -82,8 +82,8 @@ def untar_input_file(tar_file: str) -> str:
 def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'users.json'
     data_file = os.path.join(data_dir, fn)
-    data = json.load(open(data_file))
-    return data
+    with open(data_file, "r") as fp:
+        return ujson.load(fp)
 
 def convert_user_data(user_handler: UserHandler,
                       raw_data: List[ZerverFieldsT],
@@ -184,7 +184,8 @@ def convert_avatar_data(avatar_folder: str,
 def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
     fn = 'rooms.json'
     data_file = os.path.join(data_dir, fn)
-    data = json.load(open(data_file))
+    with open(data_file) as f:
+        data = ujson.load(f)
     return data
 
 def convert_room_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[ZerverFieldsT]:
@@ -296,7 +297,8 @@ def write_emoticon_data(realm_id: int,
 
     fn = 'emoticons.json'
     data_file = os.path.join(data_dir, fn)
-    data = json.load(open(data_file))
+    with open(data_file) as f:
+        data = ujson.load(f)
 
     flat_data = [
         dict(
@@ -431,7 +433,8 @@ def process_message_file(realm_id: int,
                          attachment_handler: AttachmentHandler) -> None:
 
     def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
-        data = json.load(open(fn))
+        with open(fn) as f:
+            data = ujson.load(f)
 
         flat_data = [
             d[message_key]

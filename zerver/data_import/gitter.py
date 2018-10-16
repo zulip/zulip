@@ -1,12 +1,11 @@
 import os
-import ujson
 import dateutil.parser
 import random
 import requests
-import json
 import logging
 import shutil
 import subprocess
+import ujson
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -231,7 +230,8 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
         raise Exception("Output directory should be empty!")
 
     # Read data from the gitter file
-    gitter_data = json.load(open(gitter_data_file))
+    with open(gitter_data_file, "r") as fp:
+        gitter_data = ujson.load(fp)
 
     realm, avatar_list, user_map = gitter_workspace_to_realm(
         domain_name, gitter_data, realm_subdomain)

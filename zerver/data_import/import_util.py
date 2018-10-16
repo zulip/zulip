@@ -1,9 +1,9 @@
-import json
 import random
 import requests
 import shutil
 import logging
 import os
+import ujson
 
 from typing import List, Dict, Any, Optional, Set
 from django.forms.models import model_to_dict
@@ -509,4 +509,5 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    json.dump(data, open(output_file, 'w'), indent=4)
+    with open(output_file, 'w') as fp:
+        ujson.dump(data, fp, indent=4)
