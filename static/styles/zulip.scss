@@ -1784,6 +1784,12 @@ blockquote p {
     z-index: 10;
 }
 
+#sidebar-avatar {
+    width: 24px;
+    height: 24px;
+    margin-top: 8px;
+}
+
 #navbar-buttons ul.nav {
     .dropdown-toggle,
     li.active .dropdown-toggle {
