@@ -79,7 +79,7 @@ export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
-apt-get install -y lsb-release
+apt-get install -y lsb-release sudo
 os_release="$(lsb_release -sc)"
 case "$os_release" in
     trusty|xenial|stretch|bionic) ;;
