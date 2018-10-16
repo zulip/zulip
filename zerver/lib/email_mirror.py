@@ -191,12 +191,20 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
+    if len(topic) > MAX_SUBJECT_LENGTH:
+        #import pdb; pdb.set_trace()
+        try:
+            Message.objects.get(subject=topic[:MAX_SUBJECT_LENGTH])
+        except:
+            content = '{}\n{}'.format(topic, content)
+        topic = topic[:MAX_SUBJECT_LENGTH]
+
     internal_send_message(
         stream.realm,
         sender,
         "stream",
         stream.name,
-        topic[:MAX_SUBJECT_LENGTH],
+        topic,
         content[:MAX_MESSAGE_LENGTH],
         email_gateway=True)
 
