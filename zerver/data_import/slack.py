@@ -295,9 +295,9 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
         else:
             raise AssertionError("Could not identify bot type")
         return slack_bot_name.replace("Bot", "").replace(" ", "") + "-bot@%s" % (domain_name,)
-    # TODO: Do we need this fallback case at all?
-    return (hashlib.sha256(user['real_name'].encode()).hexdigest() +
-            "@%s" % (domain_name,))
+    if get_user_full_name(user) == "slackbot":
+        return "imported-slackbot-bot@%s" % (domain_name,)
+    raise AssertionError("Could not find email address for Slack user %s" % (user,))
 
 def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
     avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format(team_id, slack_user_id,
