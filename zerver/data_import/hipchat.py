@@ -679,6 +679,8 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     # we process everything else, since we may introduce
     # mirror users when processing messages.
     realm['zerver_userprofile'] = user_handler.get_all_users()
+    realm['sort_by_date'] = True
+
     create_converted_data_files(realm, output_dir, '/realm.json')
 
     logging.info('Start importing avatar data')
