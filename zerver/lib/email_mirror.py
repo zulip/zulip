@@ -194,7 +194,7 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
     if len(topic) > MAX_SUBJECT_LENGTH:
         try:
             Message.objects.get(subject=topic[:MAX_SUBJECT_LENGTH])
-        except:
+        except Message.DoesNotExist:
             content = '{}\n{}'.format(topic, content)
         topic = topic[:MAX_SUBJECT_LENGTH]
 

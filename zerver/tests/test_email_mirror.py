@@ -143,7 +143,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
-        
+
         mail_subject = 'x'*70  # 70 character long string
 
         incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
