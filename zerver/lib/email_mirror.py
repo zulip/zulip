@@ -192,7 +192,6 @@ class ZulipEmailForwardError(Exception):
 
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
     if len(topic) > MAX_SUBJECT_LENGTH:
-        #import pdb; pdb.set_trace()
         try:
             Message.objects.get(subject=topic[:MAX_SUBJECT_LENGTH])
         except:
