@@ -341,6 +341,39 @@ def toggle_mute_topic(client):
                                     '/users/me/subscriptions/muted_topics',
                                     'patch', '200')
 
+def mark_all_as_read(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Mark all of the user's unread messages as read
+    result = client.mark_all_as_read()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/mark_all_as_read', 'post', '200')
+
+def mark_stream_as_read(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Mark the unread messages in stream with ID "1" as read
+    result = client.mark_stream_as_read(1)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
+
+def mark_topic_as_read(client):
+    # type: (Client) -> None
+
+    # Grab an existing topic name
+    topìc_name = client.get_stream_topics(1)['topics'][0]['name']
+
+    # {code_example|start}
+    # Mark the unread messages in stream 1's topic "topic_name" as read
+    result = client.mark_topic_as_read(1, topìc_name)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/mark_stream_as_read', 'post', '200')
+
 def render_message(client):
     # type: (Client) -> None
 
@@ -666,6 +699,9 @@ def test_invalid_stream_error(client):
     validate_against_openapi_schema(result, '/get_stream_id', 'get', '400')
 
 TEST_FUNCTIONS = {
+    '/mark_all_as_read:post': mark_all_as_read,
+    '/mark_stream_as_read:post': mark_stream_as_read,
+    '/mark_topic_as_read:post': mark_topic_as_read,
     '/messages/render:post': render_message,
     '/messages:get': get_messages,
     '/messages:post': send_message,
@@ -752,6 +788,9 @@ def test_messages(client, nonadmin_client):
     get_messages(client)
     get_message_history(client, message_id)
     delete_message(client, message_id)
+    mark_all_as_read(client)
+    mark_stream_as_read(client)
+    mark_topic_as_read(client)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
