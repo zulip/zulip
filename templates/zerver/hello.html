@@ -524,6 +524,12 @@
 
     <div class="padded-content call-to-action-bottom">
         <h1>Experience Zulip today!</h1>
+        {% if root_domain_landing_page %}
+        <a href="{{ url('plans') }}">
+            <button href="" class="download-button" type="button"
+              name="button">{{ _('See plans and pricing!') }}</button>
+        </a>
+        {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
         <a href="{{ url('login-sso') }}">
