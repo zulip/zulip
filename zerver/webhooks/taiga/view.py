@@ -148,15 +148,8 @@ def get_old_and_new_values(change_type: str,
         new = message["change"]["diff"][change_type]["to"]
         return old, new
 
-    try:
-        old = message["change"]["diff"][change_type]["from"]
-    except KeyError:
-        old = None
-
-    try:
-        new = message["change"]["diff"][change_type]["to"]
-    except KeyError:
-        new = None
+    old = message["change"]["diff"][change_type].get("from")
+    new = message["change"]["diff"][change_type].get("to")
 
     return old, new
 
