@@ -7,7 +7,8 @@ If you just want to play around with Zulip and see what it looks like, you
 can create a test organization at <https://zulipchat.com>.
 
 You'll need an Ubuntu or Debian system that satisfies
-[the installation requirements](../production/requirements.html).
+[the installation requirements](../production/requirements.html), or
+you can use Zulip's [experimental Docker image](../production/deployment.html#zulip-in-docker).
 
 ## Step 1: Download the latest release
 

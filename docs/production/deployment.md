@@ -21,6 +21,15 @@ and then
 [continue the normal installation instructions](../production/install.html#step-2-install-zulip).
 You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository).
 
+## Zulip in Docker
+
+Zulip has an officially supported, experimental
+[docker image](https://github.com/zulip/docker-zulip).  Please note
+that Zulip's [normal installer](../production/install.html) has been
+extremely reliable for years, whereas the Docker image is new and has
+rough edges, so we recommend the normal installer unless you have a
+specific reason to prefer Docker.
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
