@@ -6,6 +6,21 @@ Zulip server, with all of the services it needs, on a single machine.
 For production deployment, however, it's common to want to do
 something more complicated.  This page documents the options for doing so.
 
+## Installing Zulip from Git
+
+To install a development version of Zulip from Git, just clone the Git
+repository from GitHub:
+
+```
+# First, install Git if you don't have it installed already
+sudo apt install git
+git clone https://github.com/zulip/zulip.git zulip-server-git
+```
+
+and then
+[continue the normal installation instructions](../production/install.html#step-2-install-zulip).
+You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository).
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
