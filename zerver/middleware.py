@@ -40,7 +40,7 @@ def record_request_stop_data(log_data: MutableMapping[str, Any]) -> None:
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
 
-def async_request_stop(request: HttpRequest) -> None:
+def async_request_timer_stop(request: HttpRequest) -> None:
     record_request_stop_data(request._log_data)
 
 def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
@@ -52,7 +52,7 @@ def record_request_restart_data(log_data: MutableMapping[str, Any]) -> None:
     log_data['bugdown_time_restarted'] = get_bugdown_time()
     log_data['bugdown_requests_restarted'] = get_bugdown_requests()
 
-def async_request_restart(request: HttpRequest) -> None:
+def async_request_timer_restart(request: HttpRequest) -> None:
     if "time_restarted" in request._log_data:
         # Don't destroy data when being called from
         # finish_current_handler

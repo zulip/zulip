@@ -23,7 +23,7 @@ from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
-from zerver.middleware import async_request_restart
+from zerver.middleware import async_request_timer_restart
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
@@ -149,7 +149,7 @@ class ClientDescriptor:
     def add_event(self, event: Dict[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
-            async_request_restart(handler._request)
+            async_request_timer_restart(handler._request)
 
         self.event_queue.push(event)
         self.finish_current_handler()
