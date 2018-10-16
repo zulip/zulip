@@ -15,6 +15,7 @@
 * [Get all streams](/api/get-all-streams)
 * [Get subscribed streams](/api/get-subscribed-streams)
 * [Add subscriptions](/api/add-subscriptions)
+* [Update subscription settings](/api/update-subscription-properties)
 * [Remove subscriptions](/api/remove-subscriptions)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topics)
