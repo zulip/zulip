@@ -6,7 +6,7 @@ Add or remove flags in a list of messages.
 
 For updating the `read` flag on common collections of messages, see also
 the
-[special endpoints for marking message as read in bulk](api/mark-as-read-bulk).
+[special endpoints for marking message as read in bulk](/api/mark-as-read-bulk).
 
 ## Usage examples
 
