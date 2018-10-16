@@ -428,6 +428,7 @@ code::after {
 }
 
 .message_content code {
+    display: inline-block;
     white-space: pre-wrap;
     padding: 0px 4px;
     background-color: hsl(0, 0%, 100%);
