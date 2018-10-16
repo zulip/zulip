@@ -79,6 +79,13 @@ Handlebars.registerHelper('if_or', function () {
     return options.inverse(this);
 });
 
+Handlebars.registerHelper('is_false', function (variable, options) {
+    if (variable === false) {
+        return options.fn(this);
+    }
+    return options.inverse(this);
+});
+
 Handlebars.registerHelper('t', function (i18n_key) {
     // Marks a string for translation.
     // Example usage:
