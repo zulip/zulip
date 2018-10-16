@@ -655,6 +655,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
+    sort_by_date = data.get('sort_by_date', False)
+
     bulk_import_client(data, Client, 'zerver_client')
 
     # We don't import the Stream model yet, since it depends on Realm,
@@ -714,7 +716,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
     # To remap foreign key for UserProfile.last_active_message_id
-    update_message_foreign_keys(import_dir)
+    update_message_foreign_keys(import_dir=import_dir, sort_by_date=sort_by_date)
 
     fix_datetime_fields(data, 'zerver_userprofile')
     update_model_ids(UserProfile, data, 'user_profile')
@@ -915,7 +917,45 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
             user_set.add((email, full_name, short_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
-def update_message_foreign_keys(import_dir: Path) -> None:
+def update_message_foreign_keys(import_dir: Path,
+                                sort_by_date: bool) -> None:
+    old_id_list = get_incoming_message_ids(
+        import_dir=import_dir,
+        sort_by_date=sort_by_date,
+    )
+
+    count = len(old_id_list)
+
+    new_id_list = allocate_ids(model_class=Message, count=count)
+
+    for old_id, new_id in zip(old_id_list, new_id_list):
+        update_id_map(
+            table='message',
+            old_id=old_id,
+            new_id=new_id,
+        )
+
+    # We don't touch user_message keys here; that happens later when
+    # we're actually read the files a second time to get actual data.
+
+def get_incoming_message_ids(import_dir: Path,
+                             sort_by_date: bool) -> List[int]:
+    '''
+    This function reads in our entire collection of message
+    ids, which can be millions of integers for some installations.
+    And then we sort the list.  This is necessary to ensure
+    that the sort order of incoming ids matches the sort order
+    of pub_date, which isn't always guaranteed by our
+    utilities that convert third party chat data.  We also
+    need to move our ids to a new range if we're dealing
+    with a server that has data for other realms.
+    '''
+
+    if sort_by_date:
+        tups = list()  # type: List[Tuple[int, int]]
+    else:
+        message_ids = []  # type: List[int]
+
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -925,8 +965,36 @@ def update_message_foreign_keys(import_dir: Path) -> None:
         with open(message_filename) as f:
             data = ujson.load(f)
 
-        update_model_ids(Message, data, 'message')
+        # Aggressively free up memory.
+        del data['zerver_usermessage']
+
+        for row in data['zerver_message']:
+            # We truncate pub_date to int to theoretically
+            # save memory and speed up the sort.  For
+            # Zulip-to-Zulip imports, the
+            # message_id will generally be a good tiebreaker.
+            # If we occasionally mis-order the ids for two
+            # messages from the same second, it's not the
+            # end of the world, as it's likely those messages
+            # arrived to the original server in somewhat
+            # arbitrary order.
+
+            message_id = row['id']
+
+            if sort_by_date:
+                pub_date = int(row['pub_date'])
+                tup = (pub_date, message_id)
+                tups.append(tup)
+            else:
+                message_ids.append(message_id)
+
         dump_file_id += 1
+
+    if sort_by_date:
+        tups.sort()
+        message_ids = [tup[1] for tup in tups]
+
+    return message_ids
 
 def import_message_data(import_dir: Path) -> None:
     dump_file_id = 1
@@ -946,7 +1014,18 @@ def import_message_data(import_dir: Path) -> None:
         # Parser to update message content with the updated attachment urls
         fix_upload_links(data, 'zerver_message')
 
-        re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
+        # We already create mappings for zerver_message ids
+        # in update_message_foreign_keys(), so here we simply
+        # apply them.
+        message_id_map = id_maps['message']
+        for row in data['zerver_message']:
+            row['id'] = message_id_map[row['id']]
+
+        for row in data['zerver_usermessage']:
+            assert(row['message'] in message_id_map)
+
+        # A LOT HAPPENS HERE.
+        # This is where we actually import the message data.
         bulk_import_model(data, Message)
 
         fix_message_rendered_content(data, 'zerver_message')

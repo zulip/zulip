@@ -21,6 +21,7 @@ from zerver.lib.export import (
 )
 from zerver.lib.import_realm import (
     do_import_realm,
+    get_incoming_message_ids,
 )
 from zerver.lib.avatar_hash import (
     user_avatar_path,
@@ -804,6 +805,22 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(original_image_key.key, avatar_path_id)
         image_data = original_image_key.get_contents_as_string()
         self.assertEqual(image_data, test_image_data)
+
+    def test_get_incoming_message_ids(self) -> None:
+        import_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "import_fixtures")
+        message_ids = get_incoming_message_ids(
+            import_dir=import_dir,
+            sort_by_date=True,
+        )
+
+        self.assertEqual(message_ids, [888, 999, 555])
+
+        message_ids = get_incoming_message_ids(
+            import_dir=import_dir,
+            sort_by_date=False,
+        )
+
+        self.assertEqual(message_ids, [555, 888, 999])
 
     def test_plan_type(self) -> None:
         realm = get_realm('zulip')
