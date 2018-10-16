@@ -376,6 +376,18 @@ class BugdownTest(ZulipTestCase):
             converted = bugdown_convert(msg)
         self.assertIn(thumbnail_img, converted)
 
+        # Any url which is not an external link and doesn't start with
+        # /user_uploads/ is not thumbnailed
+        msg = '[foobar](/static/images/cute/turtle.png)'
+        thumbnail_img = '<div class="message_inline_image"><a href="/static/images/cute/turtle.png" target="_blank" title="foobar"><img src="/static/images/cute/turtle.png"></a></div>'
+        converted = bugdown_convert(msg)
+        self.assertIn(thumbnail_img, converted)
+
+        msg = '[foobar](/user_avatars/2/emoji/images/50.png)'
+        thumbnail_img = '<div class="message_inline_image"><a href="/user_avatars/2/emoji/images/50.png" target="_blank" title="foobar"><img src="/user_avatars/2/emoji/images/50.png"></a></div>'
+        converted = bugdown_convert(msg)
+        self.assertIn(thumbnail_img, converted)
+
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview(self):
         # type: () -> None

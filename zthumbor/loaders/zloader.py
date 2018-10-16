@@ -35,14 +35,16 @@ def load(context, url, callback):
         return
 
     if source_type == THUMBOR_S3_TYPE:
+        if actual_url.startswith('/user_uploads/'):  # type: ignore # python 2 type differs from python 3 type
+            actual_url = actual_url[len('/user_uploads/'):]
+        else:
+            raise AssertionError("Unexpected s3 file.")
+
         s3_loader.load(context, actual_url, callback)
     elif source_type == THUMBOR_LOCAL_FILE_TYPE:
         if actual_url.startswith('/user_uploads/'):  # type: ignore # python 2 type differs from python 3 type
             actual_url = actual_url[len('/user_uploads/'):]
             local_file_path_prefix = 'files/'
-        elif actual_url.startswith('/user_avatars/'):  # type: ignore # python 2 type differs from python 3 type
-            actual_url = actual_url[len('/user_avatars/'):]
-            local_file_path_prefix = 'avatars/'
         else:
             raise AssertionError("Unexpected local file.")
 
