@@ -20,8 +20,8 @@ PYTHON_CLIENT_CONFIG = """
 
 import zulip
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
+# Pass the path to your zuliprc file here.
+client = zulip.Client(config_file="~/zuliprc")
 
 """
 
@@ -30,7 +30,7 @@ PYTHON_CLIENT_ADMIN_CONFIG = """
 
 import zulip
 
-# You need a zuliprc-admin with administrator credentials
+# The user for this zuliprc file must be an organization administrator
 client = zulip.Client(config_file="~/zuliprc-admin")
 
 """
