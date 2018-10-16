@@ -1,6 +1,8 @@
-# Remove organization filters
+# Remove linkifiers
 
-Remove an organization filter.
+Remove [linkifiers](/help/add-a-custom-linkification-filter), regular
+expression patterns that are automatically linkified when they appear
+in messages and topics.
 
 `DELETE {{ api_url }}/v1/realm/filters/<filter_id>`
 

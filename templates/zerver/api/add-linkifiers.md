@@ -1,6 +1,8 @@
-# Create organization filters
+# Create linkifiers
 
-Establish patterns in the messages that should be automatically linkified.
+Configure [linkifiers](/help/add-a-custom-linkification-filter),
+regular expression patterns that are automatically linkified when they
+appear in messages and topics.
 
 `POST {{ api_url }}/v1/realm/filters`
 

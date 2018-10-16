@@ -1,6 +1,9 @@
-# List organization filters
+# List linkifiers
 
-Fetch all the filters set up for the user's organization.
+List all of an organization's configured
+[linkifiers](/help/add-a-custom-linkification-filter), regular
+expression patterns that are automatically linkified when they appear
+in messages and topics.
 
 `GET {{ api_url }}/v1/realm/filters`
 
@@ -40,11 +43,11 @@ curl {{ api_url }}/v1/realm/filters \
 
 #### Return values
 
-* `filters`: An array of sub-arrays, each representing one of the filters set
-  up in the organization. Each of these tuples contain the pattern, the
-  formatted URL and the filter's ID, in that order. See [Create organization
-  filters](/api/create-org-filters#create-organization-filters) for details on
-  what does each field mean.
+* `filters`: An array of tuples, each representing one of the
+  linkifiers set up in the organization. Each of these tuples contain the
+  pattern, the formatted URL and the filter's ID, in that order. See
+  the [Create linkifiers](/api/add-linkifiers) article for details on what
+  each field means.
 
 #### Example response
 

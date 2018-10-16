@@ -32,9 +32,9 @@
 #### Server & organizations
 
 * [Get server settings](/api/server-settings)
-* [List organization filters](/api/list-org-filters)
-* [Create organization filters](/api/create-org-filters)
-* [Remove organization filters](/api/remove-org-filters)
+* [List linkifiers](/api/list-linkifiers)
+* [Create organization filters](/api/add-linkifiers)
+* [Remove organization filters](/api/remove-linkifiers)
 * [Get all custom emoji](/api/get-org-emoji)
 
 #### Real-time events

@@ -1278,13 +1278,11 @@ paths:
                             anyOf:
                             - string
                             - integer
-                      description: An array of sub-arrays, each representing
-                        one of the filters set up in the organization. Each of
-                        these tuples contain the pattern, the formatted URL and
-                        the filter's ID, in that order.
-                        See [Create organization
-                        filters](/api/create-org-filters#create-organization-filters)
-                        for details on what does each field mean.
+                      description: An array of tuples, each representing one of the
+                        linkifiers set up in the organization. Each of these tuples contain the
+                        pattern, the formatted URL and the filter's ID, in that order. See
+                        the [Create linkifiers](/api/add-linkifiers) article for details on what
+                        each field means.
                 - example:
                     {
                         "msg": "",
