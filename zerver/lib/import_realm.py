@@ -35,16 +35,16 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
 
 # Code from here is the realm import code path
 
-# id_maps is a dictionary that maps table names to dictionaries
+# ID_MAP is a dictionary that maps table names to dictionaries
 # that map old ids to new ids.  We use this in
 # re_map_foreign_keys and other places.
 #
-# We explicity initialize id_maps with the tables that support
+# We explicity initialize ID_MAP with the tables that support
 # id re-mapping.
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
-id_maps = {
+ID_MAP = {
     'client': {},
     'user_profile': {},
     'huddle': {},
@@ -85,13 +85,13 @@ path_maps = {
 }  # type: Dict[str, Dict[str, str]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
-    if table not in id_maps:
+    if table not in ID_MAP:
         raise Exception('''
-            Table %s is not initialized in id_maps, which could
+            Table %s is not initialized in ID_MAP, which could
             mean that we have not thought through circular
             dependencies.
             ''' % (table,))
-    id_maps[table][old_id] = new_id
+    ID_MAP[table][old_id] = new_id
 
 def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
@@ -179,11 +179,11 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
     This helps to generate a unique huddle hash from the updated user_profile ids
     """
     id_map_to_list['huddle_to_user_list'] = {
-        value: [] for value in id_maps['recipient_to_huddle_map'].values()}
+        value: [] for value in ID_MAP['recipient_to_huddle_map'].values()}
 
     for subscription in data[table]:
-        if subscription['recipient'] in id_maps['recipient_to_huddle_map']:
-            huddle_id = id_maps['recipient_to_huddle_map'][subscription['recipient']]
+        if subscription['recipient'] in ID_MAP['recipient_to_huddle_map']:
+            huddle_id = ID_MAP['recipient_to_huddle_map'][subscription['recipient']]
             id_map_to_list['huddle_to_user_list'][huddle_id].append(subscription['user_profile_id'])
 
 def fix_customprofilefield(data: TableData) -> None:
@@ -308,7 +308,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
     are in sync with the new ids, and this fixer function does
     the re-mapping.  (It also appends `_id` to the field.)
     '''
-    lookup_table = id_maps[related_table]
+    lookup_table = ID_MAP[related_table]
     for item in data_table:
         old_id = item[field_name]
         if recipient_field:
@@ -321,7 +321,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 # the user_profile ids involved in a huddle with the help of the
                 # subscription object
                 # check function 'get_huddles_from_subscription'
-                id_maps['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
+                ID_MAP['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
                 pass
             else:
                 continue
@@ -379,7 +379,7 @@ def re_map_foreign_keys_many_to_many_internal(table: TableName,
     which takes the old ID list of the ManyToMany relation and returns the
     new updated ID list.
     """
-    lookup_table = id_maps[related_table]
+    lookup_table = ID_MAP[related_table]
     new_id_list = []
     for old_id in old_id_list:
         if old_id in lookup_table:
@@ -577,9 +577,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         if not processing_emojis:
             user_profile_id = int(record['user_profile_id'])
             # Support email gateway bot and other cross-realm messages
-            if user_profile_id in id_maps["user_profile"]:
+            if user_profile_id in ID_MAP["user_profile"]:
                 logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
-                user_profile_id = id_maps["user_profile"][user_profile_id]
+                user_profile_id = ID_MAP["user_profile"][user_profile_id]
             user_profile = get_user_profile_by_id(user_profile_id)
             key.set_metadata("user_profile_id", str(user_profile.id))
 
@@ -1017,7 +1017,7 @@ def import_message_data(import_dir: Path) -> None:
         # We already create mappings for zerver_message ids
         # in update_message_foreign_keys(), so here we simply
         # apply them.
-        message_id_map = id_maps['message']
+        message_id_map = ID_MAP['message']
         for row in data['zerver_message']:
             row['id'] = message_id_map[row['id']]
 
@@ -1077,7 +1077,7 @@ def import_attachments(data: TableData) -> None:
         for fk_id in parent_row[child_plural]:
             m2m_row = {}  # type: Record
             m2m_row[parent_singular] = parent_row['id']
-            m2m_row[child_singular] = id_maps['message'][fk_id]
+            m2m_row[child_singular] = ID_MAP['message'][fk_id]
             m2m_rows.append(m2m_row)
 
     # Create our table data for insert.
