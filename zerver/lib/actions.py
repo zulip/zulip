@@ -3088,11 +3088,14 @@ def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
 
     if plan_type == Realm.STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        realm.message_visibility_limit = None
     elif plan_type == Realm.STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        realm.message_visibility_limit = None
     elif plan_type == Realm.LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
-    realm.save(update_fields=['_max_invites'])
+        realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
+    realm.save(update_fields=['_max_invites', 'message_visibility_limit'])
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
@@ -3272,6 +3275,7 @@ def do_create_realm(string_id: str, name: str,
         kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
     if settings.BILLING_ENABLED:
         kwargs['plan_type'] = Realm.LIMITED
+        kwargs['message_visibility_limit'] = Realm.MESSAGE_VISIBILITY_LIMITED
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 

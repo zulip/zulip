@@ -6,6 +6,7 @@ import mock
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.conf import settings
 from mock import patch
 from typing import Any, Dict, List, Union, Mapping
 
@@ -344,19 +345,36 @@ class RealmTest(ZulipTestCase):
 
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):
-            self.assertEqual(Realm.LIMITED, do_create_realm('hosted', 'hosted').plan_type)
+            self.assertEqual(do_create_realm('hosted', 'hosted').plan_type, Realm.LIMITED)
+            self.assertEqual(get_realm("hosted").max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+            self.assertEqual(get_realm("hosted").message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
+
         with self.settings(BILLING_ENABLED=False):
-            self.assertEqual(Realm.SELF_HOSTED, do_create_realm('onpremise', 'onpremise').plan_type)
+            self.assertEqual(do_create_realm('onpremise', 'onpremise').plan_type, Realm.SELF_HOSTED)
+            self.assertEqual(get_realm('onpremise').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+            self.assertEqual(get_realm('onpremise').message_visibility_limit, None)
 
     def test_change_plan_type(self) -> None:
         user = self.example_user('iago')
-        self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+
         do_change_plan_type(user, Realm.STANDARD)
-        self.assertEqual(get_realm('zulip').max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+
         do_change_plan_type(user, Realm.LIMITED)
-        self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
+
         do_change_plan_type(user, Realm.STANDARD_FREE)
-        self.assertEqual(get_realm('zulip').max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
 
 class RealmAPITest(ZulipTestCase):
 
