@@ -13,12 +13,12 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-You can use <http://requestb.in> or a similar tool to capture
+Use <https://webhook.site/> or a similar tool to capture
 webhook payload(s) from the service you are integrating. Examining this
 data allows you to do two things:
 
 1. Determine how you will need to structure your webhook code, including what
-   message types your integration should support and how; and,
+   message types your integration should support and how.
 2. Create fixtures for your webhook tests.
 
 A test fixture is a small file containing test data, one for each test.
@@ -374,7 +374,8 @@ Zulip's webhooks/integrations documentation.
 See
 [our guide on documenting an integration][integration-docs-guide]
 for further details, including how to easily create the message
-screenshot.
+screenshot. Mostly you should plan on templating off an existing guide, like
+[this one](https://raw.githubusercontent.com/zulip/zulip/master/zerver/webhooks/github/doc.md).
 
 [integration-docs-guide]: https://zulip.readthedocs.io/en/latest/subsystems/integration-docs.html
 
