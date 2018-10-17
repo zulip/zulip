@@ -81,3 +81,37 @@ below are for a webhook named `MyWebHook`.
   URL for the incoming webhook of the form `api/v1/external/mywebhook` and
   associate it with the function called `api_mywebhook_webhook` in
   `zerver/webhooks/mywebhook/view.py`.
+
+## General advice
+
+* Consider using our Zulip markup to make the output from your
+  integration especially attractive or useful (e.g.  emoji, markdown
+  emphasis, @-mentions, or `!avatar(email)`).
+
+* Use topics effectively to ensure sequential messages about the same
+  thing are threaded together; this makes for much better consumption
+  by users.  E.g. for a bug tracker integration, put the bug number in
+  the topic for all messages; for an integration like Nagios, put the
+  service in the topic.
+
+* Integrations that don't match a team's workflow can often be
+  uselessly spammy.  Give careful thought to providing options for
+  triggering Zulip messages only for certain message types, certain
+  projects, or sending different messages to different streams/topics,
+  to make it easy for teams to configure the integration to support
+  their workflow.
+
+* Consistently capitalize the name of the integration in the
+  documentation and the Client name the way the vendor does.  It's OK
+  to use all-lower-case in the implementation.
+
+* Sometimes it can be helpful to contact the vendor if it appears they
+  don't have an API or webhook we can use; sometimes the right API
+  is just not properly documented.
+
+* A helpful tool for testing your integration is
+  [UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
+  calls via your local Zulip development environment. This enables you to do end-to-end
+  testing with live data from the service you're integrating and can help you
+  spot why something isn't working or if the service is using custom HTTP
+  headers.
