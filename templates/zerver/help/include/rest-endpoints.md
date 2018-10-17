@@ -36,8 +36,8 @@
 
 * [Get server settings](/api/server-settings)
 * [List linkifiers](/api/list-linkifiers)
-* [Create organization filters](/api/add-linkifiers)
-* [Remove organization filters](/api/remove-linkifiers)
+* [Create linkifiers](/api/add-linkifiers)
+* [Remove linkifiers](/api/remove-linkifiers)
 * [Get all custom emoji](/api/get-org-emoji)
 
 #### Real-time events
