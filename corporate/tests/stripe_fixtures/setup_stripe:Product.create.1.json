@@ -1,0 +1,28 @@
+{
+  "active": true,
+  "attributes": [],
+  "caption": null,
+  "created": 1539757767,
+  "deactivate_on": [],
+  "description": null,
+  "id": "prod_Dnk1caVMmJUR1O",
+  "images": [],
+  "livemode": false,
+  "metadata": {},
+  "name": "Zulip Cloud Premium",
+  "object": "product",
+  "package_dimensions": null,
+  "shippable": null,
+  "skus": {
+    "data": [],
+    "has_more": false,
+    "object": "list",
+    "total_count": 0,
+    "url": "/v1/skus?product=prod_Dnk1caVMmJUR1O&active=true"
+  },
+  "statement_descriptor": "Zulip Cloud Premium",
+  "type": "service",
+  "unit_label": "user",
+  "updated": 1539757767,
+  "url": null
+}

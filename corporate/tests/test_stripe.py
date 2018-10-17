@@ -1,13 +1,18 @@
 import datetime
 import mock
 import os
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
+from functools import wraps, partial
 import ujson
 import re
+import errno
+import sys
+import operator
 
 from django.core import signing
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
+from django.core.management import call_command
 
 import stripe
 
@@ -22,6 +27,10 @@ from corporate.lib.stripe import catch_stripe_errors, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
     BillingError, StripeCardError, StripeConnectionError
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
+
+CallableT = TypeVar('CallableT', bound=Callable[..., Any])
+
+GENERATE_STRIPE_FIXTURES = False
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
@@ -66,11 +75,64 @@ def mock_invoice_preview_for_downgrade(total: int=-1000) -> Callable[[str, str, 
         return stripe_invoice
     return invoice_preview
 
+def stripe_fixture_path(decorated_function: CallableT, mocked_function_name: str,
+                        call_count: int) -> str:
+    fixture_name = "{}:{}".format(decorated_function.__name__, mocked_function_name[7:])
+    return "corporate/tests/stripe_fixtures/{}.{}.json".format(fixture_name, call_count)
+
+def generate_and_save_stripe_fixture(decorated_function: CallableT, mocked_function: CallableT,
+                                     mocked_function_name: str) -> Callable[[Any, Any], Any]:  # nocoverage
+    def _generate_and_save_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
+        mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        # Talk to Stripe
+        stripe_object = mocked_function(*args, **kwargs)
+        filepath = stripe_fixture_path(decorated_function, mocked_function_name, mock.call_count)
+        if not os.path.exists(os.path.dirname(filepath)):
+            try:
+                os.makedirs(os.path.dirname(filepath))
+            except OSError as exc:
+                if exc.errno != errno.EEXIST:
+                    raise
+        with open(filepath, 'w') as f:
+            f.write(str(stripe_object) + "\n")
+        return stripe_object
+    return _generate_and_save_stripe_fixture
+
+def read_stripe_fixture(decorated_function: CallableT, mocked_function_name: str) -> Callable[[Any, Any], Any]:
+    def _read_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
+        mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        fixture_file = open(stripe_fixture_path(decorated_function, mocked_function_name, mock.call_count), 'r')
+        return stripe.util.convert_to_stripe_object(ujson.load(fixture_file))
+    return _read_stripe_fixture
+
+def mock_stripe(mocked_function_name: str, generate_fixture: bool=False) -> Callable[[CallableT], CallableT]:
+    def _mock_stripe(decorated_function: CallableT) -> CallableT:
+        mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        if GENERATE_STRIPE_FIXTURES or generate_fixture:
+            side_effect = generate_and_save_stripe_fixture(decorated_function, mocked_function,
+                                                           mocked_function_name)  # nocoverage
+        else:
+            side_effect = read_stripe_fixture(decorated_function, mocked_function_name)
+
+        @mock.patch(mocked_function_name, side_effect=side_effect)
+        @wraps(decorated_function)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            return decorated_function(*args, **kwargs)
+        return wrapped
+    return _mock_stripe
+
 # A Kandra is a fictional character that can become anything. Used as a
 # wildcard when testing for equality.
 class Kandra(object):
     def __eq__(self, other: Any) -> bool:
         return True
+
+@mock_stripe("stripe.Coupon.create")
+@mock_stripe("stripe.Plan.create")
+@mock_stripe("stripe.Product.create")
+def setup_stripe(mock_create_product: mock.Mock, mock_create_plan: mock.Mock,
+                 mock_create_coupon: mock.Mock) -> None:
+    call_command("setup_stripe")
 
 class StripeTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -95,6 +157,21 @@ class StripeTest(ZulipTestCase):
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
         return match.group(1) if match else None
 
+    def create_stripe_token(self) -> stripe.Token:
+        return stripe.Token.create(
+            card={
+                "number": "4242424242424242",
+                "exp_month": 3,
+                "exp_year": 2033,
+                "cvc": "333",
+                "name": "Ada Starr",
+                "address_line1": "Under the sea,",
+                "address_city": "Pacific",
+                "address_zip": "33333",
+                "address_country": "United States",
+            },
+        )
+
     @mock.patch("corporate.lib.stripe.billing_logger.error")
     def test_catch_stripe_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
@@ -118,20 +195,25 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('card error', context.exception.description)
         mock_billing_logger_error.assert_called()
 
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_initial_upgrade(self, mock_create_subscription: mock.Mock,
-                             mock_create_customer: mock.Mock) -> None:
+    @mock_stripe("stripe.Token.create")
+    @mock_stripe("stripe.Customer.retrieve")
+    @mock_stripe("stripe.Customer.create")
+    @mock_stripe("stripe.Subscription.create")
+    def test_initial_upgrade(self, mock_create_subscription: mock.Mock, mock_create_customer: mock.Mock,
+                             mock_retrieve_customer: mock.Mock, mock_create_token: mock.Mock) -> None:
+        setup_stripe()  # type: ignore # MyPy seems to have trouble recognizing the mock arguments
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
         self.assertNotEqual(user.realm.plan_type, Realm.PREMIUM)
+        self.assertFalse(Customer.objects.filter(realm=get_realm("zulip")))
 
+        token = self.create_stripe_token()
         # Click "Make payment" in Stripe Checkout
         self.client_post("/upgrade/", {
-            'stripeToken': self.token,
+            'stripeToken': token.id,
             'signed_seat_count': self.get_signed_seat_count_from_response(response),
             'salt': self.get_salt_from_response(response),
             'plan': Plan.CLOUD_ANNUAL})
@@ -140,26 +222,27 @@ class StripeTest(ZulipTestCase):
             description="zulip (Zulip Dev)",
             email=user.email,
             metadata={'realm_id': user.realm.id, 'realm_str': 'zulip'},
-            source=self.token,
+            source=token.id,
             coupon=None)
+        customer = Customer.objects.get(realm=get_realm("zulip"))
+        stripe_plan_id = Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id
         mock_create_subscription.assert_called_once_with(
-            customer=self.stripe_customer_id,
+            customer=customer.stripe_customer_id,
             billing='charge_automatically',
             items=[{
-                'plan': self.stripe_plan_id,
+                'plan': stripe_plan_id,
                 'quantity': self.quantity,
             }],
             prorate=True,
             tax_percent=0)
-        # Check that we correctly populated Customer and RealmAuditLog in Zulip
-        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=self.stripe_customer_id,
-                                                    realm=user.realm).count())
+        stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+        subscription = extract_current_subscription(stripe_customer)
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created)),
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(stripe_customer.created)),
+            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created)),
+            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(subscription.created)),
             (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
         # Check that we correctly updated Realm
