@@ -1,5 +1,4 @@
 import logging
-import mock
 from typing import Any, Dict, List, Set, Tuple, Optional, Sequence
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -319,7 +318,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
     def __init__(self) -> None:
-        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage # We only use this in development
+        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
+            # We only use this in development.  Importing mock inside
+            # this function is an import time optimization, which
+            # avoids the expensive import of the mock module (slow
+            # because its dependency pbr uses pkgresources, which is
+            # really slow to import.)
+            import mock
             from fakeldap import MockLDAP
 
             ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')

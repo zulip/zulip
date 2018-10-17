@@ -1,4 +1,3 @@
-from mock import patch
 from django.forms import Form
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -591,6 +590,13 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         realm.uri instead of '/'.
         """
         realm_uri = self.get_user().realm.uri
+        # This mock.patch business is an unpleasant hack that we'd
+        # ideally like to remove by instead patching the upstream
+        # module to support better configurability of the
+        # LOGIN_REDIRECT_URL setting.  But until then, it works.  We
+        # import mock.patch here because mock has an expensive import
+        # process involving pbr -> pkgresources (which is really slow).
+        from mock import patch
         with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
             return super().done(form_list, **kwargs)
 
