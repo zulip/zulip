@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
-    build_user,
+    build_user_profile,
 )
 
 class UserHandler:
@@ -47,7 +47,7 @@ class UserHandler:
         date_joined = int(timezone_now().timestamp())
         timezone = 'UTC'
 
-        user = build_user(
+        user = build_user_profile(
             avatar_source=avatar_source,
             date_joined=date_joined,
             delivery_email=delivery_email,
