@@ -81,7 +81,7 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
-    if is_admin is not None:
+    if is_admin is not None and target.is_realm_admin != is_admin:
         if not is_admin and check_last_admin(user_profile):
             return json_error(_('Cannot remove the only organization administrator'))
         do_change_is_admin(target, is_admin)
