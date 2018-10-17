@@ -1,0 +1,21 @@
+{
+  "active": true,
+  "attributes": [],
+  "caption": null,
+  "created": 1539831970,
+  "deactivate_on": [],
+  "description": null,
+  "id": "prod_Do3x494SetTDpx",
+  "images": [],
+  "livemode": false,
+  "metadata": {},
+  "name": "Zulip Cloud Premium",
+  "object": "product",
+  "package_dimensions": null,
+  "shippable": null,
+  "statement_descriptor": "Zulip Cloud Premium",
+  "type": "service",
+  "unit_label": "user",
+  "updated": 1539831970,
+  "url": null
+}

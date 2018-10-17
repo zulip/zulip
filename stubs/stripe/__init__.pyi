@@ -15,6 +15,9 @@ class Customer:
     coupon: str
     account_balance: int
     email: str
+    description: str
+    discount: Optional[Dict[str, Any]]
+    metadata: Dict[str, str]
 
     @staticmethod
     def retrieve(customer_id: str=..., expand: Optional[List[str]]=...) -> Customer:
@@ -52,6 +55,7 @@ class Subscription:
         ...
 
 class Card:
+    id: str
     last4: str
 
 class Plan:
@@ -74,4 +78,10 @@ class Coupon:
 
     @staticmethod
     def create(duration: str=..., name: str=..., percent_off: int=...) -> Coupon:
+        ...
+
+class Token:
+    id: str
+    @staticmethod
+    def create(card: Dict[str, Any]) -> Token:
         ...

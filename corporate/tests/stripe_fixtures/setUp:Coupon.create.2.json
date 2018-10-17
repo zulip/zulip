@@ -1,0 +1,17 @@
+{
+  "amount_off": null,
+  "created": 1539831972,
+  "currency": null,
+  "duration": "forever",
+  "duration_in_months": null,
+  "id": "wqkGqs8t",
+  "livemode": false,
+  "max_redemptions": null,
+  "metadata": {},
+  "name": "85% discount",
+  "object": "coupon",
+  "percent_off": 85.0,
+  "redeem_by": null,
+  "times_redeemed": 0,
+  "valid": true
+}

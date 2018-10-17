@@ -1,0 +1,61 @@
+{
+  "account_balance": 0,
+  "created": 1539832157,
+  "currency": null,
+  "default_source": "card_1DMRsvGh0CmXqmnwRFN7yRRD",
+  "delinquent": false,
+  "description": "zulip (Zulip Dev)",
+  "discount": null,
+  "email": "hamlet@zulip.com",
+  "id": "cus_Do40UO0WhJ4ZIl",
+  "invoice_prefix": "7783290",
+  "livemode": false,
+  "metadata": {
+    "realm_id": "1",
+    "realm_str": "zulip"
+  },
+  "object": "customer",
+  "shipping": null,
+  "sources": {
+    "data": [
+      {
+        "address_city": "Pacific",
+        "address_country": "United States",
+        "address_line1": "Under the sea,",
+        "address_line1_check": "pass",
+        "address_line2": null,
+        "address_state": null,
+        "address_zip": "33333",
+        "address_zip_check": "pass",
+        "brand": "Visa",
+        "country": "US",
+        "customer": "cus_Do40UO0WhJ4ZIl",
+        "cvc_check": "pass",
+        "dynamic_last4": null,
+        "exp_month": 3,
+        "exp_year": 2033,
+        "fingerprint": "6dAXT9VZvwro65EK",
+        "funding": "credit",
+        "id": "card_1DMRsvGh0CmXqmnwRFN7yRRD",
+        "last4": "4242",
+        "metadata": {},
+        "name": "Ada Starr",
+        "object": "card",
+        "tokenization_method": null
+      }
+    ],
+    "has_more": false,
+    "object": "list",
+    "total_count": 1,
+    "url": "/v1/customers/cus_Do40UO0WhJ4ZIl/sources"
+  },
+  "subscriptions": {
+    "data": [],
+    "has_more": false,
+    "object": "list",
+    "total_count": 0,
+    "url": "/v1/customers/cus_Do40UO0WhJ4ZIl/subscriptions"
+  },
+  "tax_info": null,
+  "tax_info_verification": null
+}

@@ -1,11 +1,15 @@
 import datetime
+from functools import wraps
 import mock
+import operator
 import os
-from typing import Any, Callable, Dict, List, Optional
-import ujson
 import re
+import sys
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
+import ujson
 
 from django.core import signing
+from django.core.management import call_command
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
 
@@ -20,8 +24,12 @@ from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
-    BillingError, StripeCardError, StripeConnectionError
+    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
+
+CallableT = TypeVar('CallableT', bound=Callable[..., Any])
+
+GENERATE_STRIPE_FIXTURES = False
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
@@ -66,6 +74,69 @@ def mock_invoice_preview_for_downgrade(total: int=-1000) -> Callable[[str, str, 
         return stripe_invoice
     return invoice_preview
 
+# TODO: check that this creates a token similar to what is created by our
+# actual Stripe Checkout flows
+def stripe_create_token() -> stripe.Token:
+    return stripe.Token.create(
+        card={
+            "number": "4242424242424242",
+            "exp_month": 3,
+            "exp_year": 2033,
+            "cvc": "333",
+            "name": "Ada Starr",
+            "address_line1": "Under the sea,",
+            "address_city": "Pacific",
+            "address_zip": "33333",
+            "address_country": "United States",
+        })
+
+def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str, call_count: int) -> str:
+    # Make the eventual filename a bit shorter, and also we conventionally
+    # use test_* for the python test files
+    if decorated_function_name[:5] == 'test_':
+        decorated_function_name = decorated_function_name[5:]
+    return "corporate/tests/stripe_fixtures/{}:{}.{}.json".format(
+        decorated_function_name, mocked_function_name[7:], call_count)
+
+def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
+                                     mocked_function: CallableT) -> Callable[[Any, Any], Any]:  # nocoverage
+    def _generate_and_save_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
+        # Talk to Stripe
+        stripe_object = mocked_function(*args, **kwargs)
+        # Note that mock is not the same as mocked_function, even though their
+        # definitions look the same
+        mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
+        with open(fixture_path, 'w') as f:
+            f.write(str(stripe_object) + "\n")
+        return stripe_object
+    return _generate_and_save_stripe_fixture
+
+def read_stripe_fixture(decorated_function_name: str,
+                        mocked_function_name: str) -> Callable[[Any, Any], Any]:
+    def _read_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
+        mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
+        return stripe.util.convert_to_stripe_object(ujson.load(open(fixture_path, 'r')))
+    return _read_stripe_fixture
+
+def mock_stripe(mocked_function_name: str,
+                generate_this_fixture: bool=False) -> Callable[[CallableT], CallableT]:
+    def _mock_stripe(decorated_function: CallableT) -> CallableT:
+        mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+        if GENERATE_STRIPE_FIXTURES or generate_this_fixture:
+            side_effect = generate_and_save_stripe_fixture(
+                decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
+        else:
+            side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
+
+        @mock.patch(mocked_function_name, side_effect=side_effect)
+        @wraps(decorated_function)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            return decorated_function(*args, **kwargs)
+        return wrapped
+    return _mock_stripe
+
 # A Kandra is a fictional character that can become anything. Used as a
 # wildcard when testing for equality.
 class Kandra(object):
@@ -73,19 +144,23 @@ class Kandra(object):
         return True
 
 class StripeTest(ZulipTestCase):
-    def setUp(self) -> None:
+    @mock_stripe("stripe.Coupon.create")
+    @mock_stripe("stripe.Plan.create")
+    @mock_stripe("stripe.Product.create")
+    def setUp(self, mock3: mock.Mock, mock2: mock.Mock, mock1: mock.Mock) -> None:
+        call_command("setup_stripe")
+
+        # legacy
         self.token = 'token'
         # The values below should be copied from stripe_fixtures.json
         self.stripe_customer_id = 'cus_D7OT2jf5YAtZQL'
         self.customer_created = 1529990750
-        self.stripe_coupon_id = "rncBblSZ"
-        self.stripe_plan_id = 'plan_D7Nh2BtpTvIzYp'
+        self.stripe_coupon_id = Coupon.objects.get(percent_off=85).stripe_coupon_id
+        self.stripe_plan_id = 'plan_Do3xCvbzO89OsR'
         self.subscription_created = 1529990751
         self.quantity = 8
 
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
-        Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=self.stripe_plan_id)
-        Coupon.objects.create(percent_off=85, stripe_coupon_id=self.stripe_coupon_id)
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
@@ -118,48 +193,55 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('card error', context.exception.description)
         mock_billing_logger_error.assert_called()
 
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_initial_upgrade(self, mock_create_subscription: mock.Mock,
-                             mock_create_customer: mock.Mock) -> None:
+    @mock_stripe("stripe.Token.create")
+    @mock_stripe("stripe.Customer.create")
+    @mock_stripe("stripe.Subscription.create")
+    @mock_stripe("stripe.Customer.retrieve")
+    def test_initial_upgrade(self, mock4: mock.Mock, mock3: mock.Mock,
+                             mock2: mock.Mock, mock1: mock.Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
         self.assertNotEqual(user.realm.plan_type, Realm.PREMIUM)
+        self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
         # Click "Make payment" in Stripe Checkout
         self.client_post("/upgrade/", {
-            'stripeToken': self.token,
+            'stripeToken': stripe_create_token().id,
             'signed_seat_count': self.get_signed_seat_count_from_response(response),
             'salt': self.get_salt_from_response(response),
             'plan': Plan.CLOUD_ANNUAL})
-        # Check that we created a customer and subscription in stripe
-        mock_create_customer.assert_called_once_with(
-            description="zulip (Zulip Dev)",
-            email=user.email,
-            metadata={'realm_id': user.realm.id, 'realm_str': 'zulip'},
-            source=self.token,
-            coupon=None)
-        mock_create_subscription.assert_called_once_with(
-            customer=self.stripe_customer_id,
-            billing='charge_automatically',
-            items=[{
-                'plan': self.stripe_plan_id,
-                'quantity': self.quantity,
-            }],
-            prorate=True,
-            tax_percent=0)
+
+        # Check that we correctly created Customer and Subscription objects in Stripe
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual(stripe_customer.default_source.id[:5], 'card_')
+        self.assertEqual(stripe_customer.description, "zulip (Zulip Dev)")
+        self.assertEqual(stripe_customer.discount, None)
+        self.assertEqual(stripe_customer.email, user.email)
+        self.assertEqual(dict(stripe_customer.metadata),
+                         {'realm_id': str(user.realm.id), 'realm_str': 'zulip'})
+
+        stripe_subscription = extract_current_subscription(stripe_customer)
+        self.assertEqual(stripe_subscription.billing, 'charge_automatically')
+        self.assertEqual(stripe_subscription.days_until_due, None)
+        self.assertEqual(stripe_subscription.plan.id,
+                         Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id)
+        self.assertEqual(stripe_subscription.quantity, self.quantity)
+        self.assertEqual(stripe_subscription.status, 'active')
+        self.assertEqual(stripe_subscription.tax_percent, 0)
+
         # Check that we correctly populated Customer and RealmAuditLog in Zulip
-        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=self.stripe_customer_id,
+        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=stripe_customer.id,
                                                     realm=user.realm).count())
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created)),
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(stripe_customer.created)),
+            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created)),
+            # TODO: Add a test where stripe_customer.created != stripe_subscription.created
+            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(stripe_subscription.created)),
             (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
         # Check that we correctly updated Realm
@@ -391,11 +473,11 @@ class StripeTest(ZulipTestCase):
             source=None, coupon=self.stripe_coupon_id)
         mock_create_customer.reset_mock()
         # For existing customer
-        Coupon.objects.create(percent_off=25, stripe_coupon_id='25OFF')
+        Coupon.objects.create(percent_off=42, stripe_coupon_id='42OFF')
         with mock.patch.object(
                 stripe.Customer, 'save', autospec=True,
-                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '25OFF')):
-            attach_discount_to_realm(user, 25)
+                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '42OFF')):
+            attach_discount_to_realm(user, 42)
         mock_create_customer.assert_not_called()
 
     @mock.patch("stripe.Subscription.delete")
