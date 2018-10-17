@@ -173,6 +173,9 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         hamlet = self.example_user('hamlet')
         self.assertEqual(hamlet.full_name, new_name)
+        req['is_admin'] = ujson.dumps(False)
+        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        self.assert_json_success(result)
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login(self.example_email("hamlet"))
