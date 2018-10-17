@@ -47,7 +47,10 @@ integration and don't have an engineer on staff, reach out to
 * If the third-party service supports outgoing webhooks, you likely want to
   build an [incoming webhook integration](/api/incoming-webhooks-overview).
 
-* Otherwise, you can
+* If it doesn't, you may want to write a
+  [script or plugin integration](/api/non-webhook-integrations).
+
+* Finally, you can
   [send messages using Zulip's API](/api/send-message).
 
 ### Sending and receiving content
