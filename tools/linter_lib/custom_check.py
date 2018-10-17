@@ -844,7 +844,7 @@ def build_custom_checkers(by_lang):
             # Has a very long configuration line
             "templates/zerver/integrations/perforce.md",
             # Has some example code that could perhaps be wrapped
-            "templates/zerver/api/webhook-walkthrough.md",
+            "templates/zerver/api/incoming-webhooks-walkthrough.md",
             # This macro has a long indented URL
             "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
         }

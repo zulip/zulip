@@ -67,7 +67,7 @@ md_macro_extension = None  # type: Optional[Any]
 # they contain a macro, it is always used literally for documenting
 # the macro system.
 docs_without_macros = [
-    "webhook-walkthrough.md",
+    "incoming-webhooks-walkthrough.md",
 ]
 
 # Much of the time, render_markdown_path is called with hashable

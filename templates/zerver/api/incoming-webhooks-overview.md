@@ -48,7 +48,7 @@ including tests and documentation, if you use the right process.
 
 ## Hello world walkthrough
 
-Check out the [detailed walkthrough](webhook-walkthrough) for step-by-step
+Check out the [detailed walkthrough](incoming-webhooks-walkthrough) for step-by-step
 instructions.
 
 ## Checklist
