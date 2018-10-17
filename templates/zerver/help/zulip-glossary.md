@@ -93,7 +93,7 @@ An **integration** is a tool that combines Zulip with another service or
 application. Zulip offers a variety of integrations for version control, issue
 tracker, CI system, monitoring tools, and other tools used for
 development.  See Zulip's
-[integration documentation](/api/integration-guide) for details on the
+[integration documentation](/api/integrations-overview) for details on the
 various types of Zulip integrations.
 
 ### mention

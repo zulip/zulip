@@ -99,7 +99,7 @@ expert teaching other users how to use Zulip.
 * [Add custom profile fields](/help/add-custom-profile-fields)
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
   issue numbers.
-- [Write custom integrations](https://zulipchat.com/api/integration-guide)
+- [Write custom integrations](/api/integrations-overview)
   for your team’s workflow.
 - If your users primarily speak a language other than English,
   [set a default language for your organization](/help/change-the-default-language-for-your-organization).

@@ -4,7 +4,6 @@
 
 This page documents how views work in Zulip. You may want to read the
 [new feature tutorial](../tutorials/new-feature-tutorial.html)
-or the [integration guide](https://zulipchat.com/api/integration-guide),
 and treat this as a reference.
 
 If you have experience with Django, much of this will be familiar, but

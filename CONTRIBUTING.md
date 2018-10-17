@@ -31,7 +31,7 @@ needs doing:
   [desktop app](https://github.com/zulip/zulip-electron).
 * Building out our
   [Python API and bots](https://github.com/zulip/python-zulip-api) framework.
-* [Writing an integration](https://zulipchat.com/api/integration-guide).
+* [Writing an integration](https://zulipchat.com/api/integrations-overview).
 * Improving our [user](https://zulipchat.com/help/) or
   [developer](https://zulip.readthedocs.io/en/latest/) documentation.
 * [Reviewing code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html)
