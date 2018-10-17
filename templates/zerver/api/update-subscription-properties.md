@@ -8,37 +8,25 @@ per-stream notification settings.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
-
-<div data-language="curl" markdown="1">
-
-```
-curl -X POST {{ api_url }}/v1/users/me/subscriptions/properties \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d 'subscription_data=[{"stream_id": 1, \
-                            "property": "pin_to_top", \
-                            "value": true}, \
-                           {"stream_id": 3, \
-                            "property": "color", \
-                            "value": 'f00'}]'
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/users/me/subscriptions/properties:post|example}
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -X POST {{ api_url }}/v1/users/me/subscriptions/properties \
+     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+     -d 'subscription_data=[{"stream_id": 1, \
+                             "property": "pin_to_top", \
+                             "value": true}, \
+                            {"stream_id": 3, \
+                             "property": "color", \
+                             "value": 'f00'}]'
+```
 
-</div>
+{end_tabs}
 
 ## Arguments
 

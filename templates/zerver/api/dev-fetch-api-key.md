@@ -14,13 +14,8 @@ in a Zulip production server.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
-
-<div data-language="curl" markdown="1">
+{start_tabs}
+{tab|curl}
 
 ```
 curl {{ api_url }}/v1/dev_fetch_api_key \
@@ -28,11 +23,7 @@ curl {{ api_url }}/v1/dev_fetch_api_key \
     -d "username=iago@zulip.com"
 ```
 
-</div>
-
-</div>
-
-</div>
+{end_tabs}
 
 ## Arguments
 

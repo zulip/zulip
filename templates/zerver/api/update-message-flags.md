@@ -10,33 +10,13 @@ the
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="javascript">JavaScript</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
-
-<div data-language="curl" markdown="1">
-
-```
-curl -X POST {{ api_url }}/v1/messages/flags \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "messages=[4,8,15]" \
-    -d "op=add" \
-    -d "flag=starred"
-```
-
-</div>
-
-<div data-language="python" markdown="1">
+{start_tabs}
+{tab|python}
 
 {generate_code_example(python)|/messages/flags:post|example}
 
-</div>
+{tab|js}
 
-<div data-language="javascript" markdown="1">
 More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
 ```js
 const zulip = require('zulip-js');
@@ -61,11 +41,18 @@ zulip(config).then((client) => {
     .then(console.log);
 });
 ```
-</div>
 
-</div>
+{tab|curl}
 
-</div>
+```
+curl -X POST {{ api_url }}/v1/messages/flags \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "messages=[4,8,15]" \
+    -d "op=add" \
+    -d "flag=starred"
+```
+
+{end_tabs}
 
 ## Arguments
 

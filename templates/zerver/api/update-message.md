@@ -41,7 +41,7 @@ zulip(config).then((client) => {
 ```
 curl -X "PATCH" {{ api_url }}/v1/messages/<msg_id> \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "content=New content"
+    -d $"content=New content"
 ```
 
 {end_tabs}

@@ -58,14 +58,14 @@ curl {{ api_url }}/v1/messages \
     -d "type=stream" \
     -d "to=Denmark" \
     -d "subject=Castle" \
-    -d "content=Something is rotten in the state of Denmark."
+    -d $"content=Something is rotten in the state of Denmark."
 
 # For private messages
 curl {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=private" \
     -d "to=hamlet@example.com" \
-    -d "content=I come not, friends, to steal away your hearts."
+    -d $"content=I come not, friends, to steal away your hearts."
 ```
 
 {tab|zulip-send}

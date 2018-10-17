@@ -9,31 +9,19 @@ in messages and topics.
 
 ## Usage examples
 
-<div class="code-section" markdown="1">
-<ul class="nav">
-<li data-language="python">Python</li>
-<li data-language="curl">curl</li>
-</ul>
-<div class="blocks">
+{start_tabs}
+{tab|python}
 
-<div data-language="curl" markdown="1">
+{generate_code_example(python)|/realm/filters:get|example}
+
+{tab|curl}
 
 ```
 curl {{ api_url }}/v1/realm/filters \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
 ```
 
-</div>
-
-<div data-language="python" markdown="1">
-
-{generate_code_example(python)|/realm/filters:get|example}
-
-</div>
-
-</div>
-
-</div>
+{end_tabs}
 
 ## Arguments
 
