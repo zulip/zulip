@@ -201,5 +201,5 @@ disposable-email-domains==0.0.30
 yamole==2.1.5
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
-# other end.
-libthumbor==1.3.2
+# other end.  Using a fork to eliminate a really slow pkgresources import.
+-e "git+https://github.com/zulip/libthumbor.git@60ed2431c07686a12f2770b2d852c5650f3ccfc6#egg=libthumbor==1.3.2zulip"
