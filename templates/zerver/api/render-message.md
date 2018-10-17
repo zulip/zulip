@@ -37,7 +37,7 @@ zulip(config).then((client) => {
 ```
 curl {{ api_url }}/v1/messages/render \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "content=**foo**"
+    -d $"content=**foo**"
 
 ```
 
