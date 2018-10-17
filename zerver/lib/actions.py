@@ -156,6 +156,10 @@ STREAM_ASSIGNMENT_COLORS = [
     "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
     "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
 
+
+ONBOARDING_NUM_MESSAGES = 80
+
+
 # Store an event in the log for re-importing messages
 def log_event(event: MutableMapping[str, Any]) -> None:
     if settings.EVENT_LOG_DIR is None:
@@ -363,7 +367,7 @@ def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
     clear_scheduled_invitation_emails(user_profile.email)
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
-    """Give you the last 1000 messages on your public streams, so you have
+    """Gives you the last 1000 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
     one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
@@ -376,17 +380,24 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     if len(message_ids_to_use) == 0:
         return
 
+    message_ids_to_flag_as_unread = message_ids_to_use[-ONBOARDING_NUM_MESSAGES:]
     # Handle the race condition where a message arrives between
     # bulk_add_subscriptions above and the Message query just above
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
                                                  user_profile=user_profile).values_list("message_id",
-                                                                                        flat=True))
+                                                                                    flat=True))
     ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
                                  flags=UserMessage.flags.read)
                      for message_id in message_ids_to_use
                      if message_id not in already_ids]
 
     UserMessage.objects.bulk_create(ums_to_create)
+    # For onboarding leave a few messages to be read for the user.
+    UserMessage.objects.filter(message_id__in=message_ids_to_flag_as_unread,
+                               user_profile=user_profile).update(
+                               flags=F('flags').bitand(~UserMessage.flags.read))
+
+
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
@@ -3636,11 +3647,18 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event('bankruptcy')
 
-    msgs = UserMessage.objects.filter(
+    message_ids_to_not_mark_as_read = UserMessage.objects.filter(user_profile=user_profile
+    ).extra(
+        where=[UserMessage.where_unread()]
+    ).order_by('-id').values_list('id', flat=True)[:ONBOARDING_NUM_MESSAGES]
+
+    msgs = UserMessage.objects.exclude(
+        id__in=message_ids_to_not_mark_as_read
+    ).filter(
         user_profile=user_profile
     ).extra(
         where=[UserMessage.where_unread()]
-    )
+    ).order_by('-id')
 
     count = msgs.update(
         flags=F('flags').bitor(UserMessage.flags.read)
