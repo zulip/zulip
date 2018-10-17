@@ -30,8 +30,8 @@ from zerver.data_import.import_util import (
     build_recipients,
     build_stream,
     build_subscriptions,
-    build_user,
     build_user_message,
+    build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
     write_avatar_png,
@@ -125,7 +125,7 @@ def convert_user_data(user_handler: UserHandler,
         else:
             avatar_source = 'G'
 
-        return build_user(
+        return build_user_profile(
             avatar_source=avatar_source,
             date_joined=date_joined,
             delivery_email=delivery_email,

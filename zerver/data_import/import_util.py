@@ -27,19 +27,19 @@ def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
     realm_dict['authentication_methods'] = auth_methods
     return[realm_dict]
 
-def build_user(avatar_source: str,
-               date_joined: Any,
-               delivery_email: str,
-               email: str,
-               full_name: str,
-               id: int,
-               is_active: bool,
-               is_realm_admin: bool,
-               is_guest: bool,
-               is_mirror_dummy: bool,
-               realm_id: int,
-               short_name: str,
-               timezone: Optional[str]) -> ZerverFieldsT:
+def build_user_profile(avatar_source: str,
+                       date_joined: Any,
+                       delivery_email: str,
+                       email: str,
+                       full_name: str,
+                       id: int,
+                       is_active: bool,
+                       is_realm_admin: bool,
+                       is_guest: bool,
+                       is_mirror_dummy: bool,
+                       realm_id: int,
+                       short_name: str,
+                       timezone: Optional[str]) -> ZerverFieldsT:
     pointer = -1
     obj = UserProfile(
         avatar_source=avatar_source,
