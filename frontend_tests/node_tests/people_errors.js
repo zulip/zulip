@@ -82,7 +82,9 @@ run_test('blueslip', () => {
     blueslip.set_test_data('error', 'Empty recipient list in message');
     people.pm_with_user_ids(message);
     people.group_pm_with_user_ids(message);
-    assert.equal(blueslip.get_test_logs('error').length, 2);
+    people.all_user_ids_in_pm(message);
+    assert.equal(people.pm_perma_link(message), undefined);
+    assert.equal(blueslip.get_test_logs('error').length, 4);
     blueslip.clear_test_data();
 
     var charles = {
