@@ -253,21 +253,20 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
 
-    @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_billing_page_permissions(self, mock_create_subscription: Mock,
-                                      mock_create_customer: Mock,
-                                      mock_customer_with_subscription: Mock,
-                                      mock_upcoming_invoice: Mock) -> None:
+    @mock_stripe("stripe.Token.create")
+    @mock_stripe("stripe.Invoice.upcoming")
+    @mock_stripe("stripe.Customer.retrieve")
+    @mock_stripe("stripe.Customer.create")
+    @mock_stripe("stripe.Subscription.create")
+    def test_billing_page_permissions(self, mock5: Mock, mock4: Mock, mock3: Mock,
+                                      mock2: Mock, mock1: Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login(self.example_email('hamlet'))
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
         # Check that non-admins can sign up and pay
-        self.client_post("/upgrade/", {'stripeToken': self.token,
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
                                        'signed_seat_count': self.signed_seat_count,
                                        'salt': self.salt,
                                        'plan': Plan.CLOUD_ANNUAL})
