@@ -769,12 +769,13 @@ class TestGetAlertFromMessage(PushNotificationTest):
 
 class TestGetAPNsPayload(PushNotificationTest):
     def test_get_apns_payload(self) -> None:
+        user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
             self.sender.email,
             [self.example_email('othello'), self.example_email('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = apn.get_apns_payload(message)
+        payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': "New private group message from King Hamlet",
@@ -801,11 +802,12 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_apns_payload_stream(self):
         # type: () -> None
+        user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name='Verona').get()
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'mentioned'
         message.stream_name = 'Verona'
-        payload = apn.get_apns_payload(message)
+        payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': "New mention from King Hamlet",
@@ -830,12 +832,13 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT = True)
     def test_get_apns_payload_redacted_content(self) -> None:
+        user_profile = self.example_user("othello")
         message_id = self.send_huddle_message(
             self.sender.email,
             [self.example_email('othello'), self.example_email('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = apn.get_apns_payload(message)
+        payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': "New private group message from King Hamlet",

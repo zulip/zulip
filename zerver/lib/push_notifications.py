@@ -522,7 +522,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
 
     return data
 
-def get_apns_payload(message: Message) -> Dict[str, Any]:
+def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
     zulip_data = get_common_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
@@ -640,7 +640,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     message.trigger = missed_message['trigger']
     message.stream_name = missed_message.get('stream_name', None)
 
-    apns_payload = get_apns_payload(message)
+    apns_payload = get_apns_payload(user_profile, message)
     gcm_payload = get_gcm_payload(user_profile, message)
     logging.info("Sending push notification to user %s" % (user_profile_id,))
 
