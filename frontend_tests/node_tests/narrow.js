@@ -15,6 +15,12 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
+var me = {
+    email: 'me@example.com',
+    user_id: 5,
+    full_name: 'Me Myself',
+};
+
 var alice = {
     email: 'alice@example.com',
     user_id: 23,
@@ -61,6 +67,8 @@ run_test('stream_topic', () => {
 run_test('uris', () => {
     people.add(ray);
     people.add(alice);
+    people.add(me);
+    people.initialize_current_user(me.user_id);
 
     var uri = hash_util.pm_with_uri(ray.email);
     assert.equal(uri, '#narrow/pm-with/22-ray');
@@ -73,6 +81,12 @@ run_test('uris', () => {
 
     var emails = global.hash_util.decode_operand('pm-with', '22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
+
+    emails = global.hash_util.decode_operand('pm-with', '5,22,23-group');
+    assert.equal(emails, 'alice@example.com,ray@example.com');
+
+    emails = global.hash_util.decode_operand('pm-with', '5-group');
+    assert.equal(emails, 'me@example.com');
 });
 
 run_test('show_empty_narrow_message', () => {
