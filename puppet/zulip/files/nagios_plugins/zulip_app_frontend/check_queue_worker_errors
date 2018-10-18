@@ -7,13 +7,9 @@ import glob
 import os
 import sys
 
-sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
-from django.conf import settings
-
-wildcard = os.path.join(settings.QUEUE_ERROR_DIR, '*.errors')
+# settings.QUEUE_ERROR_DIR; not importing Django so that this can run
+# as the nagios user.
+wildcard = os.path.join("/var/log/zulip/queue_error", '*.errors')
 clean = True
 for fn in glob.glob(wildcard):
     print('WARNING: Queue errors logged in %s' % (fn,))
