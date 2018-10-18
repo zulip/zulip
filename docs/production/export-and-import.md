@@ -63,29 +63,24 @@ export tarball:
 cd /tmp
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
-./manage.py import --destroy-rebuild-database '' /tmp/zulip-export-zcmpxfm6
+./manage.py import '' /tmp/zulip-export-zcmpxfm6
 ./manage reactivate_realm -r ''  # Reactivates the organization
 ```
 
-**Warning:** This will destroy all existing data in your Zulip server
+This could take several minutes to run, depending on how much data you're
+importing.
 
-## Import into an existing Zulip server
+**Import options**
 
-If you already have some organizations hosted on your Zulip server, and
-want to import an additional Zulip organization, you can use the
-following procedure.
-
-Log in to your Zulip server as the `zulip` user. Run the following
-commands, replacing the filename with the path to your data export
-tarball, `<subdomain>` with the subdomain of the URL you'd like for
-your imported Zulip organization.
+The commands above create an imported organization on the root domain
+(`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
+custom subdomain, e.g. if you already have an existing organization on the
+root domain. Replace the last two lines above with the following, after replacing
+`<subdomain>` with the desired subdomain.
 
 ```
-cd /tmp
-tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
-cd /home/zulip/deployments/current
 ./manage.py import <subdomain> /tmp/zulip-export-zcmpxfm6
-./manage reactivate_realm -r ''  # Reactivates the organization
+./manage reactivate_realm -r <subdomain>  # Reactivates the organization
 ```
 
 ## Logging in
