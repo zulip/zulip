@@ -488,9 +488,27 @@ exports.emails_to_slug = function (emails_string) {
 exports.slug_to_emails = function (slug) {
     var m = /^([\d,]+)-/.exec(slug);
     if (m) {
-        var user_ids = m[1];
-        return exports.user_ids_string_to_emails_string(user_ids);
+        var user_ids_string = m[1];
+        user_ids_string = exports.exclude_me_from_string(user_ids_string);
+        return exports.user_ids_string_to_emails_string(user_ids_string);
     }
+};
+
+exports.exclude_me_from_string = function (user_ids_string) {
+    // Exclude me from a user_ids_string UNLESS I'm the
+    // only one in it.
+    var user_ids = user_ids_string.split(',');
+
+    if (user_ids.length <= 1) {
+        // We either have a message to ourself, an empty
+        // slug, or a message to somebody else where we weren't
+        // part of the slug.
+        return user_ids.join(',');
+    }
+
+    user_ids = _.reject(user_ids, exports.is_my_user_id);
+
+    return user_ids.join(',');
 };
 
 exports.format_small_avatar_url = function (raw_url) {
