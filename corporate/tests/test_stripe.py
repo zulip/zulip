@@ -193,6 +193,12 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('card error', context.exception.description)
         mock_billing_logger_error.assert_called()
 
+    def test_billing_not_enabled(self) -> None:
+        with self.settings(BILLING_ENABLED=False):
+            self.login(self.example_email("iago"))
+            response = self.client_get("/upgrade/")
+            self.assert_in_success_response(["Page not found (404)"], response)
+
     @mock_stripe("stripe.Token.create")
     @mock_stripe("stripe.Customer.create")
     @mock_stripe("stripe.Subscription.create")
