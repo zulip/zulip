@@ -1,6 +1,6 @@
 import datetime
 from functools import wraps
-import mock
+from mock import Mock, patch
 import operator
 import os
 import re
@@ -130,7 +130,7 @@ def mock_stripe(mocked_function_name: str,
         else:
             side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
 
-        @mock.patch(mocked_function_name, side_effect=side_effect)
+        @patch(mocked_function_name, side_effect=side_effect)
         @wraps(decorated_function)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
             return decorated_function(*args, **kwargs)
@@ -147,7 +147,7 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("stripe.Coupon.create")
     @mock_stripe("stripe.Plan.create")
     @mock_stripe("stripe.Product.create")
-    def setUp(self, mock3: mock.Mock, mock2: mock.Mock, mock1: mock.Mock) -> None:
+    def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
 
         # legacy
@@ -170,8 +170,8 @@ class StripeTest(ZulipTestCase):
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
         return match.group(1) if match else None
 
-    @mock.patch("corporate.lib.stripe.billing_logger.error")
-    def test_catch_stripe_errors(self, mock_billing_logger_error: mock.Mock) -> None:
+    @patch("corporate.lib.stripe.billing_logger.error")
+    def test_catch_stripe_errors(self, mock_billing_logger_error: Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
             raise stripe.error.InvalidRequestError(
@@ -197,8 +197,7 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("stripe.Customer.create")
     @mock_stripe("stripe.Subscription.create")
     @mock_stripe("stripe.Customer.retrieve")
-    def test_initial_upgrade(self, mock4: mock.Mock, mock3: mock.Mock,
-                             mock2: mock.Mock, mock1: mock.Mock) -> None:
+    def test_initial_upgrade(self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
@@ -254,14 +253,14 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
 
-    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_billing_page_permissions(self, mock_create_subscription: mock.Mock,
-                                      mock_create_customer: mock.Mock,
-                                      mock_customer_with_subscription: mock.Mock,
-                                      mock_upcoming_invoice: mock.Mock) -> None:
+    @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    @patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    def test_billing_page_permissions(self, mock_create_subscription: Mock,
+                                      mock_create_customer: Mock,
+                                      mock_customer_with_subscription: Mock,
+                                      mock_upcoming_invoice: Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login(self.example_email('hamlet'))
         response = self.client_get("/billing/")
@@ -284,15 +283,15 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: mock.Mock,
-                                              mock_create_customer: mock.Mock) -> None:
+    @patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: Mock,
+                                              mock_create_customer: Mock) -> None:
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
         response = self.client_get("/upgrade/")
-        with mock.patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
+        with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {
                 'stripeToken': self.token,
                 'signed_seat_count': self.get_signed_seat_count_from_response(response),
@@ -324,12 +323,12 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_upgrade_where_subscription_save_fails_at_first(self, create_customer: mock.Mock) -> None:
+    @patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_upgrade_where_subscription_save_fails_at_first(self, create_customer: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
-        with mock.patch('stripe.Subscription.create',
-                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+        with patch('stripe.Subscription.create',
+                   side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
             self.client_post("/upgrade/", {'stripeToken': self.token,
                                            'signed_seat_count': self.signed_seat_count,
                                            'salt': self.salt,
@@ -354,9 +353,9 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         # mock_create_customer just returns a customer with no subscription object
-        with mock.patch("stripe.Subscription.create", side_effect=mock_customer_with_subscription):
-            with mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer):
-                with mock.patch("stripe.Customer.save", side_effect=mock_create_customer):
+        with patch("stripe.Subscription.create", side_effect=mock_customer_with_subscription):
+            with patch("stripe.Customer.retrieve", side_effect=mock_create_customer):
+                with patch("stripe.Customer.save", side_effect=mock_create_customer):
                     self.client_post("/upgrade/", {'stripeToken': self.token,
                                                    'signed_seat_count': self.signed_seat_count,
                                                    'salt': self.salt,
@@ -404,10 +403,10 @@ class StripeTest(ZulipTestCase):
         self.assert_in_success_response(["Upgrade to Zulip Premium"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
-                          mock_customer_with_subscription: mock.Mock) -> None:
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
+    def test_billing_home(self, mock_upcoming_invoice: Mock,
+                          mock_customer_with_subscription: Mock) -> None:
         user = self.example_user("iago")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -461,10 +460,10 @@ class StripeTest(ZulipTestCase):
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_attach_discount_to_realm(self, mock_create_customer: mock.Mock,
-                                      mock_retrieve_customer: mock.Mock) -> None:
+    @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
+    @patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_attach_discount_to_realm(self, mock_create_customer: Mock,
+                                      mock_retrieve_customer: Mock) -> None:
         user = self.example_user('hamlet')
         # Before customer exists
         attach_discount_to_realm(user, 85)
@@ -474,18 +473,18 @@ class StripeTest(ZulipTestCase):
         mock_create_customer.reset_mock()
         # For existing customer
         Coupon.objects.create(percent_off=42, stripe_coupon_id='42OFF')
-        with mock.patch.object(
+        with patch.object(
                 stripe.Customer, 'save', autospec=True,
                 side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '42OFF')):
             attach_discount_to_realm(user, 42)
         mock_create_customer.assert_not_called()
 
-    @mock.patch("stripe.Subscription.delete")
-    @mock.patch("stripe.Customer.save")
-    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade())
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_downgrade(self, mock_retrieve_customer: mock.Mock, mock_upcoming_invoice: mock.Mock,
-                       mock_save_customer: mock.Mock, mock_delete_subscription: mock.Mock) -> None:
+    @patch("stripe.Subscription.delete")
+    @patch("stripe.Customer.save")
+    @patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade())
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_downgrade(self, mock_retrieve_customer: Mock, mock_upcoming_invoice: Mock,
+                       mock_save_customer: Mock, mock_delete_subscription: Mock) -> None:
         realm = get_realm('zulip')
         realm.has_seat_based_plan = True
         realm.plan_type = Realm.PREMIUM
@@ -508,10 +507,10 @@ class StripeTest(ZulipTestCase):
                                              RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
         self.assertEqual(realm.plan_type, Realm.LIMITED)
 
-    @mock.patch("stripe.Customer.save")
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
+    @patch("stripe.Customer.save")
+    @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
     def test_downgrade_with_no_subscription(
-            self, mock_retrieve_customer: mock.Mock, mock_save_customer: mock.Mock) -> None:
+            self, mock_retrieve_customer: Mock, mock_save_customer: Mock) -> None:
         realm = get_realm('zulip')
         Customer.objects.create(
             realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
@@ -529,7 +528,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.is_billing_admin = True
         user.save(update_fields=['is_billing_admin'])
-        with mock.patch('corporate.views.process_downgrade') as mocked1:
+        with patch('corporate.views.process_downgrade') as mocked1:
             self.client_post("/json/billing/downgrade", {})
         mocked1.assert_called()
         # realm admin but not billing admin
@@ -537,40 +536,40 @@ class StripeTest(ZulipTestCase):
         user.is_billing_admin = False
         user.is_realm_admin = True
         user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with mock.patch('corporate.views.process_downgrade') as mocked2:
+        with patch('corporate.views.process_downgrade') as mocked2:
             self.client_post("/json/billing/downgrade", {})
         mocked2.assert_called()
 
-    @mock.patch("stripe.Subscription.delete")
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
-    def test_downgrade_credits(self, mock_retrieve_customer: mock.Mock,
-                               mock_delete_subscription: mock.Mock) -> None:
+    @patch("stripe.Subscription.delete")
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
+    def test_downgrade_credits(self, mock_retrieve_customer: Mock,
+                               mock_delete_subscription: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
         Customer.objects.create(
             realm=user.realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
         # Check that positive balance is forgiven
-        with mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(1000)):
-            with mock.patch.object(
+        with patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(1000)):
+            with patch.object(
                     stripe.Customer, 'save', autospec=True,
                     side_effect=lambda customer: self.assertEqual(customer.account_balance, 1234)):
                 response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
         # Check that negative balance is credited
-        with mock.patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(-1000)):
-            with mock.patch.object(
+        with patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(-1000)):
+            with patch.object(
                     stripe.Customer, 'save', autospec=True,
                     side_effect=lambda customer: self.assertEqual(customer.account_balance, 234)):
                 response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_replace_payment_source(self, mock_retrieve_customer: mock.Mock) -> None:
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_replace_payment_source(self, mock_retrieve_customer: Mock) -> None:
         user = self.example_user("iago")
         self.login(user.email)
         Customer.objects.create(realm=user.realm, stripe_customer_id=self.stripe_customer_id)
-        with mock.patch.object(stripe.Customer, 'save', autospec=True,
-                               side_effect=lambda customer: self.assertEqual(customer.source, "new_token")):
+        with patch.object(stripe.Customer, 'save', autospec=True,
+                          side_effect=lambda customer: self.assertEqual(customer.source, "new_token")):
             result = self.client_post("/json/billing/sources/change",
                                       {'stripe_token': ujson.dumps("new_token")})
         self.assert_json_success(result)
@@ -589,7 +588,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         user.is_billing_admin = True
         user.save(update_fields=['is_billing_admin'])
-        with mock.patch('corporate.views.do_replace_payment_source') as mocked1:
+        with patch('corporate.views.do_replace_payment_source') as mocked1:
             self.client_post("/json/billing/sources/change",
                              {'stripe_token': ujson.dumps('token')})
         mocked1.assert_called()
@@ -598,17 +597,17 @@ class StripeTest(ZulipTestCase):
         user.is_billing_admin = False
         user.is_realm_admin = True
         user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with mock.patch('corporate.views.do_replace_payment_source') as mocked2:
+        with patch('corporate.views.do_replace_payment_source') as mocked2:
             self.client_post("/json/billing/sources/change",
                              {'stripe_token': ujson.dumps('token')})
         mocked2.assert_called()
 
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    @patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     def test_billing_quantity_changes_end_to_end(
-            self, mock_customer_with_subscription: mock.Mock, mock_create_subscription: mock.Mock,
-            mock_create_customer: mock.Mock) -> None:
+            self, mock_customer_with_subscription: Mock, mock_create_subscription: Mock,
+            mock_create_customer: Mock) -> None:
         self.login(self.example_email("hamlet"))
         processor = BillingProcessor.objects.create(
             log_row=RealmAuditLog.objects.order_by('id').first(), state=BillingProcessor.DONE)
@@ -620,14 +619,14 @@ class StripeTest(ZulipTestCase):
                     event_type=event_type, requires_billing_update=True).order_by('-id').first()
                 self.assertEqual(idempotency_key, 'process_billing_log_entry:%s' % (log_row.id,))
                 self.assertEqual(subscription.proration_date, datetime_to_timestamp(log_row.event_time))
-            with mock.patch.object(stripe.Subscription, 'save', autospec=True,
-                                   side_effect=check_subscription_save):
+            with patch.object(stripe.Subscription, 'save', autospec=True,
+                              side_effect=check_subscription_save):
                 run_billing_processor_one_step(processor)
 
         # Test STRIPE_PLAN_QUANTITY_RESET
         new_seat_count = 123
         # change the seat count while the user is going through the upgrade flow
-        with mock.patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
+        with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {'stripeToken': self.token,
                                            'signed_seat_count': self.signed_seat_count,
                                            'salt': self.salt,
@@ -764,15 +763,15 @@ class BillingProcessorTest(ZulipTestCase):
             realm=second_realm, log_row=entry1, state=BillingProcessor.STARTED)
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
         Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
-        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity'):
+        with patch('corporate.lib.stripe.do_adjust_subscription_quantity'):
             # test return values
             self.assertTrue(run_billing_processor_one_step(processor))
             self.assertTrue(run_billing_processor_one_step(realm_processor))
         # test no processors get added or deleted
         self.assertEqual(2, BillingProcessor.objects.count())
 
-    @mock.patch("corporate.lib.stripe.billing_logger.error")
-    def test_run_billing_processor_with_card_error(self, mock_billing_logger_error: mock.Mock) -> None:
+    @patch("corporate.lib.stripe.billing_logger.error")
+    def test_run_billing_processor_with_card_error(self, mock_billing_logger_error: Mock) -> None:
         second_realm = Realm.objects.create(string_id='second', name='second')
         entry1 = self.add_log_entry(realm=second_realm)
         # global processor
@@ -781,8 +780,8 @@ class BillingProcessorTest(ZulipTestCase):
         Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
 
         # card error on global processor should create a new realm processor
-        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
-                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+        with patch('corporate.lib.stripe.do_adjust_subscription_quantity',
+                   side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
             self.assertTrue(run_billing_processor_one_step(processor))
         self.assertEqual(2, BillingProcessor.objects.count())
         self.assertTrue(BillingProcessor.objects.filter(
@@ -795,16 +794,16 @@ class BillingProcessorTest(ZulipTestCase):
         realm_processor = BillingProcessor.objects.filter(realm=second_realm).first()
         realm_processor.state = BillingProcessor.STARTED
         realm_processor.save()
-        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
-                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+        with patch('corporate.lib.stripe.do_adjust_subscription_quantity',
+                   side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
             self.assertTrue(run_billing_processor_one_step(realm_processor))
         self.assertEqual(2, BillingProcessor.objects.count())
         self.assertTrue(BillingProcessor.objects.filter(
             realm=second_realm, log_row=entry1, state=BillingProcessor.STALLED).exists())
         mock_billing_logger_error.assert_called()
 
-    @mock.patch("corporate.lib.stripe.billing_logger.error")
-    def test_run_billing_processor_with_uncaught_error(self, mock_billing_logger_error: mock.Mock) -> None:
+    @patch("corporate.lib.stripe.billing_logger.error")
+    def test_run_billing_processor_with_uncaught_error(self, mock_billing_logger_error: Mock) -> None:
         # This tests three different things:
         # * That run_billing_processor_one_step passes through exceptions that
         #   are not StripeCardError
@@ -815,8 +814,8 @@ class BillingProcessorTest(ZulipTestCase):
         processor = BillingProcessor.objects.create(
             log_row=entry1, state=BillingProcessor.DONE)
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
-        with mock.patch('corporate.lib.stripe.do_adjust_subscription_quantity',
-                        side_effect=stripe.error.StripeError('message', 'param', 'code', json_body={})):
+        with patch('corporate.lib.stripe.do_adjust_subscription_quantity',
+                   side_effect=stripe.error.StripeError('message', 'param', 'code', json_body={})):
             with self.assertRaises(BillingError):
                 run_billing_processor_one_step(processor)
         mock_billing_logger_error.assert_called()
