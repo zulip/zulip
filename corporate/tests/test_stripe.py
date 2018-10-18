@@ -76,10 +76,10 @@ def mock_invoice_preview_for_downgrade(total: int=-1000) -> Callable[[str, str, 
 
 # TODO: check that this creates a token similar to what is created by our
 # actual Stripe Checkout flows
-def stripe_create_token() -> stripe.Token:
+def stripe_create_token(card_number: str="4242424242424242") -> stripe.Token:
     return stripe.Token.create(
         card={
-            "number": "4242424242424242",
+            "number": card_number,
             "exp_month": 3,
             "exp_year": 2033,
             "cvc": "333",
@@ -321,22 +321,28 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_upgrade_where_subscription_save_fails_at_first(self, create_customer: Mock) -> None:
+    @mock_stripe("stripe.Token.create")
+    @mock_stripe("stripe.Customer.create")
+    @mock_stripe("stripe.Subscription.create")
+    @mock_stripe("stripe.Customer.retrieve")
+    @mock_stripe("stripe.Customer.save")
+    def test_upgrade_where_subscription_save_fails_at_first(
+            self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
-        with patch('stripe.Subscription.create',
-                   side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
-            self.client_post("/upgrade/", {'stripeToken': self.token,
-                                           'signed_seat_count': self.signed_seat_count,
-                                           'salt': self.salt,
-                                           'plan': Plan.CLOUD_ANNUAL})
-        # Check that we created a customer in stripe
-        create_customer.assert_called()
-        create_customer.reset_mock()
-        # Check that we created a Customer with has_billing_relationship=False
-        self.assertTrue(Customer.objects.filter(
-            stripe_customer_id=self.stripe_customer_id, has_billing_relationship=False).exists())
+        # From https://stripe.com/docs/testing#cards: Attaching this card to
+        # a Customer object succeeds, but attempts to charge the customer fail.
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token('4000000000000341').id,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL})
+        # Check that we created a Customer object with has_billing_relationship False
+        customer = Customer.objects.get(realm=get_realm('zulip'))
+        self.assertFalse(customer.has_billing_relationship)
+        original_stripe_customer_id = customer.stripe_customer_id
+        # Check that we created a customer in stripe, with no subscription
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        self.assertFalse(extract_current_subscription(stripe_customer))
         # Check that we correctly populated RealmAuditLog
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
@@ -350,19 +356,19 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
-        # mock_create_customer just returns a customer with no subscription object
-        with patch("stripe.Subscription.create", side_effect=mock_customer_with_subscription):
-            with patch("stripe.Customer.retrieve", side_effect=mock_create_customer):
-                with patch("stripe.Customer.save", side_effect=mock_create_customer):
-                    self.client_post("/upgrade/", {'stripeToken': self.token,
-                                                   'signed_seat_count': self.signed_seat_count,
-                                                   'salt': self.salt,
-                                                   'plan': Plan.CLOUD_ANNUAL})
-        # Check that we do not create a new customer in stripe
-        create_customer.assert_not_called()
-        # Impossible to create two Customers, but check that we updated has_billing_relationship
-        self.assertTrue(Customer.objects.filter(
-            stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True).exists())
+        # Try again, with a valid card
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL})
+        customer = Customer.objects.get(realm=get_realm('zulip'))
+        # Impossible to create two Customers, but check that we didn't
+        # change stripe_customer_id and that we updated has_billing_relationship
+        self.assertEqual(customer.stripe_customer_id, original_stripe_customer_id)
+        self.assertTrue(customer.has_billing_relationship)
+        # Check that we successfully added a subscription
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        self.assertTrue(extract_current_subscription(stripe_customer))
         # Check that we correctly populated RealmAuditLog
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
