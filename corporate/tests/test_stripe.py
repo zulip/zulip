@@ -282,40 +282,39 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: Mock,
-                                              mock_create_customer: Mock) -> None:
+    @mock_stripe("stripe.Token.create")
+    @mock_stripe("stripe.Customer.create")
+    @mock_stripe("stripe.Subscription.create")
+    @mock_stripe("stripe.Customer.retrieve")
+    def test_upgrade_with_outdated_seat_count(
+            self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
         response = self.client_get("/upgrade/")
         with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {
-                'stripeToken': self.token,
+                'stripeToken': stripe_create_token().id,
                 'signed_seat_count': self.get_signed_seat_count_from_response(response),
                 'salt': self.get_salt_from_response(response),
                 'plan': Plan.CLOUD_ANNUAL})
         # Check that the subscription call used the old quantity, not new_seat_count
-        mock_create_subscription.assert_called_once_with(
-            customer=self.stripe_customer_id,
-            billing='charge_automatically',
-            items=[{
-                'plan': self.stripe_plan_id,
-                'quantity': self.quantity,
-            }],
-            prorate=True,
-            tax_percent=0)
+        stripe_customer = stripe_get_customer(
+            Customer.objects.get(realm=get_realm('zulip')).stripe_customer_id)
+        stripe_subscription = extract_current_subscription(stripe_customer)
+        self.assertEqual(stripe_subscription.quantity, self.quantity)
+
         # Check that we have the STRIPE_PLAN_QUANTITY_RESET entry, and that we
         # correctly handled the requires_billing_update field
         audit_log_entries = list(RealmAuditLog.objects.order_by('-id')
                                  .values_list('event_type', 'event_time',
                                               'requires_billing_update')[:5])[::-1]
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created), False),
-            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(self.customer_created), False),
-            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created), False),
-            (RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, timestamp_to_datetime(self.subscription_created), True),
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(stripe_customer.created), False),
+            (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created), False),
+            # TODO: Ideally this test would force stripe_customer.created != stripe_subscription.created
+            (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(stripe_subscription.created), False),
+            (RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, timestamp_to_datetime(stripe_subscription.created), True),
             (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra(), False),
         ])
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
