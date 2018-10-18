@@ -475,11 +475,11 @@ exports.set_up = function () {
             cache: false,
             processData: false,
             contentType: false,
-            success: function (data) {
+            success: function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user-avatar-block").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
                 $("#user-avatar-source").hide();
+                // Rest of the work is done via the user_events -> avatar_url event we will get
             },
             error: function () {
                 if (page_params.avatar_source === 'G') {

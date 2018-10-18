@@ -61,13 +61,13 @@ exports.build_user_avatar_widget = function (upload_function) {
         e.stopPropagation();
         channel.del({
             url: '/json/users/me/avatar',
-            success: function (data) {
-                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+            success: function () {
                 $("#user_avatar_delete_button").hide();
                 $("#user-avatar-source").show();
                 // Need to clear input because of a small edge case
                 // where you try to upload the same image you just deleted.
                 get_file_input().val('');
+                // Rest of the work is done via the user_events -> avatar_url event we will get
             },
         });
     });
