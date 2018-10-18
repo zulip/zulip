@@ -534,7 +534,9 @@ def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, A
             'title': get_alert_from_message(message),
             'body': content,
         },
-        'badge': 0,  # TODO: set badge count in a better way
+        # TODO: We probably still need do something to update the badge count after reading.
+        'badge': UserMessage.objects.filter(user_profile=user_profile,
+                                            flags=UserMessage.flags.active_mobile_push_notification).count(),
         'custom': {'zulip': zulip_data},
     }
     return apns_data
