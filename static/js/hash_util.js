@@ -108,23 +108,18 @@ exports.huddle_with_uri = function (user_ids_string) {
 
 exports.by_conversation_and_time_uri = function (message) {
     var absolute_url = window.location.protocol + "//" +
-        window.location.host + "/" + window.location.pathname.split('/')[1];
+        window.location.host + "/" +
+        window.location.pathname.split('/')[1];
+
+    var suffix = "/near/" + exports.encodeHashComponent(message.id);
 
     if (message.type === "stream") {
-        return absolute_url + "#narrow/stream/" +
-            exports.encode_stream_name(message.stream) +
-            "/subject/" + exports.encodeHashComponent(message.subject) +
-            "/near/" + exports.encodeHashComponent(message.id);
+        return absolute_url +
+            exports.by_stream_subject_uri(message.stream, message.subject) +
+            suffix;
     }
 
-    // Include your own email in this URI if it's not there already
-    var all_emails = message.reply_to;
-    if (all_emails.indexOf(people.my_current_email()) === -1) {
-        all_emails += "," + people.my_current_email();
-    }
-    return absolute_url + "#narrow/pm-with/" +
-        exports.encodeHashComponent(all_emails) +
-        "/near/" + exports.encodeHashComponent(message.id);
+    return absolute_url + people.pm_perma_link(message) + suffix;
 };
 
 return exports;
