@@ -75,3 +75,9 @@ class Coupon:
     @staticmethod
     def create(duration: str=..., name: str=..., percent_off: int=...) -> Coupon:
         ...
+
+class Token:
+    id: str
+    @staticmethod
+    def create(card: Dict[str, Any]) -> Token:
+        ...
