@@ -688,6 +688,12 @@ class RequiresBillingUpdateTest(ZulipTestCase):
         do_activate_user(user2)
         self.assertEqual(4, RealmAuditLog.objects.filter(requires_billing_update=True).count())
 
+    def test_billing_not_enabled(self) -> None:
+        with self.settings(BILLING_ENABLED=False):
+            self.login(self.example_email("iago"))
+            response = self.client_get("/upgrade/")
+            self.assert_in_success_response(["Page not found (404)"], response)
+
 class BillingProcessorTest(ZulipTestCase):
     def add_log_entry(self, realm: Realm=get_realm('zulip'),
                       event_type: str=RealmAuditLog.USER_CREATED,
