@@ -56,20 +56,20 @@ Zulip 1.9; it is generally updated in bursts.
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
 - Added documentation on alternative production deployment options.
-- Added a Gitter data import tool.
+- Added Gitter and HipChat data import tools.
 - Added support for using both LDAPAuthBackend and EmailAuthBackend.
-- Added Clubhouse and Zabbix integrations.
+- Added Ansible Tower, Appveyor, Clubhouse, Netlify, and Zabbix integrations.
 - Added support for rendering message content written in right-to-left
   languages in a right-to-left style.
 - Added support for compose keyboard shortcuts in message edit UI.
-- Dramatically expanded our API documentation.
+- Added a fast database index supporting the "Private messages" narrow.
+- Added a notification setting for whether to send "new login" emails.
+- Dramatically expanded our API documentation to cover many more endpoints.
 - Optimized the performance of loading Zulip in an organization with
   thousands of users and hundreds of bot users.
 - Optimized production release tarballs to save about 40MB of size.
-- Upgraded to the latest version of the Google emoji set.
-- Dropped, at least for now, support for user-configured alternative
-  emoji sets.  This was largely motivated by
-  [EmojiOne requesting removal from the emoji-data project](https://github.com/iamcal/emoji-data/pull/142)
+- Dropped support for the EmojiOne and Apple emoji sets, and added
+  support for the Google modern emoji set.
 - Removed the "Delete streams" administration page; one can delete
   streams directly on "Manage streams".
 - Removed support code for the (long-deprecated) legacy desktop app.
@@ -81,7 +81,8 @@ Zulip 1.9; it is generally updated in bursts.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
-- Fixed several subtle issues with the LDAP integration.
+- Fixed several subtle issues with both the LDAP/Active Direcotry
+  integration and its documentation, making it much easier to setup.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have
   misconfigured IPv6.
@@ -103,6 +104,7 @@ Zulip 1.9; it is generally updated in bursts.
 - Improved Zulip's layout for windows with a width around 1024px.
 - Improved Zulip's generic error handling behavior for webhooks.
 - Improved keyboard navigation of settings and popovers.
+- Renamed "Realm Filters" to "Linkifiers", at least in the UI.
 - Converted several layered-checkbox settings to clearer dropdowns.
 - Cleaned up some legacy APIs still using email addresses.
 - Made arrow-key navigation work within right and left sidebar search.
@@ -110,6 +112,8 @@ Zulip 1.9; it is generally updated in bursts.
   user accounts on a server.
 - Emails and several other onboarding strings are now tagged for
   translation.
+- Optimized the performance of importing Zulip by about 30%.  This
+  significantly decreases the load spike when restarting a Zulip server.
 - Optimized the performance of development provisioning; a no-op
   provision now completes in about 3.5s.
 - Migrated our static asset pipeline to webpack.
