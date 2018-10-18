@@ -341,6 +341,24 @@ exports.pm_lookup_key = function (user_ids_string) {
     return user_ids.join(',');
 };
 
+exports.all_user_ids_in_pm = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return;
+    }
+
+    var user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+
+    user_ids = sort_numerically(user_ids);
+    return user_ids;
+};
+
 exports.pm_with_user_ids = function (message) {
     if (message.type !== 'private') {
         return;
@@ -380,6 +398,26 @@ exports.group_pm_with_user_ids = function (message) {
         }
     }
     return false;
+};
+
+exports.pm_perma_link = function (message) {
+    var user_ids = exports.all_user_ids_in_pm(message);
+
+    if (!user_ids) {
+        return;
+    }
+
+    var suffix;
+
+    if (user_ids.length >= 3) {
+        suffix = 'group';
+    } else {
+        suffix = 'pm';
+    }
+
+    var slug = user_ids.join(',') + '-' + suffix;
+    var uri = "#narrow/pm-with/" + slug;
+    return uri;
 };
 
 exports.pm_with_url = function (message) {

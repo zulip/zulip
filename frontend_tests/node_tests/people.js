@@ -403,6 +403,7 @@ run_test('message_methods', () => {
         sender_id: charles.user_id,
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
+    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,451,452-group');
     assert.equal(people.pm_reply_to(message),
                  'Athens@example.com,charles@example.com');
     assert.equal(people.small_avatar_url(message),
@@ -417,6 +418,7 @@ run_test('message_methods', () => {
         avatar_url: 'legacy.png',
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
+    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30,452-pm');
     assert.equal(people.pm_reply_to(message),
                  'Athens@example.com');
     assert.equal(people.small_avatar_url(message),
@@ -446,9 +448,11 @@ run_test('message_methods', () => {
         ],
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/30-me');
+    assert.equal(people.pm_perma_link(message), '#narrow/pm-with/30-pm');
 
     message = { type: 'stream' };
     assert.equal(people.pm_with_user_ids(message), undefined);
+    assert.equal(people.all_user_ids_in_pm(message), undefined);
 
     // Test undefined user_ids
     assert.equal(people.pm_reply_to(message), undefined);
