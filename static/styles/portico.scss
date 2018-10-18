@@ -1052,6 +1052,18 @@ input#terminal:checked ~ #tab-terminal {
     text-align: center;
 }
 
+.history .sponsors {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.history .sponsors .sponsor-picture img {
+    height: 170px;
+    margin: 0 20px 0 20px;
+    pointer-events: none;
+}
+
 .integration-instruction-block .integration-lozenge {
     float: left;
     margin-top: 5px;
