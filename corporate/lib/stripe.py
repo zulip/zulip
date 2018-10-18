@@ -199,7 +199,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
     # Deletes existing card: https://stripe.com/docs/api#update_customer-source
     # This can also have other side effects, e.g. it will try to pay certain past-due
     # invoices: https://stripe.com/docs/api#update_customer
-    updated_stripe_customer = stripe_customer.save()
+    updated_stripe_customer = stripe.Customer.save(stripe_customer)
     RealmAuditLog.objects.create(
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
         event_time=timezone_now())
@@ -209,7 +209,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
 def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
     stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
     stripe_customer.coupon = coupon.stripe_coupon_id
-    return stripe_customer.save()
+    return stripe.Customer.save(stripe_customer)
 
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Customer, stripe_plan_id: str,
@@ -300,7 +300,7 @@ def process_downgrade(user: UserProfile) -> None:
     stripe_subscription = extract_current_subscription(stripe_customer)
     # Wish these two could be transaction.atomic
     stripe_subscription = stripe_subscription.delete()
-    stripe_customer.save()
+    stripe.Customer.save(stripe_customer)
     with transaction.atomic():
         user.realm.has_seat_based_plan = False
         user.realm.save(update_fields=['has_seat_based_plan'])

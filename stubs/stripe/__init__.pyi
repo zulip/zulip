@@ -29,7 +29,7 @@ class Customer:
         ...
 
     @staticmethod
-    def save() -> Customer:
+    def save(customer: Customer) -> Customer:
         ...
 
 class Invoice:
