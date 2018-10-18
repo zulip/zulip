@@ -37,6 +37,24 @@ In the Vagrant development environment, `vagrant provision` will run
 the provision script; `vagrant up` will boot the machine, and will
 also run an initial provision the first time only.
 
+### PROVISION_VERSION
+
+In `version.py`, we have a special parameter, `PROVISION_VERSION`,
+which is used to help ensure developers don't spend time debugging
+test/linter/etc. failures that actually were caused by the developer
+rebasing and forgetting to provision".  `PROVISION_VERSION` has a
+format of `x.y`; when `x` doesn't match the value from the last time
+the user provisioned, or `y` is higher than than the value from last
+time, most Zulip tools will crash early and ask the user to provision.
+This has empirically made a huge impact on how often developers spend
+time debugging a "weird failure" after rebasing that had an easy
+solution.  (Of course, the other key part of achieving this is all the
+work that goes into making sure that `provision` reliably leaves the
+development environment in a good state.)
+
+`PROVISION_VERSION` must be manually updated when making changes that
+require re-running provision, so don't forget about it!
+
 ## Philosophy on adding third-party dependencies
 
 In the Zulip project, we take a pragmatic approach to third-party
