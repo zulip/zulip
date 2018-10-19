@@ -120,7 +120,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_json_success(users_result)
 
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 3)
 
     def test_add_bot(self) -> None:
         self.login(self.example_email('hamlet'))
