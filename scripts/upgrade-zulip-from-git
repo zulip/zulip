@@ -5,6 +5,7 @@ import sys
 import subprocess
 import logging
 import time
+import argparse
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
@@ -33,11 +34,11 @@ if os.getuid() != 0:
     logging.error("Must be run as root.")
     sys.exit(1)
 
-if len(sys.argv) != 2:
-    print(FAIL + "Usage: upgrade-zulip-from-git refname" + ENDC)
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("refname", help="Git reference.")
+args = parser.parse_args()
 
-refname = sys.argv[1]
+refname = args.refname
 
 subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
