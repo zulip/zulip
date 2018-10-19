@@ -31,6 +31,12 @@
                 </a>
                 <!-- The missing whitespace on the next line is a hack; ideally, would be user-select: none. -->
             </span><span class="recipient_bar_controls no-select">
+                {{! exterior links (e.g. to a trac ticket) }}
+                {{#each subject_links}}
+                <a href="{{this}}" target="_blank" class="no-underline">
+                    <i class="fa fa-external-link-square" aria-hidden="true"></i>
+                </a>
+                {{/each}}
                 {{! edit subject pencil icon }}
                 {{#if always_visible_topic_edit}}
                     <i class="fa fa-pencil always_visible_topic_edit" aria-hidden="true" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
@@ -39,12 +45,6 @@
                     <i class="fa fa-pencil on_hover_topic_edit" aria-hidden="true" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
                     {{/if}}
                 {{/if}}
-                {{! exterior links (e.g. to a trac ticket) }}
-                {{#each subject_links}}
-                <a href="{{this}}" target="_blank" class="no-underline">
-                    <i class="fa fa-external-link-square" aria-hidden="true"></i>
-                </a>
-                {{/each}}
 
                 <span class="topic_edit">
                     <span class="topic_edit_form" id="{{id}}"></span>
