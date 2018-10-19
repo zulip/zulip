@@ -36,9 +36,14 @@ if os.getuid() != 0:
 
 parser = argparse.ArgumentParser()
 parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
+parser.add_argument("--remote-url", dest="remote_url", help="Override the Git remote URL configured in /etc/zulip/zulip.conf.")
 args = parser.parse_args()
 
 refname = args.refname
+# Command line remote URL will be given preference above the one
+# in /etc/zulip/zulip.conf.
+if args.remote_url:
+    remote_url = args.remote_url
 
 subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
