@@ -96,8 +96,8 @@ markupsafe==1.0
 matrix-client==0.3.2
 mock==2.0.0
 moto==1.3.3
-mypy==0.620
-mypy_extensions==0.3.0
+mypy-extensions==0.4.1
+mypy==0.641
 ndg-httpsclient==0.5.1
 oauth2client==4.1.2
 oauthlib==2.1.0
@@ -177,6 +177,7 @@ twilio==6.15.2
 twisted==18.4.0
 typed-ast==1.1.0          # via mypy
 typing==3.6.4
+typing_extensions==3.6.6
 uritemplate==3.0.0
 urllib3==1.22             # via requests, transifex-client
 virtualenv-clone==0.3.0

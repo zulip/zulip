@@ -6,7 +6,7 @@
 Django==1.11.14
 
 # needed for mypy TypedDict
-mypy_extensions==0.3.0
+mypy_extensions==0.4.1
 
 # Needed for rendering backend templates
 Jinja2==2.10
