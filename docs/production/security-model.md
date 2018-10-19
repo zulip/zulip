@@ -1,9 +1,10 @@
 # Security Model
 
-This section attempts to document the Zulip security model.  Since
-this is new documentation, it likely does not cover every issue; if
+This section attempts to document the Zulip security model.
+It likely does not cover every issue; if
 there are details you're curious about, please feel free to ask
-questions on the Zulip development mailing list (or if you think
+questions on the [Zulip community server](../contributing/chat-zulip-org.html)
+(or if you think
 you've found a security bug, please report it to
 zulip-security@googlegroups.com so we can do a responsible security
 announcement).
@@ -62,9 +63,9 @@ strength allowed is controlled by two settings in
 
   By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
   significant protection against online attacks, while limiting the
-  burden imposed on users choosing a password.
-
-  <!--- Why 10000?  See /production/password-strength.md. -->
+  burden imposed on users choosing a password. See
+  [password strength](../production/password-strength.html) for an extended
+  discussion on how we chose this value.
 
   Estimating the guessability of a password is a complex problem and
   impossible to efficiently do perfectly. For background or when
@@ -95,80 +96,59 @@ strength allowed is controlled by two settings in
   parser which escapes content to protect against cross-site scripting
   attacks.
 
-* Zulip supports both public streams and private streams.  Any Zulip
-  user can join any public stream in the realm, and can view the complete
-  message history of any public stream without joining the stream.
+* Zulip supports both public streams and private streams.
+  * Any Zulip user can join any public stream in the realm, and can view the
+    complete message history of any public stream without joining the
+    stream.
 
-* A private stream is hidden from users who are not subscribed to the stream.
-  * Users who are not members of a private stream cannot read messages
-    on the stream, send messages to the stream, or join the stream,
-    even if they are a Zulip organization administrator.
-  * Any member of a private stream can add other users to the stream.
-    This is the only way that one can join a private stream (even
-    organization administrators cannot join a private stream without
-    being added by an existing member).
-  * When a new user joins a private stream, they can see future
-    messages sent to the stream.
-  * The person creating the stream can configure whether new
-    subscribers will receive access to the stream's message history
-    from before that user joined.  Organization administrators can
-    edit this configuration if they are a subscriber to the stream.
-  * Organization administrators can do some basic management of
-    private streams that they are not subscribed to: Changing the
-    stream name and description, viewing the current subscribers, and
-    removing subscribers.
+  * Organization admins can see and modify most aspects of a private stream,
+    including the membership and estimated traffic. Admins generally cannot
+    see stream messages or do things that would indirectly give them access
+    to stream messages, like adding members or changing the stream privacy
+    settings.
+
+  * Non-admins cannot easily see which private streams exist, or interact
+    with them in any way until they are added. Given a stream name, they can
+    figure out whether a stream with that name exists, but cannot see any
+    other details about the stream.
+
+  * See [Stream permissions](/help/stream-permissions) for more details.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
   hard limits on the ways in which message content can be changed or
   undone. In contrast, our policies around message topics favor
   usefulness (e.g. for conversational organization) over faithfulness
-  to the original.
+  to the original. In all configurations
+  * Message content can only ever be modified by the original author.
 
-  The message editing policy can be configured on the /#organization
-  page. There are three configurations provided out of the box: (i)
-  users cannot edit messages at all, (ii) users can edit any message
-  they have sent, and (iii) users can edit the content of any message
-  they have sent in the last N minutes, and the topic of any message
-  they have sent. In (ii) and (iii), topic edits can also be
-  propagated to other messages with the same original topic, even if
-  those messages were sent by other users. The default setting is
-  (iii), with N = 10.
+  * Any message visible to an organization administrator can be deleted at
+    any time by that administrator.
 
-  In addition, and regardless of the configuration above, messages
-  with no topic can always be edited to have a topic, by anyone in the
-  organization, and the topic of any message can also always be edited
-  by a realm administrator.
-
-  Also note that while edited messages are synced immediately to open
-  browser windows, editing messages is not a safe way to redact secret
-  content (e.g. a password) shared unintentionally. Other users may
-  have seen and saved the content of the original message, or have an
-  integration (e.g. push notifications) forwarding all messages they
-  receive to another service.  Zulip stores the edit history of
-  messages, but it may or may not be available to clients, depending
-  on an organization-level setting.
+  * See
+    [Configuring message editing and deletion](/help/configure-message-editing-and-deletion)
+    for more details.
 
 ## Users and Bots
 
-* There are three types of users in a Zulip realm: Administrators,
+* There are three types of users in a Zulip realm: Organization administrators,
   normal users, and bots.  Administrators have the ability to
   deactivate and reactivate other human and bot users, delete streams,
   add/remove administrator privileges, as well as change configuration
-  for the overall realm (e.g. whether an invitation is required to
-  join the realm).  Being a Zulip administrator does not provide the
-  ability to interact with other users' private messages or the
-  messages sent to private streams to which the administrator is not
-  subscribed.  However, a Zulip administrator subscribed to a stream
-  can toggle whether that stream is public or private.  Also, Zulip
-  realm administrators have administrative access to the API keys of
-  all bots in the realm, so a Zulip administrator may be able to
-  access messages sent to private streams that have bots subscribed,
-  by using the bot's credentials.
+  for the overall realm.
 
-  In the future, Zulip's security model may change to allow realm
-  administrators to access private messages (e.g. to support auditing
-  functionality).
+* Being an organization administrator does not generally provide the ability
+  to read other users' private messages or messages sent to private
+  streams to which the administrator is not subscribed. There are two
+  exceptions:
+  * Administrators may get access to private messages via some types of
+    [data export](/help/export-your-organization).
+
+  * Administrators can change the ownership of a bot. If a bot is subscribed
+    to a private stream, then an administrator can indirectly get access to
+    stream messages by taking control of the bot, though the access will be
+    limited to what the bot can do. (E.g. incoming webhook bots cannot read
+    messages.)
 
 * Every Zulip user has an API key, available on the settings page.
   This API key can be used to do essentially everything the user can
@@ -176,12 +156,12 @@ strength allowed is controlled by two settings in
   can rotate their own API key if it is accidentally compromised.
 
 * To properly remove a user's access to a Zulip team, it does not
-  suffice to change their password or deactivate their account in the
+  suffice to change their password or deactivate their account in a
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
-  should deactivate the user's account in the "Organization settings"
-  interface (`/#organization`); this will automatically also
-  deactivate any bots the user had created.
+  should
+  [deactivate the user's account](https://zulipchat.com/help/deactivate-or-reactivate-a-user)
+  via Zulip's "Organization settings" interface.
 
 * The Zulip mobile apps authenticate to the server by sending the
   user's password and retrieving the user's API key; the apps then use
@@ -189,22 +169,19 @@ strength allowed is controlled by two settings in
   Thus, if a user's phone is lost, in addition to changing passwords,
   you should rotate the user's Zulip API key.
 
-* Zulip bots are used for integrations.  A Zulip bot can do everything
-  a normal user in the realm can do including reading other, with a
-  few exceptions (e.g. a bot cannot login to the web application or
-  create other bots).  In particular, with the API key for a Zulip
-  bot, one can read any message sent to a public stream in that bot's
-  realm.  A likely future feature for Zulip is [limited bots that can
-  only send messages](https://github.com/zulip/zulip/issues/373).
+* Zulip supports several kinds of bots.
+  * Incoming webhook bots can only send messages into Zulip.
+  * Outgoing webhook bots and Generic bots can essentially do anything a
+    non-administrator user can, with a few exceptions (e.g. a bot cannot
+    login to the web application, or create other bots).
+  * API super user bots can send messages that appear to have been sent by
+    another user. They also have the ability to see the names of all
+    streams, including private streams.  This is important for implementing
+    integrations like the Jabber, IRC, and Zephyr mirrors.
 
-* Certain Zulip bots can be marked as "API super users"; these special
-  bots have the ability to send messages that appear to have been sent
-  by another user (an important feature for implementing integrations
-  like the Jabber, IRC, and Zephyr mirrors).  They also have the
-  ability to see the names of all streams (including private streams).
-
-  They can only be created on the command line (with `manage.py
-  knight --permission=api_super_user`).
+    API super user bots cannot be created by Zulip users, including
+    organization administrators. They can only be created on the command
+    line (via `manage.py knight --permission=api_super_user`).
 
 ## User-uploaded content
 
@@ -223,10 +200,10 @@ strength allowed is controlled by two settings in
   random strings, providing one layer of security against unauthorized
   users accessing files uploaded in Zulip (an authorized user would
   need to share the URL with an unauthorized user in order for the
-  file to be accessed by the unauthorized user; and of course, any
+  file to be accessed by the unauthorized user. Of course, any
   such authorized user could have just downloaded and sent the file
-  instead of the URL, so this is arguably the best protection
-  possible).  However, to help protect against consequences accidental
+  instead of the URL, so this is arguably pretty good protection.)
+  However, to help protect against accidental
   sharing of URLs to restricted files (e.g. by forwarding a
   missed-message email or leaks involving the Referer header), we
   provide additional layers of protection in both backends as well.
@@ -241,7 +218,7 @@ strength allowed is controlled by two settings in
   unauthorized users with access to that file.
 
   We have a similar protection for the `LOCAL_UPLOADS_DIR` backend,
-  that is not only available on Ubuntu Trusty (this is the one place
+  that is only unavailable on Ubuntu Trusty (this is the one place
   in Zulip where behavior is currently different between different OS
   versions).  For platforms that are not Ubuntu Trusty, every access
   to an uploaded file has access control verified (confirming that the
