@@ -66,9 +66,9 @@ exports.update_user_data = function (user_id, new_data) {
 
     if (new_data.is_admin !== undefined) {
         if (new_data.is_admin) {
-            user_row.find('#admin_icon').show();
+            user_row.find(".user_role").text(i18n.t("Administrator"));
         } else {
-            user_row.find('#admin_icon').hide();
+            user_row.find(".user_role").text(i18n.t("Member"));
         }
     }
 };
