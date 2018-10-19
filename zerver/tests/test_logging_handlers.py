@@ -204,3 +204,11 @@ class LoggingConfigTest(TestCase):
             # `all_loggers`.
             for handler in logger.handlers:
                 assert not isinstance(handler, AdminEmailHandler)
+
+class ErrorFiltersTest(TestCase):
+    def test_clean_data_from_query_parameters(self) -> None:
+        from zerver.filters import clean_data_from_query_parameters
+        self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=1"),
+                         "api_key=******&stream=******")
+        self.assertEqual(clean_data_from_query_parameters("api_key=abcdz&stream=foo&topic=bar"),
+                         "api_key=******&stream=******&topic=******")

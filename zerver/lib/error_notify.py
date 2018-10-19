@@ -7,8 +7,9 @@ from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Any, Dict, Optional
+from typing import cast, Any, Dict, Optional
 
+from zerver.filters import clean_data_from_query_parameters
 from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_success, json_error
@@ -102,7 +103,10 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
             "- path: %(path)s\n"
             "- %(method)s: %(data)s\n") % (report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-            request_repr += "- %s: \"%s\"\n" % (field, report.get(field.lower()))
+            val = cast(str, report.get(field.lower()))
+            if field == "QUERY_STRING":
+                val = clean_data_from_query_parameters(val)
+            request_repr += "- %s: \"%s\"\n" % (field, val)
         request_repr += "~~~~"
     else:
         request_repr = "Request info: none"
@@ -127,7 +131,10 @@ def email_server_error(report: Dict[str, Any]) -> None:
             "- path: %(path)s\n"
             "- %(method)s: %(data)s\n") % (report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-            request_repr += "- %s: \"%s\"\n" % (field, report.get(field.lower()))
+            val = cast(str, report.get(field.lower()))
+            if field == "QUERY_STRING":
+                val = clean_data_from_query_parameters(val)
+            request_repr += "- %s: \"%s\"\n" % (field, val)
     else:
         request_repr = "Request info: none\n"
 
