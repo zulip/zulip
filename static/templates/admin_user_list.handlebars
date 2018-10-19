@@ -10,6 +10,8 @@
         <span class="user_role">
             {{#if is_admin}}
             {{t "Administrator" }}
+            {{else if is_guest}}
+            {{t "Guest" }}
             {{else}}
             {{t "Member" }}
             {{/if}}

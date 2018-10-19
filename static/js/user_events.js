@@ -52,6 +52,11 @@ exports.update_person = function update(person) {
         }
     }
 
+    if (_.has(person, 'is_guest')) {
+        person_obj.is_guest = person.is_guest;
+        settings_users.update_user_data(person.user_id, person);
+    }
+
     if (_.has(person, 'avatar_url')) {
         var url = person.avatar_url;
         person_obj.avatar_url = url;

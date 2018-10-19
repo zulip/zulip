@@ -482,6 +482,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
                              avatar_url=avatar_url(user_profile),
                              timezone=user_profile.timezone,
                              date_joined=user_profile.date_joined.isoformat(),
+                             is_guest=user_profile.is_guest,
                              is_bot=user_profile.is_bot))  # type: Dict[str, Any]
     if not user_profile.is_bot:
         event["person"]["profile_data"] = {}
@@ -3174,6 +3175,16 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
                                  user_id=user_profile.id,
                                  is_admin=value))
         send_event(event, active_user_ids(user_profile.realm_id))
+
+def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
+    user_profile.is_guest = value
+    user_profile.save(update_fields=["is_guest"])
+    event = dict(type="realm_user", op="update",
+                 person=dict(email=user_profile.email,
+                             user_id=user_profile.id,
+                             is_guest=value))
+    send_event(event, active_user_ids(user_profile.realm_id))
+
 
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:

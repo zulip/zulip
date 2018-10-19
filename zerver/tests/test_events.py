@@ -1154,6 +1154,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
+                ('is_guest', check_bool),
                 ('profile_data', check_dict_only([])),
                 ('timezone', check_string),
                 ('date_joined', check_string),
