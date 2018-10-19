@@ -18,7 +18,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
-    do_update_bot_config_data, check_change_bot_full_name
+    do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -78,13 +78,22 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
-                        is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
+                        is_admin: Optional[bool]=REQ(default=None, validator=check_bool),
+                        is_guest: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if is_admin is not None and target.is_realm_admin != is_admin:
         if not is_admin and check_last_admin(user_profile):
             return json_error(_('Cannot remove the only organization administrator'))
+        if target.is_guest and is_admin:
+            if is_guest is None or is_guest:
+                return json_error(_("Guest user cannot be admin"))
         do_change_is_admin(target, is_admin)
+
+    if is_guest is not None and target.is_guest != is_guest:
+        if target.is_realm_admin and is_guest:
+            return json_error(_("Admin cannot be guest"))
+        do_change_is_guest(target, is_guest)
 
     if (full_name is not None and target.full_name != full_name and
             full_name.strip() != ""):
@@ -381,6 +390,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         'is_bot',
         'is_realm_admin',
         'is_active',
+        'is_guest',
         'bot_type',
         'avatar_source',
         'avatar_version',
@@ -399,6 +409,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
             is_active=row['is_active'],
             is_admin=row['is_realm_admin'],
             bot_type=row['bot_type'],
+            is_guest=row['is_guest'],
         )
 
         result['avatar_url'] = get_avatar_field(

@@ -64,9 +64,12 @@ exports.update_user_data = function (user_id, new_data) {
         }
     }
 
-    if (new_data.is_admin !== undefined) {
-        if (new_data.is_admin) {
+    if (new_data.is_admin !== undefined || new_data.is_guest !== undefined) {
+        var person_obj = people.get_person_from_user_id(user_id);
+        if (person_obj.is_admin) {
             user_row.find(".user_role").text(i18n.t("Administrator"));
+        } else if (person_obj.is_guest) {
+            user_row.find(".user_role").text(i18n.t("Guest"));
         } else {
             user_row.find(".user_role").text(i18n.t("Member"));
         }
@@ -309,6 +312,7 @@ exports.on_load_success = function (realm_people_data) {
             user_id: person.user_id,
             full_name: people.get_full_name(person.user_id),
             is_admin: person.is_admin,
+            is_guest: person.is_guest,
             is_bot: person.is_bot,
         });
         var user_info_form_modal = $(html);
@@ -363,6 +367,7 @@ exports.on_load_success = function (realm_people_data) {
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                     is_admin: JSON.stringify(user_role_select_value === 'admin'),
+                    is_guest: JSON.stringify(user_role_select_value === 'guest'),
                 };
             }
 

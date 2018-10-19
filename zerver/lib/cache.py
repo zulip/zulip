@@ -324,7 +324,7 @@ realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone',
-    'date_joined'
+    'date_joined', 'is_guest'
 ]  # type: List[str]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:

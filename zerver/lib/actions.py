@@ -3175,6 +3175,16 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
                                  is_admin=value))
         send_event(event, active_user_ids(user_profile.realm_id))
 
+def do_change_is_guest(user_profile: UserProfile, value: bool) -> None:
+    user_profile.is_guest = value
+    user_profile.save(update_fields=["is_guest"])
+    event = dict(type="realm_user", op="update",
+                 person=dict(email=user_profile.email,
+                             user_id=user_profile.id,
+                             is_guest=value))
+    send_event(event, active_user_ids(user_profile.realm_id))
+
+
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(

@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_reactivate_user,
     do_change_is_admin,
+    do_change_is_guest,
     do_create_user,
 )
 from zerver.lib.create_user import copy_user_settings
@@ -229,6 +230,109 @@ class PermissionTest(ZulipTestCase):
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id)
+
+    def test_change_regular_member_to_guest(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+
+        hamlet = self.example_user("hamlet")
+        self.assertFalse(hamlet.is_guest)
+        req = dict(is_guest=ujson.dumps(True))
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        self.assert_json_success(result)
+
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(hamlet.is_guest)
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], hamlet.email)
+        self.assertTrue(person['is_guest'])
+
+    def test_change_guest_to_regular_member(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        req = dict(is_guest=ujson.dumps(False))
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+        self.assert_json_success(result)
+
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_guest)
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], polonius.email)
+        self.assertFalse(person['is_guest'])
+
+    def test_change_admin_to_guest(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        hamlet = self.example_user("hamlet")
+        do_change_is_admin(hamlet, True)
+        self.assertFalse(hamlet.is_guest)
+        self.assertTrue(hamlet.is_realm_admin)
+
+        # Test failure of making a admin to guest without revoking admin status
+        req = dict(is_guest=ujson.dumps(True))
+        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        self.assert_json_error(result, 'Admin cannot be guest')
+
+        # Test changing a user from admin to guest and revoking admin status
+        hamlet = self.example_user("hamlet")
+        self.assertFalse(hamlet.is_guest)
+        req = dict(is_admin=ujson.dumps(False), is_guest=ujson.dumps(True))
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
+        self.assert_json_success(result)
+
+        hamlet = self.example_user("hamlet")
+        self.assertTrue(hamlet.is_guest)
+        self.assertFalse(hamlet.is_realm_admin)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], hamlet.email)
+        self.assertFalse(person['is_admin'])
+
+        person = events[1]['event']['person']
+        self.assertEqual(person['email'], hamlet.email)
+        self.assertTrue(person['is_guest'])
+
+    def test_change_guest_to_admin(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        polonius = self.example_user("polonius")
+        self.assertTrue(polonius.is_guest)
+        self.assertFalse(polonius.is_realm_admin)
+
+        # Test failure of making a guest to admin without revoking guest status
+        req = dict(is_admin=ujson.dumps(True))
+        result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+        self.assert_json_error(result, 'Guest user cannot be admin')
+
+        # Test changing a user from guest to admin and revoking guest status
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_realm_admin)
+        req = dict(is_admin=ujson.dumps(True), is_guest=ujson.dumps(False))
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/{}'.format(polonius.id), req)
+        self.assert_json_success(result)
+
+        polonius = self.example_user("polonius")
+        self.assertFalse(polonius.is_guest)
+        self.assertTrue(polonius.is_realm_admin)
+
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], polonius.email)
+        self.assertTrue(person['is_admin'])
+
+        person = events[1]['event']['person']
+        self.assertEqual(person['email'], polonius.email)
+        self.assertFalse(person['is_guest'])
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:

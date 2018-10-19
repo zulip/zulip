@@ -73,6 +73,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
         )
 
         is_admin = row['is_realm_admin']
+        is_guest = row['is_guest']
         is_bot = row['is_bot']
         # This format should align with get_cross_realm_dicts() and notify_created_user
         result = dict(
@@ -80,6 +81,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
             user_id=row['id'],
             avatar_url=avatar_url,
             is_admin=is_admin,
+            is_guest=is_guest,
             is_bot=is_bot,
             full_name=row['full_name'],
             timezone=row['timezone'],

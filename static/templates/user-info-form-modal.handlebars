@@ -21,6 +21,7 @@
                     <select name="user-role-select" id="user-role-select">
                         <option value="regular">{{t 'Regular member' }}</option>
                         <option value="admin" {{#if is_admin}}selected{{/if}}>{{t 'Organization administrator' }}</option>
+                        <option value="guest" {{#if is_guest}}selected{{/if}}>{{t 'Guest'}}</option>
                     </select>
                 </div>
                 {{/if}}
