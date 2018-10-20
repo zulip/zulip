@@ -17,6 +17,13 @@ that's running one of:
 
 You can just run the Zulip provision script on your machine.
 
+**Note**: you should not use the `root` user to run the installation. Instead,
+create a separate user with sudo privileges. For instance, you can create a
+`zulip` user by running the command `adduser zulip`. Run through the prompts to
+assign a password and user information. Add the user to the sudo group by
+running the command `usermod -aG sudo zulip`. Finally, you can switch to the
+user by running the command `su - zulip`.
+
 **Warning**: there is no supported uninstallation process with this
 method.  If you want that, use the Vagrant environment, where you can
 just do `vagrant destroy` to clean up the development environment.
