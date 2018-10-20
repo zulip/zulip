@@ -12,9 +12,9 @@ config_file.read("/etc/zulip/zulip.conf")
 LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
 
 try:
-    git_url = config_file.get('deployment', 'git_repo_url')
+    remote_url = config_file.get('deployment', 'git_repo_url')
 except (configparser.NoSectionError, configparser.NoOptionError):
-    git_url = "https://github.com/zulip/zulip.git"
+    remote_url = "https://github.com/zulip/zulip.git"
 try:
     deploy_options = config_file.get('deployment', 'deploy_options').strip().split()
 except (configparser.NoSectionError, configparser.NoOptionError):
@@ -51,13 +51,13 @@ try:
     deploy_path = make_deploy_path()
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
         logging.info("Cloning the repository")
-        subprocess.check_call(["git", "clone", "-q", git_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+        subprocess.check_call(["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
                               stdout=open('/dev/null', 'w'))
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
     logging.info("Fetching the latest commits")
     os.chdir(LOCAL_GIT_CACHE_DIR)
-    subprocess.check_call(["git", "remote", "set-url", "origin", git_url], preexec_fn=su_to_zulip)
+    subprocess.check_call(["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip)
     subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
 
     subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
