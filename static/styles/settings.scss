@@ -760,8 +760,8 @@ input[type=checkbox].inline-block {
 
 .bots_list .name {
     font-weight: 600;
-    font-size: 1.3rem;
-    margin: 10px 0px 5px 0px;
+    font-size: 1.1rem;
+    margin: 7px 5px;
 
     overflow: hidden;
     line-height: 1.3em;
@@ -830,7 +830,8 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
 }
 
-.bots_list .email {
+.bots_list .email,
+.bots_list .type {
     margin-bottom: 5px;
 }
 
