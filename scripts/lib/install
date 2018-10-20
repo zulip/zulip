@@ -161,7 +161,7 @@ fi
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
         --no-zulip-conf --method=standalone \
-        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 elif [ -n "$SELF_SIGNED_CERT" ]; then
     "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert \
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
