@@ -1,8 +1,8 @@
 # Non-webhook integrations
 
-Incoming webhook integrations are the fastest to write, but sometimes a
-third-party product just doesn't support them. Zulip supports two other
-types of integrations.
+[Incoming webhook integrations](/api/incoming-webhooks-overview) are the
+fastest to write, but sometimes a third-party product just doesn't support
+them. Zulip supports several other types of integrations.
 
 1. **Python script integrations**
    (examples: SVN, Git), where we can get the service to call our integration
@@ -20,12 +20,14 @@ types of integrations.
     documentation for the third party software in order to learn how to
     write the integration.
 
+1. **Interactive bots**. See [Writing bots](/api/writing-bots).
+
 A few notes on how to do these:
 
 * You should always send messages by POSTing to URLs of the form
 `https://zulip.example.com/v1/messages/`.
 
-* We usually build Python script integration with (at least) 2 files:
+* We usually build Python script integrations with (at least) 2 files:
 `zulip_foo_config.py` containing the configuration for the
 integration including the bots' API keys, plus a script that reads
 from this configuration to actually do the work (that way, it's
