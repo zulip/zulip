@@ -1,13 +1,5 @@
 # Writing interactive bots
 
-Zulip's API supports a few different ways of integrating with a
-third-party service.
-
-* **Incoming webhook integrations**, for when you just want notifications from
-  a tool to be sent into Zulip. See the [integrations guide](integrations-overview).
-* **Interactive bots**, for when you want the tool to react to
-  messages in Zulip.
-
 This guide is about writing and testing interactive bots. We assume
 familiarity with our [guide for running bots](running-bots).
 
@@ -20,7 +12,7 @@ On this page you'll find:
 * A [guide](#writing-a-bot) on writing a bot.
 * A [guide](#adding-a-bot-to-zulip) on adding a bot to Zulip.
 * A [guide](#testing-a-bots-output) on testing a bot's output.
-* A [documentation](#bot-api) of the bot API.
+* [Documentation](#bot-api) of the bot API.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
 ## Installing a development version of the Zulip bots package
@@ -455,7 +447,7 @@ system and gives your test "dummy data" instead.
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
-depend on a third-party we service, such as the Giphy webapp, in order to work. Because
+depend on a third-party service, such as the Giphy webapp, in order to work. Because
 we want our test suite to be reliable and not add load to these third-party APIs, tests
 for these services need to have "test fixtures": sample HTTP request/response pairs to
 be used by the tests. You can specify which one to use in your test code using the
