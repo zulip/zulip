@@ -84,14 +84,25 @@ this screenshot of the Zulip development environment:
 ![Image of Zulip development
 environment](../images/zulip-dev.png)
 
-The `--interface=''` command makes the Zulip development environment
-accessible from any IP address (in contrast with the more secure
+The `--interface=''` option makes the Zulip development environment
+accessible from any IP address (in contrast with the much more secure
 default of only being accessible from localhost, which is great for
 developing on your laptop).
 
-You can [port
-forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using
-ssh instead of running the development environment on an exposed interface.
+To properly secure your remote development environment, you can
+[port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
+using ssh instead of running the development environment on an exposed
+interface.  For example, if you're running Zulip on a remote server
+such as a DigitalOcean Droplet or an AWS EC2 instance, you can setup
+port-forwarding to access Zulip by running the following command in
+your terminal:
+
+```
+ssh -L 3000:127.0.0.1:9991 <username>@<remote_server_ip> -N
+```
+
+Now you can access Zulip by navigating to `http://127.0.0.1:3000` in
+your local computer's browser.
 
 For more information, see [Using the development
 environment][rtd-using-dev-env].
