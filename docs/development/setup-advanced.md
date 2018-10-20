@@ -17,6 +17,11 @@ that's running one of:
 
 You can just run the Zulip provision script on your machine.
 
+**Note**: you should not use the `root` user to run the installation.
+If you are using a [remote server](../development/remote.html), see
+the
+[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+
 **Warning**: there is no supported uninstallation process with this
 method.  If you want that, use the Vagrant environment, where you can
 just do `vagrant destroy` to clean up the development environment.

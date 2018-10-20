@@ -30,6 +30,23 @@ If you have poor internet connectivity, we recommend using
 [Mosh](https://mosh.org/) as it is more reliable over slow or unreliable
 networks.
 
+## Setting up user accounts
+
+You will need a non-root user account with sudo privileges to setup
+the Zulip development environment.  If you have one already, continue
+to the next section.
+
+You can create a new user with sudo privileges by running the
+following commands as root:
+* You can create a `zulipdev` user by running the command `adduser
+zulipdev`. Run through the prompts to assign a password and user
+information.  (You can pick any username you like for this user
+account.)
+* You can add the user to the sudo group by running the command
+`usermod -aG sudo zulipdev`.
+* Finally, you can switch to the user by running the command `su -
+zulipdev` (or just login to that user using `ssh`).
+
 ## Setting up the development environment
 
 After you have connected to your remote server, you need to install the
