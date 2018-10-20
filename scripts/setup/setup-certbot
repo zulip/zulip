@@ -4,7 +4,8 @@ set -e
 
 usage() {
     cat <<EOF >&2
-Usage: $0 --hostname=zulip.example.com --email=admin@example.com [--method={webroot|standalone}] [--no-zulip-conf]
+Usage: $0 --email=admin@example.com [--method={webroot|standalone}] \
+[--no-zulip-conf] hostname.com [another.hostname.com]
 EOF
     exit 1
 }
@@ -15,15 +16,10 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 method=webroot
-args="$(getopt -o '' --long help,hostname:,email:,method:,deploy-hook:,no-zulip-conf,agree-tos -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,email:,method:,deploy-hook:,no-zulip-conf,agree-tos -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
-        --hostname)
-            DOMAIN="$2"
-            shift
-            shift
-            ;;
         --email)
             EMAIL="$2"
             shift
@@ -52,10 +48,18 @@ while true; do
             shift
             ;;
         --)
+            shift
             break
             ;;
     esac
 done
+
+# Parse the remaining arguments as Subject Alternative Names to pass to certbot
+HOSTNAMES=()
+for arg; do
+    HOSTNAMES+=(-d "$arg")
+done
+DOMAIN=$1
 
 if [ -n "$show_help" ]; then
     usage
@@ -94,7 +98,7 @@ chmod a+x "$CERTBOT_PATH"
 # Passing --force-interactive suppresses a warning, but also brings up
 # an annoying prompt we stifle with --no-eff-email.
 "$CERTBOT_PATH" certonly "${method_args[@]}" \
-                -d "$DOMAIN" -m "$EMAIL" \
+                "${HOSTNAMES[@]}" -m "$EMAIL" \
                 $agree_tos --force-renewal \
                 "${deploy_hook[@]}" \
                 --force-interactive --no-eff-email
