@@ -1102,6 +1102,9 @@ class Stream(models.Model):
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream)  # type: str
 
+    # Counter for subjects in the stream that don't have a topic
+    no_topic_counter = models.PositiveSmallIntegerField(default=1)  # type: int
+
     def __str__(self) -> str:
         return "<Stream: %s>" % (self.name,)
 
