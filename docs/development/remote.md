@@ -76,6 +76,13 @@ You can [port
 forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using
 ssh instead of running the development environment on an exposed interface.
 
+For instance, if you're running Zulip on a remote server such as a DigitalOcean
+Droplet or an AWS EC2 instance, use port-forwarding to access Zulip by running
+the following command in your terminal:
+`ssh -L 3000:127.0.0.1:9991 <username>@<remote_server_ip> -N`.
+Now you can access Zulip in your local computer's browser by navigating to
+`http://127.0.0.1:3000`.
+
 For more information, see [Using the development
 environment][rtd-using-dev-env].
 
