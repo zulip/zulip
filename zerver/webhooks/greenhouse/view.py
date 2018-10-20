@@ -35,6 +35,9 @@ def message_creator(action: str, application: Dict[str, Any]) -> str:
 @has_request_variables
 def api_greenhouse_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+    if payload['action'] == 'ping':
+        return json_success()
+
     if payload['action'] == 'update_candidate':
         candidate = payload['payload']['candidate']
     else:

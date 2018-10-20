@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from mock import MagicMock, patch
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class GreenhouseHookTests(WebhookTestCase):
@@ -60,6 +62,15 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_subject,
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
+
+    @patch('zerver.webhooks.greenhouse.view.check_send_webhook_message')
+    def test_ping_message_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body('ping_event')
+        result = self.client_post(self.url, payload, content_type=self.CONTENT_TYPE)
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("greenhouse", fixture_name, file_type="json")
