@@ -73,17 +73,33 @@ exports.handle_narrow_activated = function (filter) {
         }
     }
 
-    var op_is = filter.operands('is');
-    var op_pm = filter.operands('pm-with');
-    if (op_is.length >= 1 && _.contains(op_is, "private") || op_pm.length >= 1) {
-        if (!people.is_valid_bulk_emails_for_compose(op_pm)) {
-            // Don't go into the else statement and close the pm_list.
-            return;
-        }
+    if (exports.should_expand_pm_list(filter)) {
+        var op_pm = filter.operands('pm-with');
         pm_list.expand(op_pm);
     } else {
         pm_list.close();
     }
+};
+
+exports.should_expand_pm_list = function (filter) {
+    var op_is = filter.operands('is');
+
+    if (op_is.length >= 1 && _.contains(op_is, "private")) {
+        return true;
+    }
+
+    var op_pm = filter.operands('pm-with');
+
+    if (op_pm.length !== 1) {
+        return false;
+    }
+
+    var emails_strings = op_pm[0];
+    var emails = emails_strings.split(',');
+
+    var has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
+
+    return has_valid_emails;
 };
 
 exports.handle_narrow_deactivated = function () {
