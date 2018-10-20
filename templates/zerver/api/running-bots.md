@@ -1,76 +1,57 @@
 # Interactive bots
 
 Zulip's API has a powerful framework for interactive bots that react
-to messages in Zulip.  This page documents how to run a bot
-implemented using that framework, both on your laptop for quick
-testing as well in a production server environment.
-
-On this page you'll find:
-
-* A step-by-step [tutorial](#running-a-bot) on how to run a bot.
-* Common [problems](#common-problems) when developing/running bots and their solutions.
-
-## Installing the Zulip bots package
+to messages in Zulip.
 
 ## Running a bot
 
-This guide will show you how to run an **existing** Zulip bot
-found in [`zulip_bots/bots`](
+This guide will show you how to run an existing Zulip bot
+found in [zulip_bots/bots](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
 
-You need:
+You'll need:
 
-* An account in an organization on a Zulip server
-  (e.g. [chat.zulip.org](https://chat.zulip.org) or
-  yourSubdomain.zulipchat.com, or your own development server).
-  Within that Zulip organization, users will be able to interact with
-  your bot.
+* An account in a Zulip organization
+  (e.g. [chat.zulip.org](https://chat.zulip.org),
+  `<yourSubdomain>.zulipchat.com`, or a Zulip organization on your own
+  [development](https://zulip.readthedocs.io/en/latest/development/overview.html) or
+  [production](https://zulip.readthedocs.io/en/latest/production/install.html) server).
 * A computer where you're running the bot from.
 
 **Note: Please be considerate when testing experimental bots on public servers such as chat.zulip.org.**
 
-1. Run `pip install zulip_bots` to install the package.
-
-     *Hint: Do you want to install the latest development version? Check
-     out [this](
-     writing-bots#installing-a-development-version-of-the-zulip-bots-package)
-     guide.*
-
-1. Register a new bot user on the Zulip server's web interface.
-
-    * Log in to the Zulip server.
-    * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
-      Select *Generic bot* for bot type, fill out the form and click on *Create bot*.
-    * A new bot user should appear in the *Active bots* panel.
+1. Go to your Zulip account and
+   [add a bot](/help/add-a-bot-or-integration). Use **Generic bot** as the bot type.
 
 1. Download the bot's `zuliprc` configuration file to your computer.
 
-    * Go to *Settings* -> *Your bots*.
-    * In the *Active bots* panel, click on the little green download icon
-      to download its configuration file *zuliprc* (the structure of this file is
-      explained [here](writing-bots#configuration-file)).
-    * The file will be downloaded to some place like `~/Downloads/zuliprc` (depends
-      on your browser and OS).
-    * Copy the file to a destination of your choice, e.g. to `~/zuliprc-my-bot`.
+1. Download the `zulip_bots` Python package to your computer using `pip install zulip_bots`.
 
-1. Start the bot process.
+     *Note: Click
+     [here](
+     writing-bots#installing-a-development-version-of-the-zulip-bots-package)
+     to install the latest development version of the package.*
+
+1. Start the bot process on your computer.
 
     * Run
       ```
-      zulip-run-bot <bot-name> --config-file ~/zuliprc-my-bot
+      zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
       ```
-      (using the path to the `zuliprc` file from step 3).
+
+      (replacing `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above).
+
     * Check the output of the command. It should include the following line:
 
             INFO:root:starting message handling...
 
         Congrats! Your bot is running.
 
-1. To talk with the bot, mention its name `@**bot-name**`.
+1. To talk with the bot, at-mention its name, like `@**bot-name**`.
 
 You can now play around with the bot and get it configured the way you
 like.  Eventually, you'll probably want to run it in a production
-environment where it'll stay up, by deploying it on a server using the
+environment where it'll stay up, by [deploying](/api/deploying-bots) it on a server using the
 Zulip Botserver.
 
 ## Common problems
