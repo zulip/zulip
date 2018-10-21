@@ -255,13 +255,7 @@ exports.on_load_success = function (realm_people_data) {
                 button.text(i18n.t("Deactivate"));
             },
             success: function () {
-                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
-                button.text(i18n.t("Reactivate"));
-                meta.current_deactivate_user_modal_row.addClass("deactivated_user");
-                meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
-                meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
+                update_view_on_deactivate(meta.current_deactivate_user_modal_row);
             },
         });
     });
