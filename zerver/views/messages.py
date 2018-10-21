@@ -1352,7 +1352,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
-    is_no_topic_msg = (message.topic_name() == "(no topic)")
+    is_no_topic_msg = re.match(r'\(no topic \d+\)', message.topic_name())
 
     # You only have permission to edit a message if:
     # you change this value also change those two parameters in message_edit.js.
