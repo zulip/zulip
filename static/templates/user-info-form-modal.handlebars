@@ -28,6 +28,17 @@
         </div>
     </div>
     <div class="modal-footer">
+        <span class="input-group">
+            {{#if is_active}}
+            <button type="button" class="button rounded deactivate btn-danger">
+                {{t "Deactivate" }}
+            </button>
+            {{else}}
+            <button type="button" class="button rounded reactivate btn-warning">
+                {{t "Reactivate" }}
+            </button>
+            {{/if}}
+        </span>
         <button type="submit" class="button rounded sea-green submit_user_info_change">{{t 'Save changes' }}</button>
         <button type="button" class="button rounded reset_edit_user" data-dismiss="modal">{{t "Cancel" }}</button>
     </div>

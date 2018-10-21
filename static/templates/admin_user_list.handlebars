@@ -28,17 +28,6 @@
     {{/if}}
     {{#if ../can_modify}}
     <td>
-        <span class="user-status-settings">
-            {{#if is_active}}
-            <button class="button rounded small deactivate btn-danger">
-                {{t "Deactivate" }}
-            </button>
-            {{else}}
-            <button class="button rounded small reactivate btn-warning">
-                {{t "Reactivate" }}
-            </button>
-            {{/if}}
-        </span>
         <button class="button rounded small btn-warning open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
             <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>

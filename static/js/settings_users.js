@@ -217,7 +217,7 @@ exports.on_load_success = function (realm_people_data) {
     populate_users(realm_people_data);
 
     // Setup click handlers
-    $(".admin_user_table").on("click", ".deactivate", function (e) {
+    $("#user-info-form-modal-container").on("click", ".deactivate", function (e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -230,9 +230,9 @@ exports.on_load_success = function (realm_people_data) {
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
+        overlays.close_modal('user-info-form-modal');
         $("#deactivation_user_modal").modal("show");
 
-        meta.current_deactivate_user_modal_row = row;
     });
 
     $("#do_deactivate_user_button").expectOne().click(function () {
@@ -302,6 +302,7 @@ exports.on_load_success = function (realm_people_data) {
         var html = templates.render('user-info-form-modal', {
             user_id: person.user_id,
             full_name: people.get_full_name(person.user_id),
+            is_active: true,
             is_admin: person.is_admin,
             is_bot: person.is_bot,
         });
