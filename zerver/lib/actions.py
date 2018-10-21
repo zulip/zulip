@@ -2096,6 +2096,12 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             forwarder_user_profile=forwarder_user_profile
         )
 
+        # Add a topic number to (no topic) messages
+        if topic_name == "(no topic)":
+            topic_name = "(no topic %d)" % (stream.no_topic_counter,)
+            stream.no_topic_counter += 1
+            stream.save(update_fields=['no_topic_counter'])
+
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
 
