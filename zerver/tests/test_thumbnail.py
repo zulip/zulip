@@ -21,7 +21,7 @@ class ThumbnailTest(ZulipTestCase):
     @use_s3_backend
     def test_s3_source_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(2.2,0.8,false)/%s/source_type/s3'
+            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/s3'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
@@ -98,13 +98,13 @@ class ThumbnailTest(ZulipTestCase):
             encoded_url = base64.urlsafe_b64encode(image_url.encode()).decode('utf-8')
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test thumbnail size.
             result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test api endpoint with standard API authentication.
@@ -113,7 +113,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.api_get(user_profile.email,
                                   "/thumbnail?url=%s&size=thumbnail" % (quoted_url,))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test api endpoint with legacy API authentication.
@@ -121,7 +121,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
                 quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test a second logged-in user; they should also be able to access it
@@ -129,7 +129,7 @@ class ThumbnailTest(ZulipTestCase):
             result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
                 quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/0x300/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test with another user trying to access image using thumbor.
@@ -137,7 +137,7 @@ class ThumbnailTest(ZulipTestCase):
             self.login(self.example_email("iago"))
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
         image_url = 'https://images.foobar.com/12345'
@@ -148,7 +148,7 @@ class ThumbnailTest(ZulipTestCase):
 
     def test_local_file_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(2.2,0.8,false)/%s/source_type/local_file'
+            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/local_file'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
@@ -307,12 +307,12 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302, result)
         base = 'http://test-thumborhost.com/'
         self.assertEqual(base, result.url[:len(base)])
-        expected_part_url = '/smart/filters:no_upscale():sharpen(2.2,0.8,false)/' + hex_uri + '/source_type/local_file'
+        expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + hex_uri + '/source_type/local_file'
         self.assertIn(expected_part_url, result.url)
 
     def test_with_different_sizes(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(2.2,0.8,false)/%s/source_type/local_file'
+            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/local_file'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
