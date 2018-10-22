@@ -107,9 +107,9 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context = {'admin_access': True}
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    if stripe_customer.account_balance > 0:
+    if stripe_customer.account_balance > 0:  # nocoverage, waiting for mock_stripe to mature
         context.update({'account_charges': '{:,.2f}'.format(stripe_customer.account_balance / 100.)})
-    if stripe_customer.account_balance < 0:
+    if stripe_customer.account_balance < 0:  # nocoverage
         context.update({'account_credits': '{:,.2f}'.format(-stripe_customer.account_balance / 100.)})
 
     subscription = extract_current_subscription(stripe_customer)
