@@ -207,6 +207,13 @@ adding a section like this to `/etc/zulip/zulip.conf`:
 git_repo_url = https://github.com/zulip/zulip.git
 ```
 
+The remote's URL can also be provided by command line. This will
+override the `git_repo_url` configured in `/etc/zulip/zulip.conf`.
+```
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git master \
+--remote-url https://github.com/user/reponame.git
+```
+
 **Systems with limited RAM**: If you are running a minimal Zulip
   server with 2GB of RAM or less, the upgrade can fail due to the
   system running out of RAM running both the Zulip server and Zulip's
