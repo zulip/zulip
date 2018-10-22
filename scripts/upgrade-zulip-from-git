@@ -55,6 +55,7 @@ get_deployment_lock(error_rerun_script)
 
 try:
     deploy_path = make_deploy_path()
+    deploy_branch = 'deploy-' + os.path.basename(deploy_path)
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
         logging.info("Cloning the repository")
         subprocess.check_call(["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
@@ -66,10 +67,11 @@ try:
     subprocess.check_call(["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip)
     subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
 
-    subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
+    subprocess.check_call(["git", "clone", "-q", LOCAL_GIT_CACHE_DIR, deploy_path],
                           stdout=open('/dev/null', 'w'),
                           preexec_fn=su_to_zulip)
     os.chdir(deploy_path)
+    subprocess.check_call(["git", "checkout", "-b", deploy_branch, refname], preexec_fn=su_to_zulip)
 
     subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
                            os.path.join(deploy_path, "zproject/prod_settings.py")])
