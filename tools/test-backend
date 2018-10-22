@@ -28,8 +28,9 @@ target_fully_covered = {path for target in [
     # zerver/ and zerver/lib/ are important core files
     'zerver/*.py',
     'zerver/lib/*.py',
-    # stripe.py handles billing
+    # Billing files require 100% test coverage
     'corporate/lib/stripe.py',
+    'corporate/views.py',
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',
