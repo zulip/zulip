@@ -63,12 +63,19 @@ function update_user_custom_profile_fields(fields, method) {
                                    {data: JSON.stringify(fields)}, spinner);
 }
 
+exports.initialize_custom_date_type_fields = function (element_id) {
+    $(element_id).find(".custom_user_field .datepicker").flatpickr({
+        altInput: true,
+        altFormat: "F j, Y"});
+};
+
 exports.add_custom_profile_fields_to_settings = function () {
     if (!overlays.settings_open()) {
         return;
     }
 
-    $("#account-settings .custom-profile-fields-form").html("");
+    var element_id = "#account-settings .custom-profile-fields-form";
+    $(element_id).html("");
     if (page_params.custom_profile_fields.length > 0) {
         $("#account-settings #custom-field-header").show();
     } else {
@@ -160,9 +167,7 @@ exports.add_custom_profile_fields_to_settings = function () {
             });
         }
     });
-    $(".custom_user_field .datepicker").flatpickr({
-        altInput: true,
-        altFormat: "F j, Y"});
+    exports.initialize_custom_date_type_fields(element_id);
 };
 
 exports.set_up = function () {
