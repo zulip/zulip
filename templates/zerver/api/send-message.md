@@ -29,7 +29,7 @@ zulip(config).then((client) => {
         to: 'Denmark',
         type: 'stream',
         subject: 'Castle',
-        content: 'Something is rotten in the state of Denmark.'
+        content: 'I come not, friends, to steal away your hearts.'
     }
 
     client.messages.send(params).then(console.log);
@@ -41,7 +41,7 @@ zulip(config).then((client) => {
     const params = {
         to: 'hamlet@example.com',
         type: 'private',
-        content: 'I come not, friends, to steal away your hearts.',
+        content: 'With mirth and laughter let old wrinkles come.',
     }
 
     client.messages.send(params).then(console.log);
@@ -58,14 +58,14 @@ curl {{ api_url }}/v1/messages \
     -d "type=stream" \
     -d "to=Denmark" \
     -d "subject=Castle" \
-    -d $"content=Something is rotten in the state of Denmark."
+    -d $"content=I come not, friends, to steal away your hearts."
 
 # For private messages
 curl {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=private" \
     -d "to=hamlet@example.com" \
-    -d $"content=I come not, friends, to steal away your hearts."
+    -d $"content=With mirth and laughter let old wrinkles come."
 ```
 
 {tab|zulip-send}
@@ -92,7 +92,7 @@ If you'd like, you can also provide the message on the command-line with the
 
 ```bash
 zulip-send --stream Denmark --subject Castle \
-    --message "Something is rotten in the state of Denmark." \
+    --message "I come not, friends, to steal away your hearts." \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 

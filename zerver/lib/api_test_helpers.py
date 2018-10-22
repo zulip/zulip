@@ -451,7 +451,7 @@ def send_message(client):
         "type": "stream",
         "to": "Denmark",
         "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
+        "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
     # {code_example|end}
@@ -473,7 +473,7 @@ def send_message(client):
     request = {
         "type": "private",
         "to": "iago@zulip.com",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "With mirth and laughter let old wrinkles come."
     }
     result = client.send_message(request)
     # {code_example|end}
@@ -498,7 +498,7 @@ def test_nonexistent_stream_error(client):
         "type": "stream",
         "to": "nonexistent_stream",
         "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
+        "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
 
@@ -510,7 +510,7 @@ def test_private_message_invalid_recipient(client):
     request = {
         "type": "private",
         "to": "eeshan@zulip.com",
-        "content": "I come not, friends, to steal away your hearts."
+        "content": "With mirth and laughter let old wrinkles come."
     }
     result = client.send_message(request)
 
@@ -551,7 +551,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
         "type": "stream",
         "to": "Denmark",
         "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
+        "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
 
@@ -581,7 +581,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
         "type": "stream",
         "to": "Denmark",
         "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
+        "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
 
@@ -618,7 +618,7 @@ def update_message_flags(client):
         "type": "stream",
         "to": "Denmark",
         "subject": "Castle",
-        "content": "Something is rotten in the state of Denmark."
+        "content": "I come not, friends, to steal away your hearts."
     }  # type: Dict[str, Any]
     message_ids = []
     for i in range(0, 3):
