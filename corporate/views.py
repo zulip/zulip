@@ -63,6 +63,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         except Exception as e:
             billing_logger.exception("Uncaught exception in billing: %s" % (e,))
             error_message = BillingError.CONTACT_SUPPORT
+            error_description = "uncaught exception during upgrade"
         else:
             return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 

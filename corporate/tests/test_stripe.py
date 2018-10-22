@@ -413,6 +413,20 @@ class StripeTest(ZulipTestCase):
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
 
+    @patch("corporate.lib.stripe.billing_logger.error")
+    def test_upgrade_with_uncaught_exception(self, mock1: Mock) -> None:
+        self.login(self.example_email("hamlet"))
+        with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
+            response = self.client_post("/upgrade/", {
+                'stripeToken': self.token,
+                'signed_seat_count': self.signed_seat_count,
+                'salt': self.salt,
+                'plan': Plan.CLOUD_ANNUAL
+            })
+        self.assert_in_success_response(["Upgrade to Zulip Standard",
+                                         "Something went wrong. Please contact"], response)
+        self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
+
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: Mock,
