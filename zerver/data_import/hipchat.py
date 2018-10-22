@@ -444,7 +444,7 @@ def process_message_file(realm_id: int,
             if message_key in d
         ]
 
-        def get_raw_message(d: Dict[str, Any]) -> ZerverFieldsT:
+        def get_raw_message(d: Dict[str, Any]) -> Optional[ZerverFieldsT]:
             if isinstance(d['sender'], str):
                 # Some Hipchat instances just give us a person's
                 # name in the sender field for NotificationMessage.
@@ -456,6 +456,12 @@ def process_message_file(realm_id: int,
                 sender_id = mirror_user['id']
             else:
                 sender_id = d['sender']['id']
+
+            if message_key == 'PrivateUserMessage':
+                if sender_id != fn_id:
+                    # PMs are in multiple places in the Hipchat export,
+                    # and we only use the copy from the sender
+                    return None
 
             return dict(
                 fn_id=fn_id,
@@ -472,7 +478,8 @@ def process_message_file(realm_id: int,
 
         for d in flat_data:
             raw_message = get_raw_message(d)
-            raw_messages.append(raw_message)
+            if raw_message is not None:
+                raw_messages.append(raw_message)
 
         return raw_messages
 
@@ -598,8 +605,11 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
     for message in zerver_message:
         message_id = message['id']
         recipient_id = message['recipient']
+        sender_id = message['sender']
         mention_user_ids = mention_map[message_id]
         user_ids = subscriber_map.get(recipient_id, set())
+        user_ids.add(sender_id)
+
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
             user_message = build_user_message(
