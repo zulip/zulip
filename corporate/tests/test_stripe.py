@@ -601,6 +601,20 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(user, log_entry.acting_user)
         self.assertEqual(RealmAuditLog.STRIPE_CARD_CHANGED, log_entry.event_type)
 
+    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_replace_payment_source_with_stripe_error(self, mock_retrieve_customer: Mock) -> None:
+        user = self.example_user("iago")
+        self.login(user.email)
+        Customer.objects.create(realm=user.realm, stripe_customer_id=self.stripe_customer_id)
+        with patch.object(stripe.Customer, 'save', autospec=True,
+                          side_effect=stripe.error.StripeError('message', json_body={})):
+            response = self.client_post("/json/billing/sources/change",
+                                        {'stripe_token': ujson.dumps("new_token")})
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'other stripe error')
+        self.assert_json_error_contains(response, 'Something went wrong. Please contact')
+        self.assertFalse(RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
+
     def test_update_payment_source_permissions(self) -> None:
         # This can be removed / merged with e.g. test_downgrade_permissions
         # once we have a decorator that handles billing page permissions
