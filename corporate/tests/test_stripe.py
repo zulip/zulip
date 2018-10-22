@@ -175,7 +175,7 @@ class StripeTest(ZulipTestCase):
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
             raise stripe.error.InvalidRequestError(
-                "Request req_oJU621i6H6X4Ez: No such token: x", None, json_body={})
+                "message", "param", "code", json_body={})
         with self.assertRaises(BillingError) as context:
             raise_invalid_request_error()
         self.assertEqual('other stripe error', context.exception.description)
@@ -819,7 +819,7 @@ class BillingProcessorTest(ZulipTestCase):
             log_row=entry1, state=BillingProcessor.DONE)
         Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
         with patch('corporate.lib.stripe.do_adjust_subscription_quantity',
-                   side_effect=stripe.error.StripeError('message', 'param', 'code', json_body={})):
+                   side_effect=stripe.error.StripeError('message', json_body={})):
             with self.assertRaises(BillingError):
                 run_billing_processor_one_step(processor)
         mock_billing_logger_error.assert_called()
