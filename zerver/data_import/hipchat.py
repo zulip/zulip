@@ -308,10 +308,10 @@ def write_emoticon_data(realm_id: int,
 
     flat_data = [
         dict(
-            path=d['Emoticon']['path'],
-            name=d['Emoticon']['shortcut'],
+            path=d['path'],
+            name=d['shortcut'],
         )
-        for d in data
+        for d in data['Emoticons']
     ]
 
     emoji_folder = os.path.join(output_dir, 'emoji')
