@@ -51,7 +51,12 @@
                             </div>
                         </label>
                     </div>
-                    <p>You&rsquo;ll initially be charged <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b> for <b>{{ seat_count }}</b> users. You&rsquo;ll receive prorated charges and credits as users are added, deactivated, or become inactive.</p>
+                    <p>
+                        You&rsquo;ll initially be charged
+                        <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b>
+                        for <b>{{ seat_count }}</b> users. We’ll automatically charge you
+                        when new users are added, or give you credit when users are deactivated.
+                    </p>
                     <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                     data-key="{{ publishable_key }}"
                     data-image="/static/images/logo/zulip-icon-128x128.png"

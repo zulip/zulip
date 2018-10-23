@@ -106,18 +106,19 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context = {'admin_access': True}
 
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    subscription = extract_current_subscription(stripe_customer)
+    if stripe_customer.account_balance > 0:
+        context.update({'account_charges': '{:,.2f}'.format(stripe_customer.account_balance / 100.)})
+    if stripe_customer.account_balance < 0:
+        context.update({'account_credits': '{:,.2f}'.format(-stripe_customer.account_balance / 100.)})
 
-    prorated_charges = stripe_customer.account_balance
+    subscription = extract_current_subscription(stripe_customer)
     if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
         seat_count = subscription.quantity
         # Need user's timezone to do this properly
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
-        upcoming_invoice = stripe_get_upcoming_invoice(customer.stripe_customer_id)
-        renewal_amount = subscription.plan.amount * subscription.quantity
-        prorated_charges += upcoming_invoice.total - renewal_amount
+        renewal_amount = stripe_get_upcoming_invoice(customer.stripe_customer_id).total
     # Can only get here by subscribing and then downgrading. We don't support downgrading
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
@@ -125,11 +126,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         seat_count = 0
         renewal_date = ''
         renewal_amount = 0
-
-    prorated_credits = 0
-    if prorated_charges < 0:  # nocoverage
-        prorated_credits = -prorated_charges
-        prorated_charges = 0
 
     payment_method = None
     if stripe_customer.default_source is not None:
@@ -141,8 +137,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
         'payment_method': payment_method,
-        'prorated_charges': '{:,.2f}'.format(prorated_charges / 100.),
-        'prorated_credits': '{:,.2f}'.format(prorated_credits / 100.),
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'stripe_email': stripe_customer.email,
     })

@@ -32,10 +32,10 @@
                         <p>Your current plan is <strong>{{ plan_name }}</strong></p>
                         <p>You are paying for <strong>{{ seat_count }} users</strong>.</p>
                         <p>Your plan will renew on <strong>{{ renewal_date }}</strong> for <strong>${{ renewal_amount }}</strong>.</p>
-                        {% if prorated_charges %}
-                        <p>You have <strong>${{ prorated_charges }}</strong> in prorated charges that will be added to your next bill.</p>
-                        {% elif prorated_credits %}
-                        <p>You have <strong>${{ prorated_credits }}</strong> in prorated credits that will be automatically applied to your next bill.</p>
+                        {% if account_charges %}
+                        <p>You have <strong>${{ account_charges }}</strong> in charges that will be added to your next bill.</p>
+                        {% elif account_credits %}
+                        <p>You have <strong>${{ account_credits }}</strong> in credits that will be automatically applied to your next bill.</p>
                         {% endif %}
                     </div>
                     <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
