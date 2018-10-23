@@ -310,7 +310,8 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any],
 
 def get_pull_request_review_requested_body(payload: Dict[str, Any],
                                            include_title: Optional[bool]=False) -> str:
-    requested_reviewers = payload['pull_request']['requested_reviewers']
+    requested_reviewers = (payload['pull_request']['requested_reviewers'] or
+                           [payload['requested_reviewer']])
     sender = get_sender_name(payload)
     pr_number = payload['pull_request']['number']
     pr_url = payload['pull_request']['html_url']
