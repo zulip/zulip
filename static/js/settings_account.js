@@ -69,6 +69,59 @@ exports.initialize_custom_date_type_fields = function (element_id) {
         altFormat: "F j, Y"});
 };
 
+exports.intialize_custom_user_type_fields = function (element_id, user_id, is_editable,
+                                                      set_handler_on_update) {
+    var field_types = page_params.custom_profile_field_types;
+    var user_pills = {};
+
+    page_params.custom_profile_fields.forEach(function (field) {
+        var field_value_raw = people.get_custom_profile_data(user_id, field.id);
+
+        // If field is not editable and field value is null, we don't expect
+        // pill container for that field and proceed further
+        if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
+            var pill_container = $(element_id).find('.custom_user_field[data-field-id="' +
+                                         field.id + '"] .pill-container').expectOne();
+            var pills = user_pill.create_pills(pill_container);
+
+            function update_custom_user_field() {
+                var fields = [];
+                var user_ids = user_pill.get_user_ids(pills);
+                if (user_ids.length < 1) {
+                    fields.push(field.id);
+                    update_user_custom_profile_fields(fields, channel.del);
+                } else {
+                    fields.push({id: field.id, value: user_ids});
+                    update_user_custom_profile_fields(fields, channel.patch);
+                }
+            }
+
+            if (field_value_raw) {
+                var field_value = JSON.parse(field_value_raw);
+                if (field_value) {
+                    field_value.forEach(function (pill_user_id) {
+                        var user = people.get_person_from_user_id(pill_user_id);
+                        user_pill.append_user(user, pills);
+                    });
+                }
+            }
+            if (is_editable) {
+                var input = pill_container.children('.input');
+                if (set_handler_on_update) {
+                    user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
+                    pills.onPillRemove(function () {
+                        update_custom_user_field();
+                    });
+                } else {
+                    user_pill.set_up_typeahead_on_pills(input, pills, function () {});
+                }
+            }
+            user_pills[field.id] = pills;
+        }
+    });
+    return user_pills;
+};
+
 exports.add_custom_profile_fields_to_settings = function () {
     if (!overlays.settings_open()) {
         return;
@@ -138,35 +191,8 @@ exports.add_custom_profile_fields_to_settings = function () {
             field_choices: field_choices,
         });
         $("#account-settings .custom-profile-fields-form").append(html);
-
-        if (is_user_field) {
-            var pill_container = $('.custom_user_field[data-field-id="' + field.id + '"] .pill-container').expectOne();
-            var pills = user_pill.create_pills(pill_container);
-
-            function update_custom_user_field() {
-                var fields = [];
-                var user_ids = user_pill.get_user_ids(pills);
-                if (user_ids.length < 1) {
-                    fields.push(field.id);
-                    update_user_custom_profile_fields(fields, channel.del);
-                } else {
-                    fields.push({id: field.id, value: user_ids});
-                    update_user_custom_profile_fields(fields, channel.patch);
-                }
-            }
-            if (value !== undefined && value.length > 0) {
-                value.forEach(function (user_id) {
-                    var user = people.get_person_from_user_id(user_id);
-                    user_pill.append_user(user, pills);
-                });
-            }
-            var input = pill_container.children('.input');
-            user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
-            pills.onPillRemove(function () {
-                update_custom_user_field();
-            });
-        }
     });
+    exports.intialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
     exports.initialize_custom_date_type_fields(element_id);
 };
 
