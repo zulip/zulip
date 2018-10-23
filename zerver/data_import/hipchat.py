@@ -652,7 +652,7 @@ def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFi
         for members in d['Room']['members']:
             print('-----' + str(users_zulip[users_hipchat[members]['email']]['id']) + '----' + users_zulip[users_hipchat[members]['email']]['email'])
             subscription = build_subscription(
-                recipient_id=recipient_zulip[stream_zulip['id']],
+                recipient_id=recipient_zulip[stream_zulip[d['Room']['name']]['id']],
                 user_id=users_zulip[users_hipchat[members]['email']]['id'],
                 subscription_id=subscription_id,
             )
