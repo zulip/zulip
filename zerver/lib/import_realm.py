@@ -35,16 +35,16 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
 
 # Code from here is the realm import code path
 
-# id_maps is a dictionary that maps table names to dictionaries
+# ID_MAP is a dictionary that maps table names to dictionaries
 # that map old ids to new ids.  We use this in
 # re_map_foreign_keys and other places.
 #
-# We explicity initialize id_maps with the tables that support
+# We explicity initialize ID_MAP with the tables that support
 # id re-mapping.
 #
 # Code reviewers: give these tables extra scrutiny, as we need to
 # make sure to reload related tables AFTER we re-map the ids.
-id_maps = {
+ID_MAP = {
     'client': {},
     'user_profile': {},
     'huddle': {},
@@ -85,13 +85,13 @@ path_maps = {
 }  # type: Dict[str, Dict[str, str]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
-    if table not in id_maps:
+    if table not in ID_MAP:
         raise Exception('''
-            Table %s is not initialized in id_maps, which could
+            Table %s is not initialized in ID_MAP, which could
             mean that we have not thought through circular
             dependencies.
             ''' % (table,))
-    id_maps[table][old_id] = new_id
+    ID_MAP[table][old_id] = new_id
 
 def fix_datetime_fields(data: TableData, table: TableName) -> None:
     for item in data[table]:
@@ -179,11 +179,11 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
     This helps to generate a unique huddle hash from the updated user_profile ids
     """
     id_map_to_list['huddle_to_user_list'] = {
-        value: [] for value in id_maps['recipient_to_huddle_map'].values()}
+        value: [] for value in ID_MAP['recipient_to_huddle_map'].values()}
 
     for subscription in data[table]:
-        if subscription['recipient'] in id_maps['recipient_to_huddle_map']:
-            huddle_id = id_maps['recipient_to_huddle_map'][subscription['recipient']]
+        if subscription['recipient'] in ID_MAP['recipient_to_huddle_map']:
+            huddle_id = ID_MAP['recipient_to_huddle_map'][subscription['recipient']]
             id_map_to_list['huddle_to_user_list'][huddle_id].append(subscription['user_profile_id'])
 
 def fix_customprofilefield(data: TableData) -> None:
@@ -212,6 +212,9 @@ def fix_message_rendered_content(data: TableData, field: TableName) -> None:
     This function sets the rendered_content of all the messages
     after the messages have been imported from a non-Zulip platform.
     """
+
+    return  # HACK FOR TESTING
+
     for message in data[field]:
         message_object = Message.objects.get(id=message['id'])
         if message_object.rendered_content is not None:
@@ -308,7 +311,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
     are in sync with the new ids, and this fixer function does
     the re-mapping.  (It also appends `_id` to the field.)
     '''
-    lookup_table = id_maps[related_table]
+    lookup_table = ID_MAP[related_table]
     for item in data_table:
         old_id = item[field_name]
         if recipient_field:
@@ -321,7 +324,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 # the user_profile ids involved in a huddle with the help of the
                 # subscription object
                 # check function 'get_huddles_from_subscription'
-                id_maps['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
+                ID_MAP['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
                 pass
             else:
                 continue
@@ -379,7 +382,7 @@ def re_map_foreign_keys_many_to_many_internal(table: TableName,
     which takes the old ID list of the ManyToMany relation and returns the
     new updated ID list.
     """
-    lookup_table = id_maps[related_table]
+    lookup_table = ID_MAP[related_table]
     new_id_list = []
     for old_id in old_id_list:
         if old_id in lookup_table:
@@ -577,9 +580,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         if not processing_emojis:
             user_profile_id = int(record['user_profile_id'])
             # Support email gateway bot and other cross-realm messages
-            if user_profile_id in id_maps["user_profile"]:
+            if user_profile_id in ID_MAP["user_profile"]:
                 logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
-                user_profile_id = id_maps["user_profile"][user_profile_id]
+                user_profile_id = ID_MAP["user_profile"][user_profile_id]
             user_profile = get_user_profile_by_id(user_profile_id)
             key.set_metadata("user_profile_id", str(user_profile.id))
 
@@ -655,6 +658,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
+    sort_by_date = data.get('sort_by_date', False)
+
     bulk_import_client(data, Client, 'zerver_client')
 
     # We don't import the Stream model yet, since it depends on Realm,
@@ -714,7 +719,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
     # To remap foreign key for UserProfile.last_active_message_id
-    update_message_foreign_keys(import_dir)
+    update_message_foreign_keys(import_dir=import_dir, sort_by_date=sort_by_date)
 
     fix_datetime_fields(data, 'zerver_userprofile')
     update_model_ids(UserProfile, data, 'user_profile')
@@ -915,7 +920,45 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
             user_set.add((email, full_name, short_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
-def update_message_foreign_keys(import_dir: Path) -> None:
+def update_message_foreign_keys(import_dir: Path,
+                                sort_by_date: bool) -> None:
+    old_id_list = get_incoming_message_ids(
+        import_dir=import_dir,
+        sort_by_date=sort_by_date,
+    )
+
+    count = len(old_id_list)
+
+    new_id_list = allocate_ids(model_class=Message, count=count)
+
+    for old_id, new_id in zip(old_id_list, new_id_list):
+        update_id_map(
+            table='message',
+            old_id=old_id,
+            new_id=new_id,
+        )
+
+    # We don't touch user_message keys here; that happens later when
+    # we're actually read the files a second time to get actual data.
+
+def get_incoming_message_ids(import_dir: Path,
+                             sort_by_date: bool) -> List[int]:
+    '''
+    This function reads in our entire collection of message
+    ids, which can be millions of integers for some installations.
+    And then we sort the list.  This is necessary to ensure
+    that the sort order of incoming ids matches the sort order
+    of pub_date, which isn't always guaranteed by our
+    utilities that convert third party chat data.  We also
+    need to move our ids to a new range if we're dealing
+    with a server that has data for other realms.
+    '''
+
+    if sort_by_date:
+        tups = list()  # type: List[Tuple[int, int]]
+    else:
+        message_ids = []  # type: List[int]
+
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -925,8 +968,36 @@ def update_message_foreign_keys(import_dir: Path) -> None:
         with open(message_filename) as f:
             data = ujson.load(f)
 
-        update_model_ids(Message, data, 'message')
+        # Aggressively free up memory.
+        del data['zerver_usermessage']
+
+        for row in data['zerver_message']:
+            # We truncate pub_date to int to theoretically
+            # save memory and speed up the sort.  For
+            # Zulip-to-Zulip imports, the
+            # message_id will generally be a good tiebreaker.
+            # If we occasionally mis-order the ids for two
+            # messages from the same second, it's not the
+            # end of the world, as it's likely those messages
+            # arrived to the original server in somewhat
+            # arbitrary order.
+
+            message_id = row['id']
+
+            if sort_by_date:
+                pub_date = int(row['pub_date'])
+                tup = (pub_date, message_id)
+                tups.append(tup)
+            else:
+                message_ids.append(message_id)
+
         dump_file_id += 1
+
+    if sort_by_date:
+        tups.sort()
+        message_ids = [tup[1] for tup in tups]
+
+    return message_ids
 
 def import_message_data(import_dir: Path) -> None:
     dump_file_id = 1
@@ -946,7 +1017,18 @@ def import_message_data(import_dir: Path) -> None:
         # Parser to update message content with the updated attachment urls
         fix_upload_links(data, 'zerver_message')
 
-        re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
+        # We already create mappings for zerver_message ids
+        # in update_message_foreign_keys(), so here we simply
+        # apply them.
+        message_id_map = ID_MAP['message']
+        for row in data['zerver_message']:
+            row['id'] = message_id_map[row['id']]
+
+        for row in data['zerver_usermessage']:
+            assert(row['message'] in message_id_map)
+
+        # A LOT HAPPENS HERE.
+        # This is where we actually import the message data.
         bulk_import_model(data, Message)
 
         fix_message_rendered_content(data, 'zerver_message')
@@ -998,7 +1080,7 @@ def import_attachments(data: TableData) -> None:
         for fk_id in parent_row[child_plural]:
             m2m_row = {}  # type: Record
             m2m_row[parent_singular] = parent_row['id']
-            m2m_row[child_singular] = id_maps['message'][fk_id]
+            m2m_row[child_singular] = ID_MAP['message'][fk_id]
             m2m_rows.append(m2m_row)
 
     # Create our table data for insert.

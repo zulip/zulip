@@ -30,10 +30,11 @@ from zerver.data_import.import_util import (
     build_recipients,
     build_stream,
     build_subscription,
-    build_user,
     build_user_message,
+    build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    make_subscriber_map,
     write_avatar_png,
 )
 
@@ -128,7 +129,7 @@ def convert_user_data(user_handler: UserHandler,
         else:
             avatar_source = 'G'
 
-        return build_user(
+        return build_user_profile(
             avatar_source=avatar_source,
             date_joined=date_joined,
             delivery_email=delivery_email,
@@ -363,7 +364,7 @@ def write_emoticon_data(realm_id: int,
 def write_message_data(realm_id: int,
                        message_key: str,
                        zerver_recipient: List[ZerverFieldsT],
-                       zerver_subscription: List[ZerverFieldsT],
+                       subscriber_map: Dict[int, Set[int]],
                        data_dir: str,
                        output_dir: str,
                        user_handler: UserHandler,
@@ -418,12 +419,44 @@ def write_message_data(realm_id: int,
             files_dir=files_dir,
             get_recipient_id=get_recipient_id,
             message_key=message_key,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             data_dir=data_dir,
             output_dir=output_dir,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
+
+def get_hipchat_sender_id(realm_id: int,
+                          message_dict: Dict[str, Any],
+                          user_handler: UserHandler) -> int:
+    '''
+    The HipChat export is inconsistent in how it renders
+    senders, and sometimes we don't even get an id.
+    '''
+    if isinstance(message_dict['sender'], str):
+        # Some Hipchat instances just give us a person's
+        # name in the sender field for NotificationMessage.
+        # We turn them into a mirror user.
+        mirror_user = user_handler.get_mirror_user(
+            realm_id=realm_id,
+            name=message_dict['sender'],
+        )
+        sender_id = mirror_user['id']
+        return sender_id
+
+    sender_id = message_dict['sender']['id']
+
+    if sender_id == 0:
+        mirror_user = user_handler.get_mirror_user(
+            realm_id=realm_id,
+            name=message_dict['sender']['name'],
+        )
+        sender_id = mirror_user['id']
+        return sender_id
+
+    # HAPPY PATH: Hipchat just gave us an ordinary
+    # sender_id.
+    return sender_id
 
 def process_message_file(realm_id: int,
                          fn: str,
@@ -431,7 +464,7 @@ def process_message_file(realm_id: int,
                          files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
                          message_key: str,
-                         zerver_subscription: List[ZerverFieldsT],
+                         subscriber_map: Dict[int, Set[int]],
                          data_dir: str,
                          output_dir: str,
                          user_handler: UserHandler,
@@ -447,24 +480,19 @@ def process_message_file(realm_id: int,
             if message_key in d
         ]
 
-        def get_raw_message(d: Dict[str, Any]) -> ZerverFieldsT:
-            if isinstance(d['sender'], str):
-                # Some Hipchat instances just give us a person's
-                # name in the sender field for NotificationMessage.
-                # We turn them into a mirror user.
-                mirror_user = user_handler.get_mirror_user(
-                    realm_id=realm_id,
-                    name=d['sender'],
-                )
-                sender_id = mirror_user['id']
-            else:
-                sender_id = d['sender']['id']
-                if sender_id == 0:
-                    mirror_user = user_handler.get_mirror_user(
-                        realm_id=realm_id,
-                        name=d['sender']['name'],
-                    )
-                    sender_id = mirror_user['id']
+        def get_raw_message(d: Dict[str, Any]) -> Optional[ZerverFieldsT]:
+            sender_id = get_hipchat_sender_id(
+                realm_id=realm_id,
+                message_dict=d,
+                user_handler=user_handler,
+            )
+
+            if message_key == 'PrivateUserMessage':
+                if sender_id != fn_id:
+                    # PMs are in multiple places in the Hipchat export,
+                    # and we only use the copy from the sender
+                    return None
+
             return dict(
                 fn_id=fn_id,
                 sender_id=sender_id,
@@ -480,7 +508,8 @@ def process_message_file(realm_id: int,
 
         for d in flat_data:
             raw_message = get_raw_message(d)
-            raw_messages.append(raw_message)
+            if raw_message is not None:
+                raw_messages.append(raw_message)
 
         return raw_messages
 
@@ -490,7 +519,7 @@ def process_message_file(realm_id: int,
         process_raw_message_batch(
             realm_id=realm_id,
             raw_messages=lst,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
             get_recipient_id=get_recipient_id,
@@ -507,7 +536,7 @@ def process_message_file(realm_id: int,
 
 def process_raw_message_batch(realm_id: int,
                               raw_messages: List[Dict[str, Any]],
-                              zerver_subscription: List[ZerverFieldsT],
+                              subscriber_map: Dict[int, Set[int]],
                               user_handler: UserHandler,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
@@ -576,7 +605,7 @@ def process_raw_message_batch(realm_id: int,
 
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
-        zerver_subscription=zerver_subscription,
+        subscriber_map=subscriber_map,
         mention_map=mention_map,
     )
 
@@ -590,24 +619,19 @@ def process_raw_message_batch(realm_id: int,
     create_converted_data_files(message_json, output_dir, message_file)
 
 def make_user_messages(zerver_message: List[ZerverFieldsT],
-                       zerver_subscription: List[ZerverFieldsT],
+                       subscriber_map: Dict[int, Set[int]],
                        mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
-
-    subscriber_map = dict()  # type: Dict[int, Set[int]]
-    for sub in zerver_subscription:
-        user_id = sub['user_profile']
-        recipient_id = sub['recipient']
-        if recipient_id not in subscriber_map:
-            subscriber_map[recipient_id] = set()
-        subscriber_map[recipient_id].add(user_id)
 
     zerver_usermessage = []
 
     for message in zerver_message:
         message_id = message['id']
         recipient_id = message['recipient']
+        sender_id = message['sender']
         mention_user_ids = mention_map[message_id]
         user_ids = subscriber_map.get(recipient_id, set())
+        user_ids.add(sender_id)
+
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
             user_message = build_user_message(
@@ -646,7 +670,7 @@ def is_subscription_exists(subscriptions: List[ZerverFieldsT], recipient_id: int
         if subscription['user_profile'] == user_id and subscription['recipient'] == recipient_id:
             return True
     return False
-def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFieldsT], realm_id: int, realm: ZerverFieldsT, users: List[ZerverFieldsT], raw_user_data: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFieldsT], realm_id: int, realm: ZerverFieldsT, users: List[ZerverFieldsT], raw_user_data: List[ZerverFieldsT], zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
     from pprint import pprint
     users_hipchat = do_build_dict_hipchat_user_by_id(raw_user_data)
     users_zulip = do_build_dict_zulip_user_by_email(data=users)
@@ -664,6 +688,22 @@ def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFi
                 )
                 subscriptions.append(subscription)
                 subscription_id +=1
+        personal_recipients = [
+        recipient
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.PERSONAL
+    ]
+
+    for recipient in personal_recipients:
+        recipient_id = recipient['id']
+        user_id = recipient['type_id']
+        subscription = build_subscription(
+            recipient_id=recipient_id,
+            user_id=user_id,
+            subscription_id=subscription_id,
+        )
+        subscriptions.append(subscription)
+        subscription_id += 1
     return subscriptions
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
@@ -704,6 +744,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
         realm=realm,
         users=normal_users,
         raw_user_data=raw_user_data,
+        zerver_recipient=zerver_recipient,
     )
     realm['zerver_subscription'] = zerver_subscription
 
@@ -714,6 +755,10 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
     realm['zerver_realmemoji'] = zerver_realmemoji
 
+    subscriber_map = make_subscriber_map(
+        zerver_subscription=zerver_subscription,
+    )
+
     logging.info('Start importing message data')
     for message_key in ['UserMessage',
                         'NotificationMessage',
@@ -722,7 +767,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             realm_id=realm_id,
             message_key=message_key,
             zerver_recipient=zerver_recipient,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             data_dir=input_data_dir,
             output_dir=output_dir,
             user_handler=user_handler,
@@ -733,6 +778,8 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     # we process everything else, since we may introduce
     # mirror users when processing messages.
     realm['zerver_userprofile'] = user_handler.get_all_users()
+    realm['sort_by_date'] = True
+
     create_converted_data_files(realm, output_dir, '/realm.json')
 
     logging.info('Start importing avatar data')
@@ -748,5 +795,5 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
 
     logging.info('Start making tarball')
-    subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
+   # subprocess.check_call(["tar", "-czf", output_dir + '.tar.gz', output_dir, '-P'])
     logging.info('Done making tarball')

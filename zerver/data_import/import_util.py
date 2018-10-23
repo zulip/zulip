@@ -27,19 +27,19 @@ def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
     realm_dict['authentication_methods'] = auth_methods
     return[realm_dict]
 
-def build_user(avatar_source: str,
-               date_joined: Any,
-               delivery_email: str,
-               email: str,
-               full_name: str,
-               id: int,
-               is_active: bool,
-               is_realm_admin: bool,
-               is_guest: bool,
-               is_mirror_dummy: bool,
-               realm_id: int,
-               short_name: str,
-               timezone: Optional[str]) -> ZerverFieldsT:
+def build_user_profile(avatar_source: str,
+                       date_joined: Any,
+                       delivery_email: str,
+                       email: str,
+                       full_name: str,
+                       id: int,
+                       is_active: bool,
+                       is_realm_admin: bool,
+                       is_guest: bool,
+                       is_mirror_dummy: bool,
+                       realm_id: int,
+                       short_name: str,
+                       timezone: Optional[str]) -> ZerverFieldsT:
     pointer = -1
     obj = UserProfile(
         avatar_source=avatar_source,
@@ -71,6 +71,21 @@ def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
         s3_path="",
         size="")
     avatar_list.append(avatar)
+
+def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, Set[int]]:
+    '''
+    This can be convenient for building up UserMessage
+    rows.
+    '''
+    subscriber_map = dict()  # type: Dict[int, Set[int]]
+    for sub in zerver_subscription:
+        user_id = sub['user_profile']
+        recipient_id = sub['recipient']
+        if recipient_id not in subscriber_map:
+            subscriber_map[recipient_id] = set()
+        subscriber_map[recipient_id].add(user_id)
+
+    return subscriber_map
 
 def build_subscription(recipient_id: int, user_id: int,
                        subscription_id: int) -> ZerverFieldsT:
@@ -129,6 +144,64 @@ def build_subscriptions(
             )
             subscriptions.append(subscription)
             subscription_id += 1
+
+    personal_recipients = [
+        recipient
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.PERSONAL
+    ]
+
+    for recipient in personal_recipients:
+        recipient_id = recipient['id']
+        user_id = recipient['type_id']
+        subscription = build_subscription(
+            recipient_id=recipient_id,
+            user_id=user_id,
+            subscription_id=subscription_id,
+        )
+        subscriptions.append(subscription)
+        subscription_id += 1
+
+    return subscriptions
+
+def build_private_subscriptions(
+        zerver_userprofile: List[ZerverFieldsT],
+        zerver_recipient: List[ZerverFieldsT],
+        zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+    '''
+    This function is only used for Hipchat now, but it may apply to
+    future conversions.  We often don't get full subscriber data in
+    the Hipchat export, so this function just autosubscribes all
+    users to every public stream.  This returns a list of Subscription
+    dicts.
+
+    This function also creates personal subscriptions.
+
+    If you need more fine tuning on how to subscribe folks, look
+    at the code in slack.py.
+    '''
+    subscriptions = []  # type: List[ZerverFieldsT]
+
+    public_stream_ids = {
+        stream['id']
+        for stream in zerver_stream
+        if not stream['invite_only']
+    }
+
+    public_stream_recipient_ids = {
+        recipient['id']
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.STREAM
+        and recipient['type_id'] in public_stream_ids
+    }
+
+    user_ids = [
+        user['id']
+        for user in zerver_userprofile
+    ]
+
+    subscription_id = 1
+
 
     personal_recipients = [
         recipient
