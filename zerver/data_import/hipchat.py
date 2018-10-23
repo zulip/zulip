@@ -29,7 +29,7 @@ from zerver.data_import.import_util import (
     build_realm_emoji,
     build_recipients,
     build_stream,
-    build_subscriptions,
+    build_subscription,
     build_user,
     build_user_message,
     build_zerver_realm,
