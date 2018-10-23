@@ -221,6 +221,32 @@ var LightboxCanvas = (function () {
             canvas.width = canvas.width;
             context.imageSmoothingEnabled = false;
 
+            if (canvas.width < canvas.height) {
+                var maxWidth = window.innerWidth * 0.75;
+                var defaultWidth = canvas.width / 2;
+                var adjustedWidth;
+                var ratio;
+
+                // 4 is hardcoded as the zoom level where the maxWidth will be used,
+                // since most people will only be zooming in at the early levels.
+                var maxedOnZoom = 4;
+                var zoomRatio = (meta.zoom - 1) / (maxedOnZoom - 1);
+                // If meta.zoom hasn't reached 4, the variable width formula is used,
+                // until it reaches 4 and defaults to the max width.
+                if (meta.zoom < maxedOnZoom) {
+                    adjustedWidth = defaultWidth + (maxWidth - defaultWidth) * zoomRatio;
+                } else {
+                    adjustedWidth = maxWidth;
+                }
+                ratio = canvas.width * meta.zoom / adjustedWidth;
+                canvas.style.width = adjustedWidth + "px";
+                w  = canvas.width / 2 * ratio;
+                // Prevents the image from going off-screen.
+                if (x + w <= canvas.width) {
+                    x = canvas.width - w;
+                }
+            }
+
             context.drawImage(meta.image, x, y, w, h);
         },
 
