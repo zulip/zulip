@@ -48,6 +48,12 @@ class AttachmentHandler:
         # HipChat provides size info, but it's not
         # completely trustworthy, so we we just
         # ask the OS for file details.
+        if os.path.isfile(local_fn) == False:
+            print("File" + local_fn + " doest not exsist. creating empty file " + local_fn)
+            basedir = os.path.dirname(local_fn)
+            if not os.path.exists(basedir):
+                os.makedirs(basedir)
+            open(local_fn, 'a').close()
         size = os.path.getsize(local_fn)
         mtime = os.path.getmtime(local_fn)
 
