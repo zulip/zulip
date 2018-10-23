@@ -110,7 +110,6 @@ def convert_user_data(user_handler: UserHandler,
             try:
                 assert(is_guest)
             except:
-                print(id)
                 exit(1)
             email = 'guest-{id}@example.com'.format(id=id)
             delivery_email = email
@@ -460,7 +459,12 @@ def process_message_file(realm_id: int,
                 sender_id = mirror_user['id']
             else:
                 sender_id = d['sender']['id']
-
+                if sender_id == 0:
+                    mirror_user = user_handler.get_mirror_user(
+                        realm_id=realm_id,
+                        name=d['sender']['name'],
+                    )
+                    sender_id = mirror_user['id']
             return dict(
                 fn_id=fn_id,
                 sender_id=sender_id,
@@ -592,7 +596,6 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
     subscriber_map = dict()  # type: Dict[int, Set[int]]
     for sub in zerver_subscription:
         user_id = sub['user_profile']
-        print(sub['recipient'])
         recipient_id = sub['recipient']
         if recipient_id not in subscriber_map:
             subscriber_map[recipient_id] = set()
@@ -638,7 +641,11 @@ def do_build_dict_recipient_by_type_id(data: [ZerverFieldsT]):
         if d['type'] == 2:
             recipients[d['type_id']] = d
     return recipients
-    
+def is_subscription_exists(subscriptions: List[ZerverFieldsT], recipient_id: int, user_id: int):
+    for subscription in subscriptions:
+        if subscription['user_profile'] == user_id and subscription['recipient'] == recipient_id:
+            return True
+    return False
 def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFieldsT], realm_id: int, realm: ZerverFieldsT, users: List[ZerverFieldsT], raw_user_data: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
     from pprint import pprint
     users_hipchat = do_build_dict_hipchat_user_by_id(raw_user_data)
@@ -648,17 +655,15 @@ def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFi
     subscriptions = []
     subscription_id = 1
     for d in raw_data:
-        print(d['Room']['name'])
-        print(stream_zulip[d['Room']['name']]['id'])
         for members in d['Room']['members']:
-            print('-----' + str(users_zulip[users_hipchat[members]['email']]['id']) + '----' + users_zulip[users_hipchat[members]['email']]['email'])
-            subscription = build_subscription(
-                recipient_id=recipient_zulip[stream_zulip[d['Room']['name']]['id']]['id'],
-                user_id=users_zulip[users_hipchat[members]['email']]['id'],
-                subscription_id=subscription_id,
-            )
-            subscriptions.append(subscription)
-            subscription_id +=1
+            if is_subscription_exists(subscriptions=subscriptions,recipient_id = recipient_zulip[stream_zulip[d['Room']['name']]['id']]['id'], user_id = users_zulip[users_hipchat[members]['email']]['id']) == False:
+                subscription = build_subscription(
+                    recipient_id=recipient_zulip[stream_zulip[d['Room']['name']]['id']]['id'],
+                    user_id=users_zulip[users_hipchat[members]['email']]['id'],
+                    subscription_id=subscription_id,
+                )
+                subscriptions.append(subscription)
+                subscription_id +=1
     return subscriptions
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
