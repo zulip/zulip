@@ -53,3 +53,20 @@ class HipChatImporter(ZulipTestCase):
             )
 
             self.assertEqual(sender_id, fred_bot_sender_id)
+
+        id_zero_message = dict(
+            sender=dict(
+                id=0,
+                name='hal_bot',
+            ),
+        )
+
+        hal_bot_sender_id = 3
+        for i in range(3):
+            sender_id = get_hipchat_sender_id(
+                realm_id=realm_id,
+                message_dict=id_zero_message,
+                user_handler=user_handler,
+            )
+
+            self.assertEqual(sender_id, hal_bot_sender_id)

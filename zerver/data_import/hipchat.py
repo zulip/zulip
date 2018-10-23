@@ -442,6 +442,17 @@ def get_hipchat_sender_id(realm_id: int,
         return sender_id
 
     sender_id = message_dict['sender']['id']
+
+    if sender_id == 0:
+        mirror_user = user_handler.get_mirror_user(
+            realm_id=realm_id,
+            name=message_dict['sender']['name'],
+        )
+        sender_id = mirror_user['id']
+        return sender_id
+
+    # HAPPY PATH: Hipchat just gave us an ordinary
+    # sender_id.
     return sender_id
 
 def process_message_file(realm_id: int,
