@@ -352,11 +352,11 @@ class RealmTest(ZulipTestCase):
         user = self.example_user('iago')
         self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         do_change_plan_type(user, Realm.PREMIUM)
-        self.assertEqual(get_realm('zulip').max_invites, Realm.MAX_INVITES_PREMIUM)
+        self.assertEqual(get_realm('zulip').max_invites, Realm.INVITES_PREMIUM_REALM_DAILY_MAX)
         do_change_plan_type(user, Realm.LIMITED)
         self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         do_change_plan_type(user, Realm.PREMIUM_FREE)
-        self.assertEqual(get_realm('zulip').max_invites, Realm.MAX_INVITES_PREMIUM)
+        self.assertEqual(get_realm('zulip').max_invites, Realm.INVITES_PREMIUM_REALM_DAILY_MAX)
 
 class RealmAPITest(ZulipTestCase):
 

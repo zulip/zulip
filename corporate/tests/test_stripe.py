@@ -247,7 +247,7 @@ class StripeTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)
         self.assertEqual(realm.plan_type, Realm.PREMIUM)
-        self.assertEqual(realm.max_invites, Realm.MAX_INVITES_PREMIUM)
+        self.assertEqual(realm.max_invites, Realm.INVITES_PREMIUM_REALM_DAILY_MAX)
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
