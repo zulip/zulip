@@ -29,11 +29,25 @@ run_test('narrowing', () => {
         user_id: 1,
         full_name: 'Alice Smith',
     };
-    people.add(alice);
+    const bob = {
+        email: 'bob@example.com',
+        user_id: 2,
+        full_name: 'Bob Patel',
+    };
+
     people.add_in_realm(alice);
+    people.add_in_realm(bob);
+
     pm_expanded = false;
     filter = new Filter([
         {operator: 'pm-with', operand: 'alice@example.com'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(pm_expanded);
+
+    pm_expanded = false;
+    filter = new Filter([
+        {operator: 'pm-with', operand: 'bob@example.com,alice@example.com'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
     assert(pm_expanded);

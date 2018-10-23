@@ -17,6 +17,11 @@ that's running one of:
 
 You can just run the Zulip provision script on your machine.
 
+**Note**: you should not use the `root` user to run the installation.
+If you are using a [remote server](../development/remote.html), see
+the
+[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+
 **Warning**: there is no supported uninstallation process with this
 method.  If you want that, use the Vagrant environment, where you can
 just do `vagrant destroy` to clean up the development environment.
@@ -375,6 +380,10 @@ To start the development server:
 
 … and visit <http://localhost:9991/>.
 
+If you're running your development server on a remote server, look at
+[the remote development docs][port-forward-setup] for port forwarding
+advice.
+
 #### Proxy setup for by-hand installation
 
 If you are building the development environment on a network where a
@@ -547,3 +556,4 @@ guide and the Docker tooling if you are using Docker to develop Zulip!
 
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
 [zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
+[port-forward-setup]: ../development/remote.html#running-the-development-server

@@ -76,12 +76,14 @@ run_test('test_by_conversation_and_time_uri', () => {
 
     message = {
         type: 'private',
-        reply_to: 'iago@example.com,hamlet@example.com',
+        display_recipient: [
+            {
+                user_id: hamlet.user_id,
+            },
+        ],
         id: 43,
     };
 
-    people.my_current_email = () => 'jeff@example.com';
-
     assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/pm-with/iago.40example.2Ecom.2Chamlet.40example.2Ecom.2Cjeff.40example.2Ecom/near/43');
+                 'https://example.com/#narrow/pm-with/1-pm/near/43');
 });

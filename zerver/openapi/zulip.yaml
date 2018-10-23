@@ -104,7 +104,7 @@ paths:
                                 "message": {
                                     "avatar_url": "https://url/for/othello-bots/avatar",
                                     "client": "website",
-                                    "content": "Something is rotten in the state of Denmark.",
+                                    "content": "I come not, friends, to steal away your hearts.",
                                     "content_type": "text/x-markdown",
                                     "display_recipient": "Denmark",
                                     "id": 12345678,
@@ -126,7 +126,7 @@ paths:
                                 "message": {
                                     "avatar_url": "https://url/for/othello-bots/avatar",
                                     "client": "website",
-                                    "content": "I come not, friends, to steal away your hearts.",
+                                    "content": "With mirth and laughter let old wrinkles come.",
                                     "content_type": "text/x-markdown",
                                     "display_recipient": [
                                         {

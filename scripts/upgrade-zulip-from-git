@@ -5,15 +5,16 @@ import sys
 import subprocess
 import logging
 import time
+import argparse
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
 
 try:
-    git_url = config_file.get('deployment', 'git_repo_url')
+    remote_url = config_file.get('deployment', 'git_repo_url')
 except (configparser.NoSectionError, configparser.NoOptionError):
-    git_url = "https://github.com/zulip/zulip.git"
+    remote_url = "https://github.com/zulip/zulip.git"
 try:
     deploy_options = config_file.get('deployment', 'deploy_options').strip().split()
 except (configparser.NoSectionError, configparser.NoOptionError):
@@ -33,11 +34,17 @@ if os.getuid() != 0:
     logging.error("Must be run as root.")
     sys.exit(1)
 
-if len(sys.argv) != 2:
-    print(FAIL + "Usage: upgrade-zulip-from-git refname" + ENDC)
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
+parser.add_argument("--remote-url", dest="remote_url",
+                    help="Override the Git remote URL configured in /etc/zulip/zulip.conf.")
+args = parser.parse_args()
 
-refname = sys.argv[1]
+refname = args.refname
+# Command line remote URL will be given preference above the one
+# in /etc/zulip/zulip.conf.
+if args.remote_url:
+    remote_url = args.remote_url
 
 subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
@@ -50,13 +57,13 @@ try:
     deploy_path = make_deploy_path()
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
         logging.info("Cloning the repository")
-        subprocess.check_call(["git", "clone", "-q", git_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+        subprocess.check_call(["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
                               stdout=open('/dev/null', 'w'))
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
     logging.info("Fetching the latest commits")
     os.chdir(LOCAL_GIT_CACHE_DIR)
-    subprocess.check_call(["git", "remote", "set-url", "origin", git_url], preexec_fn=su_to_zulip)
+    subprocess.check_call(["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip)
     subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
 
     subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
