@@ -26,7 +26,7 @@ def sequencer() -> Callable[[str], int]:
         Use like this:
 
         NEXT_ID = sequencer()
-        message_id = NEXT_ID('message_id')
+        message_id = NEXT_ID('message')
     '''
     seq_dict = dict()  # type: Dict[str, Callable[[], int]]
 
@@ -37,3 +37,14 @@ def sequencer() -> Callable[[str], int]:
         return seq()
 
     return next_one
+
+'''
+NEXT_ID is a singleton used by an entire process, which is
+almost always reasonable.  If you want to have two parallel
+sequences, just use different `name` values.
+
+This object gets created once and only once during the first
+import of the file.
+'''
+
+NEXT_ID = sequencer()

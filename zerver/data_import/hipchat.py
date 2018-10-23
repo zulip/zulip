@@ -40,10 +40,7 @@ from zerver.data_import.import_util import (
 
 from zerver.data_import.hipchat_attachment import AttachmentHandler
 from zerver.data_import.hipchat_user import UserHandler
-from zerver.data_import.sequencer import sequencer
-
-# Create one sequencer for our entire conversion.
-NEXT_ID = sequencer()
+from zerver.data_import.sequencer import NEXT_ID
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
