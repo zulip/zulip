@@ -98,7 +98,7 @@ def build_subscription(recipient_id: int, user_id: int,
     subscription_dict['recipient'] = recipient_id
     return subscription_dict
 
-def build_subscriptions(
+def build_public_stream_subscriptions(
         zerver_userprofile: List[ZerverFieldsT],
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
@@ -108,11 +108,6 @@ def build_subscriptions(
     the Hipchat export, so this function just autosubscribes all
     users to every public stream.  This returns a list of Subscription
     dicts.
-
-    This function also creates personal subscriptions.
-
-    If you need more fine tuning on how to subscribe folks, look
-    at the code in slack.py.
     '''
     subscriptions = []  # type: List[ZerverFieldsT]
 
@@ -142,6 +137,12 @@ def build_subscriptions(
                 subscription_id=NEXT_ID('subscription'),
             )
             subscriptions.append(subscription)
+
+    return subscriptions
+
+def build_personal_subscriptions(zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+
+    subscriptions = []  # type: List[ZerverFieldsT]
 
     personal_recipients = [
         recipient

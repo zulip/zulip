@@ -29,7 +29,8 @@ from zerver.data_import.import_util import (
     build_realm_emoji,
     build_recipients,
     build_stream,
-    build_subscriptions,
+    build_personal_subscriptions,
+    build_public_stream_subscriptions,
     build_user_message,
     build_user_profile,
     build_zerver_realm,
@@ -672,11 +673,17 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
     realm['zerver_recipient'] = zerver_recipient
 
-    zerver_subscription = build_subscriptions(
+    public_stream_subscriptions = build_public_stream_subscriptions(
         zerver_userprofile=normal_users,
         zerver_recipient=zerver_recipient,
         zerver_stream=zerver_stream,
     )
+
+    personal_subscriptions = build_personal_subscriptions(
+        zerver_recipient=zerver_recipient,
+    )
+
+    zerver_subscription = public_stream_subscriptions + personal_subscriptions
     realm['zerver_subscription'] = zerver_subscription
 
     zerver_realmemoji = write_emoticon_data(
