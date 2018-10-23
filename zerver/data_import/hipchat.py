@@ -318,7 +318,7 @@ def write_emoticon_data(realm_id: int,
     os.makedirs(emoji_folder, exist_ok=True)
 
     def process(data: ZerverFieldsT) -> ZerverFieldsT:
-        source_sub_path = data['path']
+        source_sub_path = 'files/img/emoticons/' + data['path']
         source_fn = os.path.basename(source_sub_path)
         source_path = os.path.join(data_dir, source_sub_path)
 
@@ -592,6 +592,7 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
     subscriber_map = dict()  # type: Dict[int, Set[int]]
     for sub in zerver_subscription:
         user_id = sub['user_profile']
+        print(sub['recipient'])
         recipient_id = sub['recipient']
         if recipient_id not in subscriber_map:
             subscriber_map[recipient_id] = set()
@@ -652,7 +653,7 @@ def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFi
         for members in d['Room']['members']:
             print('-----' + str(users_zulip[users_hipchat[members]['email']]['id']) + '----' + users_zulip[users_hipchat[members]['email']]['email'])
             subscription = build_subscription(
-                recipient_id=recipient_zulip[stream_zulip[d['Room']['name']]['id']],
+                recipient_id=recipient_zulip[stream_zulip[d['Room']['name']]['id']]['id'],
                 user_id=users_zulip[users_hipchat[members]['email']]['id'],
                 subscription_id=subscription_id,
             )
