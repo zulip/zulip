@@ -34,6 +34,7 @@ from zerver.data_import.import_util import (
     build_user_profile,
     build_zerver_realm,
     create_converted_data_files,
+    make_subscriber_map,
     write_avatar_png,
 )
 
@@ -360,7 +361,7 @@ def write_emoticon_data(realm_id: int,
 def write_message_data(realm_id: int,
                        message_key: str,
                        zerver_recipient: List[ZerverFieldsT],
-                       zerver_subscription: List[ZerverFieldsT],
+                       subscriber_map: Dict[int, Set[int]],
                        data_dir: str,
                        output_dir: str,
                        user_handler: UserHandler,
@@ -415,7 +416,7 @@ def write_message_data(realm_id: int,
             files_dir=files_dir,
             get_recipient_id=get_recipient_id,
             message_key=message_key,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             data_dir=data_dir,
             output_dir=output_dir,
             user_handler=user_handler,
@@ -428,7 +429,7 @@ def process_message_file(realm_id: int,
                          files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
                          message_key: str,
-                         zerver_subscription: List[ZerverFieldsT],
+                         subscriber_map: Dict[int, Set[int]],
                          data_dir: str,
                          output_dir: str,
                          user_handler: UserHandler,
@@ -489,7 +490,7 @@ def process_message_file(realm_id: int,
         process_raw_message_batch(
             realm_id=realm_id,
             raw_messages=lst,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
             get_recipient_id=get_recipient_id,
@@ -506,7 +507,7 @@ def process_message_file(realm_id: int,
 
 def process_raw_message_batch(realm_id: int,
                               raw_messages: List[Dict[str, Any]],
-                              zerver_subscription: List[ZerverFieldsT],
+                              subscriber_map: Dict[int, Set[int]],
                               user_handler: UserHandler,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
@@ -575,7 +576,7 @@ def process_raw_message_batch(realm_id: int,
 
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
-        zerver_subscription=zerver_subscription,
+        subscriber_map=subscriber_map,
         mention_map=mention_map,
     )
 
@@ -589,16 +590,8 @@ def process_raw_message_batch(realm_id: int,
     create_converted_data_files(message_json, output_dir, message_file)
 
 def make_user_messages(zerver_message: List[ZerverFieldsT],
-                       zerver_subscription: List[ZerverFieldsT],
+                       subscriber_map: Dict[int, Set[int]],
                        mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
-
-    subscriber_map = dict()  # type: Dict[int, Set[int]]
-    for sub in zerver_subscription:
-        user_id = sub['user_profile']
-        recipient_id = sub['recipient']
-        if recipient_id not in subscriber_map:
-            subscriber_map[recipient_id] = set()
-        subscriber_map[recipient_id].add(user_id)
 
     zerver_usermessage = []
 
@@ -670,6 +663,10 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     )
     realm['zerver_realmemoji'] = zerver_realmemoji
 
+    subscriber_map = make_subscriber_map(
+        zerver_subscription=zerver_subscription,
+    )
+
     logging.info('Start importing message data')
     for message_key in ['UserMessage',
                         'NotificationMessage',
@@ -678,7 +675,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             realm_id=realm_id,
             message_key=message_key,
             zerver_recipient=zerver_recipient,
-            zerver_subscription=zerver_subscription,
+            subscriber_map=subscriber_map,
             data_dir=input_data_dir,
             output_dir=output_dir,
             user_handler=user_handler,

@@ -72,6 +72,21 @@ def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
         size="")
     avatar_list.append(avatar)
 
+def make_subscriber_map(zerver_subscription: List[ZerverFieldsT]) -> Dict[int, Set[int]]:
+    '''
+    This can be convenient for building up UserMessage
+    rows.
+    '''
+    subscriber_map = dict()  # type: Dict[int, Set[int]]
+    for sub in zerver_subscription:
+        user_id = sub['user_profile']
+        recipient_id = sub['recipient']
+        if recipient_id not in subscriber_map:
+            subscriber_map[recipient_id] = set()
+        subscriber_map[recipient_id].add(user_id)
+
+    return subscriber_map
+
 def build_subscription(recipient_id: int, user_id: int,
                        subscription_id: int) -> ZerverFieldsT:
     subscription = Subscription(
