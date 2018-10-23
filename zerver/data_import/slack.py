@@ -458,8 +458,8 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     total_attachments = []  # type: List[ZerverFieldsT]
     total_uploads = []  # type: List[ZerverFieldsT]
 
-    message_id = usermessage_id = reaction_id = attachment_id = 0
-    id_list = (message_id, usermessage_id, reaction_id, attachment_id)
+    message_id = reaction_id = attachment_id = 0
+    id_list = (message_id, reaction_id, attachment_id)
 
     # The messages are stored in batches
     low_index = 0
@@ -516,13 +516,13 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
                                       added_channels: AddedChannelsT,
-                                      id_list: Tuple[int, int, int, int],
+                                      id_list: Tuple[int, int, int],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
-                                                                 Tuple[int, int, int, int]]:
+                                                                 Tuple[int, int, int]]:
     """
     Returns:
     1. zerver_message, which is a list of the messages
@@ -530,9 +530,9 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     3. zerver_attachment, which is a list of the attachments
     4. uploads_list, which is a list of uploads to be mapped in uploads records.json
     5. reaction_list, which is a list of all user reactions
-    6. id_list, which is a tuple of max ids of messages, usermessages, reactions and attachments
+    6. id_list, which is a tuple of max ids of messages, reactions and attachments
     """
-    message_id_count, usermessage_id_count, reaction_id_count, attachment_id_count = id_list
+    message_id_count, reaction_id_count, attachment_id_count = id_list
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
@@ -635,13 +635,13 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         zerver_message.append(zulip_message)
 
         # construct usermessages
-        usermessage_id_count = build_usermessages(
-            zerver_usermessage, usermessage_id_count, zerver_subscription,
+        build_usermessages(
+            zerver_usermessage, zerver_subscription,
             recipient_id, mentioned_users_id, message_id)
 
         message_id_count += 1
 
-    id_list = (message_id_count, usermessage_id_count,
+    id_list = (message_id_count,
                reaction_id_count, attachment_id_count)
     return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, \
         reaction_list, id_list
