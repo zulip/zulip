@@ -361,14 +361,14 @@ class PlansPageTest(ZulipTestCase):
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/")
+        self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
         self.login(self.example_email("iago"))
 
-        # SELF_HOSTED should hide plans, even if logged in
+        # SELF_HOSTED should hide the local plans page, even if logged in
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/")
+        self.assertEqual(result["Location"], "https://zulipchat.com/plans")
 
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
