@@ -107,7 +107,11 @@ def convert_user_data(user_handler: UserHandler,
         if not email:
             # Hipchat guest users don't have emails, so
             # we just fake them.
-            assert(is_guest)
+            try:
+                assert(is_guest)
+            except:
+                print(id)
+                exit(1)
             email = 'guest-{id}@example.com'.format(id=id)
             delivery_email = email
 
@@ -612,6 +616,49 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
 
     return zerver_usermessage
 
+def do_build_dict_hipchat_user_by_id(data: [ZerverFieldsT]):
+    users={}
+    for d in data:
+        users[d['User']['id']]=d['User']
+    return users
+def do_build_dict_zulip_user_by_email(data: [ZerverFieldsT]):
+    users={}
+    for d in data:
+        users[d['email']] = d
+    return users
+def do_build_dict_zulip_stream_by_name(data: [ZerverFieldsT]):
+    streams={}
+    for d in data:
+        streams[d['name']] = d
+    return streams
+def do_build_dict_recipient_by_type_id(data: [ZerverFieldsT]):
+    recipients={}
+    for d in data:
+        if d['type'] == 2:
+            recipients[d['type_id']] = d
+    return recipients
+    
+def do_subscriptions(raw_data: List[ZerverFieldsT], zerver_stream: List[ZerverFieldsT], realm_id: int, realm: ZerverFieldsT, users: List[ZerverFieldsT], raw_user_data: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+    from pprint import pprint
+    users_hipchat = do_build_dict_hipchat_user_by_id(raw_user_data)
+    users_zulip = do_build_dict_zulip_user_by_email(data=users)
+    stream_zulip = do_build_dict_zulip_stream_by_name(zerver_stream)
+    recipient_zulip = do_build_dict_recipient_by_type_id(realm['zerver_recipient'])
+    subscriptions = []
+    subscription_id = 1
+    for d in raw_data:
+        print(d['Room']['name'])
+        print(stream_zulip[d['Room']['name']]['id'])
+        for members in d['Room']['members']:
+            print('-----' + str(users_zulip[users_hipchat[members]['email']]['id']) + '----' + users_zulip[users_hipchat[members]['email']]['email'])
+            subscription = build_subscription(
+                recipient_id=recipient_zulip[stream_zulip['id']],
+                user_id=users_zulip[users_hipchat[members]['email']]['id'],
+                subscription_id=subscription_id,
+            )
+            subscriptions.append(subscription)
+            subscription_id +=1
+    return subscriptions
 def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
@@ -642,14 +689,15 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     zerver_recipient = build_recipients(
         zerver_userprofile=normal_users,
-        zerver_stream=zerver_stream,
-    )
+        zerver_stream=zerver_stream,    )
     realm['zerver_recipient'] = zerver_recipient
-
-    zerver_subscription = build_subscriptions(
-        zerver_userprofile=normal_users,
-        zerver_recipient=zerver_recipient,
+    zerver_subscription = do_subscriptions(
+        raw_data=raw_stream_data,
+        realm_id=realm_id,
         zerver_stream=zerver_stream,
+        realm=realm,
+        users=normal_users,
+        raw_user_data=raw_user_data,
     )
     realm['zerver_subscription'] = zerver_subscription
 
