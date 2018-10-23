@@ -27,6 +27,9 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_defaultstream,
 )
+from zerver.data_import.sequencer import (
+    NEXT_ID,
+)
 from zerver.lib.import_realm import (
     do_import_realm,
 )
@@ -364,7 +367,6 @@ class SlackImporter(ZulipTestCase):
 
     def test_build_zerver_message(self) -> None:
         zerver_usermessage = []  # type: List[Dict[str, Any]]
-        usermessage_id_count = 0
         zerver_subscription = [{'recipient': 2, 'user_profile': 7},
                                {'recipient': 4, 'user_profile': 12},
                                {'recipient': 2, 'user_profile': 16},
@@ -374,18 +376,19 @@ class SlackImporter(ZulipTestCase):
         mentioned_users_id = [12, 3, 16]
         message_id = 9
 
-        test_usermessage_id = build_usermessages(zerver_usermessage, usermessage_id_count,
-                                                 zerver_subscription, recipient_id,
-                                                 mentioned_users_id, message_id)
-        self.assertEqual(test_usermessage_id, 4)
+        um_id = NEXT_ID('user_message')
+
+        build_usermessages(zerver_usermessage,
+                           zerver_subscription, recipient_id,
+                           mentioned_users_id, message_id)
 
         self.assertEqual(zerver_usermessage[0]['flags_mask'], 1)
-        self.assertEqual(zerver_usermessage[0]['id'], 0)
+        self.assertEqual(zerver_usermessage[0]['id'], um_id+1)
         self.assertEqual(zerver_usermessage[0]['message'], message_id)
         self.assertEqual(zerver_usermessage[1]['user_profile'],
                          zerver_subscription[2]['user_profile'])
         self.assertEqual(zerver_usermessage[1]['flags_mask'], 9)
-        self.assertEqual(zerver_usermessage[3]['id'], 3)
+        self.assertEqual(zerver_usermessage[3]['id'], um_id + 4)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value = 2)
@@ -428,7 +431,7 @@ class SlackImporter(ZulipTestCase):
             reaction, id_list = channel_message_to_zerver_message(
                 1, user_data, added_users, added_recipient,
                 all_messages, zerver_subscription, [],
-                added_channels, (0, 0, 0, 0), 'domain')
+                added_channels, (0, 0, 0), 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -436,7 +439,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
-        self.assertEqual(id_list, (5, 2, 1, 0))
+        self.assertEqual(id_list, (5, 1, 0))
 
         # Test reactions
         self.assertEqual(reaction[0]['user_profile'], 24)
@@ -479,7 +482,7 @@ class SlackImporter(ZulipTestCase):
         user_list = []  # type: List[Dict[str, Any]]
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments = uploads = []  # type: List[Dict[str, Any]]
-        id_list = (2, 4, 0, 1)
+        id_list = (2, 0, 1)
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 

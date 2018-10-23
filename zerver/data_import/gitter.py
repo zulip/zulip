@@ -162,7 +162,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
     Messages are stored in batches
     """
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
-    message_id = usermessage_id = 0
+    message_id = 0
     recipient_id = 0  # Corresponding to stream "gitter"
 
     low_index = 0
@@ -188,8 +188,8 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                           rendered_content, user_id, recipient_id)
             zerver_message.append(zulip_message)
 
-            usermessage_id = build_usermessages(
-                zerver_usermessage, usermessage_id, zerver_subscription,
+            build_usermessages(
+                zerver_usermessage, zerver_subscription,
                 recipient_id, mentioned_user_ids, message_id)
             message_id += 1
 

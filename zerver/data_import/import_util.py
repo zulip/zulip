@@ -259,9 +259,9 @@ def build_realm(zerver_realm: List[ZerverFieldsT], realm_id: int,
                  zerver_realmfilter=[])
     return realm
 
-def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
+def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        zerver_subscription: List[ZerverFieldsT], recipient_id: int,
-                       mentioned_users_id: List[int], message_id: int) -> int:
+                       mentioned_users_id: List[int], message_id: int) -> None:
     for subscription in zerver_subscription:
         if subscription['recipient'] == recipient_id:
             flags_mask = 1  # For read
@@ -270,12 +270,10 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: 
 
             usermessage = dict(
                 user_profile=subscription['user_profile'],
-                id=usermessage_id,
+                id=NEXT_ID('user_message'),
                 flags_mask=flags_mask,
                 message=message_id)
-            usermessage_id += 1
             zerver_usermessage.append(usermessage)
-    return usermessage_id
 
 def build_user_message(id: int,
                        user_id: int,
