@@ -10,6 +10,7 @@ from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
     Attachment, Stream, Message, UserProfile
+from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
@@ -133,17 +134,14 @@ def build_subscriptions(
         for user in zerver_userprofile
     ]
 
-    subscription_id = 1
-
     for recipient_id in public_stream_recipient_ids:
         for user_id in user_ids:
             subscription = build_subscription(
                 recipient_id=recipient_id,
                 user_id=user_id,
-                subscription_id=subscription_id,
+                subscription_id=NEXT_ID('subscription'),
             )
             subscriptions.append(subscription)
-            subscription_id += 1
 
     personal_recipients = [
         recipient
@@ -157,10 +155,9 @@ def build_subscriptions(
         subscription = build_subscription(
             recipient_id=recipient_id,
             user_id=user_id,
-            subscription_id=subscription_id,
+            subscription_id=NEXT_ID('subscription'),
         )
         subscriptions.append(subscription)
-        subscription_id += 1
 
     return subscriptions
 
@@ -180,7 +177,6 @@ def build_recipients(zerver_userprofile: List[ZerverFieldsT],
     tightly integrated with creating other objects.
     '''
 
-    recipient_id = 1
     recipients = []
 
     for user in zerver_userprofile:
@@ -188,24 +184,22 @@ def build_recipients(zerver_userprofile: List[ZerverFieldsT],
         type = Recipient.PERSONAL
         recipient = Recipient(
             type_id=type_id,
-            id=recipient_id,
+            id=NEXT_ID('recipient'),
             type=type,
         )
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
-        recipient_id += 1
 
     for stream in zerver_stream:
         type_id = stream['id']
         type = Recipient.STREAM
         recipient = Recipient(
             type_id=type_id,
-            id=recipient_id,
+            id=NEXT_ID('recipient'),
             type=type,
         )
         recipient_dict = model_to_dict(recipient)
         recipients.append(recipient_dict)
-        recipient_id += 1
 
     return recipients
 
