@@ -284,6 +284,13 @@ class GithubWebhookTest(WebhookTestCase):
                                           expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
 
+    def test_pull_request_review_requested_singular_key_msg(self) -> None:
+        expected_message = u"**eeshangarg** requested [rishig](https://github.com/rishig) for a review on [PR #6](https://github.com/eeshangarg/Scheduler/pull/6)."
+        self.send_and_test_stream_message('pull_request_review_requested_singular_key',
+                                          'Scheduler / PR #6 Mention how awesome this project is in ...',
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
     def test_pull_request_review_requested_multiple_reviwers_msg(self) -> None:
         expected_message = u"**eeshangarg** requested [showell](https://github.com/showell), and [timabbott](https://github.com/timabbott) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.send_and_test_stream_message('pull_request_review_requested_multiple_reviewers',
