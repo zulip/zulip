@@ -9,10 +9,7 @@ from zerver.data_import.import_util import (
 
 from typing import Any, Dict, List, Optional
 
-from zerver.data_import.sequencer import sequencer
-
-# Create one sequencer for our entire conversion.
-NEXT_ID = sequencer()
+from zerver.data_import.sequencer import NEXT_ID
 
 class AttachmentHandler:
     def __init__(self) -> None:
