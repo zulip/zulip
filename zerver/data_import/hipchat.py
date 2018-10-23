@@ -423,6 +423,27 @@ def write_message_data(realm_id: int,
             attachment_handler=attachment_handler,
         )
 
+def get_hipchat_sender_id(realm_id: int,
+                          message_dict: Dict[str, Any],
+                          user_handler: UserHandler) -> int:
+    '''
+    The HipChat export is inconsistent in how it renders
+    senders, and sometimes we don't even get an id.
+    '''
+    if isinstance(message_dict['sender'], str):
+        # Some Hipchat instances just give us a person's
+        # name in the sender field for NotificationMessage.
+        # We turn them into a mirror user.
+        mirror_user = user_handler.get_mirror_user(
+            realm_id=realm_id,
+            name=message_dict['sender'],
+        )
+        sender_id = mirror_user['id']
+        return sender_id
+
+    sender_id = message_dict['sender']['id']
+    return sender_id
+
 def process_message_file(realm_id: int,
                          fn: str,
                          fn_id: int,
@@ -446,17 +467,11 @@ def process_message_file(realm_id: int,
         ]
 
         def get_raw_message(d: Dict[str, Any]) -> Optional[ZerverFieldsT]:
-            if isinstance(d['sender'], str):
-                # Some Hipchat instances just give us a person's
-                # name in the sender field for NotificationMessage.
-                # We turn them into a mirror user.
-                mirror_user = user_handler.get_mirror_user(
-                    realm_id=realm_id,
-                    name=d['sender'],
-                )
-                sender_id = mirror_user['id']
-            else:
-                sender_id = d['sender']['id']
+            sender_id = get_hipchat_sender_id(
+                realm_id=realm_id,
+                message_dict=d,
+                user_handler=user_handler,
+            )
 
             if message_key == 'PrivateUserMessage':
                 if sender_id != fn_id:
