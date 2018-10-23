@@ -4,6 +4,7 @@ import ujson
 import re
 import mock
 
+from django.conf import settings
 from django.http import HttpResponse
 from mock import patch
 from typing import Any, Dict, List, Union, Mapping
@@ -16,6 +17,7 @@ from zerver.lib.actions import (
     do_create_realm,
     do_scrub_realm,
     create_stream_if_needed,
+    do_change_plan_type,
 )
 
 from zerver.lib.send_email import send_future_email
@@ -345,6 +347,16 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(Realm.LIMITED, do_create_realm('hosted', 'hosted').plan_type)
         with self.settings(BILLING_ENABLED=False):
             self.assertEqual(Realm.SELF_HOSTED, do_create_realm('onpremise', 'onpremise').plan_type)
+
+    def test_change_plan_type(self) -> None:
+        user = self.example_user('iago')
+        self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        do_change_plan_type(user, Realm.PREMIUM)
+        self.assertEqual(get_realm('zulip').max_invites, Realm.MAX_INVITES_PREMIUM)
+        do_change_plan_type(user, Realm.LIMITED)
+        self.assertEqual(get_realm('zulip').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        do_change_plan_type(user, Realm.PREMIUM_FREE)
+        self.assertEqual(get_realm('zulip').max_invites, Realm.MAX_INVITES_PREMIUM)
 
 class RealmAPITest(ZulipTestCase):
 
