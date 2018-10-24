@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import ujson
+import re
 
 from typing import Any, Callable, Dict, List, Optional, Set
 
@@ -472,6 +473,7 @@ def process_message_file(realm_id: int,
                          user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
 
+    user_by_mentions=do_build_dict_user_by_mention(user_handler.get_all_users())
     def get_raw_messages(fn: str) -> List[ZerverFieldsT]:
         with open(fn) as f:
             data = ujson.load(f)
@@ -527,6 +529,7 @@ def process_message_file(realm_id: int,
             get_recipient_id=get_recipient_id,
             output_dir=output_dir,
             zerver_recipient=zerver_recipient,
+            user_by_mentions=user_by_mentions,
         )
 
     chunk_size = 1000
@@ -544,29 +547,29 @@ def process_raw_message_batch(realm_id: int,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
                               output_dir: str,
-                              zerver_recipient: List[ZerverFieldsT]) -> None:
+                              zerver_recipient: List[ZerverFieldsT],
+                              user_by_mentions: Dict[str, Any]) -> None:
 
-    def fix_mentions(content: str,
-                     mention_user_ids: List[int]) -> str:
-        for user_id in mention_user_ids:
-            user = user_handler.get_user(user_id=user_id)
-            hipchat_mention = '@{short_name}'.format(**user)
-            zulip_mention = '@**{full_name}**'.format(**user)
-            content = content.replace(hipchat_mention, zulip_mention)
-
+    def fix_mentions(content: str, user_by_mentions: Dict[str, Any]) -> str:
         content = content.replace('@here', '@**all**')
+        content = content.replace('@all', '@**all**')
+
+        match = re.findall(r'@(\w+)',content,re.UNICODE)
+        for short_name in match:
+            if short_name in user_by_mentions:
+                print(short_name)
+                content = content.replace('@' + short_name, '@**' + short_name + '**')
         return content
 
     mention_map = dict()  # type: Dict[int, Set[int]]
 
-    def make_message(message_id: int, raw_message: ZerverFieldsT) -> ZerverFieldsT:
+    def make_message(message_id: int, raw_message: ZerverFieldsT, user_by_mentions: Dict[str, Any]) -> ZerverFieldsT:
         # One side effect here:
         mention_map[message_id] = set(raw_message['mention_user_ids'])
-
         content = fix_mentions(
             content=raw_message['content'],
-            mention_user_ids=raw_message['mention_user_ids'],
-        )
+            user_by_mentions=user_by_mentions            
+         )
         pub_date = raw_message['pub_date']
         recipient_id = get_recipient_id(raw_message)
         rendered_content = None
@@ -602,7 +605,8 @@ def process_raw_message_batch(realm_id: int,
     zerver_message = [
         make_message(
             message_id=NEXT_ID('message'),
-            raw_message=raw_message
+            raw_message=raw_message,
+            user_by_mentions=user_by_mentions
         )
         for raw_message in raw_messages
     ]
@@ -658,6 +662,11 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
             zerver_usermessage.append(user_message)
 
     return zerver_usermessage
+def do_build_dict_user_by_mention(data: [ZerverFieldsT]):
+    users={}
+    for d in data:
+        users[d['short_name']] = d
+    return users
 def do_build_dict_recipient_by_id(data: [ZerverFieldsT]):
     recipients={}
     for d in data:
