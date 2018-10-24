@@ -347,7 +347,7 @@
                 {
                     "amount": 64000,
                     "currency": "usd",
-                    "description": "8 user \u00d7 Zulip Cloud Premium (at $80.00 / year)",
+                    "description": "8 user \u00d7 Zulip Cloud Standard (at $80.00 / year)",
                     "discountable": true,
                     "id": "sub_D7OTT8FZbOPxah",
                     "livemode": false,

@@ -143,7 +143,7 @@ class Realm(models.Model):
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
     MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
-    INVITES_PREMIUM_REALM_DAILY_MAX = 3000
+    INVITES_STANDARD_REALM_DAILY_MAX = 3000
     VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
@@ -229,8 +229,8 @@ class Realm(models.Model):
     # like zulipchat.com.
     SELF_HOSTED = 1
     LIMITED = 2
-    PREMIUM = 3
-    PREMIUM_FREE = 4
+    STANDARD = 3
+    STANDARD_FREE = 4
     plan_type = models.PositiveSmallIntegerField(default=SELF_HOSTED)  # type: int
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.

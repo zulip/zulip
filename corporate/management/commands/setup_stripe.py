@@ -17,9 +17,9 @@ class Command(ZulipBaseCommand):
 
         # Zulip Cloud offerings
         product = stripe.Product.create(
-            name="Zulip Cloud Premium",
+            name="Zulip Cloud Standard",
             type='service',
-            statement_descriptor="Zulip Cloud Premium",
+            statement_descriptor="Zulip Cloud Standard",
             unit_label="user")
 
         plan = stripe.Plan.create(

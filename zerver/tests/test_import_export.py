@@ -824,7 +824,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm('zulip')
-        realm.plan_type = Realm.PREMIUM
+        realm.plan_type = Realm.STANDARD
         realm.save(update_fields=['plan_type'])
 
         self._setup_export_files()

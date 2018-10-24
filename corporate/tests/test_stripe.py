@@ -203,7 +203,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
-        self.assertNotEqual(user.realm.plan_type, Realm.PREMIUM)
+        self.assertNotEqual(user.realm.plan_type, Realm.STANDARD)
         self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
         # Click "Make payment" in Stripe Checkout
@@ -246,8 +246,8 @@ class StripeTest(ZulipTestCase):
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)
-        self.assertEqual(realm.plan_type, Realm.PREMIUM)
-        self.assertEqual(realm.max_invites, Realm.INVITES_PREMIUM_REALM_DAILY_MAX)
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
@@ -393,7 +393,7 @@ class StripeTest(ZulipTestCase):
             'salt': self.salt,
             'plan': Plan.CLOUD_ANNUAL
         })
-        self.assert_in_success_response(["Upgrade to Zulip Premium"], response)
+        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered seat count')
 
     def test_upgrade_with_tampered_plan(self) -> None:
@@ -404,7 +404,7 @@ class StripeTest(ZulipTestCase):
             'salt': self.salt,
             'plan': "invalid"
         })
-        self.assert_in_success_response(["Upgrade to Zulip Premium"], response)
+        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
 
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
@@ -491,7 +491,7 @@ class StripeTest(ZulipTestCase):
                        mock_save_customer: Mock, mock_delete_subscription: Mock) -> None:
         realm = get_realm('zulip')
         realm.has_seat_based_plan = True
-        realm.plan_type = Realm.PREMIUM
+        realm.plan_type = Realm.STANDARD
         realm.save(update_fields=['has_seat_based_plan', 'plan_type'])
         Customer.objects.create(
             realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
