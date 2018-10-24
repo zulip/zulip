@@ -5,7 +5,7 @@ import logging
 import os
 import ujson
 
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional, Set, Callable
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
@@ -130,6 +130,38 @@ def build_public_stream_subscriptions(
     ]
 
     for recipient_id in public_stream_recipient_ids:
+        for user_id in user_ids:
+            subscription = build_subscription(
+                recipient_id=recipient_id,
+                user_id=user_id,
+                subscription_id=NEXT_ID('subscription'),
+            )
+            subscriptions.append(subscription)
+
+    return subscriptions
+
+def build_private_stream_subscriptions(
+        get_users: Callable[..., Set[int]],
+        zerver_recipient: List[ZerverFieldsT],
+        zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+
+    subscriptions = []  # type: List[ZerverFieldsT]
+
+    stream_ids = {
+        stream['id']
+        for stream in zerver_stream
+        if stream['invite_only']
+    }
+
+    recipient_map = {
+        recipient['id']: recipient['type_id']  # recipient_id -> stream_id
+        for recipient in zerver_recipient
+        if recipient['type'] == Recipient.STREAM
+        and recipient['type_id'] in stream_ids
+    }
+
+    for recipient_id, stream_id in recipient_map.items():
+        user_ids = get_users(stream_id=stream_id)
         for user_id in user_ids:
             subscription = build_subscription(
                 recipient_id=recipient_id,

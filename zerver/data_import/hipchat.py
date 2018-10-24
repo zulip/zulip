@@ -31,6 +31,7 @@ from zerver.data_import.import_util import (
     build_stream,
     build_personal_subscriptions,
     build_public_stream_subscriptions,
+    build_private_stream_subscriptions,
     build_user_message,
     build_user_profile,
     build_zerver_realm,
@@ -41,6 +42,7 @@ from zerver.data_import.import_util import (
 
 from zerver.data_import.hipchat_attachment import AttachmentHandler
 from zerver.data_import.hipchat_user import UserHandler
+from zerver.data_import.hipchat_subscriber import SubscriberHandler
 from zerver.data_import.sequencer import NEXT_ID
 
 # stubs
@@ -189,7 +191,9 @@ def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
         data = ujson.load(f)
     return data
 
-def convert_room_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[ZerverFieldsT]:
+def convert_room_data(raw_data: List[ZerverFieldsT],
+                      subscriber_handler: SubscriberHandler,
+                      realm_id: int) -> List[ZerverFieldsT]:
     flat_data = [
         d['Room']
         for d in raw_data
@@ -213,6 +217,12 @@ def convert_room_data(raw_data: List[ZerverFieldsT], realm_id: int) -> List[Zerv
             stream_id=in_dict['id'],
             deactivated=in_dict['is_archived'],
             invite_only=invite_only(in_dict['privacy']),
+        )
+
+        subscriber_handler.set_info(
+            stream_id=in_dict['id'],
+            owner=in_dict['owner'],
+            members=set(in_dict['members']),
         )
 
         # unmapped fields:
@@ -644,6 +654,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
 
     attachment_handler = AttachmentHandler()
     user_handler = UserHandler()
+    subscriber_handler = SubscriberHandler()
 
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
@@ -663,6 +674,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
     raw_stream_data = read_room_data(data_dir=input_data_dir)
     zerver_stream = convert_room_data(
         raw_data=raw_stream_data,
+        subscriber_handler=subscriber_handler,
         realm_id=realm_id,
     )
     realm['zerver_stream'] = zerver_stream
@@ -679,11 +691,21 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
         zerver_stream=zerver_stream,
     )
 
+    private_stream_subscriptions = build_private_stream_subscriptions(
+        get_users=subscriber_handler.get_users,
+        zerver_recipient=zerver_recipient,
+        zerver_stream=zerver_stream,
+    )
+
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
     )
 
-    zerver_subscription = public_stream_subscriptions + personal_subscriptions
+    zerver_subscription = \
+        public_stream_subscriptions + \
+        personal_subscriptions + \
+        private_stream_subscriptions
+
     realm['zerver_subscription'] = zerver_subscription
 
     zerver_realmemoji = write_emoticon_data(
