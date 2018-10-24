@@ -63,6 +63,66 @@ function update_user_custom_profile_fields(fields, method) {
                                    {data: JSON.stringify(fields)}, spinner);
 }
 
+exports.append_custom_profile_fields = function (element_id, user_id) {
+    var all_custom_fields = page_params.custom_profile_fields;
+    var field_types = page_params.custom_profile_field_types;
+
+    all_custom_fields.forEach(function (field) {
+        var field_type = field.type;
+        var type;
+        var value = people.get_custom_profile_data(user_id, field.id);
+        var is_long_text = field_type === field_types.LONG_TEXT.id;
+        var is_choice_field = field_type === field_types.CHOICE.id;
+        var is_user_field = field_type === field_types.USER.id;
+        var is_date_field = field_type === field_types.DATE.id;
+        var field_choices = [];
+
+        if (is_long_text || field_type === field_types.SHORT_TEXT.id) {
+            type = "text";
+        } else if (is_choice_field) {
+            type = "choice";
+            var field_choice_dict = JSON.parse(field.field_data);
+            for (var choice in field_choice_dict) {
+                if (choice) {
+                    field_choices[field_choice_dict[choice].order] = {
+                        value: choice,
+                        text: field_choice_dict[choice].text,
+                        selected: choice === value,
+                    };
+                }
+            }
+        } else if (is_date_field) {
+            type = "date";
+        } else if (field_type === field_types.URL.id) {
+            type = "url";
+        } else if (is_user_field) {
+            if (value) {
+                value = JSON.parse(value);
+            }
+            type = "user";
+        } else {
+            blueslip.error("Undefined field type.");
+        }
+
+        if (value === undefined || value === null) {
+            // If user has not set value for field.
+            value = "";
+        }
+
+        var html = templates.render("custom-user-profile-field", {
+            field: field,
+            field_type: type,
+            field_value: value,
+            is_long_text_field: is_long_text,
+            is_choice_field: is_choice_field,
+            is_user_field: is_user_field,
+            is_date_field: is_date_field,
+            field_choices: field_choices,
+        });
+        $(element_id).append(html);
+    });
+};
+
 exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
@@ -135,63 +195,7 @@ exports.add_custom_profile_fields_to_settings = function () {
         $("#account-settings #custom-field-header").hide();
     }
 
-    var all_custom_fields = page_params.custom_profile_fields;
-    var field_types = page_params.custom_profile_field_types;
-
-    all_custom_fields.forEach(function (field) {
-        var field_type = field.type;
-        var type;
-        var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field_type === field_types.LONG_TEXT.id;
-        var is_choice_field = field_type === field_types.CHOICE.id;
-        var is_user_field = field_type === field_types.USER.id;
-        var is_date_field = field_type === field_types.DATE.id;
-        var field_choices = [];
-
-        if (is_long_text || field_type === field_types.SHORT_TEXT.id) {
-            type = "text";
-        } else if (is_choice_field) {
-            type = "choice";
-            var field_choice_dict = JSON.parse(field.field_data);
-            for (var choice in field_choice_dict) {
-                if (choice) {
-                    field_choices[field_choice_dict[choice].order] = {
-                        value: choice,
-                        text: field_choice_dict[choice].text,
-                        selected: choice === value,
-                    };
-                }
-            }
-        } else if (is_date_field) {
-            type = "date";
-        } else if (field_type === field_types.URL.id) {
-            type = "url";
-        } else if (is_user_field) {
-            if (value) {
-                value = JSON.parse(value);
-            }
-            type = "user";
-        } else {
-            blueslip.error("Undefined field type.");
-        }
-
-        if (value === undefined || value === null) {
-            // If user has not set value for field.
-            value = "";
-        }
-
-        var html = templates.render("custom-user-profile-field", {
-            field: field,
-            field_type: type,
-            field_value: value,
-            is_long_text_field: is_long_text,
-            is_choice_field: is_choice_field,
-            is_user_field: is_user_field,
-            is_date_field: is_date_field,
-            field_choices: field_choices,
-        });
-        $("#account-settings .custom-profile-fields-form").append(html);
-    });
+    exports.append_custom_profile_fields(element_id, people.my_current_user_id());
     exports.intialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
     exports.initialize_custom_date_type_fields(element_id);
 };
