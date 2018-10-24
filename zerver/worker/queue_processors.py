@@ -276,6 +276,8 @@ class MissedMessageWorker(LoopQueueProcessingWorker):
             by_recipient[event['user_profile_id']].append(event)
 
         for user_profile_id, events in by_recipient.items():
+            logging.info("Batch-processing %s missedmessage_emails events for user %s" %
+                         (len(events), user_profile_id))
             handle_missedmessage_emails(user_profile_id, events)
 
 @assign_queue('email_senders')
