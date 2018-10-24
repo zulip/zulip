@@ -3,6 +3,7 @@ import dateutil
 import glob
 import logging
 import os
+import re
 import shutil
 import subprocess
 import ujson
@@ -372,6 +373,7 @@ def write_message_data(realm_id: int,
                        subscriber_map: Dict[int, Set[int]],
                        data_dir: str,
                        output_dir: str,
+                       masking_content: bool,
                        user_handler: UserHandler,
                        attachment_handler: AttachmentHandler) -> None:
 
@@ -427,6 +429,7 @@ def write_message_data(realm_id: int,
             subscriber_map=subscriber_map,
             data_dir=data_dir,
             output_dir=output_dir,
+            masking_content=masking_content,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
@@ -472,6 +475,7 @@ def process_message_file(realm_id: int,
                          subscriber_map: Dict[int, Set[int]],
                          data_dir: str,
                          output_dir: str,
+                         masking_content: bool,
                          user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
 
@@ -498,11 +502,17 @@ def process_message_file(realm_id: int,
                     # and we only use the copy from the sender
                     return None
 
+            content = d['message']
+
+            if masking_content:
+                content = re.sub('[a-z]', 'x', content)
+                content = re.sub('[A-Z]', 'X', content)
+
             return dict(
                 fn_id=fn_id,
                 sender_id=sender_id,
                 receiver_id=d.get('receiver', {}).get('id'),
-                content=d['message'],
+                content=content,
                 mention_user_ids=d.get('mentions', []),
                 pub_date=str_date_to_float(d['timestamp']),
                 attachment=d.get('attachment'),
@@ -649,7 +659,9 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
 
     return zerver_usermessage
 
-def do_convert_data(input_tar_file: str, output_dir: str) -> None:
+def do_convert_data(input_tar_file: str,
+                    output_dir: str,
+                    masking_content: bool) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
     attachment_handler = AttachmentHandler()
@@ -730,6 +742,7 @@ def do_convert_data(input_tar_file: str, output_dir: str) -> None:
             subscriber_map=subscriber_map,
             data_dir=input_data_dir,
             output_dir=output_dir,
+            masking_content=masking_content,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
