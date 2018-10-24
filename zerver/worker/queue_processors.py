@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, 
 import copy
 import signal
 from functools import wraps
+from threading import Timer
 
 import smtplib
 import socket
@@ -263,22 +264,67 @@ class UserPresenceWorker(QueueProcessingWorker):
         do_update_user_presence(user_profile, client, log_time, status)
 
 @assign_queue('missedmessage_emails', queue_type="loop")
-class MissedMessageWorker(LoopQueueProcessingWorker):
-    # Aggregate all messages received every 2 minutes to let someone finish sending a batch
-    # of messages
-    sleep_delay = 2 * 60
+class MissedMessageWorker(QueueProcessingWorker):
+    # Aggregate all messages received over the last BATCH_DURATION
+    # seconds to let someone finish sending a batch of messages and/or
+    # editing them before they are sent out as emails to recipients.
+    #
+    # The timer is running whenever; we poll at most every TIMER_FREQUENCY
+    # seconds, to avoid excessive activity.
+    #
+    # TODO: Since this process keeps events in memory for up to 2
+    # minutes, it now will lose approximately BATCH_DURATION worth of
+    # missed_message emails whenever it is restarted as part of a
+    # server restart.  We should probably add some sort of save/reload
+    # mechanism for that case.
+    TIMER_FREQUENCY = 5
+    BATCH_DURATION = 120
+    timer_event = None  # type: Optional[Timer]
+    events_by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
+    batch_start_by_recipient = {}  # type: Dict[int, float]
 
-    def consume_batch(self, missed_events: List[Dict[str, Any]]) -> None:
-        by_recipient = defaultdict(list)  # type: Dict[int, List[Dict[str, Any]]]
+    def consume(self, event: Dict[str, Any]) -> None:
+        logging.debug("Received missedmessage_emails event: %s" % (event,))
 
-        for event in missed_events:
-            logging.debug("Received missedmessage_emails event: %s" % (event,))
-            by_recipient[event['user_profile_id']].append(event)
+        # When we process an event, just put it into the queue and ensure we have a timer going.
+        user_profile_id = event['user_profile_id']
+        if user_profile_id not in self.batch_start_by_recipient:
+            self.batch_start_by_recipient[user_profile_id] = time.time()
+        self.events_by_recipient[user_profile_id].append(event)
 
-        for user_profile_id, events in by_recipient.items():
+        self.ensure_timer()
+
+    def ensure_timer(self) -> None:
+        if self.timer_event is not None:
+            return
+        self.timer_event = Timer(self.TIMER_FREQUENCY, MissedMessageWorker.maybe_send_batched_emails, [self])
+        self.timer_event.start()
+
+    def stop_timer(self) -> None:
+        if self.timer_event and self.timer_event.is_alive():  # type: ignore # Report mypy bug.
+            self.timer_event.cancel()
+            self.timer_event = None
+
+    def maybe_send_batched_emails(self) -> None:
+        self.stop_timer()
+
+        current_time = time.time()
+        for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
+            if current_time - timestamp < self.BATCH_DURATION:
+                logging.info("%s: %s - %s" % (user_profile_id, current_time, timestamp))
+                continue
+            events = self.events_by_recipient[user_profile_id]
             logging.info("Batch-processing %s missedmessage_emails events for user %s" %
                          (len(events), user_profile_id))
             handle_missedmessage_emails(user_profile_id, events)
+            del self.events_by_recipient[user_profile_id]
+            del self.batch_start_by_recipient[user_profile_id]
+
+        # By only restarting the timer if there are actually events in
+        # the queue, we ensure this queue processor is idle when there
+        # are no missed-message emails to process.
+        if len(self.batch_start_by_recipient) > 0:
+            self.ensure_timer()
 
 @assign_queue('email_senders')
 class EmailSendingWorker(QueueProcessingWorker):
@@ -332,7 +378,9 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
     # Sleep 1 minute between checking the queue
     sleep_delay = 60 * 1
 
-    def consume_batch(self, slow_queries: List[Dict[str, Any]]) -> None:
+    # TODO: The type annotation here should be List[str], but that
+    # creates conflicts with other users in the file.
+    def consume_batch(self, slow_queries: List[Any]) -> None:
         for query in slow_queries:
             logging.info("Slow query: %s" % (query))
 

@@ -6,14 +6,15 @@ import smtplib
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, UserActivity, PreregistrationUser
+from zerver.models import get_client, UserActivity, PreregistrationUser, \
+    get_system_bot
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -21,6 +22,7 @@ from zerver.worker.queue_processors import (
     EmailSendingWorker,
     LoopQueueProcessingWorker,
     MissedMessageWorker,
+    SlowQueryWorker,
 )
 
 Event = Dict[str, Any]
@@ -35,7 +37,7 @@ class WorkerTest(ZulipTestCase):
     class FakeClient:
         def __init__(self) -> None:
             self.consumers = {}  # type: Dict[str, Callable[[Dict[str, Any]], None]]
-            self.queue = []  # type: List[Tuple[str, Dict[str, Any]]]
+            self.queue = []  # type: List[Tuple[str, Any]]
 
         def register_json_consumer(self,
                                    queue_name: str,
@@ -46,6 +48,7 @@ class WorkerTest(ZulipTestCase):
             for queue_name, data in self.queue:
                 callback = self.consumers[queue_name]
                 callback(data)
+            self.queue = []
 
         def drain_queue(self, queue_name: str, json: bool) -> List[Event]:
             assert json
@@ -62,6 +65,47 @@ class WorkerTest(ZulipTestCase):
 
             return events
 
+    @override_settings(SLOW_QUERY_LOGS_STREAM="errors")
+    def test_slow_queries_worker(self) -> None:
+        error_bot = get_system_bot(settings.ERROR_BOT)
+        fake_client = self.FakeClient()
+        events = [
+            'test query (data)',
+            'second test query (data)',
+        ]
+        for event in events:
+            fake_client.queue.append(('slow_queries', event))
+
+        worker = SlowQueryWorker()
+
+        time_mock = patch(
+            'zerver.worker.queue_processors.time.sleep',
+            side_effect=AbortLoop,
+        )
+
+        send_mock = patch(
+            'zerver.worker.queue_processors.internal_send_message'
+        )
+
+        with send_mock as sm, time_mock as tm:
+            with simulated_queue_client(lambda: fake_client):
+                try:
+                    worker.setup()
+                    worker.start()
+                except AbortLoop:
+                    pass
+
+        self.assertEqual(tm.call_args[0][0], 60)  # should sleep 60 seconds
+
+        sm.assert_called_once()
+        args = [c[0] for c in sm.call_args_list][0]
+        self.assertEqual(args[0], error_bot.realm)
+        self.assertEqual(args[1], error_bot.email)
+        self.assertEqual(args[2], "stream")
+        self.assertEqual(args[3], "errors")
+        self.assertEqual(args[4], "testserver: slow queries")
+        self.assertEqual(args[5], "    test query (data)\n    second test query (data)\n")
+
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
@@ -77,6 +121,12 @@ class WorkerTest(ZulipTestCase):
             from_email=cordelia.email,
             to_email=hamlet.email,
             content='goodbye hamlet',
+        )
+
+        hamlet3_msg_id = self.send_personal_message(
+            from_email=cordelia.email,
+            to_email=hamlet.email,
+            content='hello again hamlet',
         )
 
         othello_msg_id = self.send_personal_message(
@@ -97,24 +147,48 @@ class WorkerTest(ZulipTestCase):
 
         mmw = MissedMessageWorker()
 
+        class MockTimer():
+            is_running = False
+
+            def is_alive(self) -> bool:
+                return self.is_running
+
+            def start(self) -> None:
+                self.is_running = True
+
+            def cancel(self) -> None:
+                self.is_running = False
+
+        timer = MockTimer()
         time_mock = patch(
-            'zerver.worker.queue_processors.time.sleep',
-            side_effect=AbortLoop,
+            'zerver.worker.queue_processors.Timer',
+            return_value=timer,
         )
 
         send_mock = patch(
             'zerver.lib.notifications.do_send_missedmessage_events_reply_in_zulip'
         )
+        mmw.BATCH_DURATION = 0
+
+        bonus_event = dict(user_profile_id=hamlet.id, message_id=hamlet3_msg_id)
 
         with send_mock as sm, time_mock as tm:
             with simulated_queue_client(lambda: fake_client):
-                try:
-                    mmw.setup()
-                    mmw.start()
-                except AbortLoop:
-                    pass
+                self.assertFalse(timer.is_alive())
+                mmw.setup()
+                mmw.start()
+                self.assertTrue(timer.is_alive())
+                fake_client.queue.append(('missedmessage_emails', bonus_event))
 
-        self.assertEqual(tm.call_args[0][0], 120)  # should sleep two minutes
+                # Double-calling start is our way to get it to run again
+                self.assertTrue(timer.is_alive())
+                mmw.start()
+
+                # Now, we actually send the emails.
+                mmw.maybe_send_batched_emails()
+                self.assertFalse(timer.is_alive())
+
+        self.assertEqual(tm.call_args[0][0], 5)  # should sleep 5 seconds
 
         args = [c[0] for c in sm.call_args_list]
         arg_dict = {
@@ -126,10 +200,10 @@ class WorkerTest(ZulipTestCase):
         }
 
         hamlet_info = arg_dict[hamlet.id]
-        self.assertEqual(hamlet_info['count'], 2)
+        self.assertEqual(hamlet_info['count'], 3)
         self.assertEqual(
             {m['message'].content for m in hamlet_info['missed_messages']},
-            {'hi hamlet', 'goodbye hamlet'},
+            {'hi hamlet', 'goodbye hamlet', 'hello again hamlet'},
         )
 
         othello_info = arg_dict[othello.id]
