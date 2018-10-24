@@ -146,7 +146,7 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
     if 'client' in request.POST:
         return request.POST['client']
     if "HTTP_USER_AGENT" in request.META:
-        user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+        user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])  # type: Optional[Dict[str, str]]
     else:
         user_agent = None
     if user_agent is not None:
@@ -282,14 +282,13 @@ def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProf
 
     custom_header_template = "{header}: {value}\n"
 
-    header_message = ""
+    header_text = ""
     for header in request.META.keys():
         if header.lower().startswith('http_x'):
-            header_message += custom_header_template.format(
+            header_text += custom_header_template.format(
                 header=header, value=request.META[header])
 
-    if not header_message:
-        header_message = None
+    header_message = header_text if header_text else None
 
     message = """
 user: {email} ({realm})
@@ -556,7 +555,7 @@ def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
 #
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
-def authenticated_rest_api_view(*, webhook_client_name: str=None,
+def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
                                 is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
