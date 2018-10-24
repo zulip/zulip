@@ -905,7 +905,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if (arguments.current_message is None
                     or not url_embed_preview_enabled_for_realm(arguments.current_message)):
                 continue
-            
+
             if extracted_data:
                 vm_id = self.vimeo_id(url)
                 if vm_id is not None:
