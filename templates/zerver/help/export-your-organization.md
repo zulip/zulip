@@ -19,7 +19,7 @@ three types of zulipchat.com exports.
 * **Full export without member consent**: All the data in the organization.
 
 All organizations have access to the first two kinds of export. Only corporate
-Zulip Premium customers have access to **full export without member consent**.
+Zulip Standard customers have access to **full export without member consent**.
 
 ## Request an export
 
@@ -64,7 +64,7 @@ in place. Note that many countries have laws that require employers to
 notify employees of their use of such an export.
 
 **Full export without member consent** is additionally limited to paid
-Zulip Premium customers, though in rare cases may be available to
+Zulip Standard customers, though in rare cases may be available to
 other organizations in case of due legal process.
 
 ## Related articles

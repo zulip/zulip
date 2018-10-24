@@ -74,7 +74,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'seat_count': seat_count,
         'signed_seat_count': signed_seat_count,
         'salt': salt,
-        'plan': "Zulip Premium",
+        'plan': "Zulip Standard",
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
         'error_message': error_message,
@@ -87,8 +87,8 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     return response
 
 PLAN_NAMES = {
-    Plan.CLOUD_ANNUAL: "Zulip Premium (billed annually)",
-    Plan.CLOUD_MONTHLY: "Zulip Premium (billed monthly)",
+    Plan.CLOUD_ANNUAL: "Zulip Standard (billed annually)",
+    Plan.CLOUD_MONTHLY: "Zulip Standard (billed monthly)",
 }
 
 @zulip_login_required

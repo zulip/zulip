@@ -331,7 +331,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response(["does not exist"], result)
         # Test valid domain, no login
         realm = get_realm("zulip")
-        realm.plan_type = Realm.PREMIUM_FREE
+        realm.plan_type = Realm.STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
@@ -348,12 +348,12 @@ class PlansPageTest(ZulipTestCase):
 
     def test_CTA_text_by_plan_type(self) -> None:
         sign_up_now = "Sign up now"
-        buy_premium = "Buy Premium"
+        buy_standard = "Buy Standard"
         current_plan = "Current plan"
 
         # Root domain
         result = self.client_get("/plans/", subdomain="")
-        self.assert_in_success_response([sign_up_now, buy_premium], result)
+        self.assert_in_success_response([sign_up_now, buy_standard], result)
         self.assert_not_in_success_response([current_plan], result)
 
         realm = get_realm("zulip")
@@ -373,17 +373,17 @@ class PlansPageTest(ZulipTestCase):
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response([current_plan, buy_premium], result)
+        self.assert_in_success_response([current_plan, buy_standard], result)
         self.assert_not_in_success_response([sign_up_now], result)
 
-        realm.plan_type = Realm.PREMIUM_FREE
+        realm.plan_type = Realm.STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
-        self.assert_not_in_success_response([sign_up_now, buy_premium], result)
+        self.assert_not_in_success_response([sign_up_now, buy_standard], result)
 
-        realm.plan_type = Realm.PREMIUM
+        realm.plan_type = Realm.STANDARD
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
-        self.assert_not_in_success_response([sign_up_now, buy_premium], result)
+        self.assert_not_in_success_response([sign_up_now, buy_standard], result)

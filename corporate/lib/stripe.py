@@ -277,7 +277,7 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
         # TODO: billing address details are passed to us in the request;
         # use that to calculate taxes.
         tax_percent=0)
-    do_change_plan_type(user, Realm.PREMIUM)
+    do_change_plan_type(user, Realm.STANDARD)
 
 def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
     coupon = Coupon.objects.get(percent_off=percent_off)

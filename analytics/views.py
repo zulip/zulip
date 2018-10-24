@@ -471,7 +471,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
         row['plan_type_string'] = [
-            '', 'self hosted', 'limited', 'premium', 'premium free'][row['plan_type']]
+            '', 'self hosted', 'limited', 'standard', 'standard free'][row['plan_type']]
         row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7

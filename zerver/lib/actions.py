@@ -3069,10 +3069,10 @@ def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
                                  realm=realm, acting_user=user, event_time=timezone_now(),
                                  extra_data={'old_value': old_value, 'new_value': plan_type})
 
-    if plan_type == Realm.PREMIUM:
-        realm.max_invites = Realm.INVITES_PREMIUM_REALM_DAILY_MAX
-    elif plan_type == Realm.PREMIUM_FREE:
-        realm.max_invites = Realm.INVITES_PREMIUM_REALM_DAILY_MAX
+    if plan_type == Realm.STANDARD:
+        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+    elif plan_type == Realm.STANDARD_FREE:
+        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
     elif plan_type == Realm.LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     realm.save(update_fields=['_max_invites'])
