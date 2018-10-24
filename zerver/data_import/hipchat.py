@@ -626,8 +626,8 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
         recipient_id = message['recipient']
         sender_id = message['sender']
         mention_user_ids = mention_map[message_id]
-        user_ids = subscriber_map.get(recipient_id, set())
-        user_ids.add(sender_id)
+        subscriber_ids = subscriber_map.get(recipient_id, set())
+        user_ids = subscriber_ids | {sender_id}
 
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
