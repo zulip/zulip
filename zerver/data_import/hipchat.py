@@ -418,6 +418,7 @@ def write_message_data(realm_id: int,
             fn_id=fn_id,
             files_dir=files_dir,
             get_recipient_id=get_recipient_id,
+            zerver_recipient=zerver_recipient,
             message_key=message_key,
             subscriber_map=subscriber_map,
             data_dir=data_dir,
@@ -463,6 +464,7 @@ def process_message_file(realm_id: int,
                          fn_id: int,
                          files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
+                         zerver_recipient: List[ZerverFieldsT],
                          message_key: str,
                          subscriber_map: Dict[int, Set[int]],
                          data_dir: str,
@@ -524,6 +526,7 @@ def process_message_file(realm_id: int,
             attachment_handler=attachment_handler,
             get_recipient_id=get_recipient_id,
             output_dir=output_dir,
+            zerver_recipient=zerver_recipient,
         )
 
     chunk_size = 1000
@@ -540,7 +543,8 @@ def process_raw_message_batch(realm_id: int,
                               user_handler: UserHandler,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
-                              output_dir: str) -> None:
+                              output_dir: str,
+                              zerver_recipient: List[ZerverFieldsT]) -> None:
 
     def fix_mentions(content: str,
                      mention_user_ids: List[int]) -> str:
@@ -607,6 +611,7 @@ def process_raw_message_batch(realm_id: int,
         zerver_message=zerver_message,
         subscriber_map=subscriber_map,
         mention_map=mention_map,
+        zerver_recipient=zerver_recipient,
     )
 
     message_json = dict(
@@ -620,17 +625,27 @@ def process_raw_message_batch(realm_id: int,
 
 def make_user_messages(zerver_message: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
-                       mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
+                       mention_map: Dict[int, Set[int]],
+                       zerver_recipient: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []
-
+    recipients = do_build_dict_recipient_by_id(zerver_recipient)
     for message in zerver_message:
         message_id = message['id']
         recipient_id = message['recipient']
         sender_id = message['sender']
         mention_user_ids = mention_map[message_id]
-        user_ids = subscriber_map.get(recipient_id, set())
-        user_ids.add(sender_id)
+        recipient=recipients[recipient_id]
+        if recipient['type'] == 2:
+            user_ids = subscriber_map.get(recipient_id, set())
+            user_ids.add(sender_id)
+                    
+        elif recipient['type'] == 1:
+            user_ids = set()
+            user_ids.add(recipient['type_id'])
+            user_ids.add(sender_id)
+        else:
+            logging.info("Not recipient type")
 
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
@@ -643,7 +658,11 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
             zerver_usermessage.append(user_message)
 
     return zerver_usermessage
-
+def do_build_dict_recipient_by_id(data: [ZerverFieldsT]):
+    recipients={}
+    for d in data:
+        recipients[d['id']]=d
+    return recipients
 def do_build_dict_hipchat_user_by_id(data: [ZerverFieldsT]):
     users={}
     for d in data:
