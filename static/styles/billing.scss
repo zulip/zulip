@@ -146,6 +146,12 @@
         }
     }
 
+    .stripe-button-el:hover:disabled {
+        box-shadow: none;
+        background-color: rgb(200, 200, 200);
+        pointer-events: none;
+    }
+
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;
