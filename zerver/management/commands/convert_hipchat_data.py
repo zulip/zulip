@@ -40,6 +40,10 @@ class Command(BaseCommand):
                             action="store",
                             help='Directory to write exported data to.')
 
+        parser.add_argument('--mask', dest='masking_content',
+                            action="store_true",
+                            help='Mask the content for privacy during QA.')
+
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -65,4 +69,8 @@ class Command(BaseCommand):
                 exit(1)
 
             print("Converting Data ...")
-            do_convert_data(path, output_dir)
+            do_convert_data(
+                input_tar_file=path,
+                output_dir=output_dir,
+                masking_content=options.get('masking_content', False),
+            )
