@@ -344,6 +344,10 @@ EMAIL_GATEWAY_PATTERN = ""
 # to puppet_classes in /etc/zulip/zulip.conf and then running
 # `scripts/zulip-puppet-apply -f` to do the installation.
 #
+# You will also need to setup DNS MX records to ensure emails sent to
+# the hostname configured in EMAIL_GATEWAY_PATTERN will be delivered
+# to the Zulip postfix server you installed above.
+#
 # If you are using polling, you will need to setup an IMAP email
 # account dedicated to Zulip email gateway messages.  The model is
 # that users will send emails to that account via an address of the
