@@ -401,11 +401,13 @@ def write_message_data(realm_id: int,
         return recipient_id
 
     if message_key in ['UserMessage', 'NotificationMessage']:
+        is_pm_data = False
         dir_glob = os.path.join(data_dir, 'rooms', '*', 'history.json')
         get_recipient_id = get_stream_recipient_id
         get_files_dir = lambda fn_id: os.path.join(data_dir, 'rooms', str(fn_id), 'files')
 
     elif message_key == 'PrivateUserMessage':
+        is_pm_data = True
         dir_glob = os.path.join(data_dir, 'users', '*', 'history.json')
         get_recipient_id = get_pm_recipient_id
         get_files_dir = lambda fn_id: os.path.join(data_dir, 'users', 'files')
@@ -429,6 +431,7 @@ def write_message_data(realm_id: int,
             subscriber_map=subscriber_map,
             data_dir=data_dir,
             output_dir=output_dir,
+            is_pm_data=is_pm_data,
             masking_content=masking_content,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
@@ -475,6 +478,7 @@ def process_message_file(realm_id: int,
                          subscriber_map: Dict[int, Set[int]],
                          data_dir: str,
                          output_dir: str,
+                         is_pm_data: bool,
                          masking_content: bool,
                          user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
@@ -496,7 +500,7 @@ def process_message_file(realm_id: int,
                 user_handler=user_handler,
             )
 
-            if message_key == 'PrivateUserMessage':
+            if is_pm_data:
                 if sender_id != fn_id:
                     # PMs are in multiple places in the Hipchat export,
                     # and we only use the copy from the sender
@@ -538,6 +542,7 @@ def process_message_file(realm_id: int,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
             get_recipient_id=get_recipient_id,
+            is_pm_data=is_pm_data,
             output_dir=output_dir,
         )
 
@@ -555,6 +560,7 @@ def process_raw_message_batch(realm_id: int,
                               user_handler: UserHandler,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
+                              is_pm_data: bool,
                               output_dir: str) -> None:
 
     def fix_mentions(content: str,
@@ -581,7 +587,11 @@ def process_raw_message_batch(realm_id: int,
         pub_date = raw_message['pub_date']
         recipient_id = get_recipient_id(raw_message)
         rendered_content = None
-        subject = 'archived'
+
+        if is_pm_data:
+            subject = ''
+        else:
+            subject = 'archived'
         user_id = raw_message['sender_id']
 
         # Another side effect:
@@ -621,6 +631,7 @@ def process_raw_message_batch(realm_id: int,
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
         subscriber_map=subscriber_map,
+        is_pm_data=is_pm_data,
         mention_map=mention_map,
     )
 
@@ -635,6 +646,7 @@ def process_raw_message_batch(realm_id: int,
 
 def make_user_messages(zerver_message: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
+                       is_pm_data: bool,
                        mention_map: Dict[int, Set[int]]) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []
@@ -653,6 +665,7 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
                 id=NEXT_ID('user_message'),
                 user_id=user_id,
                 message_id=message_id,
+                is_private=is_pm_data,
                 is_mentioned=is_mentioned,
             )
             zerver_usermessage.append(user_message)

@@ -280,10 +280,13 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: 
 def build_user_message(id: int,
                        user_id: int,
                        message_id: int,
+                       is_private: bool,
                        is_mentioned: bool) -> ZerverFieldsT:
     flags_mask = 1  # For read
     if is_mentioned:
         flags_mask += 8  # For mentioned
+    if is_private:
+        flags_mask += 2048  # For is_private
 
     usermessage = dict(
         id=id,
