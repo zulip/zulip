@@ -205,7 +205,7 @@ def add_a(
         class_attr: str="message_inline_image",
         data_id: Optional[str]=None,
         insertion_index: Optional[int]=None,
-        use_thumbnails: Optional[bool]=True
+        already_thumbnailed: Optional[bool]=False
 ) -> None:
     title = title if title is not None else url_filename(link)
     title = title if title else ""
@@ -225,7 +225,7 @@ def add_a(
     if data_id is not None:
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
-    if is_thumbor_enabled() and use_thumbnails and user_uploads_or_external(url):
+    if is_thumbor_enabled() and (not already_thumbnailed) and user_uploads_or_external(url):
         # See docs/thumbnailing.md for some high-level documentation.
         #
         # We strip leading '/' from relative URLs here to ensure
@@ -238,8 +238,6 @@ def add_a(
             urllib.parse.quote(url, safe='')
         ))
     else:
-        # TODO: We might want to rename use_thumbnails to
-        # !already_thumbnailed for clarity.
         img.set("src", url)
 
     if class_attr == "message_inline_ref":
@@ -859,7 +857,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       title=dropbox_image.get('title', ""),
                       desc=dropbox_image.get('desc', ""),
                       class_attr=class_attr,
-                      use_thumbnails=False)
+                      already_thumbnailed=True)
                 continue
             if self.is_image(url):
                 self.handle_image_inlining(root, found_url)
@@ -882,7 +880,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 yt_id = self.youtube_id(url)
                 add_a(root, youtube, url, None, None,
                       "youtube-video message_inline_image",
-                      yt_id, use_thumbnails=False)
+                      yt_id, already_thumbnailed=True)
                 continue
 
             if arguments.db_data and arguments.db_data['sent_by_bot']:
@@ -904,7 +902,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if vimeo_image is not None:
                         add_a(root, vimeo_image, url, vimeo_title,
                               None, "vimeo-video message_inline_image", vm_id,
-                              use_thumbnails=False)
+                              already_thumbnailed=True)
                     if vimeo_title is not None:
                         found_url.family.child.text = vimeo_title
                 else:
