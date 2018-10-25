@@ -14,7 +14,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Set
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient, \
     CustomProfileField, CustomProfileFieldValue
@@ -23,7 +23,8 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis, build_realm, build_stream, build_message, create_converted_data_files
+    process_emojis, build_realm, build_stream, build_message, \
+    create_converted_data_files, make_subscriber_map
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -466,6 +467,10 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     upper_index = low_index + chunk_size
     dump_file_id = 1
 
+    subscriber_map = make_subscriber_map(
+        zerver_subscription=realm['zerver_subscription'],
+    )
+
     while True:
         message_data = all_messages[low_index:upper_index]
         if len(message_data) == 0:
@@ -473,7 +478,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
         zerver_message, zerver_usermessage, attachment, uploads, \
             reactions, id_list = channel_message_to_zerver_message(
                 realm_id, users, added_users, added_recipient, message_data,
-                zerver_realmemoji, realm['zerver_subscription'], added_channels,
+                zerver_realmemoji, subscriber_map, added_channels,
                 id_list, domain_name)
 
         message_json = dict(
@@ -514,7 +519,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       added_recipient: AddedRecipientsT,
                                       all_messages: List[ZerverFieldsT],
                                       zerver_realmemoji: List[ZerverFieldsT],
-                                      zerver_subscription: List[ZerverFieldsT],
+                                      subscriber_map: Dict[int, Set[int]],
                                       added_channels: AddedChannelsT,
                                       id_list: Tuple[int, int, int],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
@@ -564,7 +569,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
         has_attachment = has_image = False
         try:
-            content, mentioned_users_id, has_link = convert_to_zulip_markdown(
+            content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
                 message['text'], users, added_channels, added_users)
         except Exception:
             print("Slack message unexpectedly missing text representation:")
@@ -636,8 +641,12 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
         # construct usermessages
         build_usermessages(
-            zerver_usermessage, zerver_subscription,
-            recipient_id, mentioned_users_id, message_id)
+            zerver_usermessage=zerver_usermessage,
+            subscriber_map=subscriber_map,
+            recipient_id=recipient_id,
+            mentioned_user_ids=mentioned_user_ids,
+            message_id=message_id,
+        )
 
         message_id_count += 1
 

@@ -367,27 +367,40 @@ class SlackImporter(ZulipTestCase):
 
     def test_build_zerver_message(self) -> None:
         zerver_usermessage = []  # type: List[Dict[str, Any]]
-        zerver_subscription = [{'recipient': 2, 'user_profile': 7},
-                               {'recipient': 4, 'user_profile': 12},
-                               {'recipient': 2, 'user_profile': 16},
-                               {'recipient': 2, 'user_profile': 15},
-                               {'recipient': 2, 'user_profile': 3}]
+
+        # recipient_id -> set of user_ids
+        subscriber_map = {
+            2: {3, 7, 15, 16},  # these we care about
+            4: {12},
+            6: {19, 21},
+        }
+
         recipient_id = 2
-        mentioned_users_id = [12, 3, 16]
+        mentioned_user_ids = [7]
         message_id = 9
 
         um_id = NEXT_ID('user_message')
 
-        build_usermessages(zerver_usermessage,
-                           zerver_subscription, recipient_id,
-                           mentioned_users_id, message_id)
+        build_usermessages(
+            zerver_usermessage=zerver_usermessage,
+            subscriber_map=subscriber_map,
+            recipient_id=recipient_id,
+            mentioned_user_ids=mentioned_user_ids,
+            message_id=message_id,
+        )
 
-        self.assertEqual(zerver_usermessage[0]['flags_mask'], 1)
-        self.assertEqual(zerver_usermessage[0]['id'], um_id+1)
+        self.assertEqual(zerver_usermessage[0]['id'], um_id + 1)
         self.assertEqual(zerver_usermessage[0]['message'], message_id)
-        self.assertEqual(zerver_usermessage[1]['user_profile'],
-                         zerver_subscription[2]['user_profile'])
-        self.assertEqual(zerver_usermessage[1]['flags_mask'], 9)
+        self.assertEqual(zerver_usermessage[0]['flags_mask'], 1)
+
+        self.assertEqual(zerver_usermessage[1]['id'], um_id + 2)
+        self.assertEqual(zerver_usermessage[1]['message'], message_id)
+        self.assertEqual(zerver_usermessage[1]['user_profile'], 7)
+        self.assertEqual(zerver_usermessage[1]['flags_mask'], 9)  # mentioned
+
+        self.assertEqual(zerver_usermessage[2]['id'], um_id + 3)
+        self.assertEqual(zerver_usermessage[2]['message'], message_id)
+
         self.assertEqual(zerver_usermessage[3]['id'], um_id + 4)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
@@ -425,12 +438,12 @@ class SlackImporter(ZulipTestCase):
         added_recipient = {'random': 2, 'general': 1}
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
-        zerver_subscription = []  # type: List[Dict[str, Any]]
+        subscriber_map = dict()  # type: Dict[int, Set[int]]
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
         zerver_message, zerver_usermessage, attachment, uploads, \
             reaction, id_list = channel_message_to_zerver_message(
                 1, user_data, added_users, added_recipient,
-                all_messages, zerver_subscription, [],
+                all_messages, [], subscriber_map,
                 added_channels, (0, 0, 0), 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])

@@ -260,12 +260,15 @@ def build_realm(zerver_realm: List[ZerverFieldsT], realm_id: int,
     return realm
 
 def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
-                       zerver_subscription: List[ZerverFieldsT], recipient_id: int,
-                       mentioned_users_id: List[int], message_id: int) -> None:
-    for subscription in zerver_subscription:
-        if subscription['recipient'] == recipient_id:
-            user_id = subscription['user_profile']
-            is_mentioned = user_id in mentioned_users_id
+                       subscriber_map: Dict[int, Set[int]],
+                       recipient_id: int,
+                       mentioned_user_ids: List[int],
+                       message_id: int) -> None:
+    user_ids = subscriber_map.get(recipient_id, set())
+
+    if user_ids:
+        for user_id in sorted(user_ids):
+            is_mentioned = user_id in mentioned_user_ids
 
             # Slack and Gitter don't yet triage private messages.
             # It's possible we don't even get PMs from them.
