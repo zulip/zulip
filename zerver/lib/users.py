@@ -23,6 +23,10 @@ def check_full_name(full_name_raw: str) -> str:
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
+# NOTE: We don't try to absolutely prevent 2 bots from having the same
+# name (e.g. you can get there by reactivating a deactivated bot after
+# making a new bot with the same name).  This is just a check designed
+# to make it unlikely to happen by accident.
 def check_bot_name_available(realm_id: int, full_name: str) -> None:
     dup_exists = UserProfile.objects.filter(
         realm_id=realm_id,
