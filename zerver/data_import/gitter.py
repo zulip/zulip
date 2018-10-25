@@ -10,14 +10,14 @@ import ujson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, process_avatars, build_realm, build_stream, \
-    build_message, create_converted_data_files
+    build_message, create_converted_data_files, make_subscriber_map
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -154,7 +154,7 @@ def build_recipient_and_subscription(
     return zerver_recipient, zerver_subscription
 
 def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
-                                      zerver_subscription: List[ZerverFieldsT],
+                                      subscriber_map: Dict[int, Set[int]],
                                       user_map: Dict[str, int],
                                       user_short_name_to_full_name: Dict[str, str],
                                       chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
@@ -189,8 +189,13 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             zerver_message.append(zulip_message)
 
             build_usermessages(
-                zerver_usermessage, zerver_subscription,
-                recipient_id, mentioned_user_ids, message_id)
+                zerver_usermessage=zerver_usermessage,
+                subscriber_map=subscriber_map,
+                recipient_id=recipient_id,
+                mentioned_user_ids=mentioned_user_ids,
+                message_id=message_id,
+            )
+
             message_id += 1
 
         message_json['zerver_message'] = zerver_message
@@ -236,13 +241,17 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     realm, avatar_list, user_map = gitter_workspace_to_realm(
         domain_name, gitter_data, realm_subdomain)
 
+    subscriber_map = make_subscriber_map(
+        zerver_subscription=realm['zerver_subscription'],
+    )
+
     # For user mentions
     user_short_name_to_full_name = {}
     for userprofile in realm['zerver_userprofile']:
         user_short_name_to_full_name[userprofile['short_name']] = userprofile['full_name']
 
     convert_gitter_workspace_messages(
-        gitter_data, output_dir, realm['zerver_subscription'], user_map,
+        gitter_data, output_dir, subscriber_map, user_map,
         user_short_name_to_full_name)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
