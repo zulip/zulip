@@ -40,6 +40,7 @@ from zerver.lib.message import (
     access_message,
     MessageDict,
     render_markdown,
+    update_first_visible_message_id,
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_messages_to_archive
@@ -3101,6 +3102,9 @@ def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
     elif plan_type == Realm.LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
+
+    update_first_visible_message_id(realm)
+
     realm.save(update_fields=['_max_invites', 'message_visibility_limit'])
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],

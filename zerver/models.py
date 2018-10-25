@@ -233,6 +233,9 @@ class Realm(models.Model):
     # are inaccessible to users (but not deleted).
     message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
 
+    # Messages older than this message ID in the organization are inaccessible.
+    first_visible_message_id = models.IntegerField(default=0)  # type: int
+
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
     COMMUNITY = 2
