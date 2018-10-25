@@ -189,7 +189,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
         attachment_id_to_message_ids = {}
         attachments = Attachment.objects.filter(messages__id__in=msg_ids)
         for attachment in attachments:
-            attachment_id_to_message_ids[attachment.id] = [message.id for message in attachment.messages.all()]
+            attachment_id_to_message_ids[attachment.id] = {message.id for message in attachment.messages.all()}
 
         (user_msgs_ids_before, all_msgs_ids_before) = self._check_messages_before_archiving(msg_ids)
         attachments_ids_before = list(attachments.order_by("id").values_list("id", flat=True))
@@ -202,7 +202,7 @@ class TestMoveMessageToArchive(ZulipTestCase):
         self.assertEqual(attachments_ids_before, arc_attachments_ids_after)
         for attachment in archived_attachments:
             self.assertEqual(attachment_id_to_message_ids[attachment.id],
-                             [message.id for message in attachment.messages.all()])
+                             {message.id for message in attachment.messages.all()})
 
     def test_archiving_message_with_shared_attachment(self) -> None:
         # Check do not removing attachments which is used in other messages.
