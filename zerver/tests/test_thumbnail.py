@@ -284,7 +284,7 @@ class ThumbnailTest(ZulipTestCase):
         with self.settings(THUMBOR_URL=''):
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
-        base = 'https://external-content.zulipcdn.net/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67'
+        base = 'https://external-content.zulipcdn.net/external_content/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67'
         self.assertEqual(base, result.url)
 
     def test_with_different_THUMBOR_URL(self) -> None:

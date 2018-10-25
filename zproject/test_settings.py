@@ -41,7 +41,7 @@ if "TORNADO_SERVER" in os.environ:
 else:
     # This covers the backend test suite case
     TORNADO_SERVER = None
-    CAMO_URI = 'https://external-content.zulipcdn.net/'
+    CAMO_URI = 'https://external-content.zulipcdn.net/external_content/'
     CAMO_KEY = 'dummy'
 
 if "CASPER_TESTS" in os.environ:

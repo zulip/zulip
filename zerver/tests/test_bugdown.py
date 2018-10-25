@@ -556,7 +556,7 @@ class BugdownTest(ZulipTestCase):
                     '<div class="twitter-tweet">'
                     '<a href="%s" target="_blank">'
                     '<img class="twitter-avatar"'
-                    ' src="https://external-content.zulipcdn.net/1f7cd2436976d410eab8189ebceda87ae0b34ead/687474703a2f2f7062732e7477696d672e63'
+                    ' src="https://external-content.zulipcdn.net/external_content/1f7cd2436976d410eab8189ebceda87ae0b34ead/687474703a2f2f7062732e7477696d672e63'
                     '6f6d2f70726f66696c655f696d616765732f313338303931323137332f53637265656e5f73686f745f323031312d30362d30335f61745f372e33352e33'
                     '365f504d5f6e6f726d616c2e706e67">'
                     '</a>'
