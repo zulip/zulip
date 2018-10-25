@@ -16,7 +16,6 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
-    realm_first_visible_message_id_cache_key,
     cache_get, cache_set,
 )
 from zerver.lib.request import JsonableError
@@ -952,23 +951,21 @@ def estimate_recent_messages(realm: Realm, hours: int) -> int:
                                      realm=realm).aggregate(Sum('value'))['value__sum'] or 0
 
 def get_first_visible_message_id(realm: Realm) -> int:
-    val = cache_get(realm_first_visible_message_id_cache_key(realm))
-    if val is not None:
-        return val[0]
-    return 0
+    return realm.first_visible_message_id
 
 def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> None:
-    cache_empty = cache_get(realm_first_visible_message_id_cache_key(realm)) is None
     recent_messages_count = estimate_recent_messages(realm, lookback_hours)
-    if realm.message_visibility_limit is not None and (recent_messages_count > 0 or cache_empty):
+    if realm.message_visibility_limit is not None and recent_messages_count > 0:
         update_first_visible_message_id(realm)
 
 def update_first_visible_message_id(realm: Realm) -> None:
-    try:
-        # We have verified that the limit is not none before calling this function.
-        assert realm.message_visibility_limit is not None
-        first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
-            order_by('-id')[realm.message_visibility_limit - 1]["id"]
-    except IndexError:
-        first_visible_message_id = 0
-    cache_set(realm_first_visible_message_id_cache_key(realm), first_visible_message_id)
+    if realm.message_visibility_limit is None:
+        realm.first_visible_message_id = 0
+    else:
+        try:
+            first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
+                order_by('-id')[realm.message_visibility_limit - 1]["id"]
+        except IndexError:
+            first_visible_message_id = 0
+        realm.first_visible_message_id = first_visible_message_id
+    realm.save(update_fields=["first_visible_message_id"])
