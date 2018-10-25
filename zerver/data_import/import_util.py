@@ -264,19 +264,23 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        mentioned_users_id: List[int], message_id: int) -> None:
     for subscription in zerver_subscription:
         if subscription['recipient'] == recipient_id:
-            flags_mask = 1  # For read
-            if subscription['user_profile'] in mentioned_users_id:
-                flags_mask = 9  # For read and mentioned
+            user_id = subscription['user_profile']
+            is_mentioned = user_id in mentioned_users_id
 
-            usermessage = dict(
-                user_profile=subscription['user_profile'],
-                id=NEXT_ID('user_message'),
-                flags_mask=flags_mask,
-                message=message_id)
+            # Slack and Gitter don't yet triage private messages.
+            # It's possible we don't even get PMs from them.
+            is_private = False
+
+            usermessage = build_user_message(
+                user_id=user_id,
+                message_id=message_id,
+                is_private=is_private,
+                is_mentioned=is_mentioned,
+            )
+
             zerver_usermessage.append(usermessage)
 
-def build_user_message(id: int,
-                       user_id: int,
+def build_user_message(user_id: int,
                        message_id: int,
                        is_private: bool,
                        is_mentioned: bool) -> ZerverFieldsT:
@@ -285,6 +289,8 @@ def build_user_message(id: int,
         flags_mask += 8  # For mentioned
     if is_private:
         flags_mask += 2048  # For is_private
+
+    id = NEXT_ID('user_message')
 
     usermessage = dict(
         id=id,
