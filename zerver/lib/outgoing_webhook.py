@@ -58,6 +58,8 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         if "content" in response_json:
             content = str(response_json['content'])
             success_data = dict(content=content)
+            if 'widget_content' in response_json:
+                success_data['widget_content'] = response_json['widget_content']
             return success_data
 
         return None
@@ -144,6 +146,8 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
     if not content:
         raise JsonableError(_("Missing content"))
 
+    widget_content = response_data.get('widget_content')
+
     if message_type == 'stream':
         message_to = [display_recipient]
     elif message_type == 'private':
@@ -158,6 +162,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
         message_to=message_to,
         topic_name=topic_name,
         message_content=content,
+        widget_content=widget_content,
         realm=realm,
     )
 
@@ -253,9 +258,10 @@ def process_success_response(event: Dict[str, Any],
     if content is None:
         return
 
+    widget_content = success_data.get('widget_content')
     bot_id = event['user_profile_id']
     message_info = event['message']
-    response_data = dict(content=content)
+    response_data = dict(content=content, widget_content=widget_content)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
 def do_rest_call(base_url: str,
