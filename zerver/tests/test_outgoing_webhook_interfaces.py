@@ -78,6 +78,18 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, dict(content='test_content'))
 
+        response = dict(
+            content='test_content',
+            widget_content='test_widget_content',
+            red_herring='whatever',
+        )
+        success_response = self.handler.process_success(response, self.event)
+        expected_response = dict(
+            content='test_content',
+            widget_content='test_widget_content',
+        )
+        self.assertEqual(success_response, expected_response)
+
         response = dict()
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
