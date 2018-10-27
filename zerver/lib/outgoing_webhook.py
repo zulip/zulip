@@ -16,7 +16,7 @@ from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import retry_event
-from zerver.lib.url_encoding import encode_stream
+from zerver.lib.url_encoding import near_message_url
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
@@ -171,21 +171,12 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
 def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
     message = event['message']
-    if message['type'] == 'stream':
-        stream_url_frag = encode_stream(message.get('stream_id'), message['display_recipient'])
-        message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
-                       % {'server': bot_user.realm.uri,
-                          'stream': stream_url_frag,
-                          'subject': message['subject'],
-                          'id': str(message['id'])})
-    else:
-        recipient_emails = ','.join([recipient['email'] for recipient in message['display_recipient']])
-        recipient_email_encoded = urllib.parse.quote(recipient_emails).replace('.', '%2E').replace('%', '.')
-        message_url = ("%(server)s/#narrow/pm-with/%(recipient_emails)s/near/%(id)s"
-                       % {'server': bot_user.realm.uri,
-                          'recipient_emails': recipient_email_encoded,
-                          'id': str(message['id'])})
-    return message_url
+    realm = bot_user.realm
+
+    return near_message_url(
+        realm=realm,
+        message=message,
+    )
 
 def notify_bot_owner(event: Dict[str, Any],
                      request_data: Dict[str, Any],
