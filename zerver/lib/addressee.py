@@ -84,7 +84,7 @@ class Addressee:
     def legacy_build(sender: UserProfile,
                      message_type_name: str,
                      message_to: Sequence[str],
-                     topic_name: str,
+                     topic_name: Optional[str],
                      realm: Optional[Realm]=None) -> 'Addressee':
 
         # For legacy reason message_to used to be either a list of
@@ -117,7 +117,7 @@ class Addressee:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream_name: str, topic: str) -> 'Addressee':
+    def for_stream(stream_name: str, topic: Optional[str]) -> 'Addressee':
         if topic is None:
             raise JsonableError(_("Missing topic"))
         topic = topic.strip()

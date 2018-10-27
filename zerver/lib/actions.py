@@ -521,7 +521,7 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
     send_event(event, bot_owner_user_ids(user_profile))
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: int=None) -> None:
+def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
@@ -3343,7 +3343,7 @@ def do_set_user_display_setting(user_profile: UserProfile,
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
              'setting_name': setting_name,
-             'setting': setting_value}
+             'setting': setting_value}  # type: Dict[str, Union[bool, str, None]]
     if setting_name == "default_language":
         assert isinstance(setting_value, str)
         event['language_name'] = get_language_name(setting_value)
@@ -4658,6 +4658,8 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     notify_invites_changed(prereg_user)
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
+    assert prereg_user.referred_by is not None
+    assert prereg_user.realm is not None
     check_invite_limit(prereg_user.referred_by.realm, 1)
 
     prereg_user.invited_at = timezone_now()
@@ -4928,7 +4930,7 @@ def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
 
 def try_add_realm_custom_profile_field(realm: Realm, name: str, field_type: int,
                                        hint: str='',
-                                       field_data: ProfileFieldData=None) -> CustomProfileField:
+                                       field_data: Optional[ProfileFieldData]=None) -> CustomProfileField:
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
     if field.field_type == CustomProfileField.CHOICE:
@@ -4953,7 +4955,7 @@ def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
 
 def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileField,
                                           name: str, hint: str='',
-                                          field_data: ProfileFieldData=None) -> None:
+                                          field_data: Optional[ProfileFieldData]=None) -> None:
     field.name = name
     field.hint = hint
     if field.field_type == CustomProfileField.CHOICE:

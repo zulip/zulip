@@ -1428,12 +1428,13 @@ class Message(AbstractMessage):
                 'bitcoin:' in content)
 
     @staticmethod
-    def is_status_message(content: str, rendered_content: str) -> bool:
+    def is_status_message(content: str, rendered_content: Optional[str]) -> bool:
         """
         Returns True if content and rendered_content are from 'me_message'
         """
         if content.startswith('/me ') and '\n' not in content:
-            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
+            if rendered_content is None or \
+                    (rendered_content.startswith('<p>') and rendered_content.endswith('</p>')):
                 return True
         return False
 
