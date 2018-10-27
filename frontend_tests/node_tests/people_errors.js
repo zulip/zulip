@@ -64,9 +64,9 @@ run_test('blueslip', () => {
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 
-    blueslip.set_test_data('error', 'Unknown user ids: 1,2');
+    blueslip.set_test_data('warn', 'Unknown user ids: 1,2');
     people.user_ids_string_to_emails_string('1,2');
-    assert.equal(blueslip.get_test_logs('error').length, 1);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 
     blueslip.set_test_data('warn', 'Unknown emails: ' + unknown_email);
