@@ -165,7 +165,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
     });
 
     if (!_.all(emails)) {
-        blueslip.error('Unknown user ids: ' + user_ids_string);
+        blueslip.warn('Unknown user ids: ' + user_ids_string);
         return;
     }
 
