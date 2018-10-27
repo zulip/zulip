@@ -78,7 +78,7 @@ class DoRestCallTests(ZulipTestCase):
             do_rest_call('',  None, self.mock_event, service_handler)
             bot_owner_notification = self.get_last_message()
             self.assertEqual(bot_owner_notification.content,
-                             '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
+                             '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *500*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
         self.mock_event['failed_tries'] = 0
@@ -91,7 +91,7 @@ The webhook got a response with status code *500*.''')
             bot_owner_notification = self.get_last_message()
             self.assertTrue(mock_fail_with_message.called)
             self.assertEqual(bot_owner_notification.content,
-                             '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
+                             '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
 
@@ -117,7 +117,7 @@ The webhook got a response with status code *400*.''')
         bot_owner_notification = self.get_last_message()
         self.assertTrue(mock_fail_with_message.called)
         self.assertEqual(bot_owner_notification.content,
-                         '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
+                         '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 When trying to send a request to the webhook service, an exception of type RequestException occurred:
 ```
 I'm a generic exception :(

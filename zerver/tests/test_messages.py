@@ -84,9 +84,10 @@ from zerver.models import (
 )
 
 
-from zerver.lib.upload import create_attachment
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
+from zerver.lib.upload import create_attachment
+from zerver.lib.url_encoding import near_message_url
 
 from zerver.views.messages import create_mirrored_message_users
 
@@ -527,6 +528,22 @@ class ExtractedRecipientsTest(TestCase):
             extract_recipients(s)
 
 class PersonalMessagesTest(ZulipTestCase):
+
+    def test_near_pm_message_url(self) -> None:
+        realm = get_realm('zulip')
+        message = dict(
+            type='personal',
+            id=555,
+            display_recipient=[
+                dict(id=77),
+                dict(id=80),
+            ],
+        )
+        url = near_message_url(
+            realm=realm,
+            message=message,
+        )
+        self.assertEqual(url, 'http://zulip.testserver/#narrow/pm-with/77,80-pm/near/555')
 
     def test_is_private_flag_not_leaked(self) -> None:
         """
