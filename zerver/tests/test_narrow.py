@@ -528,6 +528,7 @@ class PostProcessTest(ZulipTestCase):
             self.assertEqual(info['rows'], out_rows)
             self.assertEqual(info['found_anchor'], found_anchor)
             self.assertEqual(info['found_newest'], found_newest)
+            self.assertEqual(info['found_oldest'], found_oldest)
 
         # typical 2-sided query
         anchor = 10
