@@ -168,7 +168,7 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     response_data = dict(content=content)
     send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
 
-def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> str:
+def get_message_url(event: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
     message = event['message']
     realm = bot_user.realm
@@ -184,7 +184,7 @@ def notify_bot_owner(event: Dict[str, Any],
                      response_content: Optional[AnyStr]=None,
                      failure_message: Optional[str]=None,
                      exception: Optional[Exception]=None) -> None:
-    message_url = get_message_url(event, request_data)
+    message_url = get_message_url(event)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
 
@@ -264,7 +264,7 @@ def do_rest_call(base_url: str,
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
                             "%(response)s\""
-                            % {'message_url': get_message_url(event, request_data),
+                            % {'message_url': get_message_url(event),
                                'status_code': response.status_code,
                                'response': response.content})
             failure_message = "Third party responded with %d" % (response.status_code)
