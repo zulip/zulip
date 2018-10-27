@@ -81,7 +81,7 @@ def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     return True
 
 def common_get_active_user(email: str, realm: Realm,
-                           return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
+                           return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
     try:
         user_profile = get_user(email, realm)
     except UserProfile.DoesNotExist:
@@ -159,7 +159,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
 
     def authenticate(self, username: Optional[str]=None, realm: Optional[Realm]=None,
                      use_dummy_backend: bool=False,
-                     return_data: Dict[str, Any]=None) -> Optional[UserProfile]:
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if use_dummy_backend:
             # These are kwargs only for readability; they should never be None
             assert username is not None
@@ -215,7 +215,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
     """
 
-    def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,
+    def authenticate(self, google_oauth2_token: Optional[str]=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         # We lazily import apiclient as part of optimizing the base
         # import time for a Zulip management command, since it's only
@@ -346,7 +346,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         try:
             username = self.django_to_ldap_username(username)
         except ZulipLDAPExceptionOutsideDomain:
-            return_data['outside_ldap_domain'] = True
+            if return_data is not None:
+                return_data['outside_ldap_domain'] = True
             return None
 
         return ZulipLDAPAuthBackendBase.authenticate(self,
