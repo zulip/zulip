@@ -19,6 +19,7 @@ from zerver.data_import.slack import (
     convert_slack_workspace_messages,
     do_convert_data,
     process_avatars,
+    process_message_files,
 )
 from zerver.data_import.import_util import (
     build_zerver_realm,
@@ -495,7 +496,7 @@ class SlackImporter(ZulipTestCase):
         user_list = []  # type: List[Dict[str, Any]]
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments = uploads = []  # type: List[Dict[str, Any]]
-        id_list = (2, 0, 1)
+        id_list = (2, 0)
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
@@ -574,3 +575,68 @@ class SlackImporter(ZulipTestCase):
         # remove tar file created in 'do_convert_data' function
         os.remove(output_dir + '.tar.gz')
         self.assertFalse(os.path.exists(output_dir))
+
+    def test_message_files(self) -> None:
+        alice_id = 7
+        alice = dict(
+            id=alice_id,
+            profile=dict(
+                email='alice@example.com',
+            ),
+        )
+        files = [
+            dict(
+                url_private='files.slack.com/apple.png',
+                title='Apple',
+                name='apple.png',
+                mimetype='image/png',
+                timestamp=9999,
+                created=8888,
+                size=3000000,
+            ),
+            dict(
+                url_private='example.com/banana.zip',
+                title='banana',
+            ),
+        ]
+        message = dict(
+            user=alice_id,
+            files=files,
+        )
+        domain_name = 'example.com'
+        realm_id = 5
+        message_id = 99
+        user = 'alice'
+        users = [alice]
+        added_users = {
+            'alice': alice_id,
+        }
+
+        zerver_attachment = []  # type: List[Dict[str, Any]]
+        uploads_list = []  # type: List[Dict[str, Any]]
+
+        info = process_message_files(
+            message=message,
+            domain_name=domain_name,
+            realm_id=realm_id,
+            message_id=message_id,
+            user=user,
+            users=users,
+            added_users=added_users,
+            zerver_attachment=zerver_attachment,
+            uploads_list=uploads_list,
+        )
+        self.assertEqual(len(zerver_attachment), 1)
+        self.assertEqual(len(uploads_list), 1)
+
+        image_path = zerver_attachment[0]['path_id']
+        self.assertIn('/SlackImportAttachment/', image_path)
+        expected_content = '[Apple](/user_uploads/{image_path})\n[banana](example.com/banana.zip)'.format(image_path=image_path)
+        self.assertEqual(info['content'], expected_content)
+
+        self.assertTrue(info['has_link'])
+        self.assertTrue(info['has_image'])
+
+        self.assertEqual(uploads_list[0]['s3_path'], image_path)
+        self.assertEqual(uploads_list[0]['realm_id'], realm_id)
+        self.assertEqual(uploads_list[0]['user_profile_email'], 'alice@example.com')
