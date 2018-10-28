@@ -348,13 +348,15 @@ def build_message(subject: str, pub_date: float, message_id: int, content: str,
 
     return zulip_message_dict
 
-def build_attachment(realm_id: int, message_ids: Set[int], attachment_id: int,
+def build_attachment(realm_id: int, message_ids: Set[int],
                      user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
                      zerver_attachment: List[ZerverFieldsT]) -> None:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
     information about 'size', 'created' (created time) and ['name'] (filename).
     """
+    attachment_id = NEXT_ID('attachment')
+
     attachment = Attachment(
         id=attachment_id,
         size=fileinfo['size'],

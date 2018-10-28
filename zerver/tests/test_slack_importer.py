@@ -444,7 +444,7 @@ class SlackImporter(ZulipTestCase):
             reaction, id_list = channel_message_to_zerver_message(
                 1, user_data, added_users, added_recipient,
                 all_messages, [], subscriber_map,
-                added_channels, (0, 0, 0), 'domain')
+                added_channels, (0, 0), 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -452,7 +452,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
-        self.assertEqual(id_list, (5, 1, 0))
+        self.assertEqual(id_list, (5, 1))
 
         # Test reactions
         self.assertEqual(reaction[0]['user_profile'], 24)

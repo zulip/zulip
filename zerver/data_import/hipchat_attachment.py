@@ -9,8 +9,6 @@ from zerver.data_import.import_util import (
 
 from typing import Any, Dict, List, Optional
 
-from zerver.data_import.sequencer import NEXT_ID
-
 class AttachmentHandler:
     def __init__(self) -> None:
         self.info_dict = dict()  # type: Dict[str, Dict[str, Any]]
@@ -75,7 +73,6 @@ class AttachmentHandler:
             build_attachment(
                 realm_id=realm_id,
                 message_ids=info['message_ids'],
-                attachment_id=NEXT_ID('attachment'),
                 user_id=info['sender_id'],
                 fileinfo=dict(
                     created=info['mtime'],  # minor lie
