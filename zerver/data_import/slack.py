@@ -25,6 +25,7 @@ from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
     process_emojis, build_realm, build_stream, build_message, \
     create_converted_data_files, make_subscriber_map
+from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -459,9 +460,6 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     total_attachments = []  # type: List[ZerverFieldsT]
     total_uploads = []  # type: List[ZerverFieldsT]
 
-    message_id = reaction_id = 0
-    id_list = (message_id, reaction_id)
-
     # The messages are stored in batches
     low_index = 0
     upper_index = low_index + chunk_size
@@ -475,11 +473,11 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
         message_data = all_messages[low_index:upper_index]
         if len(message_data) == 0:
             break
-        zerver_message, zerver_usermessage, attachment, uploads, \
-            reactions, id_list = channel_message_to_zerver_message(
+        zerver_message, zerver_usermessage, attachment, uploads, reactions = \
+            channel_message_to_zerver_message(
                 realm_id, users, added_users, added_recipient, message_data,
                 zerver_realmemoji, subscriber_map, added_channels,
-                id_list, domain_name)
+                domain_name)
 
         message_json = dict(
             zerver_message=zerver_message,
@@ -522,13 +520,11 @@ def channel_message_to_zerver_message(realm_id: int,
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       subscriber_map: Dict[int, Set[int]],
                                       added_channels: AddedChannelsT,
-                                      id_list: Tuple[int, int],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT],
-                                                                 Tuple[int, int]]:
+                                                                 List[ZerverFieldsT]]:
     """
     Returns:
     1. zerver_message, which is a list of the messages
@@ -536,9 +532,7 @@ def channel_message_to_zerver_message(realm_id: int,
     3. zerver_attachment, which is a list of the attachments
     4. uploads_list, which is a list of uploads to be mapped in uploads records.json
     5. reaction_list, which is a list of all user reactions
-    6. id_list, which is a tuple of max ids of messages, reactions
     """
-    message_id_count, reaction_id_count = id_list
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
@@ -578,13 +572,13 @@ def channel_message_to_zerver_message(realm_id: int,
         rendered_content = None
 
         recipient_id = added_recipient[message['channel_name']]
-        message_id = message_id_count
+        message_id = NEXT_ID('message')
 
         # Process message reactions
         if 'reactions' in message.keys():
-            reaction_id_count = build_reactions(reaction_list, message['reactions'], added_users,
-                                                message_id, reaction_id_count, name_to_codepoint,
-                                                zerver_realmemoji)
+            build_reactions(reaction_list, message['reactions'], added_users,
+                            message_id, name_to_codepoint,
+                            zerver_realmemoji)
 
         # Process different subtypes of slack messages
 
@@ -630,11 +624,8 @@ def channel_message_to_zerver_message(realm_id: int,
             message_id=message_id,
         )
 
-        message_id_count += 1
-
-    id_list = (message_id_count, reaction_id_count)
     return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, \
-        reaction_list, id_list
+        reaction_list
 
 def process_message_files(message: ZerverFieldsT,
                           domain_name: str,
@@ -718,9 +709,9 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
     return s3_path, content
 
 def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
-                    added_users: AddedUsersT, message_id: int, reaction_id: int,
+                    added_users: AddedUsersT, message_id: int,
                     name_to_codepoint: ZerverFieldsT,
-                    zerver_realmemoji: List[ZerverFieldsT]) -> int:
+                    zerver_realmemoji: List[ZerverFieldsT]) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:
         realmemoji[realm_emoji['name']] = realm_emoji['id']
@@ -741,6 +732,7 @@ def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFi
             continue
 
         for user in slack_reaction['users']:
+            reaction_id = NEXT_ID('reaction')
             reaction = Reaction(
                 id=reaction_id,
                 emoji_code=emoji_code,
@@ -752,9 +744,7 @@ def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFi
             reaction_dict['message'] = message_id
             reaction_dict['user_profile'] = added_users[user]
 
-            reaction_id += 1
             reaction_list.append(reaction_dict)
-    return reaction_id
 
 def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverFieldsT, s3_path: str,
                   uploads_list: List[ZerverFieldsT]) -> None:
