@@ -158,7 +158,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(message.content, "TestStreamEmailMessages Body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "(no topic 1)")
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user('hamlet')

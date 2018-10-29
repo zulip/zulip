@@ -2523,7 +2523,7 @@ class EditMessageTest(ZulipTestCase):
         do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has passed")
 
         # anyone should be able to edit "no topic" indefinitely
-        message.set_topic_name("(no topic)")
+        message.subject = "(no topic 42)"
         message.save()
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_success(id_, 'D')
