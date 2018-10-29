@@ -7,6 +7,7 @@ import re
 import sys
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
 import ujson
+import json
 
 from django.core import signing
 from django.core.management import call_command
@@ -101,12 +102,19 @@ def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str,
 def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
                                      mocked_function: CallableT) -> Callable[[Any, Any], Any]:  # nocoverage
     def _generate_and_save_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
-        # Talk to Stripe
-        stripe_object = mocked_function(*args, **kwargs)
         # Note that mock is not the same as mocked_function, even though their
         # definitions look the same
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
+        try:
+            # Talk to Stripe
+            stripe_object = mocked_function(*args, **kwargs)
+        except stripe.error.StripeError as e:
+            with open(fixture_path, 'w') as f:
+                error_dict = e.__dict__
+                error_dict["headers"] = dict(error_dict["headers"])
+                f.write(json.dumps(error_dict, indent=2, separators=(',', ': ')) + "\n")
+            raise e
         with open(fixture_path, 'w') as f:
             f.write(str(stripe_object) + "\n")
         return stripe_object
@@ -117,7 +125,13 @@ def read_stripe_fixture(decorated_function_name: str,
     def _read_stripe_fixture(*args: Any, **kwargs: Any) -> Any:
         mock = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
         fixture_path = stripe_fixture_path(decorated_function_name, mocked_function_name, mock.call_count)
-        return stripe.util.convert_to_stripe_object(ujson.load(open(fixture_path, 'r')))
+        fixture = ujson.load(open(fixture_path, 'r'))
+        # Check for StripeError fixtures
+        if "json_body" in fixture:
+            requestor = stripe.api_requestor.APIRequestor()
+            # This function will raise the relevant StripeError according to the fixture
+            requestor.interpret_response(fixture["http_body"], fixture["http_status"], fixture["headers"])
+        return stripe.util.convert_to_stripe_object(fixture)
     return _read_stripe_fixture
 
 def mock_stripe(mocked_function_name: str,

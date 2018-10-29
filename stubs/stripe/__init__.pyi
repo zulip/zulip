@@ -1,5 +1,6 @@
 import stripe.error as error
 import stripe.util as util
+import stripe.api_requestor as api_requestor
 from stripe.api_resources.list_object import SubscriptionListObject
 
 from typing import Optional, Any, Dict, List, Union
