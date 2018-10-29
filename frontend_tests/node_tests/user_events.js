@@ -63,6 +63,13 @@ run_test('updates', () => {
     };
     people.add(isaac);
 
+    user_events.update_person({user_id: isaac.user_id, is_guest: true});
+    person = people.get_by_email(isaac.email);
+    assert(person.is_guest);
+    user_events.update_person({user_id: isaac.user_id, is_guest: false});
+    person = people.get_by_email(isaac.email);
+    assert(!person.is_guest);
+
     user_events.update_person({user_id: isaac.user_id, is_admin: true});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, 'Isaac Newton');
