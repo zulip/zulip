@@ -151,7 +151,7 @@ exports.generate_botserverrc_content = function (email, api_key, token) {
 exports.bot_creation_policy_values = {
     everyone: {
         code: 1,
-        description: i18n.t("Everyone"),
+        description: i18n.t("Members and admins"),
     },
     admins_only: {
         code: 3,
@@ -159,7 +159,7 @@ exports.bot_creation_policy_values = {
     },
     restricted: {
         code: 2,
-        description: i18n.t("Everyone, but only admins can add generic bots"),
+        description: i18n.t("Members and admins, but only admins can add generic bots"),
     },
 };
 

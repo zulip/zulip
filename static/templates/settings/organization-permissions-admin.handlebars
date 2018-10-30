@@ -11,8 +11,8 @@
                     <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
                     <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction">
                         <option value="no_invite_required">{{t "No" }}</option>
-                        <option value="by_anyone">{{t "Yes, and normal users can send invitations" }}</option>
-                        <option value="by_admins_only">{{t "Yes, and only admins can send invitations" }}</option>
+                        <option value="by_anyone">{{t "Yes. Members and admins can send invitations." }}</option>
+                        <option value="by_admins_only">{{t "Yes. Only admins can send invitations." }}</option>
                     </select>
                 </div>
 
@@ -62,10 +62,10 @@
                 <div class="input-group">
                     <label for="realm_create_stream_permission" class="dropdown-title">{{t "Who can create streams" }}</label>
                     <select name="realm_create_stream_permission" id="id_realm_create_stream_permission">
-                        <option value="by_anyone">{{t "Everyone" }}</option>
+                        <option value="by_anyone">{{t "Members and admins" }}</option>
                         <option value="by_admins_only">{{t "Admins only" }}</option>
-                        <option value="by_admin_user_with_three_days_old">{{t "All admins, and users with accounts at least 3 days old." }}</option>
-                        <option value="by_admin_user_with_custom_time">{{t "All admins, and users with accounts at least N days old." }}</option>
+                        <option value="by_admin_user_with_three_days_old">{{t "All admins, and members with accounts at least 3 days old." }}</option>
+                        <option value="by_admin_user_with_custom_time">{{t "All admins, and members with accounts at least N days old." }}</option>
                     </select>
                 </div>
                 <div class="dependent-block">
@@ -88,7 +88,7 @@
                 <div class="inline-block">
                     <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
                     <select name="realm_add_emoji_by_admins_only" id="id_realm_add_emoji_by_admins_only">
-                        <option value="by_anyone">{{t "Everyone" }}</option>
+                        <option value="by_anyone">{{t "Members and admins" }}</option>
                         <option value="by_admins_only">{{t "Admins only" }}</option>
                     </select>
                 </div>
