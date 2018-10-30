@@ -313,6 +313,7 @@ exports.on_load_success = function (realm_people_data) {
             full_name: people.get_full_name(person.user_id),
             is_admin: person.is_admin,
             is_guest: person.is_guest,
+            is_member: !person.is_admin && !person.is_guest,
             is_bot: person.is_bot,
         });
         var user_info_form_modal = $(html);

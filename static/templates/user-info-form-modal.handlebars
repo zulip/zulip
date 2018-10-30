@@ -19,9 +19,9 @@
                 <div class="input-group">
                     <label class="input-label" for="user-role-select">{{t 'User role' }}</label>
                     <select name="user-role-select" id="user-role-select">
-                        <option value="regular">{{t 'Regular member' }}</option>
-                        <option value="admin" {{#if is_admin}}selected{{/if}}>{{t 'Organization administrator' }}</option>
                         <option value="guest" {{#if is_guest}}selected{{/if}}>{{t 'Guest'}}</option>
+                        <option value="regular" {{#if is_member}}selected{{/if}}>{{t 'Member' }}</option>
+                        <option value="admin" {{#if is_admin}}selected{{/if}}>{{t 'Administrator' }}</option>
                     </select>
                 </div>
                 {{/if}}
