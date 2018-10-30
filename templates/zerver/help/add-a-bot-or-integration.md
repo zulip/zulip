@@ -1,6 +1,6 @@
 # Add a bot
 
-By default, anyone can add a bot to a Zulip organization.
+By default, anyone other than guests can add a bot to a Zulip organization.
 A bot that sends content to or from another product is often called an
 **integration**.
 

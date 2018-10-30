@@ -3,7 +3,7 @@
 Streams are similar to chatrooms, IRC channels, or email lists in that they
 determine who receives a message. There are three types of streams in Zulip.
 
-* **Public**: Anyone can join, and anyone can view the complete message
+* **Public**: Anyone other than guests can join, and anyone (other than guests) can view the complete message
   history without joining.
 
 * **Private, shared history**: You must be added by a member of the stream. The
@@ -21,10 +21,13 @@ At a high level:
   messages or do things that would indirectly give them access to stream
   messages, like adding members or changing the stream privacy settings.
 
-* Non-admins cannot easily see which private streams exist, or interact with
+* Non-admin members cannot easily see which private streams exist, or interact with
   them in any way until they are added. Given a stream name, they can figure
   out whether a stream with that name exists, but cannot see any other
   details about the stream.
+
+* From the perspective of a guest, all streams are private streams, and they
+  additionally can't add other members to the streams they are subscribed to.
 
 There are two situations in which an organization administrator can access
 private stream messages:
@@ -40,41 +43,45 @@ private stream messages:
 
 ### Public streams
 
-|                       | Org admins | Stream members | Org members |
-|---                    |---         |---             |---          |
+|                       | Org admins | Stream members | Org members | Guests
+|---                    |---         |---             |---          |---
 | Join                  | &#10004;   | &mdash;        | &#10004;    |
-| Add others            | &#10004;   | &#10004;       | &#10004;    |
+| Add others            | &#10004;   | [1]            | &#10004;    |
 | See subscriber list   | &#10004;   | &#10004;       | &#10004;    |
 | See full history      | &#10004;   | &#10004;       | &#10004;    |
 | See estimated traffic | &#10004;   | &#10004;       | &#10004;    |
-| Post                  | &#10004;   | [1]            |             |
+| Post                  | &#10004;   | [2]            |             |
 | Change the privacy    | &#10004;   |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
 | Remove others         | &#10004;   |                |             |
 | Delete                | &#10004;   |                |             |
 
-[1] Configurable.
+[1] Yes, except for guests.
+
+[2] Configurable.
 
 ### Private streams
 
-|                       | Org admins | Stream members | Org members |
-|---                    |---         |---             |---          |
+|                       | Org admins | Stream members | Org members | Guests
+|---                    |---         |---             |---          |---
 | Join                  |            | &mdash;        |             |
-| Add others            |            | &#10004;       |             |
+| Add others            |            | [1]            |             |
 | See subscriber list   | &#10004;   | &#10004;       |             |
-| See full history      |            | [2]            |             |
+| See full history      |            | [3]            |             |
 | See estimated traffic | &#10004;   | &#10004;       |             |
-| Post                  | &#10004;   | [1]            |             |
-| Change the privacy    | [3]        |                |             |
+| Post                  | &#10004;   | [2]            |             |
+| Change the privacy    | [4]        |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
 | Remove others         | &#10004;   |                |             |
 | Delete                | &#10004;   |                |             |
 
-[1] Configurable.
+[1] Yes, except for guests.
 
-[2] Depends on the stream type.
+[2] Configurable.
 
-[3] Yes, but only if subscribed. If you have a private stream without an
+[3] Depends on the stream type.
+
+[4] Yes, but only if subscribed. If you have a private stream without an
 admin, you'll have to add an admin in order to change the stream's privacy.

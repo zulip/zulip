@@ -11,7 +11,7 @@ member an administrator, or revoke admin access from any other administrator.
 1. Find the user you would like to manage. Click the **pencil**
 (<i class="fa fa-pencil"></i>) to the right of their name.
 
-1. Under **User role**, select **Member** or **Administrator**.
+1. Under **User role**, select **Administrator**, **Member** or **Guest**.
 
 1. Click **Save changes**. The new rights will take effect immediately.
 

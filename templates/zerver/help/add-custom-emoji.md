@@ -1,6 +1,6 @@
 # Add custom emoji
 
-By default, anyone can add custom emoji to a Zulip organization. Added emoji
+By default, anyone other than guests can add custom emoji to a Zulip organization. Added emoji
 are available to all users.
 
 Organization administrators can also

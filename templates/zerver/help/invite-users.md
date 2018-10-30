@@ -1,7 +1,7 @@
 # Invite users
 
 By default, users need an invitation to join your Zulip organization, and
-any existing user can invite anyone else.
+all members other than guests can invite others.
 
 Organization administrators can also
 [modify who can join and invite](/help/manage-who-can-join-and-invite) in a
@@ -10,7 +10,7 @@ variety of ways.
 {relative|gear|invite}
 
 1. Enter a list of **email addresses**, decide whether the new users should
-   **join as members or admins**, and select the **streams they should join**.
+   **join as admins, members, or guests**, and select the **streams they should join**.
 
 1. Click **Invite**.
 

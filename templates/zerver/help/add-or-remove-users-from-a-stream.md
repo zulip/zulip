@@ -2,9 +2,9 @@
 
 ## Add someone to a stream
 
-Anyone subscribed to a stream can add users to that stream. Additionally,
-anyone can add users to a public stream, whether or not they are subscribed
-to the stream.
+Anyone (other than guests) subscribed to a stream can add users to that
+stream. Additionally, anyone (other than guests) can add users to a public
+stream, whether or not they are subscribed to the stream.
 
 {relative|stream|all}
 

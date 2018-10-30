@@ -2,10 +2,10 @@
 
 {!admin-only.md!}
 
-By default, any user can create new streams. However, you can restrict stream creation to
+By default, anyone other than guests can create new streams. However, you can restrict stream creation to
 
 * **Organization administrators**, or
-* **Organization administrators, and anyone with an account at least `N` days old**,
+* **Organization administrators, and members with accounts at least `N` days old**,
   for any `N`.
 
 For corporations and other entities with controlled access, we highly

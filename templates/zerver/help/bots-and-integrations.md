@@ -68,7 +68,7 @@ A few more details:
 
 ## Adding bots
 
-By default, anyone can [add a bot](/help/add-a-bot-or-integration) to a
+By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integration) to a
 Zulip organization, but administrators can
 [restrict bot creation](/help/restrict-bot-creation). Any bot that is added
 is visible and available for anyone to use.
