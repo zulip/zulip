@@ -6,6 +6,7 @@
     <td>
         <span class="email">{{email}}</span>
     </td>
+    {{#unless is_bot}}
     <td>
         <span class="user_role">
             {{#if is_admin}}
@@ -17,6 +18,7 @@
             {{/if}}
         </span>
     </td>
+    {{/unless}}
     {{#if is_bot}}
     <td>
         <span class="owner">{{bot_owner}}</span>
