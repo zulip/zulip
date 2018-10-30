@@ -121,10 +121,16 @@ def read_stripe_fixture(decorated_function_name: str,
     return _read_stripe_fixture
 
 def mock_stripe(mocked_function_name: str,
-                generate_this_fixture: bool=False) -> Callable[[CallableT], CallableT]:
+                generate_this_fixture: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
-        if GENERATE_STRIPE_FIXTURES or generate_this_fixture:
+
+        if generate_this_fixture is not None:
+            generate_fixture = generate_this_fixture
+        else:
+            generate_fixture = GENERATE_STRIPE_FIXTURES
+
+        if generate_fixture:
             side_effect = generate_and_save_stripe_fixture(
                 decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
         else:
@@ -144,9 +150,9 @@ class Kandra(object):
         return True
 
 class StripeTest(ZulipTestCase):
-    @mock_stripe("stripe.Coupon.create")
-    @mock_stripe("stripe.Plan.create")
-    @mock_stripe("stripe.Product.create")
+    @mock_stripe("stripe.Coupon.create", False)
+    @mock_stripe("stripe.Plan.create", False)
+    @mock_stripe("stripe.Product.create", False)
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
 
