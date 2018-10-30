@@ -441,7 +441,7 @@ def get_gcm_alert(message: Message) -> str:
     elif message.is_stream_message() and message.trigger == 'mentioned':
         return "New mention from %s" % (sender_str,)
     else:  # message.is_stream_message() and message.trigger == 'stream_push_notify'
-        return "New stream message from %s in %s" % (sender_str, message.stream_name,)
+        return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
 
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: LH.HtmlElement) -> str:
@@ -527,7 +527,7 @@ def get_apns_alert_title(message: Message) -> str:
         recipients = cast(List[Dict[str, Any]], get_display_recipient(message.recipient))
         return ', '.join(sorted(r['full_name'] for r in recipients))
     elif message.is_stream_message():
-        return "#%s > %s" % (message.stream_name, message.topic_name(),)
+        return "#%s > %s" % (get_display_recipient(message.recipient), message.topic_name(),)
     # For personal PMs, we just show the sender name.
     return message.sender.full_name
 
@@ -659,7 +659,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
             return
 
     message.trigger = missed_message['trigger']
-    message.stream_name = missed_message.get('stream_name', None)
 
     apns_payload = get_apns_payload(user_profile, message)
     gcm_payload = get_gcm_payload(user_profile, message)
