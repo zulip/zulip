@@ -35,11 +35,7 @@ class zulip::app_frontend_once {
   }
 
   file { '/etc/cron.d/calculate-first-visible-message-id':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/calculate-first-visible-message-id',
+    ensure => absent,
   }
 
   file { '/etc/cron.d/clearsessions':

@@ -30,6 +30,14 @@ class zulip_ops::prod_app_frontend {
     source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
   }
 
+  # TODO: This should ideally move to a prod_app_frontend_once.pp
+  file { '/etc/cron.d/update-first-visible-message-id':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/calculate-first-visible-message-id',
+  }
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }
