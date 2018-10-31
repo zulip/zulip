@@ -43,8 +43,15 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#billing-tabs a').click(function (e) {
-        e.preventDefault();
+    var hash = window.location.hash;
+    if (hash) {
+        $('#billing-tabs.nav a[href="' + hash + '"]').tab('show');
+        $('html,body').scrollTop(0);
+    }
+
+    $('#billing-tabs.nav-tabs a').click(function () {
         $(this).tab('show');
+        window.location.hash = this.hash;
+        $('html,body').scrollTop(0);
     });
 });
