@@ -103,9 +103,9 @@ def zulip_server_error(report: Dict[str, Any]) -> None:
             "- path: %(path)s\n"
             "- %(method)s: %(data)s\n") % (report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-            val = cast(str, report.get(field.lower()))
+            val = report.get(field.lower())
             if field == "QUERY_STRING":
-                val = clean_data_from_query_parameters(val)
+                val = clean_data_from_query_parameters(str(val))
             request_repr += "- %s: \"%s\"\n" % (field, val)
         request_repr += "~~~~"
     else:
@@ -131,9 +131,9 @@ def email_server_error(report: Dict[str, Any]) -> None:
             "- path: %(path)s\n"
             "- %(method)s: %(data)s\n") % (report)
         for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
-            val = cast(str, report.get(field.lower()))
+            val = report.get(field.lower())
             if field == "QUERY_STRING":
-                val = clean_data_from_query_parameters(val)
+                val = clean_data_from_query_parameters(str(val))
             request_repr += "- %s: \"%s\"\n" % (field, val)
     else:
         request_repr = "Request info: none\n"
