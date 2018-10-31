@@ -23,10 +23,12 @@
                     <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
                     <div class="text">{{ _('Notifications') }}</div>
                 </li>
+                {% if not is_guest %}
                 <li tabindex="0" data-section="your-bots">
                     <i class="icon fa fa-github" aria-hidden="true"></i>
                     <div class="text">{{ _('Your bots') }}</div>
                 </li>
+                {% endif %}
                 <li tabindex="0" data-section="alert-words">
                     <i class="icon fa fa-book" aria-hidden="true"></i>
                     <div class="text">{{ _('Alert words') }}</div>
