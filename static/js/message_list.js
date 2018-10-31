@@ -254,9 +254,10 @@ exports.MessageList.prototype = {
 
                 // For invite only streams or streams that no longer
                 // exist, hide the resubscribe button
+                // Hide button for guest users
                 var sub = stream_data.get_sub(stream_name);
                 if (sub !== undefined) {
-                    show_button = !sub.invite_only;
+                    show_button = !page_params.is_guest && !sub.invite_only;
                 } else {
                     show_button = false;
                 }
