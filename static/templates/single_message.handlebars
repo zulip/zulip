@@ -10,7 +10,7 @@
                         {{#include_sender}}
                             {{! See ../js/notifications.js for another user of avatar_url. }}
                             <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}">
-                                <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+                                <img src="{{small_avatar_url}}" alt="" class="no-drag{{#if sender_is_guest}} guest_user_avatar{{/if}}"/>
                             </div>
                             {{#if status_message}}
                                 <span class="sender-status">

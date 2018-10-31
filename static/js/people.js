@@ -562,6 +562,14 @@ exports.sender_is_bot = function (message) {
     return false;
 };
 
+exports.sender_is_guest = function (message) {
+    if (message.sender_id) {
+        var person = exports.get_person_from_user_id(message.sender_id);
+        return person.is_guest;
+    }
+    return false;
+};
+
 function gravatar_url_for_email(email) {
     var hash = md5(email.toLowerCase());
     var avatar_url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';

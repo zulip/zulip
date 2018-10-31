@@ -382,7 +382,9 @@ run_test('message_methods', () => {
         user_id: 451,
         full_name: 'Charles Dickens',
         avatar_url: 'charles.com/foo.png',
+        is_guest: false,
     };
+    // Maria is an intentionally incomplete user object without all attributes
     var maria = {
         email: 'Athens@example.com',
         user_id: 452,
@@ -476,6 +478,28 @@ run_test('message_methods', () => {
 
     message = { sender_id: undefined };
     assert.equal(people.sender_is_bot(message), false);
+
+    // Test sender_is_guest
+    var polonius = {
+        email: 'polonius@example.com',
+        user_id: 43,
+        full_name: 'Guest User',
+        is_bot: false,
+        is_guest: true,
+    };
+    people.add(polonius);
+
+    message = { sender_id: polonius.user_id };
+    assert.equal(people.sender_is_guest(message), true);
+
+    message = { sender_id: maria.user_id };
+    assert.equal(people.sender_is_guest(message), undefined);
+
+    message = { sender_id: charles.user_id };
+    assert.equal(people.sender_is_guest(message), false);
+
+    message = { sender_id: undefined };
+    assert.equal(people.sender_is_guest(message), false);
 });
 
 initialize();
