@@ -35,6 +35,15 @@ is recommended.  We also recommend installing on the newest option
 you're comfortable with, to save your organization the work of
 upgrading.
 
+If you're using Ubuntu, the
+[Ubuntu universe repository][ubuntu-repositories] must be
+[enabled][enable-universe], which is usually just `sudo
+add-apt-repository universe`.
+
+[ubuntu-repositories]:
+https://help.ubuntu.com/community/Repositories/Ubuntu
+[enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
+
 #### Hardware Specifications
 
 * CPU and Memory: For installations with 100+ users you'll need a
