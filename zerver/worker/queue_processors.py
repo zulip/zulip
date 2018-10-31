@@ -311,7 +311,6 @@ class MissedMessageWorker(QueueProcessingWorker):
         current_time = time.time()
         for user_profile_id, timestamp in list(self.batch_start_by_recipient.items()):
             if current_time - timestamp < self.BATCH_DURATION:
-                logging.info("%s: %s - %s" % (user_profile_id, current_time, timestamp))
                 continue
             events = self.events_by_recipient[user_profile_id]
             logging.info("Batch-processing %s missedmessage_emails events for user %s" %
