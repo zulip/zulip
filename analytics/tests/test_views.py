@@ -24,6 +24,15 @@ class TestStatsEndpoint(ZulipTestCase):
         # Check that we get something back
         self.assert_in_response("Zulip analytics for", result)
 
+    def test_guest_user_cant_access_stats(self) -> None:
+        self.user = self.example_user('polonius')
+        self.login(self.user.email)
+        result = self.client_get('/stats')
+        self.assert_json_error(result, "Not allowed for guest users", 400)
+
+        result = self.client_get('/json/analytics/chart_data')
+        self.assert_json_error(result, "Not allowed for guest users", 400)
+
     def test_stats_for_realm(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)

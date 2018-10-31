@@ -147,12 +147,14 @@
                                     <i class="fa fa-sitemap" aria-hidden="true"></i> {{ _('API documentation') }}
                                 </a>
                             </li>
+                            {% if not is_guest %}
                             <li role="presentation">
                                 <a href="/stats" target="_blank" role="menuitem">
                                     <i class="fa fa-bar-chart" aria-hidden="true"></i>
                                     <span>{{ _('Statistics') }}</span>
                                 </a>
                             </li>
+                            {% endif %}
                             {% if show_plans %}
                             <li role="presentation">
                                 <a href="/plans" role="menuitem">

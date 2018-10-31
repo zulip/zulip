@@ -27,7 +27,7 @@ from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
     RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
 from zerver.decorator import require_server_admin, require_server_admin_api, \
-    to_non_negative_int, to_utc_datetime, zulip_login_required
+    to_non_negative_int, to_utc_datetime, zulip_login_required, require_non_guest_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
@@ -52,6 +52,10 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
+    if request.user.is_guest:
+        # TODO: Make @zulip_login_required pass the UserProfile so we
+        # can use @require_non_guest_human_user
+        raise JsonableError(_("Not allowed for guest users"))
     return render_stats(request, '', realm.name or realm.string_id)
 
 @require_server_admin
@@ -83,6 +87,7 @@ def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProf
                                     chart_name: str=REQ(), **kwargs: Any) -> HttpResponse:
     return get_chart_data(request=request, user_profile=user_profile, for_installation=True, **kwargs)
 
+@require_non_guest_user
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: str=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
