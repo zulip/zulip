@@ -2262,6 +2262,10 @@ nav ul li.active::after {
     background-image: url(/static/images/landing-page/mit-lobby-7.jpg);
 }
 
+.portico-landing.why-page .bg-pycon.security {
+    background-image: url(/static/images/landing-page/security.jpg);
+}
+
 .portico-landing.why-page .bg-pycon .bg-dimmer {
     position: absolute;
     width: 100%;
