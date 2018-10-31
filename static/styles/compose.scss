@@ -42,6 +42,12 @@
 
 #compose_buttons {
     text-align: right;
+
+    .new_message_button .compose_mobile_button span {
+        font-size: 1.2em !important;
+        font-weight: 400;
+        line-height: 1em;
+    }
 }
 
 #compose_buttons .button.small {
