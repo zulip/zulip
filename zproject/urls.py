@@ -495,6 +495,7 @@ i18n_urls = [
     url(r'^for/working-groups-and-communities/$',
         TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
     url(r'^for/mystery-hunt/$', TemplateView.as_view(template_name='zerver/for-mystery-hunt.html')),
+    url(r'^security/$', TemplateView.as_view(template_name='zerver/security.html')),
 
     # Terms of Service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
