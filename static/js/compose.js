@@ -471,7 +471,9 @@ exports.validation_error = function (error_type, stream_name) {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        var new_row = templates.render("compose_not_subscribed");
+        var sub = stream_data.get_sub(stream_name);
+        var new_row = templates.render("compose_not_subscribed", {
+            should_display_sub_button: sub.should_display_subscription_button});
         compose_not_subscribed_error(new_row, $('#stream'));
         return false;
     }

@@ -569,9 +569,12 @@ run_test('compose_announce', () => {
 });
 
 run_test('compose_not_subscribed', () => {
-    var html = render('compose_not_subscribed');
+    var html = render('compose_not_subscribed', {should_display_sub_button: true});
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
+    html = render('compose_not_subscribed', {should_display_sub_button: false});
+    button = $(html).find("button:first");
+    assert.equal(button.length, 0);
 });
 
 run_test('compose_notification', () => {
