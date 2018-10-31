@@ -23,12 +23,6 @@ casper.then(function () {
                                 'Heading is well-formed');
     });
 
-    msg.bodies.forEach(function (body) {
-        casper.test.assertMatch(body,
-                                /^(<p>(.|\n)*<\/p>)?$/,
-                                'Body is well-formed');
-    });
-
     casper.test.info('Sending messages');
 });
 
