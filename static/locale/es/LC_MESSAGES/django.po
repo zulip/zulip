@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-16 22:44+0000\n"
-"PO-Revision-Date: 2018-10-16 22:45+0000\n"
+"PO-Revision-Date: 2018-10-23 08:39+0000\n"
 "Last-Translator: Yago González <yagogonzalezg@gmail.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/zulip/zulip/language/es/)\n"
 "MIME-Version: 1.0\n"
@@ -61,7 +61,7 @@ msgstr "No hay datos de analíticas disponible. Por favor, contacta con el admin
 #: corporate/lib/stripe.py:71
 #, python-format
 msgid "Something went wrong. Please contact %s."
-msgstr ""
+msgstr "Algo salió mal. Por favor, contacta con %s."
 
 #: corporate/lib/stripe.py:72
 msgid "Something went wrong. Please reload the page."
@@ -69,7 +69,7 @@ msgstr "Algo salió mal. Por favor, recarga la página."
 
 #: corporate/lib/stripe.py:111
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "Algo salió mal. Por favor, espera unos segundos e inténtalo de nuevo."
 
 #: corporate/views.py:154 corporate/views.py:165 zerver/decorator.py:695
 msgid "Access denied"
@@ -1024,7 +1024,7 @@ msgstr "Estadísticas"
 
 #: templates/zerver/app/navbar.html:159
 msgid "Plans and pricing"
-msgstr ""
+msgstr "Planes y precios"
 
 #: templates/zerver/app/navbar.html:174
 msgid "Feedback"
@@ -1252,7 +1252,7 @@ msgstr "Canales por defecto"
 
 #: templates/zerver/app/settings_overlay.html:89
 msgid "Linkifiers"
-msgstr ""
+msgstr "Creadores de enlaces"
 
 #: templates/zerver/app/settings_overlay.html:93
 msgid "Custom profile fields"
@@ -2022,7 +2022,7 @@ msgstr "Logo de Pagerduty"
 
 #: templates/zerver/hello.html:530
 msgid "See plans and pricing!"
-msgstr ""
+msgstr "¡Mira los planes y precios!"
 
 #: templates/zerver/hello.html:536
 msgid "Log in now!"
@@ -2261,7 +2261,7 @@ msgstr "Reestablece tu contraseña"
 
 #: templates/zerver/reset.html:30
 msgid "Send reset link"
-msgstr ""
+msgstr "Enviar enlace de recuperación"
 
 #: templates/zerver/reset_confirm.html:14
 msgid "Reset your password."
@@ -2290,7 +2290,7 @@ msgstr "¡Reestablecimiento de contraseña enviado!"
 
 #: templates/zerver/reset_emailed.html:13
 msgid "Check your email in a few minutes to finish the process."
-msgstr ""
+msgstr "Comprueba tu correo electrónico en unos minutos para completar el proceso."
 
 #: templates/zerver/team.html:168
 msgid "Avatar"
@@ -2380,7 +2380,7 @@ msgstr "Esta organización ha sido desactivada"
 
 #: zerver/decorator.py:237
 msgid "Account is deactivated"
-msgstr ""
+msgstr "La cuenta está desactivada."
 
 #: zerver/decorator.py:251
 msgid "Account is not associated with this subdomain"
@@ -2629,7 +2629,7 @@ msgstr "El grupo de canales por defecto '%s' ya existe"
 #: zerver/lib/actions.py:3728
 #, python-format
 msgid "Invalid flag: '%s'"
-msgstr ""
+msgstr "Etiqueta inválida: '%s'"
 
 #: zerver/lib/actions.py:3737 zerver/lib/actions.py:3739
 #: zerver/lib/message.py:499 zerver/lib/message.py:505
@@ -2910,7 +2910,7 @@ msgstr "miembros"
 
 #: zerver/lib/outgoing_webhook.py:145
 msgid "Missing content"
-msgstr ""
+msgstr "Falta el contenido"
 
 #: zerver/lib/push_notifications.py:312
 msgid "Received 500 from push notification bouncer"
@@ -3189,11 +3189,11 @@ msgstr "El usuario con ID %d es un bot"
 
 #: zerver/models.py:2323
 msgid "List of options"
-msgstr ""
+msgstr "Lista de opciones"
 
 #: zerver/models.py:2326
 msgid "Person picker"
-msgstr ""
+msgstr "Selector de personas"
 
 #: zerver/models.py:2338
 msgid "Short text"
@@ -3205,11 +3205,11 @@ msgstr "Texto largo"
 
 #: zerver/models.py:2340
 msgid "Date picker"
-msgstr ""
+msgstr "Selector de fechas"
 
 #: zerver/models.py:2341
 msgid "Link"
-msgstr ""
+msgstr "Enlace"
 
 #: zerver/signals.py:91
 msgid "Unknown IP address"
@@ -3335,7 +3335,7 @@ msgstr "Tipo de campo inválido."
 
 #: zerver/views/custom_profile_fields.py:63
 msgid "Field must have at least one choice."
-msgstr ""
+msgstr "El campo debe tener al menos una opción."
 
 #: zerver/views/custom_profile_fields.py:79
 #: zerver/views/custom_profile_fields.py:117
@@ -3389,7 +3389,7 @@ msgstr "Falta el argumento 'anchor' (o usa 'use_first_unread_anchor'=True)."
 #: zerver/views/messages.py:711
 #, python-format
 msgid "Too many messages requested (maximum %s)."
-msgstr ""
+msgstr "Se han solicitado demasaidos mensajes (máximo %s)."
 
 #: zerver/views/messages.py:1036
 #, python-format
@@ -3459,7 +3459,7 @@ msgstr "Tema ya silenciado"
 
 #: zerver/views/muting.py:28
 msgid "Topic is not muted"
-msgstr ""
+msgstr "El tema no está silenciado."
 
 #: zerver/views/pointer.py:21
 msgid "Invalid message ID"
@@ -3576,7 +3576,7 @@ msgstr "El enlace de creación de organización ha expirado o no es válido."
 
 #: zerver/views/registration.py:383
 msgid "New organization creation disabled"
-msgstr ""
+msgstr "Creación de nuevas organizaciones desactivada"
 
 #: zerver/views/streams.py:49
 #, python-brace-format
@@ -3608,13 +3608,13 @@ msgstr "Esta acción requiere permisos administrativos"
 msgid ""
 "Hi there! @**%(full_name)s** just subscribed you to the stream "
 "#**%(stream_name)s**."
-msgstr ""
+msgstr "¡Hola! @**%(full_name)s** te acaba de suscribir al canal #**%(stream_name)s**."
 
 #: zerver/views/streams.py:269
 #, python-format
 msgid ""
 "Hi there! @**%(full_name)s** just subscribed you to the following streams:"
-msgstr ""
+msgstr "¡Hola! @**%(full_name)s** te acaba de suscribir a los siguientes canales:"
 
 #: zerver/views/streams.py:309
 #, python-format

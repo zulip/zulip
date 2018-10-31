@@ -6,13 +6,14 @@
 # Greg Price <gnprice@gmail.com>, 2017
 # Kouhei Sutou <kou@cozmixng.org>, 2016-2018
 # Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2017
+# Tim Abbott <tabbott@kandralabs.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-16 22:44+0000\n"
-"PO-Revision-Date: 2018-10-16 22:45+0000\n"
-"Last-Translator: Kouhei Sutou <kou@cozmixng.org>\n"
+"PO-Revision-Date: 2018-10-31 17:28+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -335,7 +336,7 @@ msgstr "作成を中止"
 
 #: templates/zerver/app/compose.html:62
 msgid "This is a private stream"
-msgstr ""
+msgstr "このストリームは非公開です。"
 
 #: templates/zerver/app/compose.html:64
 msgid "Stream"
@@ -1233,7 +1234,7 @@ msgstr "カスタム絵文字"
 
 #: templates/zerver/app/settings_overlay.html:63
 msgid "User groups"
-msgstr ""
+msgstr "ユーザーグループ"
 
 #: templates/zerver/app/settings_overlay.html:67
 msgid "Authentication methods"
@@ -1257,7 +1258,7 @@ msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:98
 msgid "Invitations"
-msgstr ""
+msgstr "招待"
 
 #: templates/zerver/app/topic_is_muted.html:3
 msgid "Topic muted"

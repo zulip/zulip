@@ -7,14 +7,15 @@
 # Greg Price <gnprice@gmail.com>, 2017
 # Jeong, Yong-ick <yongick.jeong@gmail.com>, 2018
 # Ki Heo <reo119@marunet.co.kr>, 2017-2018
+# Kwoun younggil <zelord.kwoun@gmail.com>, 2018
 # Wonha Ryu <wonha.ryu@gmail.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-16 22:44+0000\n"
-"PO-Revision-Date: 2018-10-16 22:45+0000\n"
-"Last-Translator: Wonha Ryu <wonha.ryu@gmail.com>\n"
+"PO-Revision-Date: 2018-10-25 18:56+0000\n"
+"Last-Translator: Kwoun younggil <zelord.kwoun@gmail.com>\n"
 "Language-Team: Korean (http://www.transifex.com/zulip/zulip/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -46,7 +47,7 @@ msgstr "비공개 그룹 메시지"
 #: analytics/views.py:132
 #, python-format
 msgid "Unknown chart name: %s"
-msgstr "알 수 없는 챠트명 : %s"
+msgstr "알 수 없는 차트명 : %s"
 
 #: analytics/views.py:141
 #, python-format
@@ -60,15 +61,15 @@ msgstr "애널리틱스 데이터가 없습니다. 서버 관리자에게 문의
 #: corporate/lib/stripe.py:71
 #, python-format
 msgid "Something went wrong. Please contact %s."
-msgstr ""
+msgstr "무언가 잘못 되었습니다. %s으로 연락주세요."
 
 #: corporate/lib/stripe.py:72
 msgid "Something went wrong. Please reload the page."
-msgstr ""
+msgstr "무언가 잘못 되었습니다. 페이지를 재요청해주세요."
 
 #: corporate/lib/stripe.py:111
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "무언가 잘못 되었습니다. 몇 초간 기다린 후 다시 시도 해주세요."
 
 #: corporate/views.py:154 corporate/views.py:165 zerver/decorator.py:695
 msgid "Access denied"
@@ -203,7 +204,7 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:65
 msgid "Add card"
-msgstr ""
+msgstr "카드 추가"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -976,7 +977,7 @@ msgstr "검색 나가기"
 
 #: templates/zerver/app/navbar.html:79
 msgid "User list"
-msgstr ""
+msgstr "사용자 목록"
 
 #: templates/zerver/app/navbar.html:87
 msgid "Menu"
@@ -3683,7 +3684,7 @@ msgstr "사용자 %s 님은 이미 이 그룹의 회원입니다."
 #: zerver/views/user_groups.py:112
 #, python-format
 msgid "There is no member '%s' in this user group"
-msgstr ""
+msgstr "이 유저 그룹에 '%s'라는 멤버는 없습니다."
 
 #: zerver/views/user_settings.py:41 zerver/views/user_settings.py:92
 msgid "Email address changes are disabled in this organization."
@@ -3695,7 +3696,7 @@ msgstr "모든 입력란을 작성하십시오."
 
 #: zerver/views/user_settings.py:68
 msgid "Your Zulip password is managed in LDAP"
-msgstr ""
+msgstr "당신의 Zulip 비밀번호는 LDAP에 관리되고 있습니다."
 
 #: zerver/views/user_settings.py:71
 msgid "Wrong password!"
@@ -3754,11 +3755,11 @@ msgstr "사용자명은 이미 사용중입니다."
 #: zerver/views/users.py:435
 #, python-format
 msgid "Email '%(email)s' not allowed in this organization"
-msgstr ""
+msgstr "'%(email)s'는 사용하실 수 없는 이메일입니다."
 
 #: zerver/views/users.py:438
 msgid "Disposable email addresses are not allowed in this organization"
-msgstr ""
+msgstr "여기서는 1회용 이메일 주소는 사용하실 수 없습니다."
 
 #: zerver/views/users.py:444
 #, python-format
@@ -3831,4 +3832,4 @@ msgstr "유효하지 못한 토큰 타입"
 #: zilencer/views.py:54
 #, python-format
 msgid "%s is not a valid hostname"
-msgstr ""
+msgstr "%s는 유효하지 않은 호스트네임입니다."
