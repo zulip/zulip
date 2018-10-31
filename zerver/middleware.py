@@ -21,6 +21,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.debug import maybe_tracemalloc_listen
+from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_response_from_error
@@ -64,6 +65,7 @@ def record_request_start_data(log_data: MutableMapping[str, Any]) -> None:
         log_data["prof"] = cProfile.Profile()
         log_data["prof"].enable()
 
+    reset_queries()
     log_data['time_started'] = time.time()
     log_data['remote_cache_time_start'] = get_remote_cache_time()
     log_data['remote_cache_requests_start'] = get_remote_cache_requests()
@@ -229,8 +231,6 @@ class LogRequests(MiddlewareMixin):
         maybe_tracemalloc_listen()
         request._log_data = dict()
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
 
     def process_view(self, request: HttpRequest, view_func: ViewFuncT,
                      args: List[str], kwargs: Dict[str, Any]) -> None:
@@ -242,8 +242,6 @@ class LogRequests(MiddlewareMixin):
         # And then completely reset our tracking to only cover work
         # done as part of this request
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
 
     def process_response(self, request: HttpRequest,
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
