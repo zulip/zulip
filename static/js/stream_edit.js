@@ -187,6 +187,7 @@ function show_subscription_settings(sub_row) {
     var colorpicker = sub_settings.find('.colorpicker');
     var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
+    subs.update_add_subscriptions_elements(sub.can_add_subscribers);
 
     if (!sub.render_subscribers) {
         return;

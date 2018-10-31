@@ -8,11 +8,13 @@
         <div class="subscriber_list_add float-right">
             <form class="form-inline">
                 <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
-                <div class="add_subscribers_container" {{#if invite_only}}{{#unless subscribed}}style="display: none"{{/unless}}{{/if}}>
+                <div class="add_subscribers_container">
                     <input type="text" name="principal" placeholder="{{t 'Name or email' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
-                    <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1">
-                        {{t 'Add' }}
-                    </button>
+                    <div class="add_subscriber_btn_wrapper inline-block">
+                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="-1">
+                            {{t 'Add' }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
