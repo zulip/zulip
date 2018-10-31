@@ -221,7 +221,9 @@ exports.update_calculated_fields = function (sub) {
     sub.can_change_name_description = page_params.is_admin;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
-    sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
+    // Guest users can't subscribe themselves to any stream.
+    sub.should_display_subscription_button = sub.subscribed ||
+        !page_params.is_guest && !sub.invite_only;
     sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
                                         sub.previously_subscribed;
     sub.can_change_stream_permissions = page_params.is_admin && (
