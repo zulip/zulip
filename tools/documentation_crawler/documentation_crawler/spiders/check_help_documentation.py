@@ -58,7 +58,12 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
     name = 'portico_documentation_crawler'
     start_urls = ['http://localhost:9981/hello',
                   'http://localhost:9981/history',
+                  'http://localhost:9981/plans',
                   'http://localhost:9981/team',
+                  'http://localhost:9981/apps',
+                  'http://localhost:9981/integrations',
+                  'http://localhost:9981/terms',
+                  'http://localhost:9981/privacy',
                   'http://localhost:9981/features',
                   'http://localhost:9981/why-zulip',
                   'http://localhost:9981/for/open-source',
