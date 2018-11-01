@@ -1098,7 +1098,8 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
         scheduled_message = ScheduledMessage()
         scheduled_message.sender = message['message'].sender
         scheduled_message.recipient = message['message'].recipient
-        scheduled_message.subject = message['message'].subject
+        topic_name = message['message'].topic_name()
+        scheduled_message.set_topic_name(topic_name=topic_name)
         scheduled_message.content = message['message'].content
         scheduled_message.sending_client = message['message'].sending_client
         scheduled_message.stream = message['stream']

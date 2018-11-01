@@ -2177,6 +2177,12 @@ class ScheduledMessage(models.Model):
     delivery_type = models.PositiveSmallIntegerField(choices=DELIVERY_TYPES,
                                                      default=SEND_LATER)  # type: int
 
+    def topic_name(self) -> str:
+        return self.subject
+
+    def set_topic_name(self, topic_name: str) -> None:
+        self.subject = topic_name
+
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
         return "<ScheduledMessage: %s %s %s %s>" % (display_recipient,
