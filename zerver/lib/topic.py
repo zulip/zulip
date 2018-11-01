@@ -4,6 +4,11 @@ from django.db import connection
 from django.db.models.query import QuerySet, Q
 from django.utils.timezone import now as timezone_now
 
+from sqlalchemy.sql import (
+    column,
+    func,
+)
+
 from zerver.models import (
     Message,
     Recipient,
@@ -17,6 +22,12 @@ ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
 TOPIC_LINKS = "subject_links"
 PREV_TOPIC = "prev_subject"
+
+def topic_match_sa(topic_name: str) -> Any:
+    # _sa is short for Sql Alchemy, which we use mostly for
+    # queries that search messages
+    topic_cond = func.upper(column("subject")) == func.upper(topic_name)
+    return topic_cond
 
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
