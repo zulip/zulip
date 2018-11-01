@@ -3951,7 +3951,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         # These fields have legacy field names.
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = bugdown.subject_links(message.sender.realm_id, topic_name)
+        event[TOPIC_LINKS] = bugdown.topic_links(message.sender.realm_id, topic_name)
         edit_history_event[PREV_TOPIC] = orig_topic_name
 
         if propagate_mode in ["change_later", "change_all"]:
