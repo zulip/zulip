@@ -272,6 +272,11 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
+        {'pattern': 'subject|SUBJECT',
+         'description': 'avoid subject as a var',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
+         'include_only': set(['zerver/lib/actions.py'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
