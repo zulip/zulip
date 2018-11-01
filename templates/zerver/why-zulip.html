@@ -7,6 +7,7 @@
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ render_bundle('landing-page') }}
+
 {% endblock %}
 
 {% block portico_content %}
@@ -14,9 +15,14 @@
 {% include 'zerver/landing_nav.html' %}
 
 <div class="portico-landing why-page">
-    <div class="hero small-hero">
-        <h1 class="center">{% trans %}Why Zulip?{% endtrans %}</h1>
+    <div class="hero bg-pycon why-zulip">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Why Zulip?</h1>
+            <p></p>
+        </div>
     </div>
+
     <div class="main">
         <div class="padded-content">
             <div class="inner-content">
