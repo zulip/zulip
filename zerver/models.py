@@ -53,7 +53,7 @@ import time
 import datetime
 import sys
 
-MAX_SUBJECT_LENGTH = 60
+MAX_TOPIC_NAME_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
@@ -1163,7 +1163,7 @@ class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
-    topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
 
     class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
@@ -1310,7 +1310,7 @@ class AbstractMessage(models.Model):
     # new code should generally also say "topic".
     #
     # See also the `topic_name` method on `Message`.
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)  # type: str
+    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)  # type: str
 
     content = models.TextField()  # type: str
     rendered_content = models.TextField(null=True)  # type: Optional[str]
@@ -2161,7 +2161,7 @@ class ScheduledEmail(AbstractScheduledJob):
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)  # type: str
+    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)  # type: str
     content = models.TextField()  # type: str
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
     stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]

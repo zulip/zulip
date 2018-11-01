@@ -20,7 +20,7 @@ from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, MAX_SUBJECT_LENGTH, \
+    Message, Realm, UserProfile, get_system_bot, get_user, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH
 
 logger = logging.getLogger(__name__)
@@ -192,7 +192,7 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
         sender,
         "stream",
         stream.name,
-        topic[:MAX_SUBJECT_LENGTH],
+        topic[:MAX_TOPIC_NAME_LENGTH],
         content[:MAX_MESSAGE_LENGTH],
         email_gateway=True)
 

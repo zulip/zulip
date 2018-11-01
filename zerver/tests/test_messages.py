@@ -76,7 +76,7 @@ from zerver.lib.soft_deactivation import (
 )
 
 from zerver.models import (
-    MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
+    MAX_MESSAGE_LENGTH, MAX_TOPIC_NAME_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
@@ -1546,7 +1546,7 @@ class MessagePOSTTest(ZulipTestCase):
         succeeds, but the topic is truncated.
         """
         self.login(self.example_email("hamlet"))
-        long_topic = "A" * (MAX_SUBJECT_LENGTH + 1)
+        long_topic = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
                      "content": "test content", "subject": long_topic}
         result = self.client_post("/json/messages", post_data)
@@ -1554,7 +1554,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.topic_name(),
-                         "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
+                         "A" * (MAX_TOPIC_NAME_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self) -> None:
         self.login(self.example_email("hamlet"))
