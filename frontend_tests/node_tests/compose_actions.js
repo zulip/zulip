@@ -29,6 +29,7 @@ var cancel = compose_actions.cancel;
 var get_focus_area = compose_actions._get_focus_area;
 var respond_to_message = compose_actions.respond_to_message;
 var reply_with_mention = compose_actions.reply_with_mention;
+var quote_and_reply = compose_actions.quote_and_reply;
 
 var compose_state = global.compose_state;
 
@@ -80,6 +81,14 @@ function stub_selected_message(msg) {
     set_global('current_msg_list', {
         selected_message: function () {
             return msg;
+        },
+    });
+}
+
+function stub_channel_get(success_value) {
+    set_global('channel', {
+        get: function (opts) {
+            opts.success(success_value);
         },
     });
 }
@@ -242,6 +251,38 @@ run_test('reply_with_mention', () => {
     assert.equal($('#stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts|40**');
     assert(compose_state.has_message_content());
+});
+
+run_test('quote_and_reply', () => {
+    var msg = {
+        type: 'stream',
+        stream: 'devel',
+        subject: 'python',
+        reply_to: 'bob',
+        sender_full_name: 'Bob Roberts',
+        sender_id: 40,
+    };
+    stub_selected_message(msg);
+    stub_channel_get({ raw_content: 'Testing.' });
+
+    current_msg_list.selected_id = function () {
+        return 100;
+    };
+
+    compose_ui.insert_syntax_and_focus = function (syntax) {
+        assert.equal(syntax, '[Quoting…]\n');
+    };
+
+    compose_ui.replace_syntax = function (syntax, replacement) {
+        assert.equal(syntax, '[Quoting…]');
+        assert.equal(replacement, 'Testing.');
+    };
+
+    var opts = {
+        reply_type: 'personal',
+    };
+
+    quote_and_reply(opts);
 });
 
 run_test('get_focus_area', () => {

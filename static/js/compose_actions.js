@@ -390,15 +390,13 @@ exports.quote_and_reply = function (opts) {
     var message_id = current_msg_list.selected_id();
 
     exports.respond_to_message(opts);
+    compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
+
     channel.get({
         url: '/json/messages/' + message_id,
         idempotent: true,
         success: function (data) {
-            if (textarea.val() === "") {
-                textarea.val("```quote\n" + data.raw_content + "\n```\n");
-            } else {
-                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content + "\n```\n");
-            }
+            compose_ui.replace_syntax('[Quoting…]', '```quote\n' + data.raw_content + '\n```', textarea);
             $("#compose-textarea").trigger("autosize.resize");
         },
     });
