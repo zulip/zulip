@@ -1,8 +1,17 @@
 from django.db import connection
+from django.db.models.query import QuerySet
 
-from zerver.models import UserProfile, Recipient
+from zerver.models import (
+    Message,
+    Recipient,
+    UserProfile,
+)
 
 from typing import Any, Dict, List, Tuple
+
+def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
+    topic_name = message.topic_name()
+    return query.filter(subject=topic_name)
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]

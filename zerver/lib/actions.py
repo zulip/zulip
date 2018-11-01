@@ -55,6 +55,9 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.topic import (
+    filter_by_exact_message_topic,
+)
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
     add_topic_mute,
@@ -1784,14 +1787,18 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
     else:
         time_window = datetime.timedelta(seconds=0)
 
-    messages = Message.objects.filter(
+    query = Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
         content=message.content,
-        subject=message.subject,
         sending_client=message.sending_client,
         pub_date__gte=message.pub_date - time_window,
         pub_date__lte=message.pub_date + time_window)
+
+    messages = filter_by_exact_message_topic(
+        query=query,
+        message=message,
+    )
 
     if messages.exists():
         return messages[0].id
