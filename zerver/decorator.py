@@ -135,6 +135,14 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 
+def require_billing_access(func: ViewFuncT) -> ViewFuncT:
+    @wraps(func)
+    def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not user_profile.is_realm_admin and not user_profile.is_billing_admin:
+            raise JsonableError(_("Access denied"))
+        return func(request, user_profile, *args, **kwargs)
+    return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
+
 from zerver.lib.user_agent import parse_user_agent
 
 def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:

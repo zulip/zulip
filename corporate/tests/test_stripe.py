@@ -27,6 +27,7 @@ from corporate.lib.stripe import catch_stripe_errors, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
+import corporate.urls
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
@@ -561,26 +562,6 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
         mock_save_customer.assert_not_called()
 
-    def test_downgrade_permissions(self) -> None:
-        self.login(self.example_email('hamlet'))
-        response = self.client_post("/json/billing/downgrade", {})
-        self.assert_json_error_contains(response, "Access denied")
-        # billing admin but not realm admin
-        user = self.example_user('hamlet')
-        user.is_billing_admin = True
-        user.save(update_fields=['is_billing_admin'])
-        with patch('corporate.views.process_downgrade') as mocked1:
-            self.client_post("/json/billing/downgrade", {})
-        mocked1.assert_called()
-        # realm admin but not billing admin
-        user = self.example_user('hamlet')
-        user.is_billing_admin = False
-        user.is_realm_admin = True
-        user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with patch('corporate.views.process_downgrade') as mocked2:
-            self.client_post("/json/billing/downgrade", {})
-        mocked2.assert_called()
-
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
     def test_downgrade_credits(self, mock_retrieve_customer: Mock,
@@ -632,31 +613,6 @@ class StripeTest(ZulipTestCase):
         self.assertFalse(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    def test_update_payment_source_permissions(self) -> None:
-        # This can be removed / merged with e.g. test_downgrade_permissions
-        # once we have a decorator that handles billing page permissions
-        self.login(self.example_email('hamlet'))
-        response = self.client_post("/json/billing/sources/change",
-                                    {'stripe_token': ujson.dumps('token')})
-        self.assert_json_error_contains(response, "Access denied")
-        # billing admin but not realm admin
-        user = self.example_user('hamlet')
-        user.is_billing_admin = True
-        user.save(update_fields=['is_billing_admin'])
-        with patch('corporate.views.do_replace_payment_source') as mocked1:
-            self.client_post("/json/billing/sources/change",
-                             {'stripe_token': ujson.dumps('token')})
-        mocked1.assert_called()
-        # realm admin but not billing admin
-        user = self.example_user('hamlet')
-        user.is_billing_admin = False
-        user.is_realm_admin = True
-        user.save(update_fields=['is_billing_admin', 'is_realm_admin'])
-        with patch('corporate.views.do_replace_payment_source') as mocked2:
-            self.client_post("/json/billing/sources/change",
-                             {'stripe_token': ujson.dumps('token')})
-        mocked2.assert_called()
-
     @patch("stripe.Customer.create", side_effect=mock_create_customer)
     @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
@@ -704,6 +660,42 @@ class StripeTest(ZulipTestCase):
         # Not a proper use of do_activate_user, but it's fine to call it like this for this test
         do_activate_user(user)
         check_billing_processor_update(RealmAuditLog.USER_ACTIVATED, self.quantity + 1)
+
+class BillingEndpointsPermissionTest(ZulipTestCase):
+    def setUp(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_billing_admin = True
+        hamlet.save(update_fields=["is_billing_admin"])
+
+    def _test(self, url: str, mocked_function: str, data: Optional[Dict[str, Any]]={}) -> None:
+        # Test permission with normal user
+        self.login(self.example_email('cordelia'))
+        response = self.client_post(url, data)
+        self.assert_json_error_contains(response, "Access denied")
+
+        # Test permission with realm admin
+        self.login(self.example_email('iago'))
+        with patch("corporate.views.{}".format(mocked_function)):
+            response = self.client_post(url, data)
+        self.assert_json_success(response)
+
+        # Test permission with billing admin
+        self.login(self.example_email('hamlet'))
+        with patch("corporate.views.{}".format(mocked_function)):
+            response = self.client_post(url, data)
+        self.assert_json_success(response)
+
+    def test_billing_endpoints(self) -> None:
+        params = [
+            ("/json/billing/sources/change", "do_replace_payment_source", {'stripe_token': ujson.dumps('token')}),
+            ("/json/billing/downgrade", "process_downgrade", {})
+        ]  # type: List[Tuple[str, str, Dict[str, Any]]]
+
+        for (url, mocked_function, data) in params:
+            self._test(url, mocked_function, data)
+
+        # Make sure that we are testing all the JSON endpoints
+        self.assertEqual(len(corporate.urls.v1_api_and_json_patterns), len(params))
 
 class RequiresBillingUpdateTest(ZulipTestCase):
     def test_activity_change_requires_seat_update(self) -> None:
