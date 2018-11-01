@@ -330,7 +330,7 @@ class MessageDict:
             recipient_type_id
         )
 
-        obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
+        obj['subject_links'] = bugdown.topic_links(sender_realm_id, subject)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
