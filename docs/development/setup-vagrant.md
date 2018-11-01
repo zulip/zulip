@@ -889,7 +889,7 @@ It is okay to proceed and start the Zulip server.
 ##### Permissions errors
 
 When building the development environment using Vagrant and the LXC provider,
-if you encounter permissions errors, you may need to `chown -R 1000:$(whoami)
+if you encounter permissions errors, you may need to `chown -R 1000:$(id -g)
 /path/to/zulip` on the host before running `vagrant up` in order to ensure that
 the synced directory has the correct owner during provision. This issue will
 arise if you run `id username` on the host where `username` is the user running
