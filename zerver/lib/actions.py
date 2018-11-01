@@ -84,7 +84,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
-    ScheduledEmail, MAX_SUBJECT_LENGTH, \
+    ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
@@ -3766,7 +3766,7 @@ def truncate_body(body: str) -> str:
     return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
 
 def truncate_topic(topic: str) -> str:
-    return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
+    return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
 
 MessageUpdateUserInfoResult = TypedDict('MessageUpdateUserInfoResult', {
     'message_user_ids': Set[int],
