@@ -1355,6 +1355,9 @@ class Message(AbstractMessage):
         """
         return self.subject
 
+    def set_topic_name(self, topic_name: str) -> None:
+        self.subject = topic_name
+
     def is_stream_message(self) -> bool:
         '''
         Find out whether a message is a stream message by
