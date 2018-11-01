@@ -710,7 +710,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         # Normal users do not have access
         self.login(self.example_email('cordelia'))
         response = self.client_post(url, request_data)
-        self.assert_json_error_contains(response, "Access denied")
+        self.assert_json_error_contains(response, "Must be a billing administrator or an organization")
 
         # Billing admins have access
         self.login(self.example_email('hamlet'))
