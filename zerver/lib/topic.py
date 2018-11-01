@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from sqlalchemy.sql import (
     column,
+    literal,
     func,
 )
 
@@ -26,7 +27,7 @@ PREV_TOPIC = "prev_subject"
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
     # queries that search messages
-    topic_cond = func.upper(column("subject")) == func.upper(topic_name)
+    topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
     return topic_cond
 
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:

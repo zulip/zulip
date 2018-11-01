@@ -33,6 +33,9 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
+from zerver.lib.topic import (
+    topic_match_sa,
+)
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
@@ -241,36 +244,36 @@ class NarrowBuilder:
             # instance "personal" to be the same.
             if base_topic in ('', 'personal', '(instance "")'):
                 cond = or_(
-                    func.upper(column("subject")) == func.upper(literal("")),
-                    func.upper(column("subject")) == func.upper(literal(".d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal('(instance "")')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d.d')),
+                    topic_match_sa(""),
+                    topic_match_sa(".d"),
+                    topic_match_sa(".d.d"),
+                    topic_match_sa(".d.d.d"),
+                    topic_match_sa(".d.d.d.d"),
+                    topic_match_sa("personal"),
+                    topic_match_sa("personal.d"),
+                    topic_match_sa("personal.d.d"),
+                    topic_match_sa("personal.d.d.d"),
+                    topic_match_sa("personal.d.d.d.d"),
+                    topic_match_sa('(instance "")'),
+                    topic_match_sa('(instance "").d'),
+                    topic_match_sa('(instance "").d.d'),
+                    topic_match_sa('(instance "").d.d.d'),
+                    topic_match_sa('(instance "").d.d.d.d'),
                 )
             else:
                 # We limit `.d` counts, since postgres has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(
-                    func.upper(column("subject")) == func.upper(literal(base_topic)),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d.d")),
+                    topic_match_sa(base_topic),
+                    topic_match_sa(base_topic + ".d"),
+                    topic_match_sa(base_topic + ".d.d"),
+                    topic_match_sa(base_topic + ".d.d.d"),
+                    topic_match_sa(base_topic + ".d.d.d.d"),
                 )
             return query.where(maybe_negate(cond))
 
-        cond = func.upper(column("subject")) == func.upper(literal(operand))
+        cond = topic_match_sa(operand)
         return query.where(maybe_negate(cond))
 
     def by_sender(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:

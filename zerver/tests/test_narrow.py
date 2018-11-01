@@ -2410,13 +2410,13 @@ class GetOldMessagesTest(ZulipTestCase):
         expected_query = '''
             SELECT id AS message_id
             FROM zerver_message
-            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:upper_1))
+            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:param_1))
             '''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
 
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Scotland'))
-        self.assertEqual(params['upper_1'], 'golf')
+        self.assertEqual(params['param_1'], 'golf')
 
         mute_stream(realm, user_profile, 'Verona')
 
@@ -2435,15 +2435,15 @@ class GetOldMessagesTest(ZulipTestCase):
             FROM zerver_message
             WHERE recipient_id NOT IN (:recipient_id_1)
             AND NOT
-               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:upper_1) OR
-                recipient_id = :recipient_id_3 AND upper(subject) = upper(:upper_2))'''
+               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:param_1) OR
+                recipient_id = :recipient_id_3 AND upper(subject) = upper(:param_2))'''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
         self.assertEqual(params['recipient_id_2'], get_recipient_id_for_stream_name(realm, 'Scotland'))
-        self.assertEqual(params['upper_1'], 'golf')
+        self.assertEqual(params['param_1'], 'golf')
         self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'web stuff'))
-        self.assertEqual(params['upper_2'], 'css')
+        self.assertEqual(params['param_2'], 'css')
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
