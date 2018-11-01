@@ -1277,7 +1277,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    prev_topic = message.subject
+    prev_topic = message.topic_name()
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time

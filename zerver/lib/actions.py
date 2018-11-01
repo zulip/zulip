@@ -4021,7 +4021,7 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
         'message_type': message_type, }  # type: Dict[str, Any]
     if message_type == "stream":
         event['stream_id'] = message.recipient.type_id
-        event['topic'] = message.subject
+        event['topic'] = message.topic_name()
     else:
         event['recipient_user_ids'] = message.recipient.type_id
 
