@@ -18,7 +18,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, get_topic_history_for_stream, \
+    do_remove_default_stream, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
@@ -27,6 +27,7 @@ from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
+from zerver.lib.topic import get_topic_history_for_stream
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
