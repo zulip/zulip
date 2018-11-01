@@ -57,6 +57,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic import (
     filter_by_exact_message_topic,
+    filter_by_topic_name_via_message,
 )
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
@@ -3638,7 +3639,10 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
     msgs = msgs.filter(message__recipient=recipient)
 
     if topic_name:
-        msgs = msgs.filter(message__subject__iexact=topic_name)
+        msgs = filter_by_topic_name_via_message(
+            query=msgs,
+            topic_name=topic_name,
+        )
 
     msgs = msgs.extra(
         where=[UserMessage.where_unread()]
