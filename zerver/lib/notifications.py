@@ -192,9 +192,9 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
             header = "%s > %s" % (stream.name, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, stream)
-            topic_link = topic_narrow_url(user_profile.realm, stream, message.subject)
+            topic_link = topic_narrow_url(user_profile.realm, stream, message.topic_name())
             header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, stream.name, topic_link, message.subject)
+                stream_link, stream.name, topic_link, message.topic_name())
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
