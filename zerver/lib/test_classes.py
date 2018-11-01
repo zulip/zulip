@@ -692,7 +692,7 @@ class WebhookTestCase(ZulipTestCase):
         kwargs['HTTP_AUTHORIZATION'] = self.encode_credentials(email)
         return self.send_and_test_stream_message(*args, **kwargs)
 
-    def send_and_test_stream_message(self, fixture_name: str, expected_subject: Optional[str]=None,
+    def send_and_test_stream_message(self, fixture_name: str, expected_topic: Optional[str]=None,
                                      expected_message: Optional[str]=None,
                                      content_type: Optional[str]="application/json", **kwargs: Any) -> Message:
         payload = self.get_body(fixture_name)
@@ -700,12 +700,12 @@ class WebhookTestCase(ZulipTestCase):
             kwargs['content_type'] = content_type
         msg = self.send_json_payload(self.test_user, self.url, payload,
                                      self.STREAM_NAME, **kwargs)
-        self.do_test_subject(msg, expected_subject)
+        self.do_test_topic(msg, expected_topic)
         self.do_test_message(msg, expected_message)
 
         return msg
 
-    def send_and_test_private_message(self, fixture_name: str, expected_subject: str=None,
+    def send_and_test_private_message(self, fixture_name: str, expected_topic: str=None,
                                       expected_message: str=None, content_type: str="application/json",
                                       **kwargs: Any)-> Message:
         payload = self.get_body(fixture_name)
@@ -747,9 +747,9 @@ class WebhookTestCase(ZulipTestCase):
         post parameters or as string containing the body of the request."""
         return ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
 
-    def do_test_subject(self, msg: Message, expected_subject: Optional[str]) -> None:
-        if expected_subject is not None:
-            self.assertEqual(msg.topic_name(), expected_subject)
+    def do_test_topic(self, msg: Message, expected_topic: Optional[str]) -> None:
+        if expected_topic is not None:
+            self.assertEqual(msg.topic_name(), expected_topic)
 
     def do_test_message(self, msg: Message, expected_message: Optional[str]) -> None:
         if expected_message is not None:

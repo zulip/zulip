@@ -30,9 +30,9 @@ class UpdownHookTests(WebhookTestCase):
 
         self.send_and_test_stream_message('check_multiple_events')
         last_message = self.get_last_message()
-        self.do_test_subject(last_message, first_message_expected_subject)
+        self.do_test_topic(last_message, first_message_expected_subject)
         self.do_test_message(last_message, first_message_expected_message)
 
         second_to_last_message = self.get_second_to_last_message()
-        self.do_test_subject(second_to_last_message, second_message_expected_subject)
+        self.do_test_topic(second_to_last_message, second_message_expected_subject)
         self.do_test_message(second_to_last_message, second_message_expected_message)
