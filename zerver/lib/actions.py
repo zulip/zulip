@@ -58,6 +58,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic import (
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
+    save_message_for_edit_use_case,
     update_messages_for_topic_edit,
     ORIG_TOPIC,
     PREV_TOPIC,
@@ -3976,9 +3977,8 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         edit_history = [edit_history_event]
     message.edit_history = ujson.dumps(edit_history)
 
-    message.save(update_fields=["subject", "content", "rendered_content",
-                                "rendered_content_version", "last_edit_time",
-                                "edit_history"])
+    # This does message.save(update_fields=[...])
+    save_message_for_edit_use_case(message=message)
 
     event['message_ids'] = update_to_dict_cache(changed_messages)
 
