@@ -25,6 +25,11 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
 
+def save_message_for_edit_use_case(message: Message) -> None:
+    message.save(update_fields=["subject", "content", "rendered_content",
+                                "rendered_content_version", "last_edit_time",
+                                "edit_history"])
+
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
                                    orig_topic_name: str,
