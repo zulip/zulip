@@ -1705,7 +1705,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
                     realm=realm_filters_key,
                     code_block_processor_disabled=email_gateway)])
 
-def subject_links(realm_filters_key: int, subject: str) -> List[str]:
+def topic_links(realm_filters_key: int, subject: str) -> List[str]:
     matches = []  # type: List[str]
 
     realm_filters = realm_filters_for_realm(realm_filters_key)
