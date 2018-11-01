@@ -19,7 +19,7 @@ i18n_urlpatterns = [
 v1_api_and_json_patterns = [
     url(r'^billing/downgrade$', rest_dispatch,
         {'POST': 'corporate.views.downgrade'}),
-    url(r'billing/sources/change', rest_dispatch,
+    url(r'^billing/sources/change', rest_dispatch,
         {'POST': 'corporate.views.replace_payment_source'}),
 ]
 

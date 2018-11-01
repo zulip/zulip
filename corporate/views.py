@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.conf import settings
 
-from zerver.decorator import zulip_login_required
+from zerver.decorator import zulip_login_required, require_billing_access
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
@@ -144,20 +144,18 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'corporate/billing.html', context=context)
 
+@require_billing_access
 def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    if not user.is_realm_admin and not user.is_billing_admin:
-        return json_error(_('Access denied'))
     try:
         process_downgrade(user)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     return json_success()
 
+@require_billing_access
 @has_request_variables
 def replace_payment_source(request: HttpRequest, user: UserProfile,
                            stripe_token: str=REQ("stripe_token", validator=check_string)) -> HttpResponse:
-    if not user.is_realm_admin and not user.is_billing_admin:
-        return json_error(_("Access denied"))
     try:
         do_replace_payment_source(user, stripe_token)
     except BillingError as e:
