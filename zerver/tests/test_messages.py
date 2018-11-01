@@ -1862,6 +1862,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, 'Test message 1')
+        self.assertEqual(message.topic_name(), 'Test subject')
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
         # Scheduling a message for reminders.
