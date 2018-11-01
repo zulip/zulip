@@ -58,6 +58,10 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic import (
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
+    ORIG_TOPIC,
+    PREV_TOPIC,
+    TOPIC_LINKS,
+    TOPIC_NAME,
 )
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
@@ -3940,13 +3944,15 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     if topic_name is not None:
         orig_topic_name = message.topic_name()
         topic_name = truncate_topic(topic_name)
-        event["orig_subject"] = orig_topic_name
         event["propagate_mode"] = propagate_mode
         message.set_topic_name(topic_name)
         event["stream_id"] = message.recipient.type_id
-        event["subject"] = topic_name
-        event['subject_links'] = bugdown.subject_links(message.sender.realm_id, topic_name)
-        edit_history_event["prev_subject"] = orig_topic_name
+
+        # These fields have legacy field names.
+        event[ORIG_TOPIC] = orig_topic_name
+        event[TOPIC_NAME] = topic_name
+        event[TOPIC_LINKS] = bugdown.subject_links(message.sender.realm_id, topic_name)
+        edit_history_event[PREV_TOPIC] = orig_topic_name
 
         if propagate_mode in ["change_later", "change_all"]:
             propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
