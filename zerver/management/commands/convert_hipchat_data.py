@@ -53,9 +53,11 @@ class Command(BaseCommand):
             print("You need to specify --output <output directory>")
             exit(1)
 
-        if not os.path.exists(output_dir) or not os.path.isdir(output_dir):
+        if os.path.exists(output_dir) and not os.path.isdir(output_dir):
             print(output_dir + " is not a directory")
             exit(1)
+
+        os.makedirs(output_dir, exist_ok=True)
 
         if os.listdir(output_dir):
             print('Output directory should be empty!')
