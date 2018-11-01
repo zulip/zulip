@@ -276,7 +276,9 @@ def build_custom_checkers(by_lang):
          'description': 'avoid subject as a var',
          'good_lines': ['topic_name'],
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
-         'include_only': set(['zerver/lib/actions.py'])},
+         'include_only': set([
+             'zerver/lib/actions.py',
+             'zerver/lib/topic_mutes.py'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],

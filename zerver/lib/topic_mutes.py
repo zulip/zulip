@@ -1,5 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional
 
+from zerver.lib.topic import (
+    topic_match_sa,
+)
 from zerver.models import (
     get_stream_recipient,
     get_stream,
@@ -9,7 +12,6 @@ from zerver.models import (
 from sqlalchemy.sql import (
     and_,
     column,
-    func,
     not_,
     or_,
     Selectable
@@ -97,7 +99,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
         recipient_id = row['recipient_id']
         topic_name = row['topic_name']
         stream_cond = column("recipient_id") == recipient_id
-        topic_cond = func.upper(column("subject")) == func.upper(topic_name)
+        topic_cond = topic_match_sa(topic_name)
         return and_(stream_cond, topic_cond)
 
     condition = not_(or_(*list(map(mute_cond, rows))))
