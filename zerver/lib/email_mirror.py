@@ -104,7 +104,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
     data = {
         'user_profile_id': user_profile.id,
         'recipient_id': recipient_id,
-        'subject': message.subject.encode('utf-8'),
+        'subject': message.topic_name().encode('utf-8'),
     }
 
     while True:

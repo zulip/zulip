@@ -96,7 +96,7 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
             continue
 
         key = (user_message.message.recipient.type_id,
-               user_message.message.subject)
+               user_message.message.topic_name())
         conversation_diversity[key].add(
             user_message.message.sender.full_name)
         conversation_length[key] += 1
