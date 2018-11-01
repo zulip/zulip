@@ -278,6 +278,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
          'include_only': set([
              'zerver/lib/actions.py',
+             'zerver/lib/test_classes.py',
              'zerver/lib/topic_mutes.py'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
