@@ -9,6 +9,12 @@ from zerver.models import (
 
 from typing import Any, Dict, List, Tuple
 
+# Only use these constants for events.
+ORIG_TOPIC = "orig_subject"
+TOPIC_NAME = "subject"
+TOPIC_LINKS = "subject_links"
+PREV_TOPIC = "prev_subject"
+
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
     return query.filter(subject=topic_name)
