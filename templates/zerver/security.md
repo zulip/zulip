@@ -2,7 +2,7 @@ Zulip’s security strategy covers all aspects of our product and
 business. Making sure your information stays protected is our highest
 priority.
 
-## Security Basics
+## Security basics
 
 - All Zulip clients (web, mobile, desktop, terminal, and integrations)
   require TLS encryption and authentication over HTTPS for all data
@@ -30,7 +30,7 @@ priority.
 
 [redact-content]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#security-and-privacy
 
-## Configurable Access Control Policies
+## Configurable access control policies
 
 - Zulip supports private messages (to one or more individuals), private
   streams with any number of subscribers, as well as public streams
