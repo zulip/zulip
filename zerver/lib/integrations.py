@@ -344,6 +344,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pingdom', ['monitoring']),
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
     WebhookIntegration('raygun', ['monitoring'], display_name="Raygun"),
+    WebhookIntegration('reviewboard', ['version-control'], display_name="ReviewBoard"),
     WebhookIntegration('semaphore', ['continuous-integration', 'deployment'], stream_name='builds'),
     WebhookIntegration('sentry', ['monitoring']),
     WebhookIntegration('slack', ['communication']),
