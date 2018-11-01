@@ -1,5 +1,8 @@
+import datetime
+
 from django.db import connection
-from django.db.models.query import QuerySet
+from django.db.models.query import QuerySet, Q
+from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
     Message,
@@ -21,6 +24,34 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
+
+def update_messages_for_topic_edit(message: Message,
+                                   propagate_mode: str,
+                                   orig_topic_name: str,
+                                   topic_name: str) -> List[Message]:
+    propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
+    # We only change messages up to 2 days in the past, to avoid hammering our
+    # DB by changing an unbounded amount of messages
+    if propagate_mode == 'change_all':
+        before_bound = timezone_now() - datetime.timedelta(days=2)
+
+        propagate_query = (propagate_query & ~Q(id = message.id) &
+                           Q(pub_date__range=(before_bound, timezone_now())))
+    if propagate_mode == 'change_later':
+        propagate_query = propagate_query & Q(id__gt = message.id)
+
+    messages = Message.objects.filter(propagate_query).select_related()
+
+    # Evaluate the query before running the update
+    messages_list = list(messages)
+    messages.update(subject=topic_name)
+
+    for m in messages_list:
+        # The cached ORM object is not changed by messages.update()
+        # and the remote cache update requires the new value
+        m.set_topic_name(topic_name)
+
+    return messages_list
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
