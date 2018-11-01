@@ -106,15 +106,19 @@ def convert_user_data(user_handler: UserHandler,
         short_name = in_dict['mention_name']
         timezone = in_dict['timezone']
 
-        if not email:
-            # Hipchat guest users don't have emails, so
-            # we just fake them.
-            assert(is_guest)
-            email = 'guest-{id}@example.com'.format(id=id)
-            delivery_email = email
-
         date_joined = int(timezone_now().timestamp())
         is_active = not in_dict['is_deleted']
+
+        if not email:
+            if is_guest:
+                # Hipchat guest users don't have emails, so
+                # we just fake them.
+                email = 'guest-{id}@example.com'.format(id=id)
+                delivery_email = email
+            else:
+                # Hipchat sometimes doesn't export an email for deactivated users.
+                assert not is_active
+                email = delivery_email = "deactivated-{id}@example.com".format(id=id)
 
         # unmapped fields:
         #    title - Developer, Project Manager, etc.
