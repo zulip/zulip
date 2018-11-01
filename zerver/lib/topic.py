@@ -13,6 +13,9 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
     topic_name = message.topic_name()
     return query.filter(subject=topic_name)
 
+def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
+    return query.filter(message__subject__iexact=topic_name)
+
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
 
