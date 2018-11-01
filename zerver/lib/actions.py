@@ -2078,7 +2078,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
     message.content = message_content
     message.recipient = recipient
     if addressee.is_stream():
-        message.subject = topic_name
+        message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
@@ -3952,7 +3952,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         topic_name = truncate_topic(topic_name)
         event["orig_subject"] = orig_topic_name
         event["propagate_mode"] = propagate_mode
-        message.subject = topic_name
+        message.set_topic_name(topic_name)
         event["stream_id"] = message.recipient.type_id
         event["subject"] = topic_name
         event['subject_links'] = bugdown.subject_links(message.sender.realm_id, topic_name)
@@ -3979,7 +3979,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
             for m in messages_list:
                 # The cached ORM object is not changed by messages.update()
                 # and the remote cache update requires the new value
-                m.subject = topic_name
+                m.set_topic_name(topic_name)
 
             changed_messages += messages_list
 
