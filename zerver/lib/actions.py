@@ -58,6 +58,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.topic import (
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
+    update_messages_for_topic_edit,
     ORIG_TOPIC,
     PREV_TOPIC,
     TOPIC_LINKS,
@@ -3955,27 +3956,12 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         edit_history_event[PREV_TOPIC] = orig_topic_name
 
         if propagate_mode in ["change_later", "change_all"]:
-            propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
-            # We only change messages up to 2 days in the past, to avoid hammering our
-            # DB by changing an unbounded amount of messages
-            if propagate_mode == 'change_all':
-                before_bound = timezone_now() - datetime.timedelta(days=2)
-
-                propagate_query = (propagate_query & ~Q(id = message.id) &
-                                   Q(pub_date__range=(before_bound, timezone_now())))
-            if propagate_mode == 'change_later':
-                propagate_query = propagate_query & Q(id__gt = message.id)
-
-            messages = Message.objects.filter(propagate_query).select_related()
-
-            # Evaluate the query before running the update
-            messages_list = list(messages)
-            messages.update(subject=topic_name)
-
-            for m in messages_list:
-                # The cached ORM object is not changed by messages.update()
-                # and the remote cache update requires the new value
-                m.set_topic_name(topic_name)
+            messages_list = update_messages_for_topic_edit(
+                message=message,
+                propagate_mode=propagate_mode,
+                orig_topic_name=orig_topic_name,
+                topic_name=topic_name,
+            )
 
             changed_messages += messages_list
 
