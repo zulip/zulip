@@ -84,7 +84,7 @@ Jump to:
    [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
    Versions 10.13.2 and above have the bug fixed.
 1. Install [Vagrant][vagrant-dl-macos] (2.0.2).
-2. Install [VirtualBox][vbox-dl-macos] (5.2.6).
+2. Install [VirtualBox][vbox-dl-macos] (5.2.20).
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
@@ -1049,7 +1049,7 @@ for the IP address that means any IP address can connect to your development ser
 [vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vbox-dl-macos]: https://download.virtualbox.org/virtualbox/5.2.6/VirtualBox-5.2.6-120293-OSX.dmg
+[vbox-dl-macos]: https://download.virtualbox.org/virtualbox/5.2.20/VirtualBox-5.2.20-125813-OSX.dmg
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
