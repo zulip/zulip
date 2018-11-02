@@ -1877,21 +1877,24 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     }
     return dct
 
-def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> Dict[str, FullNameInfo]:
+def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
     if not mention_texts:
-        return dict()
+        return list()
 
-    # Remove the trailing part of the `user|id` mention syntax.
+    # Remove the trailing part of the `name|id` mention syntax,
+    # thus storing only full names in full_names.
+    full_names = set()
     name_re = r'(?P<full_name>.+)\|\d+$'
-    for mention_text in mention_texts.copy():
+    for mention_text in mention_texts:
         name_syntax_match = re.match(name_re, mention_text)
         if name_syntax_match:
-            mention_texts.remove(mention_text)
-            mention_texts.add(name_syntax_match.group("full_name"))
+            full_names.add(name_syntax_match.group("full_name"))
+        else:
+            full_names.add(mention_text)
 
     q_list = {
-        Q(full_name__iexact=mention_text)
-        for mention_text in mention_texts
+        Q(full_name__iexact=full_name)
+        for full_name in full_names
     }
 
     rows = UserProfile.objects.filter(
@@ -1904,22 +1907,19 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> Dict[s
         'full_name',
         'email',
     )
-    dct = {}  # type: Dict[str, FullNameInfo]
-    for row in rows:
-        key = row['full_name'].lower()
-        # To insert users with duplicate full names in the dict
-        if key in dct:
-            key = '{}|{}'.format(key, row['id'])
-        dct[key] = row
-    return dct
+    return list(rows)
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
         mention_texts = possible_mentions(content)
-        self.full_name_info = get_possible_mentions_info(realm_id, mention_texts)
+        possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
+        self.full_name_info = {
+            row['full_name'].lower(): row
+            for row in possible_mentions_info
+        }
         self.user_id_info = {
             row['id']: row
-            for row in self.full_name_info.values()
+            for row in possible_mentions_info
         }
         self.init_user_group_data(realm_id=realm_id, content=content)
 
