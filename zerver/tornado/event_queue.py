@@ -417,7 +417,7 @@ def gc_event_queues() -> None:
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
-def persistent_queue_filename(last=False) -> str:
+def persistent_queue_filename(last: bool=False) -> str:
     if last:
         return "/var/tmp/event_queues.json.last"
     return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('',)
