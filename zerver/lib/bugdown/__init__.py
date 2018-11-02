@@ -1932,11 +1932,12 @@ def do_convert(content: str,
     else:
         realm_filters_key = message_realm.id
 
-    if (message is not None and message.sender.realm.is_zephyr_mirror_realm and
-            message.sending_client.name == "zephyr_mirror"):
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
+    if message is not None and message_realm is not None:
+        if message_realm.is_zephyr_mirror_realm:
+            if message.sending_client.name == "zephyr_mirror":
+                # Use slightly customized Markdown processor for content
+                # delivered via zephyr_mirror
+                realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
 
     maybe_update_markdown_engines(realm_filters_key, email_gateway)
     md_engine_key = (realm_filters_key, email_gateway)
