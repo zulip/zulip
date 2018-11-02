@@ -1478,7 +1478,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 id = id_syntax_match.group("user_id")
                 user = db_data['mention_data'].get_user_by_id(id)
             else:
-                user = db_data['mention_data'].get_user(name)
+                user = db_data['mention_data'].get_user_by_name(name)
 
             if wildcard:
                 self.markdown.zulip_message.mentions_wildcard = True
@@ -1942,7 +1942,10 @@ class MentionData:
             user_profile_id = info['user_profile_id']
             self.user_group_members[group_id].append(user_profile_id)
 
-    def get_user(self, name: str) -> Optional[FullNameInfo]:
+    def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
+        # warning: get_user_by_name is not dependable if two
+        # users of the same full name are mentioned. Use
+        # get_user_by_id where possible.
         return self.full_name_info.get(name.lower(), None)
 
     def get_user_by_id(self, id: str) -> Optional[FullNameInfo]:
