@@ -584,7 +584,9 @@ def render_markdown(message: Message,
             if user_id in message_user_ids:
                 possible_words.update(set(words))
 
-    sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
+    sender = get_user_profile_by_id(message.sender_id)
+    sent_by_bot = sender.is_bot
+    translate_emoticons = sender.translate_emoticons
 
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(
@@ -593,6 +595,7 @@ def render_markdown(message: Message,
         message_realm=realm,
         possible_words=possible_words,
         sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
         mention_data=mention_data,
         email_gateway=email_gateway
     )
