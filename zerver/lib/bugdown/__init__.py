@@ -94,27 +94,44 @@ def rewrite_local_links_to_relative(link: str) -> str:
 
     return link
 
-def url_embed_preview_enabled_for_realm(message: Optional[Message]) -> bool:
-    if message is not None:
-        realm = message.get_realm()  # type: Optional[Realm]
-    else:
-        realm = None
-
+def url_embed_preview_enabled_for_realm(message: Optional[Message]=None) -> bool:
     if not settings.INLINE_URL_EMBED_PREVIEW:
         return False
+
+    realm = arguments.current_realm
+
     if realm is None:
+        if message is None:
+            message = arguments.current_message
+
+        if message is not None:
+            realm = message.get_realm()
+
+    if realm is None:
+        # realm can be None for odd use cases
+        # like generating documentation or running
+        # test code
         return True
+
     return realm.inline_url_embed_preview
 
 def image_preview_enabled_for_realm() -> bool:
-    if arguments.current_message is not None:
-        realm = arguments.current_message.get_realm()  # type: Optional[Realm]
-    else:
-        realm = None
     if not settings.INLINE_IMAGE_PREVIEW:
         return False
+
+    realm = arguments.current_realm
+    message = arguments.current_message
+
     if realm is None:
+        if message is not None:
+            realm = message.get_realm()
+
+    if realm is None:
+        # realm can be None for odd use cases
+        # like generating documentation or running
+        # test code
         return True
+
     return realm.inline_image_preview
 
 def list_of_tlds() -> List[str]:
@@ -886,9 +903,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if arguments.db_data and arguments.db_data['sent_by_bot']:
                 continue
 
-            if (arguments.current_message is None
-                    or not url_embed_preview_enabled_for_realm(arguments.current_message)):
+            if not url_embed_preview_enabled_for_realm():
                 continue
+
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
@@ -1935,6 +1952,7 @@ def do_convert(content: str,
     _md_engine.reset()
 
     arguments.current_message = message
+    arguments.current_realm = message_realm
 
     # Pre-fetch data from the DB that is used in the bugdown thread
     if message is not None:
@@ -2000,6 +2018,7 @@ def do_convert(content: str,
         raise BugdownRenderingException()
     finally:
         arguments.current_message = None
+        arguments.current_realm = None
         arguments.db_data = None
 
 bugdown_time_start = 0.0
