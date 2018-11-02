@@ -119,6 +119,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_email: user.email,
         user_id: user.user_id,
         user_time: people.get_user_time(user.user_id),
+        user_type: people.get_user_type(user.user_id),
         presence_status: presence.get_status(user.user_id),
         user_last_seen_time_status: user_last_seen_time_status(user.user_id),
         pm_with_uri: hash_util.pm_with_uri(user.email),
