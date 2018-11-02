@@ -112,6 +112,43 @@ function calculate_info_popover_placement(size, elt) {
     }
 }
 
+function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
+                                  template_class, popover_placement) {
+    var args = {
+        is_active: people.is_active_user_for_popover(user.user_id),
+        is_bot: user.is_bot,
+        is_me: people.is_current_user(user.email),
+        is_sender_popover: is_sender_popover,
+        pm_with_uri: hash_util.pm_with_uri(user.email),
+        presence_status: presence.get_status(user.user_id),
+        private_message_class: private_msg_class,
+        sent_by_uri: hash_util.by_sender_uri(user.email),
+        show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
+        user_email: user.email,
+        user_full_name: user.full_name,
+        user_id: user.user_id,
+        user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+        user_time: people.get_user_time(user.user_id),
+    };
+
+    popover_element.popover({
+        content: templates.render('user_info_popover_content', args),
+        // TODO: Determine whether `fixed` should be applied
+        // unconditionally.  Right now, we only do it for the user
+        // sidebar version of the popover.
+        fixed: template_class === 'user_popover',
+        placement: popover_placement,
+        template: templates.render('user_info_popover', {class: template_class}),
+        title: templates.render('user_info_popover_title',
+                                {user_avatar: "avatar/" + user.email}),
+        trigger: "manual",
+    });
+    popover_element.popover("show");
+
+    init_email_clipboard();
+    load_medium_avatar(user, $(".popover-avatar"));
+}
+
 // exporting for testability
 exports._test_calculate_info_popover_placement = calculate_info_popover_placement;
 
@@ -138,35 +175,9 @@ function show_user_info_popover(element, user, message) {
             return;
         }
 
-        var args = {
-            is_active: people.is_active_user_for_popover(user.user_id),
-            is_bot: user.is_bot,
-            is_me: people.is_current_user(user.email),
-            is_sender_popover: message.sender_id === user.user_id,
-            pm_with_uri: hash_util.pm_with_uri(user.email),
-            presence_status: presence.get_status(user.user_id),
-            private_message_class: "respond_personal_button",
-            sent_by_uri: hash_util.by_sender_uri(user.email),
-            show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
-            user_email: user.email,
-            user_full_name: user.full_name,
-            user_id: user.user_id,
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
-            user_time: people.get_user_time(user.user_id),
-        };
-
-        elt.popover({
-            content: templates.render('user_info_popover_content', args),
-            placement: calculate_info_popover_placement(popover_size, elt),
-            template: templates.render('user_info_popover', {class: "message-info-popover"}),
-            title: templates.render('user_info_popover_title',
-                                    {user_avatar: "avatar/" + user.email}),
-            trigger: "manual",
-        });
-        elt.popover("show");
-
-        init_email_clipboard();
-        load_medium_avatar(user, $(".popover-avatar"));
+        var is_sender_popover =  message.sender_id === user.user_id;
+        render_user_info_popover(user, elt, is_sender_popover, "respond_personal_button",
+                                 "message-info-popover", calculate_info_popover_placement(popover_size, elt));
 
         current_message_info_popover_elem = elt;
     }
@@ -761,35 +772,10 @@ exports.register_click_handlers = function () {
         }
 
         var user = people.get_person_from_user_id(user_id);
+        var popover_placement = userlist_placement === "left" ? "right" : "left";
 
-        var args = {
-            is_active: people.is_active_user_for_popover(user.user_id),
-            is_bot: user.is_bot,
-            is_sender_popover: false,
-            pm_with_uri: hash_util.pm_with_uri(user.email),
-            presence_status: presence.get_status(user.user_id),
-            private_message_class: "compose_private_message",
-            sent_by_uri: hash_util.by_sender_uri(user.email),
-            show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
-            user_email: user.email,
-            user_full_name: user.full_name,
-            user_id: user.user_id,
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
-            user_time: people.get_user_time(user.user_id),
-        };
-
-        target.popover({
-            content: templates.render('user_info_popover_content', args),
-            fixed: true,
-            placement: userlist_placement === "left" ? "right" : "left",
-            template: templates.render('user_info_popover', {class: "user_popover"}),
-            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user.email}),
-            trigger: "manual",
-        });
-        target.popover("show");
-
-        init_email_clipboard();
-        load_medium_avatar(user, $(".popover-avatar"));
+        render_user_info_popover(user, target, false, "compose_private_message",
+                                 "user_popover", popover_placement);
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data('popover');
