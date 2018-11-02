@@ -54,13 +54,14 @@ queues = {
     'email_senders',
     'missedmessage_mobile_notifications',
     'outgoing_webhooks',
-    'notify_tornado',
     'signups',
     'slow_queries',
-    'tornado_return',
     'user_activity'
     'user_activity_interval',
     'user_presence',
+    # These queues may not be present if settings.TORNADO_PROCESSES > 1
+    'notify_tornado',
+    'tornado_return',
 }
 
 for queue_name in queues:

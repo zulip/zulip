@@ -30,7 +30,8 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
-from zerver.tornado.sharding import get_tornado_uri
+from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
+    notify_tornado_queue_name, tornado_return_queue_name
 import copy
 
 requests_client = requests.Session()
@@ -1005,6 +1006,7 @@ def send_event(realm: Realm, event: Mapping[str, Any],
     """`users` is a list of user IDs, or in the case of `message` type
     events, a list of dicts describing the users and metadata about
     the user/message pair."""
-    queue_json_publish("notify_tornado",
+    port = get_tornado_port(realm)
+    queue_json_publish(notify_tornado_queue_name(port),
                        dict(event=event, users=users),
                        lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs))
