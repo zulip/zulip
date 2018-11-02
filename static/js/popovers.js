@@ -261,6 +261,7 @@ exports.show_user_profile = function (element, user) {
         date_joined: moment(user.date_joined).format(localFormat),
         last_seen: user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
+        user_type: people.get_user_type(user.user_id),
     };
 
     $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
