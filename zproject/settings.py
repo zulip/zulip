@@ -589,6 +589,7 @@ CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
+TORNADO_PROCESSES = get_config('application_server', 'tornado_processes', 1)
 TORNADO_SERVER = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG

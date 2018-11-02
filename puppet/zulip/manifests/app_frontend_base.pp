@@ -53,6 +53,11 @@ class zulip::app_frontend_base {
     }
   }
 
+  # The number of Tornado processes to run on the server;
+  # historically, this has always been 1, but we now have experimental
+  # support for Tornado sharding.
+  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
