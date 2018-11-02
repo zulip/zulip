@@ -19,7 +19,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
-from zerver.lib.message import save_message_rendered_content
+from zerver.lib.message import render_markdown
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend, guess_type
@@ -219,11 +219,18 @@ def fix_message_rendered_content(data: TableData, field: TableName) -> None:
             continue
 
         try:
-            rendered_content = save_message_rendered_content(message_object, message['content'])  # type: Optional[str]
+            content = message['content']
+            realm = message_object.get_realm()
+            rendered_content = render_markdown(
+                message=message_object,
+                content=content,
+                realm=realm,
+            )
+            assert(rendered_content is not None)
+            message_object.rendered_content = rendered_content
+            message_object.rendered_content_version = bugdown_version
+            message_object.save_rendered_content()
         except Exception:
-            rendered_content = None
-
-        if rendered_content is None:
             # This can happen with two possible causes:
             # * rendering markdown failing with the exception being caught in bugdown
             # * The explicit None clause from an exception escaping
