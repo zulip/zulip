@@ -1846,12 +1846,22 @@ class MentionData:
             row['id']: row
             for row in self.full_name_info.values()
         }
+        self.init_user_group_data(realm_id=realm_id, content=content)
 
+    def init_user_group_data(self,
+                             realm_id: int,
+                             content: str) -> None:
         user_group_names = possible_user_group_mentions(content)
         self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
-        group_ids = [group.id for group in self.user_group_name_info.values()]
-        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         self.user_group_members = defaultdict(list)  # type: Dict[int, List[int]]
+        group_ids = [group.id for group in self.user_group_name_info.values()]
+
+        if not group_ids:
+            # Early-return to avoid the cost of hitting the ORM,
+            # which shows up in profiles.
+            return
+
+        membership = UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         for info in membership.values('user_group_id', 'user_profile_id'):
             group_id = info['user_group_id']
             user_profile_id = info['user_profile_id']
