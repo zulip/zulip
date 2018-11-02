@@ -145,6 +145,7 @@ run_test('sender_hover', () => {
                 user_email: 'alice@example.com',
                 user_id: 42,
                 user_time: undefined,
+                user_type: i18n.t('Member'),
                 presence_status: 'offline',
                 user_last_seen_time_status: 'translated: More than 2 weeks ago',
                 pm_with_uri: '#narrow/pm-with/42-alice',
