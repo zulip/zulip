@@ -204,7 +204,7 @@ finishing those steps, you will be ready for
 #### Windows 10
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install [VirtualBox][vbox-dl] (version == 5.2.6).
+2. Install [VirtualBox][vbox-dl] (version == 5.2.20).
 3. Install [Vagrant][vagrant-dl-win] (version 2.0.2 is best tested).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
@@ -1048,7 +1048,7 @@ for the IP address that means any IP address can connect to your development ser
 [vagrant-dl-macos]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.dmg
 [vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
-[vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vbox-dl]: https://download.virtualbox.org/virtualbox/5.2.20/VirtualBox-5.2.20-125813-Win.exe
 [vbox-dl-macos]: https://download.virtualbox.org/virtualbox/5.2.20/VirtualBox-5.2.20-125813-OSX.dmg
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
