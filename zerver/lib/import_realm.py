@@ -207,7 +207,7 @@ def fix_customprofilefield(data: TableData) -> None:
                 old_id_list=old_user_id_list)
             item['value'] = ujson.dumps(new_id_list)
 
-def fix_message_rendered_content(data: TableData, field: TableName) -> None:
+def fix_message_rendered_content(realm: Realm, data: TableData, field: TableName) -> None:
     """
     This function sets the rendered_content of all the messages
     after the messages have been imported from a non-Zulip platform.
@@ -220,7 +220,6 @@ def fix_message_rendered_content(data: TableData, field: TableName) -> None:
 
         try:
             content = message['content']
-            realm = message_object.get_realm()
             rendered_content = render_markdown(
                 message=message_object,
                 content=content,
@@ -903,7 +902,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         import_uploads(os.path.join(import_dir, "emoji"), processing_emojis=True)
 
     # Import zerver_message and zerver_usermessage
-    import_message_data(import_dir)
+    import_message_data(realm=realm, import_dir=import_dir)
 
     re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
     re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
@@ -1024,7 +1023,7 @@ def get_incoming_message_ids(import_dir: Path,
 
     return message_ids
 
-def import_message_data(import_dir: Path) -> None:
+def import_message_data(realm: Realm, import_dir: Path) -> None:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -1056,7 +1055,7 @@ def import_message_data(import_dir: Path) -> None:
         # This is where we actually import the message data.
         bulk_import_model(data, Message)
 
-        fix_message_rendered_content(data, 'zerver_message')
+        fix_message_rendered_content(realm, data, 'zerver_message')
         logging.info("Successfully rendered markdown for message batch")
 
         # Due to the structure of these message chunks, we're
