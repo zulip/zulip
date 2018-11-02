@@ -125,6 +125,112 @@ class FencedCodeExtension(markdown.Extension):
                              position)
 
 
+class BaseHandler:
+    def handle_line(self, line: str) -> None:
+        raise NotImplementedError()
+
+    def done(self) -> None:
+        raise NotImplementedError()
+
+def generic_handler(processor: Any, output: MutableSequence[str], fence: str, lang: str) -> BaseHandler:
+    if lang in ('quote', 'quoted'):
+        return QuoteHandler(processor, output, fence)
+    elif lang in ('math', 'tex', 'latex'):
+        return TexHandler(processor, output, fence)
+    else:
+        return CodeHandler(processor, output, fence, lang)
+
+def check_for_new_fence(processor: Any, output: MutableSequence[str], line: str) -> None:
+    m = FENCE_RE.match(line)
+    if m:
+        fence = m.group('fence')
+        lang = m.group('lang')
+        handler = generic_handler(processor, output, fence, lang)
+        processor.push(handler)
+    else:
+        output.append(line)
+
+class OuterHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str]) -> None:
+        self.output = output
+        self.processor = processor
+
+    def handle_line(self, line: str) -> None:
+        check_for_new_fence(self.processor, self.output, line)
+
+    def done(self) -> None:
+        self.processor.pop()
+
+class CodeHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str], fence: str, lang: str) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.lang = lang
+        self.lines = []  # type: List[str]
+
+    def handle_line(self, line: str) -> None:
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            self.lines.append(line.rstrip())
+
+    def done(self) -> None:
+        text = '\n'.join(self.lines)
+        text = self.processor.format_code(self.lang, text)
+        text = self.processor.placeholder(text)
+        processed_lines = text.split('\n')
+        self.output.append('')
+        self.output.extend(processed_lines)
+        self.output.append('')
+        self.processor.pop()
+
+class QuoteHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.lines = []  # type: List[str]
+
+    def handle_line(self, line: str) -> None:
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            check_for_new_fence(self.processor, self.lines, line)
+
+    def done(self) -> None:
+        text = '\n'.join(self.lines)
+        text = self.processor.format_quote(text)
+        processed_lines = text.split('\n')
+        self.output.append('')
+        self.output.extend(processed_lines)
+        self.output.append('')
+        self.processor.pop()
+
+class TexHandler(BaseHandler):
+    def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.lines = []  # type: List[str]
+
+    def handle_line(self, line: str) -> None:
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            self.lines.append(line)
+
+    def done(self) -> None:
+        text = '\n'.join(self.lines)
+        text = self.processor.format_tex(text)
+        text = self.processor.placeholder(text)
+        processed_lines = text.split('\n')
+        self.output.append('')
+        self.output.extend(processed_lines)
+        self.output.append('')
+        self.processor.pop()
+
+
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
     def __init__(self, md: markdown.Markdown) -> None:
         markdown.preprocessors.Preprocessor.__init__(self, md)
@@ -132,129 +238,28 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         self.checked_for_codehilite = False
         self.codehilite_conf = {}  # type: Dict[str, List[Any]]
 
+    def push(self, handler: BaseHandler) -> None:
+        self.handlers.append(handler)
+
+    def pop(self) -> None:
+        self.handlers.pop()
+
     def run(self, lines: Iterable[str]) -> List[str]:
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
         output = []  # type: List[str]
 
-        class BaseHandler:
-            def handle_line(self, line: str) -> None:
-                raise NotImplementedError()
-
-            def done(self) -> None:
-                raise NotImplementedError()
-
         processor = self
-        handlers = []  # type: List[BaseHandler]
+        self.handlers = []  # type: List[BaseHandler]
 
-        def push(handler: BaseHandler) -> None:
-            handlers.append(handler)
-
-        def pop() -> None:
-            handlers.pop()
-
-        def check_for_new_fence(output: MutableSequence[str], line: str) -> None:
-            m = FENCE_RE.match(line)
-            if m:
-                fence = m.group('fence')
-                lang = m.group('lang')
-                handler = generic_handler(output, fence, lang)
-                push(handler)
-            else:
-                output.append(line)
-
-        class OuterHandler(BaseHandler):
-            def __init__(self, output: MutableSequence[str]) -> None:
-                self.output = output
-
-            def handle_line(self, line: str) -> None:
-                check_for_new_fence(self.output, line)
-
-            def done(self) -> None:
-                pop()
-
-        def generic_handler(output: MutableSequence[str], fence: str, lang: str) -> BaseHandler:
-            if lang in ('quote', 'quoted'):
-                return QuoteHandler(output, fence)
-            elif lang in ('math', 'tex', 'latex'):
-                return TexHandler(output, fence)
-            else:
-                return CodeHandler(output, fence, lang)
-
-        class CodeHandler(BaseHandler):
-            def __init__(self, output: MutableSequence[str], fence: str, lang: str) -> None:
-                self.output = output
-                self.fence = fence
-                self.lang = lang
-                self.lines = []  # type: List[str]
-
-            def handle_line(self, line: str) -> None:
-                if line.rstrip() == self.fence:
-                    self.done()
-                else:
-                    self.lines.append(line.rstrip())
-
-            def done(self) -> None:
-                text = '\n'.join(self.lines)
-                text = processor.format_code(self.lang, text)
-                text = processor.placeholder(text)
-                processed_lines = text.split('\n')
-                self.output.append('')
-                self.output.extend(processed_lines)
-                self.output.append('')
-                pop()
-
-        class QuoteHandler(BaseHandler):
-            def __init__(self, output: MutableSequence[str], fence: str) -> None:
-                self.output = output
-                self.fence = fence
-                self.lines = []  # type: List[str]
-
-            def handle_line(self, line: str) -> None:
-                if line.rstrip() == self.fence:
-                    self.done()
-                else:
-                    check_for_new_fence(self.lines, line)
-
-            def done(self) -> None:
-                text = '\n'.join(self.lines)
-                text = processor.format_quote(text)
-                processed_lines = text.split('\n')
-                self.output.append('')
-                self.output.extend(processed_lines)
-                self.output.append('')
-                pop()
-
-        class TexHandler(BaseHandler):
-            def __init__(self, output: MutableSequence[str], fence: str) -> None:
-                self.output = output
-                self.fence = fence
-                self.lines = []  # type: List[str]
-
-            def handle_line(self, line: str) -> None:
-                if line.rstrip() == self.fence:
-                    self.done()
-                else:
-                    self.lines.append(line)
-
-            def done(self) -> None:
-                text = '\n'.join(self.lines)
-                text = processor.format_tex(text)
-                text = processor.placeholder(text)
-                processed_lines = text.split('\n')
-                self.output.append('')
-                self.output.extend(processed_lines)
-                self.output.append('')
-                pop()
-
-        handler = OuterHandler(output)
-        push(handler)
+        handler = OuterHandler(processor, output)
+        self.push(handler)
 
         for line in lines:
-            handlers[-1].handle_line(line)
+            self.handlers[-1].handle_line(line)
 
-        while handlers:
-            handlers[-1].done()
+        while self.handlers:
+            self.handlers[-1].done()
 
         # This fiddly handling of new lines at the end of our output was done to make
         # existing tests pass.  Bugdown is just kind of funny when it comes to new lines,
