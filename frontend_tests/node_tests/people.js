@@ -8,12 +8,16 @@ set_global('page_params', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
+set_global('i18n', global.stub_i18n);
 
 var me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
     timezone: 'US/Pacific',
+    is_admin: false,
+    is_guest: false,
+    is_bot: false,
 };
 
 var isaac = {
@@ -163,6 +167,38 @@ run_test('user_timezone', () => {
     expected_pref.format = 'h:mm A';
     global.page_params.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), '12:09 AM');
+});
+
+run_test('user_type', () => {
+    var realm_admin = {
+        email: 'realm_admin@example.com',
+        user_id: 32,
+        is_admin: true,
+        is_guest: false,
+        is_bot: false,
+    };
+    var guest = {
+        email: 'guest@example.com',
+        user_id: 33,
+        is_admin: false,
+        is_guest: true,
+        is_bot: false,
+    };
+    var bot = {
+        email: 'bot@example.com',
+        user_id: 34,
+        is_admin: false,
+        is_guest: false,
+        is_bot: true,
+    };
+
+    people.add(realm_admin);
+    people.add(guest);
+    people.add(bot);
+    assert.equal(people.get_user_type(me.user_id), i18n.t('Member'));
+    assert.equal(people.get_user_type(realm_admin.user_id), i18n.t('Administrator'));
+    assert.equal(people.get_user_type(guest.user_id), i18n.t('Guest'));
+    assert.equal(people.get_user_type(bot.user_id), i18n.t('Bot'));
 });
 
 run_test('updates', () => {
