@@ -57,6 +57,12 @@ class zulip::app_frontend_base {
   # historically, this has always been 1, but we now have experimental
   # support for Tornado sharding.
   $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+  if $tornado_processes > 1 {
+    $tornado_ports = range(9800, 9800 + $tornado_processes)
+    $tornado_multiprocess = true
+  } else {
+    $tornado_multiprocess = false
+  }
 
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
