@@ -11,7 +11,7 @@ from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable
+    Iterable, cast
 
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -207,6 +207,13 @@ def fix_customprofilefield(data: TableData) -> None:
                 old_id_list=old_user_id_list)
             item['value'] = ujson.dumps(new_id_list)
 
+class FakeMessage:
+    '''
+    We just need a stub object for do_render_markdown
+    to write stuff to.
+    '''
+    pass
+
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
                                  data: TableData,
@@ -216,10 +223,11 @@ def fix_message_rendered_content(realm: Realm,
     after the messages have been imported from a non-Zulip platform.
     """
     for message in data[field]:
-        message_object = Message.objects.get(id=message['id'])
-        if message_object.rendered_content is not None:
+        if message['rendered_content'] is not None:
             # For Zulip->Zulip imports, we use the original rendered markdown.
             continue
+
+        message_object = FakeMessage()
 
         try:
             content = message['content']
@@ -234,7 +242,7 @@ def fix_message_rendered_content(realm: Realm,
             message_user_ids = set()  # type: Set[int]
 
             rendered_content = do_render_markdown(
-                message=message_object,
+                message=cast(Message, message_object),
                 content=content,
                 realm=realm,
                 realm_alert_words=realm_alert_words,
@@ -243,9 +251,12 @@ def fix_message_rendered_content(realm: Realm,
                 translate_emoticons=translate_emoticons,
             )
             assert(rendered_content is not None)
-            message_object.rendered_content = rendered_content
-            message_object.rendered_content_version = bugdown_version
-            message_object.save_rendered_content()
+
+            # This code will go away in the next commit.
+            Message.objects.filter(id=message['id']).update(
+                rendered_content=rendered_content,
+                rendered_content_version=bugdown_version,
+            )
         except Exception:
             # This can happen with two possible causes:
             # * rendering markdown failing with the exception being caught in bugdown
