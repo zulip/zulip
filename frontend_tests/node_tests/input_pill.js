@@ -511,9 +511,12 @@ run_test('exit button on pill', () => {
         },
     };
 
+    var e = {
+        stopPropagation: noop,
+    };
     const exit_click_handler = container.get_on_handler('click', '.exit');
 
-    exit_click_handler.apply(exit_button_stub);
+    exit_click_handler.apply(exit_button_stub, [e]);
 
     assert(next_pill_focused);
 
