@@ -283,7 +283,7 @@ def do_set_realm_name(realm, name):
         property='name',
         value=name,
     )
-    send_event(event, active_user_ids(realm))
+    send_event(realm, event, active_user_ids(realm))
 ```
 
 `realm.save()` actually saves the changes to the realm to the

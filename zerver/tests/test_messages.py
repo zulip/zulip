@@ -853,7 +853,7 @@ class StreamMessagesTest(ZulipTestCase):
                 content=content
             )
         self.assertEqual(m.call_count, 1)
-        users = m.call_args[0][1]
+        users = m.call_args[0][2]
         user_ids = {u['id'] for u in users}
         return user_ids
 
