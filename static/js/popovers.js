@@ -112,6 +112,41 @@ function calculate_info_popover_placement(size, elt) {
     }
 }
 
+function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
+                                  template_class, popover_placement) {
+    var args = {
+        user_full_name: user.full_name,
+        user_email: user.email,
+        user_id: user.user_id,
+        user_time: people.get_user_time(user.user_id),
+        presence_status: presence.get_status(user.user_id),
+        user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+        pm_with_uri: hash_util.pm_with_uri(user.email),
+        sent_by_uri: hash_util.by_sender_uri(user.email),
+        narrowed: narrow_state.active(),
+        private_message_class: private_msg_class,
+        is_me: people.is_current_user(user.email),
+        is_active: people.is_active_user_for_popover(user.user_id),
+        is_bot: user.is_bot,
+        is_sender_popover: is_sender_popover,
+        show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
+    };
+
+    popover_element.popover({
+        placement: popover_placement,
+        template: templates.render('user_info_popover', {class: template_class}),
+        title: templates.render('user_info_popover_title',
+                                {user_avatar: "avatar/" + user.email}),
+        content: templates.render('user_info_popover_content', args),
+        trigger: "manual",
+        fixed: true,
+    });
+    popover_element.popover("show");
+
+    init_email_clipboard();
+    load_medium_avatar(user, $(".popover-avatar"));
+}
+
 // exporting for testability
 exports._test_calculate_info_popover_placement = calculate_info_popover_placement;
 
@@ -138,37 +173,9 @@ function show_user_info_popover(element, user, message) {
             return;
         }
 
-        var args = {
-            user_full_name: user.full_name,
-            user_email: user.email,
-            user_id: user.user_id,
-            user_time: people.get_user_time(user.user_id),
-            presence_status: presence.get_status(user.user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
-            pm_with_uri: hash_util.pm_with_uri(user.email),
-            sent_by_uri: hash_util.by_sender_uri(user.email),
-            narrowed: narrow_state.active(),
-            private_message_class: "respond_personal_button",
-            is_me: people.is_current_user(user.email),
-            is_active: people.is_active_user_for_popover(user.user_id),
-            is_bot: user.is_bot,
-            is_sender_popover: message.sender_id === user.user_id,
-            show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
-        };
-
-
-        elt.popover({
-            placement: calculate_info_popover_placement(popover_size, elt),
-            template: templates.render('user_info_popover', {class: "message-info-popover"}),
-            title: templates.render('user_info_popover_title',
-                                    {user_avatar: "avatar/" + user.email}),
-            content: templates.render('user_info_popover_content', args),
-            trigger: "manual",
-        });
-        elt.popover("show");
-
-        init_email_clipboard();
-        load_medium_avatar(user, $(".popover-avatar"));
+        var is_sender_popover =  message.sender_id === user.user_id;
+        render_user_info_popover(user, elt, is_sender_popover, "respond_personal_button",
+                                 "message-info-popover", calculate_info_popover_placement(popover_size, elt));
 
         current_message_info_popover_elem = elt;
     }
@@ -763,36 +770,10 @@ exports.register_click_handlers = function () {
         }
 
         var user = people.get_person_from_user_id(user_id);
-        var user_email = user.email;
+        var popover_placement = userlist_placement === "left" ? "right" : "left";
 
-        var args = {
-            user_email: user_email,
-            user_full_name: user.full_name,
-            user_id: user_id,
-            user_time: people.get_user_time(user_id),
-            presence_status: presence.get_status(user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user_id),
-            pm_with_uri: hash_util.pm_with_uri(user_email),
-            sent_by_uri: hash_util.by_sender_uri(user_email),
-            private_message_class: "compose_private_message",
-            is_active: people.is_active_user_for_popover(user_id),
-            is_bot: user.is_bot,
-            is_sender_popover: false,
-            show_user_profile: !user.is_bot && page_params.custom_profile_fields,
-        };
-
-        target.popover({
-            template: templates.render('user_info_popover', {class: "user_popover"}),
-            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
-            content: templates.render('user_info_popover_content', args),
-            trigger: "manual",
-            fixed: true,
-            placement: userlist_placement === "left" ? "right" : "left",
-        });
-        target.popover("show");
-
-        init_email_clipboard();
-        load_medium_avatar(user, $(".popover-avatar"));
+        render_user_info_popover(user, target, false, "compose_private_message",
+                                 "user_popover", popover_placement);
 
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');
