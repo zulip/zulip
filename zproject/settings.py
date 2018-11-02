@@ -48,6 +48,11 @@ def get_secret(key: str, default_value: Optional[Any]=None,
         return secrets_file.get('secrets', key)
     return default_value
 
+def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Optional[Any]:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 
@@ -698,13 +703,10 @@ if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-try:
     # For get_updates hostname sharding.
-    domain = config_file.get('django', 'cookie_domain')
-    CSRF_COOKIE_DOMAIN = '.' + domain
-except configparser.Error:
-    # Failing here is OK
-    pass
+    domain = get_config('django', 'cookie_domain', None)
+    if domain is not None:
+        CSRF_COOKIE_DOMAIN = '.' + domain
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
