@@ -750,6 +750,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'body': message.content,
             },
             'badge': 0,
+            'sound': 'default',
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
@@ -778,6 +779,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'subtitle': 'King Hamlet:',
                 'body': message.content,
             },
+            'sound': 'default',
             'badge': 0,
             'custom': {
                 'zulip': {
@@ -811,6 +813,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'subtitle': 'King Hamlet:',
                 'body': message.content,
             },
+            'sound': 'default',
             'badge': 0,
             'custom': {
                 'zulip': {
@@ -842,6 +845,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'subtitle': 'King Hamlet mentioned you:',
                 'body': message.content,
             },
+            'sound': 'default',
             'badge': 0,
             'custom': {
                 'zulip': {
@@ -874,6 +878,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'subtitle': "King Hamlet:",
                 'body': "***REDACTED***",
             },
+            'sound': 'default',
             'badge': 0,
             'custom': {
                 'zulip': {
