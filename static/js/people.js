@@ -223,6 +223,19 @@ exports.get_user_time = function (user_id) {
     }
 };
 
+exports.get_user_type = function (user_id) {
+    var user_profile = exports.get_person_from_user_id(user_id);
+
+    if (user_profile.is_admin) {
+        return i18n.t("Administrator");
+    } else if (user_profile.is_guest) {
+        return i18n.t("Guest");
+    } else if (user_profile.is_bot) {
+        return i18n.t("Bot");
+    }
+    return i18n.t("Member");
+};
+
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     return exports.email_list_to_user_ids_string(emails);
