@@ -216,13 +216,12 @@ class FakeMessage:
 
 def fix_message_rendered_content(realm: Realm,
                                  sender_map: Dict[int, Record],
-                                 data: TableData,
-                                 field: TableName) -> None:
+                                 messages: List[Record]) -> None:
     """
     This function sets the rendered_content of all the messages
     after the messages have been imported from a non-Zulip platform.
     """
-    for message in data[field]:
+    for message in messages:
         if message['rendered_content'] is not None:
             # For Zulip->Zulip imports, we use the original rendered markdown.
             continue
@@ -1095,8 +1094,7 @@ def import_message_data(realm: Realm,
         fix_message_rendered_content(
             realm=realm,
             sender_map=sender_map,
-            data=data,
-            field='zerver_message',
+            messages=data['zerver_message'],
         )
         logging.info("Successfully rendered markdown for message batch")
 
