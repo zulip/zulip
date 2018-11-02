@@ -31,8 +31,9 @@ class Command(BaseCommand):
             raise CommandError("Missing queue_name argument!")
         else:
             queue_name = options['queue_name']
-            if queue_name not in ['notify_tornado', 'tornado_return',
-                                  ] + get_active_worker_queues():
+            if not (queue_name in get_active_worker_queues() or
+                    queue_name.startswith("notify_tornado") or
+                    queue_name.startswith("tornado_return")):
                 raise CommandError("Unknown queue %s" % (queue_name,))
 
             print("Purging queue %s" % (queue_name,))
