@@ -232,7 +232,7 @@ class BugdownMiscTest(ZulipTestCase):
             id=hamlet.id
         ))
 
-        user = mention_data.get_user('king hamLET')
+        user = mention_data.get_user_by_name('king hamLET')
         assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
 
