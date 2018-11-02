@@ -29,6 +29,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.sessions import get_session_user
 from zerver.tornado.event_queue import get_client_descriptor
 from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.sharding import tornado_return_queue_name
 
 logger = logging.getLogger('zulip.socket')
 
@@ -220,7 +221,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                 req_id=msg['req_id'],
                                 server_meta=dict(user_id=self.session.user_profile.id,
                                                  client_id=self.client_id,
-                                                 return_queue="tornado_return",
+                                                 return_queue=tornado_return_queue_name(self.port),
                                                  log_data=log_data,
                                                  request_environ=request_environ)))
 
