@@ -959,8 +959,8 @@ class BugdownTest(ZulipTestCase):
         assert_mentions('smush@**steve**smush', set())
 
         assert_mentions(
-            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson** @**all**',
-            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson'}
+            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**',
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}
         )
 
     def test_mention_multiple(self) -> None:
