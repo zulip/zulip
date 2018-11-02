@@ -253,11 +253,8 @@ def fix_message_rendered_content(realm: Realm,
             )
             assert(rendered_content is not None)
 
-            # This code will go away in the next commit.
-            Message.objects.filter(id=message['id']).update(
-                rendered_content=rendered_content,
-                rendered_content_version=bugdown_version,
-            )
+            message['rendered_content'] = rendered_content
+            message['rendered_content_version'] = bugdown_version
         except Exception:
             # This generally happens with two possible causes:
             # * rendering markdown throwing an uncaught exception
@@ -1087,16 +1084,16 @@ def import_message_data(realm: Realm,
         for row in data['zerver_usermessage']:
             assert(row['message'] in message_id_map)
 
-        # A LOT HAPPENS HERE.
-        # This is where we actually import the message data.
-        bulk_import_model(data, Message)
-
         fix_message_rendered_content(
             realm=realm,
             sender_map=sender_map,
             messages=data['zerver_message'],
         )
         logging.info("Successfully rendered markdown for message batch")
+
+        # A LOT HAPPENS HERE.
+        # This is where we actually import the message data.
+        bulk_import_model(data, Message)
 
         # Due to the structure of these message chunks, we're
         # guaranteed to have already imported all the Message objects
