@@ -1,17 +1,21 @@
-{!create-stream.md!}
+Receive Greenhouse notifications in Zulip!
 
-The integration will automatically use the default stream
-`greenhouse` if no stream is supplied, though you will still
-need to create the stream manually even though it's the
-default.
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-{!append-topic.md!}
+1. On your Greenhouse **Dashboard**, click on the
+   **gear** (<i class="fa fa-cog"></i>) icon in the upper right
+   corner. Click on **Dev Center**, and click **Web Hooks**.
+   Click on **Web Hooks** one more time.
 
-Go to the account settings page of your Greenhouse account and
-under **Webhooks**, add the above URL and name the integration,
-Zulip.
+1. Set **Name this web hook** to a name of your choice, such as
+   `Zulip`. Set **When** to the event you'd like to be notified
+   about. Set **Endpoint URL** to the URL constructed above.
+
+1. Greenhouse requires you to provide a **Secret key**, but Zulip
+   doesn't expect any particular value. Set **Secret key** to any
+   random value, and click **Create Web hook**.
 
 {!congrats.md!}
 
