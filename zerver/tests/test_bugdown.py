@@ -444,6 +444,7 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         arguments.current_message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = arguments.current_message.get_realm()
+        arguments.current_realm = realm
 
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
@@ -457,17 +458,15 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
+        arguments.current_realm = realm
 
-        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        ret = bugdown.url_embed_preview_enabled_for_realm()
         self.assertEqual(ret, False)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
-        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        ret = bugdown.url_embed_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
-
-        ret = bugdown.url_embed_preview_enabled_for_realm(None)
-        self.assertEqual(ret, True)
 
     def test_inline_dropbox(self) -> None:
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
