@@ -1917,6 +1917,7 @@ def do_convert(content: str,
                message_realm: Optional[Realm]=None,
                possible_words: Optional[Set[str]]=None,
                sent_by_bot: Optional[bool]=False,
+               translate_emoticons: Optional[bool]=False,
                mention_data: Optional[MentionData]=None,
                email_gateway: Optional[bool]=False) -> str:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
@@ -1989,7 +1990,7 @@ def do_convert(content: str,
             'realm_uri': message_realm.uri,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
-            'translate_emoticons': message.sender.translate_emoticons,
+            'translate_emoticons': translate_emoticons,
         }
 
     try:
@@ -2048,10 +2049,12 @@ def convert(content: str,
             message_realm: Optional[Realm]=None,
             possible_words: Optional[Set[str]]=None,
             sent_by_bot: Optional[bool]=False,
+            translate_emoticons: Optional[bool]=False,
             mention_data: Optional[MentionData]=None,
             email_gateway: Optional[bool]=False) -> str:
     bugdown_stats_start()
     ret = do_convert(content, message, message_realm,
-                     possible_words, sent_by_bot, mention_data, email_gateway)
+                     possible_words, sent_by_bot, translate_emoticons,
+                     mention_data, email_gateway)
     bugdown_stats_finish()
     return ret
