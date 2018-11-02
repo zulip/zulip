@@ -19,7 +19,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
-from zerver.lib.message import render_markdown
+from zerver.lib.message import do_render_markdown, RealmAlertWords
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend, guess_type
@@ -207,7 +207,10 @@ def fix_customprofilefield(data: TableData) -> None:
                 old_id_list=old_user_id_list)
             item['value'] = ujson.dumps(new_id_list)
 
-def fix_message_rendered_content(realm: Realm, data: TableData, field: TableName) -> None:
+def fix_message_rendered_content(realm: Realm,
+                                 sender_map: Dict[int, Record],
+                                 data: TableData,
+                                 field: TableName) -> None:
     """
     This function sets the rendered_content of all the messages
     after the messages have been imported from a non-Zulip platform.
@@ -220,10 +223,26 @@ def fix_message_rendered_content(realm: Realm, data: TableData, field: TableName
 
         try:
             content = message['content']
-            rendered_content = render_markdown(
+
+            sender_id = message['sender_id']
+            sender = sender_map[sender_id]
+            sent_by_bot = sender['is_bot']
+            translate_emoticons = sender['translate_emoticons']
+
+            # We don't handle alert words on import from third-party
+            # platforms, since they generally don't have an "alert
+            # words" type feature, and notifications aren't important anyway.
+            realm_alert_words = dict()  # type: RealmAlertWords
+            message_user_ids = set()  # type: Set[int]
+
+            rendered_content = do_render_markdown(
                 message=message_object,
                 content=content,
                 realm=realm,
+                realm_alert_words=realm_alert_words,
+                message_user_ids=message_user_ids,
+                sent_by_bot=sent_by_bot,
+                translate_emoticons=translate_emoticons,
             )
             assert(rendered_content is not None)
             message_object.rendered_content = rendered_content
@@ -901,8 +920,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     if os.path.exists(os.path.join(import_dir, "emoji")):
         import_uploads(os.path.join(import_dir, "emoji"), processing_emojis=True)
 
+    sender_map = {
+        user['id']: user
+        for user in data['zerver_userprofile']
+    }
+
     # Import zerver_message and zerver_usermessage
-    import_message_data(realm=realm, import_dir=import_dir)
+    import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
     re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
     re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
@@ -1023,7 +1047,9 @@ def get_incoming_message_ids(import_dir: Path,
 
     return message_ids
 
-def import_message_data(realm: Realm, import_dir: Path) -> None:
+def import_message_data(realm: Realm,
+                        sender_map: Dict[int, Record],
+                        import_dir: Path) -> None:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -1055,7 +1081,12 @@ def import_message_data(realm: Realm, import_dir: Path) -> None:
         # This is where we actually import the message data.
         bulk_import_model(data, Message)
 
-        fix_message_rendered_content(realm, data, 'zerver_message')
+        fix_message_rendered_content(
+            realm=realm,
+            sender_map=sender_map,
+            data=data,
+            field='zerver_message',
+        )
         logging.info("Successfully rendered markdown for message batch")
 
         # Due to the structure of these message chunks, we're
