@@ -199,16 +199,21 @@ class BugdownMiscTest(ZulipTestCase):
         fred3.save()
 
         fred4 = make_user('fred4@example.com', 'Fred Flintstone')
-        fred4_key = 'fred flintstone|{}'.format(fred4.id)
 
-        dct = bugdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
-        self.assertEqual(set(dct.keys()), {'fred flintstone', fred4_key, 'cordelia lear'})
-        self.assertEqual(dct['fred flintstone'], dict(
+        lst = bugdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
+        set_of_names = set(map(lambda x: x['full_name'].lower(), lst))
+        self.assertEqual(set_of_names, {'fred flintstone', 'cordelia lear'})
+
+        by_id = {
+            row['id']: row
+            for row in lst
+        }
+        self.assertEqual(by_id.get(fred2.id), dict(
             email='fred2@example.com',
             full_name='Fred Flintstone',
             id=fred2.id
         ))
-        self.assertEqual(dct[fred4_key], dict(
+        self.assertEqual(by_id.get(fred4.id), dict(
             email='fred4@example.com',
             full_name='Fred Flintstone',
             id=fred4.id
