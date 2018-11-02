@@ -53,7 +53,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     @override_settings(DEBUG=False)
     def get_app(self) -> Application:
-        return create_tornado_application()
+        return create_tornado_application(9993)
 
     def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
@@ -171,7 +171,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
     def get_app(self) -> Application:
         """ Return tornado app to launch for test cases
         """
-        return create_tornado_application()
+        return create_tornado_application(9993)
 
     @staticmethod
     def tornado_call(view_func: Callable[[HttpRequest, UserProfile], HttpResponse],

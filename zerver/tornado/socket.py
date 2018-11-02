@@ -275,5 +275,6 @@ sockjs_url = '%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.ROOT_DOMAIN_UR
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': sockjs_url,
                                              'disabled_transports': ['eventsource', 'htmlfile']})
-def get_sockjs_router() -> sockjs.tornado.SockJSRouter:
+def get_sockjs_router(port: int) -> sockjs.tornado.SockJSRouter:
+    sockjs_router._connection.port = port
     return sockjs_router
