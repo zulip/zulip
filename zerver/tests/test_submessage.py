@@ -137,9 +137,9 @@ class TestBasics(ZulipTestCase):
         )
 
         self.assertEqual(m.call_count, 1)
-        data = m.call_args[0][0]
+        data = m.call_args[0][1]
         self.assertEqual(data, expected_data)
-        users = m.call_args[0][1]
+        users = m.call_args[0][2]
         self.assertIn(cordelia.id, users)
         self.assertIn(hamlet.id, users)
 

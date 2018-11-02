@@ -18,7 +18,7 @@ import signal
 import tornado.autoreload
 import tornado.ioloop
 import random
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile, Client, Realm
 from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
@@ -997,7 +997,7 @@ def send_notification_http(data: Mapping[str, Any]) -> None:
     else:
         process_notification(data)
 
-def send_event(event: Mapping[str, Any],
+def send_event(realm: Realm, event: Mapping[str, Any],
                users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
     """`users` is a list of user IDs, or in the case of `message` type
     events, a list of dicts describing the users and metadata about

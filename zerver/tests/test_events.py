@@ -890,6 +890,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         events = self.do_test(
             lambda: do_add_submessage(
+                realm=cordelia.realm,
                 sender_id=cordelia.id,
                 message_id=message_id,
                 msg_type='whatever',

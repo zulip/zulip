@@ -51,15 +51,16 @@ problems in a scalable, correct, and predictable way.
 ## Generation system
 
 Zulip's generation system is built around a Python function,
-`send_event(event, users)`.  It accepts an event data structure (just
-a Python dictionary with some keys and value; `type` is always one of
-the keys but the rest depends on the specific event) and a list of
-user IDs for the users whose clients should receive the event.  In
-special cases such as message delivery, the list of users will instead
-be a list of dicts mapping user IDs to user-specific data like whether
-that user was mentioned in that message.  The data passed to
-`send_event` are simply marshalled as JSON and placed in the
-`notify_tornado` RabbitMQ queue to be consumed by the delivery system.
+`send_event(realm, event, users)`.  It accepts the realm (used for
+sharding), the event data structure (just a Python dictionary with
+some keys and value; `type` is always one of the keys but the rest
+depends on the specific event) and a list of user IDs for the users
+whose clients should receive the event.  In special cases such as
+message delivery, the list of users will instead be a list of dicts
+mapping user IDs to user-specific data like whether that user was
+mentioned in that message.  The data passed to `send_event` are simply
+marshalled as JSON and placed in the `notify_tornado` RabbitMQ queue
+to be consumed by the delivery system.
 
 Usually, this list of users is one of 3 things:
 

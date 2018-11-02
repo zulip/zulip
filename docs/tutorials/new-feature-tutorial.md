@@ -307,7 +307,7 @@ active users in a realm.
           property=name,
           value=value,
       )
-      send_event(event, active_user_ids(realm))
+      send_event(realm, event, active_user_ids(realm))
 
 If the new realm property being added does not fit into the
 `property_types` framework (such as the `authentication_methods`
@@ -327,7 +327,7 @@ field and send an event. For example:
             property='default',
             data=dict(authentication_methods=realm.authentication_methods_dict())
         )
-        send_event(event, active_user_ids(realm))
+        send_event(realm, event, active_user_ids(realm))
 
 ### Update application state
 
