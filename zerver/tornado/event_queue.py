@@ -30,6 +30,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.sharding import get_tornado_uri
 import copy
 
 requests_client = requests.Session()
@@ -565,6 +566,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         all_public_streams: bool=False,
                         narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
     if settings.TORNADO_SERVER:
+        tornado_uri = get_tornado_uri(user_profile.realm)
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'client_gravatar': ujson.dumps(client_gravatar),
@@ -579,8 +581,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
             req['event_types'] = ujson.dumps(event_types)
 
         try:
-            resp = requests_client.post(settings.TORNADO_SERVER +
-                                        '/api/v1/events/internal',
+            resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                         data=req)
         except requests.adapters.ConnectionError:
             logging.error('Tornado server does not seem to be running, check %s '
@@ -588,7 +589,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                           (settings.ERROR_FILE_LOG_PATH, "tornado.log"))
             raise requests.adapters.ConnectionError(
                 "Django cannot connect to Tornado server (%s); try restarting" %
-                (settings.TORNADO_SERVER))
+                (tornado_uri,))
 
         resp.raise_for_status()
 
@@ -598,6 +599,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[Any, Any]]:
     if settings.TORNADO_SERVER:
+        tornado_uri = get_tornado_uri(user_profile.realm)
         post_data = {
             'queue_id': queue_id,
             'last_event_id': last_event_id,
@@ -606,7 +608,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
             'secret': settings.SHARED_SECRET,
             'client': 'internal'
         }  # type: Dict[str, Any]
-        resp = requests_client.post(settings.TORNADO_SERVER + '/api/v1/events/internal',
+        resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                     data=post_data)
         resp.raise_for_status()
 
@@ -989,9 +991,10 @@ def process_notification(notice: Mapping[str, Any]) -> None:
 # We use JSON rather than bare form parameters, so that we can represent
 # different types and for compatibility with non-HTTP transports.
 
-def send_notification_http(data: Mapping[str, Any]) -> None:
+def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
-        requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
+        tornado_uri = get_tornado_uri(realm)
+        requests_client.post(tornado_uri + '/notify_tornado', data=dict(
             data   = ujson.dumps(data),
             secret = settings.SHARED_SECRET))
     else:
@@ -1004,4 +1007,4 @@ def send_event(realm: Realm, event: Mapping[str, Any],
     the user/message pair."""
     queue_json_publish("notify_tornado",
                        dict(event=event, users=users),
-                       send_notification_http)
+                       lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs))
