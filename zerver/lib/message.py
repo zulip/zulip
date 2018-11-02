@@ -558,16 +558,53 @@ def render_markdown(message: Message,
                     user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
                     email_gateway: Optional[bool]=False) -> str:
-    """Return HTML for given markdown. Bugdown may add properties to the
-    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
-    `mentions_wildcard`.  These are only on this Django object and are not
-    saved in the database.
-    """
+    '''
+    This is basically just a wrapper for do_render_markdown.
+    '''
 
     if user_ids is None:
         message_user_ids = set()  # type: Set[int]
     else:
         message_user_ids = user_ids
+
+    if realm is None:
+        realm = message.get_realm()
+
+    if realm_alert_words is None:
+        realm_alert_words = dict()
+
+    sender = get_user_profile_by_id(message.sender_id)
+    sent_by_bot = sender.is_bot
+    translate_emoticons = sender.translate_emoticons
+
+    rendered_content = do_render_markdown(
+        message=message,
+        content=content,
+        realm=realm,
+        realm_alert_words=realm_alert_words,
+        message_user_ids=message_user_ids,
+        sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
+        mention_data=mention_data,
+        email_gateway=email_gateway,
+    )
+
+    return rendered_content
+
+def do_render_markdown(message: Message,
+                       content: str,
+                       realm: Realm,
+                       realm_alert_words: RealmAlertWords,
+                       message_user_ids: Set[int],
+                       sent_by_bot: bool,
+                       translate_emoticons: bool,
+                       mention_data: Optional[bugdown.MentionData]=None,
+                       email_gateway: Optional[bool]=False) -> str:
+    """Return HTML for given markdown. Bugdown may add properties to the
+    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
+    `mentions_wildcard`.  These are only on this Django object and are not
+    saved in the database.
+    """
 
     message.mentions_wildcard = False
     message.mentions_user_ids = set()
@@ -575,18 +612,10 @@ def render_markdown(message: Message,
     message.alert_words = set()
     message.links_for_preview = set()
 
-    if realm is None:
-        realm = message.get_realm()
-
     possible_words = set()  # type: Set[str]
-    if realm_alert_words is not None:
-        for user_id, words in realm_alert_words.items():
-            if user_id in message_user_ids:
-                possible_words.update(set(words))
-
-    sender = get_user_profile_by_id(message.sender_id)
-    sent_by_bot = sender.is_bot
-    translate_emoticons = sender.translate_emoticons
+    for user_id, words in realm_alert_words.items():
+        if user_id in message_user_ids:
+            possible_words.update(set(words))
 
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(
@@ -600,14 +629,12 @@ def render_markdown(message: Message,
         email_gateway=email_gateway
     )
 
-    if message is not None:
-        message.user_ids_with_alert_words = set()
+    message.user_ids_with_alert_words = set()
 
-        if realm_alert_words is not None:
-            for user_id, words in realm_alert_words.items():
-                if user_id in message_user_ids:
-                    if set(words).intersection(message.alert_words):
-                        message.user_ids_with_alert_words.add(user_id)
+    for user_id, words in realm_alert_words.items():
+        if user_id in message_user_ids:
+            if set(words).intersection(message.alert_words):
+                message.user_ids_with_alert_words.add(user_id)
 
     return rendered_content
 
