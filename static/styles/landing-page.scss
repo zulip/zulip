@@ -3349,6 +3349,10 @@ nav ul li.active::after {
         width: 80%;
         left: 0;
     }
+
+    .portico-landing.hello .hero header {
+        width: calc(100% - 50px);
+    }
 }
 
 @media (max-width: 906px) {
