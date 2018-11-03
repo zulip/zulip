@@ -1707,7 +1707,16 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         del md_engines[md_engine_key]
 
     realm_filters = realm_filter_data[realm_filters_key]
-    md_engines[md_engine_key] = markdown.Markdown(
+    md_engines[md_engine_key] = build_engine(
+        realm_filters=realm_filters,
+        realm_filters_key=realm_filters_key,
+        email_gateway=email_gateway,
+    )
+
+def build_engine(realm_filters: List[Tuple[str, str, int]],
+                 realm_filters_key: int,
+                 email_gateway: bool) -> markdown.Markdown:
+    engine = markdown.Markdown(
         output_format = 'html',
         extensions    = [
             'markdown.extensions.nl2br',
@@ -1721,6 +1730,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
             Bugdown(realm_filters=realm_filters,
                     realm=realm_filters_key,
                     code_block_processor_disabled=email_gateway)])
+    return engine
 
 def topic_links(realm_filters_key: int, subject: str) -> List[str]:
     matches = []  # type: List[str]
