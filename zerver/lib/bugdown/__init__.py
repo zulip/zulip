@@ -3,7 +3,7 @@
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
                     Optional, Set, Tuple, TypeVar, Union, cast)
 from mypy_extensions import TypedDict
-from typing.re import Match
+from typing.re import Match, Pattern
 
 import markdown
 import logging
@@ -73,12 +73,84 @@ AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
 
+def verbose_compile(pattern: str) -> Any:
+    return re.compile(
+        "^(.*?)%s(.*?)$" % pattern,
+        re.DOTALL | re.UNICODE | re.VERBOSE
+    )
+
 STREAM_LINK_REGEX = r"""
                      (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
                      \#\*\*                       # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*]+)  # stream name can contain anything
                      \*\*                         # ends by double asterisks
                     """
+
+LINK_REGEX = None  # type: Pattern
+
+def get_web_link_regex() -> str:
+    # We create this one time, but not at startup.  So the
+    # first message rendered in any process will have some
+    # extra costs.
+    global LINK_REGEX
+    if LINK_REGEX is None:
+        # NOTE: this is a very expensive step, it reads a file of tlds!
+        tlds = '|'.join(list_of_tlds())
+
+        # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
+        #
+        # We detect a url either by the `https?://` or by building around the TLD.
+
+        # In lieu of having a recursive regex (which python doesn't support) to match
+        # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
+        # can match up to six
+        # The inner_paren_contents chunk matches the innermore non-parenthesis-holding text,
+        # and the paren_group matches text with, optionally, a matching set of parens
+        inner_paren_contents = r"[^\s()\"]*"
+        paren_group = r"""
+                        [^\s()\"]*?            # Containing characters that won't end the URL
+                        (?: \( %s \)           # and more characters in matched parens
+                            [^\s()\"]*?        # followed by more characters
+                        )*                     # zero-or-more sets of paired parens
+                       """
+        nested_paren_chunk = paren_group
+        for i in range(6):
+            nested_paren_chunk = nested_paren_chunk % (paren_group,)
+        nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
+
+        file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+        regex = r"""
+            (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+                                 # (Double-negative lookbehind to allow start-of-string)
+            (?P<url>             # Main group
+                (?:(?:           # Domain part
+                    https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                   |(?:                   # Or, if not, be more strict to avoid false-positives
+                        (?:[\w-]+\.)+     # One or more domain components, separated by dots
+                        (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                    )
+                )
+                (?:/             # A path, beginning with /
+                    %s           # zero-to-6 sets of paired parens
+                )?)              # Path is optional
+                | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
+                %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+                | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
+            )
+            (?=                            # URL must be followed by (not included in group)
+                [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
+                (?:\Z|\s)                  # followed by whitespace or end of string
+            )
+            """ % (tlds, nested_paren_chunk, file_links)
+        LINK_REGEX = verbose_compile(regex)
+    return LINK_REGEX
+
+def clear_state_for_testing() -> None:
+    # The link regex never changes in production, but our tests
+    # try out both sides of ENABLE_FILE_LINKS, so we need
+    # a way to clear it.
+    global LINK_REGEX
+    LINK_REGEX = None
 
 bugdown_logger = logging.getLogger()
 
@@ -1193,15 +1265,13 @@ def url_to_a(url: str, text: Optional[str]=None) -> Union[Element, str]:
     return a
 
 class VerbosePattern(markdown.inlinepatterns.Pattern):
-    def __init__(self, pattern: str) -> None:
+    def __init__(self, compiled_re: Pattern) -> None:
         markdown.inlinepatterns.Pattern.__init__(self, ' ')
 
         # HACK: we just had python-markdown compile an empty regex.
         # Now replace with the real regex compiled with the flags we want.
 
-        self.pattern = pattern
-        self.compiled_re = re.compile("^(.*?)%s(.*?)$" % pattern,
-                                      re.DOTALL | re.UNICODE | re.VERBOSE)
+        self.compiled_re = compiled_re
 
 class AutoLink(VerbosePattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
@@ -1601,7 +1671,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('usergroupmention',
                               UserGroupMentionPattern(mention.user_group_mentions),
                               '>backtick')
-        md.inlinePatterns.add('stream', StreamPattern(STREAM_LINK_REGEX), '>backtick')
+        md.inlinePatterns.add('stream', StreamPattern(verbose_compile(STREAM_LINK_REGEX)), '>backtick')
         md.inlinePatterns.add(
             'tex',
             Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
@@ -1615,52 +1685,7 @@ class Bugdown(markdown.Extension):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '>link')
 
-        # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
-        #
-        # We detect a url either by the `https?://` or by building around the TLD.
-
-        # In lieu of having a recursive regex (which python doesn't support) to match
-        # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
-        # can match up to six
-        # The inner_paren_contents chunk matches the innermore non-parenthesis-holding text,
-        # and the paren_group matches text with, optionally, a matching set of parens
-        inner_paren_contents = r"[^\s()\"]*"
-        paren_group = r"""
-                        [^\s()\"]*?            # Containing characters that won't end the URL
-                        (?: \( %s \)           # and more characters in matched parens
-                            [^\s()\"]*?        # followed by more characters
-                        )*                     # zero-or-more sets of paired parens
-                       """
-        nested_paren_chunk = paren_group
-        for i in range(6):
-            nested_paren_chunk = nested_paren_chunk % (paren_group,)
-        nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
-        tlds = '|'.join(list_of_tlds())
-        link_regex = r"""
-            (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
-                                 # (Double-negative lookbehind to allow start-of-string)
-            (?P<url>             # Main group
-                (?:(?:           # Domain part
-                    https?://[\w.:@-]+?   # If it has a protocol, anything goes.
-                   |(?:                   # Or, if not, be more strict to avoid false-positives
-                        (?:[\w-]+\.)+     # One or more domain components, separated by dots
-                        (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
-                    )
-                )
-                (?:/             # A path, beginning with /
-                    %s           # zero-to-6 sets of paired parens
-                )?)              # Path is optional
-                | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-                %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
-                | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
-            )
-            (?=                            # URL must be followed by (not included in group)
-                [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
-                (?:\Z|\s)                  # followed by whitespace or end of string
-            )
-            """ % (tlds, nested_paren_chunk,
-                   r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r"")
-        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
+        md.inlinePatterns.add('autolink', AutoLink(get_web_link_regex()), '>link')
 
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
