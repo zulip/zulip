@@ -240,6 +240,9 @@ class BugdownMiscTest(ZulipTestCase):
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
 class BugdownTest(ZulipTestCase):
+    def setUp(self) -> None:
+        bugdown.clear_state_for_testing()
+
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
             if first != second:
@@ -319,6 +322,7 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" target="_blank" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
+        bugdown.clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
             bugdown.maybe_update_markdown_engines(realm.id, False)
