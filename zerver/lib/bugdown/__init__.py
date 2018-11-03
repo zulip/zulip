@@ -1617,8 +1617,20 @@ class Bugdown(markdown.Extension):
         except Exception:
             pass
 
+        self.extend_alert_words(md)
+        self.extend_text_formatting(md)
+        self.extend_block_formatting(md)
+        self.extend_avatars(md)
+        self.extend_modal_links(md)
+        self.extend_mentions(md)
+        self.extend_stream_links(md)
+        self.extend_emojis(md)
+        self.extend_misc(md)
+
+    def extend_alert_words(self, md: markdown.Markdown) -> None:
         md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
 
+    def extend_text_formatting(self, md: markdown.Markdown) -> None:
         # Inline code block without whitespace stripping
         md.inlinePatterns.add(
             "backtick",
@@ -1648,6 +1660,7 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
             '>strong')
 
+    def extend_block_formatting(self, md: markdown.Markdown) -> None:
         for k in ('hashheader', 'setextheader', 'olist', 'ulist', 'indent'):
             del md.parser.blockprocessors[k]
 
@@ -1659,19 +1672,27 @@ class Bugdown(markdown.Extension):
             r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
             r'[ ]{0,3}>[ ]?(.*)')
 
+    def extend_avatars(self, md: markdown.Markdown) -> None:
         # Note that !gravatar syntax should be deprecated long term.
         md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
         md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
+    def extend_modal_links(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
+
+    def extend_mentions(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('usergroupmention',
                               UserGroupMentionPattern(mention.user_group_mentions),
                               '>backtick')
+
+    def extend_stream_links(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add('stream', StreamPattern(verbose_compile(STREAM_LINK_REGEX)), '>backtick')
+
+    def extend_emojis(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add(
             'tex',
             Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
@@ -1679,6 +1700,8 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '<nl')
         md.inlinePatterns.add('translate_emoticons', EmoticonTranslation(emoticon_regex), '>emoji')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
+
+    def extend_misc(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
