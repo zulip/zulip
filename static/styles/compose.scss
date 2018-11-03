@@ -156,12 +156,11 @@ table.compose_table {
 }
 
 #compose {
-    position: fixed;
+    position: sticky;
     bottom: 0px;
     left: 0px;
     z-index: 2;
     width: 100%;
-
     background-color: hsl(0, 0%, 100%);
 }
 
@@ -175,8 +174,8 @@ table.compose_table {
 
 .compose-content {
     padding: 8px 10px 8px 10px;
-    margin-left: 250px;
-    margin-right: 250px;
+    margin-left: 0px;
+    margin-right: 0px;
     position: relative;
 
     border-left: 1px solid hsl(0, 0%, 93%);

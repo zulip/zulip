@@ -52,10 +52,8 @@ function get_new_heights() {
     var top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     var invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
 
-    res.bottom_whitespace_height = viewport_height * 0.4;
-
     res.main_div_min_height = viewport_height - top_navbar_height;
-
+    $('#main_div').css('min-height', res.main_div_min_height - 137 + "px");
     res.bottom_sidebar_height = viewport_height - top_navbar_height;
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
@@ -116,10 +114,8 @@ function left_userlist_get_new_heights() {
     var user_list_real_height = buddy_list_wrapper.prop("scrollHeight");
     var group_pms_real_height = group_pms.prop("scrollHeight");
 
-    res.bottom_whitespace_height = viewport_height * 0.4;
-
     res.main_div_min_height = viewport_height - top_navbar_height;
-
+    $('#main_div').css('min-height', res.main_div_min_height - 137 + "px");
     res.bottom_sidebar_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"),10)
                                 - parseInt($(".bottom_sidebar").css("marginTop"),10);

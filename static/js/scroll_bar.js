@@ -47,15 +47,7 @@ exports.initialize = function () {
         $(".app-main .right-sidebar").css({"margin-left": sbWidth + "px",
                                            width: 250 - sbWidth + "px"});
 
-        $("#compose").css("left", "-" + sbWidth + "px");
-        $(".compose-content").css({left: sbWidth + "px",
-                                   "margin-right": 250 + sbWidth + "px"});
-        $("#compose-container").css("max-width", 1400 + sbWidth + "px");
         $('#keyboard-icon').css({right: sbWidth + 13 + "px"});
-
-        $("head").append("<style> @media (max-width: 1165px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
-                         "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +
-                         "</style>");
     }
 
     ui.set_up_scrollbar($("#stream-filters-container"));

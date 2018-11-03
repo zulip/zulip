@@ -123,7 +123,7 @@
                             </div>
                         </div>
                     </div>
-                    {% include "zerver/app/home.html" %}
+
                 </div>
 
                 {% if show_debug %}
@@ -132,6 +132,7 @@
                 </div>
                 {% endif %}
             </div><!--/tab-content-->
+            {% include "zerver/app/home.html" %}
         </div>
         <div class="column-right">
             {% include "zerver/app/right_sidebar.html" %}

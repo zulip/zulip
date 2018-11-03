@@ -56,9 +56,9 @@ exports.set_focus = function (msg_type, opts) {
     }
 
     if (window.getSelection().toString() === "" ||
-         opts.trigger !== "message click") {
+        opts.trigger !== "message click") {
         var elt = $('#' + focus_area);
-        elt.focus().select();
+        elt.select();
     }
 };
 
