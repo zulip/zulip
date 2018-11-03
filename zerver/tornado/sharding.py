@@ -3,6 +3,8 @@ from django.conf import settings
 from zerver.models import Realm
 
 def get_tornado_port(realm: Realm) -> int:
+    if settings.TORNADO_SERVER is None:
+        return 9993
     if settings.TORNADO_PROCESSES == 1:
         return int(settings.TORNADO_SERVER.split(":")[-1])
     return 9993
