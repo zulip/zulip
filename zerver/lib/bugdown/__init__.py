@@ -27,7 +27,7 @@ from django.core import mail
 from django.conf import settings
 from django.db.models import Q
 
-from markdown.extensions import codehilite
+from markdown.extensions import codehilite, nl2br, tables
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
@@ -1770,8 +1770,8 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
     engine = markdown.Markdown(
         output_format = 'html',
         extensions    = [
-            'markdown.extensions.nl2br',
-            'markdown.extensions.tables',
+            nl2br.makeExtension(),
+            tables.makeExtension(),
             codehilite.makeExtension(
                 linenums=False,
                 guess_lang=False
