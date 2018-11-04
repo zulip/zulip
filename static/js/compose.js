@@ -137,10 +137,10 @@ exports.empty_topic_placeholder = function () {
 };
 
 function create_message_object() {
-    // Subjects are optional, and we provide a placeholder if one isn't given.
-    var subject = compose_state.subject();
-    if (subject === "") {
-        subject = compose.empty_topic_placeholder();
+    // Topics are optional, and we provide a placeholder if one isn't given.
+    var topic = compose_state.subject();
+    if (topic === '') {
+        topic = compose.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose_state.message_content());
@@ -152,8 +152,8 @@ function create_message_object() {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: '',
-        subject: '',
     };
+    message[page_params.topic_name] = '';
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -171,7 +171,7 @@ function create_message_object() {
         if (sub) {
             message.stream_id = sub.stream_id;
         }
-        message.subject = subject;
+        message[page_params.topic_name] = topic;
     }
     return message;
 }

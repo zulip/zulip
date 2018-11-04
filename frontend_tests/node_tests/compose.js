@@ -591,6 +591,7 @@ run_test('send_message', () => {
         compose_state.subject('');
         compose_state.set_message_type('private');
         page_params.user_id = 101;
+        page_params.topic_name = 'topic';
         compose_state.recipient = function () {
             return 'alice@example.com';
         };
@@ -606,7 +607,7 @@ run_test('send_message', () => {
                 sender_id: 101,
                 queue_id: undefined,
                 stream: '',
-                subject: '',
+                topic: '',
                 to: '["alice@example.com"]',
                 reply_to: 'alice@example.com',
                 private_message_recipient: 'alice@example.com',
@@ -1606,7 +1607,7 @@ run_test('create_message_object', () => {
 
     var message = compose.create_message_object();
     assert.equal(message.to, 'social');
-    assert.equal(message.subject, 'lunch');
+    assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
     global.compose_state.get_message_type = function () {
