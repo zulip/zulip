@@ -68,12 +68,12 @@ run_test('set_focused_recipient', () => {
     var good_msg = {
         type: 'stream',
         stream_id: 101,
-        subject: 'lunch',
+        topic: 'lunch',
     };
     var bad_msg = {
         type: 'stream',
         stream_id: 999,
-        subject: 'lunch',
+        topic: 'lunch',
     };
     assert(!compose_fade.should_fade_message(good_msg));
     assert(compose_fade.should_fade_message(bad_msg));

@@ -66,6 +66,7 @@ run_test('merge_message_groups', () => {
             type: 'stream',
             stream: 'Test Stream 1',
             subject: 'Test Subject 1',
+            topic: 'Test Subject 1',
             sender_email: 'test@example.com',
             timestamp: _.uniqueId(),
         });
@@ -124,7 +125,7 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_append_message_same_subject() {
+    (function test_append_message_same_topic() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -156,7 +157,7 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test subject 2'});
+        var message2 = build_message_context({subject: 'Test subject 2', topic: 'Test subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
@@ -287,7 +288,7 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test Subject 2'});
+        var message2 = build_message_context({subject: 'Test Subject 2', topic: 'Test Subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);

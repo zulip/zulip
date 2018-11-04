@@ -59,7 +59,7 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
-            a.subject.toLowerCase() === b.subject.toLowerCase();
+            a.topic.toLowerCase() === b.topic.toLowerCase();
 };
 
 exports.is_pm_recipient = function (email, message) {
