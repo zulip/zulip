@@ -188,7 +188,7 @@ function same_recipient_as_before(msg_type, opts) {
     return compose_state.get_message_type() === msg_type &&
             (msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.subject() ||
+              opts.subject === compose_state.topic() ||
              msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient());
 }
@@ -219,7 +219,7 @@ exports.start = function (msg_type, opts) {
     }
 
     compose_state.stream_name(opts.stream);
-    compose_state.subject(opts.subject);
+    compose_state.topic(opts.subject);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
@@ -246,9 +246,9 @@ exports.cancel = function () {
         // at least clear the subject and unfade.
         compose_fade.clear_compose();
         if (page_params.narrow_topic !== undefined) {
-            compose_state.subject(page_params.narrow_topic);
+            compose_state.topic(page_params.narrow_topic);
         } else {
-            compose_state.subject("");
+            compose_state.topic("");
         }
         return;
     }
@@ -362,7 +362,7 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject() && compose_state.has_message_content()) {
+    if (compose_state.topic() && compose_state.has_message_content()) {
         // If the user has written something to a different topic,
         // they probably want that content, so leave compose open.
         //
@@ -379,7 +379,7 @@ exports.on_topic_narrow = function () {
     // we should update the compose topic to match the new narrow.
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
-    compose_state.subject(narrow_state.topic());
+    compose_state.topic(narrow_state.topic());
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
     $('#compose-textarea').focus().select();

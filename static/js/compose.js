@@ -137,8 +137,8 @@ exports.empty_topic_placeholder = function () {
 };
 
 function create_message_object() {
-    // Subjects are optional, and we provide a placeholder if one isn't given.
-    var subject = compose_state.subject();
+    // Topics are optional, and we provide a placeholder if one isn't given.
+    var subject = compose_state.topic();
     if (subject === "") {
         subject = compose.empty_topic_placeholder();
     }
@@ -497,7 +497,7 @@ function validate_stream_message() {
     }
 
     if (page_params.realm_mandatory_topics) {
-        var topic = compose_state.subject();
+        var topic = compose_state.topic();
         if (topic === "") {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;

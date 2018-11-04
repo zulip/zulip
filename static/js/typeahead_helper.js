@@ -403,7 +403,7 @@ exports.sort_people_and_user_groups = function (query, matches) {
         users,
         query,
         compose_state.stream_name(),
-        compose_state.subject(),
+        compose_state.topic(),
         groups);
     return recipients;
 };

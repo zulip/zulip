@@ -259,7 +259,7 @@ run_test('validate', () => {
 
     compose_state.stream_name('Denmark');
     page_params.realm_mandatory_topics = true;
-    compose_state.subject('');
+    compose_state.topic('');
     $("#subject").select(noop);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a topic'));
@@ -331,7 +331,7 @@ run_test('test_validate_stream_message_announcement_only', () => {
     stream_data.get_announcement_only = function () {
         return true;
     };
-    compose_state.subject('subject102');
+    compose_state.topic('subject102');
     stream_data.add_sub('stream102', sub);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t("Only organization admins are allowed to post to this stream."));
@@ -588,7 +588,7 @@ run_test('send_message', () => {
     // Tests start here.
     (function test_message_send_success_codepath() {
         stub_state = initialize_state_stub_dict();
-        compose_state.subject('');
+        compose_state.topic('');
         compose_state.set_message_type('private');
         page_params.user_id = 101;
         compose_state.recipient = function () {
