@@ -133,6 +133,9 @@ exports.add_message_metadata = function (message) {
         message.is_stream = true;
         message.stream = message.display_recipient;
         message.reply_to = message.sender_email;
+        if (!message.topic) {
+            message.topic = message.subject;
+        }
 
         topic_data.add_message({
             stream_id: message.stream_id,

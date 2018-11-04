@@ -101,7 +101,6 @@ run_test('add_message_metadata', () => {
         sender_id: me.user_id,
         type: 'stream',
         display_recipient: 'Zoolippy',
-        topic: 'cool thing',
         subject: 'the_subject',
         id: 2068,
     };
@@ -112,6 +111,8 @@ run_test('add_message_metadata', () => {
     assert.equal(message.reply_to, 'me@example.com');
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
+    assert.equal(message.subject, 'the_subject');
+    assert.equal(message.topic, 'the_subject');
 });
 
 run_test('errors', () => {
