@@ -163,9 +163,9 @@ exports.update_messages = function update_messages(events) {
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
-                    if (event.orig_subject === compose_state.subject()) {
+                    if (event.orig_subject === compose_state.topic()) {
                         changed_compose = true;
-                        compose_state.subject(event.subject);
+                        compose_state.topic(event.subject);
                         compose_fade.set_focused_recipient("stream");
                     }
                 }

@@ -28,7 +28,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         if (msg_type === 'stream') {
             url += "+msg_type=stream";
             url += "+stream=" + encodeURIComponent(compose_state.stream_name());
-            url += "+subject=" + encodeURIComponent(compose_state.subject());
+            url += "+subject=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === 'private') {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.recipient());
