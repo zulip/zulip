@@ -288,6 +288,10 @@ def re_map_foreign_keys(data: TableData,
     because of the difference in data format (TableData corresponding to realm data tables
     and List[Record] corresponding to the avatar and attachment records)
     """
+
+    # See comments in bulk_import_user_message_data.
+    assert('usermessage' not in related_table)
+
     re_map_foreign_keys_internal(data[table], table, field_name, related_table, verbose, id_field,
                                  recipient_field, reaction_field)
 
@@ -413,6 +417,12 @@ def get_db_table(model_class: Any) -> str:
 
 def update_model_ids(model: Any, data: TableData, related_table: TableName) -> None:
     table = get_db_table(model)
+
+    # Important: remapping usermessage rows is
+    # not only unnessary, it's expensive and can cause
+    # memory errors. We don't even use ids from ID_MAP.
+    assert('usermessage' not in table)
+
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
     for item in range(len(data[table])):
@@ -423,6 +433,12 @@ def bulk_import_user_message_data(data: TableData, dump_file_id: int) -> None:
     model = UserMessage
     table = 'zerver_usermessage'
     lst = data[table]
+
+    # IMPORTANT NOTE: We do not use any primary id
+    # data from either the import itself or ID_MAP.
+    # We let the DB itself generate ids.  Note that
+    # no tables use user_message.id as a foreign key,
+    # so we can safely avoid all re-mapping complexity.
 
     def process_batch(items: List[Dict[str, Any]]) -> None:
         ums = [
@@ -1038,7 +1054,6 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_usermessage', 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
 
-        update_model_ids(UserMessage, data, 'usermessage')
         bulk_import_user_message_data(data, dump_file_id)
         dump_file_id += 1
 
