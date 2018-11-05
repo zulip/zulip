@@ -222,7 +222,8 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("stripe.Customer.create")
     @mock_stripe("stripe.Subscription.create")
     @mock_stripe("stripe.Customer.retrieve")
-    def test_initial_upgrade(self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    @mock_stripe("stripe.Invoice.upcoming")
+    def test_initial_upgrade(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
@@ -277,6 +278,13 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
+
+        # Check /billing has the correct information
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
+                          'Card ending in 4242']:
+            self.assert_in_response(substring, response)
 
     @mock_stripe("stripe.Token.create")
     @mock_stripe("stripe.Invoice.upcoming")
@@ -448,7 +456,7 @@ class StripeTest(ZulipTestCase):
 
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    def test_billing_home(self, mock_upcoming_invoice: Mock,
+    def test_redirect_for_billing_home(self, mock_upcoming_invoice: Mock,
                           mock_customer_with_subscription: Mock) -> None:
         user = self.example_user("iago")
         self.login(user.email)
@@ -457,15 +465,20 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
-        Customer.objects.create(
+        # Customer, but no billing relationship
+        customer = Customer.objects.create(
             realm=user.realm, stripe_customer_id=self.stripe_customer_id,
-            has_billing_relationship=True)
+            has_billing_relationship=False)
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/upgrade/', response.url)
+
+        customer.has_billing_relationship = True
+        customer.save()
 
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
-        for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
-                          'Card ending in 4242']:
-            self.assert_in_response(substring, response)
+        self.assert_in_response('Your plan will renew on', response)
 
     def test_get_seat_count(self) -> None:
         realm = get_realm("zulip")
