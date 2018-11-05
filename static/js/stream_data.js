@@ -229,7 +229,9 @@ exports.update_calculated_fields = function (sub) {
     sub.can_change_stream_permissions = page_params.is_admin && (
         !sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
-    sub.can_access_subscribers = !sub.invite_only || sub.subscribed || page_params.is_admin;
+    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
+    sub.can_access_subscribers = page_params.is_admin || sub.subscribed || !page_params.is_guest &&
+                                 !sub.invite_only;
     sub.preview_url = hash_util.by_stream_uri(sub.name);
     exports.render_stream_description(sub);
     exports.update_subscribers_count(sub);
