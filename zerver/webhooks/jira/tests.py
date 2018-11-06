@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from urllib.parse import quote, unquote
+
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.users import get_api_key
 
@@ -27,6 +29,24 @@ class JiraHookTests(WebhookTestCase):
 > New bug with hook"""
         self.send_and_test_stream_message('created_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('created_v2', expected_subject, expected_message)
+
+    def test_created_with_stream_with_spaces_escaped(self) -> None:
+        self.STREAM_NAME = quote('jira alerts')
+        self.url = self.build_webhook_url()
+        self.subscribe(self.test_user, unquote(self.STREAM_NAME))
+
+        payload = self.get_body('created_v1')
+        result = self.client_post(self.url, payload, content_type='application/json')
+
+        self.assert_json_success(result)
+
+        expected_subject = "BUG-15: New bug with hook"
+        expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with hook"""
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, expected_message)
+        self.assertEqual(msg.topic_name(), expected_subject)
 
     def test_created_with_unicode(self) -> None:
             expected_subject = u"BUG-15: New bug with à hook"

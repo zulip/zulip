@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
@@ -51,7 +53,8 @@ class MissingHTTPEventHeader(JsonableError):
 def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
         topic: str, body: str, stream: Optional[str]=REQ(default=None),
-        user_specified_topic: Optional[str]=REQ("topic", default=None)
+        user_specified_topic: Optional[str]=REQ("topic", default=None),
+        unquote_stream: Optional[bool]=False
 ) -> None:
 
     if stream is None:
@@ -59,6 +62,13 @@ def check_send_webhook_message(
         check_send_private_message(user_profile, request.client,
                                    user_profile.bot_owner, body)
     else:
+        # Some third-party websites (such as Atlassian's JIRA), tend to
+        # double escape their URLs in a manner that escaped space characters
+        # (%20) are never properly decoded. We work around that by making sure
+        # that the stream name is decoded on our end.
+        if unquote_stream:
+            stream = unquote(stream)
+
         if user_specified_topic is not None:
             topic = user_specified_topic
 
