@@ -588,6 +588,10 @@ def channel_message_to_zerver_message(realm_id: int,
         # which should be displayed as '/me started a call'
         if subtype in ["bot_add", "sh_room_created", "me_message"]:
             content = ('/me %s' % (content))
+        if subtype == 'file_comment':
+            # The file_comment message type only indicates the
+            # responsible user in a subfield.
+            message['user'] = message['comment']['user']
 
         file_info = process_message_files(
             message=message,
