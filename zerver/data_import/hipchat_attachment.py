@@ -92,7 +92,6 @@ class AttachmentHandler:
                 s3_path=target_path,
                 path=target_path,
                 content_type=None,
-                last_modified=None,
             )
             uploads_records.append(upload_rec)
 
