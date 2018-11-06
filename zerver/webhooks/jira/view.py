@@ -241,5 +241,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         raise UnexpectedWebhookEventType('Jira', event)
 
-    check_send_webhook_message(request, user_profile, subject, content)
+    check_send_webhook_message(request, user_profile,
+                               subject, content,
+                               unquote_stream=True)
     return json_success()
