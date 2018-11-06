@@ -350,6 +350,7 @@ def write_emoticon_data(realm_id: int,
 
         return dict(
             path=target_path,
+            s3_path=target_path,
             file_name=target_fn,
             realm_id=realm_id,
             name=data['name'],
