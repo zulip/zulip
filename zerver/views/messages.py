@@ -286,6 +286,8 @@ class NarrowBuilder:
         return query
 
     def by_id(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        if not str(operand).isdigit():
+            raise BadNarrowOperator("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
