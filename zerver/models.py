@@ -857,10 +857,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
-        user_data = {v.field_id: v.value for v in values}
+        user_data = {v.field_id: {"value": v.value, "rendered_value": v.rendered_value} for v in values}
         data = []  # type: ProfileData
         for field in custom_profile_fields_for_realm(self.realm_id):
-            value = user_data.get(field.id, None)
+            field_values = user_data.get(field.id, None)
+            if field_values:
+                value, rendered_value = field_values.get("value"), field_values.get("rendered_value")
+            else:
+                value, rendered_value = None, None
             field_type = field.field_type
             if value is not None:
                 converter = field.FIELD_CONVERTERS[field_type]
@@ -870,6 +874,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             for k, v in field.as_dict().items():
                 field_data[k] = v
             field_data['value'] = value
+            field_data['rendered_value'] = rendered_value
             data.append(field_data)
 
         return data
@@ -2387,6 +2392,11 @@ class CustomProfileField(models.Model):
             'order': self.order,
         }
 
+    def is_renderable(self) -> bool:
+        if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:
+            return True
+        return False
+
     def __str__(self) -> str:
         return "<CustomProfileField: %s %s %s %d>" % (self.realm, self.name, self.field_type, self.order)
 
@@ -2397,6 +2407,7 @@ class CustomProfileFieldValue(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)  # type: CustomProfileField
     value = models.TextField()  # type: str
+    rendered_value = models.TextField(null=True, default=None)  # type: Optional[str]
 
     class Meta:
         unique_together = ('user_profile', 'field')
