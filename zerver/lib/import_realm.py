@@ -603,7 +603,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         key.set_metadata("realm_id", str(record['realm_id']))
 
         # Zulip exports will always have a content-type, but third-party exports might not.
-        content_type = record.get("content_type", guess_type(record['s3_path'])[0])
+        content_type = record.get("content_type")
+        if content_type is None:
+            content_type = guess_type(record['s3_path'])[0]
         headers = {'Content-Type': content_type}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
