@@ -7,6 +7,7 @@ from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
 import ujson
@@ -409,9 +410,9 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         fields = [
-            ('Phone number', 'short text data'),
-            ('Biography', 'long text data'),
-            ('Favorite food', 'short text data'),
+            ('Phone number', '*short* text data'),
+            ('Biography', '~~short~~ **long** text data'),
+            ('Favorite food', 'long short text data'),
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
             ('GitHub profile', 'https://github.com/ABC'),
@@ -425,6 +426,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             data.append({
                 'id': field.id,
                 'value': value,
+                'field': field,
             })
 
         # Update value of field
@@ -434,9 +436,16 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         iago = self.example_user('iago')
         expected_value = {f['id']: f['value'] for f in data}
+        expected_rendered_value = {}  # type: Dict[Union[int, float, str, None], Union[str, None]]
+        for f in data:
+            if f['field'].is_renderable():
+                expected_rendered_value[f['id']] = bugdown_convert(f['value'])
+            else:
+                expected_rendered_value[f['id']] = None
 
         for field_dict in iago.profile_data:
             self.assertEqual(field_dict['value'], expected_value[field_dict['id']])
+            self.assertEqual(field_dict['rendered_value'], expected_rendered_value[field_dict['id']])
             for k in ['id', 'type', 'name', 'field_data']:
                 self.assertIn(k, field_dict)
 
@@ -486,3 +495,34 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
+
+    def test_null_value_and_rendered_value(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm("zulip")
+
+        quote = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Quote",
+            hint="Saying or phrase which you known for.",
+            field_type=CustomProfileField.SHORT_TEXT
+        )
+
+        iago = self.example_user("iago")
+        iago_profile_quote = iago.profile_data[-1]
+        value = iago_profile_quote["value"]
+        rendered_value = iago_profile_quote["rendered_value"]
+        self.assertIsNone(value)
+        self.assertIsNone(rendered_value)
+
+        update_dict = {
+            "id": quote.id,
+            "value": "O, beware, my lord, of jealousy; it is the green-ey'd monster which doth mock the meat it feeds on."
+        }
+        do_update_user_custom_profile_data(iago, [update_dict])
+
+        iago_profile_quote = self.example_user("iago").profile_data[-1]
+        value = iago_profile_quote["value"]
+        rendered_value = iago_profile_quote["rendered_value"]
+        self.assertIsNotNone(value)
+        self.assertIsNotNone(rendered_value)
+        self.assertEqual(bugdown_convert(str(value)), rendered_value)

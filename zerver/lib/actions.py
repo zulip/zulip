@@ -17,7 +17,8 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
 
 from zerver.lib.bugdown import (
     version as bugdown_version,
-    url_embed_preview_enabled_for_realm
+    url_embed_preview_enabled_for_realm,
+    convert as bugdown_convert
 )
 from zerver.lib.addressee import (
     Addressee,
@@ -4927,8 +4928,10 @@ def notify_user_update_custom_profile_data(user_profile: UserProfile,
         field_value = ujson.dumps(field['value'])  # type: Union[int, str, List[int], None]
     else:
         field_value = field['value']
+    field_rendered_value = field['rendered_value']
     payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
-                                                                      value=field_value))
+                                                                      value=field_value,
+                                                                      rendered_value=field_rendered_value))
     event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
 
@@ -4936,13 +4939,19 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
                                        data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
     with transaction.atomic():
         for field in data:
-            field_value, created = CustomProfileFieldValue.objects.update_or_create(
+            field_value, created = CustomProfileFieldValue.objects.get_or_create(
                 user_profile=user_profile,
-                field_id=field['id'],
-                defaults={'value': field['value']})
+                field_id=field['id'])
+            field_value.value = field['value']
+            if field_value.field.is_renderable():
+                field_value.rendered_value = bugdown_convert(str(field['value']))
+                field_value.save(update_fields=['value', 'rendered_value'])
+            else:
+                field_value.save(update_fields=['value'])
             notify_user_update_custom_profile_data(user_profile, {
                 "id": field_value.field_id,
                 "value": field_value.value,
+                "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type})
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:

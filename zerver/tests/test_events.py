@@ -1074,6 +1074,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('custom_profile_field', check_dict_only([
                     ('id', check_int),
                     ('value', check_none_or(check_string)),
+                    ('rendered_value', check_none_or(check_string)),
                 ])),
             ])),
         ])
