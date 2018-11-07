@@ -446,14 +446,13 @@ class BugdownTest(ZulipTestCase):
         settings.INLINE_IMAGE_PREVIEW = True
 
         sender_user_profile = self.example_user('othello')
-        arguments.current_message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
-        realm = arguments.current_message.get_realm()
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm = message.get_realm()
         arguments.current_realm = realm
 
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
 
-        arguments.current_message = None
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, True)
 

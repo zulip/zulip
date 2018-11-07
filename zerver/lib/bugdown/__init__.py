@@ -565,7 +565,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return url
 
     def is_image(self, url: str) -> bool:
-        if not image_preview_enabled_for_realm(arguments.current_message):
+        if not image_preview_enabled_for_realm(self.markdown.zulip_message):
             return False
         parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
@@ -971,13 +971,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if arguments.db_data and arguments.db_data['sent_by_bot']:
                 continue
 
-            if not url_embed_preview_enabled_for_realm(arguments.current_message):
+            if not url_embed_preview_enabled_for_realm(self.markdown.zulip_message):
                 continue
 
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
-                arguments.current_message.links_for_preview.add(url)
+                self.markdown.zulip_message.links_for_preview.add(url)
                 continue
             if extracted_data:
                 vm_id = self.vimeo_id(url)
@@ -1132,7 +1132,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if arguments.db_data is not None:
             active_realm_emoji = arguments.db_data['active_realm_emoji']
 
-        if arguments.current_message and name in active_realm_emoji:
+        if self.markdown.zulip_message and name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
@@ -1261,8 +1261,8 @@ def url_to_a(url: str, text: Optional[str]=None) -> Union[Element, str]:
     return a
 
 class VerbosePattern(markdown.inlinepatterns.Pattern):
-    def __init__(self, compiled_re: Pattern) -> None:
-        markdown.inlinepatterns.Pattern.__init__(self, ' ')
+    def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
+        markdown.inlinepatterns.Pattern.__init__(self, ' ', md)
 
         # HACK: we just had python-markdown compile an empty regex.
         # Now replace with the real regex compiled with the flags we want.
@@ -1450,7 +1450,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
 
-        if arguments.current_message and arguments.db_data is not None:
+        if self.markdown.zulip_message and arguments.db_data is not None:
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
@@ -1466,10 +1466,10 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user = arguments.db_data['mention_data'].get_user(name)
 
             if wildcard:
-                arguments.current_message.mentions_wildcard = True
+                self.markdown.zulip_message.mentions_wildcard = True
                 user_id = "*"
             elif user:
-                arguments.current_message.mentions_user_ids.add(user['id'])
+                self.markdown.zulip_message.mentions_user_ids.add(user['id'])
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -1487,11 +1487,11 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
 
-        if arguments.current_message and arguments.db_data is not None:
+        if self.markdown.zulip_message and arguments.db_data is not None:
             name = extract_user_group(match)
             user_group = arguments.db_data['mention_data'].get_user_group(name)
             if user_group:
-                arguments.current_message.mentions_user_group_ids.add(user_group.id)
+                self.markdown.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1516,7 +1516,7 @@ class StreamPattern(VerbosePattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         name = m.group('stream_name')
 
-        if arguments.current_message:
+        if self.markdown.zulip_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
                 return None
@@ -1539,13 +1539,13 @@ def possible_linked_stream_names(content: str) -> Set[str]:
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: Iterable[str]) -> Iterable[str]:
-        if arguments.current_message and arguments.db_data is not None:
+        if self.markdown.zulip_message and arguments.db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set arguments.current_message.alert_words.
+            # we find to the set self.markdown.zulip_message.alert_words.
 
             realm_words = arguments.db_data['possible_words']
 
@@ -1561,7 +1561,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
                                        escaped,
                                        allowed_after_punctuation))
                 if re.search(match_re, content):
-                    arguments.current_message.alert_words.add(word)
+                    self.markdown.zulip_message.alert_words.add(word)
 
         return lines
 
@@ -1683,20 +1683,20 @@ class Bugdown(markdown.Extension):
             '>avatar')
 
     def extend_mentions(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
+        md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions, md), '>backtick')
         md.inlinePatterns.add('usergroupmention',
-                              UserGroupMentionPattern(mention.user_group_mentions),
+                              UserGroupMentionPattern(mention.user_group_mentions, md),
                               '>backtick')
 
     def extend_stream_links(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('stream', StreamPattern(verbose_compile(STREAM_LINK_REGEX)), '>backtick')
+        md.inlinePatterns.add('stream', StreamPattern(verbose_compile(STREAM_LINK_REGEX), md), '>backtick')
 
     def extend_emojis(self, md: markdown.Markdown) -> None:
         md.inlinePatterns.add(
             'tex',
             Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
             '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '<nl')
+        md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX, md), '<nl')
         md.inlinePatterns.add('translate_emoticons', EmoticonTranslation(emoticon_regex), '>emoji')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
 
@@ -1707,7 +1707,7 @@ class Bugdown(markdown.Extension):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '>link')
 
-        md.inlinePatterns.add('autolink', AutoLink(get_web_link_regex()), '>link')
+        md.inlinePatterns.add('autolink', AutoLink(get_web_link_regex(), md), '>link')
 
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
@@ -2020,7 +2020,8 @@ def do_convert(content: str,
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
-    arguments.current_message = message
+    # Filters such as UserMentionPattern need a message.
+    _md_engine.zulip_message = message
     arguments.current_realm = message_realm
 
     # Pre-fetch data from the DB that is used in the bugdown thread
@@ -2086,7 +2087,7 @@ def do_convert(content: str,
 
         raise BugdownRenderingException()
     finally:
-        arguments.current_message = None
+        _md_engine.zulip_message = None
         arguments.current_realm = None
         arguments.db_data = None
 
