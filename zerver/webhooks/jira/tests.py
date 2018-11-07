@@ -48,6 +48,24 @@ class JiraHookTests(WebhookTestCase):
         self.assertEqual(msg.content, expected_message)
         self.assertEqual(msg.topic_name(), expected_subject)
 
+    def test_created_with_stream_with_spaces_double_escaped(self) -> None:
+        self.STREAM_NAME = quote(quote('jira alerts'))
+        self.url = self.build_webhook_url()
+        self.subscribe(self.test_user, unquote(unquote(self.STREAM_NAME)))
+
+        payload = self.get_body('created_v1')
+        result = self.client_post(self.url, payload, content_type='application/json')
+
+        self.assert_json_success(result)
+
+        expected_subject = "BUG-15: New bug with hook"
+        expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with hook"""
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, expected_message)
+        self.assertEqual(msg.topic_name(), expected_subject)
+
     def test_created_with_unicode(self) -> None:
             expected_subject = u"BUG-15: New bug with à hook"
             expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
