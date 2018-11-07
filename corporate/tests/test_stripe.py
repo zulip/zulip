@@ -65,9 +65,6 @@ def mock_customer_with_account_balance(account_balance: int) -> Callable[[str, L
         return stripe_customer
     return customer_with_account_balance
 
-def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
-    return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
-
 def mock_invoice_preview_for_downgrade(total: int=-1000) -> Callable[[str, str, Dict[str, Any]], stripe.Invoice]:
     def invoice_preview(customer: str, subscription: str,
                         subscription_items: Dict[str, Any]) -> stripe.Invoice:
@@ -455,9 +452,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    @patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    def test_redirect_for_billing_home(self, mock_upcoming_invoice: Mock,
-                          mock_customer_with_subscription: Mock) -> None:
+    def test_redirect_for_billing_home(self, mock_customer_with_subscription: Mock) -> None:
         user = self.example_user("iago")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -476,7 +471,8 @@ class StripeTest(ZulipTestCase):
         customer.has_billing_relationship = True
         customer.save()
 
-        response = self.client_get("/billing/")
+        with patch("corporate.views.upcoming_invoice_total", return_value=0):
+            response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         self.assert_in_response('Your plan will renew on', response)
 

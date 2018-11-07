@@ -149,6 +149,11 @@ def preview_invoice_total_for_downgrade(stripe_customer: stripe.Customer) -> int
     return stripe_get_invoice_preview_for_downgrade(
         stripe_customer.id, stripe_subscription.id, stripe_subscriptionitem_id).total
 
+# This allows us to access /billing in tests without having to mock the
+# whole invoice object
+def upcoming_invoice_total(stripe_customer_id: str) -> int:
+    return stripe_get_upcoming_invoice(stripe_customer_id).total
+
 # Return type should be Optional[stripe.Subscription], which throws a mypy error.
 # Will fix once we add type stubs for the Stripe API.
 def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
