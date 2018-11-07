@@ -290,6 +290,14 @@ exports.add_tooltips_to_left_panel = function () {
 };
 
 exports.update_add_subscriptions_elements = function (allow_user_to_add_subs) {
+    if (page_params.is_guest) {
+        // For guest users, we just hide the add_subscribers feature.
+        $('.add_subscribers_container').hide();
+        return;
+    }
+
+    // Otherwise, we adjust whether the widgets are disabled based on
+    // whether this user is authorized to add subscribers.
     var input_element = $('.add_subscribers_container').find('input[name="principal"]').expectOne();
     var button_element = $('.add_subscribers_container').find('button[name="add_subscriber"]').expectOne();
 
