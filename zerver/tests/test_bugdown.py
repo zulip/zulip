@@ -1235,7 +1235,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_url_to_a(self) -> None:
         url = 'javascript://example.com/invalidURL'
-        converted = bugdown.url_to_a(url, url)
+        converted = bugdown.url_to_a(db_data=None, url=url, text=url)
         self.assertEqual(
             converted,
             'javascript://example.com/invalidURL',
