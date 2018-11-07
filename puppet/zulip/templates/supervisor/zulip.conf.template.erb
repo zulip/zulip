@@ -24,9 +24,9 @@ killasgroup=true              ; Without this, we leak processes every restart
 directory=/home/zulip/deployments/current/
 
 <% if @tornado_multiprocess -%>
-<% @tornado_ports.each do |port| -%>
-[program:zulip-tornado:port-<%= port %>]
-command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:<%= port %>
+[program:zulip-tornado]
+command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
+process_name=port-98%(process_num)02d
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)
@@ -38,7 +38,7 @@ stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for no
 stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
-<% end -%>
+numprocs=<%= @tornado_processes %>
 <% else -%>
 [program:zulip-tornado]
 command=env PYTHONUNBUFFERED=1 /home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9993
