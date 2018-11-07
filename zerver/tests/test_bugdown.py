@@ -3,7 +3,6 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 
 from zerver.lib import bugdown
-from zerver.lib.bugdown import arguments
 from zerver.lib.actions import (
     do_set_user_display_setting,
     do_remove_realm_emoji,
