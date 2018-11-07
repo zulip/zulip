@@ -23,3 +23,7 @@ Server: {{ realm_uri }} Account: {{ user_email }} Time: {{ login_time }}
 <p>If you recognize this login activity, you can archive this notice.</p>
 <p>Thanks,<br />Zulip Account Security</p>
 {% endblock %}
+
+{% block manage_preferences %}
+<p><a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from login notifications</a></p>
+{% endblock %}

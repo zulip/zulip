@@ -1568,6 +1568,24 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
 
+    def test_login_unsubscribe(self) -> None:
+        """
+        We provide one-click unsubscribe links in login
+        e-mails that you can click even when logged out to update your
+        email notification settings.
+        """
+        user_profile = self.example_user('hamlet')
+        user_profile.enable_login_emails = True
+        user_profile.save()
+
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "login")
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+
+        self.assertEqual(result.status_code, 200)
+
+        user_profile.refresh_from_db()
+        self.assertFalse(user_profile.enable_login_emails)
+
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def check_able_to_create_realm(self, email: str) -> None:
