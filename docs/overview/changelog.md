@@ -7,30 +7,43 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
-These changes likely will not be included in Zulip 1.9, but are
-scheduled for the next major release.
-
-- Added support for limited-permissions "guest" users.
-- Added support for clearing push notifications on Android.
-- Redesigned search navbar area to use more attractive input pills.
-
-### Unreleased targeting Zulip 1.9
-
-This section lists notable unreleased changes that will be included in
-Zulip 1.9; it is generally updated in bursts.
+### 1.9.0 -- 2018-11-07
 
 **Highlights:**
-- Added support for custom profile fields.
-- Added support for Debian stretch and Ubuntu bionic.
-- Added support for using Google Hangouts as the video chat provider.
-- Added support for configuring a private stream so subscribers can
-  access full history, even before they joined the stream.
-- Added support for announcement-only streams.
-- Adopted docker-zulip to be now the official Docker image for Zulip.
-- Added support for using matrix.org as an IRC gateway.
-- Added support for configuring email notifications for all messages
-  in a stream (useful for very low-traffic streams/organizations).
-- New translations: Ukrainian and others.
+
+- Support for Ubuntu bionic and Debian stretch (our first non-Ubuntu
+  platform!).  We expect to deprecate support for installing a new
+  Zulip server on Ubuntu Trusty in the coming months, in preparation
+  for Trusty’s end-of-life in April 2019.
+- New data import tools for HipChat and Gitter.  The Slack importer
+  is now out of beta.
+- Zulip Python process startup time is about 30% faster; this effort
+  resulted in upstream contributions to fix significant performance
+  bugs in django-bitfield, libthumbor, and pika.
+- You can now configure custom (organization-specific) fields for user
+  profiles; Zulip can now serve as your organization’s employee
+  directory.
+- Zulip now supports using Google Hangouts instead of Jitsi as the
+  video chat provider.
+- Users can now configure email and mobile push notifications for
+  all messages in a stream (useful for low-traffic
+  streams/organizations), not just for messages mentioning them.
+- New [stream settings](https://zulipchat.com/help/stream-permissions)
+  control whether private stream subscribers can access history
+  from before they joined, and allow configuring streams to only
+  allow administrators to post.
+- Zulip now has experimental support for guest users (intended
+  for use cases like contractors who the organization only wants
+  to have access to a few streams).
+- New native integrations for Ansible Tower, Appveyor, Clubhouse,
+  Netlify, and Zabbix; Zulip now has over 100 native integrations (in
+  addition to hundreds more available via Zapier and IFTTT).
+- New translations for Ukrainian, Portuguese, Indonesian, Dutch, and
+  Finnish.  Zulip now has complete or nearly-complete translations
+  for German, Spanish, French, Portuguese, Russian, Ukrainian,
+  Czech, Finnish, and Turkish.  Partial translations for Chinese,
+  Dutch, Korean, Polish, Japanese, and Indonesian cover the majority
+  of the total strings in the project.
 
 **Upgrade notes:**
 
@@ -58,7 +71,6 @@ Zulip 1.9; it is generally updated in bursts.
 - Added documentation on alternative production deployment options.
 - Added Gitter and HipChat data import tools.
 - Added support for using both LDAPAuthBackend and EmailAuthBackend.
-- Added Ansible Tower, Appveyor, Clubhouse, Netlify, and Zabbix integrations.
 - Added support for rendering message content written in right-to-left
   languages in a right-to-left style.
 - Added support for compose keyboard shortcuts in message edit UI.
