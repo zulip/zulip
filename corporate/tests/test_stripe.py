@@ -133,20 +133,22 @@ def read_stripe_fixture(decorated_function_name: str,
         return stripe.util.convert_to_stripe_object(fixture)
     return _read_stripe_fixture
 
-def mock_stripe(mocked_function_name: str,
-                generate_this_fixture: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
-    def _mock_stripe(decorated_function: CallableT) -> CallableT:
-        mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
-        generate_fixture = generate_this_fixture
+def mock_stripe(*mocked_function_names: str,
+                generate: Optional[bool]=None) -> Callable[[CallableT], Callable[..., Any]]:
+    def _mock_stripe(decorated_function: CallableT) -> Callable[..., Any]:
+        generate_fixture = generate
         if generate_fixture is None:
             generate_fixture = GENERATE_STRIPE_FIXTURES
-        if generate_fixture:
-            side_effect = generate_and_save_stripe_fixture(
-                decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
-        else:
-            side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
+        mocked_function_names_ = ["stripe.{}".format(name) for name in mocked_function_names]
+        for mocked_function_name in mocked_function_names_:
+            mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
+            if generate_fixture:
+                side_effect = generate_and_save_stripe_fixture(
+                    decorated_function.__name__, mocked_function_name, mocked_function)  # nocoverage
+            else:
+                side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
+            decorated_function = patch(mocked_function_name, side_effect=side_effect)(decorated_function)
 
-        @patch(mocked_function_name, side_effect=side_effect)
         @wraps(decorated_function)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
             return decorated_function(*args, **kwargs)
@@ -160,9 +162,7 @@ class Kandra(object):
         return True
 
 class StripeTest(ZulipTestCase):
-    @mock_stripe("stripe.Coupon.create", False)
-    @mock_stripe("stripe.Plan.create", False)
-    @mock_stripe("stripe.Product.create", False)
+    @mock_stripe("Product.create", "Plan.create", "Coupon.create", generate=False)
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
 
@@ -215,11 +215,7 @@ class StripeTest(ZulipTestCase):
             response = self.client_get("/upgrade/")
             self.assert_in_success_response(["Page not found (404)"], response)
 
-    @mock_stripe("stripe.Token.create")
-    @mock_stripe("stripe.Customer.create")
-    @mock_stripe("stripe.Subscription.create")
-    @mock_stripe("stripe.Customer.retrieve")
-    @mock_stripe("stripe.Invoice.upcoming")
+    @mock_stripe("Customer.retrieve", "Subscription.create", "Customer.create", "Token.create", "Invoice.upcoming")
     def test_initial_upgrade(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -283,11 +279,7 @@ class StripeTest(ZulipTestCase):
                           'Card ending in 4242']:
             self.assert_in_response(substring, response)
 
-    @mock_stripe("stripe.Token.create")
-    @mock_stripe("stripe.Invoice.upcoming")
-    @mock_stripe("stripe.Customer.retrieve")
-    @mock_stripe("stripe.Customer.create")
-    @mock_stripe("stripe.Subscription.create")
+    @mock_stripe("Token.create", "Invoice.upcoming", "Customer.retrieve", "Customer.create", "Subscription.create")
     def test_billing_page_permissions(self, mock5: Mock, mock4: Mock, mock3: Mock,
                                       mock2: Mock, mock1: Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
@@ -312,10 +304,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock_stripe("stripe.Token.create")
-    @mock_stripe("stripe.Customer.create")
-    @mock_stripe("stripe.Subscription.create")
-    @mock_stripe("stripe.Customer.retrieve")
+    @mock_stripe("Token.create", "Customer.create", "Subscription.create", "Customer.retrieve")
     def test_upgrade_with_outdated_seat_count(
             self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         self.login(self.example_email("hamlet"))
@@ -351,11 +340,7 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
-    @mock_stripe("stripe.Token.create")
-    @mock_stripe("stripe.Customer.create")
-    @mock_stripe("stripe.Subscription.create")
-    @mock_stripe("stripe.Customer.retrieve")
-    @mock_stripe("stripe.Customer.save")
+    @mock_stripe("Token.create", "Customer.create", "Subscription.create", "Customer.retrieve", "Customer.save")
     def test_upgrade_where_subscription_save_fails_at_first(
             self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
