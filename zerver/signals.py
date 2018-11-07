@@ -10,6 +10,7 @@ from django.utils.timezone import \
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext_lazy as _
 
+from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
@@ -91,6 +92,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
         context['device_os'] = get_device_os(user_agent)
         context['device_browser'] = get_device_browser(user_agent)
+        context['unsubscribe_link'] = one_click_unsubscribe_link(user, 'login')
 
         email_dict = {
             'template_prefix': 'zerver/emails/notify_new_login',
