@@ -22,7 +22,7 @@ pygments==2.2.0           # via sphinx
 pyparsing==2.2.0          # via packaging
 pytz==2017.3              # via babel
 recommonmark==0.4.0
-requests==2.18.4          # via sphinx
+requests==2.20.0          # via sphinx
 six==1.11.0               # via packaging, sphinx
 snowballstemmer==1.2.1
 sphinx-rtd-theme==0.4.1

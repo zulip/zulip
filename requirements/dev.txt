@@ -41,7 +41,7 @@ commonmark==0.5.4
 constantly==15.1.0        # via twisted
 cookies==2.2.1            # via moto, responses
 coverage==4.5.1
-cryptography==2.3
+cryptography==2.3.1
 cssselect==1.0.1          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
@@ -130,7 +130,7 @@ pyjwt==1.6.4
 pyldap==3.0.0.post1       # via fakeldap
 pylibmc==1.5.2
 pyoembed==0.1.2
-pyopenssl==17.3.0         # via ndg-httpsclient, requests, scrapy, service-identity
+pyopenssl==18.0.0         # via ndg-httpsclient, requests, scrapy, service-identity
 pyparsing==2.2.0          # via packaging
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
@@ -146,8 +146,8 @@ queuelib==1.4.2           # via scrapy
 recommonmark==0.4.0
 redis==2.10.6
 regex==2017.11.9
-requests-oauthlib==0.8.0
-requests[security]==2.18.4  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+requests-oauthlib==1.0.0
+requests[security]==2.20.0  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.9.0          # via moto
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
@@ -173,7 +173,7 @@ tblib==1.3.2
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
 transifex-client==0.12.5
-twilio==6.15.2
+twilio==6.19.2
 twisted==18.4.0
 typed-ast==1.1.0          # via mypy
 typing==3.6.4
