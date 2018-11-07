@@ -5,6 +5,7 @@ class zulip::app_frontend_base {
   include zulip::nginx
   include zulip::sasl_modules
   include zulip::supervisor
+  include zulip::sharding
 
   if $::osfamily == 'debian' {
     $web_packages = [
