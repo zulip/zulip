@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-03 00:33+0000\n"
+"POT-Creation-Date: 2018-11-07 15:19+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -2548,8 +2548,8 @@ msgid "hello"
 msgstr ""
 
 #: zerver/lib/actions.py:1804 zerver/lib/actions.py:4848
-#: zerver/views/messages.py:1208 zerver/views/messages.py:1215
-#: zerver/views/messages.py:1238
+#: zerver/views/messages.py:1210 zerver/views/messages.py:1217
+#: zerver/views/messages.py:1240
 msgid "User not authorized for this query"
 msgstr ""
 
@@ -2754,7 +2754,7 @@ msgstr ""
 msgid "Missing topic"
 msgstr ""
 
-#: zerver/lib/addressee.py:125 zerver/views/messages.py:1383
+#: zerver/lib/addressee.py:125 zerver/views/messages.py:1385
 #: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:22
 msgid "Topic can't be empty"
 msgstr ""
@@ -3187,14 +3187,14 @@ msgstr ""
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr ""
 
-#: zerver/lib/webhooks/common.py:37
+#: zerver/lib/webhooks/common.py:39
 #, python-brace-format
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
 msgstr ""
 
-#: zerver/lib/webhooks/common.py:48
+#: zerver/lib/webhooks/common.py:50
 #, python-brace-format
 msgid "Missing the HTTP event header '{header}'"
 msgstr ""
@@ -3431,74 +3431,74 @@ msgstr ""
 msgid "Invalid narrow operator: {desc}"
 msgstr ""
 
-#: zerver/views/messages.py:705
+#: zerver/views/messages.py:707
 msgid "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."
 msgstr ""
 
-#: zerver/views/messages.py:707
+#: zerver/views/messages.py:709
 #, python-format
 msgid "Too many messages requested (maximum %s)."
 msgstr ""
 
-#: zerver/views/messages.py:1058
+#: zerver/views/messages.py:1060
 #, python-format
 msgid "No such topic '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1168
+#: zerver/views/messages.py:1170
 msgid "Invalid time format"
 msgstr ""
 
-#: zerver/views/messages.py:1178
+#: zerver/views/messages.py:1180
 msgid "Time must be in the future."
 msgstr ""
 
-#: zerver/views/messages.py:1218
+#: zerver/views/messages.py:1220
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1236
+#: zerver/views/messages.py:1238
 msgid "Missing sender"
 msgstr ""
 
-#: zerver/views/messages.py:1242
+#: zerver/views/messages.py:1244
 msgid "Invalid mirrored message"
 msgstr ""
 
-#: zerver/views/messages.py:1244
+#: zerver/views/messages.py:1246
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1250
+#: zerver/views/messages.py:1252
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr ""
 
-#: zerver/views/messages.py:1317
+#: zerver/views/messages.py:1319
 msgid "Message edit history is disabled in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1337
+#: zerver/views/messages.py:1339
 msgid "Your organization has turned off message editing"
 msgstr ""
 
-#: zerver/views/messages.py:1355
+#: zerver/views/messages.py:1357
 msgid "You don't have permission to edit this message"
 msgstr ""
 
-#: zerver/views/messages.py:1366 zerver/views/messages.py:1376
+#: zerver/views/messages.py:1368 zerver/views/messages.py:1378
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/views/messages.py:1379
+#: zerver/views/messages.py:1381
 msgid "Nothing to change"
 msgstr ""
 
-#: zerver/views/messages.py:1435 zerver/views/messages.py:1438
+#: zerver/views/messages.py:1437 zerver/views/messages.py:1440
 msgid "You don't have permission to delete this message"
 msgstr ""
 
-#: zerver/views/messages.py:1446
+#: zerver/views/messages.py:1448
 msgid "The time limit for deleting this message has passed"
 msgstr ""
 
