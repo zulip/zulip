@@ -275,7 +275,7 @@ run_test('quote_and_reply', () => {
 
     compose_ui.replace_syntax = function (syntax, replacement) {
         assert.equal(syntax, '[Quoting…]');
-        assert.equal(replacement, 'Testing.');
+        assert.equal(replacement, '```quote\nTesting.\n```');
     };
 
     var opts = {
