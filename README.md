@@ -58,7 +58,7 @@ You might be interested in:
 * **Running a Zulip server**. Setting up a server takes just a couple
   of minutes. Zulip runs on Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial,
   Ubuntu 14.04 Trusty, and Debian 9 Stretch. The installation process is
-  [documented here](https://zulip.readthedocs.io/en/stable/prod.html).
+  [documented here](https://zulip.readthedocs.io/en/stable/production/install.html).
   Commercial support is available; see <https://zulipchat.com/plans>
   for details.
 
