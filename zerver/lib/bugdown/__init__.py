@@ -173,9 +173,6 @@ def url_embed_preview_enabled_for_realm(message: Optional[Message]=None) -> bool
     realm = arguments.current_realm
 
     if realm is None:
-        if message is None:
-            message = arguments.current_message
-
         if message is not None:
             realm = message.get_realm()
 
@@ -187,12 +184,11 @@ def url_embed_preview_enabled_for_realm(message: Optional[Message]=None) -> bool
 
     return realm.inline_url_embed_preview
 
-def image_preview_enabled_for_realm() -> bool:
+def image_preview_enabled_for_realm(message: Optional[Message]=None) -> bool:
     if not settings.INLINE_IMAGE_PREVIEW:
         return False
 
     realm = arguments.current_realm
-    message = arguments.current_message
 
     if realm is None:
         if message is not None:
@@ -569,7 +565,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return url
 
     def is_image(self, url: str) -> bool:
-        if not image_preview_enabled_for_realm():
+        if not image_preview_enabled_for_realm(arguments.current_message):
             return False
         parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
@@ -975,7 +971,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if arguments.db_data and arguments.db_data['sent_by_bot']:
                 continue
 
-            if not url_embed_preview_enabled_for_realm():
+            if not url_embed_preview_enabled_for_realm(arguments.current_message):
                 continue
 
             try:
