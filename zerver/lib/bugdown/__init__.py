@@ -166,11 +166,10 @@ def rewrite_local_links_to_relative(link: str) -> str:
 
     return link
 
-def url_embed_preview_enabled_for_realm(message: Optional[Message]=None) -> bool:
+def url_embed_preview_enabled_for_realm(message: Optional[Message]=None,
+                                        realm: Optional[Realm]=None) -> bool:
     if not settings.INLINE_URL_EMBED_PREVIEW:
         return False
-
-    realm = arguments.current_realm
 
     if realm is None:
         if message is not None:
@@ -184,11 +183,10 @@ def url_embed_preview_enabled_for_realm(message: Optional[Message]=None) -> bool
 
     return realm.inline_url_embed_preview
 
-def image_preview_enabled_for_realm(message: Optional[Message]=None) -> bool:
+def image_preview_enabled_for_realm(message: Optional[Message]=None,
+                                    realm: Optional[Realm]=None) -> bool:
     if not settings.INLINE_IMAGE_PREVIEW:
         return False
-
-    realm = arguments.current_realm
 
     if realm is None:
         if message is not None:
@@ -564,8 +562,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         return url
 
+    def image_preview_enabled(self) -> bool:
+        return image_preview_enabled_for_realm(
+            self.markdown.zulip_message,
+            self.markdown.zulip_realm,
+        )
+
     def is_image(self, url: str) -> bool:
-        if not image_preview_enabled_for_realm(self.markdown.zulip_message):
+        if not self.image_preview_enabled():
             return False
         parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
@@ -620,7 +624,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def youtube_id(self, url: str) -> Optional[str]:
-        if not image_preview_enabled_for_realm():
+        if not self.image_preview_enabled():
             return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
@@ -640,7 +644,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def vimeo_id(self, url: str) -> Optional[str]:
-        if not image_preview_enabled_for_realm():
+        if not self.image_preview_enabled():
             return None
         #(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)
         # If it matches, match.group('id') is the video id.
@@ -971,7 +975,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if arguments.db_data and arguments.db_data['sent_by_bot']:
                 continue
 
-            if not url_embed_preview_enabled_for_realm(self.markdown.zulip_message):
+            if not url_embed_preview_enabled_for_realm(self.markdown.zulip_message,
+                                                       self.markdown.zulip_realm):
                 continue
 
             try:
@@ -2022,7 +2027,7 @@ def do_convert(content: str,
 
     # Filters such as UserMentionPattern need a message.
     _md_engine.zulip_message = message
-    arguments.current_realm = message_realm
+    _md_engine.zulip_realm = message_realm
 
     # Pre-fetch data from the DB that is used in the bugdown thread
     if message is not None:
@@ -2088,7 +2093,7 @@ def do_convert(content: str,
         raise BugdownRenderingException()
     finally:
         _md_engine.zulip_message = None
-        arguments.current_realm = None
+        _md_engine.zulip_realm = None
         arguments.db_data = None
 
 bugdown_time_start = 0.0

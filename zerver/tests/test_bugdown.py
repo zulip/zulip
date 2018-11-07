@@ -448,7 +448,6 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm = message.get_realm()
-        arguments.current_realm = realm
 
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
@@ -461,7 +460,6 @@ class BugdownTest(ZulipTestCase):
         sender_user_profile = self.example_user('othello')
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
-        arguments.current_realm = realm
 
         ret = bugdown.url_embed_preview_enabled_for_realm()
         self.assertEqual(ret, False)
