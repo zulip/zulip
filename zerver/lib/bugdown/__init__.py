@@ -62,6 +62,8 @@ FullNameInfo = TypedDict('FullNameInfo', {
     'full_name': str,
 })
 
+DbData = Dict[str, Any]
+
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
 version = 1
@@ -154,12 +156,12 @@ def clear_state_for_testing() -> None:
 
 bugdown_logger = logging.getLogger()
 
-def rewrite_local_links_to_relative(link: str) -> str:
+def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str:
     """ If the link points to a local destination we can just switch to that
     instead of opening a new tab. """
 
-    if arguments.db_data:
-        realm_uri_prefix = arguments.db_data['realm_uri'] + "/"
+    if db_data:
+        realm_uri_prefix = db_data['realm_uri'] + "/"
         if link.startswith(realm_uri_prefix):
             # +1 to skip the `/` before the hash link.
             return link[len(realm_uri_prefix):]
@@ -751,6 +753,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 current_node.tail = text
 
+        db_data = arguments.db_data
         current_index = 0
         for item in to_process:
             # The text we want to link starts in already linked text skip it
@@ -761,7 +764,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             set_text(text[current_index:item['start']])
             current_index = item['end']
             if item['type'] != 'emoji':
-                current_node = elem = url_to_a(item['url'], item['text'])
+                current_node = elem = url_to_a(db_data, item['url'], item['text'])
             else:
                 current_node = elem = make_emoji(item['codepoint'], item['title'])
             p.append(elem)
@@ -1246,7 +1249,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # Url passes all tests. Return url as-is.
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-def url_to_a(url: str, text: Optional[str]=None) -> Union[Element, str]:
+def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> Union[Element, str]:
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
@@ -1257,7 +1260,7 @@ def url_to_a(url: str, text: Optional[str]=None) -> Union[Element, str]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    href = rewrite_local_links_to_relative(href)
+    href = rewrite_local_links_to_relative(db_data, href)
     target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
@@ -1277,7 +1280,8 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
 class AutoLink(VerbosePattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group('url')
-        return url_to_a(url)
+        db_data = arguments.db_data
+        return url_to_a(db_data, url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
@@ -1421,7 +1425,8 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
-        href = rewrite_local_links_to_relative(href)
+        db_data = arguments.db_data
+        href = rewrite_local_links_to_relative(db_data, href)
 
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
@@ -1448,7 +1453,9 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
-        return url_to_a(self.format_string % m.groupdict(),
+        db_data = arguments.db_data
+        return url_to_a(db_data,
+                        self.format_string % m.groupdict(),
                         m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
