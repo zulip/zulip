@@ -3,12 +3,13 @@
 import sys
 import time
 import argparse
+import configparser
 from collections import defaultdict
 import os
 import subprocess
 
 if False:
-    from typing import Dict
+    from typing import Any, Dict, Optional, Union
 
 states = {
     0: "OK",
@@ -31,6 +32,15 @@ parser.add_argument('--min-threshold',
                     action='store')
 
 options = parser.parse_args()
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+def get_config(section, key, default_value):
+    # type: (str, str, str) -> str
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', '1'))
 
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
                                  universal_newlines=True)
@@ -71,7 +81,12 @@ for queue_name in queues:
 for line in output.split('\n'):
     parts = line.split('\t')
     if len(parts) >= 2:
-        consumers[parts[0]] += 1
+        queue_name = parts[0]
+        if queue_name.startswith("tornado_return_"):
+            queue_name = "tornado_return"
+        if queue_name.startswith("notify_tornado_"):
+            queue_name = "notify_tornado"
+        consumers[queue_name] += 1
 
 now = int(time.time())
 
@@ -79,12 +94,16 @@ for queue_name in consumers.keys():
     state_file_path = "/var/lib/nagios_state/check-rabbitmq-consumers-" + queue_name
     state_file_tmp = state_file_path + "-tmp"
 
-    if consumers[queue_name] < options.min_count:
+    target_count = options.min_count
+    if queue_name in ["tornado_return", "notify_tornado"]:
+        target_count = TORNADO_PROCESSES
+
+    if consumers[queue_name] < target_count:
         status = 2
     else:
         status = 0
     with open(state_file_tmp, "w") as f:
         f.write("%s|%s|%s|queue %s has %s consumers, needs %s\n" % (
             now, status, states[status], queue_name,
-            consumers[queue_name], options.min_count))
+            consumers[queue_name], target_count))
     os.rename(state_file_tmp, state_file_path)
