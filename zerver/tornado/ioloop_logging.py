@@ -11,6 +11,10 @@ from tornado.ioloop import IOLoop, PollIOLoop
 # be epoll.
 orig_poll_impl = select.epoll
 
+# This is used for a somewhat hacky way of passing the port number
+# into this early-initialized module.
+logging_data = {}
+
 class InstrumentedPollIOLoop(PollIOLoop):
     def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
         super().initialize(impl=InstrumentedPoll(), **kwargs)
@@ -64,8 +68,8 @@ class InstrumentedPoll:
             if total > 0:
                 percent_busy = 100 * (1 - in_poll / total)
                 if settings.PRODUCTION:
-                    logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
-                                 % (percent_busy, total))
+                    logging.info('Tornado %s %5.1f%% busy over the past %4.1f seconds'
+                                 % (logging_data.get('port', 'unknown'), percent_busy, total))
                     self._last_print = t1
 
         return result
