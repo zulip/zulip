@@ -1797,14 +1797,14 @@ def build_engine(realm_filters: List[Tuple[str, str, int]],
                     code_block_processor_disabled=email_gateway)])
     return engine
 
-def topic_links(realm_filters_key: int, subject: str) -> List[str]:
+def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
     matches = []  # type: List[str]
 
     realm_filters = realm_filters_for_realm(realm_filters_key)
 
     for realm_filter in realm_filters:
         pattern = prepare_realm_pattern(realm_filter[0])
-        for m in re.finditer(pattern, subject):
+        for m in re.finditer(pattern, topic_name):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
 

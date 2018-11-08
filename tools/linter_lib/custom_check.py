@@ -42,7 +42,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # TRY TO FIX THESE! If you can't fix them, try to
     # add comments here and/or in the file itself about
     # why sweeping subject is tricky.
-    'zerver/lib/bugdown/__init__.py',
     'zerver/lib/digest.py',
     'zerver/lib/narrow.py',
     'zerver/lib/onboarding.py',
