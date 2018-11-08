@@ -408,20 +408,23 @@ def handle_missedmessage_emails(user_profile_id: int,
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
+    # We bucket messages by tuples that identify similar messages.
+    # For streams it's recipient_id and topic.
+    # For PMs it's recipient id and sender.
+    messages_by_bucket = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For PM's group using (recipient, sender).
-            messages_by_recipient_subject[(msg.recipient_id, msg.sender_id)].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:
-            messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.topic_name())].append(msg)
 
-    message_count_by_recipient_subject = {
-        recipient_subject: len(msgs)
-        for recipient_subject, msgs in messages_by_recipient_subject.items()
+    message_count_by_bucket = {
+        bucket_tup: len(msgs)
+        for bucket_tup, msgs in messages_by_bucket.items()
     }
 
-    for msg_list in messages_by_recipient_subject.values():
+    for msg_list in messages_by_bucket.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.is_stream_message():
             context_messages = get_context_for_message(msg)
@@ -429,17 +432,17 @@ def handle_missedmessage_emails(user_profile_id: int,
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    recipient_subjects = []  # type: List[Tuple[Tuple[int, str], int]]
-    for recipient_subject, msg_list in messages_by_recipient_subject.items():
+    bucket_tups = []  # type: List[Tuple[Tuple[int, str], int]]
+    for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
-        recipient_subjects.append((recipient_subject, max_message_id))
+        bucket_tups.append((bucket_tup, max_message_id))
 
-    recipient_subjects = sorted(recipient_subjects, key=lambda x: x[1])
+    bucket_tups = sorted(bucket_tups, key=lambda x: x[1])
 
     # Send an email per recipient subject pair
-    for recipient_subject, ignored_max_id in recipient_subjects:
+    for bucket_tup, ignored_max_id in bucket_tups:
         unique_messages = {}
-        for m in messages_by_recipient_subject[recipient_subject]:
+        for m in messages_by_bucket[bucket_tup]:
             unique_messages[m.id] = dict(
                 message=m,
                 trigger=message_ids.get(m.id)
@@ -447,7 +450,7 @@ def handle_missedmessage_emails(user_profile_id: int,
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),
-            message_count_by_recipient_subject[recipient_subject],
+            message_count_by_bucket[bucket_tup],
         )
 
 def clear_scheduled_invitation_emails(email: str) -> None:
