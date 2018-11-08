@@ -388,11 +388,11 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     downloaded.  For simpler conversions see write_avatar_png.
     """
 
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        avatar_url = avatar_upload_list[0]
+    def get_avatar(avatar_upload_item: List[str]) -> int:
+        avatar_url = avatar_upload_item[0]
 
-        image_path = os.path.join(avatar_dir, avatar_original_list[1])
-        original_image_path = os.path.join(avatar_dir, avatar_original_list[2])
+        image_path = os.path.join(avatar_dir, avatar_upload_item[1])
+        original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
         response = requests.get(avatar_url + size_url_suffix, stream=True)
         with open(image_path, 'wb') as image_file:
