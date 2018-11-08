@@ -270,10 +270,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg['message'].recipient_id, msg['message'].subject) for msg in missed_messages)
+    recipients = set((msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages)
     if len(recipients) != 1:
         raise ValueError(
-            'All missed_messages must have the same recipient and subject %r' %
+            'All missed_messages must have the same recipient and topic %r' %
             recipients
         )
 
@@ -439,7 +439,7 @@ def handle_missedmessage_emails(user_profile_id: int,
 
     bucket_tups = sorted(bucket_tups, key=lambda x: x[1])
 
-    # Send an email per recipient subject pair
+    # Send an email per bucket.
     for bucket_tup, ignored_max_id in bucket_tups:
         unique_messages = {}
         for m in messages_by_bucket[bucket_tup]:
