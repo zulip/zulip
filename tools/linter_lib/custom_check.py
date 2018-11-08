@@ -45,7 +45,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/digest.py',
     'zerver/lib/narrow.py',
     'zerver/lib/onboarding.py',
-    'zerver/lib/push_notifications.py',
     'zerver/lib/stream_topic.py',
     'zerver/lib/url_encoding.py',
     'zerver/lib/webhooks/git.py',
