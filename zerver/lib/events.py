@@ -31,6 +31,7 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
+from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
@@ -557,9 +558,9 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
         # the unread_msgs data if the topic of an unread message changed.
-        if 'subject' in event:
+        if TOPIC_NAME in event:
             stream_dict = state['raw_unread_msgs']['stream_dict']
-            topic = event['subject']
+            topic = event[TOPIC_NAME]
             for message_id in event['message_ids']:
                 if message_id in stream_dict:
                     stream_dict[message_id]['topic'] = topic
