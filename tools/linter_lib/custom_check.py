@@ -280,6 +280,7 @@ def build_custom_checkers(by_lang):
              'zerver/lib/actions.py',
              'zerver/lib/test_classes.py',
              'zerver/lib/message.py',
+             'zerver/lib/notifications.py',
              'zerver/lib/topic_mutes.py'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
