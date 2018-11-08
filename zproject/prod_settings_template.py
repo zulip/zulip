@@ -71,8 +71,13 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
 # data and should not be delivered anywhere.  The default is
-# e.g. noreply@zulip.example.com (if EXTERNAL_HOST is
-# zulip.example.com).
+# e.g. noreply-{random_token}@zulip.example.com (if EXTERNAL_HOST is
+# zulip.example.com).  There are potential security issues if you set
+# ADD_TOKENS_TO_NOREPLY_ADDRESS=False to remove the token; see
+# https://zulip.readthedocs.io/en/latest/production/email.html for details.
+#ADD_TOKENS_TO_NOREPLY_ADDRESS = True
+#TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@example.com"
+# Used for noreply emails only if ADD_TOKENS_TO_NOREPLY_ADDRESS=False
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
 # Many countries and bulk mailers require certain types of email to display
