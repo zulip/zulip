@@ -372,7 +372,7 @@ i18n_urls = [
     url(r'^desktop_home/$', zerver.views.home.desktop_home,
         name='zerver.views.home.desktop_home'),
 
-    url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
+    url(r'^accounts/login/sso$', zerver.views.auth.remote_user_sso, name='login-sso'),
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
     url(r'^accounts/login/social/([\w,-]+)$', zerver.views.auth.start_social_login,
         name='login-social'),
