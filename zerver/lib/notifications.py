@@ -1,7 +1,7 @@
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.models import Confirmation, one_click_unsubscribe_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
@@ -36,15 +36,6 @@ import subprocess
 import ujson
 from collections import defaultdict
 import pytz
-
-def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
-    """
-    Generate a unique link that a logged-out user can visit to unsubscribe from
-    Zulip e-mails without having to first log in.
-    """
-    return create_confirmation_link(user_profile, user_profile.realm.host,
-                                    Confirmation.UNSUBSCRIBE,
-                                    url_args = {'email_type': email_type})
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.

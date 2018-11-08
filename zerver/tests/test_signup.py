@@ -17,7 +17,8 @@ from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP, get_test_image_file, avatar_disk_path
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
-    generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
+    generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException, \
+    one_click_unsubscribe_link
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
@@ -55,7 +56,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
-    one_click_unsubscribe_link, followup_day2_email_delay
+    followup_day2_email_delay
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock, load_subdomain_token
