@@ -510,7 +510,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     if message.recipient.type == Recipient.STREAM:
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
-        data['topic'] = message.subject
+        data['topic'] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data['recipient_type'] = "private"
         data['pm_users'] = huddle_users(message.recipient.id)
