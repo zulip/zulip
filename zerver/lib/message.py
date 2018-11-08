@@ -26,6 +26,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     DB_TOPIC_NAME,
+    MESSAGE__TOPIC,
     TOPIC_LINKS,
     TOPIC_NAME,
 )
@@ -762,7 +763,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     ).values(
         'message_id',
         'message__sender_id',
-        'message__subject',
+        MESSAGE__TOPIC,
         'message__recipient_id',
         'message__recipient__type',
         'message__recipient__type_id',
@@ -811,7 +812,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
         if msg_type == Recipient.STREAM:
             stream_id = row['message__recipient__type_id']
-            topic = row['message__subject']
+            topic = row[MESSAGE__TOPIC]
             stream_dict[message_id] = dict(
                 stream_id=stream_id,
                 topic=topic,
@@ -911,7 +912,7 @@ def apply_unread_message_event(user_profile: UserProfile,
 
     if message_type == 'stream':
         stream_id = message['stream_id']
-        topic = message['subject']
+        topic = message[TOPIC_NAME]
         new_row = dict(
             stream_id=stream_id,
             topic=topic,
