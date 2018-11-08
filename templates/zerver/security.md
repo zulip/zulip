@@ -131,10 +131,8 @@ the industry:
 - All access to user data (messages, streams, uploaded files, etc.) in the
   Zulip backend is through carefully-audited core libraries that validate
   that the user who is making the request has access to that data.
-- With many SaaS providers, essentially all engineers have direct shell
-  access to production servers storing user data.  Zulip Cloud is different:
-  only a small handful of security-trained engineers have access to
-  production servers or to sensitive customer data.
+- Only a small handful of people have access to production servers or
+  to sensitive customer data.
 - Our error handling systems are have been designed from the beginning to
   avoid including user message content in error reports, even in cases where
   this makes debugging quite difficult (e.g. bugs in the message rendering
