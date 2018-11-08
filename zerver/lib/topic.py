@@ -24,6 +24,10 @@ TOPIC_NAME = "subject"
 TOPIC_LINKS = "subject_links"
 PREV_TOPIC = "prev_subject"
 
+# This is used in low-level message functions in
+# zerver/lib/message.py, and it's not user facing.
+DB_TOPIC_NAME = "subject"
+
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
     # queries that search messages

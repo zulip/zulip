@@ -24,6 +24,11 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import (
+    DB_TOPIC_NAME,
+    TOPIC_LINKS,
+    TOPIC_NAME,
+)
 from zerver.lib.topic_mutes import (
     build_topic_mute_checker,
     topic_is_muted,
@@ -222,7 +227,7 @@ class MessageDict:
             last_edit_time = message.last_edit_time,
             edit_history = message.edit_history,
             content = message.content,
-            subject = message.subject,
+            topic_name = message.topic_name(),
             pub_date = message.pub_date,
             rendered_content = message.rendered_content,
             rendered_content_version = message.rendered_content_version,
@@ -242,7 +247,7 @@ class MessageDict:
         # callers like get_messages_backend().
         fields = [
             'id',
-            'subject',
+            DB_TOPIC_NAME,
             'pub_date',
             'last_edit_time',
             'edit_history',
@@ -276,7 +281,7 @@ class MessageDict:
             last_edit_time = row['last_edit_time'],
             edit_history = row['edit_history'],
             content = row['content'],
-            subject = row['subject'],
+            topic_name = row[DB_TOPIC_NAME],
             pub_date = row['pub_date'],
             rendered_content = row['rendered_content'],
             rendered_content_version = row['rendered_content_version'],
@@ -297,7 +302,7 @@ class MessageDict:
             last_edit_time: Optional[datetime.datetime],
             edit_history: Optional[str],
             content: str,
-            subject: str,
+            topic_name: str,
             pub_date: datetime.datetime,
             rendered_content: Optional[str],
             rendered_content_version: Optional[int],
@@ -318,10 +323,10 @@ class MessageDict:
             recipient_type_id = recipient_type_id,
             recipient_type    = recipient_type,
             recipient_id      = recipient_id,
-            subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
             client            = sending_client_name)
 
+        obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
 
         obj['raw_display_recipient'] = get_display_recipient_by_id(
@@ -330,7 +335,7 @@ class MessageDict:
             recipient_type_id
         )
 
-        obj['subject_links'] = bugdown.topic_links(sender_realm_id, subject)
+        obj[TOPIC_LINKS] = bugdown.topic_links(sender_realm_id, topic_name)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
