@@ -13,6 +13,45 @@ from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
 RuleList = List[Dict[str, Any]]
 
+FILES_WITH_LEGACY_SUBJECT = {
+    # This basically requires a big DB migration:
+    'zerver/lib/topic.py',
+
+    # This is tricky--it's used in a migration.
+    'zerver/lib/fix_unreads.py',
+
+    # This is just test data, although I don't know
+    # why it's in lib.
+    'zerver/lib/test_data.source.txt',
+
+    # These use subject in the email sense, and will
+    # probably always be exempt:
+    'zerver/lib/email_mirror.py',
+    'zerver/lib/error_notify.py',
+    'zerver/lib/feedback.py',
+    'zerver/lib/send_email.py',
+
+    # This has "subject" in the copyright message.
+    'zerver/lib/ccache.py',
+
+    # These are tied more to our API than our DB model.
+    'zerver/lib/api_test_helpers.py',
+    'zerver/lib/bot_lib.py',
+    'zerver/lib/outgoing_webhook.py',
+
+    # TRY TO FIX THESE! If you can't fix them, try to
+    # add comments here and/or in the file itself about
+    # why sweeping subject is tricky.
+    'zerver/lib/bugdown/__init__.py',
+    'zerver/lib/digest.py',
+    'zerver/lib/narrow.py',
+    'zerver/lib/onboarding.py',
+    'zerver/lib/push_notifications.py',
+    'zerver/lib/stream_topic.py',
+    'zerver/lib/url_encoding.py',
+    'zerver/lib/webhooks/git.py',
+}
+
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
     # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
     failed = False
@@ -276,12 +315,9 @@ def build_custom_checkers(by_lang):
          'description': 'avoid subject as a var',
          'good_lines': ['topic_name'],
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
+         'exclude': FILES_WITH_LEGACY_SUBJECT,
          'include_only': set([
-             'zerver/lib/actions.py',
-             'zerver/lib/test_classes.py',
-             'zerver/lib/message.py',
-             'zerver/lib/notifications.py',
-             'zerver/lib/topic_mutes.py'])},
+             'zerver/lib/'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
