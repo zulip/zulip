@@ -1,5 +1,6 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
-  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row">
+  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
+  role="region" aria-label="{{t 'Message' }}">
     <div class="unread_marker"><div class="unread-marker-fill"></div></div>
     <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
       style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
@@ -16,7 +17,7 @@
                                 <span class="sender-status">
                                     <span class="sender_name-in-status auto-select sender_info_hover">{{msg/sender_full_name}}</span>
                                     {{#if sender_is_bot}}
-                                    <i class="zulip-icon bot" aria-hidden="true"></i>
+                                    <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
                                     {{/if}}
                                     <span class="status-message">
                                         {{{ status_message }}}
@@ -28,7 +29,7 @@
                             {{else}}
                                 <span class="sender_name auto-select">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
-                                <i class="zulip-icon bot" aria-hidden="true"></i>
+                                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
                                 {{/if}}
                             {{/if}}
                         {{/include_sender}}
@@ -45,18 +46,18 @@
                         <div class="edit_content"></div>
                         {{else}}
                         <div class="reaction_button">
-                            <i class="fa fa-smile-o" aria-hidden="true" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
+                            <i class="fa fa-smile-o" title="{{#tr this}}Add emoji reaction{{/tr}} (:)" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
                         </div>
                         {{/if}}
 
                         {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
-                            <i class="fa fa-chevron-down" aria-hidden="true" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
+                            <i class="fa fa-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)" title="{{#tr this}}Message actions{{/tr}}" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr this}}Message actions{{/tr}}"></i>
                         </div>
                         {{/unless}}
 
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-                            <i class="fa fa-refresh refresh-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
+                            <i class="fa fa-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
                             <i class="fa fa-times-circle remove-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
                         </div>
 
