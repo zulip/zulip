@@ -23,8 +23,13 @@ from typing import Any, Dict, List, Tuple
 ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
 TOPIC_LINKS = "subject_links"
-PREV_TOPIC = "prev_subject"
 MATCH_TOPIC = "match_subject"
+
+# This constant is actually embedded into
+# the JSON data for message edit history,
+# so we'll always need to handle legacy data
+# unless we do a pretty tricky migration.
+LEGACY_PREV_TOPIC = "prev_subject"
 
 # This is used in low-level message functions in
 # zerver/lib/message.py, and it's not user facing.
