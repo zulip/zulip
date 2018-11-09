@@ -185,7 +185,7 @@ social-auth-app-django==2.1.0
 lxml==4.2.5
 
 # Needed for 2-factor authentication
-django-two-factor-auth==1.7.0
+django-two-factor-auth==1.8.0
 twilio==6.19.2
 
 # Needed for processing payments (in zilencer)
