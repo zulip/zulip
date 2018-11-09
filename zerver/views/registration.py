@@ -383,7 +383,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                           context={'message': _('New organization creation disabled')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
-    # subject to a few restrictions on their email address.
+    # with a few restrictions on their email address.
     if request.method == 'POST':
         form = RealmCreationForm(request.POST)
         if form.is_valid():
