@@ -35,6 +35,9 @@ def topic_match_sa(topic_name: str) -> Any:
     topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
     return topic_cond
 
+def topic_column_sa() -> Any:
+    return column("subject")
+
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
     return query.filter(subject=topic_name)
