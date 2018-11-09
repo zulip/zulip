@@ -36,6 +36,7 @@ from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
     topic_column_sa,
     topic_match_sa,
+    DB_TOPIC_NAME,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
@@ -462,10 +463,10 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     result += final_frag
     return result
 
-def get_search_fields(rendered_content: str, subject: str, content_matches: Iterable[Tuple[int, int]],
+def get_search_fields(rendered_content: str, topic_name: str, content_matches: Iterable[Tuple[int, int]],
                       topic_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
     return dict(match_content=highlight_string(rendered_content, content_matches),
-                match_subject=highlight_string(escape_html(subject), topic_matches))
+                match_subject=highlight_string(escape_html(topic_name), topic_matches))
 
 def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -833,10 +834,10 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if is_search:
         for row in rows:
             message_id = row[0]
-            (subject, rendered_content, content_matches, topic_matches) = row[-4:]
+            (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
 
             try:
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
+                search_fields[message_id] = get_search_fields(rendered_content, topic_name,
                                                               content_matches, topic_matches)
             except UnicodeDecodeError as err:  # nocoverage
                 # No coverage for this block since it should be
@@ -1505,18 +1506,18 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     search_fields = dict()
     for row in query_result:
         message_id = row['message_id']
-        subject = row['subject']
+        topic_name = row[DB_TOPIC_NAME]
         rendered_content = row['rendered_content']
 
         if 'content_matches' in row:
             content_matches = row['content_matches']
             topic_matches = row['topic_matches']
-            search_fields[message_id] = get_search_fields(rendered_content, subject,
+            search_fields[message_id] = get_search_fields(rendered_content, topic_name,
                                                           content_matches, topic_matches)
         else:
             search_fields[message_id] = dict(
                 match_content=rendered_content,
-                match_subject=escape_html(subject),
+                match_subject=escape_html(topic_name),
             )
 
     return json_success({"messages": search_fields})
