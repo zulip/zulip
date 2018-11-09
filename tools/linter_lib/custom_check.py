@@ -47,7 +47,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/onboarding.py',
     'zerver/lib/stream_topic.py',
     'zerver/lib/url_encoding.py',
-    'zerver/lib/webhooks/git.py',
 }
 
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):

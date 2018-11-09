@@ -12,7 +12,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
-    SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
+    TOPIC_WITH_BRANCH_TEMPLATE, TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
     get_push_tag_event_message, get_setup_webhook_message
@@ -359,14 +359,14 @@ def is_commit_push_event(payload: Dict[str, Any]) -> bool:
 
 def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     if 'pull_request' in event:
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type='PR',
             id=payload['pull_request']['number'],
             title=payload['pull_request']['title']
         )
     elif event.startswith('issue'):
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
             type='Issue',
             id=payload['issue']['number'],
@@ -380,12 +380,12 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event == 'membership':
         return u"{} organization".format(payload['organization']['login'])
     elif event == 'push_commits':
-        return SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
             branch=get_branch_name_from_ref(payload['ref'])
         )
     elif event == 'gollum':
-        return SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
             branch='Wiki Pages'
         )

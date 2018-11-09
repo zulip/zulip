@@ -12,8 +12,8 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header, UnexpectedWebhookEventType
-from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
     get_issue_event_message, get_pull_request_event_message, \
     get_push_commits_event_message, get_push_tag_event_message, \
@@ -78,7 +78,7 @@ def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
 
 def get_subject_for_branch_specified_events(payload: Dict[str, Any],
                                             branch_name: Optional[str]=None) -> str:
-    return SUBJECT_WITH_BRANCH_TEMPLATE.format(
+    return TOPIC_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload['repository']),
         branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name
     )
@@ -103,14 +103,14 @@ def get_subject(payload: Dict[str, Any]) -> str:
 
 def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
     if type.startswith('pull_request'):
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload['repository']),
             type='PR',
             id=payload['pullrequest']['id'],
             title=payload['pullrequest']['title']
         )
     if type.startswith('issue'):
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload['repository']),
             type='Issue',
             id=payload['issue']['id'],

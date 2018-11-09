@@ -11,7 +11,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import EMPTY_SHA, \
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
     get_push_tag_event_message, get_remove_branch_event_message
@@ -323,28 +323,28 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
             get_repo_name(payload),
             payload['object_attributes'].get('ref').replace('refs/heads/', ''))
     elif event.startswith('Merge Request Hook'):
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
             id=payload['object_attributes'].get('iid'),
             title=payload['object_attributes'].get('title')
         )
     elif event.startswith('Issue Hook'):
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
             id=payload['object_attributes'].get('iid'),
             title=payload['object_attributes'].get('title')
         )
     elif event == 'Note Hook Issue':
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Issue',
             id=payload['issue'].get('iid'),
             title=payload['issue'].get('title')
         )
     elif event == 'Note Hook MergeRequest':
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
             id=payload['merge_request'].get('iid'),
@@ -352,7 +352,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> str:
         )
 
     elif event == 'Note Hook Snippet':
-        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='Snippet',
             id=payload['snippet'].get('id'),
