@@ -1344,11 +1344,9 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int),
-                           subject: Optional[str]=REQ(default=None),
+                           topic_name: Optional[str]=REQ_topic(),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
-
-    topic_name = subject
 
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
