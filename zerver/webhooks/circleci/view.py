@@ -11,7 +11,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-CIRCLECI_SUBJECT_TEMPLATE = u'{repository_name}'
+CIRCLECI_TOPIC_TEMPLATE = u'{repository_name}'
 CIRCLECI_MESSAGE_TEMPLATE = u'[Build]({build_url}) triggered by {username} on {branch} branch {status}.'
 
 FAILED_STATUS = 'failed'
@@ -28,7 +28,7 @@ def api_circleci_webhook(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 def get_subject(payload: Dict[str, Any]) -> str:
-    return CIRCLECI_SUBJECT_TEMPLATE.format(repository_name=payload['reponame'])
+    return CIRCLECI_TOPIC_TEMPLATE.format(repository_name=payload['reponame'])
 
 def get_body(payload: Dict[str, Any]) -> str:
     data = {

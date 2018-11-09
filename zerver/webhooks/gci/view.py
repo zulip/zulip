@@ -9,7 +9,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
-GCI_SUBJECT_TEMPLATE = u'{student_name}'
+GCI_TOPIC_TEMPLATE = u'{student_name}'
 
 
 def build_instance_url(instance_id: str) -> str:
@@ -107,7 +107,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
     event = get_event(payload)
     if event is not None:
         body = get_body_based_on_event(event)(payload)
-        subject = GCI_SUBJECT_TEMPLATE.format(
+        subject = GCI_TOPIC_TEMPLATE.format(
             student_name=payload['task_claimed_by']
         )
         check_send_webhook_message(request, user_profile, subject, body)
