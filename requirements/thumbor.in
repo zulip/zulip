@@ -11,7 +11,7 @@ Django==1.11.14
 # https://github.com/thumbor/thumbor/issues/1006
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-certifi==2018.4.16
+certifi==2018.10.15
 singledispatch==3.4.0.3
 
 # Needed for cloning virtual environments
