@@ -20,7 +20,7 @@ coverage==4.5.1
 fakeldap==0.6.1
 
 # For testing mock http requests
-httpretty==0.9.5
+httpretty==0.9.6
 
 # For sorting imports
 isort==4.3.4
