@@ -15,7 +15,7 @@ sphinx-rtd-theme==0.4.1
 recommonmark==0.4.0
 
 # Dependencies of Sphinx
-alabaster==0.7.11
+alabaster==0.7.12
 babel==2.5.3
 # Upgrading to the latest version of CommonMark breaks the
 # compatibility with recommonmark.  See
