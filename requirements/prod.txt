@@ -112,7 +112,7 @@ rsa==4.0
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
 smmap==0.9.0
-social-auth-app-django==2.1.0
+social-auth-app-django==3.1.0
 social-auth-core==1.5.0   # via social-auth-app-django
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
