@@ -39,6 +39,7 @@ class ErrorCode(AbstractEnum):
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
     INVALID_ZULIP_SERVER = ()
+    REQUEST_CONFUSING_VAR = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.

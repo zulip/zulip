@@ -30,7 +30,7 @@ from zerver.lib.users import get_api_key
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError
+    RequestVariableConversionError, RequestConfusingParmsError
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_api_view,
@@ -104,6 +104,37 @@ class DecoratorTestCase(TestCase):
 
         self.assertEqual(get_client_name(req, is_browser_view=True), 'fancy phone')
         self.assertEqual(get_client_name(req, is_browser_view=False), 'fancy phone')
+
+    def test_REQ_aliases(self) -> None:
+
+        @has_request_variables
+        def double(request: HttpRequest,
+                   x: int=REQ(whence='number', aliases=['x', 'n'], converter=int)) -> int:
+            return x + x
+
+        class Request:
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
+
+        request = Request()
+
+        request.POST = dict(bogus='5555')
+        with self.assertRaises(RequestVariableMissingError):
+            double(request)
+
+        request.POST = dict(number='3')
+        self.assertEqual(double(request), 6)
+
+        request.POST = dict(x='4')
+        self.assertEqual(double(request), 8)
+
+        request.POST = dict(n='5')
+        self.assertEqual(double(request), 10)
+
+        request.POST = dict(number='6', x='7')
+        with self.assertRaises(RequestConfusingParmsError) as cm:
+            double(request)
+        self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
     def test_REQ_converter(self) -> None:
 
