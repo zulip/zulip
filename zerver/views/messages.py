@@ -1347,6 +1347,9 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            subject: Optional[str]=REQ(default=None),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
+
+    topic_name = subject
+
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
@@ -1389,11 +1392,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    if subject is None and content is None:
+    if topic_name is None and content is None:
         return json_error(_("Nothing to change"))
-    if subject is not None:
-        subject = subject.strip()
-        if subject == "":
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+        if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
     links_for_embed = set()  # type: Set[str]
@@ -1420,7 +1423,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
         mention_user_ids = message.mentions_user_ids
 
-    number_changed = do_update_message(user_profile, message, subject,
+    number_changed = do_update_message(user_profile, message, topic_name,
                                        propagate_mode, content, rendered_content,
                                        prior_mention_user_ids,
                                        mention_user_ids)
