@@ -37,6 +37,7 @@ from zerver.lib.topic import (
     topic_column_sa,
     topic_match_sa,
     DB_TOPIC_NAME,
+    MATCH_TOPIC,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
@@ -465,8 +466,10 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
 
 def get_search_fields(rendered_content: str, topic_name: str, content_matches: Iterable[Tuple[int, int]],
                       topic_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
-    return dict(match_content=highlight_string(rendered_content, content_matches),
-                match_subject=highlight_string(escape_html(topic_name), topic_matches))
+    return {
+        'match_content': highlight_string(rendered_content, content_matches),
+        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
+    }
 
 def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -1515,9 +1518,9 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
             search_fields[message_id] = get_search_fields(rendered_content, topic_name,
                                                           content_matches, topic_matches)
         else:
-            search_fields[message_id] = dict(
-                match_content=rendered_content,
-                match_subject=escape_html(topic_name),
-            )
+            search_fields[message_id] = {
+                'match_content': rendered_content,
+                MATCH_TOPIC: escape_html(topic_name),
+            }
 
     return json_success({"messages": search_fields})

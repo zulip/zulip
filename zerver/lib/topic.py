@@ -23,6 +23,7 @@ ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
 TOPIC_LINKS = "subject_links"
 PREV_TOPIC = "prev_subject"
+MATCH_TOPIC = "match_subject"
 
 # This is used in low-level message functions in
 # zerver/lib/message.py, and it's not user facing.
