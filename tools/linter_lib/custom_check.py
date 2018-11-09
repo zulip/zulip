@@ -315,7 +315,8 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
          'exclude': FILES_WITH_LEGACY_SUBJECT,
          'include_only': set([
-             'zerver/lib/'])},
+             'zerver/lib/',
+             'zerver/views/'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
