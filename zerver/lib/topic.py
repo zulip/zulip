@@ -13,6 +13,7 @@ from sqlalchemy.sql import (
 from zerver.models import (
     Message,
     Recipient,
+    UserMessage,
     UserProfile,
 )
 
@@ -50,6 +51,15 @@ def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=["subject", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
+
+def user_message_exists_for_topic(user_profile: UserProfile,
+                                  recipient: Recipient,
+                                  topic_name: str) -> bool:
+    return UserMessage.objects.filter(
+        user_profile=user_profile,
+        message__recipient=recipient,
+        message__subject__iexact=topic_name,
+    ).exists()
 
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
