@@ -1,6 +1,6 @@
 {
   "account_balance": 0,
-  "created": 1540918391,
+  "created": 1542020429,
   "currency": "usd",
   "default_source": {
     "address_city": "Pacific",
@@ -13,14 +13,14 @@
     "address_zip_check": "pass",
     "brand": "Visa",
     "country": "US",
-    "customer": "cus_Dsm0jbfb5Vxhmv",
+    "customer": "cus_replaced000001",
     "cvc_check": "pass",
     "dynamic_last4": null,
     "exp_month": 3,
     "exp_year": 2033,
-    "fingerprint": "6dAXT9VZvwro65EK",
+    "fingerprint": "REPLACED00000002",
     "funding": "credit",
-    "id": "card_1DR0SsGh0CmXqmnwLRYxxJTu",
+    "id": "card_replaced0000000000000002",
     "last4": "4242",
     "metadata": {},
     "name": "Ada Starr",
@@ -31,8 +31,8 @@
   "description": "zulip (Zulip Dev)",
   "discount": null,
   "email": "hamlet@zulip.com",
-  "id": "cus_Dsm0jbfb5Vxhmv",
-  "invoice_prefix": "705151A",
+  "id": "cus_replaced000001",
+  "invoice_prefix": "REPLD01",
   "livemode": false,
   "metadata": {
     "realm_id": "1",
@@ -53,14 +53,14 @@
         "address_zip_check": "pass",
         "brand": "Visa",
         "country": "US",
-        "customer": "cus_Dsm0jbfb5Vxhmv",
+        "customer": "cus_replaced000001",
         "cvc_check": "pass",
         "dynamic_last4": null,
         "exp_month": 3,
         "exp_year": 2033,
-        "fingerprint": "6dAXT9VZvwro65EK",
+        "fingerprint": "REPLACED00000002",
         "funding": "credit",
-        "id": "card_1DR0SsGh0CmXqmnwLRYxxJTu",
+        "id": "card_replaced0000000000000002",
         "last4": "4242",
         "metadata": {},
         "name": "Ada Starr",
@@ -71,29 +71,30 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/customers/cus_Dsm0jbfb5Vxhmv/sources"
+    "url": "/v1/customers/cus_replaced000001/sources"
   },
   "subscriptions": {
     "data": [
       {
         "application_fee_percent": null,
         "billing": "charge_automatically",
-        "billing_cycle_anchor": 1540918396,
+        "billing_cycle_anchor": 1542020441,
         "cancel_at_period_end": false,
         "canceled_at": null,
-        "created": 1540918396,
-        "current_period_end": 1572454396,
-        "current_period_start": 1540918396,
-        "customer": "cus_Dsm0jbfb5Vxhmv",
+        "created": 1542020441,
+        "current_period_end": 1573556441,
+        "current_period_start": 1542020441,
+        "customer": "cus_replaced000001",
         "days_until_due": null,
+        "default_source": null,
         "discount": null,
         "ended_at": null,
-        "id": "sub_Dsm057t087gXIv",
+        "id": "sub_replaced000001",
         "items": {
           "data": [
             {
-              "created": 1540918396,
-              "id": "si_Dsm07fKQl9R4ep",
+              "created": 1542020441,
+              "id": "si_replaced000001",
               "metadata": {},
               "object": "subscription_item",
               "plan": {
@@ -118,13 +119,13 @@
                 "usage_type": "licensed"
               },
               "quantity": 8,
-              "subscription": "sub_Dsm057t087gXIv"
+              "subscription": "sub_replaced000001"
             }
           ],
           "has_more": false,
           "object": "list",
           "total_count": 1,
-          "url": "/v1/subscription_items?subscription=sub_Dsm057t087gXIv"
+          "url": "/v1/subscription_items?subscription=sub_replaced000001"
         },
         "livemode": false,
         "metadata": {},
@@ -151,7 +152,7 @@
           "usage_type": "licensed"
         },
         "quantity": 8,
-        "start": 1540918396,
+        "start": 1542020441,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,
@@ -161,7 +162,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/customers/cus_Dsm0jbfb5Vxhmv/subscriptions"
+    "url": "/v1/customers/cus_replaced000001/subscriptions"
   },
   "tax_info": null,
   "tax_info_verification": null

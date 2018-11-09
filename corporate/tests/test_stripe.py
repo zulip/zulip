@@ -34,6 +34,8 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 GENERATE_STRIPE_FIXTURES = False
 
+STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
+
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
 
@@ -95,8 +97,8 @@ def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str,
     # use test_* for the python test files
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
-    return "corporate/tests/stripe_fixtures/{}:{}.{}.json".format(
-        decorated_function_name, mocked_function_name[7:], call_count)
+    return "{}/{}:{}.{}.json".format(
+        STRIPE_FIXTURES_DIR, decorated_function_name, mocked_function_name[7:], call_count)
 
 def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
                                      mocked_function: CallableT) -> Callable[[Any, Any], Any]:  # nocoverage
@@ -133,6 +135,64 @@ def read_stripe_fixture(decorated_function_name: str,
         return stripe.util.convert_to_stripe_object(fixture)
     return _read_stripe_fixture
 
+def regex_to_sample(regex: str, category: str, number: int, pool: List[str]=[]) -> str:  # nocoverage
+    if category == "id":
+        prefix = regex[:regex.find("_") + 1]
+        postfix_length = int(regex[-3: -1])
+        number_length = postfix_length - len("replaced")
+        number_str = str(number).zfill(number_length)
+        return "{}replaced{}".format(prefix, number_str)
+
+    else:
+        key = regex[: regex.find(":")]
+        return '{}: "{}"'.format(key, pool[number])
+
+def normalize_fixtures(decorated_function: CallableT) -> None:  # nocoverage
+    decorated_function_name = decorated_function.__name__
+    if decorated_function_name[:5] == 'test_':
+        decorated_function_name = decorated_function_name[5:]
+
+    fixture_file_names = [f for f in os.listdir(STRIPE_FIXTURES_DIR) if f.startswith(decorated_function_name)]
+    id_regexes = ["sub_[A-Za-z0-9]{14}", "card_[A-Za-z0-9]{24}", "cus_[A-Za-z0-9]{14}", "si_[A-Za-z0-9]{14}",
+                  "sli_[A-Za-z0-9]{14}", "tok_[A-Za-z0-9]{24}", "req_[A-Za-z0-9]{14}"]
+
+    other_regexes = [
+        ('"invoice_prefix": "[A-Za-z0-9]{7}"', ["REPLD01", "REPLD02", "REPLD03", "REPLD04"]),
+        ('"fingerprint": "[A-Za-z0-9]{16}"', ["REPLACED00000001", "REPLACED00000002", "REPLACED00000003"]),
+        ('"number": "[A-Za-z0-9]{7}-[A-Za-z0-9]{4}"', ["REPLCED-0001", "REPLCED-0002", "REPLCED-0003"])
+    ]
+
+    regex_mapping = {}  # type: Dict[str, Dict[str, str]]
+    for regex in id_regexes:
+        regex_mapping[regex] = {}
+    for regex_pair in other_regexes:
+        regex_mapping[regex_pair[0]] = {}
+
+    for fixture_file_name in fixture_file_names:
+        fixture_file_path = "{}/{}".format(STRIPE_FIXTURES_DIR, fixture_file_name)
+        with open(fixture_file_path, "r+") as f:
+            file_content = f.read()
+
+        for regex in id_regexes:
+            for match in re.findall(regex, file_content):
+                if match not in regex_mapping[regex]:
+                    regex_mapping[regex][match] = regex_to_sample(regex, "id", len(regex_mapping[regex]) + 1)
+                file_content = file_content.replace(match, regex_mapping[regex][match])
+
+        for regex_pair in other_regexes:
+            regex = regex_pair[0]
+            normalized_value_pool = regex_pair[1]
+            for match in re.findall(regex, file_content):
+                if match not in regex_mapping[regex]:
+                    regex_mapping[regex][match] = regex_to_sample(regex, "other",
+                                                                  len(regex_mapping[regex]), normalized_value_pool)
+                file_content = file_content.replace(match, regex_mapping[regex][match])
+
+        file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
+
+        with open(fixture_file_path, "w") as f:
+            f.write(file_content)
+
 def mock_stripe(*mocked_function_names: str,
                 generate: Optional[bool]=None) -> Callable[[CallableT], Callable[..., Any]]:
     def _mock_stripe(decorated_function: CallableT) -> Callable[..., Any]:
@@ -151,7 +211,10 @@ def mock_stripe(*mocked_function_names: str,
 
         @wraps(decorated_function)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
-            return decorated_function(*args, **kwargs)
+            val = decorated_function(*args, **kwargs)
+            if generate_fixture:  # nocoverage
+                normalize_fixtures(decorated_function)
+            return val
         return wrapped
     return _mock_stripe
 
