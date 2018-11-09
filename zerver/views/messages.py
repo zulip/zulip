@@ -390,7 +390,7 @@ class NarrowBuilder:
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            column("rendered_content"),
                                            tsquery).label("content_matches"))
-        # We HTML-escape the subject in Postgres to avoid doing a server round-trip
+        # We HTML-escape the topic in Postgres to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            func.escape_html(topic_column_sa()),
                                            tsquery).label("topic_matches"))
