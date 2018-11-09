@@ -38,6 +38,7 @@ from zerver.lib.topic import (
     topic_match_sa,
     user_message_exists_for_topic,
     DB_TOPIC_NAME,
+    LEGACY_PREV_TOPIC,
     MATCH_TOPIC,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -1299,11 +1300,10 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
 
     for entry in message_history:
         entry['topic'] = prev_topic
-        if 'prev_subject' in entry:
-            # We replace use of 'subject' with 'topic' for downstream simplicity
-            prev_topic = entry['prev_subject']
+        if LEGACY_PREV_TOPIC in entry:
+            prev_topic = entry[LEGACY_PREV_TOPIC]
             entry['prev_topic'] = prev_topic
-            del entry['prev_subject']
+            del entry[LEGACY_PREV_TOPIC]
 
         entry['content'] = prev_content
         entry['rendered_content'] = prev_rendered_content
