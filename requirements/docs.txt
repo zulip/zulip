@@ -14,7 +14,7 @@ chardet==3.0.4            # via requests
 commonmark==0.5.4
 docutils==0.14
 idna==2.6                 # via requests
-imagesize==1.0.0
+imagesize==1.1.0
 jinja2==2.10              # via sphinx
 markupsafe==1.0           # via jinja2
 packaging==16.8           # via sphinx

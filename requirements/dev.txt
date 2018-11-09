@@ -79,7 +79,7 @@ hyperframe==3.2.0         # via h2, hyper
 hyperlink==17.3.1         # via twisted
 idna==2.6                 # via cryptography, requests
 ijson==2.3
-imagesize==1.0.0
+imagesize==1.1.0
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
