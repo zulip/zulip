@@ -136,11 +136,11 @@ you would like to send a response message:
 
 ## Slack-format webhook format
 
-This interface translates Zulip's outgoing webhook's request into
-the format that Slack expects.  Hence the outgoing webhook bot
-would be able to post data to URLs which support Slack-style
-webhook payloads.  Here's how we fill in the fields that a
-Slack-format webhook expects:
+This interface translates Zulip's outgoing webhook's request into the
+format that Slack's outgoing webhook interface sends.  As a result,
+one should be able to use this to interact with third-party
+integrations designed to work with Slack's outgoing webhook interface.
+Here's how we fill in the fields that a Slack-format webhook expects:
 
 <table class="table">
     <thead>
