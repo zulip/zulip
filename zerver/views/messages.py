@@ -378,7 +378,7 @@ class NarrowBuilder:
         query = query.column(match_positions_character(column("rendered_content"),
                                                        keywords).label("content_matches"))
         query = query.column(match_positions_character(func.escape_html(column("subject")),
-                                                       keywords).label("subject_matches"))
+                                                       keywords).label("topic_matches"))
         condition = column("search_pgroonga").op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
@@ -392,7 +392,7 @@ class NarrowBuilder:
         # We HTML-escape the subject in Postgres to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            func.escape_html(column("subject")),
-                                           tsquery).label("subject_matches"))
+                                           tsquery).label("topic_matches"))
 
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
@@ -462,9 +462,9 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     return result
 
 def get_search_fields(rendered_content: str, subject: str, content_matches: Iterable[Tuple[int, int]],
-                      subject_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
+                      topic_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
     return dict(match_content=highlight_string(rendered_content, content_matches),
-                match_subject=highlight_string(escape_html(subject), subject_matches))
+                match_subject=highlight_string(escape_html(subject), topic_matches))
 
 def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -832,11 +832,11 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if is_search:
         for row in rows:
             message_id = row[0]
-            (subject, rendered_content, content_matches, subject_matches) = row[-4:]
+            (subject, rendered_content, content_matches, topic_matches) = row[-4:]
 
             try:
                 search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
+                                                              content_matches, topic_matches)
             except UnicodeDecodeError as err:  # nocoverage
                 # No coverage for this block since it should be
                 # impossible, and we plan to remove it once we've
@@ -1509,9 +1509,9 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
 
         if 'content_matches' in row:
             content_matches = row['content_matches']
-            subject_matches = row['subject_matches']
+            topic_matches = row['topic_matches']
             search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                          content_matches, subject_matches)
+                                                          content_matches, topic_matches)
         else:
             search_fields[message_id] = dict(
                 match_content=rendered_content,
