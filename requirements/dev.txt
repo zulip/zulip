@@ -157,7 +157,7 @@ sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
 smmap==0.9.0
-snakeviz==0.4.2
+snakeviz==1.0.0
 snowballstemmer==1.2.1
 social-auth-app-django==2.1.0
 social-auth-core==1.5.0   # via social-auth-app-django
