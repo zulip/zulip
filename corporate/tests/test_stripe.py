@@ -34,6 +34,7 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 GENERATE_STRIPE_FIXTURES = False
 
+STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
 
@@ -95,8 +96,15 @@ def stripe_fixture_path(decorated_function_name: str, mocked_function_name: str,
     # use test_* for the python test files
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
-    return "corporate/tests/stripe_fixtures/{}:{}.{}.json".format(
-        decorated_function_name, mocked_function_name[7:], call_count)
+    return "{}/{}:{}.{}.json".format(
+        STRIPE_FIXTURES_DIR, decorated_function_name, mocked_function_name[7:], call_count)
+
+def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # nocoverage
+    decorated_function_name = decorated_function.__name__
+    if decorated_function_name[:5] == 'test_':
+        decorated_function_name = decorated_function_name[5:]
+    return sorted(['{}/{}'.format(STRIPE_FIXTURES_DIR, f) for f in os.listdir(STRIPE_FIXTURES_DIR)
+                   if f.startswith(decorated_function_name)])
 
 def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
                                      mocked_function: CallableT) -> Callable[[Any, Any], Any]:  # nocoverage
@@ -133,6 +141,37 @@ def read_stripe_fixture(decorated_function_name: str,
         return stripe.util.convert_to_stripe_object(fixture)
     return _read_stripe_fixture
 
+def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
+    # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
+    id_lengths = [
+        ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24)]
+    # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
+    pattern_translations = {
+        "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
+        for prefix, length in id_lengths
+    }
+    # We'll replace "invoice_prefix": "A35BC4Q" with something like "invoice_prefix": "NORMA01"
+    pattern_translations.update({
+        '"invoice_prefix": "[A-Za-z0-9]{7}"': '"invoice_prefix": "NORMA%02d"',
+        '"fingerprint": "[A-Za-z0-9]{16}"': '"fingerprint": "NORMALIZED%06d"',
+        '"number": "[A-Za-z0-9]{7}-[A-Za-z0-9]{4}"': '"number": "NORMALI-%04d"',
+    })
+
+    normalized_values = {pattern: {}
+                         for pattern in pattern_translations.keys()}  # type: Dict[str, Dict[str, str]]
+    for fixture_file in fixture_files_for_function(decorated_function):
+        with open(fixture_file, "r") as f:
+            file_content = f.read()
+        for pattern, translation in pattern_translations.items():
+            for match in re.findall(pattern, file_content):
+                if match not in normalized_values[pattern]:
+                    normalized_values[pattern][match] = translation % (len(normalized_values[pattern]) + 1,)
+                file_content = file_content.replace(match, normalized_values[pattern][match])
+        # Overwrite all IP addresses
+        file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
+        with open(fixture_file, "w") as f:
+            f.write(file_content)
+
 def mock_stripe(*mocked_function_names: str,
                 generate: Optional[bool]=None) -> Callable[[CallableT], Callable[..., Any]]:
     def _mock_stripe(decorated_function: CallableT) -> Callable[..., Any]:
@@ -151,7 +190,10 @@ def mock_stripe(*mocked_function_names: str,
 
         @wraps(decorated_function)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
-            return decorated_function(*args, **kwargs)
+            val = decorated_function(*args, **kwargs)
+            if generate_fixture:  # nocoverage
+                normalize_fixture_data(decorated_function)
+            return val
         return wrapped
     return _mock_stripe
 

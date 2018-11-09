@@ -1,22 +1,23 @@
 {
   "application_fee_percent": null,
   "billing": "charge_automatically",
-  "billing_cycle_anchor": 1541455622,
+  "billing_cycle_anchor": 1542089878,
   "cancel_at_period_end": false,
   "canceled_at": null,
-  "created": 1541455622,
-  "current_period_end": 1572991622,
-  "current_period_start": 1541455622,
-  "customer": "cus_Dv6QAe29ulQ1vp",
+  "created": 1542089878,
+  "current_period_end": 1573625878,
+  "current_period_start": 1542089878,
+  "customer": "cus_NORMALIZED0001",
   "days_until_due": null,
+  "default_source": null,
   "discount": null,
   "ended_at": null,
-  "id": "sub_Dv6QZdECBmtdRT",
+  "id": "sub_NORMALIZED0001",
   "items": {
     "data": [
       {
-        "created": 1541455623,
-        "id": "si_Dv6QDNnS3DrRBx",
+        "created": 1542089878,
+        "id": "si_NORMALIZED0001",
         "metadata": {},
         "object": "subscription_item",
         "plan": {
@@ -41,13 +42,13 @@
           "usage_type": "licensed"
         },
         "quantity": 8,
-        "subscription": "sub_Dv6QZdECBmtdRT"
+        "subscription": "sub_NORMALIZED0001"
       }
     ],
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/subscription_items?subscription=sub_Dv6QZdECBmtdRT"
+    "url": "/v1/subscription_items?subscription=sub_NORMALIZED0001"
   },
   "livemode": false,
   "metadata": {},
@@ -74,7 +75,7 @@
     "usage_type": "licensed"
   },
   "quantity": 8,
-  "start": 1541455622,
+  "start": 1542089878,
   "status": "active",
   "tax_percent": 0.0,
   "trial_end": null,

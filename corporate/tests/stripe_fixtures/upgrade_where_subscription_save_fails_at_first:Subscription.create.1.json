@@ -11,8 +11,8 @@
     "Connection": "keep-alive",
     "Content-Length": "241",
     "Content-Type": "application/json",
-    "Date": "Tue, 30 Oct 2018 16:53:13 GMT",
-    "Request-Id": "req_Tk1JhdtuCSSeAU",
+    "Date": "Tue, 13 Nov 2018 06:18:03 GMT",
+    "Request-Id": "req_NORMALIZED0001",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=31556926; includeSubDomains; preload",
     "Stripe-Version": "2018-08-23"
@@ -30,5 +30,5 @@
     }
   },
   "param": "",
-  "request_id": "req_Tk1JhdtuCSSeAU"
+  "request_id": "req_NORMALIZED0001"
 }
