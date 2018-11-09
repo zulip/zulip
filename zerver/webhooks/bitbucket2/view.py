@@ -20,7 +20,7 @@ from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
     get_remove_branch_event_message
 from zerver.models import UserProfile
 
-BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
+BITBUCKET_TOPIC_TEMPLATE = '{repository_name}'
 USER_PART = 'User {display_name}(login: {username})'
 
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
@@ -99,7 +99,7 @@ def get_push_subjects(payload: Dict[str, Any]) -> List[str]:
 
 def get_subject(payload: Dict[str, Any]) -> str:
     assert(payload['repository'] is not None)
-    return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
+    return BITBUCKET_TOPIC_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
 
 def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
     if type.startswith('pull_request'):

@@ -10,7 +10,7 @@ from zerver.models import UserProfile
 
 import ujson
 
-APPVEYOR_SUBJECT_TEMPLATE = '{project_name}'
+APPVEYOR_TOPIC_TEMPLATE = '{project_name}'
 APPVEYOR_MESSAGE_TEMPLATE = ('[Build {project_name} {build_version} {status}]({build_url})\n'
                              'Commit [{commit_id}]({commit_url}) by {committer_name}'
                              ' on {commit_date}: {commit_message}\n'
@@ -30,7 +30,7 @@ def api_appveyor_webhook(request: HttpRequest, user_profile: UserProfile,
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     event_data = payload['eventData']
-    return APPVEYOR_SUBJECT_TEMPLATE.format(project_name=event_data['projectName'])
+    return APPVEYOR_TOPIC_TEMPLATE.format(project_name=event_data['projectName'])
 
 def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     event_data = payload['eventData']

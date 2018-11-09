@@ -14,12 +14,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import Client, UserProfile
 
-SUBJECT_TEMPLATE = "{service_url}"
+TOPIC_TEMPLATE = "{service_url}"
 
 def send_message_for_event(request: HttpRequest, user_profile: UserProfile,
                            event: Dict[str, Any]) -> None:
     event_type = get_event_type(event)
-    subject = SUBJECT_TEMPLATE.format(service_url=event['check']['url'])
+    subject = TOPIC_TEMPLATE.format(service_url=event['check']['url'])
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
     check_send_webhook_message(request, user_profile, subject, body)
 
