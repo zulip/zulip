@@ -1,7 +1,7 @@
 from typing import Optional, Any, Dict, List, Tuple
 from collections import defaultdict
-SUBJECT_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
-SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
+TOPIC_WITH_BRANCH_TEMPLATE = '{repo} / {branch}'
+TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = '{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 

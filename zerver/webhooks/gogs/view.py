@@ -10,8 +10,8 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header, UnexpectedWebhookEventType
-from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
     get_pull_request_event_message, get_push_commits_event_message
 from zerver.models import UserProfile
 
@@ -76,13 +76,13 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
         if branches is not None and branches.find(branch) == -1:
             return json_success()
         body = format_push_event(payload)
-        topic = SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
             branch=branch
         )
     elif event == 'create':
         body = format_new_branch_event(payload)
-        topic = SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
             branch=payload['ref']
         )
@@ -91,7 +91,7 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
             payload,
             include_title=user_specified_topic is not None
         )
-        topic = SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type='PR',
             id=payload['pull_request']['id'],

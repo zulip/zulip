@@ -11,8 +11,8 @@ from zerver.decorator import authenticated_api_view, \
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
-from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
+from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, \
+    TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
     get_issue_event_message, get_pull_request_event_message, \
     get_push_commits_event_message, get_remove_branch_event_message
@@ -103,7 +103,7 @@ def get_pull_request_or_issue_assignee(object_payload: Mapping[str, Any]) -> Opt
 def get_pull_request_or_issue_subject(repository: Mapping[str, Any],
                                       payload_object: Mapping[str, Any],
                                       type: str) -> str:
-    return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+    return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=repository['name'],
         type=type,
         id=payload_object['number'],
@@ -292,7 +292,7 @@ def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
                               created: Optional[str]=None, deleted: Optional[bool]=False
                               ) -> Tuple[str, str]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
-    subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
+    subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     if re.match(r'^0+$', after):
         content = get_remove_branch_event_message(pusher, short_ref)
