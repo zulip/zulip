@@ -34,6 +34,7 @@ from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
+    topic_column_sa,
     topic_match_sa,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -377,7 +378,7 @@ class NarrowBuilder:
         keywords = query_extract_keywords(operand_escaped)
         query = query.column(match_positions_character(column("rendered_content"),
                                                        keywords).label("content_matches"))
-        query = query.column(match_positions_character(func.escape_html(column("subject")),
+        query = query.column(match_positions_character(func.escape_html(topic_column_sa()),
                                                        keywords).label("topic_matches"))
         condition = column("search_pgroonga").op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
@@ -391,7 +392,7 @@ class NarrowBuilder:
                                            tsquery).label("content_matches"))
         # We HTML-escape the subject in Postgres to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
-                                           func.escape_html(column("subject")),
+                                           func.escape_html(topic_column_sa()),
                                            tsquery).label("topic_matches"))
 
         # Do quoted string matching.  We really want phrase
@@ -403,7 +404,7 @@ class NarrowBuilder:
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
                 cond = or_(column("content").ilike(term),
-                           column("subject").ilike(term))
+                           topic_column_sa().ilike(term))
                 query = query.where(maybe_negate(cond))
 
         cond = column("search_tsvector").op("@@")(tsquery)
@@ -623,7 +624,7 @@ def add_narrow_conditions(user_profile: UserProfile,
 
     if search_operands:
         is_search = True
-        query = query.column(column("subject")).column(column("rendered_content"))
+        query = query.column(topic_column_sa()).column(column("rendered_content"))
         search_term = dict(
             operator='search',
             operand=' '.join(search_operands)
@@ -1486,7 +1487,7 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = select([column("message_id"), column("subject"), column("rendered_content")],
+    query = select([column("message_id"), topic_column_sa(), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
                    join(table("zerver_usermessage"), table("zerver_message"),
