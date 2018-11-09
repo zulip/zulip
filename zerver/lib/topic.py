@@ -63,6 +63,14 @@ def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
     return query.filter(message__subject__iexact=topic_name)
 
+def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
+    # It might be the case that we really want subject__contains
+    # here.  This code is used for the archive.
+    return Message.objects.filter(
+        recipient__type_id=stream_id,
+        subject=topic_name,
+    )
+
 def save_message_for_edit_use_case(message: Message) -> None:
     message.save(update_fields=["subject", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
