@@ -44,7 +44,7 @@ snakeviz==0.4.2
 transifex-client==0.12.5
 
 # Needed for creating digital ocean droplets
-python-digitalocean==1.13.2
+python-digitalocean==1.14.0
 
 # Needed for updating the locked pip dependencies
 pip-tools==2.0.2
