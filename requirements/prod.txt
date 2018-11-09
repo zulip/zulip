@@ -108,7 +108,7 @@ redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==1.0.0
 requests[security]==2.20.0  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
-rsa==3.4.2
+rsa==4.0
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
 smmap==0.9.0
