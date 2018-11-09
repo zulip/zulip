@@ -27,7 +27,7 @@ babel==2.5.3
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-beautifulsoup4==4.6.0
+beautifulsoup4==4.6.3
 boto3==1.7.11             # via moto
 boto==2.49.0
 botocore==1.10.11         # via boto3, moto, s3transfer
