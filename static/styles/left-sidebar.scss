@@ -3,12 +3,9 @@
     -moz-osx-font-smoothing: grayscale;
 
     font-size: 0.89rem;
+    padding-left: 5px;
 }
 
-#left-sidebar #user-list,
-#left-sidebar #group-pm-list {
-    padding-left: 10px;
-}
 
 #streams_inline_cog,
 #streams_filter_icon {
@@ -61,6 +58,7 @@
 
 #stream_filters li {
     padding: 1px 0px;
+    padding-left: 5px;
 }
 
 #stream_filters li ul {
@@ -132,7 +130,7 @@ li.active-sub-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
+    padding: 1px 5px;
 }
 
 .left-sidebar li {
@@ -279,8 +277,6 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block {
     padding: 0px;
-    margin-right: 25px;
-    margin-left: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -411,7 +407,7 @@ li.expanded_private_message a {
 
 #streams_header {
     margin-right: 0px;
-    padding-left: 10px;
+    padding-left: 5px;
     cursor: pointer;
 }
 
