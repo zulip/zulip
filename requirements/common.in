@@ -153,7 +153,7 @@ django-webpack-loader==0.6.0
 # Needed for iOS push notifications
 apns2==0.4.1
 
-python-twitter==3.4.2
+python-twitter==3.5
 
 # To parse po files
 polib==1.1.0

@@ -137,7 +137,7 @@ python-dateutil==2.6.1
 python-digitalocean==1.14.0
 python-gcm==0.4
 python-ldap==3.1.0        # via django-auth-ldap, pyldap
-python-twitter==3.4.2
+python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.5
 pyyaml==3.12              # via pyaml, yamole
