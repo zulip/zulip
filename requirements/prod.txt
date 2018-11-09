@@ -34,7 +34,7 @@ cssselect==1.0.1          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
-disposable-email-domains==0.0.36
+disposable-email-domains==0.0.37
 django-auth-ldap==1.6.0
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.4.1.1       # via django-two-factor-auth
