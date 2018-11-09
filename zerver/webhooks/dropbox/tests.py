@@ -9,10 +9,10 @@ class DropboxHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'dropbox'
 
     def test_file_updated(self) -> None:
-        expected_subject = u"Dropbox"
+        expected_topic = u"Dropbox"
         expected_message = u"File has been updated on Dropbox!"
 
-        self.send_and_test_stream_message('file_updated', expected_subject, expected_message,
+        self.send_and_test_stream_message('file_updated', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:

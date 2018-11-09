@@ -53,12 +53,12 @@ class GithubV1HookTests(WebhookTestCase):
         return data
 
     def basic_test(self, fixture_name: str, stream_name: str,
-                   expected_subject: str, expected_content: str,
+                   expected_topic: str, expected_content: str,
                    send_stream: bool=False, branches: Optional[str]=None) -> None:
         self.STREAM_NAME = stream_name
         self.SEND_STREAM = send_stream
         self.BRANCHES = branches
-        self.send_and_test_stream_message(fixture_name, expected_subject, expected_content, content_type=None)
+        self.send_and_test_stream_message(fixture_name, expected_topic, expected_content, content_type=None)
 
     def test_user_specified_branches(self) -> None:
         self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
@@ -75,11 +75,11 @@ class GithubV1HookTests(WebhookTestCase):
 
     def test_push_multiple_commits(self) -> None:
         commit_info = "* Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))\n"
-        expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 50 commits to branch master.\n\n{}[and {} more commit(s)]".format(
+        expected_topic = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 50 commits to branch master.\n\n{}[and {} more commit(s)]".format(
             commit_info * COMMITS_LIMIT,
             50 - COMMITS_LIMIT,
         )
-        self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_subject)
+        self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_topic)
 
     def test_issues_opened(self) -> None:
         self.basic_test('issues_opened', 'issues',
@@ -178,12 +178,12 @@ class GithubV2HookTests(WebhookTestCase):
         return data
 
     def basic_test(self, fixture_name: str, stream_name: str,
-                   expected_subject: str, expected_content: str,
+                   expected_topic: str, expected_content: str,
                    send_stream: bool=False, branches: Optional[str]=None) -> None:
         self.STREAM_NAME = stream_name
         self.SEND_STREAM = send_stream
         self.BRANCHES = branches
-        self.send_and_test_stream_message(fixture_name, expected_subject, expected_content, content_type=None)
+        self.send_and_test_stream_message(fixture_name, expected_topic, expected_content, content_type=None)
 
     def test_user_specified_branches(self) -> None:
         self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
@@ -197,21 +197,21 @@ class GithubV2HookTests(WebhookTestCase):
 
     def test_push_multiple_commits(self) -> None:
         commit_info = "* Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))\n"
-        expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 50 commits to branch master.\n\n{}[and {} more commit(s)]".format(
+        expected_topic = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 50 commits to branch master.\n\n{}[and {} more commit(s)]".format(
             commit_info * COMMITS_LIMIT,
             50 - COMMITS_LIMIT,
         )
-        self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_subject)
+        self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_topic)
 
     def test_push_multiple_committers(self) -> None:
         commit_info = "* Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))\n"
-        expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 6 commits to branch master. Commits by tomasz (3), baxthehacker (2) and zbenjamin (1).\n\n{}* Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))".format(commit_info * 5)
-        self.basic_test('push_multiple_committers', 'commits', 'zulip-test / master', expected_subject)
+        expected_topic = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 6 commits to branch master. Commits by tomasz (3), baxthehacker (2) and zbenjamin (1).\n\n{}* Add baz ([48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e))".format(commit_info * 5)
+        self.basic_test('push_multiple_committers', 'commits', 'zulip-test / master', expected_topic)
 
     def test_push_multiple_committers_with_others(self) -> None:
         commit_info = "* Final edit to baz, I swear ([b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8))\n"
-        expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 10 commits to branch master. Commits by baxthehacker (4), James (3), Tomasz (2) and others (1).\n\n{}* Final edit to baz, I swear ([b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8))".format(commit_info * 9)
-        self.basic_test('push_multiple_committers_with_others', 'commits', 'zulip-test / master', expected_subject)
+        expected_topic = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 10 commits to branch master. Commits by baxthehacker (4), James (3), Tomasz (2) and others (1).\n\n{}* Final edit to baz, I swear ([b954491](https://github.com/zbenjamin/zulip-test/commit/b95449196980507f08209bdfdc4f1d611689b7a8))".format(commit_info * 9)
+        self.basic_test('push_multiple_committers_with_others', 'commits', 'zulip-test / master', expected_topic)
 
     def test_legacy_hook(self) -> None:
         self.basic_test('push', 'commits', 'zulip-test / master', self.push_content)

@@ -7,21 +7,21 @@ class CircleCiHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'circleci'
 
     def test_circleci_build_in_success_status(self) -> None:
-        expected_subject = u"RepoName"
+        expected_topic = u"RepoName"
         expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch succeeded."
-        self.send_and_test_stream_message('build_passed', expected_subject, expected_message)
+        self.send_and_test_stream_message('build_passed', expected_topic, expected_message)
 
     def test_circleci_build_in_failed_status(self) -> None:
-        expected_subject = u"RepoName"
+        expected_topic = u"RepoName"
         expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch failed."
-        self.send_and_test_stream_message('build_failed', expected_subject, expected_message)
+        self.send_and_test_stream_message('build_failed', expected_topic, expected_message)
 
     def test_circleci_build_in_failed_status_when_previous_build_failed_too(self) -> None:
-        expected_subject = u"RepoName"
+        expected_topic = u"RepoName"
         expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch is still failing."
-        self.send_and_test_stream_message('build_failed_when_previous_build_failed', expected_subject, expected_message)
+        self.send_and_test_stream_message('build_failed_when_previous_build_failed', expected_topic, expected_message)
 
     def test_circleci_build_in_success_status_when_previous_build_failed_too(self) -> None:
-        expected_subject = u"RepoName"
+        expected_topic = u"RepoName"
         expected_message = u"[Build](https://circleci.com/gh/username/project/build_number) triggered by username on master branch fixed."
-        self.send_and_test_stream_message('build_passed_when_previous_build_failed', expected_subject, expected_message)
+        self.send_and_test_stream_message('build_passed_when_previous_build_failed', expected_topic, expected_message)
