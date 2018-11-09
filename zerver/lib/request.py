@@ -14,7 +14,19 @@ from zerver.lib.exceptions import JsonableError, ErrorCode
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Type
+from typing import Any, Callable, List, Optional, Type
+
+class RequestConfusingParmsError(JsonableError):
+    code = ErrorCode.REQUEST_CONFUSING_VAR
+    data_fields = ['var_name1', 'var_name2']
+
+    def __init__(self, var_name1: str, var_name2: str) -> None:
+        self.var_name1 = var_name1  # type: str
+        self.var_name2 = var_name2  # type: str
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Can't decide between '{var_name1}' and '{var_name2}' arguments")
 
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
@@ -51,7 +63,8 @@ class REQ:
     def __init__(self, whence: str=None, *, converter: Callable[[Any], Any]=None,
                  default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
                  str_validator: Callable[[Any], Any]=None,
-                 argument_type: str=None, type: Type=None) -> None:
+                 argument_type: str=None, type: Type=None,
+                 aliases: Optional[List[str]]=None) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
         same name as the parameter.
@@ -75,6 +88,8 @@ class REQ:
         type: a hint to typing (using mypy) what the type of this parameter is.
         Currently only typically necessary if default=None and the type cannot
         be inferred in another way (eg. via converter).
+
+        aliases: alternate names for the POST var
         """
 
         self.post_var_name = whence
@@ -84,6 +99,7 @@ class REQ:
         self.str_validator = str_validator
         self.default = default
         self.argument_type = argument_type
+        self.aliases = aliases
 
         if converter and (validator or str_validator):
             # Not user-facing, so shouldn't be tagged for translation
@@ -146,14 +162,30 @@ def has_request_variables(view_func):
                 # This is a view bug, not a user error, and thus should throw a 500.
                 raise Exception(_("Invalid argument type"))
 
+            post_var_names = [param.post_var_name]
+            if param.aliases:
+                post_var_names += param.aliases
+
             default_assigned = False
-            try:
-                query_params = request.GET.copy()
-                query_params.update(request.POST)
-                val = query_params[param.post_var_name]
-            except KeyError:
+
+            post_var_name = None  # type: Optional[str]
+
+            query_params = request.GET.copy()
+            query_params.update(request.POST)
+
+            for req_var in post_var_names:
+                try:
+                    val = query_params[req_var]
+                except KeyError:
+                    continue
+                if post_var_name is not None:
+                    raise RequestConfusingParmsError(post_var_name, req_var)
+                post_var_name = req_var
+
+            if post_var_name is None:
+                post_var_name = param.post_var_name
                 if param.default is REQ.NotSpecified:
-                    raise RequestVariableMissingError(param.post_var_name)
+                    raise RequestVariableMissingError(post_var_name)
                 val = param.default
                 default_assigned = True
 
@@ -163,22 +195,22 @@ def has_request_variables(view_func):
                 except JsonableError:
                     raise
                 except Exception:
-                    raise RequestVariableConversionError(param.post_var_name, val)
+                    raise RequestVariableConversionError(post_var_name, val)
 
             # Validators are like converters, but they don't handle JSON parsing; we do.
             if param.validator is not None and not default_assigned:
                 try:
                     val = ujson.loads(val)
                 except Exception:
-                    raise JsonableError(_('Argument "%s" is not valid JSON.') % (param.post_var_name,))
+                    raise JsonableError(_('Argument "%s" is not valid JSON.') % (post_var_name,))
 
-                error = param.validator(param.post_var_name, val)
+                error = param.validator(post_var_name, val)
                 if error:
                     raise JsonableError(error)
 
             # str_validators is like validator, but for direct strings (no JSON parsing).
             if param.str_validator is not None and not default_assigned:
-                error = param.str_validator(param.post_var_name, val)
+                error = param.str_validator(post_var_name, val)
                 if error:
                     raise JsonableError(error)
 

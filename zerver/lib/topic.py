@@ -42,7 +42,8 @@ def REQ_topic() -> Optional[str]:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
     return REQ(
-        whence='subject',
+        whence='topic',
+        aliases=['subject'],
         converter=lambda x: x.strip(),
         default=None,
     )  # type: ignore # see comment above
