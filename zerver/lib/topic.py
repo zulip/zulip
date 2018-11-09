@@ -10,6 +10,7 @@ from sqlalchemy.sql import (
     func,
 )
 
+from zerver.lib.request import REQ
 from zerver.models import (
     Message,
     Recipient,
@@ -17,7 +18,7 @@ from zerver.models import (
     UserProfile,
 )
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -35,6 +36,16 @@ LEGACY_PREV_TOPIC = "prev_subject"
 # zerver/lib/message.py, and it's not user facing.
 DB_TOPIC_NAME = "subject"
 MESSAGE__TOPIC = 'message__subject'
+
+
+def REQ_topic() -> Optional[str]:
+    # REQ handlers really return a REQ, but we
+    # lie to make the rest of the type matching work.
+    return REQ(
+        whence='subject',
+        converter=lambda x: x.strip(),
+        default=None,
+    )  # type: ignore # see comment above
 
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
