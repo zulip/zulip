@@ -16,7 +16,7 @@ git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/python-zulip-api.git@0.5.5#egg=zulip==0.5.5_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@0.5.5#egg=zulip_bots==0.5.5+git&subdirectory=zulip_bots
 apns2==0.4.1
-argon2-cffi==18.1.0
+argon2-cffi==18.3.0
 asn1crypto==0.23.0        # via cryptography
 babel==2.5.1              # via django-phonenumber-field
 backcall==0.1.0           # via ipython
