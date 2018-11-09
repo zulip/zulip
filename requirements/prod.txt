@@ -22,7 +22,7 @@ babel==2.5.1              # via django-phonenumber-field
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-beautifulsoup4==4.6.0
+beautifulsoup4==4.6.3
 boto==2.49.0
 cachetools==2.1.0         # via google-auth
 cchardet==2.1.1
