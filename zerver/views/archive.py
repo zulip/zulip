@@ -9,7 +9,10 @@ from zerver.models import Message, UserProfile, get_stream_recipient
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import get_topic_history_for_web_public_stream
+from zerver.lib.topic import (
+    get_topic_history_for_web_public_stream,
+    messages_for_topic,
+)
 from zerver.lib.exceptions import JsonableError
 
 def archive(request: HttpRequest,
@@ -38,8 +41,13 @@ def archive(request: HttpRequest,
     if not stream.is_web_public:
         return get_response([], False, '')
 
-    all_messages = list(Message.objects.select_related(
-        'sender').filter(recipient__type_id=stream_id, subject=topic_name).order_by('pub_date'))
+    all_messages = list(
+        messages_for_topic(
+            stream_id=stream_id,
+            topic_name=topic_name,
+        ).select_related('sender').order_by('pub_date')
+    )
+
     if not all_messages:
         return get_response([], True, stream.name)
 
