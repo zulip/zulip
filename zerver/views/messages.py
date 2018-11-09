@@ -36,6 +36,7 @@ from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import (
     topic_column_sa,
     topic_match_sa,
+    user_message_exists_for_topic,
     DB_TOPIC_NAME,
     MATCH_TOPIC,
 )
@@ -1061,9 +1062,12 @@ def mark_topic_as_read(request: HttpRequest,
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
 
     if topic_name:
-        topic_exists = UserMessage.objects.filter(user_profile=user_profile,
-                                                  message__recipient=recipient,
-                                                  message__subject__iexact=topic_name).exists()
+        topic_exists = user_message_exists_for_topic(
+            user_profile=user_profile,
+            recipient=recipient,
+            topic_name=topic_name,
+        )
+
         if not topic_exists:
             raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
 
