@@ -40,6 +40,7 @@ from zerver.lib.topic import (
     DB_TOPIC_NAME,
     LEGACY_PREV_TOPIC,
     MATCH_TOPIC,
+    REQ_topic,
 )
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
@@ -1207,8 +1208,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
                          message_to: List[str]=REQ('to', converter=extract_recipients, default=[]),
                          forged: bool=REQ(default=False),
-                         topic_name: Optional[str]=REQ('subject',
-                                                       converter=lambda x: x.strip(), default=None),
+                         topic_name: Optional[str]=REQ_topic(),
                          message_content: str=REQ('content'),
                          widget_content: Optional[str]=REQ(default=None),
                          realm_str: Optional[str]=REQ('realm_str', default=None),
