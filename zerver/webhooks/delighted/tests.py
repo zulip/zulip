@@ -8,25 +8,25 @@ class DelightedHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'delighted'
 
     def test_feedback_message_promoter(self) -> None:
-        expected_subject = "Survey Response"
+        expected_topic = "Survey Response"
         expected_message = ("Kudos! You have a new promoter.\n"
                             ">Score of 9/10 from charlie_gravis@example.com"
                             "\n>Your service is fast and flawless!")
 
         self.send_and_test_stream_message('survey_response_updated_promoter',
-                                          expected_subject,
+                                          expected_topic,
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_feedback_message_non_promoter(self) -> None:
-        expected_subject = "Survey Response"
+        expected_topic = "Survey Response"
         expected_message = ("Great! You have new feedback.\n"
                             ">Score of 5/10 from paul_gravis@example.com"
                             "\n>Your service is slow, but nearly flawless! "
                             "Keep up the good work!")
 
         self.send_and_test_stream_message('survey_response_updated_non_promoter',
-                                          expected_subject,
+                                          expected_topic,
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 

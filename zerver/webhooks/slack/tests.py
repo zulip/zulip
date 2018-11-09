@@ -8,18 +8,18 @@ class SlackWebhookTests(WebhookTestCase):
 
     def test_slack_channel_to_topic(self) -> None:
 
-        expected_subject = u"channel: general"
+        expected_topic = u"channel: general"
         expected_message = u"**slack_user**: `test\n`"
-        self.send_and_test_stream_message('message_info', expected_subject, expected_message,
+        self.send_and_test_stream_message('message_info', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_slack_channel_to_stream(self) -> None:
 
         self.STREAM_NAME = 'general'
         self.url = "{}{}".format(self.url, "&channels_map_to_topics=0")
-        expected_subject = u"Message from Slack"
+        expected_topic = u"Message from Slack"
         expected_message = u"**slack_user**: `test\n`"
-        self.send_and_test_stream_message('message_info', expected_subject, expected_message,
+        self.send_and_test_stream_message('message_info', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_missing_data_user_name(self) -> None:

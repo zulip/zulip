@@ -7,10 +7,10 @@ class SentryHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'sentry'
 
     def test_error_issue_message(self) -> None:
-        expected_subject = u"zulip"
+        expected_topic = u"zulip"
         expected_message = u"New ERROR [issue](https://sentry.io/zulip/zulip/issues/156699934/): This is an example python exception."
         self.send_and_test_stream_message(
             'exception_message',
-            expected_subject,
+            expected_topic,
             expected_message
         )

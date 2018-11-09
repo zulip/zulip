@@ -24,8 +24,8 @@ class ZenDeskHookTests(WebhookTestCase):
             'stream': self.STREAM_NAME,
         }
 
-    def do_test(self, expected_subject: Optional[str]=None, expected_message: Optional[str]=None) -> None:
-        self.api_stream_message(self.TEST_USER_EMAIL, "", expected_subject, expected_message,
+    def do_test(self, expected_topic: Optional[str]=None, expected_message: Optional[str]=None) -> None:
+        self.api_stream_message(self.TEST_USER_EMAIL, "", expected_topic, expected_message,
                                 content_type=None)
         self.TICKET_TITLE = self.DEFAULT_TICKET_TITLE
         self.TICKET_ID = self.DEFAULT_TICKET_ID
@@ -34,12 +34,12 @@ class ZenDeskHookTests(WebhookTestCase):
     def test_subject(self) -> None:
         self.TICKET_ID = 4
         self.TICKET_TITLE = "Test ticket"
-        self.do_test(expected_subject='#4: Test ticket')
+        self.do_test(expected_topic='#4: Test ticket')
 
     def test_long_subject(self) -> None:
         self.TICKET_ID = 4
         self.TICKET_TITLE = "Test ticket" + '!' * 80
-        self.do_test(expected_subject='#4: Test ticket' + '!' * 42 + '...')
+        self.do_test(expected_topic='#4: Test ticket' + '!' * 42 + '...')
 
     def test_content(self) -> None:
         self.MESSAGE = 'New comment:\n> It is better\n* here'

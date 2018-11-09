@@ -18,8 +18,8 @@ class TeamcityHookTests(WebhookTestCase):
 
     def test_teamcity_success_branch(self) -> None:
         expected_message = u"Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
-        expected_subject = u"Project :: Compile (MyBranch)"
-        self.send_and_test_stream_message('success_branch', expected_subject, expected_message)
+        expected_topic = u"Project :: Compile (MyBranch)"
+        self.send_and_test_stream_message('success_branch', expected_topic, expected_message)
 
     def test_teamcity_broken(self) -> None:
         expected_message = u"Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
