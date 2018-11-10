@@ -74,15 +74,7 @@ def get_line_info_from_file(fn: str) -> List[LineTup]:
         line_tups.append(tup)
     return line_tups
 
-def custom_check_file(fn: str,
-                      identifier: str,
-                      rules: RuleList,
-                      color: Optional[Iterable[str]],
-                      max_length: Optional[int]=None) -> bool:
-    failed = False
-
-    line_tups = get_line_info_from_file(fn=fn)
-
+def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
     rules_to_apply = []
     for rule in rules:
         excluded = False
@@ -100,6 +92,19 @@ def custom_check_file(fn: str,
             if not found:
                 continue
         rules_to_apply.append(rule)
+
+    return rules_to_apply
+
+def custom_check_file(fn: str,
+                      identifier: str,
+                      rules: RuleList,
+                      color: Optional[Iterable[str]],
+                      max_length: Optional[int]=None) -> bool:
+    failed = False
+
+    line_tups = get_line_info_from_file(fn=fn)
+
+    rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=rules)
 
     for rule in rules_to_apply:
         exclude_lines = {
