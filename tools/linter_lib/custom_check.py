@@ -62,21 +62,18 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
-def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
-    # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
+def custom_check_file(fn: str,
+                      identifier: str,
+                      rules: RuleList,
+                      color: Optional[Iterable[str]],
+                      max_length: Optional[int]=None) -> bool:
     failed = False
 
     line_tups = []
     for i, line in enumerate(open(fn)):
         line_newline_stripped = line.strip('\n')
         line_fully_stripped = line_newline_stripped.strip()
-        skip = False
-        for skip_rule in skip_rules or []:
-            if re.match(skip_rule, line):
-                skip = True
         if line_fully_stripped.endswith('  # nolint'):
-            continue
-        if skip:
             continue
         tup = (i, line, line_newline_stripped, line_fully_stripped)
         line_tups.append(tup)
