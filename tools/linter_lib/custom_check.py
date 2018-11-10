@@ -113,7 +113,7 @@ def custom_check_file(fn: str,
             if exclude_fn == fn
         }
 
-        pattern = rule['pattern']
+        pattern = re.compile(rule['pattern'])
         for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
             if line_fully_stripped in exclude_lines:
                 exclude_lines.remove(line_fully_stripped)
@@ -125,7 +125,7 @@ def custom_check_file(fn: str,
                         line_to_check = line_newline_stripped
                     else:
                         raise Exception("Invalid strip rule")
-                if re.search(pattern, line_to_check):
+                if pattern.search(line_to_check):
                     if rule.get("exclude_pattern"):
                         if re.search(rule['exclude_pattern'], line_to_check):
                             continue
