@@ -13,6 +13,7 @@ from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
     is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
 from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.topic import get_topic_from_message_info
 
 import configparser
 
@@ -75,7 +76,7 @@ class EmbeddedBotHandler:
 
         if message['type'] == 'stream':
             internal_send_stream_message(self.user_profile.realm, self.user_profile, message['to'],
-                                         message['subject'], message['content'])
+                                         message['topic'], message['content'])
             return
 
         assert message['type'] == 'private'
@@ -103,7 +104,7 @@ class EmbeddedBotHandler:
             self.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
-                subject=message['subject'],
+                topic=get_topic_from_message_info(message),
                 content=response,
                 sender_email=message['sender_email'],
             ))

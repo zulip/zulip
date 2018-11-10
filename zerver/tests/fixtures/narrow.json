@@ -36,7 +36,14 @@
             {
                 "message":{
                     "type":"stream",
-                    "subject":"bark"
+                    "subject":"BarK"
+                },
+                "flags":null
+            },
+            {
+                "message":{
+                    "type":"stream",
+                    "topic":"bark"
                 },
                 "flags":null
             }
@@ -52,6 +59,13 @@
                 "message":{
                     "type":"stream",
                     "subject":"play with tail"
+                },
+                "flags":null
+            },
+            {
+                "message":{
+                    "type":"stream",
+                    "topic":"play with tail"
                 },
                 "flags":null
             }

@@ -36,6 +36,25 @@ LEGACY_PREV_TOPIC = "prev_subject"
 # database, but it's the JSON field.
 EXPORT_TOPIC_NAME = "subject"
 
+'''
+The following functions are for user-facing APIs
+where we'll want to support "subject" for a while.
+'''
+
+def get_topic_from_message_info(message_info: Dict[str, Any]) -> str:
+    '''
+    Use this where you are getting dicts that are based off of messages
+    that may come from the outside world, especially from third party
+    APIs and bots.
+
+    We prefer 'topic' to 'subject' here.  We expect at least one field
+    to be present (or the caller must know how to handle KeyError).
+    '''
+    if 'topic' in message_info:
+        return message_info['topic']
+
+    return message_info['subject']
+
 def REQ_topic() -> Optional[str]:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
