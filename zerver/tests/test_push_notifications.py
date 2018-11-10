@@ -307,15 +307,18 @@ class PushNotificationTest(BouncerTestCase):
             type=type,
         )
 
-        return Message.objects.create(
+        message = Message(
             sender=self.sender,
             recipient=recipient,
-            subject='Test Message',
             content='This is test content',
             rendered_content='This is test content',
             pub_date=now(),
             sending_client=self.sending_client,
         )
+        message.set_topic_name('Test Topic')
+        message.save()
+
+        return message
 
     @contextmanager
     def mock_apns(self) -> mock.MagicMock:
@@ -809,7 +812,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
-                'title': '#Verona > Test Message',
+                'title': '#Verona > Test Topic',
                 'subtitle': 'King Hamlet:',
                 'body': message.content,
             },
@@ -841,7 +844,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = apn.get_apns_payload(user_profile, message)
         expected = {
             'alert': {
-                'title': '#Verona > Test Message',
+                'title': '#Verona > Test Topic',
                 'subtitle': 'King Hamlet mentioned you:',
                 'body': message.content,
             },
@@ -976,7 +979,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
             "recipient_type": "stream",
-            "topic": "Test Message",
+            "topic": "Test Topic",
             "stream": "Denmark"
         }
         self.assertDictEqual(payload, expected)
@@ -1004,7 +1007,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
             "recipient_type": "stream",
-            "topic": "Test Message",
+            "topic": "Test Topic",
             "stream": "Denmark"
         }
         self.assertDictEqual(payload, expected)
