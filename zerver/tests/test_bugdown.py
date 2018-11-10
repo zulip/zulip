@@ -730,17 +730,17 @@ class BugdownTest(ZulipTestCase):
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
-        msg = Message(sender=self.example_user('othello'),
-                      subject="#444")
+        msg = Message(sender=self.example_user('othello'))
+        msg.set_topic_name("#444")
 
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, message_realm=realm, message=msg)
-        converted_subject = bugdown.topic_links(realm.id, msg.subject)
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
-        self.assertEqual(converted_subject, [u'https://trac.zulip.net/ticket/444'])
+        self.assertEqual(converted_topic, [u'https://trac.zulip.net/ticket/444'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
@@ -808,10 +808,10 @@ class BugdownTest(ZulipTestCase):
         realm = get_realm('zulip')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
-        boring_msg = Message(sender=self.example_user('othello'),
-                             subject=u"no match here")
-        converted_boring_subject = bugdown.topic_links(realm.id, boring_msg.subject)
-        self.assertEqual(converted_boring_subject, [])
+        boring_msg = Message(sender=self.example_user('othello'))
+        boring_msg.set_topic_name("no match here")
+        converted_boring_topic = bugdown.topic_links(realm.id, boring_msg.topic_name())
+        self.assertEqual(converted_boring_topic, [])
 
     def test_is_status_message(self) -> None:
         user_profile = self.example_user('othello')
