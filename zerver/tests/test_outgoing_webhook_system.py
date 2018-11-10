@@ -154,6 +154,6 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
-        self.assertEqual(last_message.subject, "bar")
+        self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")

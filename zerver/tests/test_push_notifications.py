@@ -822,7 +822,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
                     "stream": apn.get_display_recipient(message.recipient),
-                    "topic": message.subject,
+                    "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
@@ -854,7 +854,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
                     "stream": apn.get_display_recipient(message.recipient),
-                    "topic": message.subject,
+                    "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
                     'realm_uri': message.sender.realm.uri,
@@ -926,7 +926,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": apn.absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "stream": apn.get_display_recipient(message.recipient),
-            "topic": message.subject,
+            "topic": message.topic_name(),
         }
         self.assertDictEqual(payload, expected)
 
