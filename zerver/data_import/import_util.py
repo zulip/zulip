@@ -326,13 +326,12 @@ def build_stream(date_created: Any, realm_id: int, name: str,
     stream_dict['realm'] = realm_id
     return stream_dict
 
-def build_message(subject: str, pub_date: float, message_id: int, content: str,
+def build_message(topic_name: str, pub_date: float, message_id: int, content: str,
                   rendered_content: Optional[str], user_id: int, recipient_id: int,
                   has_image: bool=False, has_link: bool=False,
                   has_attachment: bool=True) -> ZerverFieldsT:
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
-        subject=subject,
         pub_date=pub_date,
         id=message_id,
         content=content,
@@ -340,6 +339,7 @@ def build_message(subject: str, pub_date: float, message_id: int, content: str,
         has_image=has_image,
         has_attachment=has_attachment,
         has_link=has_link)
+    zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(zulip_message,
                                        exclude=['recipient', 'sender', 'sending_client'])
     zulip_message_dict['sender'] = user_id

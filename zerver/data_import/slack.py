@@ -612,9 +612,9 @@ def channel_message_to_zerver_message(realm_id: int,
         has_image = file_info['has_image']
 
         # construct message
-        subject = 'imported from slack'
+        topic_name = 'imported from slack'
 
-        zulip_message = build_message(subject, float(message['ts']), message_id, content,
+        zulip_message = build_message(topic_name, float(message['ts']), message_id, content,
                                       rendered_content, added_users[user], recipient_id,
                                       has_image, has_link, has_attachment)
         zerver_message.append(zulip_message)

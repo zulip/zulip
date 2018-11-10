@@ -594,9 +594,9 @@ def process_raw_message_batch(realm_id: int,
         rendered_content = None
 
         if is_pm_data:
-            subject = ''
+            topic_name = ''
         else:
-            subject = 'imported from hipchat'
+            topic_name = 'imported from hipchat'
         user_id = raw_message['sender_id']
 
         # Another side effect:
@@ -620,7 +620,7 @@ def process_raw_message_batch(realm_id: int,
             pub_date=pub_date,
             recipient_id=recipient_id,
             rendered_content=rendered_content,
-            subject=subject,
+            topic_name=topic_name,
             user_id=user_id,
             has_attachment=has_attachment,
         )

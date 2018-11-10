@@ -32,6 +32,10 @@ MATCH_TOPIC = "match_subject"
 # unless we do a pretty tricky migration.
 LEGACY_PREV_TOPIC = "prev_subject"
 
+# This constant is pretty closely coupled to the
+# database, but it's the JSON field.
+EXPORT_TOPIC_NAME = "subject"
+
 # This is used in low-level message functions in
 # zerver/lib/message.py, and it's not user facing.
 DB_TOPIC_NAME = "subject"

@@ -40,6 +40,9 @@ from zerver.lib.avatar_hash import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic import (
+    EXPORT_TOPIC_NAME,
+)
 from zerver.models import (
     Realm,
     get_realm,
@@ -465,10 +468,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]['content'], 'http://journals.plos.org/plosone/article')
         self.assertEqual(zerver_message[2]['has_link'], True)
 
-        self.assertEqual(zerver_message[3]['subject'], 'imported from slack')
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], 'imported from slack')
         self.assertEqual(zerver_message[3]['content'], '/me added bot')
         self.assertEqual(zerver_message[4]['recipient'], added_recipient['general'])
-        self.assertEqual(zerver_message[2]['subject'], 'imported from slack')
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], 'imported from slack')
         self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])
 
         self.assertEqual(zerver_message[3]['id'], zerver_message[0]['id'] + 3)
