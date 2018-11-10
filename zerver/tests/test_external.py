@@ -61,7 +61,7 @@ class RateLimitTests(ZulipTestCase):
                                                          "to": "Verona",
                                                          "client": "test suite",
                                                          "content": content,
-                                                         "subject": "Test subject"})
+                                                         "topic": "whatever"})
 
     def test_headers(self) -> None:
         user = self.example_user('hamlet')
