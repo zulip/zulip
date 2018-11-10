@@ -12,6 +12,7 @@ from zulint.printer import print_err, colors
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
 RuleList = List[Dict[str, Any]]
+LineTup = Tuple[int, str, str, str]
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
@@ -137,20 +138,13 @@ def custom_check_file(fn: str,
         firstline = line_tups[0][3]  # line_fully_stripped for the first line.
         lastLine = line_tups[-1][1]
 
-    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-        if isinstance(line, bytes):
-            line_length = len(line.decode("utf-8"))
-        else:
-            line_length = len(line)
-        if (max_length is not None and line_length > max_length and
-            '# type' not in line and 'test' not in fn and 'example' not in fn and
-            # Don't throw errors for markdown format URLs
-            not re.search(r"^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
-            # Don't throw errors for URLs in code comments
-            not re.search(r"[#].*http.*", line) and
-            not re.search(r"`\{\{ api_url \}\}[^`]+`", line) and
-                "# ignorelongline" not in line and 'migrations' not in fn):
-            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+    if max_length is not None:
+        ok = check_file_for_long_lines(
+            fn=fn,
+            max_length=max_length,
+            line_tups=line_tups,
+        )
+        if not ok:
             failed = True
 
     if firstline:
@@ -174,6 +168,27 @@ def custom_check_file(fn: str,
         failed = True
 
     return failed
+
+def check_file_for_long_lines(fn: str,
+                              max_length: int,
+                              line_tups: List[LineTup]) -> bool:
+    ok = True
+    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+        if isinstance(line, bytes):
+            line_length = len(line.decode("utf-8"))
+        else:
+            line_length = len(line)
+        if (line_length > max_length and
+            '# type' not in line and 'test' not in fn and 'example' not in fn and
+            # Don't throw errors for markdown format URLs
+            not re.search(r"^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            # Don't throw errors for URLs in code comments
+            not re.search(r"[#].*http.*", line) and
+            not re.search(r"`\{\{ api_url \}\}[^`]+`", line) and
+                "# ignorelongline" not in line and 'migrations' not in fn):
+            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+            ok = False
+    return ok
 
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
