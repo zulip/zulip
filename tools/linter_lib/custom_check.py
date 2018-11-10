@@ -17,8 +17,12 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     'zerver/lib/topic.py',
 
-    # This is tricky--it's used in a migration.
+    # This is for backward compatibility.
+    'zerver/tests/test_legacy_subject.py',
+
+    # Other migration-related changes require extreme care.
     'zerver/lib/fix_unreads.py',
+    'zerver/tests/test_migrations.py',
 
     # This is just test data, although I don't know
     # why it's in lib.
@@ -30,6 +34,11 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/error_notify.py',
     'zerver/lib/feedback.py',
     'zerver/lib/send_email.py',
+    'zerver/tests/test_email_change.py',
+    'zerver/tests/test_email_mirror.py',
+    'zerver/tests/test_new_users.py',
+    'zerver/tests/test_notifications.py',
+    'zerver/tests/test_templates.py',
 
     # This has "subject" in the copyright message.
     'zerver/lib/ccache.py',
@@ -47,6 +56,10 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/onboarding.py',
     'zerver/lib/stream_topic.py',
     'zerver/lib/url_encoding.py',
+
+    # These may be tough fixes, but progress can me made.
+    'zerver/tests/test_messages.py',
+    'zerver/tests/test_narrow.py',
 }
 
 def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
@@ -316,6 +329,7 @@ def build_custom_checkers(by_lang):
          'include_only': set([
              'zerver/data_import/',
              'zerver/lib/',
+             'zerver/tests/',
              'zerver/views/'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
