@@ -181,10 +181,10 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             mentioned_user_ids = get_usermentions(message, user_map,
                                                   user_short_name_to_full_name)
             rendered_content = None
-            subject = 'imported from gitter'
+            topic_name = 'imported from gitter'
             user_id = user_map[message['fromUser']['id']]
 
-            zulip_message = build_message(subject, float(message_time), message_id, message['text'],
+            zulip_message = build_message(topic_name, float(message_time), message_id, message['text'],
                                           rendered_content, user_id, recipient_id)
             zerver_message.append(zulip_message)
 
