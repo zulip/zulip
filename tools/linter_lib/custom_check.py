@@ -538,7 +538,6 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r]Message.objects.get',
          'exclude': set(["zerver/tests",
                          "zerver/lib/onboarding.py",
-                         "zerver/lib/import_realm.py",
                          "zilencer/management/commands/add_mock_conversation.py",
                          "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
@@ -569,7 +568,6 @@ def build_custom_checkers(by_lang):
          'include_only': set(["/migrations/"]),
          'exclude': set([
              'zerver/migrations/0032_verify_all_medium_avatar_images.py',
-             'zerver/migrations/0041_create_attachments_for_old_messages.py',
              'zerver/migrations/0060_move_avatars_to_be_uid_based.py',
              'zerver/migrations/0104_fix_unreads.py',
              'pgroonga/migrations/0002_html_escape_subject.py',
