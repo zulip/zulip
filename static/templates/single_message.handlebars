@@ -1,6 +1,6 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
   class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
-  role="region" aria-label="{{t 'Message' }}">
+  role="listitem">
     <div class="unread_marker"><div class="unread-marker-fill"></div></div>
     <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
       style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">

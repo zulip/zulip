@@ -27,7 +27,7 @@
 
         </div>
         {{/if}}
-        <div class="message_row{{^is_stream}} private-message{{/is_stream}}">
+        <div class="message_row{{^is_stream}} private-message{{/is_stream}}" role="listitem">
             <div class="messagebox"
               style="box-shadow: inset 2px 0px 0px 0px {{#if is_stream}}{{stream_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if is_stream}}{{stream_color}}{{else}}#444444{{/if}};">
                 <div class="messagebox-content">
