@@ -2111,7 +2111,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.subject, u'hello')
+        self.assertEqual(msg.topic_name(), u'hello')
         self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
         self.assertIn('Welcome to #**', msg.content)
 

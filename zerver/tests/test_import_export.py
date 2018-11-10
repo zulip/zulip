@@ -719,7 +719,7 @@ class ImportExportTest(ZulipTestCase):
 
         def get_stream_topics(r: Realm) -> Set[str]:
             messages = get_stream_messages(r)
-            topics = {m.subject for m in messages}
+            topics = {m.topic_name() for m in messages}
             return topics
 
         assert_realm_values(get_stream_topics)
