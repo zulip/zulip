@@ -316,7 +316,7 @@ def toggle_mute_topic(client):
     message = {
         'type': 'stream',
         'to': 'Denmark',
-        'subject': 'boat party'
+        'topic': 'boat party'
     }
     client.call_endpoint(
         url='messages',
@@ -509,7 +509,7 @@ def test_nonexistent_stream_error(client):
     request = {
         "type": "stream",
         "to": "nonexistent_stream",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -562,7 +562,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -592,7 +592,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -629,7 +629,7 @@ def update_message_flags(client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }  # type: Dict[str, Any]
     message_ids = []
