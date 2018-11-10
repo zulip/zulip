@@ -17,6 +17,7 @@ from zerver.lib.outgoing_webhook import (
 )
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import TOPIC_NAME
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
 class ResponseMock:
@@ -47,7 +48,7 @@ class DoRestCallTests(ZulipTestCase):
             'failed_tries': 3,
             'message': {'display_recipient': 'Verona',
                         'stream_id': 999,
-                        'subject': 'Foo',
+                        TOPIC_NAME: 'Foo',
                         'id': '',
                         'type': 'stream'},
             'user_profile_id': user_profile.id,
