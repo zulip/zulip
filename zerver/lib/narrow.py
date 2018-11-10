@@ -1,4 +1,7 @@
 from zerver.lib.request import JsonableError
+from zerver.lib.topic import (
+    get_topic_from_message_info,
+)
 from django.utils.translation import ugettext as _
 
 from typing import Any, Callable, Dict, Iterable, Mapping, Sequence
@@ -38,7 +41,8 @@ def build_narrow_filter(narrow: Iterable[Sequence[str]]) -> Callable[[Mapping[st
             elif operator == "topic":
                 if message["type"] != "stream":
                     return False
-                if operand.lower() != message["subject"].lower():
+                topic_name = get_topic_from_message_info(message)
+                if operand.lower() != topic_name.lower():
                     return False
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():

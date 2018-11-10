@@ -1,6 +1,7 @@
 import urllib
 from typing import Any, Dict, List
 
+from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import Realm, Stream, UserProfile
 
 def hash_util_encode(string: str) -> str:
@@ -57,7 +58,7 @@ def near_stream_message_url(realm: Realm,
     message_id = str(message['id'])
     stream_id = message['stream_id']
     stream_name = message['display_recipient']
-    topic_name = message['subject']
+    topic_name = get_topic_from_message_info(message)
     encoded_topic = hash_util_encode(topic_name)
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 
