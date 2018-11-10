@@ -296,7 +296,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
                     stream_data.update_stream_email_address(sub, rec.email_address);
-                    stream_events.mark_subscribed(sub, rec.subscribers);
+                    stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                 } else {
                     blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
