@@ -135,9 +135,11 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
 
     # TODO: Move the below into more of a framework.
     firstline = None
+    lastLine = None
     if line_tups:
         firstline = line_tups[0][3]  # line_fully_stripped for the first line.
-    lastLine = None
+        lastLine = line_tups[-1][1]
+
     for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
         if isinstance(line, bytes):
             line_length = len(line.decode("utf-8"))
@@ -153,7 +155,6 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
                 "# ignorelongline" not in line and 'migrations' not in fn):
             print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             failed = True
-        lastLine = line
 
     if firstline:
         if os.path.splitext(fn)[1] and 'zerver/' in fn:
