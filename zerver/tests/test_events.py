@@ -111,6 +111,11 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
+from zerver.lib.topic import (
+    ORIG_TOPIC,
+    TOPIC_NAME,
+    TOPIC_LINKS,
+)
 from zerver.lib.topic_mutes import (
     add_topic_mute,
 )
@@ -641,8 +646,8 @@ class EventsRegisterTest(ZulipTestCase):
                     ('sender_id', check_int),
                     ('sender_short_name', check_string),
                     ('stream_id', check_int),
-                    ('subject', check_string),
-                    ('subject_links', check_list(None)),
+                    (TOPIC_NAME, check_string),
+                    (TOPIC_LINKS, check_list(None)),
                     ('submessages', check_list(None)),
                     ('timestamp', check_int),
                     ('type', check_string),
@@ -682,15 +687,15 @@ class EventsRegisterTest(ZulipTestCase):
             ('push_notify_user_ids', check_list(check_int)),
             ('orig_content', check_string),
             ('orig_rendered_content', check_string),
-            ('orig_subject', check_string),
+            (ORIG_TOPIC, check_string),
             ('prev_rendered_content_version', check_int),
             ('propagate_mode', check_string),
             ('rendered_content', check_string),
             ('sender', check_string),
             ('stream_id', check_int),
             ('stream_name', check_string),
-            ('subject', check_string),
-            ('subject_links', check_list(None)),
+            (TOPIC_NAME, check_string),
+            (TOPIC_LINKS, check_list(None)),
             ('user_id', check_int),
             ('is_me_message', check_bool),
         ])
