@@ -36,12 +36,6 @@ LEGACY_PREV_TOPIC = "prev_subject"
 # database, but it's the JSON field.
 EXPORT_TOPIC_NAME = "subject"
 
-# This is used in low-level message functions in
-# zerver/lib/message.py, and it's not user facing.
-DB_TOPIC_NAME = "subject"
-MESSAGE__TOPIC = 'message__subject'
-
-
 def REQ_topic() -> Optional[str]:
     # REQ handlers really return a REQ, but we
     # lie to make the rest of the type matching work.
@@ -51,6 +45,19 @@ def REQ_topic() -> Optional[str]:
         converter=lambda x: x.strip(),
         default=None,
     )  # type: ignore # see comment above
+
+'''
+TRY TO KEEP THIS DIVIDING LINE.
+
+Below this line we want to make it so that functions are only
+using "subject" in the DB sense, and nothing customer facing.
+
+'''
+
+# This is used in low-level message functions in
+# zerver/lib/message.py, and it's not user facing.
+DB_TOPIC_NAME = "subject"
+MESSAGE__TOPIC = 'message__subject'
 
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
