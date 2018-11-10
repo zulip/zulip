@@ -36,14 +36,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/error_notify.py',
     'zerver/lib/feedback.py',
     'zerver/lib/send_email.py',
-    'zerver/tests/test_email_change.py',
-    'zerver/tests/test_email_mirror.py',
     'zerver/tests/test_new_users.py',
     'zerver/tests/test_notifications.py',
-    'zerver/tests/test_templates.py',
-
-    # This has "subject" in the copyright message.
-    'zerver/lib/ccache.py',
 
     # These are tied more to our API than our DB model.
     'zerver/lib/api_test_helpers.py',
@@ -379,6 +373,7 @@ def build_custom_checkers(by_lang):
     ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
         {'pattern': 'subject|SUBJECT',
+         'exclude_pattern': 'subject to the|email',
          'description': 'avoid subject as a var',
          'good_lines': ['topic_name'],
          'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
