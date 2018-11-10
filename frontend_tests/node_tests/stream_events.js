@@ -134,6 +134,7 @@ run_test('marked_subscribed', () => {
     // Test undefined error
     with_overrides(function (override) {
         var errors = 0;
+        override('stream_color.update_stream_color', noop);
         override('blueslip.error', function () {
             errors += 1;
         });
@@ -170,6 +171,7 @@ run_test('marked_subscribed', () => {
     // Test unread count update
     with_overrides(function (override) {
         global.with_stub(function (stub) {
+            override('stream_color.update_stream_color', noop);
             override('message_util.do_unread_count_updates', stub.f);
             stream_events.mark_subscribed(frontend, [], '');
             var args = stub.get_args('messages');
@@ -180,15 +182,19 @@ run_test('marked_subscribed', () => {
     set_global('message_util', { do_unread_count_updates: noop });
 
     // Test jQuery event
-    global.with_stub(function (stub) {
-        $(document).on('subscription_add_done.zulip', stub.f);
-        stream_events.mark_subscribed(frontend, [], '');
-        var args = stub.get_args('event');
-        assert.equal(args.event.sub.stream_id, 1);
+    with_overrides(function (override) {
+        override('stream_color.update_stream_color', noop);
+        global.with_stub(function (stub) {
+            $(document).on('subscription_add_done.zulip', stub.f);
+            stream_events.mark_subscribed(frontend, [], '');
+            var args = stub.get_args('event');
+            assert.equal(args.event.sub.stream_id, 1);
+        });
     });
 
     // Test bookend update
     with_overrides(function (override) {
+        override('stream_color.update_stream_color', noop);
         override('narrow_state.is_for_stream_id', function () {
             return true;
         });
@@ -204,8 +210,11 @@ run_test('marked_subscribed', () => {
     set_global('narrow_state', { is_for_stream_id: noop });
 
     // Test setting color
-    stream_events.mark_subscribed(frontend, [], 'blue');
-    assert.equal(frontend.color, 'blue');
+    with_overrides(function (override) {
+        override('stream_color.update_stream_color', noop);
+        stream_events.mark_subscribed(frontend, [], 'blue');
+        assert.equal(frontend.color, 'blue');
+    });
 
     // Test assigning generated color
     with_overrides(function (override) {
@@ -219,6 +228,7 @@ run_test('marked_subscribed', () => {
         });
 
         global.with_stub(function (stub) {
+            override('stream_color.update_stream_color', noop);
             override('subs.set_color', stub.f);
             stream_events.mark_subscribed(frontend, [], undefined);
             var args = stub.get_args('id', 'color');
@@ -230,6 +240,7 @@ run_test('marked_subscribed', () => {
 
     // Test assigning subscriber emails
     with_overrides(function (override) {
+        override('stream_color.update_stream_color', noop);
         global.with_stub(function (stub) {
             override('stream_data.set_subscribers', stub.f);
             var user_ids = [15, 20, 25];

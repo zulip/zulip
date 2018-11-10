@@ -100,8 +100,9 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
 
     // If the backend sent us a color, use that
-    if (color !== undefined) {
+    if (color !== undefined && sub.color !== color) {
         sub.color = color;
+        stream_color.update_stream_color(sub, color, {update_historical: true});
     } else if (sub.color === undefined) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
