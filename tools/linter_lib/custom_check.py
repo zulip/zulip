@@ -11,6 +11,7 @@ from zulint.printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
+Rule = Dict[str, Any]
 RuleList = List[Dict[str, Any]]
 LineTup = Tuple[int, str, str, str]
 
@@ -95,6 +96,63 @@ def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
 
     return rules_to_apply
 
+def check_file_for_pattern(fn: str,
+                           line_tups: List[LineTup],
+                           identifier: str,
+                           color: Optional[Iterable[str]],
+                           rule: Rule) -> bool:
+
+    '''
+    DO NOT MODIFY THIS FUNCTION WITHOUT PROFILING.
+
+    This function gets called ~40k times, once per file per regex.
+
+    Inside it's doing a regex check for every line in the file, so
+    it's important to do things like pre-compiling regexes.
+
+    DO NOT INLINE THIS FUNCTION.
+
+    We need to see it show up in profiles, and the function call
+    overhead will never be a bottleneck.
+    '''
+    exclude_lines = {
+        line for
+        (exclude_fn, line) in rule.get('exclude_line', set())
+        if exclude_fn == fn
+    }
+
+    pattern = re.compile(rule['pattern'])
+    strip_rule = rule.get('strip')  # type: Optional[str]
+
+    ok = True
+    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+        if line_fully_stripped in exclude_lines:
+            exclude_lines.remove(line_fully_stripped)
+            continue
+        try:
+            line_to_check = line_fully_stripped
+            if strip_rule is not None:
+                if strip_rule == '\n':
+                    line_to_check = line_newline_stripped
+                else:
+                    raise Exception("Invalid strip rule")
+            if pattern.search(line_to_check):
+                if rule.get("exclude_pattern"):
+                    if re.search(rule['exclude_pattern'], line_to_check):
+                        continue
+                print_err(identifier, color, '{} at {} line {}:'.format(
+                    rule['description'], fn, i+1))
+                print_err(identifier, color, line)
+                ok = False
+        except Exception:
+            print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
+            traceback.print_exc()
+
+    if exclude_lines:
+        print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
+
+    return ok
+
 def custom_check_file(fn: str,
                       identifier: str,
                       rules: RuleList,
@@ -107,39 +165,15 @@ def custom_check_file(fn: str,
     rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=rules)
 
     for rule in rules_to_apply:
-        exclude_lines = {
-            line for
-            (exclude_fn, line) in rule.get('exclude_line', set())
-            if exclude_fn == fn
-        }
-
-        pattern = re.compile(rule['pattern'])
-        strip_rule = rule.get('strip')
-        for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-            if line_fully_stripped in exclude_lines:
-                exclude_lines.remove(line_fully_stripped)
-                continue
-            try:
-                line_to_check = line_fully_stripped
-                if strip_rule is not None:
-                    if strip_rule == '\n':
-                        line_to_check = line_newline_stripped
-                    else:
-                        raise Exception("Invalid strip rule")
-                if pattern.search(line_to_check):
-                    if rule.get("exclude_pattern"):
-                        if re.search(rule['exclude_pattern'], line_to_check):
-                            continue
-                    print_err(identifier, color, '{} at {} line {}:'.format(
-                        rule['description'], fn, i+1))
-                    print_err(identifier, color, line)
-                    failed = True
-            except Exception:
-                print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
-                traceback.print_exc()
-
-        if exclude_lines:
-            print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
+        ok = check_file_for_pattern(
+            fn=fn,
+            line_tups=line_tups,
+            identifier=identifier,
+            color=color,
+            rule=rule,
+        )
+        if not ok:
+            failed = True
 
     # TODO: Move the below into more of a framework.
     firstline = None
