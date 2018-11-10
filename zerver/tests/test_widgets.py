@@ -70,7 +70,7 @@ class WidgetContentTestCase(ZulipTestCase):
             to=stream_name,
             sender=sender_email,
             client='test suite',
-            subject='whatever',
+            topic='whatever',
             content='whatever',
         )
 
@@ -128,7 +128,7 @@ class WidgetContentTestCase(ZulipTestCase):
             to=stream_name,
             sender=sender_email,
             client='test suite',
-            subject='whatever',
+            topic='whatever',
             content=content,
             widget_content=widget_content,
         )
@@ -161,7 +161,7 @@ class WidgetContentTestCase(ZulipTestCase):
             to=stream_name,
             sender=sender_email,
             client='test suite',
-            subject='whatever',
+            topic='whatever',
             content=content,
         )
         result = self.api_post(sender_email, "/api/v1/messages", payload)
@@ -189,7 +189,7 @@ class WidgetContentTestCase(ZulipTestCase):
             to=stream_name,
             sender=sender_email,
             client='test suite',
-            subject='whatever',
+            topic='whatever',
             content=content,
         )
         result = self.api_post(sender_email, "/api/v1/messages", payload)
