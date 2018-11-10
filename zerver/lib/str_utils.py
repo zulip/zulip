@@ -47,8 +47,6 @@ def force_str(s: Union[str, bytes], encoding: str='utf-8') -> str:
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
-    elif isinstance(s, str):
-        return s.encode(encoding)
     elif isinstance(s, bytes):
         return s.decode(encoding)
     else:
