@@ -26,10 +26,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/fix_unreads.py',
     'zerver/tests/test_migrations.py',
 
-    # This is just test data, although I don't know
-    # why it's in lib.
-    'zerver/lib/test_data.source.txt',
-
     # These use subject in the email sense, and will
     # probably always be exempt:
     'zerver/lib/email_mirror.py',
