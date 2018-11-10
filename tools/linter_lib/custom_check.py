@@ -63,13 +63,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/tests/test_narrow.py',
 }
 
-def custom_check_file(fn: str,
-                      identifier: str,
-                      rules: RuleList,
-                      color: Optional[Iterable[str]],
-                      max_length: Optional[int]=None) -> bool:
-    failed = False
-
+def get_line_info_from_file(fn: str) -> List[LineTup]:
     line_tups = []
     for i, line in enumerate(open(fn)):
         line_newline_stripped = line.strip('\n')
@@ -78,6 +72,16 @@ def custom_check_file(fn: str,
             continue
         tup = (i, line, line_newline_stripped, line_fully_stripped)
         line_tups.append(tup)
+    return line_tups
+
+def custom_check_file(fn: str,
+                      identifier: str,
+                      rules: RuleList,
+                      color: Optional[Iterable[str]],
+                      max_length: Optional[int]=None) -> bool:
+    failed = False
+
+    line_tups = get_line_info_from_file(fn=fn)
 
     rules_to_apply = []
     for rule in rules:
