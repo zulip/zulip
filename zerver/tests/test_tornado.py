@@ -20,6 +20,7 @@ from tornado.httpclient import HTTPRequest, HTTPResponse
 
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import TOPIC_NAME
 
 from zerver.models import UserProfile, get_client
 
@@ -338,7 +339,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "private",
-                "subject": "(no topic)",
+                TOPIC_NAME: "(no topic)",
                 "stream": "",
                 "private_message_recipient": self.example_email('othello'),
                 "content": "hello",
@@ -372,7 +373,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "stream",
-                "subject": "Stream message",
+                TOPIC_NAME: "Stream message",
                 "stream": "Denmark",
                 "private_message_recipient": "",
                 "content": "hello",
@@ -406,7 +407,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "stream",
-                "subject": "Stream message",
+                TOPIC_NAME: "Stream message",
                 "stream": "Denmark",
                 "private_message_recipient": "",
                 "content": "hello",
@@ -441,7 +442,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
             "request": {
                 "client": "website",
                 "type": "stream",
-                "subject": "Stream message",
+                TOPIC_NAME: "Stream message",
                 "stream": "Denmark",
                 "private_message_recipient": "",
                 "content": "hello",
