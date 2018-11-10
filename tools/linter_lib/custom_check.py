@@ -57,8 +57,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     'zerver/lib/stream_topic.py',
     'zerver/lib/url_encoding.py',
 
-    # These may be tough fixes, but progress can me made.
-    'zerver/tests/test_messages.py',
+    # This has lots of query data embedded, so it's hard
+    # to fix everything until we migrate the DB to "topic".
     'zerver/tests/test_narrow.py',
 }
 
