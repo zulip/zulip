@@ -34,7 +34,7 @@ LEGACY_PREV_TOPIC = "prev_subject"
 
 # This constant is pretty closely coupled to the
 # database, but it's the JSON field.
-EXPORT_TOPIC_NAME = "subject"
+EXPORT_TOPIC_NAME = "topic"
 
 '''
 The following functions are for user-facing APIs
@@ -75,35 +75,35 @@ using "subject" in the DB sense, and nothing customer facing.
 
 # This is used in low-level message functions in
 # zerver/lib/message.py, and it's not user facing.
-DB_TOPIC_NAME = "subject"
-MESSAGE__TOPIC = 'message__subject'
+DB_TOPIC_NAME = "topic"
+MESSAGE__TOPIC = 'message__topic'
 
 def topic_match_sa(topic_name: str) -> Any:
     # _sa is short for Sql Alchemy, which we use mostly for
     # queries that search messages
-    topic_cond = func.upper(column("subject")) == func.upper(literal(topic_name))
+    topic_cond = func.upper(column("topic")) == func.upper(literal(topic_name))
     return topic_cond
 
 def topic_column_sa() -> Any:
-    return column("subject")
+    return column("topic")
 
 def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
     topic_name = message.topic_name()
-    return query.filter(subject=topic_name)
+    return query.filter(topic=topic_name)
 
 def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
-    return query.filter(message__subject__iexact=topic_name)
+    return query.filter(message__topic__iexact=topic_name)
 
 def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
-    # It might be the case that we really want subject__contains
+    # It might be the case that we really want topic__contains
     # here.  This code is used for the archive.
     return Message.objects.filter(
         recipient__type_id=stream_id,
-        subject=topic_name,
+        topic=topic_name,
     )
 
 def save_message_for_edit_use_case(message: Message) -> None:
-    message.save(update_fields=["subject", "content", "rendered_content",
+    message.save(update_fields=["topic", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
@@ -113,14 +113,14 @@ def user_message_exists_for_topic(user_profile: UserProfile,
     return UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient=recipient,
-        message__subject__iexact=topic_name,
+        message__topic__iexact=topic_name,
     ).exists()
 
 def update_messages_for_topic_edit(message: Message,
                                    propagate_mode: str,
                                    orig_topic_name: str,
                                    topic_name: str) -> List[Message]:
-    propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
+    propagate_query = Q(recipient = message.recipient, topic = orig_topic_name)
     # We only change messages up to 2 days in the past, to avoid hammering our
     # DB by changing an unbounded amount of messages
     if propagate_mode == 'change_all':
@@ -135,7 +135,7 @@ def update_messages_for_topic_edit(message: Message,
 
     # Evaluate the query before running the update
     messages_list = list(messages)
-    messages.update(subject=topic_name)
+    messages.update(topic=topic_name)
 
     for m in messages_list:
         # The cached ORM object is not changed by messages.update()
@@ -171,14 +171,14 @@ def get_topic_history_for_stream(user_profile: UserProfile,
     if public_history:
         query = '''
         SELECT
-            "zerver_message"."subject" as topic,
+            "zerver_message"."topic" as topic,
             max("zerver_message".id) as max_message_id
         FROM "zerver_message"
         WHERE (
             "zerver_message"."recipient_id" = %s
         )
         GROUP BY (
-            "zerver_message"."subject"
+            "zerver_message"."topic"
         )
         ORDER BY max("zerver_message".id) DESC
         '''
@@ -186,7 +186,7 @@ def get_topic_history_for_stream(user_profile: UserProfile,
     else:
         query = '''
         SELECT
-            "zerver_message"."subject" as topic,
+            "zerver_message"."topic" as topic,
             max("zerver_message".id) as max_message_id
         FROM "zerver_message"
         INNER JOIN "zerver_usermessage" ON (
@@ -197,7 +197,7 @@ def get_topic_history_for_stream(user_profile: UserProfile,
             "zerver_message"."recipient_id" = %s
         )
         GROUP BY (
-            "zerver_message"."subject"
+            "zerver_message"."topic"
         )
         ORDER BY max("zerver_message".id) DESC
         '''
@@ -211,14 +211,14 @@ def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[s
     cursor = connection.cursor()
     query = '''
     SELECT
-        "zerver_message"."subject" as topic,
+        "zerver_message"."topic" as topic,
         max("zerver_message".id) as max_message_id
     FROM "zerver_message"
     WHERE (
         "zerver_message"."recipient_id" = %s
     )
     GROUP BY (
-        "zerver_message"."subject"
+        "zerver_message"."topic"
     )
     ORDER BY max("zerver_message".id) DESC
     '''
@@ -233,6 +233,6 @@ def get_turtle_message(message_ids: List[int]) -> Message:
     # here to make subject -> topic sweeping easier.
     turtle_message = Message.objects.get(  # nolint
         id__in=message_ids,
-        subject='topic demonstration',
+        topic='topic demonstration',
         content__icontains='cute/turtle.png')
     return turtle_message

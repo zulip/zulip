@@ -1332,13 +1332,13 @@ class AbstractMessage(models.Model):
 
     # The message's topic.
     #
-    # Early versions of Zulip called this concept a "subject", as in an email
-    # "subject line", before changing to "topic" in 2013 (commit dac5a46fa).
+    # Early versions of Zulip called this concept a "subject", as in an email,
+    # before changing to "topic" in 2013 (commit dac5a46fa).
     # UI and user documentation now consistently say "topic".  New APIs and
     # new code should generally also say "topic".
     #
     # See also the `topic_name` method on `Message`.
-    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)  # type: str
+    topic = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)  # type: str
 
     content = models.TextField()  # type: str
     rendered_content = models.TextField(null=True)  # type: Optional[str]
@@ -1363,7 +1363,7 @@ class AbstractMessage(models.Model):
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
         return "<%s: %s / %s / %s>" % (self.__class__.__name__, display_recipient,
-                                       self.subject, self.sender)
+                                       self.topic, self.sender)
 
 
 class ArchivedMessage(AbstractMessage):
@@ -1381,10 +1381,10 @@ class Message(AbstractMessage):
         Please start using this helper to facilitate an
         eventual switch over to a separate topic table.
         """
-        return self.subject
+        return self.topic
 
     def set_topic_name(self, topic_name: str) -> None:
-        self.subject = topic_name
+        self.topic = topic_name
 
     def is_stream_message(self) -> bool:
         '''
@@ -1421,7 +1421,7 @@ class Message(AbstractMessage):
             sending_client    = self.sending_client.name,
             type              = self.recipient.type_name(),
             recipient         = get_display_recipient(self.recipient),
-            subject           = self.topic_name(),
+            topic             = self.topic_name(),
             content           = self.content,
             timestamp         = datetime_to_timestamp(self.pub_date))
 
@@ -1485,7 +1485,7 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        topic=message.topic,
         id__lt=message.id,
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]

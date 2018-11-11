@@ -195,7 +195,7 @@ def fix_pre_pointer(cursor: CursorObj, user_profile: UserProfile) -> None:
             SELECT
                 zerver_usermessage.id,
                 zerver_message.recipient_id,
-                zerver_message.subject
+                zerver_message.topic
             FROM
                 zerver_usermessage
             INNER JOIN zerver_message ON (

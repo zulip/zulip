@@ -159,21 +159,21 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_topic_operator_and_lunch_operand(self) -> None:
         term = dict(operator='topic', operand='lunch')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(topic) = upper(:param_1)')
 
     def test_add_term_using_topic_operator_lunch_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='topic', operand='lunch', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(topic) != upper(:param_1)')
 
     def test_add_term_using_topic_operator_and_personal_operand(self) -> None:
         term = dict(operator='topic', operand='personal')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(topic) = upper(:param_1)')
 
     def test_add_term_using_topic_operator_personal_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='topic', operand='personal', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE upper(topic) != upper(:param_1)')
 
     def test_add_term_using_sender_operator(self) -> None:
         term = dict(operator='sender', operand=self.example_email("othello"))
@@ -270,13 +270,13 @@ class NarrowBuilderTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
         term = dict(operator='search', operand='"french fries"')
-        self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+        self._do_add_term_test(term, 'WHERE (lower(content) LIKE lower(:content_1) OR lower(topic) LIKE lower(:topic_1)) AND (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(subject) LIKE lower(:subject_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
+        self._do_add_term_test(term, 'WHERE NOT (lower(content) LIKE lower(:content_1) OR lower(topic) LIKE lower(:topic_1)) AND NOT (search_tsvector @@ plainto_tsquery(:param_2, :param_3))')
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
@@ -1410,7 +1410,7 @@ class GetOldMessagesTest(ZulipTestCase):
             cursor.execute("""
             UPDATE zerver_message SET
             search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
+            topic || rendered_content)
             """)
 
     @override_settings(USING_PGROONGA=False)
@@ -1655,7 +1655,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE zerver_message SET
-                search_pgroonga = escape_html(subject) || ' ' || rendered_content
+                search_pgroonga = escape_html(topic) || ' ' || rendered_content
                 """)
 
         narrow = [
@@ -2365,7 +2365,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         stream = get_stream('Scotland', realm)
         recipient_id = get_stream_recipient(stream.id).id
-        cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
+        cond = '''AND NOT (recipient_id = {scotland} AND upper(topic) = upper('golf'))'''.format(scotland=recipient_id)
         self.assertIn(cond, queries[0]['sql'])
 
         # Next, verify the use_first_unread_anchor setting invokes
@@ -2414,7 +2414,7 @@ class GetOldMessagesTest(ZulipTestCase):
         expected_query = '''
             SELECT id AS message_id
             FROM zerver_message
-            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:param_1))
+            WHERE NOT (recipient_id = :recipient_id_1 AND upper(topic) = upper(:param_1))
             '''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
@@ -2439,8 +2439,8 @@ class GetOldMessagesTest(ZulipTestCase):
             FROM zerver_message
             WHERE recipient_id NOT IN (:recipient_id_1)
             AND NOT
-               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:param_1) OR
-                recipient_id = :recipient_id_3 AND upper(subject) = upper(:param_2))'''
+               (recipient_id = :recipient_id_2 AND upper(topic) = upper(:param_1) OR
+                recipient_id = :recipient_id_3 AND upper(topic) = upper(:param_2))'''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
@@ -2515,13 +2515,13 @@ class GetOldMessagesTest(ZulipTestCase):
                                               'narrow': '[["stream", "Scotland"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(topic) = upper('blah') ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["topic", "blah"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND upper(topic) = upper('blah') ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
@@ -2544,19 +2544,19 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_search_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: str
+        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.topic, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, topic, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(topic), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: str
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["search", "jumping"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.topic, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT id AS message_id, topic, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(topic), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.topic, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, topic, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(topic), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR topic ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["search", "\\"jumping\\" quickly"]]'},
