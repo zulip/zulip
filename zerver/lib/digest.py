@@ -81,7 +81,7 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                 logger.info("%s is inactive, queuing for potential digest" % (
                     user_profile.email,))
 
-def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySet) -> List[Dict[str, Any]]:
+def gather_hot_conversations(user_profile: UserProfile, stream_ums: QuerySet) -> List[Dict[str, Any]]:
     # Gather stream conversations of 2 types:
     # 1. long conversations
     # 2. conversations where many different people participated
@@ -89,17 +89,22 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
+    # stream_ums is a list of UserMessage rows for a single
+    # user, so the list of messages is distinct here.
+    messages = [um.message for um in stream_ums]
+
     conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
     conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, str], Set[str]]
-    for user_message in stream_messages:
-        if not user_message.message.sent_by_human():
+    for message in messages:
+        key = (message.recipient.type_id,
+               message.topic_name())
+
+        if not message.sent_by_human():
             # Don't include automated messages in the count.
             continue
 
-        key = (user_message.message.recipient.type_id,
-               user_message.message.topic_name())
         conversation_diversity[key].add(
-            user_message.message.sender.full_name)
+            message.sender.full_name)
         conversation_length[key] += 1
 
     diversity_list = list(conversation_diversity.items())
@@ -132,7 +137,7 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
 
         # We'll display up to 2 messages from the conversation.
         first_few_messages = [user_message.message for user_message in
-                              stream_messages.filter(
+                              stream_ums.filter(
                                   message__recipient__type_id=stream_id,
                                   message__subject=subject)[:2]]
 
