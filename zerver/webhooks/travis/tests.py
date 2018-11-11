@@ -38,7 +38,7 @@ class TravisHookTests(WebhookTestCase):
         )
         self.assert_json_success(result)
         msg = self.get_last_message()
-        self.assertNotEquals(msg.subject, self.TOPIC)
+        self.assertNotEquals(msg.topic_name(), self.TOPIC)
 
     def test_travis_pull_requests_are_not_ignored_when_applicable(self) -> None:
         self.url = "{}&ignore_pull_requests=false".format(self.build_webhook_url())
