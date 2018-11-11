@@ -16,7 +16,7 @@ from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.url_encoding import encode_stream
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
-    Realm
+    Realm, Message
 from zerver.context_processors import common_context
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.logging_util import log_to_file
@@ -94,10 +94,13 @@ def gather_hot_conversations(user_profile: UserProfile, stream_ums: QuerySet) ->
     messages = [um.message for um in stream_ums]
 
     conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
+    conversation_messages = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
     conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, str], Set[str]]
     for message in messages:
         key = (message.recipient.type_id,
                message.topic_name())
+
+        conversation_messages[key].append(message)
 
         if not message.sent_by_human():
             # Don't include automated messages in the count.
@@ -131,15 +134,12 @@ def gather_hot_conversations(user_profile: UserProfile, stream_ums: QuerySet) ->
 
     hot_conversation_render_payloads = []
     for h in hot_conversations:
-        stream_id, subject = h
         users = list(conversation_diversity[h])
         count = conversation_length[h]
+        messages = conversation_messages[h]
 
         # We'll display up to 2 messages from the conversation.
-        first_few_messages = [user_message.message for user_message in
-                              stream_ums.filter(
-                                  message__recipient__type_id=stream_id,
-                                  message__subject=subject)[:2]]
+        first_few_messages = messages[:2]
 
         teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),

@@ -40,7 +40,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # TRY TO FIX THESE! If you can't fix them, try to
     # add comments here and/or in the file itself about
     # why sweeping subject is tricky.
-    'zerver/lib/digest.py',
     'zerver/lib/onboarding.py',
     'zerver/lib/stream_topic.py',
 
