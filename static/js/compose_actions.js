@@ -388,9 +388,16 @@ exports.on_topic_narrow = function () {
 exports.quote_and_reply = function (opts) {
     var textarea = $("#compose-textarea");
     var message_id = current_msg_list.selected_id();
+    var message = current_msg_list.selected_message();
 
     exports.respond_to_message(opts);
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
+
+    if (message && message.raw_content) {
+        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + message.raw_content + '\n```', textarea);
+        $("#compose-textarea").trigger("autosize.resize");
+        return;
+    }
 
     channel.get({
         url: '/json/messages/' + message_id,
