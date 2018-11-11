@@ -1129,7 +1129,6 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: Optional[bool]=False) -> List[int]:
     # Filter out messages which didn't pass internal_prep_message properly
-    assert(False)
     messages = [message for message in messages_maybe_none if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
