@@ -283,6 +283,24 @@ run_test('quote_and_reply', () => {
     };
 
     quote_and_reply(opts);
+
+    current_msg_list.selected_message = function () {
+        return {
+            type: 'stream',
+            stream: 'devel',
+            subject: 'test',
+            reply_to: 'bob',
+            sender_full_name: 'Bob',
+            sender_id: 40,
+            raw_content: 'Testing.',
+        };
+    };
+
+    channel.get = function () {
+        assert.fail('channel.get should not be used if raw_content is present');
+    };
+
+    quote_and_reply(opts);
 });
 
 run_test('get_focus_area', () => {
