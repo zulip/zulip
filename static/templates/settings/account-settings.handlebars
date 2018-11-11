@@ -17,6 +17,7 @@
                       title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
+                <div id="email_overlay" class="overlay">    
                 <div id="change_email_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
                   aria-labelledby="change_email_modal_label" aria-hidden="true">
                     <div class="modal-header">
@@ -34,6 +35,7 @@
                         <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_email_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                     </div>
+                </div>
                 </div>
             </form>
 
@@ -58,6 +60,8 @@
                           {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_name_changes_disabled}}style="display:none"{{/unless}}{{/if}}
                           title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                     </div>
+
+                    <div id="full_name_overlay" class="overlay">  
                     <div id="change_full_name_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
                       aria-labelledby="change_full_name_modal_label" aria-hidden="true">
                         <div class="modal-header">
@@ -76,6 +80,7 @@
                             <button id='change_full_name_button' class="button rounded sea-green" data-dismiss="modal">{{t "Change" }}</button>
                         </div>
                     </div>
+                    </div>
                 </div>
             </form>
 
@@ -92,6 +97,7 @@
                 </div>
                 {{/if}}
 
+                <div id="password_overlay" class="overlay">  
                 <div id="change_password_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog"
                   aria-labelledby="change_password_modal_label" aria-hidden="true">
                     <div class="modal-header">
@@ -121,6 +127,7 @@
                         <button class="button white rounded" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
                         <button id='change_password_button' class="button rounded sea-green">{{t "Change" }}</button>
                     </div>
+                </div>
                 </div>
             </form>
 

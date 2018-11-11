@@ -243,6 +243,8 @@ exports.set_up = function () {
     clear_password_change();
 
     $("#change_full_name").on('click', function (e) {
+        $('#full_name_overlay').addClass ('show');
+
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_name_changes_disabled || page_params.is_admin) {
@@ -251,6 +253,7 @@ exports.set_up = function () {
     });
 
     $('#change_password').on('click', function (e) {
+        $('#password_overlay').addClass ('show');
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal('change_password_modal');
@@ -384,6 +387,8 @@ exports.set_up = function () {
     });
 
     $('#change_email').on('click', function (e) {
+        $('#email_overlay').addClass ('show');
+
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {

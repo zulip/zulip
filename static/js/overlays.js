@@ -141,6 +141,9 @@ exports.close_active = function () {
     }
 
     exports.close_overlay(open_overlay_name);
+    $('#full_name_overlay').removeClass ('show');
+    $('#email_overlay').removeClass ('show');
+    $('#password_overlay').removeClass ('show');
 };
 
 exports.close_modal = function (name) {
@@ -163,6 +166,9 @@ exports.close_modal = function (name) {
     blueslip.debug('close modal: ' + name);
 
     $("#" + name).modal("hide").attr("aria-hidden", true);
+    $('#full_name_overlay').removeClass ('show');
+    $('#email_overlay').removeClass ('show');
+    $('#password_overlay').removeClass ('show');
 };
 
 exports.close_active_modal = function () {
@@ -172,6 +178,9 @@ exports.close_active_modal = function () {
     }
 
     $(".modal.in").modal("hide").attr("aria-hidden", true);
+    $('#full_name_overlay').removeClass ('show');
+    $('#email_overlay').removeClass ('show');
+    $('#password_overlay').removeClass ('show');
 };
 
 exports.close_for_hash_change = function () {
