@@ -11,7 +11,8 @@ from zerver.lib.actions import create_stream_if_needed, do_create_user
 from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
     gather_new_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, get_realm, Realm, UserActivity, UserProfile
+from zerver.lib.test_helpers import queries_captured
+from zerver.models import get_client, get_realm, Realm, Message, UserActivity, UserProfile
 
 class TestDigestEmailMessages(ZulipTestCase):
 
@@ -82,6 +83,60 @@ class TestDigestEmailMessages(ZulipTestCase):
         slug = ','.join(str(user_id) for user_id in other_user_ids) + '-group'
         expected_url = "'http://zulip.testserver/#narrow/pm-with/" + slug + "'"
         self.assertIn(expected_url, html)
+
+    @mock.patch('zerver.lib.digest.enough_traffic')
+    @mock.patch('zerver.lib.digest.send_future_email')
+    def test_multiple_stream_senders(self,
+                                     mock_send_future_email: mock.MagicMock,
+                                     mock_enough_traffic: mock.MagicMock) -> None:
+
+        client = 'website'  # this makes `sent_by_human` return True
+
+        othello = self.example_user('othello')
+        self.subscribe(othello, 'Verona')
+
+        one_day_ago = timezone_now() - datetime.timedelta(days=1)
+        Message.objects.all().update(pub_date=one_day_ago)
+        one_sec_ago = timezone_now() - datetime.timedelta(seconds=1)
+
+        cutoff = time.mktime(one_sec_ago.timetuple())
+
+        senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
+        for sender_name in senders:
+            email = self.example_email(sender_name)
+            self.login(email)
+            content = 'some content for ' + email
+            payload = dict(
+                type='stream',
+                client=client,
+                to='Verona',
+                topic='lunch',
+                content=content,
+            )
+            result = self.client_post("/json/messages", payload)
+            self.assert_json_success(result)
+
+        with queries_captured() as queries:
+            handle_digest_email(othello.id, cutoff)
+
+        self.assertTrue(41 <= len(queries) <= 42)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs['to_user_id'], othello.id)
+
+        hot_convo = kwargs['context']['hot_conversations'][0]
+
+        expected_participants = {
+            self.example_user(sender).full_name
+            for sender in senders
+        }
+
+        self.assertEqual(set(hot_convo['participants']), expected_participants)
+        self.assertEqual(hot_convo['count'], 5 - 2)  # 5 messages, but 2 shown
+        teaser_messages = hot_convo['first_few_messages'][0]['senders']
+        self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
+        self.assertIn(teaser_messages[0]['sender'], expected_participants)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
