@@ -12,7 +12,8 @@ from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_e
     gather_new_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.models import get_client, get_realm, Realm, Message, UserActivity, UserProfile
+from zerver.models import get_client, get_realm, flush_per_request_caches, \
+    Realm, Message, UserActivity, UserProfile
 
 class TestDigestEmailMessages(ZulipTestCase):
 
@@ -116,10 +117,11 @@ class TestDigestEmailMessages(ZulipTestCase):
             result = self.client_post("/json/messages", payload)
             self.assert_json_success(result)
 
+        flush_per_request_caches()
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(41 <= len(queries) <= 42)
+        self.assertTrue(34 <= len(queries) <= 35)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]

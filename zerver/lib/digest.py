@@ -201,7 +201,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
-        message__pub_date__gt=cutoff_date).order_by("message__pub_date")
+        message__pub_date__gt=cutoff_date
+    ).select_related('message').order_by("message__pub_date")
 
     context = common_context(user_profile)
 
