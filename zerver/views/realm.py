@@ -1,6 +1,7 @@
 
 from typing import Any, Dict, Optional, List
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -15,6 +16,7 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_property,
     do_deactivate_realm,
+    do_reactivate_realm,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -24,6 +26,7 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
 from zerver.models import Realm, UserProfile
 from zerver.forms import check_subdomain_available as check_subdomain
+from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
 
 @require_realm_admin
 @has_request_variables
@@ -169,3 +172,12 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
         return json_success({"msg": "available"})
     except ValidationError as e:
         return json_success({"msg": e.message})
+
+def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+    try:
+        realm = get_object_from_key(confirmation_key, Confirmation.REALM_REACTIVATION)
+    except ConfirmationKeyException:
+        return render(request, 'zerver/realm_reactivation_link_error.html')
+    do_reactivate_realm(realm)
+    context = {"realm": realm}
+    return render(request, 'zerver/realm_reactivation.html', context)

@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import do_create_user, do_deactivate_realm, do_reactivate_realm
 from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
@@ -287,3 +287,11 @@ class TestPasswordRestEmail(ZulipTestCase):
         tokenized_no_reply_email = parseaddr(from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn("Psst. Word on the street is that you", outbox[0].body)
+
+class TestRealmReactivationEmail(ZulipTestCase):
+    COMMAND_NAME = "send_realm_reactivation_email"
+
+    def test_if_realm_not_deactivated(self) -> None:
+        realm = get_realm('zulip')
+        with self.assertRaisesRegex(CommandError, "The realm %s is already active." % (realm.name,)):
+            call_command(self.COMMAND_NAME, "--realm=zulip")
