@@ -1,0 +1,9 @@
+{{ _('Hello there.') }}
+
+{{ _('To reactivate organization, please click here:') }}
+    <{{ confirmation_url }}>
+
+{% trans %}Feel free to give us a shout at {{ support_email }},if you have any questions.{% endtrans %}
+
+{{ _("Cheers,") }}<br />
+{{ _("Team Zulip") }}

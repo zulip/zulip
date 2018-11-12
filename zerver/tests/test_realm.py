@@ -3,6 +3,7 @@ import datetime
 import ujson
 import re
 import mock
+from email.utils import parseaddr
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -19,8 +20,10 @@ from zerver.lib.actions import (
     do_scrub_realm,
     create_stream_if_needed,
     do_change_plan_type,
+    do_send_realm_reactivation_email
 )
 
+from confirmation.models import create_confirmation_link, Confirmation
 from zerver.lib.send_email import send_future_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
@@ -179,6 +182,39 @@ class RealmTest(ZulipTestCase):
 
         do_deactivate_realm(realm)
         self.assertTrue(realm.deactivated)
+
+    def test_realm_reactivation_link(self) -> None:
+        realm = get_realm('zulip')
+        do_deactivate_realm(realm)
+        self.assertTrue(realm.deactivated)
+        confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
+        response = self.client_get(confirmation_url)
+        self.assert_in_success_response(['Your organization has been successfully reactivated'], response)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+    def test_do_send_realm_reactivation_email(self) -> None:
+        realm = get_realm('zulip')
+        do_send_realm_reactivation_email(realm)
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+        from_email = outbox[0].from_email
+        tokenized_no_reply_email = parseaddr(from_email)[1]
+        self.assertIn("Zulip Account Security", from_email)
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertIn('Reactivate your Zulip organization', outbox[0].subject)
+        self.assertIn('To reactivate organization, please click here:', outbox[0].body)
+        admins = realm.get_admin_users()
+        confirmation_url = self.get_confirmation_url_from_outbox(admins[0].email)
+        response = self.client_get(confirmation_url)
+        self.assert_in_success_response(['Your organization has been successfully reactivated'], response)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+    def test_realm_reactivation_with_random_link(self) -> None:
+        random_link = "/reactivate/5e89081eb13984e0f3b130bf7a4121d153f1614b"
+        response = self.client_get(random_link)
+        self.assert_in_success_response(['The organization reactivation link has expired or is not valid.'], response)
 
     def test_change_notifications_stream(self) -> None:
         # We need an admin user.

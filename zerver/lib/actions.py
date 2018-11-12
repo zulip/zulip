@@ -5136,3 +5136,13 @@ def missing_any_realm_internal_bots() -> bool:
                                          .annotate(Count('id')))
     realm_count = Realm.objects.count()
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
+
+def do_send_realm_reactivation_email(realm: Realm) -> None:
+    confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
+    admins = realm.get_admin_users()
+    context = {'confirmation_url': confirmation_url}
+    for admin in admins:
+        send_email(
+            'zerver/emails/realm_reactivation', to_email=admin.email,
+            from_address=FromAddress.tokenized_no_reply_address(),
+            from_name="Zulip Account Security", context=context)
