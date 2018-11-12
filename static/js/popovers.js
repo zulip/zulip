@@ -772,7 +772,7 @@ exports.register_click_handlers = function () {
             presence_status: presence.get_status(user.user_id),
             private_message_class: "compose_private_message",
             sent_by_uri: hash_util.by_sender_uri(user.email),
-            show_user_profile: !user.is_bot && page_params.custom_profile_fields,
+            show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
             user_email: user.email,
             user_full_name: user.full_name,
             user_id: user.user_id,
