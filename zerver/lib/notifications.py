@@ -11,7 +11,8 @@ from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import pm_narrow_url, stream_narrow_url, topic_narrow_url
+from zerver.lib.url_encoding import personal_narrow_url, pm_narrow_url, \
+    stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
     ScheduledEmail,
@@ -168,7 +169,10 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name,)
-            html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
+            html_link = personal_narrow_url(
+                realm=user_profile.realm,
+                sender=message.sender,
+            )
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             disp_recipient = get_display_recipient(message.recipient)

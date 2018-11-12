@@ -23,8 +23,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
-        email = self.example_email('hamlet')
-        self.login(email)
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
@@ -40,7 +40,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         kwargs = mock_send_future_email.call_args[1]
         self.assertEqual(kwargs['to_user_id'], user_profile.id)
         html = kwargs['context']['unread_pms'][0]['header']['html']
-        self.assertIn("'http://zulip.testserver/#narrow/pm-with/hamlet.40zulip.2Ecom'", html)
+        expected_url = "'http://zulip.testserver/#narrow/pm-with/{id}-hamlet'".format(id=hamlet.id)
+        self.assertIn(expected_url, html)
 
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
