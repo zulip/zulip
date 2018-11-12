@@ -1,6 +1,6 @@
 tc-aws==6.2.10
 thumbor==6.5.1
-typing==3.6.4
+typing==3.6.6
 # Required for just importing settings from our main django app.
 django-auth-ldap==1.5.0
 Django==1.11.14

@@ -26,4 +26,4 @@ imagesize==1.1.0
 snowballstemmer==1.2.1
 
 # Include typing explicitly, since it's needed on Python 3.4
-typing==3.6.4
+typing==3.6.6
