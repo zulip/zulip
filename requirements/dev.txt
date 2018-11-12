@@ -129,7 +129,7 @@ pygments==2.2.0
 pyhamcrest==1.9.0         # via twisted
 pyjwt==1.6.4
 pyldap==3.0.0.post1       # via fakeldap
-pylibmc==1.5.2
+pylibmc==1.6.0
 pyoembed==0.1.2
 pyopenssl==18.0.0         # via ndg-httpsclient, requests, scrapy, service-identity
 pyparsing==2.2.0          # via packaging
