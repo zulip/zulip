@@ -74,7 +74,14 @@ class TestDigestEmailMessages(ZulipTestCase):
         kwargs = mock_send_future_email.call_args[1]
         self.assertEqual(kwargs['to_user_id'], user_profile.id)
         html = kwargs['context']['unread_pms'][0]['header']['html']
-        self.assertIn("'http://zulip.testserver/#narrow/pm-with/cordelia.40zulip.2Ecom.2Chamlet.40zulip.2Ecom'", html)
+
+        other_user_ids = sorted([
+            self.example_user('cordelia').id,
+            self.example_user('hamlet').id,
+        ])
+        slug = ','.join(str(user_id) for user_id in other_user_ids) + '-group'
+        expected_url = "'http://zulip.testserver/#narrow/pm-with/" + slug + "'"
+        self.assertIn(expected_url, html)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
