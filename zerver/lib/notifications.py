@@ -11,7 +11,7 @@ from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import personal_narrow_url, pm_narrow_url, \
+from zerver.lib.url_encoding import personal_narrow_url, huddle_narrow_url, \
     stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
@@ -178,10 +178,15 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
             disp_recipient = get_display_recipient(message.recipient)
             assert not isinstance(disp_recipient, str)
             other_recipients = [r['full_name'] for r in disp_recipient
-                                if r['email'] != user_profile.email]
+                                if r['id'] != user_profile.id]
             header = "You and %s" % (", ".join(other_recipients),)
-            html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
-                                      if r["email"] != user_profile.email])
+            other_user_ids = [r['id'] for r in disp_recipient
+                              if r['id'] != user_profile.id]
+            html_link = huddle_narrow_url(
+                realm=user_profile.realm,
+                other_user_ids=other_user_ids,
+            )
+
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
