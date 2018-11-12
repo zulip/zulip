@@ -1,7 +1,7 @@
 import urllib
 from typing import Any, Dict, List
 
-from zerver.models import Realm, Stream
+from zerver.models import Realm, Stream, UserProfile
 
 def hash_util_encode(string: str) -> str:
     # Do the same encoding operation as hash_util.encodeHashComponent on the
@@ -14,6 +14,12 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
     # We encode streams for urls as something like 99-Verona.
     stream_name = stream_name.replace(' ', '-')
     return str(stream_id) + '-' + hash_util_encode(stream_name)
+
+def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
+    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
+    email_user = sender.email.split('@')[0].lower()
+    pm_slug = str(sender.id) + '-' + hash_util_encode(email_user)
+    return base_url + pm_slug
 
 def pm_narrow_url(realm: Realm, participants: List[str]) -> str:
     participants.sort()
