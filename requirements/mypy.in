@@ -4,5 +4,5 @@
 # See requirements/README.md for more detail.
 mypy==0.641
 # Include typing explicitly, since it's needed on Python 3.4
-typing==3.6.4
+typing==3.6.6
 typing_extensions==3.6.6
