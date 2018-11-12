@@ -763,27 +763,26 @@ exports.register_click_handlers = function () {
         }
 
         var user = people.get_person_from_user_id(user_id);
-        var user_email = user.email;
 
         var args = {
-            is_active: people.is_active_user_for_popover(user_id),
+            is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: user.is_bot,
             is_sender_popover: false,
-            pm_with_uri: hash_util.pm_with_uri(user_email),
-            presence_status: presence.get_status(user_id),
+            pm_with_uri: hash_util.pm_with_uri(user.email),
+            presence_status: presence.get_status(user.user_id),
             private_message_class: "compose_private_message",
-            sent_by_uri: hash_util.by_sender_uri(user_email),
+            sent_by_uri: hash_util.by_sender_uri(user.email),
             show_user_profile: !user.is_bot && page_params.custom_profile_fields,
-            user_email: user_email,
+            user_email: user.email,
             user_full_name: user.full_name,
-            user_id: user_id,
-            user_last_seen_time_status: user_last_seen_time_status(user_id),
-            user_time: people.get_user_time(user_id),
+            user_id: user.user_id,
+            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            user_time: people.get_user_time(user.user_id),
         };
 
         target.popover({
             template: templates.render('user_info_popover', {class: "user_popover"}),
-            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
+            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user.email}),
             content: templates.render('user_info_popover_content', args),
             trigger: "manual",
             fixed: true,
@@ -794,7 +793,7 @@ exports.register_click_handlers = function () {
         init_email_clipboard();
         load_medium_avatar(user, $(".popover-avatar"));
 
-        current_user_sidebar_user_id = user_id;
+        current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = target.data('popover');
     });
 
