@@ -21,10 +21,10 @@ def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
     pm_slug = str(sender.id) + '-' + hash_util_encode(email_user)
     return base_url + pm_slug
 
-def pm_narrow_url(realm: Realm, participants: List[str]) -> str:
-    participants.sort()
+def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
+    pm_slug = ','.join(str(user_id) for user_id in sorted(other_user_ids)) + '-group'
     base_url = "%s/#narrow/pm-with/" % (realm.uri,)
-    return base_url + hash_util_encode(",".join(participants))
+    return base_url + pm_slug
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
     base_url = "%s/#narrow/stream/" % (realm.uri,)
