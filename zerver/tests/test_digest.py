@@ -36,7 +36,11 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
-        self.assertEqual(mock_send_future_email.call_args[1]['to_user_id'], user_profile.id)
+
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs['to_user_id'], user_profile.id)
+        html = kwargs['context']['unread_pms'][0]['header']['html']
+        self.assertIn("'http://zulip.testserver/#narrow/pm-with/hamlet.40zulip.2Ecom'", html)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
