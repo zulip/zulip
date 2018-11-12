@@ -42,6 +42,39 @@ class TestDigestEmailMessages(ZulipTestCase):
         html = kwargs['context']['unread_pms'][0]['header']['html']
         self.assertIn("'http://zulip.testserver/#narrow/pm-with/hamlet.40zulip.2Ecom'", html)
 
+    @mock.patch('zerver.lib.digest.enough_traffic')
+    @mock.patch('zerver.lib.digest.send_future_email')
+    def test_huddle_urls(self, mock_send_future_email: mock.MagicMock,
+                         mock_enough_traffic: mock.MagicMock) -> None:
+
+        email = self.example_email('hamlet')
+        self.login(email)
+
+        huddle_emails = [
+            self.example_email('cordelia'),
+            self.example_email('othello'),
+        ]
+
+        payload = dict(
+            type='private',
+            content='huddle message',
+            client='test suite',
+            to=','.join(huddle_emails),
+        )
+        result = self.client_post("/json/messages", payload)
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('othello')
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
+
+        handle_digest_email(user_profile.id, cutoff)
+        self.assertEqual(mock_send_future_email.call_count, 1)
+
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs['to_user_id'], user_profile.id)
+        html = kwargs['context']['unread_pms'][0]['header']['html']
+        self.assertIn("'http://zulip.testserver/#narrow/pm-with/cordelia.40zulip.2Ecom.2Chamlet.40zulip.2Ecom'", html)
+
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
     @override_settings(SEND_DIGEST_EMAILS=True)
