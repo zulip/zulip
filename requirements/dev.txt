@@ -177,7 +177,7 @@ transifex-client==0.12.5
 twilio==6.19.2
 twisted==18.9.0
 typed-ast==1.1.0          # via mypy
-typing==3.6.4
+typing==3.6.6
 typing_extensions==3.6.6
 uritemplate==3.0.0
 urllib3==1.22             # via requests, transifex-client

@@ -36,6 +36,6 @@ tc-aws==6.2.10
 thumbor==6.5.1
 tornado-botocore==1.3.2   # via tc-aws
 tornado==4.5.3            # via thumbor, tornado-botocore
-typing==3.6.4
+typing==3.6.6
 virtualenv-clone==0.3.0
 webcolors==1.8.1          # via thumbor
