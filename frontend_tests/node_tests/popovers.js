@@ -150,7 +150,6 @@ run_test('sender_hover', () => {
                 user_last_seen_time_status: 'translated: More than 2 weeks ago',
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
-                narrowed: false,
                 private_message_class: 'respond_personal_button',
                 show_user_profile: false,
                 is_me: false,
