@@ -139,21 +139,21 @@ function show_user_info_popover(element, user, message) {
         }
 
         var args = {
-            user_full_name: user.full_name,
-            user_email: user.email,
-            user_id: user.user_id,
-            user_time: people.get_user_time(user.user_id),
-            presence_status: presence.get_status(user.user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
-            pm_with_uri: hash_util.pm_with_uri(user.email),
-            sent_by_uri: hash_util.by_sender_uri(user.email),
-            narrowed: narrow_state.active(),
-            private_message_class: "respond_personal_button",
-            is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
             is_bot: user.is_bot,
+            is_me: people.is_current_user(user.email),
             is_sender_popover: message.sender_id === user.user_id,
+            narrowed: narrow_state.active(),
+            pm_with_uri: hash_util.pm_with_uri(user.email),
+            presence_status: presence.get_status(user.user_id),
+            private_message_class: "respond_personal_button",
+            sent_by_uri: hash_util.by_sender_uri(user.email),
             show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
+            user_email: user.email,
+            user_full_name: user.full_name,
+            user_id: user.user_id,
+            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            user_time: people.get_user_time(user.user_id),
         };
 
 
@@ -766,19 +766,19 @@ exports.register_click_handlers = function () {
         var user_email = user.email;
 
         var args = {
-            user_email: user_email,
-            user_full_name: user.full_name,
-            user_id: user_id,
-            user_time: people.get_user_time(user_id),
-            presence_status: presence.get_status(user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user_id),
-            pm_with_uri: hash_util.pm_with_uri(user_email),
-            sent_by_uri: hash_util.by_sender_uri(user_email),
-            private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
             is_sender_popover: false,
+            pm_with_uri: hash_util.pm_with_uri(user_email),
+            presence_status: presence.get_status(user_id),
+            private_message_class: "compose_private_message",
+            sent_by_uri: hash_util.by_sender_uri(user_email),
             show_user_profile: !user.is_bot && page_params.custom_profile_fields,
+            user_email: user_email,
+            user_full_name: user.full_name,
+            user_id: user_id,
+            user_last_seen_time_status: user_last_seen_time_status(user_id),
+            user_time: people.get_user_time(user_id),
         };
 
         target.popover({
