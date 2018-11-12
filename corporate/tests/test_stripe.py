@@ -5,7 +5,7 @@ import operator
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple
+from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
 import ujson
 import json
 
@@ -194,8 +194,8 @@ def normalize_fixtures(decorated_function: CallableT) -> None:  # nocoverage
             f.write(file_content)
 
 def mock_stripe(*mocked_function_names: str,
-                generate: Optional[bool]=None) -> Callable[[CallableT], Callable[..., Any]]:
-    def _mock_stripe(decorated_function: CallableT) -> Callable[..., Any]:
+                generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
+    def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
             generate_fixture = GENERATE_STRIPE_FIXTURES
@@ -215,7 +215,7 @@ def mock_stripe(*mocked_function_names: str,
             if generate_fixture:  # nocoverage
                 normalize_fixtures(decorated_function)
             return val
-        return wrapped
+        return cast(CallableT, wrapped)
     return _mock_stripe
 
 # A Kandra is a fictional character that can become anything. Used as a
