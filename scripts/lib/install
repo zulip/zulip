@@ -56,6 +56,7 @@ PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
+    set +x
     echo "error: --self-signed-cert and --certbot are incompatible" >&2
     echo >&2
     usage
@@ -106,7 +107,11 @@ esac
 # errors like a segfault running `pip install`.
 mem_kb=$(head -n1 /proc/meminfo | awk '{print $2}')
 if [ "$mem_kb" -lt 1900000 ]; then
-    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
+    set +x
+    echo -e '\033[0;31m' >&2
+    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM." >&2
+    echo >&2
+    echo -e '\033[0m' >&2
     exit 1
 fi
 
