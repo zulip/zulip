@@ -20,7 +20,7 @@ apns2==0.4.1
 argon2-cffi==18.3.0
 arrow==0.10.0             # via gitlint
 asn1crypto==0.23.0        # via cryptography
-attrs==17.3.0             # via automat, service-identity
+attrs==18.2.0             # via automat, service-identity, twisted
 automat==0.6.0            # via twisted
 aws-xray-sdk==0.94        # via moto
 babel==2.5.3
@@ -126,6 +126,7 @@ pycrypto==2.6.1
 pydispatcher==2.0.5       # via scrapy
 pyflakes==2.0.0
 pygments==2.2.0
+pyhamcrest==1.9.0         # via twisted
 pyjwt==1.6.4
 pyldap==3.0.0.post1       # via fakeldap
 pylibmc==1.5.2
@@ -174,7 +175,7 @@ tornado==4.5.3
 traitlets==4.3.2          # via ipython
 transifex-client==0.12.5
 twilio==6.19.2
-twisted==18.4.0
+twisted==18.9.0
 typed-ast==1.1.0          # via mypy
 typing==3.6.4
 typing_extensions==3.6.6
