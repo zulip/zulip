@@ -159,7 +159,7 @@ python-twitter==3.5
 polib==1.1.0
 
 # Needed for cloning virtual environments
-virtualenv-clone==0.3.0
+virtualenv-clone==0.4.0
 
 # Needed for reading json as stream
 ijson==2.3

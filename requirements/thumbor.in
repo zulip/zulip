@@ -15,4 +15,4 @@ certifi==2018.10.15
 singledispatch==3.4.0.3
 
 # Needed for cloning virtual environments
-virtualenv-clone==0.3.0
+virtualenv-clone==0.4.0
