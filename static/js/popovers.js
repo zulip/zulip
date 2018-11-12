@@ -156,13 +156,12 @@ function show_user_info_popover(element, user, message) {
             user_time: people.get_user_time(user.user_id),
         };
 
-
         elt.popover({
+            content: templates.render('user_info_popover_content', args),
             placement: calculate_info_popover_placement(popover_size, elt),
             template: templates.render('user_info_popover', {class: "message-info-popover"}),
             title: templates.render('user_info_popover_title',
                                     {user_avatar: "avatar/" + user.email}),
-            content: templates.render('user_info_popover_content', args),
             trigger: "manual",
         });
         elt.popover("show");
@@ -781,12 +780,12 @@ exports.register_click_handlers = function () {
         };
 
         target.popover({
-            template: templates.render('user_info_popover', {class: "user_popover"}),
-            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user.email}),
             content: templates.render('user_info_popover_content', args),
-            trigger: "manual",
             fixed: true,
             placement: userlist_placement === "left" ? "right" : "left",
+            template: templates.render('user_info_popover', {class: "user_popover"}),
+            title: templates.render('user_info_popover_title', {user_avatar: "avatar/" + user.email}),
+            trigger: "manual",
         });
         target.popover("show");
 
