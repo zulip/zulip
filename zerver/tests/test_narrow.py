@@ -31,6 +31,10 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic import (
+    MATCH_TOPIC,
+    TOPIC_NAME,
+)
 from zerver.lib.topic_mutes import (
     set_topic_mutes,
 )
@@ -1496,18 +1500,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
 
-        meeting_message = [m for m in messages if m['subject'] == 'meetings'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'meetings'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             'meetings')
         self.assertEqual(
             meeting_message['match_content'],
             '<p>discuss <span class="highlight">lunch</span> after ' +
             '<span class="highlight">lunch</span></p>')
 
-        meeting_message = [m for m in messages if m['subject'] == 'lunch plans'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'lunch plans'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             '<span class="highlight">lunch</span> plans')
         self.assertEqual(
             meeting_message['match_content'],
@@ -1540,18 +1544,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本'][-1]
+        japanese_message = [m for m in messages if m[TOPIC_NAME] == u'日本'][-1]
         self.assertEqual(
-            japanese_message['match_subject'],
+            japanese_message[MATCH_TOPIC],
             u'<span class="highlight">日本</span>')
         self.assertEqual(
             japanese_message['match_content'],
             u'<p>昨日、<span class="highlight">日本</span>' +
             u' のお菓子を送りました。</p>')
 
-        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        english_message = [m for m in messages if m[TOPIC_NAME] == 'english'][0]
         self.assertEqual(
-            english_message['match_subject'],
+            english_message[MATCH_TOPIC],
             'english')
         self.assertIn(
             english_message['match_content'],
@@ -1666,18 +1670,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本語'][-1]
+        japanese_message = [m for m in messages if m[TOPIC_NAME] == u'日本語'][-1]
         self.assertEqual(
-            japanese_message['match_subject'],
+            japanese_message[MATCH_TOPIC],
             u'<span class="highlight">日本</span>語')
         self.assertEqual(
             japanese_message['match_content'],
             u'<p>昨日、<span class="highlight">日本</span>の' +
             u'お菓子を送りました。</p>')
 
-        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        english_message = [m for m in messages if m[TOPIC_NAME] == 'english'][0]
         self.assertEqual(
-            english_message['match_subject'],
+            english_message[MATCH_TOPIC],
             'english')
         self.assertIn(
             english_message['match_content'],
@@ -1740,7 +1744,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_before=0,
         ))  # type: Dict[str, Any]
         self.assertEqual(len(special_search_result['messages']), 1)
-        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+        self.assertEqual(special_search_result['messages'][0][MATCH_TOPIC],
                          'bread &amp; <span class="highlight">butter</span>')
 
         special_search_narrow = [
@@ -1753,7 +1757,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_before=0,
         ))
         self.assertEqual(len(special_search_result['messages']), 1)
-        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+        self.assertEqual(special_search_result['messages'][0][MATCH_TOPIC],
                          'bread <span class="highlight">&amp;</span> butter')
         self.assertEqual(special_search_result['messages'][0]['match_content'],
                          '<p>chalk <span class="highlight">&amp;</span> cheese</p>')
@@ -1789,7 +1793,7 @@ class GetOldMessagesTest(ZulipTestCase):
         message = messages[str(good_id)]
         self.assertIn('a href=', message['match_content'])
         self.assertIn('http://foo.com', message['match_content'])
-        self.assertEqual(message['match_subject'], 'test_topic')
+        self.assertEqual(message[MATCH_TOPIC], 'test_topic')
 
     def test_get_messages_with_only_searching_anchor(self) -> None:
         """
@@ -2601,9 +2605,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 1)
         messages = result['messages']
 
-        meeting_message = [m for m in messages if m['subject'] == 'say hello'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'say hello'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             'say hello')
         othello = self.example_user('othello')
         self.assertEqual(
