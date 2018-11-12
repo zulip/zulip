@@ -143,7 +143,6 @@ function show_user_info_popover(element, user, message) {
             is_bot: user.is_bot,
             is_me: people.is_current_user(user.email),
             is_sender_popover: message.sender_id === user.user_id,
-            narrowed: narrow_state.active(),
             pm_with_uri: hash_util.pm_with_uri(user.email),
             presence_status: presence.get_status(user.user_id),
             private_message_class: "respond_personal_button",
