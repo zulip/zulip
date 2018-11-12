@@ -1,0 +1,38 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/registration_confirmation.png"/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% trans %}
+    Dear former administrators of {{ realm_name }},
+    {% endtrans %}
+</p>
+<p>
+    {% trans %}
+    One of your administrators requested reactivation of the
+    previously deactivated Zulip organization hosted at {{ realm_uri }}.  If you'd
+    like to do confirm that request and reactivate the organization, please click here:
+    {% endtrans %}
+</p>
+<a class="button" href="{{ confirmation_url }}">{{ _('Reactivate organization') }}</a>
+<p>
+    {% trans %}
+    If the request was in error, you can take no action and this link
+    will expire in 24 hours.
+    {% endtrans %}
+</p>
+<p>
+    {% trans %}
+    Feel free to give us a shout at
+    <a href="mailto:{{ support_email }}">{{ support_email }}</a>,
+    if you have any questions.
+    {% endtrans %}
+</p>
+<p>
+    {{ _("Cheers,") }}<br />
+    {{ _("Team Zulip") }}
+</p>
+{% endblock %}

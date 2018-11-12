@@ -70,8 +70,11 @@ def create_confirmation_link(obj: ContentType, host: str,
                              confirmation_type: int,
                              url_args: Optional[Dict[str, str]]=None) -> str:
     key = generate_key()
+    realm = None
+    if hasattr(obj, 'realm'):
+        realm = obj.realm
     Confirmation.objects.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key,
-                                realm=obj.realm, type=confirmation_type)
+                                realm=realm, type=confirmation_type)
     return confirmation_url(key, host, confirmation_type, url_args)
 
 def confirmation_url(confirmation_key: str, host: str,
@@ -99,6 +102,7 @@ class Confirmation(models.Model):
     SERVER_REGISTRATION = 5
     MULTIUSE_INVITE = 6
     REALM_CREATION = 7
+    REALM_REACTIVATION = 8
     type = models.PositiveSmallIntegerField()  # type: int
 
     def __str__(self) -> str:
@@ -121,6 +125,7 @@ _properties = {
         'zerver.views.registration.accounts_home_from_multiuse_invite',
         validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS),
     Confirmation.REALM_CREATION: ConfirmationType('check_prereg_key_and_redirect'),
+    Confirmation.REALM_REACTIVATION: ConfirmationType('zerver.views.realm.realm_reactivation'),
 }
 
 def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
