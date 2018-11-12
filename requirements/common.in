@@ -106,7 +106,7 @@ pyasn1-modules==0.2.2
 pycrypto==2.6.1
 
 # Needed for memcached usage
-pylibmc==1.5.2
+pylibmc==1.6.0
 
 # Needed for compression support in memcached via pylibmc
 django-pylibmc==0.6.1
