@@ -59,7 +59,7 @@ exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + exports.encode_stream_name(stream);
 };
 
-exports.by_stream_subject_uri = function (stream, subject) {
+exports.by_stream_topic_uri = function (stream, subject) {
     return "#narrow/stream/" + exports.encode_stream_name(stream) +
            "/subject/" + exports.encodeHashComponent(subject);
 };
@@ -115,7 +115,7 @@ exports.by_conversation_and_time_uri = function (message) {
 
     if (message.type === "stream") {
         return absolute_url +
-            exports.by_stream_subject_uri(message.stream, message.subject) +
+            exports.by_stream_topic_uri(message.stream, message.subject) +
             suffix;
     }
 
