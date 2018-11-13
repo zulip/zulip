@@ -22,9 +22,14 @@ class AttachmentHandler:
         if not attachment:
             return None
 
+        name = attachment['name']
+
+        if 'path' not in attachment:
+            logging.info('Skipping HipChat attachment with missing path data: ' + name)
+            return None
+
         size = attachment['size']
         path = attachment['path']
-        name = attachment['name']
 
         local_fn = os.path.join(files_dir, path)
 
