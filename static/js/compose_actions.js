@@ -4,7 +4,7 @@ var exports = {};
 
 function update_lock_icon_for_stream(stream_name) {
     var icon = $("#compose-lock-icon");
-    var streamfield = $("#stream");
+    var streamfield = $("#stream_message_recipient_stream");
     if (stream_data.get_invite_only(stream_name)) {
         icon.show();
         streamfield.addClass("lock-padding");
@@ -32,19 +32,19 @@ function hide_box() {
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === 'stream' && opts.stream && !opts.subject) {
-        return 'subject';
+        return '#stream_message_recipient_topic';
     } else if (msg_type === 'stream' && opts.stream
                || msg_type === 'private' && opts.private_message_recipient) {
         if (opts.trigger === "new topic button") {
-            return 'subject';
+            return '#stream_message_recipient_topic';
         }
-        return 'compose-textarea';
+        return '#compose-textarea';
     }
 
     if (msg_type === 'stream') {
-        return 'stream';
+        return '#stream_message_recipient_stream';
     }
-    return 'private_message_recipient';
+    return '#private_message_recipient';
 }
 // Export for testing
 exports._get_focus_area = get_focus_area;
@@ -57,7 +57,7 @@ exports.set_focus = function (msg_type, opts) {
 
     if (window.getSelection().toString() === "" ||
          opts.trigger !== "message click") {
-        var elt = $('#' + focus_area);
+        var elt = $(focus_area);
         elt.focus().select();
     }
 };

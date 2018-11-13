@@ -466,16 +466,17 @@ exports.validation_error = function (error_type, stream_name) {
     switch (error_type) {
     case "does-not-exist":
         response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
-        compose_error(response, $('#stream'));
+        compose_error(response, $('#stream_message_recipient_stream'));
         return false;
     case "error":
-        compose_error(i18n.t("Error checking subscription"), $("#stream"));
+        compose_error(i18n.t("Error checking subscription"),
+                      $("#stream_message_recipient_stream"));
         return false;
     case "not-subscribed":
         var sub = stream_data.get_sub(stream_name);
         var new_row = templates.render("compose_not_subscribed", {
             should_display_sub_button: sub.should_display_subscription_button});
-        compose_not_subscribed_error(new_row, $('#stream'));
+        compose_not_subscribed_error(new_row, $('#stream_message_recipient_stream'));
         return false;
     }
     return true;
@@ -493,14 +494,14 @@ exports.validate_stream_message_address_info = function (stream_name) {
 function validate_stream_message() {
     var stream_name = compose_state.stream_name();
     if (stream_name === "") {
-        compose_error(i18n.t("Please specify a stream"), $("#stream"));
+        compose_error(i18n.t("Please specify a stream"), $("#stream_message_recipient_stream"));
         return false;
     }
 
     if (page_params.realm_mandatory_topics) {
         var topic = compose_state.topic();
         if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
+            compose_error(i18n.t("Please specify a topic"), $("#stream_message_recipient_topic"));
             return false;
         }
     }
@@ -689,8 +690,8 @@ exports.needs_subscribe_warning = function (email) {
 
 
 exports.initialize = function () {
-    $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
-    $('#stream,#subject,#private_message_recipient').on('change', update_fade);
+    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
+    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
     $('#compose-textarea').on('keydown', function (event) {
         exports.handle_keydown(event, $("#compose-textarea").expectOne());
     });
@@ -775,7 +776,7 @@ exports.initialize = function () {
     $("#compose-send-status").on('click', '.sub_unsub_button', function (event) {
         event.preventDefault();
 
-        var stream_name = $('#stream').val();
+        var stream_name = $('#stream_message_recipient_stream').val();
         if (stream_name === undefined) {
             return;
         }

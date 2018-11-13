@@ -334,7 +334,7 @@ textarea.new_message_textarea:focus,
     -webkit-box-shadow: none;
 }
 
-#stream.recipient_box:focus {
+#stream_message_recipient_stream.recipient_box:focus {
     border-left: none;
 }
 
@@ -344,20 +344,20 @@ input.recipient_box {
     border-radius: 3px;
 }
 
-#stream.recipient_box {
+#stream_message_recipient_stream.recipient_box {
     width: 20%;
     border-radius: 0px 3px 3px 0px;
     border-left: 0px;
     min-width: 120px;
 }
 
-#subject.recipient_box {
+#stream_message_recipient_topic.recipient_box {
     width: calc(20% - -14px);
     min-width: 140px;
     max-width: 165px;
 }
 
-#stream.recipient_box.lock-padding {
+#stream_message_recipient_stream.recipient_box.lock-padding {
     padding-left: 18px;
 }
 

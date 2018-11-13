@@ -129,8 +129,8 @@ run_test('start', () => {
     assert_visible('#stream-message');
     assert_hidden('#private-message');
 
-    assert.equal($('#stream').val(), 'stream1');
-    assert.equal($('#subject').val(), 'topic1');
+    assert.equal($('#stream_message_recipient_stream').val(), 'stream1');
+    assert.equal($('#stream_message_recipient_topic').val(), 'topic1');
     assert.equal(compose_state.get_message_type(), 'stream');
     assert(compose_state.composing());
 
@@ -206,7 +206,7 @@ run_test('respond_to_message', () => {
     };
 
     respond_to_message(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
 });
 
 run_test('reply_with_mention', () => {
@@ -229,7 +229,7 @@ run_test('reply_with_mention', () => {
     };
 
     reply_with_mention(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts**');
     assert(compose_state.has_message_content());
 
@@ -248,7 +248,7 @@ run_test('reply_with_mention', () => {
     people.add_in_realm(bob_2);
 
     reply_with_mention(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts|40**');
     assert(compose_state.has_message_content());
 });
@@ -304,19 +304,19 @@ run_test('quote_and_reply', () => {
 });
 
 run_test('get_focus_area', () => {
-    assert.equal(get_focus_area('private', {}), 'private_message_recipient');
+    assert.equal(get_focus_area('private', {}), '#private_message_recipient');
     assert.equal(get_focus_area('private', {
-        private_message_recipient: 'bob@example.com'}), 'compose-textarea');
-    assert.equal(get_focus_area('stream', {}), 'stream');
+        private_message_recipient: 'bob@example.com'}), '#compose-textarea');
+    assert.equal(get_focus_area('stream', {}), '#stream_message_recipient_stream');
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
-                 'subject');
+                 '#stream_message_recipient_topic');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more'}),
-                 'compose-textarea');
+                 '#compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
                                            subject: 'more',
                                            trigger: 'new topic button'}),
-                 'subject');
+                 '#stream_message_recipient_topic');
 });
 
 run_test('focus_in_empty_compose', () => {

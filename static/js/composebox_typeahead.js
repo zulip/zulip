@@ -146,8 +146,8 @@ function handle_keydown(e) {
         }
 
         // If no typeaheads are shown...
-        if (!($("#subject").data().typeahead.shown ||
-              $("#stream").data().typeahead.shown ||
+        if (!($("#stream_message_recipient_topic").data().typeahead.shown ||
+              $("#stream_message_recipient_stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
               $("#compose-textarea").data().typeahead.shown)) {
 
@@ -540,8 +540,8 @@ exports.initialize_compose_typeahead = function (selector) {
 };
 
 exports.initialize = function () {
-    select_on_focus("stream");
-    select_on_focus("subject");
+    select_on_focus("stream_message_recipient_stream");
+    select_on_focus("stream_message_recipient_topic");
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
@@ -573,7 +573,7 @@ exports.initialize = function () {
     }
 
     // limit number of items so the list doesn't fall off the screen
-    $("#stream").typeahead({
+    $("#stream_message_recipient_stream").typeahead({
         source: function () {
             return stream_data.subscribed_streams();
         },
@@ -590,7 +590,7 @@ exports.initialize = function () {
         },
     });
 
-    $("#subject").typeahead({
+    $("#stream_message_recipient_topic").typeahead({
         source: function () {
             var stream_name = compose_state.stream_name();
             return exports.topics_seen_for(stream_name);

@@ -240,6 +240,16 @@ exports.then_send_message = function (type, params) {
         exports.pm_recipient.set(params.recipient);
         delete params.recipient;
 
+        if (params.stream) {
+            params.stream_message_recipient_stream = params.stream;
+            delete params.stream;
+        }
+
+        if (params.subject) {
+            params.stream_message_recipient_topic = params.subject;
+            delete params.subject;
+        }
+
         casper.fill('form[action^="/json/messages"]', params);
 
         exports.turn_off_press_enter_to_send();

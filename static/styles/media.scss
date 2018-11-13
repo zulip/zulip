@@ -326,7 +326,7 @@
 }
 
 @media (max-width: 370px) {
-    #subject.recipient_box {
+    #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 175px);
         min-width: 95px;
     }

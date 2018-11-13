@@ -39,10 +39,22 @@ casper.then(function () {
     casper.page.sendEvent('keypress', "c");
 });
 
+
+function check_compose_is_cleared() {
+    common.check_form(
+        '#send_message_form',
+        {
+            stream_message_recipient_stream: '',
+            stream_message_recipient_topic: '',
+        },
+        "Stream empty on new compose"
+    );
+}
+
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertVisible('#stream-message', 'Stream input box visible');
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        check_compose_is_cleared();
         casper.click('body');
         casper.page.sendEvent('keypress', "x");
     });
@@ -58,7 +70,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        check_compose_is_cleared();
 
         // Check that when you reply to a message it pre-populates the stream and subject fields
         casper.click('body');
@@ -73,7 +85,14 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
+        common.check_form(
+            '#send_message_form',
+            {
+                stream_message_recipient_stream: "Verona",
+                stream_message_recipient_topic: "Reply test",
+            },
+            "Stream populated after reply by click"
+        );
         // Or recipient field
         casper.click('body');
         casper.clickLabel("And reply to this message");
@@ -92,7 +111,14 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#stream-message', function () {
-        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
+        common.check_form(
+            '#send_message_form',
+            {
+                stream_message_recipient_stream: "Verona",
+                stream_message_recipient_topic: "Reply test",
+            },
+            "Stream populated after reply with `r`"
+        );
 
         // Test "closing" the compose box
         casper.click('body');
@@ -124,7 +150,7 @@ casper.waitUntilVisible('li[data-user-ids-string="3"].expanded_private_message.a
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertEval(function () {
-            return document.activeElement === $('.compose_table #stream')[0];
+            return document.activeElement === $('.compose_table #stream_message_recipient_stream')[0];
         }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
     });
 });

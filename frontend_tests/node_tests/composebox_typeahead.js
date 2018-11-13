@@ -384,7 +384,7 @@ run_test('initialize', () => {
     var expected_value;
 
     var stream_typeahead_called = false;
-    $('#stream').typeahead = function (options) {
+    $('#stream_message_recipient_stream').typeahead = function (options) {
         // options.source()
         //
         var actual_value = options.source();
@@ -418,14 +418,14 @@ run_test('initialize', () => {
     };
 
     var subject_typeahead_called = false;
-    $('#subject').typeahead = function (options) {
+    $('#stream_message_recipient_topic').typeahead = function (options) {
         var topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
         topic_data.get_recent_names = (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
             return topics;
         };
 
-        $('#stream').val('Sweden');
+        $('#stream_message_recipient_stream').val('Sweden');
         var actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
         var expected_value = topics;
@@ -818,8 +818,8 @@ run_test('initialize', () => {
     page_params.enter_sends = false;
     // We manually specify it the first time because the click_func
     // doesn't exist yet.
-    $("#stream").select(noop);
-    $("#subject").select(noop);
+    $("#stream_message_recipient_stream").select(noop);
+    $("#stream_message_recipient_topic").select(noop);
     $("#private_message_recipient").select(noop);
 
     ct.initialize();
@@ -833,7 +833,7 @@ run_test('initialize', () => {
         preventDefault: noop,
     };
 
-    $('#subject').data = function () {
+    $('#stream_message_recipient_topic').data = function () {
         return { typeahead: { shown: true }};
     };
     $('form#send_message_form').keydown(event);
@@ -841,8 +841,8 @@ run_test('initialize', () => {
     var stub_typeahead_hidden = function () {
         return { typeahead: { shown: false }};
     };
-    $('#subject').data = stub_typeahead_hidden;
-    $('#stream').data = stub_typeahead_hidden;
+    $('#stream_message_recipient_topic').data = stub_typeahead_hidden;
+    $('#stream_message_recipient_stream').data = stub_typeahead_hidden;
     $('#private_message_recipient').data = stub_typeahead_hidden;
     $('#compose-textarea').data = stub_typeahead_hidden;
     $('form#send_message_form').keydown(event);
@@ -914,7 +914,7 @@ run_test('initialize', () => {
         preventDefault: noop,
     };
     // We execute .keydown() in order to make nextFocus !== false
-    $('#subject').data = function () {
+    $('#stream_message_recipient_topic').data = function () {
         return { typeahead: { shown: true }};
     };
     $('form#send_message_form').keydown(event);
@@ -929,10 +929,10 @@ run_test('initialize', () => {
     // select_on_focus()
     var focus_handler_called = false;
     var stream_one_called = false;
-    $('#stream').focus = function (f) {
+    $('#stream_message_recipient_stream').focus = function (f) {
         // This .one() function emulates the possible infinite recursion that
         // in_handler tries to avoid.
-        $('#stream').one = function (event, handler) {
+        $('#stream_message_recipient_stream').one = function (event, handler) {
             handler({ preventDefault: noop });
             f();  // This time in_handler will already be true.
             stream_one_called = true;

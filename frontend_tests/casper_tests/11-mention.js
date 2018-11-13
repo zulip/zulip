@@ -9,8 +9,8 @@ casper.waitUntilVisible('#zhome', function () {
 
 casper.then(function () {
     casper.fill('form[action^="/json/messages"]', {
-        stream:  'Verona',
-        subject: 'Test mention all',
+        stream_message_recipient_stream:  'Verona',
+        stream_message_recipient_topic: 'Test mention all',
     });
 });
 common.select_item_via_typeahead('#compose-textarea', '@**all**', 'all');
