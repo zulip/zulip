@@ -10,7 +10,7 @@
 argparse==1.4.0           # via thumbor
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-botocore==1.10.31         # via tornado-botocore
+botocore==1.12.43         # via tornado-botocore
 certifi==2018.10.15
 derpconf==0.8.2           # via thumbor
 django-auth-ldap==1.7.0
@@ -19,23 +19,23 @@ docutils==0.14            # via botocore
 futures==3.1.1            # via thumbor
 jmespath==0.9.3           # via botocore
 libthumbor==1.3.2         # via thumbor
-olefile==0.45.1           # via pillow
 piexif==1.0.13            # via thumbor
-pillow==4.3.0             # via thumbor
+pillow==5.1.0             # via thumbor
 pyasn1-modules==0.2.2     # via python-ldap
-pyasn1==0.4.3             # via pyasn1-modules, python-ldap
-pycryptodome==3.6.1       # via thumbor
-pycurl==7.43.0.2          # via thumbor, tornado-botocore
-python-dateutil==2.7.3    # via botocore, tc-aws
+pyasn1==0.4.4             # via pyasn1-modules, python-ldap
+pycryptodome==3.7.0       # via thumbor
+pycurl==7.43.0.2          # via thumbor
+python-dateutil==2.7.5    # via botocore, tc-aws
 python-ldap==3.1.0        # via django-auth-ldap
-pytz==2018.4              # via django, thumbor
+pytz==2018.7              # via django, thumbor
 singledispatch==3.4.0.3
 six==1.11.0               # via derpconf, libthumbor, python-dateutil, singledispatch, thumbor
-statsd==3.2.2             # via thumbor
+statsd==3.3.0             # via thumbor
 tc-aws==6.2.10
 thumbor==6.5.1
-tornado-botocore==1.3.2   # via tc-aws
-tornado==4.5.3            # via thumbor, tornado-botocore
+tornado-botocore==1.5.0   # via tc-aws
+tornado==5.1.1            # via thumbor, tornado-botocore
 typing==3.6.6
+urllib3==1.24.1           # via botocore
 virtualenv-clone==0.4.0
 webcolors==1.8.1          # via thumbor
