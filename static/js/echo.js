@@ -62,7 +62,7 @@ function insert_local_message(message_request, local_id) {
     message.local_id = local_id;
     message.locally_echoed = true;
     message.id = message.local_id;
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
 
     waiting_for_id[message.local_id] = message;
     waiting_for_ack[message.local_id] = message;

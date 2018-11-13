@@ -391,38 +391,38 @@ run_test('marked', () => {
 
 run_test('subject_links', () => {
     var message = {type: 'stream', subject: "No links here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, []);
 
     message = {type: 'stream', subject: "One #123 link here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 1);
     assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
 
     message = {type: 'stream', subject: "Two #123 #456 link here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 2);
     assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
     assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
 
     message = {type: 'stream', subject: "New ZBUG_123 link here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 1);
     assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
 
     message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 2);
     assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
     assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
     message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 1);
     assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
 
     message = {type: "not-stream"};
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
     assert.equal(message.subject_links.length, 0);
 });
 
