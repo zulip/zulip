@@ -50,6 +50,21 @@ For servers hosting a large number of organizations, like
 `ROOT_DOMAIN_LANDING_PAGE = True` in `/etc/zulip/settings.py` so that
 the homepage for the server is a copy of the Zulip homepage.
 
+### SSL Certificates
+
+You'll need to install an SSL certificate valid for all the
+(sub)domains you're using your Zulip server with.  You can get an SSL
+certificate covering several domains for free by using
+[our Certbot wrapper tool](../production/ssl-certificates.html#after-zulip-is-already-installed),
+though if you're going to host a large number of organizations, you
+may want to get a wildcard certificate.  You can also get a wildcard
+certificate for
+[free using Certbot](https://community.letsencrypt.org/t/getting-wildcard-certificates-with-certbot/56285),
+but because of the stricter security checks for acquiring a wildcard
+cert, it isn't possible for a generic script like `setup-certbot` to
+create it for you; you'll have to do some manual steps with your DNS
+provider.
+
 ### Other hostnames
 
 If you'd like to use hostnames that are not subdomains of each other,
