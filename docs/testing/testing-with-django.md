@@ -158,7 +158,7 @@ Say you have a method `greet(name_key)` defined as follows:
 
 -> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
 
-    from unittest.mock import MagickMock # Our mocking class that will replace `fetch_database()`
+    from unittest.mock import MagicMock # Our mocking class that will replace `fetch_database()`
 
     def test_greet() -> None:
         # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
@@ -174,7 +174,7 @@ More generally, you should only mock those functions you explicitly don't want t
 #### How does mocking work under the hood?
 
 Since Python 3.3, the standard mocking library is `unittest.mock`. `unittest.mock` implements the basic mocking class `Mock`.
-It also implements `MagickMock`, which is the same as `Mock`, but contains many default magic methods (in Python,
+It also implements `MagicMock`, which is the same as `Mock`, but contains many default magic methods (in Python,
 those are the ones starting with with a dunder `__`). From the docs:
 
 > In most of these examples the Mock and MagicMock classes are interchangeable. As the MagicMock is the more capable class
@@ -197,7 +197,7 @@ is *not* going to throw any errors. Our mock silently accepts all these calls an
 Finally, `unittest.mock` also provides a method to mock objects only within a scope: `patch()`. We can use `patch()` either
 as a decorator or as a context manager. In both cases, the mock created by `patch()` will apply for the scope of the decorator /
 context manager. `patch()` takes only one required argument `target`. `target` is a string in dot notation that *refers to
-the name of the object you want to mock*. It will then assign a `MagickMock()` to that object.
+the name of the object you want to mock*. It will then assign a `MagicMock()` to that object.
 As an example, look at the following code:
 
     from unittest import mock
