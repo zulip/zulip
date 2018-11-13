@@ -320,6 +320,48 @@
       "expected_output": "<p><a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "ignore": true,
+      "name": "https_link_preceded_by_singlebyte_characters",
+      "input": "abchttps://github.com",
+      "expected_output": "<p>abc<a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "ignore": true,
+      "name": "https_link_preceded_by_multibyte_characters",
+      "input": "ùhttps://github.com",
+      "expected_output": "<p>ù<a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "ignore": true,
+      "name": "https_link_preceded_by_word_boundary",
+      "input": "日本語https://github.com",
+      "expected_output": "<p>日本語<a href=\"https://github.com\" target=\"_blank\" title=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "ignore": true,
+      "name": "any_protocol_link",
+      "input": "foo://github.com",
+      "expected_output": "<p>日本語<a href=\"foo://github.com\" target=\"_blank\" title=\"foo://github.com\">foo://github.com</a></p>"
+    },
+    {
+      "ignore": true,
+      "name": "any_protocol_link_preceded_by_singlebyte_characters",
+      "input": "abcfoo://github.com",
+      "expected_output": "<p<a href=\"abcfoo://github.com\" target=\"_blank\" title=\"abcfoo://github.com\">abcfoo://github.com</a></p>"
+    },
+    {
+      "ignore": true,
+      "name": "any_protocol_link_preceded_by_multibyte_characters",
+      "input": "ùfoo://github.com",
+      "expected_output": "<p>ùfoo://github.com</p>"
+    },
+    {
+      "ignore": true,
+      "name": "any_protocol_link_preceded_by_word_boundary",
+      "input": "日本語foo://github.com",
+      "expected_output": "<p>日本語<a href=\"foo://github.com\" target=\"_blank\" title=\"foo://github.com\">foo://github.com</a></p>"
+    },
+    {
       "name": "nl2br",
       "input": "test\nbar",
       "expected_output": "<p>test<br>\nbar</p>",
