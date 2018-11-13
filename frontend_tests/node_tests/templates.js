@@ -582,12 +582,12 @@ run_test('compose_notification', () => {
         note: "You sent a message to a muted topic.",
         link_text: "Narrow to here",
         link_msg_id: "99",
-        link_class: "compose_notification_narrow_by_subject",
+        link_class: "compose_notification_narrow_by_topic",
     };
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
     html += '</div>';
-    var a = $(html).find("a.compose_notification_narrow_by_subject");
+    var a = $(html).find("a.compose_notification_narrow_by_topic");
     assert.equal(a.text(), "Narrow to here");
 });
 

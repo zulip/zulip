@@ -92,7 +92,7 @@ var keypress_mappings = {
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
-    83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    83: {name: 'narrow_by_topic', message_view_only: true}, //'S'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
@@ -471,7 +471,7 @@ exports.process_hotkey = function (e, hotkey) {
         if (exports.processing_text()) {
             return false;
         }
-        if (event_name === 'narrow_by_subject' && overlays.streams_open()) {
+        if (event_name === 'narrow_by_topic' && overlays.streams_open()) {
             subs.keyboard_sub();
             return true;
         }
@@ -718,7 +718,7 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
-    case 'narrow_by_subject':
+    case 'narrow_by_topic':
         return do_narrow_action(narrow.by_subject);
     case 'respond_to_author': // 'R': respond to author
         compose_actions.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
