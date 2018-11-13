@@ -16,6 +16,8 @@ from typing import cast, Callable, Dict, Iterable, List
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
+    # Our parser doesn't handle the way its conditionals are layered
+    'templates/zerver/emails/missed_message.html',
 ]
 
 def check_our_files(modified_only, all_dups, targets):
