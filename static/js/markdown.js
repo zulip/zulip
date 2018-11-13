@@ -105,7 +105,7 @@ exports.apply_markdown = function (message) {
     message.is_me_message = exports.is_status_message(message.raw_content, message.content);
 };
 
-exports.add_subject_links = function (message) {
+exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
         message.subject_links = [];
         return;
