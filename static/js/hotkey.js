@@ -719,7 +719,7 @@ exports.process_hotkey = function (e, hotkey) {
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
     case 'narrow_by_topic':
-        return do_narrow_action(narrow.by_subject);
+        return do_narrow_action(narrow.by_topic);
     case 'respond_to_author': // 'R': respond to author
         compose_actions.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
         return true;

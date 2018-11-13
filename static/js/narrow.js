@@ -565,7 +565,7 @@ exports.by = function (operator, operand, opts) {
     exports.activate([{operator: operator, operand: operand}], opts);
 };
 
-exports.by_subject = function (target_id, opts) {
+exports.by_topic = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var original = message_store.get(target_id);
     if (original.type !== 'stream') {
