@@ -44,7 +44,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.hipchat_attachment import AttachmentHandler
 from zerver.data_import.hipchat_user import UserHandler
 from zerver.data_import.hipchat_subscriber import SubscriberHandler
-from zerver.data_import.sequencer import NEXT_ID
+from zerver.data_import.sequencer import NEXT_ID, IdMapper
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -88,6 +88,7 @@ def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
         return ujson.load(fp)
 
 def convert_user_data(user_handler: UserHandler,
+                      user_id_mapper: IdMapper,
                       raw_data: List[ZerverFieldsT],
                       realm_id: int) -> None:
     flat_data = [
@@ -99,7 +100,7 @@ def convert_user_data(user_handler: UserHandler,
         delivery_email = in_dict['email']
         email = in_dict['email']
         full_name = in_dict['name']
-        id = in_dict['id']
+        id = user_id_mapper.get(in_dict['id'])
         is_realm_admin = in_dict['account_type'] == 'admin'
         is_guest = in_dict['account_type'] == 'guest'
         is_mirror_dummy = False
@@ -198,6 +199,8 @@ def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
 
 def convert_room_data(raw_data: List[ZerverFieldsT],
                       subscriber_handler: SubscriberHandler,
+                      stream_id_mapper: IdMapper,
+                      user_id_mapper: IdMapper,
                       realm_id: int) -> List[ZerverFieldsT]:
     flat_data = [
         d['Room']
@@ -214,20 +217,32 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
 
     def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
         now = int(timezone_now().timestamp())
+        stream_id = stream_id_mapper.get(in_dict['id'])
+
         out_dict = build_stream(
             date_created=now,
             realm_id=realm_id,
             name=in_dict['name'],
             description=in_dict['topic'],
-            stream_id=in_dict['id'],
+            stream_id=stream_id,
             deactivated=in_dict['is_archived'],
             invite_only=invite_only(in_dict['privacy']),
         )
 
+        if not user_id_mapper.has(in_dict['owner']):
+            raise Exception('bad owner')
+
+        owner = user_id_mapper.get(in_dict['owner'])
+        members = {
+            user_id_mapper.get(key)
+            for key in in_dict['members']
+            if user_id_mapper.has(key)
+        }
+
         subscriber_handler.set_info(
-            stream_id=in_dict['id'],
-            owner=in_dict['owner'],
-            members=set(in_dict['members']),
+            stream_id=stream_id,
+            owner=owner,
+            members=members,
         )
 
         # unmapped fields:
@@ -379,6 +394,8 @@ def write_message_data(realm_id: int,
                        data_dir: str,
                        output_dir: str,
                        masking_content: bool,
+                       stream_id_mapper: IdMapper,
+                       user_id_mapper: IdMapper,
                        user_handler: UserHandler,
                        attachment_handler: AttachmentHandler) -> None:
 
@@ -396,12 +413,14 @@ def write_message_data(realm_id: int,
 
     def get_stream_recipient_id(raw_message: ZerverFieldsT) -> int:
         fn_id = raw_message['fn_id']
-        recipient_id = stream_id_to_recipient_id[fn_id]
+        stream_id = stream_id_mapper.get(fn_id)
+        recipient_id = stream_id_to_recipient_id[stream_id]
         return recipient_id
 
     def get_pm_recipient_id(raw_message: ZerverFieldsT) -> int:
-        user_id = raw_message['receiver_id']
-        assert(user_id)
+        raw_user_id = raw_message['receiver_id']
+        assert(raw_user_id)
+        user_id = user_id_mapper.get(raw_user_id)
         recipient_id = user_id_to_recipient_id[user_id]
         return recipient_id
 
@@ -423,7 +442,7 @@ def write_message_data(realm_id: int,
     history_files = glob.glob(dir_glob)
     for fn in history_files:
         dir = os.path.dirname(fn)
-        fn_id = int(os.path.basename(dir))
+        fn_id = os.path.basename(dir)
         files_dir = get_files_dir(fn_id)
 
         process_message_file(
@@ -438,12 +457,14 @@ def write_message_data(realm_id: int,
             output_dir=output_dir,
             is_pm_data=is_pm_data,
             masking_content=masking_content,
+            user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
 
 def get_hipchat_sender_id(realm_id: int,
                           message_dict: Dict[str, Any],
+                          user_id_mapper: IdMapper,
                           user_handler: UserHandler) -> int:
     '''
     The HipChat export is inconsistent in how it renders
@@ -460,23 +481,32 @@ def get_hipchat_sender_id(realm_id: int,
         sender_id = mirror_user['id']
         return sender_id
 
-    sender_id = message_dict['sender']['id']
+    raw_sender_id = message_dict['sender']['id']
 
-    if sender_id == 0:
+    if raw_sender_id == 0:
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
-            name=message_dict['sender']['name'],
+            name=message_dict['sender']['name']
+        )
+        sender_id = mirror_user['id']
+        return sender_id
+
+    if not user_id_mapper.has(raw_sender_id):
+        mirror_user = user_handler.get_mirror_user(
+            realm_id=realm_id,
+            name=message_dict['sender']['id']
         )
         sender_id = mirror_user['id']
         return sender_id
 
     # HAPPY PATH: Hipchat just gave us an ordinary
     # sender_id.
+    sender_id = user_id_mapper.get(raw_sender_id)
     return sender_id
 
 def process_message_file(realm_id: int,
                          fn: str,
-                         fn_id: int,
+                         fn_id: str,
                          files_dir: str,
                          get_recipient_id: Callable[[ZerverFieldsT], int],
                          message_key: str,
@@ -485,6 +515,7 @@ def process_message_file(realm_id: int,
                          output_dir: str,
                          is_pm_data: bool,
                          masking_content: bool,
+                         user_id_mapper: IdMapper,
                          user_handler: UserHandler,
                          attachment_handler: AttachmentHandler) -> None:
 
@@ -502,6 +533,7 @@ def process_message_file(realm_id: int,
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
                 message_dict=d,
+                user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
             )
 
@@ -544,6 +576,7 @@ def process_message_file(realm_id: int,
             realm_id=realm_id,
             raw_messages=lst,
             subscriber_map=subscriber_map,
+            user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
             get_recipient_id=get_recipient_id,
@@ -562,6 +595,7 @@ def process_message_file(realm_id: int,
 def process_raw_message_batch(realm_id: int,
                               raw_messages: List[Dict[str, Any]],
                               subscriber_map: Dict[int, Set[int]],
+                              user_id_mapper: IdMapper,
                               user_handler: UserHandler,
                               attachment_handler: AttachmentHandler,
                               get_recipient_id: Callable[[ZerverFieldsT], int],
@@ -569,7 +603,7 @@ def process_raw_message_batch(realm_id: int,
                               output_dir: str) -> None:
 
     def fix_mentions(content: str,
-                     mention_user_ids: List[int]) -> str:
+                     mention_user_ids: Set[int]) -> str:
         for user_id in mention_user_ids:
             user = user_handler.get_user(user_id=user_id)
             hipchat_mention = '@{short_name}'.format(**user)
@@ -583,11 +617,16 @@ def process_raw_message_batch(realm_id: int,
 
     def make_message(message_id: int, raw_message: ZerverFieldsT) -> ZerverFieldsT:
         # One side effect here:
-        mention_map[message_id] = set(raw_message['mention_user_ids'])
+        mention_user_ids = {
+            user_id_mapper.get(id)
+            for id in set(raw_message['mention_user_ids'])
+            if user_id_mapper.has(id)
+        }
+        mention_map[message_id] = mention_user_ids
 
         content = fix_mentions(
             content=raw_message['content'],
-            mention_user_ids=raw_message['mention_user_ids'],
+            mention_user_ids=mention_user_ids,
         )
         pub_date = raw_message['pub_date']
         recipient_id = get_recipient_id(raw_message)
@@ -684,6 +723,8 @@ def do_convert_data(input_tar_file: str,
     attachment_handler = AttachmentHandler()
     user_handler = UserHandler()
     subscriber_handler = SubscriberHandler()
+    user_id_mapper = IdMapper()
+    stream_id_mapper = IdMapper()
 
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
@@ -692,6 +733,7 @@ def do_convert_data(input_tar_file: str,
     raw_user_data = read_user_data(data_dir=input_data_dir)
     convert_user_data(
         user_handler=user_handler,
+        user_id_mapper=user_id_mapper,
         raw_data=raw_user_data,
         realm_id=realm_id,
     )
@@ -704,6 +746,8 @@ def do_convert_data(input_tar_file: str,
     zerver_stream = convert_room_data(
         raw_data=raw_stream_data,
         subscriber_handler=subscriber_handler,
+        stream_id_mapper=stream_id_mapper,
+        user_id_mapper=user_id_mapper,
         realm_id=realm_id,
     )
     realm['zerver_stream'] = zerver_stream
@@ -760,6 +804,8 @@ def do_convert_data(input_tar_file: str,
             data_dir=input_data_dir,
             output_dir=output_dir,
             masking_content=masking_content,
+            stream_id_mapper=stream_id_mapper,
+            user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             attachment_handler=attachment_handler,
         )
