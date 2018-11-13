@@ -241,7 +241,7 @@ function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current
     return tertiary_compare(person_a, person_b);
 }
 
-exports.sort_for_at_mentioning = function (objs, current_stream_name, current_subject) {
+exports.sort_for_at_mentioning = function (objs, current_stream_name, current_topic) {
     // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
     var current_stream = false;
     if (current_stream_name) {
@@ -267,7 +267,7 @@ exports.sort_for_at_mentioning = function (objs, current_stream_name, current_su
                         user_a,
                         user_b,
                         stream_id,
-                        current_subject
+                        current_topic
                     );
                 },
                 current_stream.name
@@ -296,13 +296,13 @@ exports.sort_languages = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
+exports.sort_recipients = function (users, query, current_stream, current_topic, groups) {
     var users_name_results =  util.prefix_sort(
         query, users, function (x) { return x.full_name; });
     var result = exports.sort_for_at_mentioning(
         users_name_results.matches,
         current_stream,
-        current_subject
+        current_topic
     );
 
     var groups_results;
@@ -316,12 +316,12 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
     result = result.concat(exports.sort_for_at_mentioning(
         email_results.matches,
         current_stream,
-        current_subject
+        current_topic
     ));
     var rest_sorted = exports.sort_for_at_mentioning(
         email_results.rest,
         current_stream,
-        current_subject
+        current_topic
     );
     if (groups !== undefined) {
         rest_sorted = rest_sorted.concat(groups_results.rest);
