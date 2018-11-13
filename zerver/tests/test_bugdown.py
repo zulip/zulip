@@ -176,7 +176,7 @@ class BugdownMiscTest(ZulipTestCase):
         expected_diff = "\u001b[34m-\u001b[0m <p>The \u001b[33mquick brown\u001b[0m fox jumps over the lazy dog.  Animal stories are fun\u001b[31m, yeah\u001b[0m</p>\n\u001b[34m+\u001b[0m <p>The \u001b[33mfast\u001b[0m fox jumps over the lazy dog\u001b[32ms and cats\u001b[0m.  Animal stories are fun</p>\n"
         self.assertEqual(mdiff.diff_strings(str1, str2), expected_diff)
 
-    def test_get_full_name_info(self) -> None:
+    def test_get_possible_mentions_info(self) -> None:
         realm = get_realm('zulip')
 
         def make_user(email: str, full_name: str) -> UserProfile:
@@ -201,7 +201,7 @@ class BugdownMiscTest(ZulipTestCase):
         fred4 = make_user('fred4@example.com', 'Fred Flintstone')
         fred4_key = 'fred flintstone|{}'.format(fred4.id)
 
-        dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
+        dct = bugdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
         self.assertEqual(set(dct.keys()), {'fred flintstone', fred4_key, 'cordelia lear'})
         self.assertEqual(dct['fred flintstone'], dict(
             email='fred2@example.com',

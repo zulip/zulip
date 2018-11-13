@@ -1877,7 +1877,7 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     }
     return dct
 
-def get_full_name_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNameInfo]:
+def get_possible_mentions_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNameInfo]:
     if not full_names:
         return dict()
 
@@ -1916,7 +1916,7 @@ def get_full_name_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNam
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
         full_names = possible_mentions(content)
-        self.full_name_info = get_full_name_info(realm_id, full_names)
+        self.full_name_info = get_possible_mentions_info(realm_id, full_names)
         self.user_id_info = {
             row['id']: row
             for row in self.full_name_info.values()
