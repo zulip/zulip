@@ -237,7 +237,7 @@ MessageListView.prototype = {
                     message_container.stream_url =
                         hash_util.by_stream_uri(message_container.msg.stream);
                     message_container.topic_url =
-                        hash_util.by_stream_subject_uri(
+                        hash_util.by_stream_topic_uri(
                             message_container.msg.stream,
                             message_container.msg.subject);
                 } else {
