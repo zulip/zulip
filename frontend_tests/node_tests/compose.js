@@ -116,7 +116,7 @@ run_test('validate_stream_message_address_info', () => {
     stream_data.add_sub('social', sub);
     assert(compose.validate_stream_message_address_info('social'));
 
-    $('#stream').select(noop);
+    $('#stream_message_recipient_stream').select(noop);
     assert(!compose.validate_stream_message_address_info('foobar'));
     assert.equal($('#compose-error-msg').html(), "translated: <p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
 
@@ -253,14 +253,14 @@ run_test('validate', () => {
 
     compose_state.set_message_type('stream');
     compose_state.stream_name('');
-    $("#stream").select(noop);
+    $("#stream_message_recipient_stream").select(noop);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a stream'));
 
     compose_state.stream_name('Denmark');
     page_params.realm_mandatory_topics = true;
     compose_state.topic('');
-    $("#subject").select(noop);
+    $("#stream_message_recipient_topic").select(noop);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a topic'));
 });
@@ -949,7 +949,7 @@ run_test('initialize', () => {
 });
 
 run_test('update_fade', () => {
-    var selector = '#stream,#subject,#private_message_recipient';
+    var selector = '#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient';
     var keyup_handler_func = $(selector).get_on_handler('keyup');
 
     var set_focused_recipient_checked = false;
@@ -1213,7 +1213,7 @@ run_test('on_events', () => {
 
         // !sub will result false here and we check the failure code path.
         blueslip.set_test_data('warn', 'Stream no longer exists: no-stream');
-        $('#stream').val('no-stream');
+        $('#stream_message_recipient_stream').val('no-stream');
         container.data = function (field) {
             assert.equal(field, 'useremail');
             return 'foo@bar.com';
@@ -1232,7 +1232,7 @@ run_test('on_events', () => {
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub('test', subscription);
-        $('#stream').val('test');
+        $('#stream_message_recipient_stream').val('test');
         var all_invite_children_called = false;
         $("#compose_invite_users").children = function () {
             all_invite_children_called = true;
@@ -1292,7 +1292,7 @@ run_test('on_events', () => {
         assert(compose_not_subscribed_called);
 
         stream_data.add_sub('test', subscription);
-        $('#stream').val('test');
+        $('#stream_message_recipient_stream').val('test');
         $("#compose-send-status").show();
 
         handler(event);
@@ -1582,8 +1582,8 @@ run_test('create_message_object', () => {
     stream_data.add_sub('social', sub);
 
     var page = {
-        '#stream': 'social',
-        '#subject': 'lunch',
+        '#stream_message_recipient_stream': 'social',
+        '#stream_message_recipient_topic': 'lunch',
         '#compose-textarea': 'burrito',
     };
 

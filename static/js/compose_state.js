@@ -40,8 +40,8 @@ function get_or_set(fieldname, keep_leading_whitespace) {
 }
 
 // TODO: Break out setters and getter into their own functions.
-exports.stream_name     = get_or_set('stream');
-exports.topic           = get_or_set('subject');
+exports.stream_name     = get_or_set('stream_message_recipient_stream');
+exports.topic           = get_or_set('stream_message_recipient_topic');
 // We can't trim leading whitespace in `compose_textarea` because
 // of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set('compose-textarea', true);
