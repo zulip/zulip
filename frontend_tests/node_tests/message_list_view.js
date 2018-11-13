@@ -149,7 +149,7 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages, [message1]);
     }());
 
-    (function test_append_message_diffrent_subject() {
+    (function test_append_message_different_subject() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -175,7 +175,7 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_append_message_diffrent_day() {
+    (function test_append_message_different_day() {
 
         var message1 = build_message_context({timestamp: 1000});
         var message_group1 = build_message_group([
@@ -280,7 +280,7 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_prepend_message_diffrent_subject() {
+    (function test_prepend_message_different_subject() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
@@ -305,7 +305,7 @@ run_test('merge_message_groups', () => {
         assert_message_list_equal(result.rerender_messages, []);
     }());
 
-    (function test_prepend_message_diffrent_day() {
+    (function test_prepend_message_different_day() {
 
         var message1 = build_message_context({timestamp: 900000});
         var message_group1 = build_message_group([
