@@ -281,7 +281,7 @@ run_test('basic_chars', () => {
     assert_mapping('k', 'navigate.up');
     assert_mapping('K', 'navigate.page_up');
     assert_mapping('s', 'narrow.by_recipient');
-    assert_mapping('S', 'narrow.by_subject');
+    assert_mapping('S', 'narrow.by_topic');
     assert_mapping('u', 'popovers.show_sender_info');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);

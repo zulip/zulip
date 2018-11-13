@@ -326,7 +326,7 @@ function process_notification(notification) {
         notification_object.onclick = function () {
             notification_object.cancel();
             if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_subject(message.id, {trigger: 'notification'});
+                narrow.by_topic(message.id, {trigger: 'notification'});
             }
             window.focus();
         };
@@ -347,7 +347,7 @@ function process_notification(notification) {
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
                     if (feature_flags.clicking_notification_causes_narrow) {
-                        narrow.by_subject(message.id, {trigger: 'notification'});
+                        narrow.by_topic(message.id, {trigger: 'notification'});
                     }
                 };
             } else {
@@ -608,7 +608,7 @@ exports.reify_message_id = function (opts) {
 exports.register_click_handlers = function () {
     $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        narrow.by_subject(msgid, {trigger: 'compose_notification'});
+        narrow.by_topic(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });

@@ -322,7 +322,7 @@ exports.initialize = function () {
         }
         e.preventDefault();
         var row_id = get_row_id_for_narrowing(this);
-        narrow.by_subject(row_id, {trigger: 'message header'});
+        narrow.by_topic(row_id, {trigger: 'message header'});
     });
 
     // SIDEBARS
