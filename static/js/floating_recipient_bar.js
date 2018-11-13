@@ -85,10 +85,10 @@ exports.update = function () {
     }
     var current_label = candidate;
 
-    // We now know what the floating stream/subject bar should say.
+    // We now know what the floating stream/topic bar should say.
     // Do we show it?
 
-    // Hide if the bottom of our floating stream/subject label is not
+    // Hide if the bottom of our floating stream/topic label is not
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
     var header_height = $(current_label).find('.message_header').safeOuterHeight();

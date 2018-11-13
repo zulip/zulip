@@ -225,7 +225,7 @@ exports.start = function (msg_type, opts) {
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
 
     // If the user opens the compose box, types some text, and then clicks on a
-    // different stream/subject, we want to keep the text in the compose box
+    // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_state.message_content(opts.content);
     }

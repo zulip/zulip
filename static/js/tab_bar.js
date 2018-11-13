@@ -99,7 +99,7 @@ function make_tab_data() {
             tabs.push(make_tab("Search results", false));
         }
 
-        // Third breadcrumb item for stream-subject naarrows
+        // Third breadcrumb item for stream-topic naarrows
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
             var subject = filter.operands("topic")[0];
