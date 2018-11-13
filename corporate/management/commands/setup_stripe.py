@@ -1,5 +1,6 @@
-from zerver.lib.management import ZulipBaseCommand
 from corporate.models import Plan, Coupon, Customer
+from django.conf import settings
+from zerver.lib.management import ZulipBaseCommand
 from zproject.settings import get_secret
 
 from typing import Any
@@ -11,6 +12,8 @@ class Command(ZulipBaseCommand):
     help = """Script to add the appropriate products and plans to Stripe."""
 
     def handle(self, *args: Any, **options: Any) -> None:
+        assert (settings.DEVELOPMENT or settings.TEST_SUITE)
+
         Customer.objects.all().delete()
         Plan.objects.all().delete()
         Coupon.objects.all().delete()
