@@ -315,9 +315,9 @@ exports.update_dom_with_unread_counts = function (counts) {
     });
 
     // counts.topic_count maps streams to hashes of topics to counts
-    counts.topic_count.each(function (subject_hash, stream_id) {
-        subject_hash.each(function (count, subject) {
-            topic_list.set_count(stream_id, subject, count);
+    counts.topic_count.each(function (topic_hash, stream_id) {
+        topic_hash.each(function (count, topic) {
+            topic_list.set_count(stream_id, topic, count);
         });
     });
 };
@@ -371,8 +371,8 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
 
     result.stream_id = stream_id;
 
-    var op_subject = filter.operands('topic');
-    result.topic_selected = op_subject.length === 1;
+    var op_topic = filter.operands('topic');
+    result.topic_selected = op_topic.length === 1;
 
     return result;
 };
