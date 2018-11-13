@@ -314,7 +314,7 @@ exports.narrowed_by_topic_reply = function () {
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
-// to a PM (or huddle), and when you're narrowed to some stream/subject pair
+// to a PM (or huddle), and when you're narrowed to some stream/topic pair
 exports.narrowed_by_reply = function () {
     return exports.narrowed_by_pm_reply() ||
             exports.narrowed_by_topic_reply();
