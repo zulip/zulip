@@ -316,7 +316,7 @@ exports.initialize = function () {
         narrow.by_recipient(row_id, {trigger: 'message header'});
     });
 
-    $("#home").on("click", ".narrows_by_subject", function (e) {
+    $("#home").on("click", ".narrows_by_topic", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }

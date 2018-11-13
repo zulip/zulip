@@ -930,7 +930,7 @@ run_test('message_group', () => {
     var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
-    var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
+    var highlighted_subject_word = $(html).find('a.narrows_by_topic .highlight').text();
     assert.equal(highlighted_subject_word, 'two');
 });
 
