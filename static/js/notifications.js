@@ -562,7 +562,7 @@ exports.notify_local_mixes = function (messages) {
         }
 
         var link_msg_id = message.id;
-        var link_class = "compose_notification_narrow_by_subject";
+        var link_class = "compose_notification_narrow_by_topic";
         var link_text = "Narrow to " + get_message_header(message);
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
@@ -577,7 +577,7 @@ exports.notify_messages_outside_current_search = function (messages) {
             return;
         }
         exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
-                                        "compose_notification_narrow_by_subject",
+                                        "compose_notification_narrow_by_topic",
                                         message.id,
                                         "Narrow to " + get_message_header(message));
     });
@@ -606,7 +606,7 @@ exports.reify_message_id = function (opts) {
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         narrow.by_subject(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
