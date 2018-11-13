@@ -102,10 +102,10 @@ function make_tab_data() {
         // Third breadcrumb item for stream-topic naarrows
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
-            var subject = filter.operands("topic")[0];
+            var topic = filter.operands("topic")[0];
             hashed = hash_util.operators_to_hash(ops.slice(0, 2));
 
-            tabs.push(make_tab(subject, hashed, null));
+            tabs.push(make_tab(topic, hashed, null));
         }
     }
 
