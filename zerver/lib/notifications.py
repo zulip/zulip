@@ -504,6 +504,8 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_name = None
         from_address = FromAddress.SUPPORT
 
+    other_account_count = UserProfile.objects.filter(
+        email__iexact=user.email).exclude(id=user.id).count()
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
     context = common_context(user)
     context.update({
@@ -527,9 +529,11 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context)
-    send_future_email(
-        "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
-        from_address=from_address, context=context, delay=followup_day2_email_delay(user))
+
+    if other_account_count == 0:
+        send_future_email(
+            "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
+            from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: str) -> str:
     # On Linux, the tool installs as html2markdown, and there's a command called
