@@ -177,6 +177,7 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
+            "topic_name",
             "translate_emoticons",
             "translation_data",
             "twenty_four_hour_time",

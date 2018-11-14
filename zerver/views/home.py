@@ -29,6 +29,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.topic import TOPIC_NAME
 from two_factor.utils import default_device
 
 import calendar
@@ -211,6 +212,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         bot_types             = get_bot_types(user_profile),
+        topic_name            = TOPIC_NAME,
         two_fa_enabled        = two_fa_enabled,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
