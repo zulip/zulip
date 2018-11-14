@@ -60,14 +60,28 @@ location / {
     uwsgi_pass django;
 }
 
+# Certain Django routes not under /api are shared between mobile and
+# web and thus need API headers added.  We don't collapse this with the
+# above block for /events, because regular expressions take priority over
+# paths in nginx's order-of-operations, and we don't want to override the
+# tornado stuff.
+location ~ ^/(user_uploads|avatar|thumbnail)/ {
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Headers Authorization;
+    add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD';
+
+    include uwsgi_params;
+    uwsgi_pass django;
+}
+
+# Send all API routes not covered above to Django via uWSGI
 location /api/ {
     add_header Access-Control-Allow-Origin *;
     add_header Access-Control-Allow-Headers Authorization;
     add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD';
 
     include uwsgi_params;
-    uwsgi_pass  django;
-
+    uwsgi_pass django;
 }
 
 include /etc/nginx/zulip-include/app.d/*.conf;
