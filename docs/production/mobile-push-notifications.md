@@ -25,9 +25,15 @@ follows:
    If you installed your Zulip server with a version older than 1.6,
    you'll need to add the line (it won't be there to uncomment).
 
-1. If you're running Zulip 1.8.1 or newer, you can run `manage.py
-   register_server` from `/home/zulip/deployments/current`.  This
-   command will print the registration data it would send to the
+1. If you're running Zulip 1.8.1 or newer, you can run the
+    registration command:
+    ```
+    # As root:
+    su zulip -c /home/zulip/deployments/current/manage.py register_server
+    # Or as the zulip user, you can skip the `su zulip -c`:
+    /home/zulip/deployments/current/manage.py register_server
+    ```
+   This command will print the registration data it would send to the
    mobile push notifications service, ask you to accept the terms of
    service, and if you accept, register your server.  Otherwise, see
    the [legacy signup instructions](#legacy-signup).
