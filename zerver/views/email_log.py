@@ -102,6 +102,10 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     user_profile.email = registered_email
     user_profile.save(update_fields=['email'])
 
-    # Follow up day1 day2 emails
+    # Follow up day1 day2 emails for normal user
     enqueue_welcome_emails(user_profile)
+
+    # Follow up day1 day2 emails for admin user
+    enqueue_welcome_emails(get_user("iago@zulip.com", realm), realm_creation=True)
+
     return redirect(email_page)

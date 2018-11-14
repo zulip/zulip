@@ -12,21 +12,80 @@ from email.utils import formataddr
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Optional
 
-from zerver.lib.notifications import fix_emojis, \
-    handle_missedmessage_emails, relative_to_full_url
-from zerver.lib.actions import do_update_message, \
-    do_change_notification_settings
+from zerver.lib.notifications import fix_emojis, handle_missedmessage_emails, \
+    enqueue_welcome_emails, relative_to_full_url
+from zerver.lib.actions import do_update_message, do_change_notification_settings
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
+from zerver.lib.test_helpers import MockLDAP
 from zerver.models import (
     get_realm,
     get_stream,
     Recipient,
     UserMessage,
     UserProfile,
+    ScheduledEmail
 )
 from zerver.lib.test_helpers import get_test_image_file
+
+class TestFollowupEmails(ZulipTestCase):
+    def test_day1_email_context(self) -> None:
+        hamlet = self.example_user("hamlet")
+        enqueue_welcome_emails(hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(user=hamlet)
+        email_data = ujson.loads(scheduled_emails[0].data)
+        self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
+        self.assertEqual(email_data["context"]["is_realm_admin"], False)
+        self.assertEqual(email_data["context"]["getting_started_link"], "https://zulipchat.com")
+        self.assertNotIn("ldap_username", email_data["context"])
+
+        ScheduledEmail.objects.all().delete()
+
+        iago = self.example_user("iago")
+        enqueue_welcome_emails(iago)
+        scheduled_emails = ScheduledEmail.objects.filter(user=iago)
+        email_data = ujson.loads(scheduled_emails[0].data)
+        self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
+        self.assertEqual(email_data["context"]["is_realm_admin"], True)
+        self.assertEqual(email_data["context"]["getting_started_link"],
+                         "http://zulip.testserver/help/getting-your-organization-started-with-zulip")
+        self.assertNotIn("ldap_username", email_data["context"])
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_day1_email_ldap_login_credentials(self) -> None:
+        password = "testing"
+        email = "newuser@zulip.com"
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        full_name = 'New LDAP fullname'
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': [full_name],
+                'sn': ['shortname'],
+            }
+        }
+
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            self.login_with_return(email, password)
+
+            user = UserProfile.objects.get(email=email)
+            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+
+            self.assertEqual(len(scheduled_emails), 2)
+            email_data = ujson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["context"]["ldap_username"], True)
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s: str) -> str:

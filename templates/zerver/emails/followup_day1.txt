@@ -1,34 +1,37 @@
-{{ _('Hi there,') }}
+{{ _('Welcome to Zulip!') }}
 
-{{ _('Welcome to Zulip! A few tips to get you started:') }}
-
+{% if realm_creation %}
 {% trans %}
-* Zulip works best when it's always open, so we suggest pinning a browser
-  tab or downloading our desktop and mobile apps (https://zulipchat.com/apps).
+You've created the new Zulip organization {{ realm_name }}.
+{% endtrans %}
+{% else %}
+{% trans %}
+You've joined the Zulip organization {{ realm_name }}.
+{% endtrans %}
+{% endif %}
+
+{{ _('Your account details:') }}
+* {{ _('Organization URL:') }} {{ realm_uri }}
+{% if ldap_username %}
+* {{ _('LDAP username:') }} {{ ldap_username }}
+{% else %}
+* {{ _('Email:') }} {{ email }}
+{% endif %}
+{% trans %}
+(you'll need these to sign in to the mobile and desktop apps (https://zulipchat.com/apps))
 {% endtrans %}
 
+{% if is_realm_admin %}
 {% trans %}
-To access your account from the apps, enter this Organization URL:
+Check out our guide ({{ getting_started_link }}) for admins, become a Zulip pro with a
+few keyboard shortcuts ({{ keyboard_shortcuts_link }}), or dive right in to {{ realm_uri }}!
 {% endtrans %}
-
-  {{ realm_uri }}
-
-* {{ _('Become a Zulip pro with a few keyboard shortcuts:') }}
-  n: {{ _('Next unread thread') }}
-  r: {{ _('Reply to message under the blue box') }}
-  c: {{ _('Start a new topic') }}
-
+{% else %}
 {% trans %}
-* Give our guide for new {{ user_role_group }} ({{ getting_started_link }})
-  a spin.
+Learn more ({{ getting_started_link }}) about Zulip, become a pro with a few keyboard
+shortcuts ({{ keyboard_shortcuts_link }}), or dive right in to {{ realm_uri }}!
 {% endtrans %}
-
-{% trans %}
-* Zulip combines the real-time ease of chat with the threaded organization
-  of email. Zulip is about productivity---making communication fun and
-  easy, while avoiding the distracting and disorganized conversations of
-  chatrooms. We hope you love using Zulip as much as we do.
-{% endtrans %}
+{% endif %}
 
 {{ _("Cheers,") }}
 {{ _("Team Zulip") }}
