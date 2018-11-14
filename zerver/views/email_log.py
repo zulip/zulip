@@ -17,6 +17,7 @@ from confirmation.models import Confirmation, confirmation_url
 import os
 from typing import List, Dict, Any, Optional
 import datetime
+import subprocess
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
 def email_page(request: HttpRequest) -> HttpResponse:
@@ -41,9 +42,17 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 @require_GET
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
+    if not settings.TEST_SUITE:  # nocoverage
+        # It's really convenient to automatically inline the email CSS
+        # here, since that saves a step when testing out changes to
+        # the email CSS.  But we don't run this inside the test suite,
+        # because by role, the tests shouldn't be doing a provision-like thing.
+        subprocess.check_call(["./tools/inline-email-css"])
+
     # We import the Django test client inside the view function,
     # because it isn't needed in production elsewhere, and not
     # importing it saves ~50ms of unnecessary manage.py startup time.
+
     from django.test import Client
     client = Client()
 
