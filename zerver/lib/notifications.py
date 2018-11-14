@@ -6,6 +6,8 @@ from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+from django.contrib.auth import get_backends
+from django_auth_ldap.backend import LDAPBackend
 
 from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
@@ -507,14 +509,20 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
     context.update({
         'unsubscribe_link': unsubscribe_link,
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
+        'realm_name': user.realm.name,
+        'realm_creation': realm_creation,
+        'email': user.email,
+        'is_realm_admin': user.is_realm_admin,
     })
     if user.is_realm_admin:
-        context['user_role_group'] = _('admins')
         context['getting_started_link'] = (user.realm.uri +
                                            '/help/getting-your-organization-started-with-zulip')
     else:
-        context['user_role_group'] = _('members')
-        context['getting_started_link'] = user.realm.uri + '/help/getting-started-with-zulip'
+        context['getting_started_link'] = "https://zulipchat.com"
+
+    from zproject.backends import email_belongs_to_ldap, require_email_format_usernames
+    if email_belongs_to_ldap(user.realm, user.email) and not require_email_format_usernames(user.realm):
+        context["ldap_username"] = True
 
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,

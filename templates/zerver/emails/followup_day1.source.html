@@ -5,50 +5,45 @@
 {% endblock %}
 
 {% block content %}
-<p>{{ _('Hi there,') }}</p>
-
-<p>{{ _('Welcome to Zulip! A few tips to get you started:') }}</p>
-<p>
-    &bull;
-    {% trans %}
-    Zulip works best when it's always open, so we suggest downloading
-    our <a href="https://zulipchat.com/apps">desktop and mobile apps</a>.
-    {% endtrans %}
-    <br/><br/>
-    {% trans %}
-    To access your account from the apps, enter this Organization URL:
-    {% endtrans %}
-</p>
+<p>{{ _('Welcome to Zulip!') }}</p>
 
 <p>
-    &nbsp;&nbsp;&nbsp;&nbsp;<b>{{ realm_uri }}</b>
+    {% if realm_creation %}
+        {% trans %}
+        You've created the new Zulip organization <b>{{ realm_name }}</b>.
+        {% endtrans %}
+    {% else %}
+        {% trans %}
+        You've joined the Zulip organization <b>{{ realm_name }}</b>.
+        {% endtrans %}
+    {% endif %}
 </p>
+
 <p>
-    &bull;
+    {{ _('Your account details:') }}
+    <li>{{ _('Organization URL:') }} {{ realm_uri }}<br/></li>
+    {% if ldap_username %}
+    <li>{{ _('Use your LDAP account to login') }}<br/></li>
+    {% else %}
+    <li>{{ _('Email:') }} {{ email }}<br/></li>
+    {% endif %}
     {% trans %}
-    Become a Zulip pro with a few
-    <a href="{{ keyboard_shortcuts_link }}">keyboard shortcuts</a>:
-    {% endtrans %}
-    <br/>
-    <b>n</b>: {{ _('Next unread thread') }}<br/>
-    <b>r</b>: {{ _('Reply to message under the blue box') }}<br/>
-    <b>c</b>: {{ _('Start a new topic') }}
-</p>
-<p>
-    &bull;
-    {% trans %}
-    Give our <a href="{{ getting_started_link }}">guide for new
-    {{ user_role_group }}</a> a spin.
+    (you'll need these to sign in to the <a href="https://zulipchat.com/apps">mobile and desktop</a> apps)
     {% endtrans %}
 </p>
+
 <p>
-    <br/>
-    {% trans %}
-    Zulip combines the real-time ease of chat with the threaded organization
-    of email. Zulip is about productivity&mdash;making communication fun and
-    easy, while avoiding the distracting and disorganized conversations of
-    chatrooms. We hope you love using Zulip as much as we do.
-    {% endtrans %}
+    {% if is_realm_admin %}
+        {% trans %}
+        Check out our <a href="{{ getting_started_link }}">guide for admins</a>, become a Zulip pro with a
+        few <a href="{{ keyboard_shortcuts_link }}">keyboard shortcuts</a>, or <a href="{{ realm_uri }}">dive right in</a>!
+        {% endtrans %}
+    {% else %}
+        {% trans %}
+        <a href="{{ getting_started_link }}">Learn more</a> about Zulip, become a pro with a few
+        <a href="{{ keyboard_shortcuts_link }}">keyboard shortcuts</a>, or <a href="{{ realm_uri }}">dive right in</a>!
+        {% endtrans %}
+    {% endif %}
 </p>
 
 <p>
