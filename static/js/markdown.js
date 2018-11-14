@@ -105,18 +105,18 @@ exports.apply_markdown = function (message) {
     message.is_me_message = exports.is_status_message(message.raw_content, message.content);
 };
 
-exports.add_subject_links = function (message) {
+exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
         message.subject_links = [];
         return;
     }
-    var subject = message.subject;
+    var topic = message.subject; // TODO: SUB->TOPIC
     var links = [];
     _.each(realm_filter_list, function (realm_filter) {
         var pattern = realm_filter[0];
         var url = realm_filter[1];
         var match;
-        while ((match = pattern.exec(subject)) !== null) {
+        while ((match = pattern.exec(topic)) !== null) {
             var link_url = url;
             var matched_groups = match.slice(1);
             var i = 0;
