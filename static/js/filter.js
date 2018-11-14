@@ -31,7 +31,7 @@ function zephyr_topic_name_match(message, operand) {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
     }
 
-    return related_regexp.test(message.subject);
+    return related_regexp.test(message.topic);
 }
 
 function message_in_home(message) {
@@ -106,7 +106,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return message.subject.toLowerCase() === operand;
+        return message.topic.toLowerCase() === operand;
 
 
     case 'sender':
@@ -154,7 +154,7 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {from: "sender", subject: "topic"};
+var canonical_operators = {from: "sender", topic: "topic"};
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
@@ -298,7 +298,7 @@ Filter.parse = function (str) {
 /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
-       ['subject', 'my amazing subject']
+       ['topic', 'my amazing subject']
 
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
@@ -595,7 +595,7 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'id':
         return verb + 'message ID';
 
-    case 'subject':
+    case 'subject': // TODO: SUB->TOPIC
     case 'topic':
         return verb + 'topic';
 
