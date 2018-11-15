@@ -359,3 +359,30 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
             hash_file.write(new_hash)
             return True
     return False
+
+def is_root() -> bool:
+    if 'posix' in os.name and os.geteuid() == 0:
+        return True
+    return False
+
+def script_should_not_be_root() -> None:
+    script_name = os.path.abspath(sys.argv[0])
+    if is_root():
+        msg = ("{shortname} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
+               "user before rerunning this, or use \n  su zulip -c '{name} ...'\n"
+               "to switch users and run this as a single command.").format(
+            name=script_name,
+            shortname=os.path.basename(script_name))
+        print(msg)
+        sys.exit(1)
+
+def script_should_be_root(strip_lib_from_paths: bool=False) -> None:
+    script_name = os.path.abspath(sys.argv[0])
+    # Since these Python scripts are run inside a thin shell wrapper,
+    # we need to replace the paths in order to ensure we instruct
+    # users to (re)run the right command.
+    if strip_lib_from_paths:
+        script_name = script_name.replace("scripts/lib/upgrade", "scripts/upgrade")
+    if not is_root():
+        print("{} must be run as root.".format(script_name))
+        sys.exit(1)
