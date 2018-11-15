@@ -359,3 +359,21 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
             hash_file.write(new_hash)
             return True
     return False
+
+def is_root() -> bool:
+    if 'posix' in os.name and os.geteuid() == 0:
+        return True
+    return False
+
+def script_should_not_be_root(script_name: str = sys.argv[0]) -> None:
+    if is_root():
+        msg = ("{name} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
+               "user before rerunning this, or use `su zulip -c '{name} ...'` to switch\n"
+               "users and run this as a single command.").format(name=script_name)
+        print(msg)
+        sys.exit(1)
+
+def script_should_be_root(script_name: str = sys.argv[0]) -> None:
+    if not is_root():
+        print("{} must be run as root.".format(script_name))
+        sys.exit(1)
