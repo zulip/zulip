@@ -210,7 +210,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
         realm.notifications_stream_id = verona.id
-        realm.save()
+        realm.save(update_fields=["notifications_stream"])
 
         notifications_stream = realm.get_notifications_stream()
         self.assertEqual(notifications_stream.id, verona.id)
@@ -248,7 +248,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
         realm.signup_notifications_stream = verona
-        realm.save()
+        realm.save(update_fields=["signup_notifications_stream"])
 
         signup_notifications_stream = realm.get_signup_notifications_stream()
         self.assertEqual(signup_notifications_stream, verona)
@@ -387,7 +387,7 @@ class RealmAPITest(ZulipTestCase):
     def set_up_db(self, attr: str, value: Any) -> None:
         realm = get_realm('zulip')
         setattr(realm, attr, value)
-        realm.save()
+        realm.save(update_fields=[attr])
 
     def update_with_api(self, name: str, value: int) -> Realm:
         result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
