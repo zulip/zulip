@@ -295,6 +295,10 @@ exports.set_topic = function (obj, topic) {
     obj.subject = topic;
 };
 
+exports.get_topic = function (obj) {
+    return obj.subject;
+};
+
 return exports;
 
 }());

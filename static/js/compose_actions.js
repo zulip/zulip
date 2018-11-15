@@ -304,10 +304,10 @@ exports.respond_to_message = function (opts) {
     unread_ops.notify_server_message_read(message);
 
     var stream = '';
-    var subject = '';
+    var topic = '';
     if (message.type === "stream") {
         stream = message.stream;
-        subject = message.subject;
+        topic = util.get_topic(message);
     }
 
     var pm_recipient = message.reply_to;
@@ -326,7 +326,7 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    exports.start(msg_type, {stream: stream, subject: subject,
+    exports.start(msg_type, {stream: stream, subject: topic,
                              private_message_recipient: pm_recipient,
                              replying_to_message: message,
                              trigger: opts.trigger});
