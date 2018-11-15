@@ -348,6 +348,7 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
         'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
         'scope': 'profile email',
         'state': csrf_state,
+        'prompt': 'select_account',
     }
     return redirect(google_uri + urllib.parse.urlencode(params))
 
