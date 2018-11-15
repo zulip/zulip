@@ -32,6 +32,7 @@ Subsystems Documentation
    typing-indicators
    users
    guest-users
+   django-upgrades
    release-checklist
    api-release-checklist
    openapi-api-docs
