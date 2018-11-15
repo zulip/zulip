@@ -119,7 +119,7 @@ run_test('start', () => {
     global.narrow_state.set_compose_defaults = function () {
         var opts = {};
         opts.stream = 'stream1';
-        opts.subject = 'topic1';
+        opts.topic = 'topic1';
         return opts;
     };
 
@@ -311,10 +311,10 @@ run_test('get_focus_area', () => {
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
                  '#stream_message_recipient_topic');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more'}),
+                                           topic: 'more'}),
                  '#compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more',
+                                           topic: 'more',
                                            trigger: 'new topic button'}),
                  '#stream_message_recipient_topic');
 });

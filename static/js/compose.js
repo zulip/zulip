@@ -1007,7 +1007,7 @@ exports.initialize = function () {
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
-            compose_actions.start("stream", {subject: page_params.narrow_topic});
+            compose_actions.start("stream", {topic: page_params.narrow_topic});
         } else {
             compose_actions.start("stream", {});
         }

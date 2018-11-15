@@ -31,7 +31,7 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && !opts.subject) {
+    if (msg_type === 'stream' && opts.stream && !opts.topic) {
         return '#stream_message_recipient_topic';
     } else if (msg_type === 'stream' && opts.stream
                || msg_type === 'private' && opts.private_message_recipient) {
@@ -172,7 +172,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
         message_type:     msg_type,
         stream:           '',
-        subject:          '',
+        topic:            '',
         private_message_recipient: '',
         trigger:          'unknown',
     };
@@ -188,7 +188,7 @@ function same_recipient_as_before(msg_type, opts) {
     return compose_state.get_message_type() === msg_type &&
             (msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.topic() ||
+              opts.topic === compose_state.topic() ||
              msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient());
 }
@@ -209,7 +209,7 @@ exports.start = function (msg_type, opts) {
     if (opts.trigger === "compose_hotkey" ||
         opts.trigger === "new topic button" ||
         opts.trigger === "sidebar stream actions") {
-        opts.subject = '';
+        opts.topic = '';
         opts.private_message_recipient = '';
     }
 
@@ -219,7 +219,7 @@ exports.start = function (msg_type, opts) {
     }
 
     compose_state.stream_name(opts.stream);
-    compose_state.topic(opts.subject);
+    compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
@@ -243,7 +243,7 @@ exports.cancel = function () {
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
-        // at least clear the subject and unfade.
+        // at least clear the topic and unfade.
         compose_fade.clear_compose();
         if (page_params.narrow_topic !== undefined) {
             compose_state.topic(page_params.narrow_topic);
@@ -326,7 +326,7 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    exports.start(msg_type, {stream: stream, subject: topic,
+    exports.start(msg_type, {stream: stream, topic: topic,
                              private_message_recipient: pm_recipient,
                              trigger: opts.trigger});
 

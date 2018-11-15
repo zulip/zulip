@@ -142,7 +142,7 @@ run_test('set_compose_defaults', () => {
 
     var stream_and_subject = narrow_state.set_compose_defaults();
     assert.equal(stream_and_subject.stream, 'Foo');
-    assert.equal(stream_and_subject.subject, 'Bar');
+    assert.equal(stream_and_subject.topic, 'Bar');
 
     set_filter([['pm-with', 'foo@bar.com']]);
     var pm_test = narrow_state.set_compose_defaults();
