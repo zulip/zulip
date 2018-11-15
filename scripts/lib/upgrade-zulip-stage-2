@@ -20,15 +20,13 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip, script_should_be_root
+
+script_should_be_root()
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
-
-if os.getuid() != 0:
-    logging.error("Must be run as root.")
-    sys.exit(1)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
