@@ -17,11 +17,13 @@ from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
+
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
-from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
+from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
+    InvalidJSONError
 from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
@@ -326,9 +328,15 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
     return "Zulip{}Webhook".format(raw_client_name)
 
 # Use this for webhook views that don't get an email passed in.
-def api_key_only_webhook_view(webhook_client_name: str) -> Callable[[ViewFuncT], ViewFuncT]:
+def api_key_only_webhook_view(
+        webhook_client_name: str,
+        notify_bot_owner_on_invalid_json: Optional[bool]=False
+) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
+    # TODO importing this at the top leads to a cyclic import
+    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
+
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
@@ -342,6 +350,10 @@ def api_key_only_webhook_view(webhook_client_name: str) -> Callable[[ViewFuncT],
                 rate_limit_user(request, user_profile, domain='all')
             try:
                 return view_func(request, user_profile, *args, **kwargs)
+            except InvalidJSONError as e:
+                if not notify_bot_owner_on_invalid_json:
+                    raise e
+                notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
             except Exception as err:
                 log_exception_to_webhook_logger(request, user_profile)
                 raise err
