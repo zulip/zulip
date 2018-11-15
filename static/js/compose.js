@@ -138,9 +138,9 @@ exports.empty_topic_placeholder = function () {
 
 function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
-    var subject = compose_state.topic();
-    if (subject === "") {
-        subject = compose.empty_topic_placeholder();
+    var topic = compose_state.topic();
+    if (topic === "") {
+        topic = compose.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose_state.message_content());
@@ -152,8 +152,8 @@ function create_message_object() {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: '',
-        subject: '',
     };
+    util.set_topic(message, '');
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -171,7 +171,7 @@ function create_message_object() {
         if (sub) {
             message.stream_id = sub.stream_id;
         }
-        message.subject = subject;
+        util.set_topic(message, topic);
     }
     return message;
 }

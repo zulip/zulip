@@ -291,6 +291,10 @@ exports.get_match_topic = function (obj) {
     return obj.match_subject;
 };
 
+exports.set_topic = function (obj, topic) {
+    obj.subject = topic;
+};
+
 return exports;
 
 }());
