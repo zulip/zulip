@@ -107,7 +107,7 @@ exports.apply_markdown = function (message) {
 
 exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
-        message.subject_links = [];
+        util.set_topic_links(message, []);
         return;
     }
     var topic = message.subject;
@@ -130,7 +130,7 @@ exports.add_topic_links = function (message) {
             links.push(link_url);
         }
     });
-    message.subject_links = links;
+    util.set_topic_links(message, links);
 };
 
 exports.is_status_message = function (raw_content, content) {
