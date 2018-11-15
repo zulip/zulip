@@ -22,11 +22,11 @@
                 {{! topic link }}
                 <a class="message_label_clickable narrows_by_topic"
                     href="{{topic_url}}"
-                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;{{/tr}}">
+                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;{{/tr}}">
                     {{#if use_match_properties}}
                     {{{match_topic}}}
                     {{else}}
-                    {{subject}}
+                    {{topic}}
                     {{/if}}
                 </a>
                 <!-- The missing whitespace on the next line is a hack; ideally, would be user-select: none. -->
@@ -38,7 +38,7 @@
                 </a>
                 {{/each}}
 
-                {{! edit subject pencil icon }}
+                {{! edit topic pencil icon }}
                 {{#if always_visible_topic_edit}}
                     <i class="fa fa-pencil always_visible_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
                 {{else}}
@@ -51,7 +51,7 @@
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
 
-                <i class="fa fa-eye-slash on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
+                <i class="fa fa-eye-slash on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
                 <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
             </span>
         </div>
