@@ -104,7 +104,7 @@ function populate_group_from_message_container(group, message_container) {
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.subject = message_container.msg.subject;
-        group.match_subject = message_container.msg.match_subject;
+        group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
         var sub = stream_data.get_sub(message_container.msg.stream);

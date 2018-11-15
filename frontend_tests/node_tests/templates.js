@@ -917,7 +917,7 @@ run_test('message_group', () => {
             show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
             show_date_separator: true,
             subject: 'two messages',
-            match_subject: '<span class="highlight">two</span> messages',
+            match_topic: '<span class="highlight">two</span> messages',
         },
     ];
 
