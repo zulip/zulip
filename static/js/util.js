@@ -272,6 +272,16 @@ exports.sorted_ids = function (ids) {
     return id_list;
 };
 
+exports.set_topic_links = function (obj, topic_links) {
+    // subject_links is a legacy name
+    obj.subject_links = topic_links;
+};
+
+exports.get_topic_links = function (obj) {
+    // subject_links is a legacy name
+    return obj.subject_links;
+};
+
 return exports;
 
 }());

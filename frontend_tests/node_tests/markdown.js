@@ -389,41 +389,41 @@ run_test('marked', () => {
     });
 });
 
-run_test('subject_links', () => {
+run_test('topic_links', () => {
     var message = {type: 'stream', subject: "No links here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, []);
+    assert.equal(util.get_topic_links(message).length, []);
 
     message = {type: 'stream', subject: "One #123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 1);
-    assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(util.get_topic_links(message).length, 1);
+    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
 
     message = {type: 'stream', subject: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 2);
-    assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
-    assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
+    assert.equal(util.get_topic_links(message).length, 2);
+    assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
+    assert.equal(util.get_topic_links(message)[1], "https://trac.zulip.net/ticket/456");
 
     message = {type: 'stream', subject: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 1);
-    assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
+    assert.equal(util.get_topic_links(message).length, 1);
+    assert.equal(util.get_topic_links(message)[0], "https://trac2.zulip.net/ticket/123");
 
     message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 2);
-    assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
-    assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
+    assert.equal(util.get_topic_links(message).length, 2);
+    assert(util.get_topic_links(message).indexOf("https://trac2.zulip.net/ticket/123") !== -1);
+    assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
     message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 1);
-    assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
+    assert.equal(util.get_topic_links(message).length, 1);
+    assert.equal(util.get_topic_links(message)[0], "https://zone_45.zulip.net/ticket/123");
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
-    assert.equal(message.subject_links.length, 0);
+    assert.equal(util.get_topic_links(message).length, 0);
 });
 
 run_test('message_flags', () => {
