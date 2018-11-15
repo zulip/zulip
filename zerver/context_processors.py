@@ -20,7 +20,8 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
-from version import ZULIP_VERSION
+from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, \
+    LATEST_RELEASE_ANNOUNCEMENT, LATEST_MAJOR_VERSION
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
@@ -136,6 +137,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'jitsi_server_url': settings.JITSI_SERVER_URL,
         'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
         'zulip_version': ZULIP_VERSION,
+        'latest_release_version': LATEST_RELEASE_VERSION,
+        'latest_major_version': LATEST_MAJOR_VERSION,
+        'latest_release_announcement': LATEST_RELEASE_ANNOUNCEMENT,
         'user_is_authenticated': user_is_authenticated,
         'settings_path': settings_path,
         'secrets_path': secrets_path,
