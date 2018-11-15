@@ -27,7 +27,7 @@ exports.initialize = function () {
     current_message_group.message_containers = [];
     current_message_group.show_date_separator = false;
     current_message_group.display_recipient = stream_name;
-    current_message_group.subject = topic;
+    current_message_group.topic = topic;
     current_message_group.background_color = recipient_color;
 
     function separate_into_groups(current_message_row, cur_msg_time, next_msg_time) {
@@ -43,7 +43,7 @@ exports.initialize = function () {
             timerender.render_date(time, prev_time, today)[0].outerHTML;
         current_message_group.show_date_separator = true;
         current_message_group.display_recipient = stream_name;
-        current_message_group.subject = topic;
+        current_message_group.topic = topic;
         current_message_group.background_color = recipient_color;
     }
 
