@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+from django.http import HttpRequest
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
-    MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader
-from zerver.models import get_user, get_realm
+    MISSING_EVENT_HEADER_MESSAGE, MissingHTTPEventHeader, \
+    INVALID_JSON_MESSAGE
+from zerver.models import get_user, get_realm, UserProfile
+from zerver.lib.users import get_api_key
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import HostRequestMock
 
@@ -43,6 +49,40 @@ class WebhooksCommonTestCase(ZulipTestCase):
         ).rstrip()
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
+
+    def test_notify_bot_owner_on_invalid_json(self)-> None:
+        @api_key_only_webhook_view('ClientName')
+        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+            raise InvalidJSONError("Malformed JSON")
+
+        @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=True)
+        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> None:
+            raise InvalidJSONError("Malformed JSON")
+
+        webhook_bot_email = 'webhook-bot@zulip.com'
+        webhook_bot_realm = get_realm('zulip')
+        webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
+        webhook_bot_api_key = get_api_key(webhook_bot)
+        request = HostRequestMock()
+        request.POST['api_key'] = webhook_bot_api_key
+        request.host = "zulip.testserver"
+        expected_msg = INVALID_JSON_MESSAGE.format(webhook_name='ClientName')
+
+        last_message_id = self.get_last_message().id
+        with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
+            my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
+
+        # First verify that without the setting, it doesn't send a PM to bot owner.
+        msg = self.get_last_message()
+        self.assertEqual(msg.id, last_message_id)
+        self.assertNotEqual(msg.content, expected_msg.strip())
+
+        # Then verify that with the setting, it does send such a message.
+        my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
+        msg = self.get_last_message()
+        self.assertNotEqual(msg.id, last_message_id)
+        self.assertEqual(msg.sender.email, self.notification_bot().email)
+        self.assertEqual(msg.content, expected_msg.strip())
 
 class MissingEventHeaderTestCase(WebhookTestCase):
     STREAM_NAME = 'groove'

@@ -23,8 +23,21 @@ an older version of the third-party service that doesn't provide that header.
 Contact {support_email} if you need help debugging!
 """
 
+INVALID_JSON_MESSAGE = """
+Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+but didn't correctly configure the webhook to send data in the JSON format
+that this integration expects!
+"""
+
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
+
+def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
+                                        webhook_client_name: str) -> None:
+    send_rate_limited_pm_notification_to_bot_owner(
+        user_profile, user_profile.realm,
+        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
+    )
 
 class UnexpectedWebhookEventType(JsonableError):
     code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE

@@ -10,7 +10,8 @@ import ujson
 
 from django.utils.translation import ugettext as _
 
-from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.exceptions import JsonableError, ErrorCode, \
+    InvalidJSONError
 
 from django.http import HttpRequest, HttpResponse
 
@@ -155,7 +156,7 @@ def has_request_variables(view_func):
                 try:
                     val = ujson.loads(request.body)
                 except ValueError:
-                    raise JsonableError(_('Malformed JSON'))
+                    raise InvalidJSONError(_("Malformed JSON"))
                 kwargs[param.func_var_name] = val
                 continue
             elif param.argument_type is not None:

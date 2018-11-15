@@ -28,6 +28,7 @@ class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
     REQUEST_VARIABLE_MISSING = ()
     REQUEST_VARIABLE_INVALID = ()
+    INVALID_JSON = ()
     BAD_IMAGE = ()
     REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
@@ -141,6 +142,13 @@ class StreamDoesNotExistError(JsonableError):
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
         super().__init__(msg)
+
+class InvalidJSONError(JsonableError):
+    code = ErrorCode.INVALID_JSON
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Malformed JSON")
 
 class BugdownRenderingException(Exception):
     pass
