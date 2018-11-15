@@ -403,6 +403,7 @@ exports.quote_and_reply = function (opts) {
         url: '/json/messages/' + message_id,
         idempotent: true,
         success: function (data) {
+            message.raw_content = data.raw_content;
             compose_ui.replace_syntax('[Quoting…]', '```quote\n' + data.raw_content + '\n```', textarea);
             $("#compose-textarea").trigger("autosize.resize");
         },
