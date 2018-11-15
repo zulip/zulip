@@ -282,6 +282,15 @@ exports.get_topic_links = function (obj) {
     return obj.subject_links;
 };
 
+exports.set_match_data = function (target, source) {
+    target.match_subject = source.match_subject;
+    target.match_content = source.match_content;
+};
+
+exports.get_match_topic = function (obj) {
+    return obj.match_subject;
+};
+
 return exports;
 
 }());

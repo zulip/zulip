@@ -110,9 +110,8 @@ exports.add_message_metadata = function (message) {
     if (cached_msg !== undefined) {
         // Copy the match subject and content over if they exist on
         // the new message
-        if (message.match_subject !== undefined) {
-            cached_msg.match_subject = message.match_subject;
-            cached_msg.match_content = message.match_content;
+        if (util.get_match_topic(message) !== undefined) {
+            util.set_match_data(cached_msg, message);
         }
         return cached_msg;
     }

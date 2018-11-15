@@ -23,8 +23,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             var elsewhere_messages = [];
             _.each(messages, function (elem) {
                 if (data.messages.hasOwnProperty(elem.id)) {
-                    elem.match_subject = data.messages[elem.id].match_subject;
-                    elem.match_content = data.messages[elem.id].match_content;
+                    util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);

@@ -85,7 +85,7 @@ run_test('add_message_metadata', () => {
     // access cached previous message, and test match subject/content
     message = {
         id: 2067,
-        match_subject: "subject foo",
+        match_subject: "topic foo",
         match_content: "bar content",
     };
     message = message_store.add_message_metadata(message);
@@ -93,7 +93,7 @@ run_test('add_message_metadata', () => {
     assert.equal(message.reply_to, 'bob@example.com,cindy@example.com');
     assert.equal(message.to_user_ids, '103,104');
     assert.equal(message.display_reply_to, 'Bob, Cindy');
-    assert.equal(message.match_subject, 'subject foo');
+    assert.equal(util.get_match_topic(message), 'topic foo');
     assert.equal(message.match_content, 'bar content');
 
     message = {
