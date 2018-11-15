@@ -427,7 +427,8 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
     if kwargs.get('update_fields') is None or "message_visibility_limit" in kwargs['update_fields']:
         cache_delete(realm_first_visible_message_id_cache_key(realm))
 
-    if realm.deactivated:
+    if realm.deactivated or (kwargs["update_fields"] is not None and
+                             "string_id" in kwargs['update_fields']):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
