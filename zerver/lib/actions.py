@@ -663,6 +663,10 @@ def do_reactivate_realm(realm: Realm) -> None:
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED, event_time=event_time)
 
+def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
+    realm.string_id = new_subdomain
+    realm.save(update_fields=["string_id"])
+
 def do_scrub_realm(realm: Realm) -> None:
     users = UserProfile.objects.filter(realm=realm)
     for user in users:

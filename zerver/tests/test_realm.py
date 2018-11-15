@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Union, Mapping
 
 from zerver.lib.actions import (
     do_change_is_admin,
+    do_change_realm_subdomain,
     do_set_realm_property,
     do_deactivate_realm,
     do_deactivate_stream,
@@ -26,7 +27,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_runner import slow
 from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream, \
-    CustomProfileField, Message, UserMessage, Attachment
+    CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
@@ -160,6 +161,20 @@ class RealmTest(ZulipTestCase):
         do_deactivate_realm(realm)
         user = self.example_user('hamlet')
         self.assertTrue(user.realm.deactivated)
+
+    def test_do_change_realm_subdomain_clears_user_realm_cache(self) -> None:
+        """The main complicated thing about changing realm subdomains is
+        updating the cache, and we start by populating the cache for
+        Hamlet, and we end by checking the cache to ensure that his
+        realm appears to be deactivated.  You can make this test fail
+        by disabling cache.flush_realm()."""
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        realm = get_realm('zulip')
+        do_change_realm_subdomain(realm, "newzulip")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.realm.string_id, "newzulip")
+        # This doesn't use a cache right now, but may later.
+        self.assertIsNone(get_realm("zulip"))
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
