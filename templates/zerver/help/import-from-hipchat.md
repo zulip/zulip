@@ -65,6 +65,11 @@ organization first.
 
 ### Import into a self-hosted Zulip server
 
+First
+[install a new Zulip server](https://zulip.readthedocs.io/en/stable/production/install.html),
+skipping "Step 3: Create a Zulip organization, and log in" (you'll
+create your Zulip organization via the data import tool instead).
+
 Because the import tool is very new, you will need to
 upgrade your Zulip server to the latest `master` branch,
 using [upgrade-zulip-from-git][upgrade-zulip-from-git].
