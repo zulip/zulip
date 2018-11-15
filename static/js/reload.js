@@ -134,7 +134,7 @@ exports.initialize = function () {
             var topic = util.get_reload_topic(vars);
 
             compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                                  subject: topic || '',
+                                                  topic: topic || '',
                                                   private_message_recipient: vars.recipient || '',
                                                   content: vars.msg || ''});
             if (send_now) {

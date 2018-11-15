@@ -68,7 +68,7 @@ var legacy_draft = {
 
 var compose_args_for_legacy_draft = {
     stream: "stream",
-    subject: "lunch",
+    topic: "lunch",
     type: "stream",
     content: "whatever",
 };

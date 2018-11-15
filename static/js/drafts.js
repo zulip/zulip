@@ -97,7 +97,7 @@ exports.restore_message = function (draft) {
         compose_args = {
             type: 'stream',
             stream: draft.stream,
-            subject: util.get_draft_topic(draft),
+            topic: util.get_draft_topic(draft),
             content: draft.content,
         };
 
@@ -158,7 +158,7 @@ exports.restore_draft = function (draft_id) {
             narrow.activate(
                 [
                     {operator: "stream", operand: compose_args.stream},
-                    {operator: "topic", operand: compose_args.subject},
+                    {operator: "topic", operand: compose_args.topic},
                 ],
                 {trigger: "restore draft"}
             );
@@ -179,7 +179,7 @@ exports.restore_draft = function (draft_id) {
     compose.clear_preview_area();
 
     if (draft.type === "stream" && draft.stream === "") {
-        compose_args.subject = "";
+        compose_args.topic = "";
     }
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea();
