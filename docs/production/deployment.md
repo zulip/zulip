@@ -71,7 +71,7 @@ degraded experience.  Zulip let you choose one of two
 Neither is available in Amazon RDS.  As a result, if you use one of
 those providers, Zulip's full-text search will be unavailable.
 
-## Putting the Zulip application behind a reverse proxy
+## Putting the Zulip application behind an NGINX reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.
 There are few things you need to be careful about when configuring a
@@ -115,4 +115,34 @@ available via the `zulip::nginx` puppet module).
 [voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
+
+
+## Putting the Zulip application behind a HAPROXY reverse proxy
+
+### Installation
+
+If you intend to use Zulip with HAProxy, installing with the `--self-signed-cert` option should enable the installation script to finish. You can then configure HAProxy as you want
+
+### HAProxy Configuration
+
+If you want to use HAProxy with Zulip, this `backend` config is a good place to start.
+
+```
+backend zulip
+    mode http
+    balance leastconn
+    http-request set-header X-Client-IP %[src]
+    reqadd X-Forwarded-Proto:\ https
+    server zulip 10.10.10.10:80 check
+```
+
+You'll also need Zulip to run in http only mode. Add the following block to /etc/zulip/zulip.conf
+
+```
+[application_server]
+http_only = true
+```
+
+And then run `/home/zulip/deployments/current/scripts/zulip-puppet-apply` in order to convert the nginx config to HTTP only. Finally, restart Zulip `/home/zulip/deployments/current/scripts/restart-server`.
+
 
