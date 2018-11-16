@@ -1,0 +1,27 @@
+#! /bin/bash -ex
+
+cat <<EOF
+This script will completely wipe your database, including all users, chat
+messages, and metadata.  It will not modify your existing /etc/zulip
+configuration files, but all other database-backed data will disappear. This
+script is targeting /home/zulip/deployments/current.
+
+Do you want to continue? You must type YES.
+EOF
+
+read yesno
+
+if [ "x$yesno" != "xYES" ]; then
+  >&2 echo "Exiting without changes."
+  exit 1;
+fi
+
+if [ "x$(sudo whoami)" != "xroot" ]; then
+  >&2 echo "Exiting because root is not available."
+  exit 1
+fi
+
+cat << EOF | sudo -sE
+/home/zulip/deployments/current/scripts/setup/postgres-init-db
+/home/zulip/deployments/current/scripts/setup/initialize-database
+EOF
