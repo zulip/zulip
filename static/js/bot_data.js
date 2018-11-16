@@ -77,6 +77,10 @@ var bot_data = (function () {
         return bots[bot_id];
     };
 
+    exports.get_bot_owner_email = function (bot_id) {
+        return bots[bot_id].owner;
+    };
+
     exports.get_services = function bot_data__get_services(bot_id) {
         return services[bot_id];
     };
