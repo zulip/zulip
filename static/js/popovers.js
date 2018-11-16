@@ -219,7 +219,7 @@ exports.hide_user_profile = function () {
     $("#user-profile-modal").modal("hide");
 };
 
-exports.show_user_profile = function (element, user) {
+exports.show_user_profile = function (user) {
     popovers.hide_all();
 
     var profile_data = [];
@@ -739,7 +739,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var user = people.get_person_from_user_id(user_id);
-        exports.show_user_profile(e.target, user);
+        exports.show_user_profile(user);
         e.stopPropagation();
         e.preventDefault();
     });
