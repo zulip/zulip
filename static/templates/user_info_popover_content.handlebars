@@ -27,8 +27,17 @@
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
-
-        <li>{{ user_type }}</li>
+        {{#if_and is_bot bot_owner }}
+            <li>{{#tr this}}Owner{{/tr}}:
+                <div class="bot-info-popover pill-container not-editable" data-bot-owner-id='{{ bot_owner.user_id }}'>
+                    <div class="input" contenteditable="false" style="display: none;"></div>
+                </div>
+            </li>
+        {{else}}
+            {{#unless is_bot}}
+            <li>{{ user_type }}</li>
+            {{/unless}}
+        {{/if_and}}
     </div>
     <hr />
     {{#if show_user_profile}}

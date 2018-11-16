@@ -132,6 +132,14 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_type: people.get_user_type(user.user_id),
     };
 
+    if (user.is_bot) {
+        var bot_owner_email = bot_data.get_bot_owner_email(user.user_id);
+        if (bot_owner_email) {
+            var bot_owner = people.get_by_email(bot_owner_email);
+            args.bot_owner = bot_owner;
+        }
+    }
+
     popover_element.popover({
         content: templates.render('user_info_popover_content', args),
         // TODO: Determine whether `fixed` should be applied
@@ -145,6 +153,14 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         trigger: "manual",
     });
     popover_element.popover("show");
+
+    // Initialize bot-owner-user-pill if profile is bot and bot has owner
+    if (args.is_bot && args.bot_owner !== undefined) {
+        var pill_container = $('.message-info-popover .info_popover_actions .bot-info-popover[data-bot-owner-id="' +
+                                args.bot_owner.user_id + '"]').expectOne();
+        var pills = user_pill.create_pills(pill_container);
+        user_pill.append_user(args.bot_owner, pills);
+    }
 
     init_email_clipboard();
     load_medium_avatar(user, $(".popover-avatar"));
@@ -725,6 +741,13 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var user = people.get_person_from_user_id(user_id);
+        exports.show_user_profile(user);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.info_popover_actions .bot-info-popover', function (e) {
+        var user_id = $(e.target).closest('.bot-info-popover').attr('data-bot-owner-id');
         var user = people.get_person_from_user_id(user_id);
         exports.show_user_profile(user);
         e.stopPropagation();
