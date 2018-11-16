@@ -41,8 +41,8 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-./manage deactivate_realm -r ''  # Deactivates the organization
-./manage.py export -r ''  # Exports the data
+python3 manage.py deactivate_realm -r ''  # Deactivates the organization
+python3 manage.py export -r ''  # Exports the data
 ```
 
 (The `-r` option lets you specify the organization to export; `''` is
@@ -73,8 +73,8 @@ export tarball:
 cd /tmp
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
-./manage.py import '' /tmp/zulip-export-zcmpxfm6
-./manage reactivate_realm -r ''  # Reactivates the organization
+python3 manage.py import '' /tmp/zulip-export-zcmpxfm6
+python3 manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 
 This could take several minutes to run, depending on how much data you're
