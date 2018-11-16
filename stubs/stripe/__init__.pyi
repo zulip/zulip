@@ -17,7 +17,7 @@ class Customer:
     account_balance: int
     email: str
     description: str
-    discount: Optional[Dict[str, Any]]
+    discount: Optional[Discount]
     metadata: Dict[str, str]
 
     @staticmethod
@@ -32,6 +32,15 @@ class Customer:
     @staticmethod
     def save(customer: Customer) -> Customer:
         ...
+
+    @staticmethod
+    def delete_discount(customer: Customer) -> None:
+        ...
+
+    @staticmethod
+    def list(limit: Optional[int]=...) -> List[Customer]:
+        ...
+
 
 class Invoice:
     amount_due: int
@@ -74,8 +83,12 @@ class Product:
     def create(name: str=..., type: str=..., statement_descriptor: str=..., unit_label: str=...) -> Product:
         ...
 
+class Discount:
+    coupon: Coupon
+
 class Coupon:
     id: str
+    percent_off: int
 
     @staticmethod
     def create(duration: str=..., name: str=..., percent_off: int=...) -> Coupon:
