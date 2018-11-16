@@ -74,6 +74,43 @@ those providers, Zulip's full-text search will be unavailable.
 ## Putting the Zulip application behind a reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.
+This section contains notes on the configuration required with
+variable reverse proxy implementations.
+
+### Installer options
+
+If your Zulip server will not be on the public Internet, we recommend,
+installing with the `--self-signed-cert` option (rather than the
+`--certbot` option), since CertBot requires the server to be on the
+public Internet.
+
+#### Configuring Zulip to allow HTTP
+
+Depending on your environment, you may want the reverse proxy to talk
+to the Zulip server over HTTP; this can be secure when the Zulip
+server is not directly exposed to the public Internet.
+
+After installing the Zulip server as
+[described above](#installer-options), you can configure Zulip to talk
+HTTP as follows:
+
+1. Add the following block to `/etc/zulip/zulip.conf`:
+
+    ```
+    [application_server]
+    http_only = true
+    ```
+
+1. As root, run
+`/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+will convert Zulip's main `nginx` configuration file to allow HTTP
+instead of HTTPS.
+
+1. Finally, restart the Zulip server, using
+`/home/zulip/deployments/current/scripts/restart-server`.
+
+### nginx configuration
+
 There are few things you need to be careful about when configuring a
 reverse proxy:
 
@@ -116,3 +153,20 @@ available via the `zulip::nginx` puppet module).
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
+### HAProxy configuration
+
+If you want to use HAProxy with Zulip, this `backend` config is a good
+place to start.
+
+```
+backend zulip
+    mode http
+    balance leastconn
+    http-request set-header X-Client-IP %[src]
+    reqadd X-Forwarded-Proto:\ https
+    server zulip 10.10.10.10:80 check
+```
+
+Since this configuration uses the `http` mode, you will also need to
+[configure Zulip to allow HTTP](#configuring-zulip-to-allow-http) as
+described above.
