@@ -9,7 +9,7 @@ script is targeting /home/zulip/deployments/current.
 Do you want to continue? You must type YES.
 EOF
 
-read yesno
+read -r yesno
 
 if [ "x$yesno" != "xYES" ]; then
   >&2 echo "Exiting without changes."
