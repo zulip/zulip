@@ -525,7 +525,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         total_bot_count += int(row['bot_count'])
         total_wau_count += int(row['wau_count'])
 
-    rows.append(dict(
+    total_row = dict(
         string_id='Total',
         plan_type_string="",
         stats_link = '',
@@ -536,7 +536,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         bot_count=total_bot_count,
         hours=int(total_hours),
         wau_count=total_wau_count,
-    ))
+    )
+
+    rows.insert(0, total_row)
 
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
