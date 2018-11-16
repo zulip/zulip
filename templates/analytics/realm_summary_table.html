@@ -39,6 +39,7 @@
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
             <th>Plan Type</th>
+            <th>$/year</th>
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
@@ -67,6 +68,12 @@
 
             <td>
                 {{ row.plan_type_string }}
+            </td>
+
+            <td>
+                {% if row.amount %}
+                {{ row.amount }}
+                {% endif %}
             </td>
 
             <td>

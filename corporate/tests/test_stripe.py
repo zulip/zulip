@@ -26,7 +26,8 @@ from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
-    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer
+    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
+    extract_percent_off
 from corporate.models import Customer, Plan, Coupon, BillingProcessor
 import corporate.urls
 
@@ -542,10 +543,12 @@ class StripeTest(ZulipTestCase):
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
 
-    @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_attach_discount_to_realm(self, mock_create_customer: Mock,
-                                      mock_retrieve_customer: Mock) -> None:
+    @mock_stripe("Customer.delete_discount")
+    @mock_stripe("Customer.save")
+    @mock_stripe("Customer.retrieve")
+    @mock_stripe("Customer.create")
+    def test_attach_discount_to_realm(self, mock_create_customer: Mock, mock_retrieve_customer: Mock,
+                                      mock_save_customer: Mock, mock_delete_discount: Mock) -> None:
         user = self.example_user('hamlet')
         # Before customer exists
         attach_discount_to_realm(user, 85)
@@ -553,13 +556,19 @@ class StripeTest(ZulipTestCase):
             description=Kandra(), email=self.example_email('hamlet'), metadata=Kandra(),
             source=None, coupon=self.stripe_coupon_id)
         mock_create_customer.reset_mock()
+        customer = Customer.objects.get(realm=user.realm)
+        stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+        self.assertEqual(extract_percent_off(stripe_customer), 85)
+
         # For existing customer
-        Coupon.objects.create(percent_off=42, stripe_coupon_id='42OFF')
-        with patch.object(
-                stripe.Customer, 'save', autospec=True,
-                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '42OFF')):
-            attach_discount_to_realm(user, 42)
+        attach_discount_to_realm(user, 25)
         mock_create_customer.assert_not_called()
+        stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+        self.assertEqual(extract_percent_off(stripe_customer), 25)
+
+        stripe.Customer.delete_discount(stripe_customer)
+        stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+        self.assertEqual(extract_percent_off(stripe_customer), 0)
 
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.save")

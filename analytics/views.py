@@ -21,6 +21,7 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
+import stripe
 
 from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
@@ -36,6 +37,7 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
+from zproject.settings import get_secret
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False) -> HttpRequest:
@@ -490,6 +492,44 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         except Exception:
             row['history'] = ''
 
+    # get the yearly revenue
+    total_amount = 0
+    if settings.BILLING_ENABLED and settings.CORPORATE_ENABLED:
+        from corporate.lib.stripe import extract_current_subscription, extract_percent_off
+        from corporate.models import Customer
+        stripe.api_key = get_secret('stripe_secret_key')
+        stripe_customer_to_plan = {}
+
+        try:
+            stripe_customers = stripe.Customer.list(limit=100)
+            for stripe_customer in stripe_customers:
+                subscription = extract_current_subscription(stripe_customer)
+                if subscription is not None:
+                    percent_off = extract_percent_off(stripe_customer)
+                    amount = (subscription.plan.amount * (100 - percent_off)/100)
+                    stripe_customer_to_plan[stripe_customer.id] = {
+                        "interval": subscription.plan.interval,
+                        "amount": amount/100,
+                        "quantity": subscription.quantity
+                    }
+        except stripe.error.StripeError:
+            pass
+
+        for row in rows:
+            try:
+                customer = Customer.objects.get(realm__string_id=row['string_id'])
+                try:
+                    plan = stripe_customer_to_plan[customer.stripe_customer_id]
+                    row["amount"] = (plan["amount"] * plan["quantity"])
+                    if plan["interval"] == "month":
+                        # For subscriptions that recur monthly consider this as yearly revenue for now.
+                        row["amount"] = row["amount"] * 12
+                    total_amount += row['amount']
+                except KeyError:
+                    pass
+            except Customer.DoesNotExist:
+                pass
+
     # augment data with realm_minutes
     total_hours = 0.0
     for row in rows:
@@ -528,6 +568,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows.append(dict(
         string_id='Total',
         plan_type_string="",
+        amount=total_amount,
         stats_link = '',
         date_created_day='',
         realm_admin_email='',

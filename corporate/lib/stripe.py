@@ -292,6 +292,11 @@ def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
     else:
         do_replace_coupon(user, coupon)
 
+def extract_percent_off(stripe_customer: stripe.Customer) -> int:
+    if stripe_customer.discount is not None:
+        return stripe_customer.discount.coupon.percent_off
+    return 0
+
 @catch_stripe_errors
 def process_downgrade(user: UserProfile) -> None:
     stripe_customer = stripe_get_customer(
