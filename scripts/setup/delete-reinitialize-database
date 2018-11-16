@@ -16,12 +16,10 @@ if [ "x$yesno" != "xYES" ]; then
   exit 1;
 fi
 
-if [ "x$(sudo whoami)" != "xroot" ]; then
+if [[ $EUID -ne 0 ]]; then
   >&2 echo "Exiting because root is not available."
   exit 1
 fi
 
-cat << EOF | sudo -sE
 /home/zulip/deployments/current/scripts/setup/postgres-init-db
 /home/zulip/deployments/current/scripts/setup/initialize-database
-EOF
