@@ -1,4 +1,7 @@
-#! /usr/bin/env sh -ex
+#! /usr/bin/env sh
+
+set -e
+set x
 
 cat <<EOF
 This script will completely wipe your database, including all users, chat
@@ -16,7 +19,7 @@ if [ "x$yesno" != "xYES" ]; then
   exit 1;
 fi
 
-if [[ $EUID -ne 0 ]]; then
+if [ "$(id -u)" -ne "0" ]; then
   >&2 echo "Exiting because root is not available."
   exit 1
 fi
