@@ -650,7 +650,9 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 # CACHING CONFIGURATION
 ########################################################################
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+# TODO: Restore this to django.contrib.sessions.backends.cached_db
+# after debugging; see https://github.com/zulip/zulip/issues/10856 for details.
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Compress large values being stored in memcached; this is important
 # for at least the realm_users cache.
