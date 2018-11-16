@@ -123,7 +123,10 @@ def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_functi
                 f.write(json.dumps(error_dict, indent=2, separators=(',', ': '), sort_keys=True) + "\n")
             raise e
         with open(fixture_path, 'w') as f:
-            f.write(str(stripe_object) + "\n")
+            if stripe_object is not None:
+                f.write(str(stripe_object) + "\n")
+            else:
+                f.write("{}\n")
         return stripe_object
     return _generate_and_save_stripe_fixture
 
