@@ -32,7 +32,8 @@ from zerver.models import (
 import datetime
 
 class ActivityTest(ZulipTestCase):
-    def test_activity(self) -> None:
+    @mock.patch("stripe.Customer.list", return_value=[])
+    def test_activity(self, unused_mock: mock.Mock) -> None:
         self.login(self.example_email("hamlet"))
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
@@ -198,7 +199,8 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'active')
         self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
-    def test_new_user_input(self) -> None:
+    @mock.patch("stripe.Customer.list", return_value=[])
+    def test_new_user_input(self, unused_mock: mock.Mock) -> None:
         """Mostly a test for UserActivityInterval"""
         user_profile = self.example_user("hamlet")
         self.login(self.example_email("hamlet"))

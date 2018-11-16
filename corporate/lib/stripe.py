@@ -164,6 +164,18 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
             return stripe_subscription
     return None
 
+def estimate_customer_arr(stripe_customer: stripe.Customer) -> int:  # nocoverage
+    stripe_subscription = extract_current_subscription(stripe_customer)
+    if stripe_subscription is None:
+        return 0
+    # This is an overestimate for those paying by invoice
+    estimated_arr = stripe_subscription.plan.amount * stripe_subscription.quantity / 100.
+    if stripe_subscription.plan_interval == 'month':
+        estimated_arr *= 12
+    if stripe_customer.discount is not None:
+        estimated_arr *= 1 - stripe_customer.discount.coupon.percent_off/100.
+    return int(estimated_arr)
+
 @catch_stripe_errors
 def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
                        coupon: Optional[Coupon]=None) -> stripe.Customer:

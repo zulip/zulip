@@ -21,6 +21,7 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
+import stripe
 
 from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
@@ -36,6 +37,7 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
+from zproject.settings import get_secret
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False) -> HttpRequest:
@@ -490,6 +492,25 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         except Exception:
             row['history'] = ''
 
+    # estimate annual subscription revenue
+    total_amount = 0
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import estimate_customer_arr
+        from corporate.models import Customer
+        stripe.api_key = get_secret('stripe_secret_key')
+        estimated_arr = {}
+        try:
+            for stripe_customer in stripe.Customer.list(limit=100):
+                # TODO: could do a select_related to get the realm.string_id, potentially
+                customer = Customer.objects.filter(stripe_customer_id=stripe_customer.id).first()
+                if customer is not None:
+                    estimated_arr[customer.realm.string_id] = estimate_customer_arr(stripe_customer)
+        except stripe.error.StripeError:
+            pass
+        for row in rows:
+            row['amount'] = estimated_arr.get(row['string_id'], None)
+        total_amount = sum(estimated_arr.values())
+
     # augment data with realm_minutes
     total_hours = 0.0
     for row in rows:
@@ -528,6 +549,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     total_row = dict(
         string_id='Total',
         plan_type_string="",
+        amount=total_amount,
         stats_link = '',
         date_created_day='',
         realm_admin_email='',
