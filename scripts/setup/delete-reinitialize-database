@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#! /usr/bin/env sh -ex
 
 cat <<EOF
 This script will completely wipe your database, including all users, chat
