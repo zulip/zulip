@@ -117,7 +117,9 @@ available via the `zulip::nginx` puppet module).
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
 
-## Putting the Zulip application behind a HAPROXY reverse proxy
+## Putting the Zulip application behind a HAProxy reverse proxy
+
+Using HAProxy lets you do SSL termination at the frontend and http at the back end.
 
 ### Installation
 
