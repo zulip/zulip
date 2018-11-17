@@ -207,7 +207,7 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
         for d in raw_data
     ]
 
-    def invite_only(v: str) -> bool:
+    def get_invite_only(v: str) -> bool:
         if v == 'public':
             return False
         elif v == 'private':
@@ -215,45 +215,51 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
         else:
             raise Exception('unexpected value')
 
-    def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
+    streams = []
+
+    for in_dict in flat_data:
         now = int(timezone_now().timestamp())
         stream_id = stream_id_mapper.get(in_dict['id'])
 
-        out_dict = build_stream(
+        invite_only = get_invite_only(in_dict['privacy'])
+
+        stream = build_stream(
             date_created=now,
             realm_id=realm_id,
             name=in_dict['name'],
             description=in_dict['topic'],
             stream_id=stream_id,
             deactivated=in_dict['is_archived'],
-            invite_only=invite_only(in_dict['privacy']),
+            invite_only=invite_only,
         )
 
-        if not user_id_mapper.has(in_dict['owner']):
-            raise Exception('bad owner')
+        if invite_only:
+            users = {
+                user_id_mapper.get(key)
+                for key in in_dict['members']
+                if user_id_mapper.has(key)
+            }  # type: Set[int]
 
-        owner = user_id_mapper.get(in_dict['owner'])
-        members = {
-            user_id_mapper.get(key)
-            for key in in_dict['members']
-            if user_id_mapper.has(key)
-        }
+            if user_id_mapper.has(in_dict['owner']):
+                owner = user_id_mapper.get(in_dict['owner'])
+                users.add(owner)
 
-        subscriber_handler.set_info(
-            stream_id=stream_id,
-            owner=owner,
-            members=members,
-        )
+            if not users:
+                continue
+
+            subscriber_handler.set_info(
+                stream_id=stream_id,
+                users=users,
+            )
 
         # unmapped fields:
         #    guest_access_url: no Zulip equivalent
         #    created: we just use "now"
-        #    members: no good sample data
-        #    owners: no good sample data
         #    participants: no good sample data
-        return out_dict
 
-    return list(map(process, flat_data))
+        streams.append(stream)
+
+    return streams
 
 def make_realm(realm_id: int) -> ZerverFieldsT:
     NOW = float(timezone_now().timestamp())
