@@ -516,7 +516,7 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         update_dict = {
             "id": quote.id,
-            "value": "O, beware, my lord, of jealousy; it is the green-ey'd monster which doth mock the meat it feeds on."
+            "value": "***beware*** of jealousy..."
         }
         do_update_user_custom_profile_data(iago, [update_dict])
 
@@ -525,4 +525,4 @@ class CustomProfileFieldTest(ZulipTestCase):
         rendered_value = iago_profile_quote["rendered_value"]
         self.assertIsNotNone(value)
         self.assertIsNotNone(rendered_value)
-        self.assertEqual(bugdown_convert(str(value)), rendered_value)
+        self.assertEqual("<p><strong><em>beware</em></strong> of jealousy...</p>", rendered_value)
