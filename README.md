@@ -8,7 +8,7 @@ allows users to easily process hundreds or thousands of messages a day. With
 over 300 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest growing open source group chat project.
 
-[![CircleCI Build Status](https://circleci.com/gh/zulip/zulip.svg?style=svg)](https://circleci.com/gh/zulip/zulip)
+[![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip)
 [![Travis Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
