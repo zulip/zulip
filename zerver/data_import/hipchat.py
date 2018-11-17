@@ -88,6 +88,7 @@ def read_user_data(data_dir: str) -> List[ZerverFieldsT]:
         return ujson.load(fp)
 
 def convert_user_data(user_handler: UserHandler,
+                      slim_mode: bool,
                       user_id_mapper: IdMapper,
                       raw_data: List[ZerverFieldsT],
                       realm_id: int) -> None:
@@ -95,6 +96,12 @@ def convert_user_data(user_handler: UserHandler,
         d['User']
         for d in raw_data
     ]
+
+    if slim_mode:
+        flat_data = [
+            d for d in flat_data
+            if not d['is_deleted']
+        ]
 
     def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
         delivery_email = in_dict['email']
@@ -738,10 +745,13 @@ def do_convert_data(input_tar_file: str,
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
 
+    slim_mode = True
+
     # users.json -> UserProfile
     raw_user_data = read_user_data(data_dir=input_data_dir)
     convert_user_data(
         user_handler=user_handler,
+        slim_mode=slim_mode,
         user_id_mapper=user_id_mapper,
         raw_data=raw_user_data,
         realm_id=realm_id,
