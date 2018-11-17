@@ -615,8 +615,12 @@ def process_raw_message_batch(realm_id: int,
 
     mention_map = dict()  # type: Dict[int, Set[int]]
 
-    def make_message(message_id: int, raw_message: ZerverFieldsT) -> ZerverFieldsT:
+    zerver_message = []
+
+    for raw_message in raw_messages:
         # One side effect here:
+
+        message_id = NEXT_ID('message')
         mention_user_ids = {
             user_id_mapper.get(id)
             for id in set(raw_message['mention_user_ids'])
@@ -629,7 +633,12 @@ def process_raw_message_batch(realm_id: int,
             mention_user_ids=mention_user_ids,
         )
         pub_date = raw_message['pub_date']
-        recipient_id = get_recipient_id(raw_message)
+
+        try:
+            recipient_id = get_recipient_id(raw_message)
+        except KeyError:
+            continue
+
         rendered_content = None
 
         if is_pm_data:
@@ -653,7 +662,7 @@ def process_raw_message_batch(realm_id: int,
         else:
             has_attachment = False
 
-        return build_message(
+        message = build_message(
             content=content,
             message_id=message_id,
             pub_date=pub_date,
@@ -663,14 +672,7 @@ def process_raw_message_batch(realm_id: int,
             user_id=user_id,
             has_attachment=has_attachment,
         )
-
-    zerver_message = [
-        make_message(
-            message_id=NEXT_ID('message'),
-            raw_message=raw_message
-        )
-        for raw_message in raw_messages
-    ]
+        zerver_message.append(message)
 
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
