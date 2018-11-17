@@ -33,6 +33,12 @@ class AttachmentHandler:
 
         local_fn = os.path.join(files_dir, path)
 
+        if not os.path.exists(local_fn):
+            # HipChat has an option to not include these in its
+            # exports, since file uploads can be very large.
+            logging.info('Skipping attachment with no file data: ' + local_fn)
+            return None
+
         target_path = os.path.join(
             str(realm_id),
             'HipChatImportAttachment',
