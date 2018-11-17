@@ -87,3 +87,23 @@ Notes for manually resolving errors:
 * Stripe's idempotency keys are only valid for 24 hours. So be mindful of
   that if manually cleaning something up more than 24 hours after the error
   occured.
+
+## Upgrading Stripe API versions
+
+Stripe makes pretty regular updates to their API. The process for upgrading
+our code is:
+* Go to <https://dashboard.stripe.com/developers> in your Stripe account.
+* Upgrade the API version.
+* Set `GENERATE_STRIPE_FIXTURES = True` in `test_stripe.py`.
+* Run `tools/test-backend corporate/tests/test_stripe.py`
+* Fix any failing tests, and manually look through `git diff` to understand
+  the changes.
+* If there are no material changes, commit the diff, and open a PR.
+* Ask Rishi or Tim to go to <https://dashboard.stripe.com/developers> in the
+  zulipchat Stripe account, and upgrade the API version there.
+
+We currently aren't set up to do version upgrades where there are breaking
+changes. The main remaining work is ensuring that we set the stripe version
+in our API calls.
+<https://stripe.com/docs/upgrades#how-can-i-upgrade-my-api> has some
+additional information.
