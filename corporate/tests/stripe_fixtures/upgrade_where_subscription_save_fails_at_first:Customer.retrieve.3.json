@@ -1,6 +1,6 @@
 {
   "account_balance": 0,
-  "created": 1542089881,
+  "created": 1542489878,
   "currency": "usd",
   "default_source": {
     "address_city": "Pacific",
@@ -78,12 +78,12 @@
       {
         "application_fee_percent": null,
         "billing": "charge_automatically",
-        "billing_cycle_anchor": 1542089885,
+        "billing_cycle_anchor": 1542489882,
         "cancel_at_period_end": false,
         "canceled_at": null,
-        "created": 1542089885,
-        "current_period_end": 1573625885,
-        "current_period_start": 1542089885,
+        "created": 1542489882,
+        "current_period_end": 1574025882,
+        "current_period_start": 1542489882,
         "customer": "cus_NORMALIZED0001",
         "days_until_due": null,
         "default_source": null,
@@ -93,7 +93,7 @@
         "items": {
           "data": [
             {
-              "created": 1542089886,
+              "created": 1542489882,
               "id": "si_NORMALIZED0001",
               "metadata": {},
               "object": "subscription_item",
@@ -152,7 +152,7 @@
           "usage_type": "licensed"
         },
         "quantity": 8,
-        "start": 1542089885,
+        "start": 1542489882,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,
