@@ -8,17 +8,15 @@
   "billing": "charge_automatically",
   "billing_reason": "upcoming",
   "charge": null,
-  "closed": false,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1573625872,
+  "date": 1574025869,
   "default_source": null,
   "description": "",
   "discount": null,
   "due_date": null,
   "ending_balance": 0,
   "finalized_at": null,
-  "forgiven": false,
   "lines": {
     "data": [
       {
@@ -31,8 +29,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1605248272,
-          "start": 1573625872
+          "end": 1605648269,
+          "start": 1574025869
         },
         "plan": {
           "active": true,
@@ -69,13 +67,13 @@
   },
   "livemode": false,
   "metadata": {},
-  "next_payment_attempt": 1573629472,
+  "next_payment_attempt": 1574029469,
   "number": "NORMALI-0001",
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1573625872,
-  "period_start": 1542089872,
+  "period_end": 1574025869,
+  "period_start": 1542489869,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,

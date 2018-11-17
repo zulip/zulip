@@ -11,11 +11,11 @@
     "Connection": "keep-alive",
     "Content-Length": "241",
     "Content-Type": "application/json",
-    "Date": "Tue, 13 Nov 2018 06:18:03 GMT",
+    "Date": "Sat, 17 Nov 2018 21:24:39 GMT",
     "Request-Id": "req_NORMALIZED0001",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=31556926; includeSubDomains; preload",
-    "Stripe-Version": "2018-08-23"
+    "Stripe-Version": "2018-11-08"
   },
   "http_body": "{\n  \"error\": {\n    \"code\": \"card_declined\",\n    \"decline_code\": \"generic_decline\",\n    \"doc_url\": \"https://stripe.com/docs/error-codes/card-declined\",\n    \"message\": \"Your card was declined.\",\n    \"param\": \"\",\n    \"type\": \"card_error\"\n  }\n}\n",
   "http_status": 402,
