@@ -32,26 +32,6 @@ billing_logger = logging.getLogger('corporate.stripe')
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
-## Note: this is no longer accurate, as of when we added coupons
-# To generate the fixture data in stripe_fixtures.json:
-# * Set PRINT_STRIPE_FIXTURE_DATA to True
-# * ./manage.py setup_stripe
-# * Customer.objects.all().delete()
-# * Log in as a user, and go to http://localhost:9991/upgrade/
-# * Click Add card. Enter the following billing details:
-#       Name: Ada Starr, Street: Under the sea, City: Pacific,
-#       Zip: 33333, Country: United States
-#       Card number: 4242424242424242, Expiry: 03/33, CVV: 333
-# * Click Make payment.
-# * Copy out the 4 blobs of json from the dev console into stripe_fixtures.json.
-#   The contents of that file are '{\n' + concatenate the 4 json blobs + '\n}'.
-#   Then you can run e.g. `M-x mark-whole-buffer` and `M-x indent-region` in emacs
-#   to prettify the file (and make 4 space indents).
-# * Copy out the customer id, plan id, and quantity values into
-#   corporate.tests.test_stripe.StripeTest.setUp.
-# * Set PRINT_STRIPE_FIXTURE_DATA to False
-PRINT_STRIPE_FIXTURE_DATA = False
-
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 def get_seat_count(realm: Realm) -> int:
@@ -114,17 +94,11 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
 
 @catch_stripe_errors
 def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
-    stripe_customer = stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
-    if PRINT_STRIPE_FIXTURE_DATA:
-        print(''.join(['"customer_with_subscription": ', str(stripe_customer), ',']))  # nocoverage
-    return stripe_customer
+    return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
 
 @catch_stripe_errors
 def stripe_get_upcoming_invoice(stripe_customer_id: str) -> stripe.Invoice:
-    stripe_invoice = stripe.Invoice.upcoming(customer=stripe_customer_id)
-    if PRINT_STRIPE_FIXTURE_DATA:
-        print(''.join(['"upcoming_invoice": ', str(stripe_invoice), ',']))  # nocoverage
-    return stripe_invoice
+    return stripe.Invoice.upcoming(customer=stripe_customer_id)
 
 @catch_stripe_errors
 def stripe_get_invoice_preview_for_downgrade(
@@ -193,8 +167,6 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
         source=stripe_token,
         coupon=stripe_coupon_id)
-    if PRINT_STRIPE_FIXTURE_DATA:
-        print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
     event_time = timestamp_to_datetime(stripe_customer.created)
     with transaction.atomic():
         RealmAuditLog.objects.create(
@@ -257,8 +229,6 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
         }],
         prorate=True,
         tax_percent=tax_percent)
-    if PRINT_STRIPE_FIXTURE_DATA:
-        print(''.join(['"create_subscription": ', str(stripe_subscription), ',']))  # nocoverage
     with transaction.atomic():
         customer.has_billing_relationship = True
         customer.save(update_fields=['has_billing_relationship'])
