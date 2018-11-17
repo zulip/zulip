@@ -33,6 +33,10 @@ class AttachmentHandler:
 
         local_fn = os.path.join(files_dir, path)
 
+        if not os.path.exists(local_fn):
+            logging.info('Skipping attachment with no file data: ' + local_fn)
+            return None
+
         target_path = os.path.join(
             str(realm_id),
             'HipChatImportAttachment',
