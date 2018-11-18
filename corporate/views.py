@@ -20,14 +20,19 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, upcoming_invoice_total, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
-    MIN_INVOICED_SEAT_COUNT
+    MIN_INVOICED_SEAT_COUNT, DEFAULT_INVOICE_DAYS_UNTIL_DUE
 from corporate.models import Customer, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
 def unsign_and_check_upgrade_parameters(user: UserProfile, plan_nickname: str,
-                                        signed_seat_count: str, salt: str) -> Tuple[Plan, int]:
-    if plan_nickname not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
+                                        signed_seat_count: str, salt: str,
+                                        billing_modality: str) -> Tuple[Plan, int]:
+    provided_plans = {
+        'charge_automatically': [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY],
+        'send_invoice': [Plan.CLOUD_ANNUAL],
+    }
+    if plan_nickname not in provided_plans[billing_modality]:
         billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
                                % (user.id, user.realm.id, user.realm.string_id))
         raise BillingError('tampered plan', BillingError.CONTACT_SUPPORT)
@@ -76,14 +81,19 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         try:
             plan, seat_count = unsign_and_check_upgrade_parameters(
-                user, request.POST['plan'], request.POST['signed_seat_count'], request.POST['salt'])
+                user, request.POST['plan'], request.POST['signed_seat_count'], request.POST['salt'],
+                request.POST['billing_modality'])
             if request.POST['billing_modality'] == 'send_invoice':
+                try:
+                    invoiced_seat_count = int(request.POST['invoiced_seat_count'])
+                except (KeyError, ValueError):
+                    invoiced_seat_count = -1
                 min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
-                if int(request.POST['invoiced_seat_count']) < min_required_seat_count:
+                if invoiced_seat_count < min_required_seat_count:
                     raise BillingError(
                         'lowball seat count',
                         "You must invoice for at least %d users." % (min_required_seat_count,))
-                seat_count = int(request.POST['invoiced_seat_count'])
+                seat_count = invoiced_seat_count
             process_initial_upgrade(user, plan, seat_count, request.POST.get('stripeToken', None))
         except BillingError as e:
             error_message = e.message
@@ -103,6 +113,8 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'seat_count': seat_count,
         'signed_seat_count': signed_seat_count,
         'salt': salt,
+        'min_seat_count_for_invoice': max(seat_count, MIN_INVOICED_SEAT_COUNT),
+        'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
@@ -140,6 +152,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     if stripe_customer.account_balance < 0:  # nocoverage
         context.update({'account_credits': '{:,.2f}'.format(-stripe_customer.account_balance / 100.)})
 
+    billed_by_invoice = False
     subscription = extract_current_subscription(stripe_customer)
     if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
@@ -148,6 +161,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
         renewal_amount = upcoming_invoice_total(customer.stripe_customer_id)
+        if subscription.billing == 'send_invoice':
+            billed_by_invoice = True
     # Can only get here by subscribing and then downgrading. We don't support downgrading
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
@@ -162,6 +177,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
         'payment_method': payment_method_string(stripe_customer),
+        'billed_by_invoice': billed_by_invoice,
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'stripe_email': stripe_customer.email,
     })
