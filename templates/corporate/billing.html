@@ -41,9 +41,11 @@
                     <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
                         <div id="payment-section">
                             <p>Your current payment method is <strong>{{ payment_method }}</strong>.</p>
+                            {% if payment_method != "Pay by invoice" %}
                             <button id="update-card-button" class="stripe-button-el">
                                 <span id="update-card-button-span">Update card</span>
                             </button>
+                            {% endif %}
                         </div>
                         <div id="loading-section">
                             <div class="updating-card-logo">
