@@ -311,7 +311,7 @@ def do_set_subscription_quantity(
     stripe_subscription = extract_current_subscription(stripe_customer)
     stripe_subscription.quantity = quantity
     stripe_subscription.proration_date = timestamp
-    stripe_subscription.save(idempotency_key=idempotency_key)
+    stripe.Subscription.save(stripe_subscription, idempotency_key=idempotency_key)
 
 def do_adjust_subscription_quantity(
         customer: Customer, timestamp: int, idempotency_key: str, delta: int) -> None:
@@ -319,7 +319,7 @@ def do_adjust_subscription_quantity(
     stripe_subscription = extract_current_subscription(stripe_customer)
     stripe_subscription.quantity = stripe_subscription.quantity + delta
     stripe_subscription.proration_date = timestamp
-    stripe_subscription.save(idempotency_key=idempotency_key)
+    stripe.Subscription.save(stripe_subscription, idempotency_key=idempotency_key)
 
 def increment_subscription_quantity(
         customer: Customer, timestamp: int, idempotency_key: str) -> None:

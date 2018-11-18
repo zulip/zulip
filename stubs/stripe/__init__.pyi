@@ -64,6 +64,10 @@ class Subscription:
                prorate: bool=..., tax_percent: float=...) -> Subscription:
         ...
 
+    @staticmethod
+    def save(subscription: Subscription, idempotency_key: str=...) -> Subscription:
+        ...
+
 class Card:
     id: str
     last4: str
