@@ -18,69 +18,114 @@
 
         <div class="page-content">
             <div class="main">
+                <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
                 {% if error_message %}
-                <div class="alert alert-danger" id="error-message-box">
+                <div class="alert alert-danger" id="upgrade-error-message-box">
                     {{ error_message }}
                 </div>
                 {% endif %}
-                <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
-                <form method="post">
-                    {{ csrf_input }}
-                    <input type="hidden" name="seat_count" value="{{ seat_count }}">
-                    <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
-                    <input type="hidden" name="salt" value="{{ salt }}">
-                    <input type="hidden" name="billing_modality" value="charge_automatically">
-                    <div class="payment-schedule">
-                        <h3>{{ _("Payment schedule") }}</h3>
-                        <label>
-                            <input type="radio" name="plan" value="{{ nickname_annual }}" data-amount="{{ cloud_annual_price }}" checked />
-                            <div class="box">
-                                <div class="schedule-time annually">{{ _("Pay annually") }}</div>
-                                <div class="schedule-amount">
-                                    ${{ cloud_annual_price_per_month }}/user/month
-                                    <div class="schedule-amount-2">
-                                        (${{ cloud_annual_price }}/user/year)
+
+                <ul class="nav nav-tabs" id="upgrade-tabs">
+                    <li class="active"><a data-toggle="tab" href="#autopay">Pay automatically</a></li>
+                    <li><a data-toggle="tab" href="#invoice">Pay by invoice</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="autopay">
+                        <form method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="seat_count" value="{{ seat_count }}">
+                            <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                            <input type="hidden" name="salt" value="{{ salt }}">
+                            <input type="hidden" name="billing_modality" value="charge_automatically">
+                            <div class="payment-schedule">
+                                <h3>{{ _("Payment schedule") }}</h3>
+                                <label>
+                                    <input type="radio" name="plan" value="{{ nickname_annual }}" data-amount="{{ cloud_annual_price }}" checked />
+                                    <div class="box">
+                                        <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                        <div class="schedule-amount">
+                                            ${{ cloud_annual_price_per_month }}/user/month
+                                            <div class="schedule-amount-2">
+                                                (${{ cloud_annual_price }}/user/year)
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </label>
+                                <label>
+                                    <input type="radio" name="plan" value="{{ nickname_monthly }}" data-amount="{{ cloud_monthly_price }}" />
+                                    <div class="box">
+                                        <div class="schedule-time">{{ _("Pay monthly") }}</div>
+                                        <div class="schedule-amount">${{ cloud_monthly_price }}/user/month</div>
+                                    </div>
+                                </label>
                             </div>
-                        </label>
-                        <label>
-                            <input type="radio" name="plan" value="{{ nickname_monthly }}" data-amount="{{ cloud_monthly_price }}" />
-                            <div class="box">
-                                <div class="schedule-time">{{ _("Pay monthly") }}</div>
-                                <div class="schedule-amount">${{ cloud_monthly_price }}/user/month</div>
-                            </div>
-                        </label>
+                            <p>
+                                You&rsquo;ll initially be charged
+                                <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b>
+                                for <b>{{ seat_count }}</b> users.
+                            </p>
+                            <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                    data-key="{{ publishable_key }}"
+                                    data-image="/static/images/logo/zulip-icon-128x128.png"
+                                    data-name="Zulip"
+                                    data-description="Zulip Cloud Standard"
+                                    data-locale="auto"
+                                    data-zip-code="true"
+                                    data-billing-address="true"
+                                    data-panel-label="Make payment"
+                                    data-email="{{ email }}"
+                                    data-label="{{ _('Add card') }}"
+                                    data-allow-remember-me="false"
+                                    >
+                            </script>
+                            <script>
+                                const seat_count = parseInt($('input[name=seat_count]').val());
+                                $("input[type=radio][name=plan").change(function () {
+                                var charged_amount = parseInt($(this).data("amount")) * seat_count;
+                                $("#charged_amount").html(charged_amount);
+                                });
+                            </script>
+                        </form>
                     </div>
+                    <div class="tab-pane" id="invoice">
+                        <form method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                            <input type="hidden" name="salt" value="{{ salt }}">
+                            <input type="hidden" name="billing_modality" value="send_invoice">
+                            <div class="payment-schedule">
+                                <h3>{{ _("Payment schedule") }}</h3>
+                                <label>
+                                    <input type="radio" name="plan" value="{{ nickname_annual }}" data-amount="{{ cloud_annual_price }}" checked />
+                                    <div class="box">
+                                        <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                        <div class="schedule-amount">
+                                            ${{ cloud_annual_price_per_month }}/user/month
+                                            <div class="schedule-amount-2">
+                                                (${{ cloud_annual_price }}/user/year)
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <h4>Number of users</h4>
+                            <input type="text" id="invoiced_seat_count" name="invoiced_seat_count" value=""/>
+                            <p>
+                                We'll send you an invoice by email. You
+                                must invoice for at least {{ min_seat_count_for_invoice }} users.
+                            </p>
+                            <button type="submit" class="stripe-button-el invoice-button">Buy Standard</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="support-link">
                     <p>
-                        You&rsquo;ll initially be charged
-                        <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b>
-                        for <b>{{ seat_count }}</b> users. We’ll automatically charge you
-                        when new users are added, or give you credit when users are deactivated.
+                        We're happy to help!
+                        Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a>
+                        for any billing-related questions.
                     </p>
-                    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                    data-key="{{ publishable_key }}"
-                    data-image="/static/images/logo/zulip-icon-128x128.png"
-                    data-name="Zulip"
-                    data-description="Zulip Cloud Standard"
-                    data-locale="auto"
-                    data-zip-code="true"
-                    data-billing-address="true"
-                    data-panel-label="Make payment"
-                    data-email="{{ email }}"
-                    data-label="{{ _('Add card') }}"
-                    data-allow-remember-me="false"
-                    >
-                    </script>
-                    <script>
-                        const seat_count = parseInt($('input[name=seat_count]').val());
-                        $("input[type=radio][name=plan").change(function () {
-                            var charged_amount = parseInt($(this).data("amount")) * seat_count;
-                            $("#charged_amount").html(charged_amount);
-                        });
-                    </script>
-                </form>
-                <p>We can also bill by invoice for annual contracts over $2,000. Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> to pay by invoice or for any other billing questions.</p>
+                </div>
             </div>
         </div>
     </div>

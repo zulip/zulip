@@ -152,6 +152,15 @@
         pointer-events: none;
     }
 
+    .invoice-button {
+        font-size: 17px;
+        font-weight: 700 !important;
+    }
+
+    #invoiced_seat_count {
+        width: 50px;
+    }
+
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;

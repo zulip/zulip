@@ -276,7 +276,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
-        self.assert_in_success_response(['We can also bill by invoice'], response)
+        self.assert_in_success_response(['Pay annually'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
         self.assertNotEqual(user.realm.plan_type, Realm.STANDARD)
         self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
@@ -331,9 +331,9 @@ class StripeTest(ZulipTestCase):
 
         # Check /billing has the correct information
         response = self.client_get("/billing/")
-        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        self.assert_not_in_success_response(['Pay annually'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
-                          'Card ending in 4242']:
+                          'Card ending in 4242', 'Update card']:
             self.assert_in_response(substring, response)
 
     @mock_stripe("Token.create", "Invoice.upcoming", "Customer.retrieve", "Customer.create", "Subscription.create")
@@ -474,6 +474,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'tampered seat count')
 
     def test_upgrade_with_tampered_plan(self) -> None:
+        # Test with an unknown plan
         self.login(self.example_email("hamlet"))
         response = self.client_post("/upgrade/", {
             'stripeToken': self.token,
@@ -481,6 +482,16 @@ class StripeTest(ZulipTestCase):
             'salt': self.salt,
             'plan': "invalid",
             'billing_modality': 'charge_automatically',
+        })
+        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
+        self.assertEqual(response['error_description'], 'tampered plan')
+        # Test with a plan that's valid, but not if you're paying by invoice
+        response = self.client_post("/upgrade/", {
+            'invoiced_seat_count': 123,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': Plan.CLOUD_MONTHLY,
+            'billing_modality': 'send_invoice',
         })
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
@@ -510,6 +521,16 @@ class StripeTest(ZulipTestCase):
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "at least %d users" % (self.quantity,)], response)
         self.assertEqual(response['error_description'], 'lowball seat count')
+        # Test not setting an invoiced_seat_count
+        response = self.client_post("/upgrade/", {
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': Plan.CLOUD_ANNUAL,
+            'billing_modality': 'send_invoice',
+        })
+        self.assert_in_success_response(["Upgrade to Zulip Standard",
+                                         "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
+        self.assertEqual(response['error_description'], 'lowball seat count')
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock1: Mock) -> None:
@@ -527,8 +548,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
     @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
-                 "Customer.retrieve", "Invoice.list")
-    def test_upgrade_billing_by_invoice(self, mock5: Mock, mock4: Mock, mock3: Mock,
+                 "Customer.retrieve", "Invoice.list", "Invoice.upcoming")
+    def test_upgrade_billing_by_invoice(self, mock6: Mock, mock5: Mock, mock4: Mock, mock3: Mock,
                                         mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -590,6 +611,12 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': self.quantity})
 
+        # Check /billing has the correct information
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
+        for substring in ['Your plan will renew on', 'Billed by invoice']:
+            self.assert_in_response(substring, response)
+
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     def test_redirect_for_billing_home(self, mock_customer_with_subscription: Mock) -> None:
         user = self.example_user("iago")
@@ -612,7 +639,7 @@ class StripeTest(ZulipTestCase):
 
         with patch("corporate.views.upcoming_invoice_total", return_value=0):
             response = self.client_get("/billing/")
-        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        self.assert_not_in_success_response(['Pay annually'], response)
         self.assert_in_response('Your plan will renew on', response)
 
     def test_get_seat_count(self) -> None:
