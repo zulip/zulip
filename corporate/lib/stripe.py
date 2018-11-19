@@ -147,7 +147,7 @@ def estimate_customer_arr(stripe_customer: stripe.Customer) -> int:  # nocoverag
         return 0
     # This is an overestimate for those paying by invoice
     estimated_arr = stripe_subscription.plan.amount * stripe_subscription.quantity / 100.
-    if stripe_subscription.plan_interval == 'month':
+    if stripe_subscription.plan.interval == 'month':
         estimated_arr *= 12
     if stripe_customer.discount is not None:
         estimated_arr *= 1 - stripe_customer.discount.coupon.percent_off/100.
