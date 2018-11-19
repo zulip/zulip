@@ -945,6 +945,9 @@ def build_custom_checkers(by_lang):
             "templates/zerver/api/incoming-webhooks-walkthrough.md",
             # This macro has a long indented URL
             "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
+            # These two are the same file and have some too-long lines for GitHub badges
+            "README.md",
+            "docs/overview/readme.md",
         }
         for fn in by_lang['md']:
             max_length = None
