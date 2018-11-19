@@ -92,6 +92,8 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
             elif event_type == "customer.subscription.updated":
                 body_template = "The customer subscription with id **[{id}]({link})** was updated."
                 body = body_template.format(id=object_id, link=link)
+            else:
+                raise UnexpectedWebhookEventType("Stripe", event_type)
         else:
             link = "https://dashboard.stripe.com/customers/{}".format(object_id)
             body_template = "{beginning} customer with id **[{id}]({link})** {rest}."
@@ -102,9 +104,11 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                     rest = "has been created"
                 else:
                     rest = "and email **{}** has been created".format(data_object['email'])
-            else:
+            elif event_type == "customer.deleted":
                 beginning = "A"
                 rest = "has been deleted"
+            else:
+                raise UnexpectedWebhookEventType("Stripe", event_type)
             body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
 
         topic = "Customer {}".format(object_id)
@@ -130,9 +134,11 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         elif event_type == "order.payment_succeeded":
             beginning = "An order payment on"
             end = "succeeded"
-        else:
+        elif event_type == "order.updated":
             beginning = "The"
             end = "been updated"
+        else:
+            raise UnexpectedWebhookEventType("Stripe", event_type)
 
         body = body_template.format(beginning=beginning,
                                     id=object_id,
@@ -149,8 +155,10 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                         "for amount **{amount}** has {end}."
         if event_type == "transfer.failed":
             end = 'failed'
-        else:
+        elif event_type == "transfer.paid":
             end = "been paid"
+        else:
+            raise UnexpectedWebhookEventType('Stripe', event_type)
         body = body_template.format(
             description=data_object['description'],
             id=object_id,
