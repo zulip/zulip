@@ -81,6 +81,13 @@ class StripeHookTests(WebhookTestCase):
         self.send_and_test_stream_message('customer_subscription_deleted', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_customer_subscription_updated(self) -> None:
+        expected_topic = u"Customer sub_00000000000000"
+        expected_message = u"The customer subscription with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** was updated."
+        self.send_and_test_stream_message('customer_subscription_updated',
+                                          expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
     def test_customer_subscription_trial_will_end(self) -> None:
         expected_topic = u"Customer sub_00000000000000"
         expected_message = u"The customer subscription trial with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** will end in 3 days."
