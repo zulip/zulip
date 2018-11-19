@@ -80,7 +80,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 body_template = "The customer subscription with id **[{id}]({link})** was deleted."
                 body = body_template.format(id=object_id, link=link)
 
-            else:  # customer.subscription.trial_will_end
+            elif event_type == "customer.subscription.trial_will_end":
                 DAY = 60 * 60 * 24  # seconds in a day
                 # days_left should always be three according to
                 # https://stripe.com/docs/api/python#event_types, but do the
@@ -89,7 +89,9 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 body_template = ("The customer subscription trial with id"
                                  " **[{id}]({link})** will end in {days} days.")
                 body = body_template.format(id=object_id, link=link, days=days_left)
-
+            elif event_type == "customer.subscription.updated":
+                body_template = "The customer subscription with id **[{id}]({link})** was updated."
+                body = body_template.format(id=object_id, link=link)
         else:
             link = "https://dashboard.stripe.com/customers/{}".format(object_id)
             body_template = "{beginning} customer with id **[{id}]({link})** {rest}."
