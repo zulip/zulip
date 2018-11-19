@@ -365,7 +365,7 @@ def is_root() -> bool:
         return True
     return False
 
-def script_should_not_be_root() -> None:
+def assert_not_running_as_root() -> None:
     script_name = os.path.abspath(sys.argv[0])
     if is_root():
         msg = ("{shortname} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
@@ -376,7 +376,7 @@ def script_should_not_be_root() -> None:
         print(msg)
         sys.exit(1)
 
-def script_should_be_root(strip_lib_from_paths: bool=False) -> None:
+def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
     script_name = os.path.abspath(sys.argv[0])
     # Since these Python scripts are run inside a thin shell wrapper,
     # we need to replace the paths in order to ensure we instruct

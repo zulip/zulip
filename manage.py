@@ -6,10 +6,10 @@ import types
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
-from scripts.lib.zulip_tools import script_should_not_be_root
+from scripts.lib.zulip_tools import assert_not_running_as_root
 
 if __name__ == "__main__":
-    script_should_not_be_root()
+    assert_not_running_as_root()
     if (os.access('/etc/zulip/zulip.conf', os.R_OK) and not
             os.access('/etc/zulip/zulip-secrets.conf', os.R_OK)):
         # The best way to detect running manage.py as another user in
