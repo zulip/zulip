@@ -24,9 +24,9 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
-    get_deployment_lock, release_deployment_lock, su_to_zulip, script_should_be_root
+    get_deployment_lock, release_deployment_lock, su_to_zulip, assert_running_as_root
 
-script_should_be_root(strip_lib_from_paths=True)
+assert_running_as_root(strip_lib_from_paths=True)
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",

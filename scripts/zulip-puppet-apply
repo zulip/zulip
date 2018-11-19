@@ -5,9 +5,9 @@ import sys
 import subprocess
 import configparser
 import re
-from lib.zulip_tools import parse_lsb_release, script_should_be_root
+from lib.zulip_tools import parse_lsb_release, assert_running_as_root
 
-script_should_be_root()
+assert_running_as_root()
 
 force = False
 extra_args = sys.argv[1:]
