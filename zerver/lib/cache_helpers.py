@@ -71,6 +71,11 @@ def recipient_cache_items(items_for_remote_cache: Dict[str, Tuple[Recipient]],
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache: Dict[str, str],
                         session: Session) -> None:
+    if settings.SESSION_ENGINE != "django.contrib.sessions.backends.cached_db":
+        # If we're not using the cached_db session engine, we there
+        # will be no store.cache_key attribute, and in any case we
+        # don't need to fill the cache, since it won't exist.
+        return
     store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
