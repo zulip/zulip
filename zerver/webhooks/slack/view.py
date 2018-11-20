@@ -12,7 +12,7 @@ from zerver.models import UserProfile
 ZULIP_MESSAGE_TEMPLATE = u"**{message_sender}**: `{text}`"
 VALID_OPTIONS = {'SHOULD_NOT_BE_MAPPED': '0', 'SHOULD_BE_MAPPED': '1'}
 
-@api_key_only_webhook_view('Slack')
+@api_key_only_webhook_view('Slack', notify_bot_owner_on_invalid_json=False)
 @has_request_variables
 def api_slack_webhook(request: HttpRequest, user_profile: UserProfile,
                       user_name: str=REQ(),

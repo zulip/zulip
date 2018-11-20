@@ -11,7 +11,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
-@api_key_only_webhook_view('Transifex')
+@api_key_only_webhook_view('Transifex', notify_bot_owner_on_invalid_json=False)
 @has_request_variables
 def api_transifex_webhook(request: HttpRequest, user_profile: UserProfile,
                           project: str=REQ(), resource: str=REQ(),

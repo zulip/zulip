@@ -330,7 +330,7 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(
         webhook_client_name: str,
-        notify_bot_owner_on_invalid_json: Optional[bool]=False
+        notify_bot_owner_on_invalid_json: Optional[bool]=True
 ) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
