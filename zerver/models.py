@@ -291,6 +291,7 @@ class Realm(models.Model):
     ]
 
     has_seat_based_plan = models.BooleanField(default=False)  # type: bool
+    seat_limit = models.PositiveIntegerField(null=True)  # type: Optional[int]
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the a mapping from authentication flags to their status,
