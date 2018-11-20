@@ -6,7 +6,8 @@ from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Dropbox')
 @has_request_variables
-def api_dropbox_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def api_dropbox_webhook(request: HttpRequest, user_profile: UserProfile,
+                        notify_bot_owner_on_invalid_json=False) -> HttpResponse:
     if request.method == 'GET':
         return HttpResponse(request.GET['challenge'])
     elif request.method == 'POST':
