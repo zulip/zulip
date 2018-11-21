@@ -9,7 +9,7 @@ into a link to `https://github.com/zulip/zulip/issues/2468`.
 
 {settings_tab|filter-settings}
 
-1. Under **Add a new linkifier**, enter a **Regular expression** and
+1. Under **Add a new linkifier**, enter a **Pattern** and
 **URL format string**.
 
 1. Click **Add linkifier**.
@@ -21,20 +21,20 @@ into a link to `https://github.com/zulip/zulip/issues/2468`.
     instead provides a little button to the right of the topic that links to
     the appropriate URL.
 
-## Understanding linkification regular expressions
+## Understanding linkification patterns
 
 This is best explained by example.
 
 Hash followed by a number of any length.
 
-* Regular expression: `#(?P<id>[0-9]+)`
+* Pattern: `#(?P<id>[0-9]+)`
 * URL format string: `https://github.com/zulip/zulip/issues/%(id)s`
 * Original text: `#2468`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
 String of hexadecimal digits between 7 and 40 characters long.
 
-* Regular expression: `(?P<id>[0-9a-f]{7,40})`
+* Pattern: `(?P<id>[0-9a-f]{7,40})`
 * URL format string: `https://github.com/zulip/zulip/commit/%(id)s`
 * Original text: `abdc123`
 * Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
