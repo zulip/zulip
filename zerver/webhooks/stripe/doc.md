@@ -11,28 +11,13 @@ Get Zulip notifications for Stripe events!
    the event types you would like to be notified about, and click
    **Add endpoint**.
 
-Zulip currently supports the following Stripe events:
+1. [Optional] In Zulip, add a
+   [linkification filter](/help/add-a-custom-linkification-filter) with
+   **Pattern** `(?P<id>cus_[0-9a-zA-Z]+)` and **URL format string**
+   `https://dashboard.stripe.com/customers/%(id)s`.
 
-* Charge Dispute Closed
-* Charge Dispute Created
-* Charge Failed
-* Charge Succeeded
-* Customer Created
-* Customer Deleted
-* Customer Subscription Created
-* Customer Subsciption Deleted
-* Customer Subscription Trial Will End
-* Invoice Payment Failed
-* Order Payment Failed
-* Order Payment Succeeded
-* Order Updated
-* Transfer Failed
-* Transfer Paid
-
-!!! tip ""
-    To set up different topics for different events, create separate
-    webhooks for those events, customizing the URL stream and topic
-    for each.
+Zulip currently supports Stripe events for Charges, Customers, Discounts,
+Sources, Subscriptions, Files, Invoices and Invoice items.
 
 {% if 'http:' in external_uri_scheme %}
 
