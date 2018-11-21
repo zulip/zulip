@@ -37,6 +37,7 @@ class HipChatImporter(ZulipTestCase):
 
         sender_id = get_hipchat_sender_id(
             realm_id=realm_id,
+            slim_mode=False,
             message_dict=normal_message,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
@@ -55,6 +56,7 @@ class HipChatImporter(ZulipTestCase):
         for i in range(3):
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
+                slim_mode=False,
                 message_dict=bot_message,
                 user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
@@ -73,6 +75,7 @@ class HipChatImporter(ZulipTestCase):
         for i in range(3):
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
+                slim_mode=False,
                 message_dict=id_zero_message,
                 user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
