@@ -408,6 +408,7 @@ def write_emoticon_data(realm_id: int,
     return realmemoji
 
 def write_message_data(realm_id: int,
+                       slim_mode: bool,
                        message_key: str,
                        zerver_recipient: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
@@ -467,6 +468,7 @@ def write_message_data(realm_id: int,
 
         process_message_file(
             realm_id=realm_id,
+            slim_mode=slim_mode,
             fn=fn,
             fn_id=fn_id,
             files_dir=files_dir,
@@ -483,14 +485,17 @@ def write_message_data(realm_id: int,
         )
 
 def get_hipchat_sender_id(realm_id: int,
+                          slim_mode: bool,
                           message_dict: Dict[str, Any],
                           user_id_mapper: IdMapper,
-                          user_handler: UserHandler) -> int:
+                          user_handler: UserHandler) -> Optional[int]:
     '''
     The HipChat export is inconsistent in how it renders
     senders, and sometimes we don't even get an id.
     '''
     if isinstance(message_dict['sender'], str):
+        if slim_mode:
+            return None
         # Some Hipchat instances just give us a person's
         # name in the sender field for NotificationMessage.
         # We turn them into a mirror user.
@@ -504,6 +509,8 @@ def get_hipchat_sender_id(realm_id: int,
     raw_sender_id = message_dict['sender']['id']
 
     if raw_sender_id == 0:
+        if slim_mode:
+            return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
             name=message_dict['sender']['name']
@@ -512,6 +519,8 @@ def get_hipchat_sender_id(realm_id: int,
         return sender_id
 
     if not user_id_mapper.has(raw_sender_id):
+        if slim_mode:
+            return None
         mirror_user = user_handler.get_mirror_user(
             realm_id=realm_id,
             name=message_dict['sender']['id']
@@ -525,6 +534,7 @@ def get_hipchat_sender_id(realm_id: int,
     return sender_id
 
 def process_message_file(realm_id: int,
+                         slim_mode: bool,
                          fn: str,
                          fn_id: str,
                          files_dir: str,
@@ -552,10 +562,14 @@ def process_message_file(realm_id: int,
         def get_raw_message(d: Dict[str, Any]) -> Optional[ZerverFieldsT]:
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
+                slim_mode=slim_mode,
                 message_dict=d,
                 user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
             )
+
+            if sender_id is None:
+                return None
 
             if is_pm_data:
                 if sender_id != fn_id:
@@ -829,6 +843,7 @@ def do_convert_data(input_tar_file: str,
                         'PrivateUserMessage']:
         write_message_data(
             realm_id=realm_id,
+            slim_mode=slim_mode,
             message_key=message_key,
             zerver_recipient=zerver_recipient,
             subscriber_map=subscriber_map,
