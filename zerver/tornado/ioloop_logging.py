@@ -1,7 +1,7 @@
 import logging
 import select
 import time
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from django.conf import settings
 from tornado.ioloop import IOLoop, PollIOLoop
@@ -13,7 +13,7 @@ orig_poll_impl = select.epoll
 
 # This is used for a somewhat hacky way of passing the port number
 # into this early-initialized module.
-logging_data = {}
+logging_data = {}  # type: Dict[str, str]
 
 class InstrumentedPollIOLoop(PollIOLoop):
     def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
