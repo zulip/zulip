@@ -803,11 +803,14 @@ def do_convert_data(input_tar_file: str,
     )
     realm['zerver_recipient'] = zerver_recipient
 
-    public_stream_subscriptions = build_public_stream_subscriptions(
-        zerver_userprofile=normal_users,
-        zerver_recipient=zerver_recipient,
-        zerver_stream=zerver_stream,
-    )
+    if slim_mode:
+        public_stream_subscriptions = []  # type: List[ZerverFieldsT]
+    else:
+        public_stream_subscriptions = build_public_stream_subscriptions(
+            zerver_userprofile=normal_users,
+            zerver_recipient=zerver_recipient,
+            zerver_stream=zerver_stream,
+        )
 
     private_stream_subscriptions = build_private_stream_subscriptions(
         get_users=subscriber_handler.get_users,
