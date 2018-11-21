@@ -652,6 +652,11 @@ def process_raw_message_batch(realm_id: int,
             content=raw_message['content'],
             mention_user_ids=mention_user_ids,
         )
+
+        if len(content) > 10000:
+            logging.info('skipping too-long message of length ' + len(content))
+            continue
+
         pub_date = raw_message['pub_date']
 
         try:
