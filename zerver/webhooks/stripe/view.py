@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -18,168 +18,198 @@ from zerver.models import UserProfile
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: str=REQ(default='test')) -> HttpResponse:
+    event_type = payload["type"]  # invoice.created, customer.subscription.created, etc
+    if len(event_type.split('.')) == 3:
+        category, resource, event = event_type.split('.')
+    else:
+        resource, event = event_type.split('.')
+        category = resource
+
+    object_ = payload["data"]["object"]  # The full, updated Stripe object
+
+    # Set the topic to the customer_id when we can
+    topic = ''
+    customer_id = object_.get("customer", None)
+    if customer_id is not None:
+        # Running into the 60 character topic limit.
+        # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (customer_id, customer_id)
+        topic = customer_id
     body = None
-    event_type = payload["type"]
-    data_object = payload["data"]["object"]
-    if event_type.startswith('charge'):
 
-        charge_url = "https://dashboard.stripe.com/payments/{}"
-        amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
+    def default_body() -> str:
+        return '{resource} {verbed}'.format(
+            resource=linkified_id(object_['id']), verbed=event.replace('_', ' '))
 
-        if event_type.startswith('charge.dispute'):
-            charge_id = data_object["charge"]
-            link = charge_url.format(charge_id)
-            body_template = "A charge dispute for **{amount}** has been {rest}.\n"\
-                            "The charge in dispute {verb} **[{charge}]({link})**."
-
-            if event_type == "charge.dispute.closed":
-                rest = "closed as **{}**".format(data_object['status'])
-                verb = 'was'
-            else:
-                rest = "created"
-                verb = 'is'
-
-            body = body_template.format(amount=amount_string,
-                                        rest=rest,
-                                        verb=verb,
-                                        charge=charge_id,
-                                        link=link)
-
+    if category == 'account':  # nocoverage
+        if event == 'updated':
+            topic = "account updates"
+            body = ''
         else:
-            charge_id = data_object["id"]
-            link = charge_url.format(charge_id)
-            body_template = "A charge with id **[{charge_id}]({link})** for **{amount}** has {verb}."
-
-            if event_type == "charge.failed":
-                verb = "failed"
-            else:
-                verb = "succeeded"
-            body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
-
-        topic = "Charge {}".format(charge_id)
-
-    elif event_type.startswith('customer'):
-        object_id = data_object["id"]
-        if event_type.startswith('customer.subscription'):
-            link = "https://dashboard.stripe.com/subscriptions/{}".format(object_id)
-
-            if event_type == "customer.subscription.created":
-                amount_string = amount(data_object["plan"]["amount"], data_object["plan"]["currency"])
-
-                body_template = "A new customer subscription for **{amount}** " \
-                                "every **{interval}** has been created.\n" \
-                                "The subscription has id **[{id}]({link})**."
-                body = body_template.format(
-                    amount=amount_string,
-                    interval=data_object['plan']['interval'],
-                    id=object_id,
-                    link=link
-                )
-
-            elif event_type == "customer.subscription.deleted":
-                body_template = "The customer subscription with id **[{id}]({link})** was deleted."
-                body = body_template.format(id=object_id, link=link)
-
-            elif event_type == "customer.subscription.trial_will_end":
+            # Part of Stripe Connect
+            return json_success()
+    if category == 'application_fee':  # nocoverage
+        # Part of Stripe Connect
+        return json_success()
+    if category == 'balance':  # nocoverage
+        # Not that interesting to most businesses, I think
+        return json_success()
+    if category == 'charge':
+        if resource == 'charge':
+            if not topic:
+                topic = 'charges'
+            body = "{resource} for {amount} {verbed}".format(
+                resource=linkified_id(object_['id']),
+                amount=amount_string(object_['amount'], object_['currency']), verbed=event)
+            if object_['failure_code']:  # nocoverage
+                body += '. Failure code: {}'.format(object_['failure_code'])
+        if resource == 'dispute':
+            topic = 'disputes'
+            body = default_body() + '. Current status: {status}.'.format(
+                status=object_['status'].replace('_', ' '))
+        if resource == 'refund':  # nocoverage
+            topic = 'refunds'
+            body = 'A {resource} for a {charge} of {amount} was updated.'.format(
+                resource=linkified_id(object_['id'], lower=True),
+                charge=linkified_id(object_['charge'], lower=True), amount=object_['amount'])
+    if category == 'checkout_beta':  # nocoverage
+        # Not sure what this is
+        return json_success()
+    if category == 'coupon':  # nocoverage
+        # Not something that likely happens programmatically
+        return json_success()
+    if category == 'customer':
+        if resource == 'customer':
+            # Running into the 60 character topic limit.
+            # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (object_['id'], object_['id'])
+            topic = object_['id']
+            body = default_body()
+            if event == 'created':
+                if object_['email']:
+                    body += '\nEmail: {}'.format(object_['email'])
+                if object_['metadata']:  # nocoverage
+                    for key, value in object_['metadata'].items():
+                        body += '\n{}: {}'.format(key, value)
+        if resource == 'discount':  # nocoverage
+            body = default_body() + '. ({coupon})'.format(
+                coupon=linkified_id(object_['coupon'], lower=True))
+        if resource == 'source':  # nocoverage
+            body = default_body()
+        if resource == 'subscription':
+            body = default_body()
+            if event == 'trial_will_end':
                 DAY = 60 * 60 * 24  # seconds in a day
-                # days_left should always be three according to
-                # https://stripe.com/docs/api/python#event_types, but do the
-                # computation just to be safe.
-                days_left = int((data_object["trial_end"] - time.time() + DAY//2) // DAY)
-                body_template = ("The customer subscription trial with id"
-                                 " **[{id}]({link})** will end in {days} days.")
-                body = body_template.format(id=object_id, link=link, days=days_left)
-            elif event_type == "customer.subscription.updated":
-                body_template = "The customer subscription with id **[{id}]({link})** was updated."
-                body = body_template.format(id=object_id, link=link)
-            else:
-                raise UnexpectedWebhookEventType("Stripe", event_type)
+                # Basically always three: https://stripe.com/docs/api/python#event_types
+                body += ' in {days} days'.format(
+                    days=int((object_["trial_end"] - time.time() + DAY//2) // DAY))
+            if event == 'created':
+                if object_['plan']:
+                    body += '\nPlan: [{plan_name}](https://dashboard.stripe.com/plans/{plan_id})'.format(
+                        plan_name=object_['plan']['name'], plan_id=object_['plan']['id'])
+                if object_['quantity']:
+                    body += '\nQuantity: {}'.format(object_['quantity'])
+                if 'billing' in object_:  # nocoverage
+                    body += '\nBilling method: {}'.format(object_['billing'].replace('_', ' '))
+    if category == 'file':  # nocoverage
+        topic = 'files'
+        body = default_body() + ' ({purpose}). \nTitle: {title}'.format(
+            purpose=object_['purpose'].replace('_', ' '), title=object_['title'])
+    if category == 'invoice':
+        if event == 'upcoming':  # nocoverage
+            body = 'Upcoming invoice created'
         else:
-            link = "https://dashboard.stripe.com/customers/{}".format(object_id)
-            body_template = "{beginning} customer with id **[{id}]({link})** {rest}."
-
-            if event_type == "customer.created":
-                beginning = "A new"
-                if data_object["email"] is None:
-                    rest = "has been created"
-                else:
-                    rest = "and email **{}** has been created".format(data_object['email'])
-            elif event_type == "customer.deleted":
-                beginning = "A"
-                rest = "has been deleted"
-            else:
-                raise UnexpectedWebhookEventType("Stripe", event_type)
-            body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
-
-        topic = "Customer {}".format(object_id)
-
-    elif event_type == "invoice.payment_failed":
-        object_id = data_object['id']
-        link = "https://dashboard.stripe.com/invoices/{}".format(object_id)
-        amount_string = amount(data_object["amount_due"], data_object["currency"])
-        body_template = "An invoice payment on invoice with id **[{id}]({link})** and "\
-                        "with **{amount}** due has failed."
-        body = body_template.format(id=object_id, amount=amount_string, link=link)
-        topic = "Invoice {}".format(object_id)
-
-    elif event_type.startswith('order'):
-        object_id = data_object['id']
-        link = "https://dashboard.stripe.com/orders/{}".format(object_id)
-        amount_string = amount(data_object["amount"], data_object["currency"])
-        body_template = "{beginning} order with id **[{id}]({link})** for **{amount}** has {end}."
-
-        if event_type == "order.payment_failed":
-            beginning = "An order payment on"
-            end = "failed"
-        elif event_type == "order.payment_succeeded":
-            beginning = "An order payment on"
-            end = "succeeded"
-        elif event_type == "order.updated":
-            beginning = "The"
-            end = "been updated"
-        else:
-            raise UnexpectedWebhookEventType("Stripe", event_type)
-
-        body = body_template.format(beginning=beginning,
-                                    id=object_id,
-                                    link=link,
-                                    amount=amount_string,
-                                    end=end)
-        topic = "Order {}".format(object_id)
-
-    elif event_type.startswith('transfer'):
-        object_id = data_object['id']
-        link = "https://dashboard.stripe.com/transfers/{}".format(object_id)
-        amount_string = amount(data_object["amount"], data_object["currency"])
-        body_template = "The transfer with description **{description}** and id **[{id}]({link})** " \
-                        "for amount **{amount}** has {end}."
-        if event_type == "transfer.failed":
-            end = 'failed'
-        elif event_type == "transfer.paid":
-            end = "been paid"
-        else:
-            raise UnexpectedWebhookEventType('Stripe', event_type)
-        body = body_template.format(
-            description=data_object['description'],
-            id=object_id,
-            link=link,
-            amount=amount_string,
-            end=end
-        )
-        topic = "Transfer {}".format(object_id)
+            body = default_body()
+        if event == 'created':  # nocoverage
+            # Could potentially add link to invoice PDF here
+            body += ' ({reason})\nBilling method: {method}\nTotal: {total}\nAmount due: {due}'.format(
+                reason=object_['billing_reason'].replace('_', ' '),
+                method=object_['billing'].replace('_', ' '),
+                total=amount_string(object_['total'], object_['currency']),
+                due=amount_string(object_['amount_due'], object_['currency']))
+    if category == 'invoiceitem':  # nocoverage
+        body = default_body()
+        if event == 'created':
+            body += ' for {amount}'.format(amount=amount_string(object_['amount'], object_['currency']))
+    if category.startswith('issuing'):  # nocoverage
+        # Not implemented
+        return json_success()
+    if category.startswith('order'):  # nocoverage
+        # Not implemented
+        return json_success()
+    if category in ['payment_intent', 'payout', 'plan', 'product', 'recipient',
+                    'reporting', 'review', 'sigma', 'sku', 'source', 'subscription_schedule',
+                    'topup', 'transfer']:  # nocoverage
+        # Not implemented. In theory doing something like
+        #   body = default_body()
+        # may not be hard for some of these
+        return json_success()
 
     if body is None:
         raise UnexpectedWebhookEventType('Stripe', event_type)
 
-    check_send_webhook_message(request, user_profile, topic, body)
+    if 'previous_attributes' in payload['data']:  # nocoverage
+        previous_attributes = payload['data']['previous_attributes']
+    else:
+        previous_attributes = {}
+    body += '\n' + update_string(previous_attributes)
+    body = body.strip()
 
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
-def amount(amount: int, currency: str) -> str:
-    # zero-decimal currencies
+def amount_string(amount: int, currency: str) -> str:
     zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
                                "xpf", "clp", "gnf", "kmf", "mga", "rwf", "vuv", "xof"]
     if currency in zero_decimal_currencies:
-        return str(amount) + currency
+        decimal_amount = str(amount)  # nocoverage
     else:
-        return '{0:.02f}'.format(float(amount) * 0.01) + currency
+        decimal_amount = '{0:.02f}'.format(float(amount) * 0.01)
+
+    if currency == 'usd':  # nocoverage
+        return '$' + decimal_amount
+    return decimal_amount + ' {}'.format(currency.upper())
+
+def update_string(previous_attributes: Dict[str, Any]) -> str:
+    return '\n'.join(attribute.replace('_', ' ').capitalize() + ' updated'
+                     for attribute in previous_attributes)
+
+def linkified_id(object_id: str, lower: bool=False) -> str:
+    names_and_urls = {
+        # Core resources
+        'ch': ('Charge', 'charges'),
+        'cus': ('Customer', 'customers'),
+        'dp': ('Dispute', 'disputes'),
+        'file': ('File', 'files'),
+        'link': ('File link', 'file_links'),
+        'pi': ('Payment intent', 'payment_intents'),
+        'po': ('Payout', 'payouts'),
+        'prod': ('Product', 'products'),
+        're': ('Refund', 'refunds'),
+        'tok': ('Token', 'tokens'),
+
+        # Payment methods
+        # payment methods have URL prefixes like /customers/cus_id/sources
+        'ba': ('Bank account', None),
+        'card': ('Card', None),
+        'src': ('Source', None),
+
+        # Billing
+        # coupons have a configurable id, but the URL prefix is /coupons
+        # discounts don't have a URL, I think
+        'in': ('Invoice', 'invoices'),
+        'ii': ('Invoice item', 'invoiceitems'),
+        # products are covered in core resources
+        # plans have a configurable id, though by default they are created with this pattern
+        # 'plan': ('Plan', 'plans'),
+        'sub': ('Subscription', 'subscriptions'),
+        'si': ('Subscription item', 'subscription_items'),
+        # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
+        'mbur': ('Usage record', None),
+
+        # Connect, Fraud, Orders, etc not implemented
+    }  # type: Dict[str, Tuple[str, Optional[str]]]
+    name, url_prefix = names_and_urls[object_id.split('_')[0]]
+    if lower:  # nocoverage
+        name = name.lower()
+    if url_prefix is None:  # nocoverage
+        return name
+    return '[{}](https://dashboard.stripe.com/{}/{})'.format(name, url_prefix, object_id)
