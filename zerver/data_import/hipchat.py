@@ -161,6 +161,7 @@ def convert_user_data(user_handler: UserHandler,
 
 def convert_avatar_data(avatar_folder: str,
                         raw_data: List[ZerverFieldsT],
+                        user_id_mapper: IdMapper,
                         realm_id: int) -> List[ZerverFieldsT]:
     '''
     This code is pretty specific to how Hipchat sends us data.
@@ -175,16 +176,21 @@ def convert_avatar_data(avatar_folder: str,
     of files to the avatars directory.
     '''
 
-    flat_data = [
-        d['User']
-        for d in raw_data
-        if d.get('avatar')
-    ]
+    avatar_records = []
 
-    def process(raw_user: ZerverFieldsT) -> ZerverFieldsT:
-        avatar_payload = raw_user['avatar']
+    for d in raw_data:
+        raw_user = d['User']
+        avatar_payload = raw_user.get('avatar')
+        if not avatar_payload:
+            continue
+
         bits = base64.b64decode(avatar_payload)
-        user_id = raw_user['id']
+
+        raw_user_id = raw_user['id']
+        if not user_id_mapper.has(raw_user_id):
+            continue
+
+        user_id = user_id_mapper.get(raw_user_id)
 
         metadata = write_avatar_png(
             avatar_folder=avatar_folder,
@@ -192,9 +198,8 @@ def convert_avatar_data(avatar_folder: str,
             user_id=user_id,
             bits=bits,
         )
-        return metadata
+        avatar_records.append(metadata)
 
-    avatar_records = list(map(process, flat_data))
     return avatar_records
 
 def read_room_data(data_dir: str) -> List[ZerverFieldsT]:
@@ -282,6 +287,7 @@ def make_realm(realm_id: int) -> ZerverFieldsT:
 
 def write_avatar_data(raw_user_data: List[ZerverFieldsT],
                       output_dir: str,
+                      user_id_mapper: IdMapper,
                       realm_id: int) -> None:
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
@@ -290,6 +296,7 @@ def write_avatar_data(raw_user_data: List[ZerverFieldsT],
     avatar_records = convert_avatar_data(
         avatar_folder=avatar_folder,
         raw_data=raw_user_data,
+        user_id_mapper=user_id_mapper,
         realm_id=realm_id,
     )
 
@@ -840,6 +847,7 @@ def do_convert_data(input_tar_file: str,
     write_avatar_data(
         raw_user_data=raw_user_data,
         output_dir=output_dir,
+        user_id_mapper=user_id_mapper,
         realm_id=realm_id,
     )
 
