@@ -16,7 +16,7 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
-<!-- Find your Zulip organization -->
+* [Find your Zulip Organization(s)](/help/find-your-organization)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
 * [Zulip glossary](/help/zulip-glossary)
