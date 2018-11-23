@@ -124,3 +124,10 @@ class Token:
     @staticmethod
     def create(card: Dict[str, Any]) -> Token:
         ...
+
+class Charge:
+    amount: int
+
+    @staticmethod
+    def list(customer: Optional[str]) -> List[Charge]:
+        ...
