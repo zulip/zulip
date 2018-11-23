@@ -733,24 +733,52 @@ class StripeTest(ZulipTestCase):
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         self.assertIn('Unknown payment method.', payment_method_string(stripe_customer))
 
-    @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_attach_discount_to_realm(self, mock_create_customer: Mock,
-                                      mock_retrieve_customer: Mock) -> None:
+    @mock_stripe("Customer.save", "Customer.retrieve", "Customer.create", "Invoice.upcoming",
+                 "Token.create", "Charge.list", "Subscription.create")
+    def test_attach_discount_to_realm(self, mock7: Mock, mock6: Mock, mock5: Mock, mock4: Mock,
+                                      mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+        # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
-        # Before customer exists
         attach_discount_to_realm(user, 85)
-        mock_create_customer.assert_called_once_with(
-            description=Kandra(), email=self.example_email('hamlet'), metadata=Kandra(),
-            source=None, coupon=self.stripe_coupon_id)
-        mock_create_customer.reset_mock()
-        # For existing customer
-        Coupon.objects.create(percent_off=42, stripe_coupon_id='42OFF')
-        with patch.object(
-                stripe.Customer, 'save', autospec=True,
-                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '42OFF')):
-            attach_discount_to_realm(user, 42)
-        mock_create_customer.assert_not_called()
+        self.login(user.email)
+        response = self.client_get("/upgrade/")
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
+                                       'signed_seat_count': self.get_signed_seat_count_from_response(response),
+                                       'salt': self.get_salt_from_response(response),
+                                       'plan': Plan.CLOUD_ANNUAL,
+                                       'billing_modality': 'charge_automatically'})
+
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual(stripe_customer.discount.coupon.percent_off, 85.0)
+
+        charges = stripe.Charge.list(customer=stripe_customer.id)
+        # Check that the customer was charged get_seat_count * 80 * 15%.
+        # No need to divide by 100 for percentage as charges.data[0].amount is in cents
+        for charge in charges:
+            self.assertEqual(charge.amount, get_seat_count(user.realm) * 80 * 15)
+
+        upcoming_invoice = stripe.Invoice.upcoming(customer=stripe_customer.id)
+        self.assertEqual(upcoming_invoice.amount_due, get_seat_count(user.realm) * 80 * 15)
+
+        # Attach discount to existing customer
+        user = self.lear_user("cordelia")
+        self.login(user.email, realm=get_realm("lear"))
+        response = self.client_get("/upgrade/", subdomain="lear")
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
+                                       'signed_seat_count': self.get_signed_seat_count_from_response(response),
+                                       'salt': self.get_salt_from_response(response),
+                                       'plan': Plan.CLOUD_ANNUAL,
+                                       'billing_modality': 'charge_automatically'},
+                         subdomain="lear")
+
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        charges = stripe.Charge.list(customer=stripe_customer.id)
+        for charge in charges:
+            self.assertEqual(charge.amount, get_seat_count(user.realm) * 80 * 100)
+
+        attach_discount_to_realm(user, 25)
+        upcoming_invoice = stripe.Invoice.upcoming(customer=stripe_customer.id)
+        self.assertEqual(upcoming_invoice.amount_due, get_seat_count(user.realm) * 80 * 75)
 
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.save")

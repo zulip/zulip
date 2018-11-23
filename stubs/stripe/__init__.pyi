@@ -17,7 +17,7 @@ class Customer:
     account_balance: int
     email: str
     description: str
-    discount: Optional[Discount]
+    discount: Discount
     metadata: Dict[str, str]
 
     @staticmethod
@@ -123,4 +123,11 @@ class Token:
     id: str
     @staticmethod
     def create(card: Dict[str, Any]) -> Token:
+        ...
+
+class Charge:
+    amount: int
+
+    @staticmethod
+    def list(customer: Optional[str]) -> List[Charge]:
         ...
