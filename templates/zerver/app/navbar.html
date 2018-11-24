@@ -29,184 +29,188 @@
 </div>
 <div class="header">
     <nav class="header-main rightside-userlist" id="top_navbar">
-        <div class="column-left">
-            <a class="brand no-style" href="#">
-                <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
-                <div class="company-name">
-                    zulip
-                </div>
-            </a>
-        </div>
-        <div class="column-middle" id="navbar-middle">
-            <div class="column-middle-inner">
-                <div id="streamlist-toggle" title="{{ _('Stream list') }} (q)" {%if embedded %} style="visibility: hidden"{% endif %}>
-                    <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
-                        <span id="streamlist-toggle-unreadcount">0</span>
+        <div class="global-nav-inner" >
+            <div class="container">
+                <div class="nav-column-left">
+                    <a class="brand no-style" href="#">
+                        <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
+                        <div class="company-name">
+                            zulip
+                        </div>
                     </a>
                 </div>
-                {% if search_pills_enabled %}
-                <div id="searchbox" class="searchbox-rightmargin">
-                    <div id="tab_bar" class="notdisplayed">
-                    </div>
-                    <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
-                    <form id="searchbox_form" class="form-search navbar-search">
-                        <div id="search_arrows" class="pill-container input-append">
-                            <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                <div class="nav-column-middle" id="navbar-middle">
+                    <div class="column-middle-inner">
+                        <div id="streamlist-toggle" title="{{ _('Stream list') }} (q)" {%if embedded %} style="visibility: hidden"{% endif %}>
+                            <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
+                                <span id="streamlist-toggle-unreadcount">0</span>
+                            </a>
                         </div>
-                    </form>
-                    {# Start the button off disabled since there is no active search #}
-                    <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                </div>
-                {% else %}
-                <div id="searchbox_legacy" class="searchbox-rightmargin">
-                    <div id="tab_bar" class="notdisplayed">
-                    </div>
-                    <form id="searchbox_form" class="form-search navbar-search">
-                        <div id="search_arrows" class="input-append">
-                            <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
+                        {% if search_pills_enabled %}
+                        <div id="searchbox" class="searchbox-rightmargin">
+                            <div id="tab_bar" class="notdisplayed">
+                            </div>
+                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                            <form id="searchbox_form" class="form-search navbar-search">
+                                <div id="search_arrows" class="pill-container input-append">
+                                    <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
+                                      autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                                </div>
+                            </form>
                             {# Start the button off disabled since there is no active search #}
                             <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
                         </div>
-                    </form>
+                        {% else %}
+                        <div id="searchbox_legacy" class="searchbox-rightmargin">
+                            <div id="tab_bar" class="notdisplayed">
+                            </div>
+                            <form id="searchbox_form" class="form-search navbar-search">
+                                <div id="search_arrows" class="input-append">
+                                    <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
+                                      autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)" />
+                                    {# Start the button off disabled since there is no active search #}
+                                    <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                                    <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                {% endif %}
-            </div>
-        </div>
-        <div class="column-right">
-            <div id="userlist-toggle" title="{{ _('User list') }} (w)">
-                <a href="#" id="userlist-toggle-button" role="button"><i class="fa fa-group" aria-hidden="true"></i>
-                    <span id="userlist-toggle-unreadcount">0</span>
-                </a>
-            </div>
-            <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
-                <ul class="nav" role="navigation">
-                    <li class="dropdown actual-dropdown-menu" id="gear-menu">
-                        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
-                            <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
+                <div class="nav-column-right">
+                    <div id="userlist-toggle" title="{{ _('User list') }} (w)">
+                        <a href="#" id="userlist-toggle-button" role="button"><i class="fa fa-group" aria-hidden="true"></i>
+                            <span id="userlist-toggle-unreadcount">0</span>
                         </a>
-                        <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
-                            {#
-                            It is quite ingrained in our frontend code that your Home
-                            view is a Bootstrap Nav tab, even though we don't show the tab
-                            anymore
-                            #}
-                            <li class="invisible" style="display:none;" role="presentation"><a href="#home" data-toggle="tab"></a></li>
-                            <li role="presentation">
-                                <a href="#streams" role="menuitem">
-                                    <i class="fa fa-exchange" aria-hidden="true"></i> {{ _('Manage streams') }}
+                    </div>
+                    <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
+                        <ul class="nav" role="navigation">
+                            <li class="dropdown actual-dropdown-menu" id="gear-menu">
+                                <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
+                                    <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
                                 </a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
+                                    {#
+                                    It is quite ingrained in our frontend code that your Home
+                                    view is a Bootstrap Nav tab, even though we don't show the tab
+                                    anymore
+                                    #}
+                                    <li class="invisible" style="display:none;" role="presentation"><a href="#home" data-toggle="tab"></a></li>
+                                    <li role="presentation">
+                                        <a href="#streams" role="menuitem">
+                                            <i class="fa fa-exchange" aria-hidden="true"></i> {{ _('Manage streams') }}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#settings" role="menuitem">
+                                            <i class="fa fa-wrench" aria-hidden="true"></i> {{ _('Settings') }}
+                                        </a>
+                                    </li>
+                                    <li class="admin-menu-item" role="presentation">
+                                        <a href="#organization" role="menuitem">
+                                            <i class="fa fa-bolt" aria-hidden="true"></i>
+                                            <span>{{ _('Manage organization') }}</span>
+                                        </a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li role="presentation">
+                                        <a href="/help" target="_blank" role="menuitem">
+                                            <i class="fa fa-question-circle" aria-hidden="true"></i> {{ _('Help center') }}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                                            <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{ _('Keyboard shortcuts') }} <span class="hotkey-hint">(?)</span>
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
+                                            <i class="fa fa-pencil" aria-hidden="true"></i> {{ _('Message formatting') }}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
+                                            <i class="fa fa-search" aria-hidden="true"></i> {{ _('Search operators') }}
+                                        </a>
+                                    </li>
+                                    <li class="divider" role="presentation"></li>
+                                    <li role="presentation">
+                                        <a href="{{ apps_page_url }}" target="_blank" role="menuitem">
+                                            <i class="fa fa-desktop" aria-hidden="true"></i> {{ _('Desktop & mobile apps') }}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="/integrations" target="_blank" role="menuitem">
+                                            <i class="fa fa-github" aria-hidden="true"></i> {{ _('Integrations') }}
+                                        </a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="/api" target="_blank" role="menuitem">
+                                            <i class="fa fa-sitemap" aria-hidden="true"></i> {{ _('API documentation') }}
+                                        </a>
+                                    </li>
+                                    {% if not is_guest %}
+                                    <li role="presentation">
+                                        <a href="/stats" target="_blank" role="menuitem">
+                                            <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                                            <span>{{ _('Statistics') }}</span>
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if show_plans %}
+                                    <li role="presentation">
+                                        <a href="/plans" target="_blank" role="menuitem">
+                                            <i class="fa fa-rocket" aria-hidden="true"></i> {{ _('Plans and pricing') }}
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if show_billing %}
+                                    <li role="presentation">
+                                        <a href="/billing" target="_blank" role="menuitem">
+                                            <i class="fa fa-credit-card" aria-hidden="true"></i> {{ _('Billing') }}
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li class="divider" role="presentation"></li>
+                                    {% if enable_feedback %}
+                                    <li role="presentation">
+                                        <a href="#feedback" class="feedback" role="menuitem">
+                                            <i class="fa fa-comment" aria-hidden="true"></i> {{ _('Feedback') }}
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    {% if show_invites %}
+                                    <li role="presentation">
+                                        <a href="#invite" role="menuitem">
+                                            <i class="fa fa-plus-circle" aria-hidden="true"></i> {{ _('Invite users') }}
+                                        </a>
+                                    </li>
+                                    <li class="divider" role="presentation"></li>
+                                    {% endif %}
+                                    {% if show_webathena %}
+                                    <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu" role="presentation">
+                                        <a href="#webathena" class="webathena_login" role="menuitem">
+                                            <i class="fa fa-bolt" aria-hidden="true"></i>{{ _('Link with Webathena') }}
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li role="presentation">
+                                        <a href="#logout" class="logout_button" role="menuitem">
+                                            <i class="fa fa-power-off" aria-hidden="true"></i> {{ _('Log out') }}
+                                        </a>
+                                    </li>
+                                    {% if show_debug %}
+                                    <li role="presentation">
+                                        <a href="#debug" data-toggle="tab" role="menuitem">
+                                            <i class="fa fa-barcode" aria-hidden="true"></i> {{ _('Debug') }}
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
                             </li>
-                            <li role="presentation">
-                                <a href="#settings" role="menuitem">
-                                    <i class="fa fa-wrench" aria-hidden="true"></i> {{ _('Settings') }}
-                                </a>
-                            </li>
-                            <li class="admin-menu-item" role="presentation">
-                                <a href="#organization" role="menuitem">
-                                    <i class="fa fa-bolt" aria-hidden="true"></i>
-                                    <span>{{ _('Manage organization') }}</span>
-                                </a>
-                            </li>
-                            <li class="divider"></li>
-                            <li role="presentation">
-                                <a href="/help" target="_blank" role="menuitem">
-                                    <i class="fa fa-question-circle" aria-hidden="true"></i> {{ _('Help center') }}
-                                </a>
-                            </li>
-                            <li role="presentation">
-                                <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
-                                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{ _('Keyboard shortcuts') }} <span class="hotkey-hint">(?)</span>
-                                </a>
-                            </li>
-                            <li role="presentation">
-                                <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
-                                    <i class="fa fa-pencil" aria-hidden="true"></i> {{ _('Message formatting') }}
-                                </a>
-                            </li>
-                            <li role="presentation">
-                                <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                                    <i class="fa fa-search" aria-hidden="true"></i> {{ _('Search operators') }}
-                                </a>
-                            </li>
-                            <li class="divider" role="presentation"></li>
-                            <li role="presentation">
-                                <a href="{{ apps_page_url }}" target="_blank" role="menuitem">
-                                    <i class="fa fa-desktop" aria-hidden="true"></i> {{ _('Desktop & mobile apps') }}
-                                </a>
-                            </li>
-                            <li role="presentation">
-                                <a href="/integrations" target="_blank" role="menuitem">
-                                    <i class="fa fa-github" aria-hidden="true"></i> {{ _('Integrations') }}
-                                </a>
-                            </li>
-                            <li role="presentation">
-                                <a href="/api" target="_blank" role="menuitem">
-                                    <i class="fa fa-sitemap" aria-hidden="true"></i> {{ _('API documentation') }}
-                                </a>
-                            </li>
-                            {% if not is_guest %}
-                            <li role="presentation">
-                                <a href="/stats" target="_blank" role="menuitem">
-                                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
-                                    <span>{{ _('Statistics') }}</span>
-                                </a>
-                            </li>
-                            {% endif %}
-                            {% if show_plans %}
-                            <li role="presentation">
-                                <a href="/plans" target="_blank" role="menuitem">
-                                    <i class="fa fa-rocket" aria-hidden="true"></i> {{ _('Plans and pricing') }}
-                                </a>
-                            </li>
-                            {% endif %}
-                            {% if show_billing %}
-                            <li role="presentation">
-                                <a href="/billing" target="_blank" role="menuitem">
-                                    <i class="fa fa-credit-card" aria-hidden="true"></i> {{ _('Billing') }}
-                                </a>
-                            </li>
-                            {% endif %}
-                            <li class="divider" role="presentation"></li>
-                            {% if enable_feedback %}
-                            <li role="presentation">
-                                <a href="#feedback" class="feedback" role="menuitem">
-                                    <i class="fa fa-comment" aria-hidden="true"></i> {{ _('Feedback') }}
-                                </a>
-                            </li>
-                            {% endif %}
-                            {% if show_invites %}
-                            <li role="presentation">
-                                <a href="#invite" role="menuitem">
-                                    <i class="fa fa-plus-circle" aria-hidden="true"></i> {{ _('Invite users') }}
-                                </a>
-                            </li>
-                            <li class="divider" role="presentation"></li>
-                            {% endif %}
-                            {% if show_webathena %}
-                            <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu" role="presentation">
-                                <a href="#webathena" class="webathena_login" role="menuitem">
-                                    <i class="fa fa-bolt" aria-hidden="true"></i>{{ _('Link with Webathena') }}
-                                </a>
-                            </li>
-                            {% endif %}
-                            <li role="presentation">
-                                <a href="#logout" class="logout_button" role="menuitem">
-                                    <i class="fa fa-power-off" aria-hidden="true"></i> {{ _('Log out') }}
-                                </a>
-                            </li>
-                            {% if show_debug %}
-                            <li role="presentation">
-                                <a href="#debug" data-toggle="tab" role="menuitem">
-                                    <i class="fa fa-barcode" aria-hidden="true"></i> {{ _('Debug') }}
-                                </a>
-                            </li>
-                            {% endif %}
                         </ul>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>

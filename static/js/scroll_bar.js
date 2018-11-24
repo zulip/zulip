@@ -32,12 +32,9 @@ function getScrollbarWidth() {
 exports.initialize = function () {
 // Workaround for browsers with fixed scrollbars
     var sbWidth = getScrollbarWidth();
-
     if (sbWidth > 0) {
-        $(".header").css("left", "-" + sbWidth + "px");
-        $(".header-main").css("left", sbWidth + "px");
-        $(".header-main").css("max-width", 1400 + sbWidth + "px");
-        $(".header-main .column-middle").css("margin-right", 250 + sbWidth + "px");
+
+        $(".global-nav-inner .container").css("max-width", 1400 + sbWidth + "px");
 
         $(".fixed-app").css("left", "-" + sbWidth + "px");
         $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");

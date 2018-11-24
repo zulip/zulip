@@ -99,7 +99,8 @@
         display: inline-block !important;
     }
 
-    .column-left {
+    .column-left,
+    .nav-column-left {
         display: none;
     }
 
@@ -148,6 +149,14 @@
         margin-right: 0px;
     }
 
+    .nav-column-middle {
+        width: calc(100% - 25px);
+        max-width: calc(100% - 25px);
+    }
+    .nav-column-right {
+        width: 15px;
+    }
+
     .skinny-user-gravatar {
         position: absolute;
         top: 0px;
@@ -191,6 +200,10 @@
 }
 
 @media (max-width: 500px) {
+
+    .header-main {
+        height: 30px;
+    }
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: 31px;
