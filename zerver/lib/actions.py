@@ -4924,14 +4924,14 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
 
 def notify_user_update_custom_profile_data(user_profile: UserProfile,
                                            field: Dict[str, Union[int, str, List[int], None]]) -> None:
+    data = dict(id=field['id'])
     if field['type'] == CustomProfileField.USER:
-        field_value = ujson.dumps(field['value'])  # type: Union[int, str, List[int], None]
+        data["value"] = ujson.dumps(field['value'])
     else:
-        field_value = field['value']
-    field_rendered_value = field['rendered_value']
-    payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
-                                                                      value=field_value,
-                                                                      rendered_value=field_rendered_value))
+        data['value'] = field['value']
+    if field['rendered_value']:
+        data['rendered_value'] = field['rendered_value']
+    payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
 

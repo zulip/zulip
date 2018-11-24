@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0190_cleanup_pushdevicetoken'),
+        ('zerver', '0191_realm_seat_limit'),
     ]
 
     operations = [
