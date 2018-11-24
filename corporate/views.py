@@ -77,7 +77,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         try:
             plan, seat_count = unsign_and_check_upgrade_parameters(
                 user, request.POST['plan'], request.POST['signed_seat_count'], request.POST['salt'])
-            if 'invoiced_seat_count' in request.POST:
+            if request.POST['billing_modality'] == 'send_invoice':
                 min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
                 if int(request.POST['invoiced_seat_count']) < min_required_seat_count:
                     raise BillingError(
