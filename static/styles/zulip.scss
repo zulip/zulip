@@ -185,22 +185,20 @@ p.n-margin {
     max-width: 1410px;
 }
 
-
-
 #panels {
     -webkit-font-smoothing: antialiased;
-
     font-size: 1rem;
+    position: fixed;
+    z-index: 103;
+    width: 100%;
 }
 
 #panels .alert {
     margin: 0;
     padding-top: 12px;
     padding-bottom: 12px;
-
     border: none;
     border-radius: 0;
-
     text-align: center;
     text-shadow: none;
     color: hsl(0, 0%, 100%);
