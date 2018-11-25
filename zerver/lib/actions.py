@@ -3767,7 +3767,7 @@ def truncate_content(content: str, max_length: int, truncation_message: str) -> 
     return content
 
 def truncate_body(body: str) -> str:
-    return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
+    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 def truncate_topic(topic: str) -> str:
     return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")

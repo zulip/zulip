@@ -10,7 +10,8 @@ from django.conf import settings
 
 from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
     internal_send_message, internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message
+    internal_send_stream_message, internal_send_huddle_message, \
+    truncate_body, truncate_topic
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
@@ -192,8 +193,8 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
         sender,
         "stream",
         stream.name,
-        topic[:MAX_TOPIC_NAME_LENGTH],
-        content[:MAX_MESSAGE_LENGTH],
+        truncate_topic(topic),
+        truncate_body(content),
         email_gateway=True)
 
 def valid_stream(stream_name: str, token: str) -> bool:

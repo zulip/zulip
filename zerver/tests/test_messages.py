@@ -1544,7 +1544,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content,
-                         "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
+                         "A" * (MAX_MESSAGE_LENGTH - 20) + "\n[message truncated]")
 
     def test_long_topic(self) -> None:
         """
