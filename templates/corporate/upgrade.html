@@ -62,7 +62,7 @@
                             </div>
                             <p>
                                 You&rsquo;ll initially be charged
-                                <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b>
+                                <b>$<span id="charged_amount"></span></b>
                                 for <b>{{ seat_count }}</b> users. We’ll automatically charge you
                                 when new users are added, and give you credit when users are deactivated.
                             </p>
@@ -79,13 +79,6 @@
                                     data-label="{{ _('Add card') }}"
                                     data-allow-remember-me="false"
                                     >
-                            </script>
-                            <script>
-                                const seat_count = parseInt($('input[name=seat_count]').val());
-                                $("input[type=radio][name=plan").change(function () {
-                                var charged_amount = parseInt($(this).data("amount")) * seat_count;
-                                $("#charged_amount").html(charged_amount);
-                                });
                             </script>
                         </form>
                     </div>

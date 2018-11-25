@@ -62,4 +62,16 @@ $(function () {
         $('html,body').scrollTop(0);
     });
 
+    if (window.location.pathname === '/upgrade/') {
+        const seat_count = parseInt($('input[name=seat_count]').val());
+        function update_charged_amount(per_seat_cost) {
+            $("#charged_amount").html(seat_count * per_seat_cost);
+        }
+
+        $('input[type=radio][name=plan]').change(function () {
+            update_charged_amount($(this).data('amount'));
+        });
+
+        update_charged_amount($('input[type=radio][name=plan]:checked').data('amount'));
+    }
 });
