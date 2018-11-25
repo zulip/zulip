@@ -63,7 +63,8 @@
                             <p>
                                 You&rsquo;ll initially be charged
                                 <b>$<span id="charged_amount">{{ cloud_annual_price * seat_count }}</span></b>
-                                for <b>{{ seat_count }}</b> users.
+                                for <b>{{ seat_count }}</b> users. We’ll automatically charge you
+                                when new users are added, and give you credit when users are deactivated.
                             </p>
                             <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
                                     data-key="{{ publishable_key }}"
@@ -109,12 +110,12 @@
                                     </div>
                                 </label>
                             </div>
-                            <h4>Number of users</h4>
-                            <input type="text" id="invoiced_seat_count" name="invoiced_seat_count" value=""/>
                             <p>
-                                We'll send you an invoice by email. You
-                                must invoice for at least {{ min_seat_count_for_invoice }} users.
+                                Tell us ahead of time how many users you're planning for. We'll email you an
+                                invoice in 1-2 hours. Invoices can be paid by ACH transfer or credit card.
                             </p>
+                            <h4>Number of users (minimum {{ min_seat_count_for_invoice }})</h4>
+                            <input type="text" id="invoiced_seat_count" name="invoiced_seat_count" value=""/><br>
                             <button type="submit" class="stripe-button-el invoice-button">Buy Standard</button>
                         </form>
                     </div>
