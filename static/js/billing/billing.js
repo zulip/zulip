@@ -46,6 +46,7 @@ $(function () {
     var hash = window.location.hash;
     if (hash) {
         $('#billing-tabs.nav a[href="' + hash + '"]').tab('show');
+        $('#upgrade-tabs.nav a[href="' + hash + '"]').tab('show');
         $('html,body').scrollTop(0);
     }
 
@@ -54,4 +55,11 @@ $(function () {
         window.location.hash = this.hash;
         $('html,body').scrollTop(0);
     });
+
+    $('#upgrade-tabs.nav-tabs a').click(function () {
+        $(this).tab('show');
+        window.location.hash = this.hash;
+        $('html,body').scrollTop(0);
+    });
+
 });
