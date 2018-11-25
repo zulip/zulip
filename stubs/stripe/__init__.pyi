@@ -135,3 +135,8 @@ class Charge:
     @staticmethod
     def list(customer: Optional[str]) -> List[Charge]:
         ...
+
+class InvoiceItem:
+    @staticmethod
+    def create(amount: int, currency: str, customer: Customer, subscription: Subscription) -> Subscription:
+        ...
