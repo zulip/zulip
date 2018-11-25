@@ -831,18 +831,16 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.LIMITED)
         self.assertFalse(realm.has_seat_based_plan)
 
-    @patch("stripe.Customer.save")
-    @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
-    def test_downgrade_with_no_subscription(
-            self, mock_retrieve_customer: Mock, mock_save_customer: Mock) -> None:
-        realm = get_realm('zulip')
-        Customer.objects.create(
-            realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
-        self.login(self.example_email('iago'))
+    @mock_stripe("Customer.retrieve", "Customer.create", generate=False)
+    def test_downgrade_with_no_subscription(self, mock2: Mock, mock1: Mock) -> None:
+        user = self.example_user("iago")
+        do_create_customer(user)
+
+        self.login(user.email)
+
         response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_error_contains(response, 'Please reload')
         self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
-        mock_save_customer.assert_not_called()
 
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
