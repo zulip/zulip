@@ -83,6 +83,10 @@ class Subscription:
     def delete(subscription: Subscription) -> Subscription:
         ...
 
+    @staticmethod
+    def retrieve(subscription_id: str) -> Subscription:
+        ...
+
 class Source:
     id: str
     object: str
