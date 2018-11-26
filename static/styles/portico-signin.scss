@@ -308,7 +308,6 @@ html {
 .new-style .alert:not(.alert-info) {
     padding: 0;
     margin-bottom: 0;
-
     font-weight: 600;
     font-size: 0.7em;
     line-height: 1.2;
@@ -724,6 +723,11 @@ button.login-google-button {
     padding-right: 10px;
 
     width: 150px;
+}
+
+#registration #id_team_subdomain-error {
+    margin-top: 5px;
+    display: block;
 }
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
