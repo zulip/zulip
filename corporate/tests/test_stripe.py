@@ -148,6 +148,10 @@ def read_stripe_fixture(decorated_function_name: str,
         return stripe.util.convert_to_stripe_object(fixture)
     return _read_stripe_fixture
 
+def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
+    for fixture_file in fixture_files_for_function(decorated_function):
+        os.remove(fixture_file)
+
 def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
@@ -197,10 +201,13 @@ def mock_stripe(*mocked_function_names: str,
 
         @wraps(decorated_function)
         def wrapped(*args: Any, **kwargs: Any) -> Any:
-            val = decorated_function(*args, **kwargs)
             if generate_fixture:  # nocoverage
+                delete_fixture_data(decorated_function)
+                val = decorated_function(*args, **kwargs)
                 normalize_fixture_data(decorated_function)
-            return val
+                return val
+            else:
+                return decorated_function(*args, **kwargs)
         return cast(CallableT, wrapped)
     return _mock_stripe
 
