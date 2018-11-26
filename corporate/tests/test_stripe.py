@@ -108,7 +108,7 @@ def fixture_files_for_function(decorated_function: CallableT) -> List[str]:  # n
     if decorated_function_name[:5] == 'test_':
         decorated_function_name = decorated_function_name[5:]
     return sorted(['{}/{}'.format(STRIPE_FIXTURES_DIR, f) for f in os.listdir(STRIPE_FIXTURES_DIR)
-                   if f.startswith(decorated_function_name)])
+                   if f.startswith(decorated_function_name + ':')])
 
 def generate_and_save_stripe_fixture(decorated_function_name: str, mocked_function_name: str,
                                      mocked_function: CallableT) -> Callable[[Any, Any], Any]:  # nocoverage
