@@ -514,8 +514,8 @@ function get_message_header(message) {
 }
 
 exports.get_local_echo_in_view_reason = function (message) {
-    var echo_offset_y = $('[zid=' + Math.round(message.local_id) + ']').offset().top,
-        compose_box_y = $('#compose-container').offset().top;
+    var echo_offset_y = $('[zid=' + Math.round(message.local_id) + ']').offset().top;
+    var compose_box_y = $('#compose-container').offset().top;
 
     // When the local_echo is not in view, the top offset is 0
     // When the top offset is positive and less than compose box top
@@ -523,8 +523,8 @@ exports.get_local_echo_in_view_reason = function (message) {
     if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
         return "Your message was sent!";
     }
-    else return null;
-}
+    return null;
+};
 
 exports.get_local_notify_mix_reason = function (message) {
     var row = current_msg_list.get_row(message.id);
