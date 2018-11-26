@@ -194,6 +194,12 @@ exports.process_from_server = function process_from_server(messages) {
 
         exports.reify_message_id(message.local_id, message.id);
 
+         // In case the subject was altered by the server, we update it here.
+        if (client_message.subject !== message.subject) {
+            client_message.subject = message.subject;
+            sent_messages.mark_disparity(message.local_id);
+        }
+
         if (client_message.content !== message.content) {
             client_message.content = message.content;
             sent_messages.mark_disparity(message.local_id);
