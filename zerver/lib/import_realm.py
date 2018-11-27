@@ -633,6 +633,8 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
                         # same realm ID from a previous iteration).
                         os.remove(medium_file_path)
                 upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+                if record.get("importer_should_thumbnail"):
+                    upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
