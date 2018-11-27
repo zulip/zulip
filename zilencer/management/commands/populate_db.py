@@ -1,4 +1,5 @@
 import itertools
+import mock
 import os
 import random
 from typing import Any, Callable, Dict, Iterable, List, \
@@ -19,6 +20,7 @@ from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
+from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.upload import upload_backend
 from zerver.lib.users import add_service
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
@@ -37,6 +39,9 @@ settings.TORNADO_SERVER = None
 settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
+
+# Suppress spammy output from the push notifications logger
+push_notifications_logger.disabled = True
 
 def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None,
