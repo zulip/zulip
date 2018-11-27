@@ -84,7 +84,6 @@ not_yet_fully_covered = {
     'zerver/lib/rate_limiter.py',
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/storage.py',
-    'zerver/lib/str_utils.py',
     'zerver/lib/stream_recipient.py',
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',

@@ -5,7 +5,6 @@ from typing import Any
 
 from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.str_utils import force_text
 
 class Command(ZulipBaseCommand):
     help = """Create a stream, and subscribe all active users (excluding bots).
@@ -22,6 +21,5 @@ the command."""
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
-        encoding = sys.getfilesystemencoding()
         stream_name = options['stream_name']
-        create_stream_if_needed(realm, force_text(stream_name, encoding))
+        create_stream_if_needed(realm, stream_name)
