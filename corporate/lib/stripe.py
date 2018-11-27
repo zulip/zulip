@@ -205,11 +205,10 @@ def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float, charge_automatically: bool) -> None:
-    if extract_current_subscription(stripe_customer) is not None:
-        # Most likely due to two people in the org going to the billing page,
-        # and then both upgrading their plan. We don't send clients
-        # real-time event updates for the billing pages, so this is more
-        # likely than it would be in other parts of the app.
+    if extract_current_subscription(stripe_customer) is not None:  # nocoverage
+        # Unlikely race condition from two people upgrading (clicking "Make payment")
+        # at exactly the same time. Doesn't fully resolve the race condition, but having
+        # a check here reduces the likelihood.
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
