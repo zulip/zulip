@@ -138,7 +138,6 @@ from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingExce
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image
-from zerver.lib.str_utils import NonBinaryStr
 from zerver.tornado.event_queue import request_event_queue, send_event
 from zerver.lib.types import ProfileFieldData
 
@@ -801,10 +800,10 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
                from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
                context=context)
 
-def compute_irc_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
+def compute_irc_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (IRC)"
 
-def compute_jabber_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
+def compute_jabber_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (XMPP)"
 
 @cache_with_key(lambda realm, email, f: user_profile_by_email_cache_key(email),

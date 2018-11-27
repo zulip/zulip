@@ -11,7 +11,6 @@ import unicodedata
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
-from zerver.lib.str_utils import NonBinaryStr
 
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key
@@ -61,7 +60,7 @@ def attachment_url_to_path_id(attachment_url: str) -> str:
     # Remove any extra '.' after file extension. These are probably added by the user
     return re.sub('[.]+$', '', path_id_raw, re.M)
 
-def sanitize_name(value: NonBinaryStr) -> str:
+def sanitize_name(value: str) -> str:
     """
     Sanitizes a value to be safe to store in a Linux filesystem, in
     S3, and in a URL.  So unicode is allowed, but not special
@@ -210,7 +209,7 @@ def get_bucket(conn: S3Connection, bucket_name: str) -> Bucket:
     return bucket
 
 def upload_image_to_s3(
-        bucket_name: NonBinaryStr,
+        bucket_name: str,
         file_name: str,
         content_type: Optional[str],
         user_profile: UserProfile,

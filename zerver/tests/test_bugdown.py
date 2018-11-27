@@ -51,7 +51,6 @@ import os
 import ujson
 
 import urllib
-from zerver.lib.str_utils import NonBinaryStr
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
 class FencedBlockPreprocessorTest(TestCase):

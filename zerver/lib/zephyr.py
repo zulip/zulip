@@ -2,9 +2,9 @@ import re
 import traceback
 import DNS
 
-from zerver.lib.str_utils import NonBinaryStr, force_str
+from zerver.lib.str_utils import force_str
 
-def compute_mit_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
+def compute_mit_user_fullname(email: str) -> str:
     try:
         # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
         match_user = re.match(r'^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$', email.lower())

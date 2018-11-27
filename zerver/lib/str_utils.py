@@ -31,9 +31,6 @@ It is recommended to use the utility functions for other string conversions.
 
 from typing import Any, Dict, Mapping, Union, TypeVar
 
-NonBinaryStr = TypeVar('NonBinaryStr', str, str)
-# This is used to represent text or native strings
-
 def force_text(s: Union[str, bytes], encoding: str='utf-8') -> str:
     """converts a string to a text string"""
     if isinstance(s, str):

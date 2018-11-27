@@ -1,7 +1,6 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable, Iterable
 from typing.re import Match
-from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet, F
@@ -2097,7 +2096,7 @@ class UserPresence(models.Model):
         )
 
     @staticmethod
-    def status_from_string(status: NonBinaryStr) -> Optional[int]:
+    def status_from_string(status: str) -> Optional[int]:
         if status == 'active':
             status_val = UserPresence.ACTIVE  # type: Optional[int] # See https://github.com/python/mypy/issues/2611
         elif status == 'idle':
