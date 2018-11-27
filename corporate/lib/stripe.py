@@ -293,6 +293,9 @@ def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
 
 @catch_stripe_errors
 def process_downgrade(user: UserProfile) -> None:
+    # This is no longer implementing our intended policy. Until that is
+    # resolved we should use the Stripe dashboard to downgrade.
+    assert(settings.TEST_SUITE)
     stripe_customer = stripe_get_customer(
         Customer.objects.filter(realm=user.realm).first().stripe_customer_id)
     subscription_balance = preview_invoice_total_for_downgrade(stripe_customer)
