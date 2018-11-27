@@ -115,6 +115,7 @@ if not CASPER_TESTS:
     set_loglevel('django.request', 'ERROR')
     set_loglevel('fakeldap', 'ERROR')
     set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.push_notifications', 'WARNING')
     set_loglevel('zerver.lib.digest', 'ERROR')
     set_loglevel('zerver.lib.email_mirror', 'ERROR')
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
