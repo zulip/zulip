@@ -16,7 +16,6 @@ from django.utils.crypto import get_random_string
 import argparse
 import uuid
 import configparser
-from zerver.lib.str_utils import force_str
 from zerver.lib.utils import generate_random_token
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -111,7 +110,7 @@ def generate_secrets(development=False):
     out = open(OUTPUT_SETTINGS_FILENAME, 'a')
     # Write a newline at the start, in case there was no newline at
     # the end of the file due to human editing.
-    out.write("\n" + force_str("".join(lines)))
+    out.write("\n" + "".join(lines))
     out.close()
 
     print("Generated new secrets in %s." % (OUTPUT_SETTINGS_FILENAME,))

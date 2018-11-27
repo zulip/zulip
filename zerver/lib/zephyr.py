@@ -2,8 +2,6 @@ import re
 import traceback
 import DNS
 
-from zerver.lib.str_utils import force_str
-
 def compute_mit_user_fullname(email: str) -> str:
     try:
         # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
@@ -12,7 +10,7 @@ def compute_mit_user_fullname(email: str) -> str:
             answer = DNS.dnslookup(
                 "%s.passwd.ns.athena.mit.edu" % (match_user.group(1),),
                 DNS.Type.TXT)
-            hesiod_name = force_str(answer[0][0]).split(':')[4].split(',')[0].strip()
+            hesiod_name = answer[0][0].split(':')[4].split(',')[0].strip()
             if hesiod_name != "":
                 return hesiod_name
         elif match_user:

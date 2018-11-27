@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import logging
 import re
@@ -17,7 +17,6 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
-from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
@@ -324,7 +323,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
         subject_header = "(no topic)"
     encoded_subject, encoding = decode_header(subject_header)[0]
     if encoding is None:
-        subject = force_text(encoded_subject)  # encoded_subject has type str when encoding is None
+        subject = cast(str, encoded_subject)  # encoded_subject has type str when encoding is None
     else:
         try:
             subject = encoded_subject.decode(encoding)

@@ -40,7 +40,6 @@ from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
@@ -479,8 +478,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
-        message = force_str(event["message"])
-        mirror_email(email.message_from_string(message),
+        mirror_email(email.message_from_string(event["message"]),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
 
 @assign_queue('test', queue_type="test")

@@ -7,7 +7,6 @@ from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.str_utils import force_str
 from zerver.lib.users import get_api_key
 from zerver.models import UserProfile
 
@@ -48,9 +47,9 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
         api_key = get_api_key(user_profile)
         subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
                                "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
-                               force_str(user),
-                               force_str(api_key),
-                               force_str(base64.b64encode(ccache))])
+                               user,
+                               api_key,
+                               base64.b64encode(ccache).decode("utf-8")])
     except Exception:
         logging.exception("Error updating the user's ccache")
         return json_error(_("We were unable to setup mirroring for you"))
