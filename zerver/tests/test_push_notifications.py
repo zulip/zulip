@@ -370,8 +370,8 @@ class HandlePushNotificationTest(PushNotificationTest):
                            side_effect=self.bounce_request), \
                 mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
                 self.mock_apns() as mock_apns, \
-                mock.patch('logging.info') as mock_info, \
-                mock.patch('logging.warning'):
+                mock.patch('zerver.lib.push_notifications.logger.info') as mock_info, \
+                mock.patch('zerver.lib.push_notifications.logger.warning'):
             apns_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
@@ -435,7 +435,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            side_effect=requests.ConnectionError), \
                 mock.patch('zerver.lib.queue.queue_json_publish',
                            side_effect=retry) as mock_retry, \
-                mock.patch('logging.warning') as mock_warn:
+                mock.patch('zerver.lib.push_notifications.logger.warning') as mock_warn:
             gcm_devices = [
                 (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
@@ -595,7 +595,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.make_stream('public_stream')
         message_id = self.send_stream_message("iago@zulip.com", "public_stream", "test")
         missed_message = {'message_id': message_id}
-        with mock.patch('logging.error') as mock_logger:
+        with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger:
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
                                            "message_id %s and user_id %s" %
@@ -637,7 +637,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            '.send_apple_push_notification') as mock_send_apple, \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_android_push_notification') as mock_send_android, \
-                mock.patch('logging.error') as mock_logger:
+                mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger:
             apn.handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_not_called()
             mock_send_apple.assert_called_with(self.user_profile.id,
@@ -668,7 +668,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_not_configured(self) -> None:
         with mock.patch('zerver.lib.push_notifications.get_apns_client') as mock_get, \
-                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+                mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_get.return_value = None
             self.send()
             mock_logging.debug.assert_called_once_with(
@@ -683,7 +683,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_success(self) -> None:
         with self.mock_apns() as mock_apns, \
-                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+                mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.return_value = 'Success'
             self.send()
             mock_logging.warning.assert_not_called()
@@ -695,7 +695,7 @@ class TestAPNs(PushNotificationTest):
     def test_http_retry(self) -> None:
         import hyper
         with self.mock_apns() as mock_apns, \
-                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+                mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],
                 itertools.repeat('Success'))
@@ -711,7 +711,7 @@ class TestAPNs(PushNotificationTest):
     def test_http_retry_eventually_fails(self) -> None:
         import hyper
         with self.mock_apns() as mock_apns, \
-                mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
+                mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
                 [hyper.http20.exceptions.StreamResetError()],
                 [hyper.http20.exceptions.StreamResetError()],
@@ -1162,7 +1162,7 @@ class GCMTest(PushNotificationTest):
         return data
 
 class GCMNotSetTest(GCMTest):
-    @mock.patch('logging.debug')
+    @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
         apn.gcm = None
         apn.send_android_push_notification_to_user(self.user_profile, {})
@@ -1172,7 +1172,7 @@ class GCMNotSetTest(GCMTest):
 
 class GCMIOErrorTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.gcm.json_request')
-    @mock.patch('logging.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_json_request_raises_ioerror(self, mock_warn: mock.MagicMock,
                                          mock_json_request: mock.MagicMock) -> None:
         mock_json_request.side_effect = IOError('error')
@@ -1180,8 +1180,8 @@ class GCMIOErrorTest(GCMTest):
         mock_warn.assert_called_with('error')
 
 class GCMSuccessTest(GCMTest):
-    @mock.patch('logging.warning')
-    @mock.patch('logging.info')
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
     def test_success(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
                      mock_warning: mock.MagicMock) -> None:
@@ -1198,7 +1198,7 @@ class GCMSuccessTest(GCMTest):
         mock_warning.assert_not_called()
 
 class GCMCanonicalTest(GCMTest):
-    @mock.patch('logging.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
     def test_equal(self, mock_send: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
         res = {}
@@ -1210,7 +1210,7 @@ class GCMCanonicalTest(GCMTest):
         mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
                                              "already matches our ID 1!")
 
-    @mock.patch('logging.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
     def test_pushdevice_not_present(self, mock_send: mock.MagicMock,
                                     mock_warning: mock.MagicMock) -> None:
@@ -1238,7 +1238,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 0)
         self.assertEqual(get_count(u'3333'), 1)
 
-    @mock.patch('logging.info')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
     def test_pushdevice_different(self, mock_send: mock.MagicMock,
                                   mock_info: mock.MagicMock) -> None:
@@ -1265,7 +1265,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'2222'), 1)
 
 class GCMNotRegisteredTest(GCMTest):
-    @mock.patch('logging.info')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
     def test_not_registered(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock) -> None:
         res = {}
@@ -1286,7 +1286,7 @@ class GCMNotRegisteredTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 0)
 
 class GCMFailureTest(GCMTest):
-    @mock.patch('logging.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
     def test_failure(self, mock_send: mock.MagicMock, mock_warn: mock.MagicMock) -> None:
         res = {}
