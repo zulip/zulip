@@ -478,8 +478,6 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
-    # who gets a digest is entirely determined by the enqueue_digest_emails
-    # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
         message = force_str(event["message"])
         mirror_email(email.message_from_string(message),
