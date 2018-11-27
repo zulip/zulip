@@ -637,7 +637,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     user_profile = get_user_profile_by_id(user_profile_id)
     (message, user_message) = access_message(user_profile, missed_message['message_id'])
     if user_message is not None:
-        # If ther user has read the message already, don't push-notify.
+        # If the user has read the message already, don't push-notify.
         #
         # TODO: It feels like this is already handled when things are
         # put in the queue; maybe we should centralize this logic with
