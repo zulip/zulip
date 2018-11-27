@@ -224,3 +224,45 @@ Next, read the following to learn more about developing for Zulip:
 [codeanywhere]: https://codeanywhere.com/
 [img-ca-settings]: ../images/codeanywhere-settings.png
 [img-ca-workspace]: ../images/codeanywhere-workspace.png
+
+## Using an nginx reverse proxy
+
+For some applications (e.g. developing an OAuth2 integration for
+Facebook), you may need your Zulip development to have a valid SSL
+certificate.  While `run-dev.py` doesn't support that, you can do this
+with an `nginx` reverse proxy sitting in front of `run-dev.py.`.
+
+The following instructions assume you have a Zulip Droplet working and
+that the user is `zulipdev`; edit accordingly if the situation is
+different.
+
+1. First, get an SSL certificate; you can use
+    [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
+    by running the following commands as root:
+    ```
+    # apt install -y crudini
+    mkdir -p /var/lib/zulip/certbot-webroot/
+    # if nginx running this will fail and you need to run `service nginx stop`
+    /home/zulipdev/zulip/scripts/setup/setup-certbot \
+      --hostname=hostname.example.com --no-zulip-conf \
+      --email=username@example.com --method=standalone
+    ```
+
+1. Install nginx configuration:
+
+    ```
+    apt install -y nginx-full
+    cp -a /home/zulipdev/zulip/tools/nginx/zulipdev /etc/nginx/sites-available/
+    ln -nsf /etc/nginx/sites-available/zulipdev /etc/nginx/sites-enabled/
+    nginx -t  # Verifies your nginx configuration
+    service nginx reload  # Actually enabled your nginx configuration
+    ```
+
+1. Edit `zproject/dev_settings.py` to set `EXTERNAL_URI_SCHEME =
+   "https://"`, so that URLs served by the development environment
+   will be HTTPS.
+
+1. Start the Zulip development environment with the following command:
+   ```
+   env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev.py --interface=''
+   ```
