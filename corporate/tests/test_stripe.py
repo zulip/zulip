@@ -643,12 +643,6 @@ class StripeTest(ZulipTestCase):
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(realm), initial_count)
 
-    def test_subscribe_customer_to_second_plan(self) -> None:
-        with self.assertRaisesRegex(BillingError, 'subscribing with existing subscription'):
-            do_subscribe_customer_to_plan(self.example_user("iago"),
-                                          mock_customer_with_subscription(),
-                                          self.stripe_plan_id, self.quantity, 0, True)
-
     def test_sign_string(self) -> None:
         string = "abc"
         signed_string, salt = sign_string(string)
