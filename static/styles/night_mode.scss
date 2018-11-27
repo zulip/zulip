@@ -50,10 +50,13 @@ body.night-mode {
         color: inherit;
     }
 
+    .message_reaction_count {
+        color: hsl(230, 70%, 69%);
+    }
+
     .dark_background a,
     a.dark_background:hover,
     .dark_background,
-    .message_reactions .message_reaction_count,
     .message_reactions .reaction_button i,
     .message_reactions:hover .message_reaction + .reaction_button {
         color: inherit !important;
@@ -125,10 +128,13 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: transparent;
     }
 
+    .message_reactions .message_reaction.reacted {
+        background-color: hsl(226, 26%, 35%);
+    }
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .message_reactions .message_reaction.reacted,
     .message_reactions:hover .message_reaction + .reaction_button {
         background-color: hsla(0, 0%, 0%, 0.5);
         border-color: hsla(0, 0%, 0%, 0.9);
