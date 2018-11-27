@@ -4,8 +4,6 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import zerver.lib.str_utils
-
 class Migration(migrations.Migration):
 
     dependencies = [

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import migrations, models
 
-import zerver.lib.str_utils
-
 class Migration(migrations.Migration):
 
     dependencies = [

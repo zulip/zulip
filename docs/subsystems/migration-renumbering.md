@@ -150,7 +150,7 @@ diff --git a/zerver/migrations/0026_add_topic_table.py b/zerver/migrations/0026_
 index 2c8c07a..43351eb 100644
 --- a/zerver/migrations/0026_add_topic_table.py
 +++ b/zerver/migrations/0026_add_topic_table.py
-@@ -8,7 +8,7 @@ import zerver.lib.str_utils
+@@ -8,7 +8,7 @@ from django.db import migrations, models
  class Migration(migrations.Migration):
 
      dependencies = [
@@ -207,7 +207,7 @@ diff --git a/zerver/migrations/0027_topics_backfill.py b/zerver/migrations/0027_
 index 766b075..05ea2bb 100644
 --- a/zerver/migrations/0027_topics_backfill.py
 +++ b/zerver/migrations/0027_topics_backfill.py
-@@ -8,7 +8,7 @@ import zerver.lib.str_utils
+@@ -8,7 +8,7 @@ from django.db import migrations, models
  class Migration(migrations.Migration):
 
      dependencies = [
