@@ -51,12 +51,6 @@ def mock_create_subscription(*args: Any, **kwargs: Any) -> stripe.Subscription:
 def mock_customer_with_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
     return stripe.util.convert_to_stripe_object(fixture_data["customer_with_subscription"])
 
-def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    customer = mock_customer_with_subscription()
-    customer.subscriptions.data[0].status = "canceled"
-    customer.subscriptions.data[0].canceled_at = 1532602160
-    return customer
-
 def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:  # nocoverage
     customer = mock_customer_with_subscription()
     customer.subscriptions.data[0].canceled_at = 1532602243
@@ -648,12 +642,6 @@ class StripeTest(ZulipTestCase):
         # Test that inactive users aren't counted
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(realm), initial_count)
-
-    def test_extract_current_subscription(self) -> None:
-        self.assertIsNone(extract_current_subscription(mock_create_customer()))
-        subscription = extract_current_subscription(mock_customer_with_subscription())
-        self.assertEqual(subscription["id"][:4], "sub_")
-        self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     def test_subscribe_customer_to_second_plan(self) -> None:
         with self.assertRaisesRegex(BillingError, 'subscribing with existing subscription'):

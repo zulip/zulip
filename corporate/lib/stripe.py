@@ -139,7 +139,6 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
     for stripe_subscription in stripe_customer.subscriptions:
         if stripe_subscription.status != "canceled":
             return stripe_subscription
-    return None
 
 def estimate_customer_arr(stripe_customer: stripe.Customer) -> int:  # nocoverage
     stripe_subscription = extract_current_subscription(stripe_customer)
