@@ -114,8 +114,8 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 
     client = get_apns_client()  # type: APNsClient
     if client is None:
-        logging.warning("APNs: Dropping a notification because nothing configured.  "
-                        "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+        logging.debug("APNs: Dropping a notification because nothing configured.  "
+                      "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
         return
 
     if remote:
@@ -186,8 +186,8 @@ def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
                                    remote: bool=False) -> None:
     if not gcm:
-        logging.warning("Skipping sending a GCM push notification since "
-                        "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
+        logging.debug("Skipping sending a GCM push notification since "
+                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
     reg_ids = [device.token for device in devices]
 
@@ -428,6 +428,12 @@ def push_notifications_enabled() -> bool:
         # (i.e., we are the bouncer, presumably.)  Again, assume it actually works.
         return True
     return False
+
+def initialize_push_notifications() -> None:
+    if not push_notifications_enabled():
+        logging.warning("Mobile push notifications are not configured.\n  "
+                        "See https://zulip.readthedocs.io/en/latest/"
+                        "production/mobile-push-notifications.html")
 
 def get_gcm_alert(message: Message) -> str:
     """

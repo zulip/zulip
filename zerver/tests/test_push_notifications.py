@@ -671,10 +671,15 @@ class TestAPNs(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.logging') as mock_logging:
             mock_get.return_value = None
             self.send()
-            mock_logging.warning.assert_called_once_with(
+            mock_logging.debug.assert_called_once_with(
                 "APNs: Dropping a notification because nothing configured.  "
                 "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
-            mock_logging.info.assert_not_called()
+            mock_logging.warning.assert_not_called()
+            from zerver.lib.push_notifications import initialize_push_notifications
+            initialize_push_notifications()
+            mock_logging.warning.assert_called_once_with(
+                "Mobile push notifications are not configured.\n  "
+                "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html")
 
     def test_success(self) -> None:
         with self.mock_apns() as mock_apns, \
@@ -1157,11 +1162,11 @@ class GCMTest(PushNotificationTest):
         return data
 
 class GCMNotSetTest(GCMTest):
-    @mock.patch('logging.warning')
-    def test_gcm_is_none(self, mock_warning: mock.MagicMock) -> None:
+    @mock.patch('logging.debug')
+    def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
         apn.gcm = None
         apn.send_android_push_notification_to_user(self.user_profile, {})
-        mock_warning.assert_called_with(
+        mock_debug.assert_called_with(
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
             "and ANDROID_GCM_API_KEY are both unset")
 
