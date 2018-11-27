@@ -471,6 +471,8 @@ def write_avatar_png(avatar_folder: str,
         s3_path=image_path,
         realm_id=realm_id,
         user_profile_id=user_id,
+        # We only write the .original file; ask the importer to do the thumbnailing.
+        importer_should_thumbnail=True,
     )
 
     return metadata
