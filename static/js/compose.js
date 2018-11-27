@@ -248,6 +248,7 @@ exports.send_message = function send_message(request) {
 
     var local_id;
     var locally_echoed;
+    var not_in_view_notification = false;
 
     local_id = echo.try_deliver_locally(request);
     if (local_id) {
@@ -256,6 +257,8 @@ exports.send_message = function send_message(request) {
         // approximation of the id we'll get from the server
         // in terms of sorting messages.
         locally_echoed = true;
+        // Once locally delivered, we can check for if the echo is in view or not
+        not_in_view_notification = notifications.notify_local_echo_not_in_view(local_id);
     } else {
         // We are not rendering this message locally, but we
         // track the message's life cycle with an id like
@@ -275,6 +278,13 @@ exports.send_message = function send_message(request) {
 
     function success(data) {
         exports.send_message_success(local_id, data.id, locally_echoed);
+        // If 'Sending...' notification is active
+        if (not_in_view_notification) {
+            notifications.notify_above_composebox("Your message was sent!", "compose_notification_narrow_by_topic", local_id, "");
+            setTimeout(function () {
+                $('#out-of-view-notification').hide();
+            }, 3000);
+        }
     }
 
     function error(response) {

@@ -513,17 +513,31 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
-exports.get_local_echo_in_view_reason = function (message) {
-    var echo_offset_y = $('[zid=' + Math.round(message.local_id) + ']').offset().top;
+exports.check_local_echo_in_view = function (local_id) {
+    var echo_offset_y = $('[zid=' + Math.round(local_id) + ']').offset().top;
     var compose_box_y = $('#compose-container').offset().top;
 
     // When the local_echo is not in view, the top offset is 0
     // When the top offset is positive and less than compose box top
     // it can be considered to be in view
     if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
-        return "Your message was sent!";
+        return true;
     }
-    return null;
+    return false;
+};
+
+exports.notify_local_echo_not_in_view = function (local_id) {
+    // Once the message is inserted, we can check if the local_echo is in view
+    // Before that, we need to check if there were no other local mixes
+    // For that we can simply check if there were any notifications while inserting
+    if ($('#out-of-view-notification').css('display') === 'none') {
+        if (!exports.check_local_echo_in_view(local_id)) {
+            exports.notify_above_composebox("Sending...", "compose_notification_narrow_by_topic", local_id, "");
+            // If notified
+            return true;
+        }
+    }
+    return false;
 };
 
 exports.get_local_notify_mix_reason = function (message) {
