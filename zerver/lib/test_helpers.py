@@ -61,7 +61,6 @@ import time
 import ujson
 import unittest
 import urllib
-from zerver.lib.str_utils import NonBinaryStr
 from moto import mock_s3_deprecated
 
 import fakeldap
@@ -139,8 +138,8 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     queries = []  # type: List[Dict[str, Union[str, bytes]]]
 
     def wrapper_execute(self: TimeTrackingCursor,
-                        action: Callable[[NonBinaryStr, Iterable[Any]], None],
-                        sql: NonBinaryStr,
+                        action: Callable[[str, Iterable[Any]], None],
+                        sql: str,
                         params: Iterable[Any]=()) -> None:
         cache = get_cache_backend(None)
         cache.clear()
@@ -159,12 +158,12 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     old_execute = TimeTrackingCursor.execute
     old_executemany = TimeTrackingCursor.executemany
 
-    def cursor_execute(self: TimeTrackingCursor, sql: NonBinaryStr,
+    def cursor_execute(self: TimeTrackingCursor, sql: str,
                        params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
-    def cursor_executemany(self: TimeTrackingCursor, sql: NonBinaryStr,
+    def cursor_executemany(self: TimeTrackingCursor, sql: str,
                            params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
