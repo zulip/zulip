@@ -671,7 +671,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     apns_payload = get_apns_payload(user_profile, message)
     gcm_payload = get_gcm_payload(user_profile, message)
-    logger.info("Sending push notification to user %s" % (user_profile_id,))
+    logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
         try:
