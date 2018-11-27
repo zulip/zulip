@@ -431,7 +431,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket_name = settings.S3_AVATAR_BUCKET
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, bucket_name)
-        key = bucket.get_key(file_path)
+        key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)  # type: ignore # image_data is `bytes`, boto subs are wrong
