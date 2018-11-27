@@ -7,6 +7,9 @@
           data-name="{{name}}"
           title="{{name}} {{type_desc}}">
             {{name}}
+            {{#if is_current_user}}
+            <span class="you-indicator">{{t "(you)" }}</span>
+            {{/if}}
         </a>
         <span class="count"><span class="value">{{#if num_unread}}{{num_unread}}{{/if}}</span></span>
     </div>
