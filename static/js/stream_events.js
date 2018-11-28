@@ -4,7 +4,7 @@ var exports = {};
 
 function get_color() {
     var used_colors = stream_data.get_colors();
-    var color = stream_color.pick_color(used_colors);
+    var color = color_data.pick_color(used_colors);
     return color;
 }
 

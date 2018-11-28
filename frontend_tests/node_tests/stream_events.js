@@ -219,7 +219,7 @@ run_test('marked_subscribed', () => {
     // Test assigning generated color
     with_overrides(function (override) {
         frontend.color = undefined;
-        override('stream_color.pick_color', function () {
+        override('color_data.pick_color', function () {
             return 'green';
         });
         var warnings = 0;

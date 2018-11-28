@@ -94,6 +94,7 @@ import "js/transmit.js";
 import "js/zcommand.js";
 import "js/compose.js";
 import "js/upload.js";
+import "js/color_data.js";
 import "js/stream_color.js";
 import "js/stream_data.js";
 import "js/topic_data.js";
