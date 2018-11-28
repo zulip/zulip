@@ -5,6 +5,7 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
+import configparser
 import hashlib
 import subprocess
 import os
@@ -44,6 +45,13 @@ args = parser.parse_args()
 
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+try:
+    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
+except (configparser.NoSectionError, configparser.NoOptionError):
+    tornado_processes = 1
 
 # Handle issues around upstart on Ubuntu Xenial
 subprocess.check_call(["./scripts/lib/check-upstart"])
@@ -139,7 +147,8 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
+core_server_services = ["zulip-django", "zulip-senders:*",
+                        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
 worker_services = ["zulip-workers:*"]
 # Stop and start thumbor service only if thumbor is installed.
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):

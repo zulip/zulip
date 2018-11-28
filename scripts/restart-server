@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import configparser
 import os
 import sys
 import pwd
@@ -36,12 +37,23 @@ if os.readlink(current_symlink) != deploy_path:
     subprocess.check_call(["ln", '-nsf', os.readlink(current_symlink), last_symlink])
     subprocess.check_call(["ln", '-nsf', deploy_path, current_symlink])
 
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+
+try:
+    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
+except (configparser.NoSectionError, configparser.NoOptionError):
+    tornado_processes = 1
+
 # We restart just the zulip-tornado service early, in order to
 # minimize downtime of the tornado service caused by too many Python
 # processes restarting at the same time resulting in it receiving
 # insufficient priority.  This is important, because Tornado is the
 # main source of user-visible downtime when we restart a Zulip server.
-subprocess.check_call(["supervisorctl", "restart", "zulip-tornado"])
+if tornado_processes > 1:
+    subprocess.check_call(["supervisorctl", "restart", "zulip-tornado:*"])
+else:
+    subprocess.check_call(["supervisorctl", "restart", "zulip-tornado", "zulip-tornado:*"])
 
 # Restart the uWSGI and related processes via supervisorctl.
 logging.info("Stopping workers")
