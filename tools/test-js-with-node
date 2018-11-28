@@ -31,6 +31,7 @@ enforce_fully_covered = {
     'static/js/buddy_data.js',
     'static/js/buddy_list.js',
     'static/js/channel.js',
+    'static/js/color_data.js',
     'static/js/colorspace.js',
     'static/js/common.js',
     'static/js/components.js',

@@ -464,8 +464,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     exports.set_subscribers(sub, subscriber_user_ids);
 
     if (!sub.color) {
-        var used_colors = exports.get_colors();
-        sub.color = color_data.pick_color(used_colors);
+        sub.color = color_data.pick_color();
     }
 
     exports.update_calculated_fields(sub);
@@ -552,6 +551,8 @@ exports.get_streams_for_admin = function () {
 };
 
 exports.initialize_from_page_params = function () {
+    color_data.claim_colors(page_params.subscriptions);
+
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
             var stream_name = sub.name;

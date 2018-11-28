@@ -1,13 +1,44 @@
 zrequire('color_data');
 
 run_test('pick_color', () => {
-    var used_colors = ["#76ce90", "#fae589"];
+    color_data.colors = [
+        'blue',
+        'orange',
+        'red',
+        'yellow',
+    ];
 
-    // Colors are assigned randomly, so this test is a little vague and brittle,
-    // but we can verify a few things, like not reusing colors and making sure
-    // the color has length 7.
-    var color = color_data.pick_color(used_colors);
-    assert.notEqual(color, "#76ce90");
-    assert.notEqual(color, "#fae589");
-    assert.equal(color.length, 7);
+    color_data.reset();
+
+    color_data.claim_colors([
+        { color: 'orange' },
+        { foo: 'whatever' },
+        { color: 'yellow' },
+        { color: 'bogus' },
+    ]);
+
+    var expected_colors = [
+        'blue',
+        'red',
+        // ok, now we'll cycle through all colors
+        'blue',
+        'orange',
+        'red',
+        'yellow',
+        'blue',
+        'orange',
+        'red',
+        'yellow',
+        'blue',
+        'orange',
+        'red',
+        'yellow',
+    ];
+
+    _.each(expected_colors, (expected_color) => {
+        assert.equal(color_data.pick_color(), expected_color);
+    });
+
+    color_data.claim_color('blue');
+    assert.equal(color_data.pick_color(), 'orange');
 });
