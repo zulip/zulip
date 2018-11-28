@@ -37,7 +37,12 @@
                         {{/include_sender}}
                     </span>
                     <span class="alert-msg pull-right"></span>
-                    <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
+                    <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
+                        {{#unless include_sender}}
+                        <span class="copy-paste-text">&nbsp;</span>
+                        {{/unless}}
+                        {{timestr}}
+                    </span>
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
                         <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
