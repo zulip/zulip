@@ -37,25 +37,7 @@ import corporate.urls
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 GENERATE_STRIPE_FIXTURES = False
-
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
-fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
-fixture_data = ujson.load(fixture_data_file)
-
-def mock_create_customer(*args: Any, **kwargs: Any) -> stripe.Customer:
-    return stripe.util.convert_to_stripe_object(fixture_data["create_customer"])
-
-def mock_create_subscription(*args: Any, **kwargs: Any) -> stripe.Subscription:
-    return stripe.util.convert_to_stripe_object(fixture_data["create_subscription"])
-
-def mock_customer_with_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    return stripe.util.convert_to_stripe_object(fixture_data["customer_with_subscription"])
-
-def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:  # nocoverage
-    customer = mock_customer_with_subscription()
-    customer.subscriptions.data[0].canceled_at = 1532602243
-    customer.subscriptions.data[0].cancel_at_period_end = True
-    return customer
 
 # TODO: check that this creates a token similar to what is created by our
 # actual Stripe Checkout flows
@@ -864,12 +846,10 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    @patch("stripe.Customer.create", side_effect=mock_create_customer)
-    @patch("stripe.Subscription.create", side_effect=mock_create_subscription)
-    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_billing_quantity_changes_end_to_end(
-            self, mock_customer_with_subscription: Mock, mock_create_subscription: Mock,
-            mock_create_customer: Mock) -> None:
+    @mock_stripe("Subscription.create", "Customer.create", "Customer.retrieve", "Token.create")
+    def test_billing_quantity_changes_end_to_end(self, mock4: Mock, mock3: Mock, mock2: Mock,
+                                                 mock1: Mock) -> None:
+        # A full end to end check would check the InvoiceItems, but this test is partway there
         self.login(self.example_email("hamlet"))
         processor = BillingProcessor.objects.create(
             log_row=RealmAuditLog.objects.order_by('id').first(), state=BillingProcessor.DONE)
@@ -889,7 +869,7 @@ class StripeTest(ZulipTestCase):
         new_seat_count = 123
         # change the seat count while the user is going through the upgrade flow
         with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
-            self.client_post("/upgrade/", {'stripeToken': self.token,
+            self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
                                            'signed_seat_count': self.signed_seat_count,
                                            'salt': self.salt,
                                            'plan': Plan.CLOUD_ANNUAL,
