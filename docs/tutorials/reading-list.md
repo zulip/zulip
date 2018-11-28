@@ -146,10 +146,6 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 [Git and GitHub guide]: ../git/index.html
 
-*Article* - [Git tips][]
-
-[Git tips]: http://blog.sidhant.me/os/python/git/projects/2017/01/07/Zulip-and-git.html
-
 ## Computer Science/Algorithms
 
 *Blog* - [GeeksforGeeks][]
