@@ -89,9 +89,12 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 if object_['metadata']:  # nocoverage
                     for key, value in object_['metadata'].items():
                         body += '\n{}: {}'.format(key, value)
-        if resource == 'discount':  # nocoverage
-            body = default_body() + '. ({coupon})'.format(
-                coupon=linkified_id(object_['coupon'], lower=True))
+        if resource == 'discount':
+            body = 'Discount {verbed} ([{coupon_name}]({coupon_url})).'.format(
+                verbed=event.replace('_', ' '),
+                coupon_name=object_['coupon']['name'],
+                coupon_url='https://dashboard.stripe.com/{}/{}'.format('coupons', object_['coupon']['id'])
+            )
         if resource == 'source':  # nocoverage
             body = default_body()
         if resource == 'subscription':
