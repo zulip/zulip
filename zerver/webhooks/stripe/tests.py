@@ -76,6 +76,12 @@ Quantity: 1"""
                                               expected_topic, expected_message,
                                               content_type="application/x-www-form-urlencoded")
 
+    def test_customer_discount_created(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"Discount created ([25.5% off](https://dashboard.stripe.com/coupons/25_00000000000000))."
+        self.send_and_test_stream_message('customer_discount_created', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
     def test_invoice_payment_failed(self) -> None:
         expected_topic = u"cus_00000000000000"
         expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
