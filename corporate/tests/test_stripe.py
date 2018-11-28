@@ -602,8 +602,7 @@ class StripeTest(ZulipTestCase):
         for substring in ['Your plan will renew on', 'Billed by invoice']:
             self.assert_in_response(substring, response)
 
-    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_redirect_for_billing_home(self, mock_customer_with_subscription: Mock) -> None:
+    def test_redirect_for_billing_home(self) -> None:
         user = self.example_user("iago")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -611,21 +610,13 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
-        # Customer, but no billing relationship
-        customer = Customer.objects.create(
+        # Customer, but no billing relationship; check that we are still redirected to /upgrade
+        Customer.objects.create(
             realm=user.realm, stripe_customer_id=self.stripe_customer_id,
             has_billing_relationship=False)
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
-
-        customer.has_billing_relationship = True
-        customer.save()
-
-        with patch("corporate.views.upcoming_invoice_total", return_value=0):
-            response = self.client_get("/billing/")
-        self.assert_not_in_success_response(['Pay annually'], response)
-        self.assert_in_response('Your plan will renew on', response)
 
     def test_get_seat_count(self) -> None:
         realm = get_realm("zulip")
