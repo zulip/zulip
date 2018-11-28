@@ -27,8 +27,6 @@ function make_people() {
         is_bot: true,
     };
     people.add_in_realm(bot);
-
-    people.initialize_current_user(99999);
 }
 
 make_people();
