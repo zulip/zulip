@@ -8,6 +8,8 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 
+set_global('color_data', {});
+
 zrequire('util');
 zrequire('hash_util');
 zrequire('topic_data');
@@ -609,7 +611,7 @@ run_test('create_sub', () => {
         color: '#76ce90',
     };
 
-    global.stream_color.pick_color = function () {
+    color_data.pick_color = function () {
         return '#bd86e5';
     };
 
