@@ -23,7 +23,9 @@
                                         {{{ status_message }}}
                                     </span>
                                     {{#if_and last_edit_timestr include_sender}}
-                                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                                        ({{t "EDITED" }})
+                                    </div>
                                     {{/if_and}}
                                 </span>
                             {{else}}
@@ -38,7 +40,9 @@
                     <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
-                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                            ({{t "EDITED" }})
+                        </div>
                         {{/unless}}
                     {{/if_and}}
                     <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
@@ -71,7 +75,9 @@
                 <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
                 {{#if last_edit_timestr}}
                     {{#unless include_sender}}
-                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                        ({{t "EDITED" }})
+                    </div>
                     {{/unless}}
                 {{/if}}
                 <div class="message_edit">
