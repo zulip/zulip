@@ -832,33 +832,46 @@ class StripeTest(ZulipTestCase):
         stripe_subscription = stripe.Subscription.retrieve(stripe_subscription.id)
         self.assertEqual(stripe_subscription.status, "canceled")
 
-    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_replace_payment_source(self, mock_retrieve_customer: Mock) -> None:
-        user = self.example_user("iago")
+    @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save",
+                 "Subscription.create", "Token.create")
+    def test_replace_payment_source(self, mock5: Mock, mock4: Mock, mock3: Mock,
+                                    mock2: Mock, mock1: Mock) -> None:
+        user = self.example_user("hamlet")
         self.login(user.email)
-        Customer.objects.create(realm=user.realm, stripe_customer_id=self.stripe_customer_id)
-        with patch.object(stripe.Customer, 'save', autospec=True,
-                          side_effect=lambda customer: self.assertEqual(customer.source, "new_token")):
-            result = self.client_post("/json/billing/sources/change",
-                                      {'stripe_token': ujson.dumps("new_token")})
-        self.assert_json_success(result)
-        log_entry = RealmAuditLog.objects.order_by('-id').first()
-        self.assertEqual(user, log_entry.acting_user)
-        self.assertEqual(RealmAuditLog.STRIPE_CARD_CHANGED, log_entry.event_type)
+        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
+                                       'plan': Plan.CLOUD_ANNUAL,
+                                       'billing_modality': 'charge_automatically'})
+        # Try replacing with a valid card
+        stripe_token = stripe_create_token(card_number='5555555555554444').id
+        response = self.client_post("/json/billing/sources/change",
+                                    {'stripe_token': ujson.dumps(stripe_token)})
+        self.assert_json_success(response)
+        number_of_sources = 0
+        for stripe_source in stripe_get_customer(Customer.objects.first().stripe_customer_id).sources:
+            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4444')
+            number_of_sources += 1
+        self.assertEqual(number_of_sources, 1)
+        audit_log_entry = RealmAuditLog.objects.order_by('-id') \
+                                               .values_list('acting_user', 'event_type').first()
+        self.assertEqual(audit_log_entry, (user.id, RealmAuditLog.STRIPE_CARD_CHANGED))
+        RealmAuditLog.objects.filter(acting_user=user).delete()
 
-    @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
-    def test_replace_payment_source_with_stripe_error(self, mock_retrieve_customer: Mock) -> None:
-        user = self.example_user("iago")
-        self.login(user.email)
-        Customer.objects.create(realm=user.realm, stripe_customer_id=self.stripe_customer_id)
-        with patch.object(stripe.Customer, 'save', autospec=True,
-                          side_effect=stripe.error.StripeError('message', json_body={})):
+        # Try replacing with an invalid card
+        stripe_token = stripe_create_token(card_number='4000000000009987').id
+        with patch("corporate.lib.stripe.billing_logger.error") as mock_billing_logger:
             response = self.client_post("/json/billing/sources/change",
-                                        {'stripe_token': ujson.dumps("new_token")})
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'other stripe error')
-        self.assert_json_error_contains(response, 'Something went wrong. Please contact')
-        self.assertFalse(RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
+                                        {'stripe_token': ujson.dumps(stripe_token)})
+        mock_billing_logger.assert_called()
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'card error')
+        self.assert_json_error_contains(response, 'Your card was declined')
+        number_of_sources = 0
+        for stripe_source in stripe_get_customer(Customer.objects.first().stripe_customer_id).sources:
+            self.assertEqual(cast(stripe.Card, stripe_source).last4, '4444')
+            number_of_sources += 1
+        self.assertEqual(number_of_sources, 1)
+        self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
     @patch("stripe.Customer.create", side_effect=mock_create_customer)
     @patch("stripe.Subscription.create", side_effect=mock_create_subscription)

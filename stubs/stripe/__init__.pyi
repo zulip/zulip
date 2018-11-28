@@ -12,6 +12,7 @@ class Customer:
     created: int
     id: str
     source: str
+    sources: List[Union[Card, Source]]
     subscriptions: SubscriptionListObject
     coupon: str
     account_balance: int
