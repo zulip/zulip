@@ -12,11 +12,15 @@ Zulip has three major documentation systems:
   might look at when deciding whether to use Zulip.  We don't expect
   to ever have more than about 10 pages written using this system.
 
-* General user documentation: Our scalable system for documenting
+* User-facing documentation: Our scalable system for documenting
   Zulip's huge collection of specific features without a lot of
-  overhead or duplicated code/syntax, written in Markdown.  We expect
-  to eventually have around 100 pages written using this system.  The
-  target audience for this system is individual Zulip users.
+  overhead or duplicated code/syntax, written in Markdown.  We have
+  several hundred pages written using this system.  There are 3
+  branches of this documentation: user documentation (with a target
+  audience of individual Zulip users), integrations documentation
+  (with an audience of IT folks setting up integrations), and API
+  documentaiton (with an audience of developers writing code to extend
+  Zulip).
 
 These three systems are documented in detail.
 
@@ -75,7 +79,28 @@ unless there's a good reason, but we don't intend to migrate them,
 either, since this system gives us the flexibility to express these
 important elements of the product clearly.
 
-## General user documentation
+## User facing documentation
 
-To learn more about Zulip's general user documentation, visit our guide
-on writing user documentation [here](user-docs.html).
+All of these systems use a common Markdown-based framework with
+various extensions for macros and variable interpolation,
+(`render_markdown_path` in the code), designed to make it convenient
+to do the things one does a lot in each type of documentation.
+
+### General user documentation
+
+To learn more about Zulip's general user documentation,
+[visit it on zulipchat.com](https://zulipchat.com/help/) or
+[read our guide on writing user documentation](user-docs.html).
+
+### Integrations documentation
+
+To learn more about Zulip's integrations documentation,
+[visit it on zulipchat.com](https://zulipchat.com/integrations/) or
+[read our guide on writing user documentation](integration-docs.html).
+
+### API documentation
+
+To learn more about Zulip's API documentation,
+[visit it on zulipchat.com](https://zulipchat.com/api/) or
+[read our tutorial on writing user documentation](../tutorials/documenting-api-endpoints.html).
+
