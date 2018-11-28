@@ -189,16 +189,8 @@ class StripeTest(ZulipTestCase):
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
 
-        # legacy
         self.token = 'token'
-        # The values below should be copied from stripe_fixtures.json
-        self.stripe_customer_id = 'cus_D7OT2jf5YAtZQL'
-        self.customer_created = 1529990750
-        self.stripe_coupon_id = Coupon.objects.get(percent_off=85).stripe_coupon_id
-        self.stripe_plan_id = 'plan_Do3xCvbzO89OsR'
-        self.subscription_created = 1529990751
         self.quantity = 8
-
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
@@ -594,8 +586,7 @@ class StripeTest(ZulipTestCase):
 
         # Customer, but no billing relationship; check that we are still redirected to /upgrade
         Customer.objects.create(
-            realm=user.realm, stripe_customer_id=self.stripe_customer_id,
-            has_billing_relationship=False)
+            realm=user.realm, stripe_customer_id='cus_123', has_billing_relationship=False)
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
