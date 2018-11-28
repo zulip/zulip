@@ -31,11 +31,6 @@ var fade_config = {
 };
 
 function level(user_id) {
-    if (people.is_my_user_id(user_id)) {
-        // Always put current user at the top.
-        return 0;
-    }
-
     var status = presence.get_status(user_id);
 
     switch (status) {
