@@ -8,8 +8,7 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 
-set_global('color_data', {});
-
+zrequire('color_data');
 zrequire('util');
 zrequire('hash_util');
 zrequire('topic_data');
