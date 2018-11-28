@@ -1,6 +1,6 @@
-ZULIP_VERSION = "1.9.0+git"
+ZULIP_VERSION = "1.9.1+git"
 LATEST_MAJOR_VERSION = "1.9"
-LATEST_RELEASE_VERSION = "1.9.0"
+LATEST_RELEASE_VERSION = "1.9.1"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2018/11/07/zulip-1-9-released/"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
