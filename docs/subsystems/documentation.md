@@ -104,3 +104,36 @@ To learn more about Zulip's API documentation,
 [visit it on zulipchat.com](https://zulipchat.com/api/) or
 [read our tutorial on writing user documentation](../tutorials/documenting-api-endpoints.html).
 
+## Automated testing
+
+Zulip has several automated test suites that we run in CI and
+recommend running locally when making significant edits:
+
+* `tools/lint` catches a number of common mistakes, and we highly
+recommend
+[using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
+See the [main linter doc](../testing/linters.html) for more details.
+
+* The ReadTheDocs docs are built and the links tested by
+`tools/test-documentation`, which runs `build-docs` and then checks
+all the links.
+
+There's an exclude list for the link testing at this horrible path:
+`tools/documentation_crawler/documentation_crawler/spiders/common/spiders.py`,
+which is relevant for flaky links.
+
+* The API docs are tested by `tools/test-api`, which does some basic
+payload verification.  Note that this test does not check for broken
+links (those are checked by `test-help-documentation`).
+
+* `tools/test-help-documentation` checks `/help/`, `/api/`,
+  `/integrations/`, and the Core website ("portico") documentation for
+  broken links.  Note that the "portico" documentation check has a
+  manually maintained whitelist of pages, so if you add a new page to
+  this site, you will need to edit `PorticoDocumentationSpider` to add it.
+
+* `tools/test-backend test_docs.py` tests various internal details of
+  the variable substitution logic, as well as rendering.  It's
+  essential when editing the documentation framework, but not
+  something you'll usually need to interact with when editing
+  documentation.
