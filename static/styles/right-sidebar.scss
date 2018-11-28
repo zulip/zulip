@@ -132,8 +132,7 @@
 .user-presence-link {
     width: calc(100% - 24px);
     .you-indicator {
-        font-weight: 300;
-        font-style: italic;
+        opacity: 0.5;
     }
 }
 
