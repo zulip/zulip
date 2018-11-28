@@ -1877,21 +1877,21 @@ def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     }
     return dct
 
-def get_possible_mentions_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNameInfo]:
-    if not full_names:
+def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> Dict[str, FullNameInfo]:
+    if not mention_texts:
         return dict()
 
     # Remove the trailing part of the `user|id` mention syntax.
     name_re = r'(?P<full_name>.+)\|\d+$'
-    for full_name in full_names.copy():
-        name_syntax_match = re.match(name_re, full_name)
+    for mention_text in mention_texts.copy():
+        name_syntax_match = re.match(name_re, mention_text)
         if name_syntax_match:
-            full_names.remove(full_name)
-            full_names.add(name_syntax_match.group("full_name"))
+            mention_texts.remove(mention_text)
+            mention_texts.add(name_syntax_match.group("full_name"))
 
     q_list = {
-        Q(full_name__iexact=full_name)
-        for full_name in full_names
+        Q(full_name__iexact=mention_text)
+        for mention_text in mention_texts
     }
 
     rows = UserProfile.objects.filter(
@@ -1915,8 +1915,8 @@ def get_possible_mentions_info(realm_id: int, full_names: Set[str]) -> Dict[str,
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
-        full_names = possible_mentions(content)
-        self.full_name_info = get_possible_mentions_info(realm_id, full_names)
+        mention_texts = possible_mentions(content)
+        self.full_name_info = get_possible_mentions_info(realm_id, mention_texts)
         self.user_id_info = {
             row['id']: row
             for row in self.full_name_info.values()
