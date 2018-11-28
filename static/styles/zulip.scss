@@ -628,14 +628,6 @@ td.pointer {
     @include prefixed-user-select(none);
 }
 
-.include-sender .message_edit_notice::before {
-    content: "(";
-}
-
-.include-sender .message_edit_notice::after {
-    content: ")";
-}
-
 .include-sender .message_time {
     top: -4px;
 }
