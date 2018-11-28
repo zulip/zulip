@@ -38,6 +38,9 @@ $(function () {
         unhighlight: highlight('success'),
     });
 
+    //this retains the state of password strength bar in case when validation fails
+    common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
+
     password_field.on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
