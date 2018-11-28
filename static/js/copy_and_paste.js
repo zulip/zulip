@@ -141,8 +141,23 @@ function copy_handler() {
     $('body').append(div);
     selection.selectAllChildren(div[0]);
 
-    // After the copy has happened, delete the div and
-    // change the selection back to the original selection
+    /*
+    The techniques we use in this code date back to
+    2013 and may be obsolete today (and may not have
+    been even the best workaround back then).
+
+    https://github.com/zulip/zulip/commit/fc0b7c00f16316a554349f0ad58c6517ebdd7ac4
+
+    The idea is that we build a temp div, return from
+    this function, let jQuery process the selection,
+    then restore the selection on a zero-second timer
+    back to the original selection.
+
+    Do not be afraid to change this code if you understand
+    how modern browsers deal with copy/paste.  Just test
+    your changes carefully.
+    */
+
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();

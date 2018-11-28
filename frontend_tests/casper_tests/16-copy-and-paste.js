@@ -63,6 +63,11 @@ function copy_messages(start_message, end_message) {
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(selectedRange);
 
+        // Remove existing copy/paste divs, which may linger from the previous
+        // example.  (The code clears these out with a zero-second timeout, which
+        // is probably sufficient for human users, but which causes problems here.)
+        $('#copytempdiv').remove();
+
         // emulate copy event
         var event = document.createEvent('Event');
         event.initEvent('copy', true, true);
