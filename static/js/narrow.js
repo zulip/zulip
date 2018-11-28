@@ -752,6 +752,9 @@ function pick_empty_narrow_banner() {
         }
         if (first_operand.indexOf(',') === -1) {
             // You have no private messages with this person
+            if (people.is_current_user(first_operand)) {
+                return $("#empty_narrow_self_private_message");
+            }
             return $("#empty_narrow_private_message");
         }
         return $("#empty_narrow_multi_private_message");
