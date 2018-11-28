@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-07 15:19+0000\n"
+"POT-Creation-Date: 2018-11-28 20:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1393,9 +1393,10 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:29
 #: templates/zerver/emails/compiled/confirm_registration.html:27
-#: templates/zerver/emails/compiled/followup_day1.html:56
+#: templates/zerver/emails/compiled/followup_day1.html:55
 #: templates/zerver/emails/compiled/invitation.html:26
 #: templates/zerver/emails/compiled/invitation_reminder.html:22
+#: templates/zerver/emails/compiled/realm_reactivation.html:36
 #: templates/zerver/emails/confirm_new_email.source.html:28
 #: templates/zerver/emails/confirm_new_email.txt:15
 #: templates/zerver/emails/confirm_registration.source.html:26
@@ -1411,8 +1412,9 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:30
 #: templates/zerver/emails/compiled/confirm_registration.html:28
-#: templates/zerver/emails/compiled/followup_day1.html:57
+#: templates/zerver/emails/compiled/followup_day1.html:56
 #: templates/zerver/emails/compiled/notify_change_in_email.html:15
+#: templates/zerver/emails/compiled/realm_reactivation.html:37
 #: templates/zerver/emails/confirm_new_email.source.html:29
 #: templates/zerver/emails/confirm_new_email.txt:16
 #: templates/zerver/emails/confirm_registration.source.html:27
@@ -1452,6 +1454,7 @@ msgid "Complete registration"
 msgstr ""
 
 #: templates/zerver/emails/compiled/confirm_registration.html:20
+#: templates/zerver/emails/compiled/realm_reactivation.html:29
 #, python-format
 msgid ""
 "\n"
@@ -1500,88 +1503,80 @@ msgid "Thanks for using Zulip!"
 msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:9
-#: templates/zerver/emails/compiled/invitation.html:9
-#: templates/zerver/emails/followup_day1.source.html:8
-#: templates/zerver/emails/followup_day1.txt:1
-#: templates/zerver/emails/invitation.source.html:8
-#: templates/zerver/emails/invitation.txt:1
-msgid "Hi there,"
+msgid "Welcome to Zulip!"
 msgstr ""
 
-#: templates/zerver/emails/compiled/followup_day1.html:11
-#: templates/zerver/emails/followup_day1.source.html:10
-#: templates/zerver/emails/followup_day1.txt:3
-msgid "Welcome to Zulip! A few tips to get you started:"
-msgstr ""
-
-#: templates/zerver/emails/compiled/followup_day1.html:14
+#: templates/zerver/emails/compiled/followup_day1.html:13
 #, python-format
 msgid ""
 "\n"
-"    Zulip works best when it's always open, so we suggest downloading\n"
-"    our <a href=\"https://zulipchat.com/apps\" style=\"color:hsl(164, 42%%, "
-"47%%); text-decoration:underline\">desktop and mobile apps</a>.\n"
-"    "
+"        You've created the new Zulip organization <b>%(realm_name)s</b>.\n"
+"        "
 msgstr ""
 
-#: templates/zerver/emails/compiled/followup_day1.html:19
-#: templates/zerver/emails/followup_day1.source.html:18
+#: templates/zerver/emails/compiled/followup_day1.html:17
+#, python-format
 msgid ""
 "\n"
-"    To access your account from the apps, enter this Organization URL:\n"
-"    "
+"        You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:24
+msgid "Your account details:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:26
+msgid "Organization URL:"
 msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:29
-#, python-format
-msgid ""
-"\n"
-"    Become a Zulip pro with a few\n"
-"    <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:hsl(164, 42%%, "
-"47%%); text-decoration:underline\">keyboard shortcuts</a>:\n"
-"    "
+msgid "Use your LDAP account to login"
 msgstr ""
 
-#: templates/zerver/emails/compiled/followup_day1.html:34
-#: templates/zerver/emails/followup_day1.source.html:33
-#: templates/zerver/emails/followup_day1.txt:17
-msgid "Next unread thread"
+#: templates/zerver/emails/compiled/followup_day1.html:32
+msgid "Email:"
 msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:35
-#: templates/zerver/emails/followup_day1.source.html:34
-#: templates/zerver/emails/followup_day1.txt:18
-msgid "Reply to message under the blue box"
-msgstr ""
-
-#: templates/zerver/emails/compiled/followup_day1.html:36
-#: templates/zerver/emails/followup_day1.source.html:35
-#: templates/zerver/emails/followup_day1.txt:19
-msgid "Start a new topic"
-msgstr ""
-
-#: templates/zerver/emails/compiled/followup_day1.html:40
 #, python-format
 msgid ""
 "\n"
-"    Give our <a href=\"%(getting_started_link)s\" style=\"color:hsl(164, "
-"42%%, 47%%); text-decoration:underline\">guide for new\n"
-"    %(user_role_group)s</a> a spin.\n"
+"    (you'll need these to sign in to the <a href=\"https://zulipchat.com/apps"
+"\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">mobile "
+"and desktop</a> apps)\n"
 "    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:42
+#, python-format
+msgid ""
+"\n"
+"        Check out our <a href=\"%(getting_started_link)s\" style=\"color:"
+"hsl(164, 42%%, 47%%); text-decoration:underline\">guide for admins</a>, "
+"become a Zulip pro with a\n"
+"        few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:hsl(164, "
+"42%%, 47%%); text-decoration:underline\">keyboard shortcuts</a>, or <a href="
+"\"%(realm_uri)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:"
+"underline\">dive right in</a>!\n"
+"        "
 msgstr ""
 
 #: templates/zerver/emails/compiled/followup_day1.html:47
+#, python-format
 msgid ""
 "\n"
-"    Zulip combines the real-time ease of chat with the threaded "
-"organization\n"
-"    of email. Zulip is about productivity—making communication fun and\n"
-"    easy, while avoiding the distracting and disorganized conversations of\n"
-"    chatrooms. We hope you love using Zulip as much as we do.\n"
-"    "
+"        <a href=\"%(getting_started_link)s\" style=\"color:hsl(164, 42%%, "
+"47%%); text-decoration:underline\">Learn more</a> about Zulip, become a pro "
+"with a few\n"
+"        <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:hsl(164, 42%%, "
+"47%%); text-decoration:underline\">keyboard shortcuts</a>, or <a href="
+"\"%(realm_uri)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:"
+"underline\">dive right in</a>!\n"
+"        "
 msgstr ""
 
-#: templates/zerver/emails/compiled/followup_day1.html:61
+#: templates/zerver/emails/compiled/followup_day1.html:60
 #, python-format
 msgid ""
 "\n"
@@ -1593,6 +1588,14 @@ msgid ""
 "    <a href=\"https://chat.zulip.org\" style=\"color:hsl(164, 42%%, 47%%); "
 "text-decoration:underline\">Zulip community server</a>!\n"
 "    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:9
+#: templates/zerver/emails/followup_day1.source.html:8
+#: templates/zerver/emails/followup_day1.txt:1
+#: templates/zerver/emails/invitation.source.html:8
+#: templates/zerver/emails/invitation.txt:1
+msgid "Hi there,"
 msgstr ""
 
 #: templates/zerver/emails/compiled/invitation.html:12
@@ -1675,6 +1678,38 @@ msgstr ""
 msgid "Best,"
 msgstr ""
 
+#: templates/zerver/emails/compiled/realm_reactivation.html:10
+#, python-format
+msgid ""
+"\n"
+"    Dear former administrators of %(realm_name)s,\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:15
+#, python-format
+msgid ""
+"\n"
+"    One of your administrators requested reactivation of the\n"
+"    previously deactivated Zulip organization hosted at %(realm_uri)s.  If "
+"you'd\n"
+"    like to do confirm that request and reactivate the organization, please "
+"click here:\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:21
+msgid "Reactivate organization"
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:23
+msgid ""
+"\n"
+"    If the request was in error, you can take no action and this link\n"
+"    will expire in 24 hours.\n"
+"    "
+msgstr ""
+
 #: templates/zerver/emails/confirm_new_email.source.html:21
 #, python-format
 msgid ""
@@ -1719,11 +1754,23 @@ msgid ""
 "questions."
 msgstr ""
 
+#: templates/zerver/emails/followup_day1.source.html:10
+#: templates/zerver/emails/followup_day1.txt:3
+msgid "Welcome to Zulip! A few tips to get you started:"
+msgstr ""
+
 #: templates/zerver/emails/followup_day1.source.html:13
 msgid ""
 "\n"
 "    Zulip works best when it's always open, so we suggest downloading\n"
 "    our <a href=\"https://zulipchat.com/apps\">desktop and mobile apps</a>.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:18
+msgid ""
+"\n"
+"    To access your account from the apps, enter this Organization URL:\n"
 "    "
 msgstr ""
 
@@ -1734,6 +1781,21 @@ msgid ""
 "    Become a Zulip pro with a few\n"
 "    <a href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>:\n"
 "    "
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:33
+#: templates/zerver/emails/followup_day1.txt:17
+msgid "Next unread thread"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:34
+#: templates/zerver/emails/followup_day1.txt:18
+msgid "Reply to message under the blue box"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:35
+#: templates/zerver/emails/followup_day1.txt:19
+msgid "Start a new topic"
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.source.html:39
@@ -3324,43 +3386,43 @@ msgstr ""
 msgid "Wrong subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:716 zerver/views/auth.py:747
+#: zerver/views/auth.py:717 zerver/views/auth.py:748
 msgid "Dev environment not enabled."
 msgstr ""
 
-#: zerver/views/auth.py:732 zerver/views/auth.py:780
+#: zerver/views/auth.py:733 zerver/views/auth.py:781
 msgid "This organization has been deactivated."
 msgstr ""
 
-#: zerver/views/auth.py:735 zerver/views/auth.py:777
+#: zerver/views/auth.py:736 zerver/views/auth.py:778
 msgid "Your account has been disabled."
 msgstr ""
 
-#: zerver/views/auth.py:738
+#: zerver/views/auth.py:739
 msgid "This user is not registered."
 msgstr ""
 
-#: zerver/views/auth.py:783
+#: zerver/views/auth.py:784
 msgid "Password auth is disabled in your team."
 msgstr ""
 
-#: zerver/views/auth.py:789
+#: zerver/views/auth.py:790
 msgid "This user is not registered; do so from a browser."
 msgstr ""
 
-#: zerver/views/auth.py:791 zerver/views/auth.py:875
+#: zerver/views/auth.py:792 zerver/views/auth.py:876
 msgid "Your username or password is incorrect."
 msgstr ""
 
-#: zerver/views/auth.py:816
+#: zerver/views/auth.py:817
 msgid "Invalid subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:822
+#: zerver/views/auth.py:823
 msgid "Subdomain required"
 msgstr ""
 
-#: zerver/views/auth.py:883
+#: zerver/views/auth.py:884
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr ""
 

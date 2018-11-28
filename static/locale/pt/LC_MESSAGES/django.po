@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-03 00:32+0000\n"
-"PO-Revision-Date: 2018-11-05 14:34+0000\n"
+"PO-Revision-Date: 2018-11-07 18:54+0000\n"
 "Last-Translator: André Lopes Pereira <andrelopespereira@gmail.com>\n"
 "Language-Team: Portuguese (http://www.transifex.com/zulip/zulip/language/pt/)\n"
 "MIME-Version: 1.0\n"
@@ -842,7 +842,7 @@ msgstr "Documentação detalhada de atalhos de teclado"
 #: templates/zerver/app/left_sidebar.html:5
 #: templates/zerver/app/left_sidebar.html:10
 msgid "All messages"
-msgstr "Todas mensagens"
+msgstr "Todas as mensagens"
 
 #: templates/zerver/app/left_sidebar.html:33
 msgid "Starred messages"
