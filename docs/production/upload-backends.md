@@ -35,6 +35,16 @@ created (e.g. `exampleinc-zulip-uploads`).
 1. Comment out the `LOCAL_UPLOADS_DIR` setting in
 `/etc/zulip/settings.py` (add a `#` at the start of the line).
 
+1. In some AWS regions, you need to explicitly
+    [configure boto](http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
+    to use AWS's SIGv4 signature format (because AWS has stopped
+    supporting the older v3 format in those regions).  You can do this
+    by adding an `/etc/boto.cfg` containing the following:
+    ```
+    [s3]
+    use-sigv4 = True
+    ```
+
 1. You will need to configure `nginx` to direct requests for uploaded
     files to the Zulip server (which will then serve a redirect to the
     appropriate place in S3), rather than serving them directly.
