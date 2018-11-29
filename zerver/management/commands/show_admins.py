@@ -3,9 +3,9 @@ import sys
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
-from zerver.models import Realm, get_realm
+from zerver.models import get_realm
 
 class Command(BaseCommand):
     help = """Show the admins in a realm."""
@@ -17,11 +17,9 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: str) -> None:
         realm_name = options['realm']
 
-        try:
-            realm = get_realm(realm_name)
-        except Realm.DoesNotExist:
-            print('There is no realm called %s.' % (realm_name,))
-            sys.exit(1)
+        realm = get_realm(realm_name)
+        if realm is None:
+            raise CommandError('There is no realm called %s.' % (realm_name,))
 
         users = realm.get_admin_users()
 
