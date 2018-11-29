@@ -8,6 +8,7 @@ Subsystems Documentation
    dependencies
    settings
    events-system
+   sending-messages
    queuing
    custom-apps
    pointer
