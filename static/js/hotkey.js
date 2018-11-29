@@ -55,6 +55,7 @@ var keydown_ctrl_mappings = {
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
     83: {name: 'star_message', message_view_only: true}, // 's'
+    190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
 };
 
 var keydown_either_mappings = {
@@ -550,6 +551,11 @@ exports.process_hotkey = function (e, hotkey) {
             // Ignore backspace; don't navigate back a page.
             return true;
         }
+    }
+
+    if (event_name === 'narrow_to_compose_target') {
+        narrow.to_compose_target();
+        return true;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button

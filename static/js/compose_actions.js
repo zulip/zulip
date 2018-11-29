@@ -421,6 +421,11 @@ exports.on_narrow = function (opts) {
         return;
     }
 
+    if (opts.trigger === "narrow_to_compose_target") {
+        compose_fade.update_message_list();
+        return;
+    }
+
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();
         return;

@@ -599,6 +599,48 @@ exports.by_recipient = function (target_id, opts) {
     }
 };
 
+// Called by the narrow_to_compose_target hotkey.
+exports.to_compose_target = function () {
+    if (!compose_state.composing()) {
+        return;
+    }
+
+    var opts = {
+        trigger: 'narrow_to_compose_target',
+    };
+
+    if (compose_state.get_message_type() === 'stream') {
+        var stream_name = compose_state.stream_name();
+        var stream_id = stream_data.get_stream_id(stream_name);
+        if (!stream_id) {
+            return;
+        }
+        // If we are composing to a new topic, we narrow to the stream but
+        // grey-out the message view instead of narrowing to an empty view.
+        var topics = topic_data.get_recent_names(stream_id);
+        var operators = [{operator: 'stream', operand: stream_name}];
+        var topic = compose_state.topic();
+        if (topics.indexOf(topic) !== -1) {
+            operators.push({operator: 'topic', operand: topic});
+        }
+        exports.activate(operators, opts);
+        return;
+    }
+
+    if (compose_state.get_message_type() === 'private') {
+        var recipient_string = compose_state.recipient();
+        var emails = util.extract_pm_recipients(recipient_string);
+        var invalid = _.reject(emails, people.is_valid_email_for_compose);
+        // If there are no recipients or any recipient is
+        // invalid, narrow to all PMs.
+        if (emails.length === 0 || invalid.length > 0) {
+            exports.by('is', 'private', opts);
+            return;
+        }
+        exports.by('pm-with', util.normalize_recipients(recipient_string), opts);
+    }
+};
+
 function handle_post_narrow_deactivate_processes() {
     compose_fade.update_message_list();
 
