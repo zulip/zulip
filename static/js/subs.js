@@ -283,6 +283,15 @@ exports.update_settings_for_subscribed = function (sub) {
     stream_edit.show_sub_settings(sub);
 };
 
+exports.show_active_stream_in_left_panel = function () {
+    var selected_row = get_hash_safe().split(/\//)[1];
+
+    if (parseFloat(selected_row)) {
+        var sub_row = row_for_stream_id(selected_row);
+        sub_row.addClass("active");
+    }
+};
+
 exports.update_settings_for_unsubscribed = function (sub) {
     var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
@@ -381,12 +390,7 @@ exports.populate_stream_settings_left_panel = function () {
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
-    var selected_row = get_hash_safe().split(/\//)[1];
-
-    if (parseFloat(selected_row)) {
-        var sub_row = row_for_stream_id(selected_row);
-        sub_row.addClass("active");
-    }
+    exports.show_active_stream_in_left_panel();
 
     var widgets = {};
     var streams_list_scrolltop = $(".streams-list").scrollTop();
