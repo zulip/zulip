@@ -26,6 +26,8 @@ function create_list() {
     // generic code below
 
     self.populate = function (opts) {
+        var d1 = new Date();
+        console.info('start populate');
         var items = self.get_data_from_keys({
             keys: opts.keys,
         });
@@ -35,6 +37,8 @@ function create_list() {
         });
 
         $(self.container_sel).html(html);
+        var d2 = new Date();
+        console.info('end populate', d2 - d1);
     };
 
     return self;
