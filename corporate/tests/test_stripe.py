@@ -189,10 +189,18 @@ class StripeTest(ZulipTestCase):
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
         # Unfortunately this test suite is likely not robust to users being
-        # added in populate_db. A quick hack if you're adding a user and
-        # these tests are failing is to set the user to be a bot in this setUp function.
-        # The correct fix is probably to patch get_seat_count for the class, but that may
-        # require some care.
+        # added in populate_db. A quick hack for now to ensure get_seat_count is 8
+        # for these tests (8, since that's what it was when the tests were written).
+        realm = get_realm('zulip')
+        seat_count = get_seat_count(get_realm('zulip'))
+        assert(seat_count >= 8)
+        if seat_count > 8:  # nocoverage
+            for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False) \
+                                           .exclude(email__in=[
+                                               self.example_email('hamlet'),
+                                               self.example_email('iago')])[:seat_count - 8]:
+                user.is_active = False
+                user.save(update_fields=['is_active'])
         self.seat_count = 8
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
 
