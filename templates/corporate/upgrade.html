@@ -1,5 +1,14 @@
 {% extends "zerver/portico.html" %}
 
+{% block page_params %}
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
+<script>
+    {% autoescape off %}
+    var page_params = {{ page_params }};
+    {% endautoescape %}
+</script>
+{% endblock %}
+
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ render_bundle('landing-page') }}
@@ -7,6 +16,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="app portico-page">
 
     {% include 'zerver/billing_nav.html' %}
@@ -41,22 +51,22 @@
                             <div class="payment-schedule">
                                 <h3>{{ _("Payment schedule") }}</h3>
                                 <label>
-                                    <input type="radio" name="plan" value="{{ nickname_annual }}" data-amount="{{ cloud_annual_price }}" checked />
+                                    <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
                                     <div class="box">
                                         <div class="schedule-time annually">{{ _("Pay annually") }}</div>
                                         <div class="schedule-amount">
-                                            ${{ cloud_annual_price_per_month }}/user/month
+                                            $<span id="autopay_annual_price_per_month"></span>/user/month
                                             <div class="schedule-amount-2">
-                                                (${{ cloud_annual_price }}/user/year)
+                                                ($<span id="autopay_annual_price"></span>/user/year)
                                             </div>
                                         </div>
                                     </div>
                                 </label>
                                 <label>
-                                    <input type="radio" name="plan" value="{{ nickname_monthly }}" data-amount="{{ cloud_monthly_price }}" />
+                                    <input type="radio" name="plan" value="{{ nickname_monthly }}" />
                                     <div class="box">
                                         <div class="schedule-time">{{ _("Pay monthly") }}</div>
-                                        <div class="schedule-amount">${{ cloud_monthly_price }}/user/month</div>
+                                        <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
                                     </div>
                                 </label>
                             </div>
@@ -91,13 +101,13 @@
                             <div class="payment-schedule">
                                 <h3>{{ _("Payment schedule") }}</h3>
                                 <label>
-                                    <input type="radio" name="plan" value="{{ nickname_annual }}" data-amount="{{ cloud_annual_price }}" checked />
+                                    <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
                                     <div class="box">
                                         <div class="schedule-time annually">{{ _("Pay annually") }}</div>
                                         <div class="schedule-amount">
-                                            ${{ cloud_annual_price_per_month }}/user/month
+                                            $<span id="invoice_annual_price_per_month"></span>/user/month
                                             <div class="schedule-amount-2">
-                                                (${{ cloud_annual_price }}/user/year)
+                                                ($<span id="invoice_annual_price"></span>/user/year)
                                             </div>
                                         </div>
                                     </div>
