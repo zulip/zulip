@@ -443,11 +443,16 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     // Our internal data structure for subscriptions is mostly plain dictionaries,
     // so we just reuse the attrs that are passed in to us, but we encapsulate how
-    // we handle subscribers.
-    var subscriber_user_ids = attrs.subscribers;
-    var raw_attrs = _.omit(attrs, 'subscribers');
+    // we handle subscribers.  We defensively remove the `subscribers` field from
+    // the original `attrs` object, which will get thrown away.  (We used to make
+    // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
+    // slow enough to show up in timings when you have 1000s of streams.
 
-    sub = _.defaults(raw_attrs, {
+    var subscriber_user_ids = attrs.subscribers;
+
+    delete attrs.subscribers;
+
+    sub = _.defaults(attrs, {
         name: stream_name,
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
