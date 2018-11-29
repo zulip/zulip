@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+from __future__ import (print_function)
 import os
 import sys
 import types
+if sys.version_info <= (3, 0):
+    print("Error: manage.py must *not* be run using python2. Please run directly as `./manage.py`.")
+    sys.exit(1)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
