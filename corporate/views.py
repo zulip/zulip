@@ -94,7 +94,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
                         'lowball seat count',
                         "You must invoice for at least %d users." % (min_required_seat_count,))
                 seat_count = invoiced_seat_count
-            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripeToken', None))
+            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripe_token', None))
         except BillingError as e:
             error_message = e.message
             error_description = e.description
