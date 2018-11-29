@@ -597,6 +597,9 @@ urls += [
     # starting up.
     url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
 
+    # For server-specific compatibility checks
+    url(r'^api/v1/server_compatibility', zerver.views.compatibility.check_server_compatibility),
+
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$', zerver.views.auth.api_fetch_api_key,
