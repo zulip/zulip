@@ -445,11 +445,7 @@ exports.filter_table = function (query) {
         $('#subscriptions_table .streams-list').append(widgets[stream_id]);
     });
 
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
-        $(".right .settings").hide();
-        $(".nothing-selected").show();
-        $(".stream-row.active").removeClass("active");
-    }
+    exports.maybe_reset_right_panel();
 
     // this puts the scrollTop back to what it was before the list was updated again.
     $(".streams-list").scrollTop(streams_list_scrolltop);
@@ -465,6 +461,14 @@ exports.get_search_params = function () {
         subscribed_only: subscribed_only,
     };
     return params;
+};
+
+exports.maybe_reset_right_panel = function () {
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        $(".right .settings").hide();
+        $(".nothing-selected").show();
+        $(".stream-row.active").removeClass("active");
+    }
 };
 
 exports.actually_filter_streams = function () {
