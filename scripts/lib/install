@@ -81,14 +81,16 @@ export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
 apt-get install -y lsb-release sudo
-os_release="$(lsb_release -sc)"
-case "$os_release" in
+os_info="$(lsb_release --short --id --release --codename)"
+{ read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
+
+case "$os_codename" in
     trusty|xenial|stretch|bionic) ;;
     *)
         set +x
         cat <<EOF
 
-Unsupported OS release: $os_release
+Unsupported OS release: $os_codename
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
@@ -101,6 +103,20 @@ For more information, see:
 EOF
         exit 1
 esac
+
+if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
+           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_codename,n=$os_codename,l=Ubuntu,c=universe"; then
+    set +x
+    cat <<'EOF'
+
+You must enable the Ubuntu Universe repository before installing
+Zulip.  You can do this with: `add-apt-repository universe`.
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+    exit 1
+fi
 
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
