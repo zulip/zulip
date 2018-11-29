@@ -182,9 +182,9 @@ class Command(BaseCommand):
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
-                lear_realm = Realm.objects.create(
-                    string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
-                    invite_required=False, org_type=Realm.CORPORATE)
+            lear_realm = Realm.objects.create(
+                string_id="lear", name="King Lear's Kingdom", emails_restricted_to_domains=False,
+                invite_required=False, org_type=Realm.CORPORATE)
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -202,12 +202,27 @@ class Command(BaseCommand):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(zulip_realm, names)
 
+            # Iago is an admin of both realm and server, and Polonius a guest
             iago = get_user("iago@zulip.com", zulip_realm)
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 
             guest_user = get_user("polonius@zulip.com", zulip_realm)
+            guest_user.is_guest = True
+            guest_user.save(update_fields=['is_guest'])
+
+            lear_users = [
+                ("King Lear", "king@lear.org"),
+                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("Polonius", "polonius@zulip.com"),
+            ]
+            create_users(lear_realm, lear_users)
+
+            # In Lear's realm, Lear is an admin, and Polonius a guest
+            lear = get_user("king@lear.org", lear_realm)
+            do_change_is_admin(lear, True)
+            guest_user = get_user("polonius@zulip.com", lear_realm)
             guest_user.is_guest = True
             guest_user.save(update_fields=['is_guest'])
 
@@ -278,7 +293,7 @@ class Command(BaseCommand):
 
             subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient]]
             profiles = UserProfile.objects.select_related().filter(
-                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
+                is_bot=False, realm=zulip_realm).order_by("email")  # type: Sequence[UserProfile]
 
             if options["test_suite"]:
                 subscriptions_map = {
@@ -382,6 +397,7 @@ class Command(BaseCommand):
             ])
         else:
             zulip_realm = get_realm("zulip")
+            lear_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
@@ -456,17 +472,10 @@ class Command(BaseCommand):
                 ]
                 create_users(mit_realm, testsuite_mit_users)
 
-                testsuite_lear_users = [
-                    ("King Lear", "king@lear.org"),
-                    ("Cordelia Lear", "cordelia@zulip.com"),
-                ]
-                create_users(lear_realm, testsuite_lear_users)
-
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
-
                 zulip_stream_dict = {
                     "devel": {"description": "For developing"},
                     "all": {"description": "For everything"},
@@ -477,6 +486,14 @@ class Command(BaseCommand):
                     "test": {"description": "For testing"},
                     "errors": {"description": "For errors"},
                     "sales": {"description": "For sales discussion"}
+                }  # type: Dict[str, Dict[str, Any]]
+
+                lear_stream_dict = {
+                    "announce": {"description": "For announcements", 'is_announcement_only': True},
+                    "books": {"description": "Discussion on books"},
+                    "gaming": {"description": "For gaming"},
+                    "jobs": {"description": "For jobs"},
+                    "gear": {"description": "For gear"},
                 }  # type: Dict[str, Dict[str, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
@@ -500,13 +517,23 @@ class Command(BaseCommand):
                 zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
                 zulip_realm.save(update_fields=['notifications_stream'])
 
+                bulk_create_streams(lear_realm, lear_stream_dict)
+                # Now that we've created the notifications stream, configure it properly.
+                lear_realm.notifications_stream = get_stream("announce", lear_realm)
+                lear_realm.save(update_fields=['notifications_stream'])
+
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
                     DefaultStream.objects.create(realm=zulip_realm,
                                                  stream=get_stream(default_stream_name, zulip_realm))
 
+                for default_stream_name in ["books", "gaming", "jobs"]:
+                    DefaultStream.objects.create(realm=lear_realm,
+                                                 stream=get_stream(default_stream_name, lear_realm))
+
                 # Now subscribe everyone to these streams
                 subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
+                subscribe_users_to_streams(lear_realm, lear_stream_dict)
 
                 # These bots are not needed by the test suite
                 internal_zulip_users_nosubs = [
@@ -515,6 +542,14 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+
+                # These bots are not needed by the test suite
+                internal_lear_users_nosubs = [
+                    ("Zulip Commit Bot", "commit-bot@lear.org"),
+                    ("Zulip Trac Bot", "trac-bot@lear.org"),
+                    ("Zulip Nagios Bot", "nagios-bot@lear.org"),
+                ]
+                create_users(lear_realm, internal_lear_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_cross_realm_bots = [
                 ("Zulip Feedback Bot", "feedback@zulip.com"),
