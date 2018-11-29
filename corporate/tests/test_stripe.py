@@ -226,7 +226,7 @@ class StripeTest(ZulipTestCase):
             if stripe_token is None:
                 stripe_token = stripe_create_token().id
             params.update({
-                'stripeToken': stripe_token,
+                'stripe_token': stripe_token,
                 'billing_modality': 'charge_automatically',
             })
         params.update(kwargs)
