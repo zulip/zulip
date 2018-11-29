@@ -62,16 +62,41 @@ $(function () {
         $('html,body').scrollTop(0);
     });
 
+    function format_money(cents) {
+        // allow for small floating point errors
+        cents = Math.ceil(cents - 0.001);
+        var precision;
+        if (cents % 100 === 0) {
+            precision = 0;
+        } else {
+            precision = 2;
+        }
+        // TODO: Add commas for thousands, millions, etc.
+        return (cents / 100).toFixed(precision);
+    }
+
     if (window.location.pathname === '/upgrade/') {
-        const seat_count = parseInt($('input[name=seat_count]').val());
-        function update_charged_amount(per_seat_cost) {
-            $("#charged_amount").html(seat_count * per_seat_cost);
+        var prices = {};
+        prices[page_params.nickname_annual] =
+            page_params.annual_price
+        prices[page_params.nickname_monthly] =
+            page_params.monthly_price
+
+        function update_charged_amount(plan_nickname) {
+            $("#charged_amount").text(
+                format_money(page_params.seat_count * prices[plan_nickname])
+            );
         }
 
         $('input[type=radio][name=plan]').change(function () {
-            update_charged_amount($(this).data('amount'));
+            update_charged_amount($(this).val());
         });
 
-        update_charged_amount($('input[type=radio][name=plan]:checked').data('amount'));
+        $("#autopay_annual_price").text(format_money(prices[page_params.nickname_annual]));
+        $("#autopay_annual_price_per_month").text(format_money(prices[page_params.nickname_annual] / 12));
+        $("#autopay_monthly_price").text(format_money(prices[page_params.nickname_monthly]));
+        $("#invoice_annual_price").text(format_money(prices[page_params.nickname_annual]));
+        $("#invoice_annual_price_per_month").text(format_money(prices[page_params.nickname_annual] / 12));
+        update_charged_amount($('input[type=radio][name=plan]:checked').val());
     }
 });

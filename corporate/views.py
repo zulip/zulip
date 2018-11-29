@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from zerver.decorator import zulip_login_required, require_billing_access
+from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
@@ -119,9 +120,13 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
         'error_message': error_message,
-        'cloud_monthly_price': 8,
-        'cloud_annual_price': 80,
-        'cloud_annual_price_per_month': 6.67,
+        'page_params': JSONEncoderForHTML().encode({
+            'seat_count': seat_count,
+            'nickname_annual': Plan.CLOUD_ANNUAL,
+            'nickname_monthly': Plan.CLOUD_MONTHLY,
+            'annual_price': 8000,
+            'monthly_price': 800,
+        }),
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     response['error_description'] = error_description
