@@ -457,10 +457,19 @@ exports.filter_table = function (query) {
 
 var subscribed_only = true;
 
-exports.actually_filter_streams = function () {
+exports.get_search_params = function () {
     var search_box = $("#add_new_subscription input[type='text']");
-    var query = search_box.expectOne().val().trim();
-    exports.filter_table({ input: query, subscribed_only: subscribed_only });
+    var input = search_box.expectOne().val().trim();
+    var params = {
+        input: input,
+        subscribed_only: subscribed_only,
+    };
+    return params;
+};
+
+exports.actually_filter_streams = function () {
+    var search_params = exports.get_search_params();
+    exports.filter_table(search_params);
 };
 
 var filter_streams = _.throttle(exports.actually_filter_streams, 50);
