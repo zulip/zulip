@@ -53,6 +53,32 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version)
 
+def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
+    subscriptions_to_add = []
+    event_time = timezone_now()
+    all_subscription_logs = []
+    profiles = UserProfile.objects.select_related().filter(realm=realm)
+    for i, stream_name in enumerate(stream_dict):
+        stream = Stream.objects.get(name=stream_name, realm=realm)
+        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+        for profile in profiles:
+            # Subscribe to some streams.
+            s = Subscription(
+                recipient=recipient,
+                user_profile=profile,
+                color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
+            subscriptions_to_add.append(s)
+
+            log = RealmAuditLog(realm=profile.realm,
+                                modified_user=profile,
+                                modified_stream=stream,
+                                event_last_message_id=0,
+                                event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+                                event_time=event_time)
+            all_subscription_logs.append(log)
+    Subscription.objects.bulk_create(subscriptions_to_add)
+    RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
 class Command(BaseCommand):
     help = "Populate a test database"
 
@@ -480,30 +506,7 @@ class Command(BaseCommand):
                                                  stream=get_stream(default_stream_name, zulip_realm))
 
                 # Now subscribe everyone to these streams
-                subscriptions_to_add = []
-                event_time = timezone_now()
-                all_subscription_logs = []
-                profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
-                for i, stream_name in enumerate(zulip_stream_dict):
-                    stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
-                    recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                    for profile in profiles:
-                        # Subscribe to some streams.
-                        s = Subscription(
-                            recipient=recipient,
-                            user_profile=profile,
-                            color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
-                        subscriptions_to_add.append(s)
-
-                        log = RealmAuditLog(realm=profile.realm,
-                                            modified_user=profile,
-                                            modified_stream=stream,
-                                            event_last_message_id=0,
-                                            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
-                                            event_time=event_time)
-                        all_subscription_logs.append(log)
-                Subscription.objects.bulk_create(subscriptions_to_add)
-                RealmAuditLog.objects.bulk_create(all_subscription_logs)
+                subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
 
                 # These bots are not needed by the test suite
                 internal_zulip_users_nosubs = [
