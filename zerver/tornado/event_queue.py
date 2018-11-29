@@ -785,6 +785,10 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
 
 
 def process_message_event(event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]) -> None:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))

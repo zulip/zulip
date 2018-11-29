@@ -248,3 +248,6 @@ separate AJAX call after the rest of the site is loaded, we don't need
 them to be included in the initial state data.  To handle those
 correctly, clients are responsible for discarding events related to
 messages that the client has not yet fetched.
+
+Additionally, see
+[the master documentation on sending messages](../subsystems/sending-messages.html)

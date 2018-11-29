@@ -1,4 +1,5 @@
 var compose = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 var exports = {};
 

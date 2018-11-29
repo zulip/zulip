@@ -1130,6 +1130,11 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: Optional[bool]=False) -> List[int]:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
+
     # Filter out messages which didn't pass internal_prep_message properly
     messages = [message for message in messages_maybe_none if message is not None]
 
@@ -2048,6 +2053,10 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   local_id: Optional[str]=None,
                   sender_queue_id: Optional[str]=None,
                   widget_content: Optional[str]=None) -> Dict[str, Any]:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
     stream = None
 
     message_content = message_content_raw.rstrip()

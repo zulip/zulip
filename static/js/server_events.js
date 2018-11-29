@@ -1,4 +1,5 @@
 var server_events = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 var exports = {};
 
