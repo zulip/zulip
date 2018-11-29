@@ -646,6 +646,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send.assert_called_with(user_profile.id,
                                          {'apns': True},
                                          {'gcm': True},
+                                         {},
                                          )
 
     def test_non_bouncer_push(self) -> None:
@@ -687,8 +688,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
                                                {'apns': True})
-            mock_send_android.assert_called_with(android_devices,
-                                                 {'gcm': True})
+            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
             mock_push_notifications.assert_called_once()
 
     @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
@@ -709,7 +709,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(user_profile.id, {},
                                                  {'gcm': True,
                                                   'event': 'remove',
-                                                  'zulip_message_id': message.id})
+                                                  'zulip_message_id': message.id},
+                                                 {})
 
     @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_non_bouncer_push_remove(self) -> None:
@@ -737,7 +738,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True,
                                                   'event': 'remove',
-                                                  'zulip_message_id': message.id})
+                                                  'zulip_message_id': message.id},
+                                                 {})
 
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
@@ -797,8 +799,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
                                                {'apns': True})
-            mock_send_android.assert_called_with(android_devices,
-                                                 {'gcm': True})
+            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
             mock_push_notifications.assert_called_once()
 
 class TestAPNs(PushNotificationTest):
@@ -1201,11 +1202,12 @@ class TestGetGCMPayload(PushNotificationTest):
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch('zerver.lib.remote_server.send_to_push_bouncer')
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
-        apn.send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True})
+        apn.send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True}, {})
         post_data = {
             'user_id': 1,
             'apns_payload': {'apns': True},
             'gcm_payload': {'gcm': True},
+            'gcm_options': {},
         }
         mock_send.assert_called_with('POST',
                                      'push/notify',
@@ -1345,7 +1347,7 @@ class GCMNotSetTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
         apn.gcm = None
-        apn.send_android_push_notification_to_user(self.user_profile, {})
+        apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_debug.assert_called_with(
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
             "and ANDROID_GCM_API_KEY are both unset")
@@ -1356,7 +1358,7 @@ class GCMIOErrorTest(GCMTest):
     def test_json_request_raises_ioerror(self, mock_warn: mock.MagicMock,
                                          mock_json_request: mock.MagicMock) -> None:
         mock_json_request.side_effect = IOError('error')
-        apn.send_android_push_notification_to_user(self.user_profile, {})
+        apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_warn.assert_called_with('error')
 
 class GCMSuccessTest(GCMTest):
@@ -1370,12 +1372,27 @@ class GCMSuccessTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         self.assertEqual(mock_info.call_count, 2)
         c1 = call("GCM: Sent 1111 as 0")
         c2 = call("GCM: Sent 2222 as 1")
         mock_info.assert_has_calls([c1, c2], any_order=True)
         mock_warning.assert_not_called()
+
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
+    @mock.patch('gcm.GCM.json_request')
+    def test_invalid_options(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
+                             mock_warning: mock.MagicMock) -> None:
+        res = {}
+        res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
+        mock_send.return_value = res
+
+        data = self.get_gcm_data()
+        with self.assertRaises(JsonableError):
+            apn.send_android_push_notification_to_user(self.user_profile, data,
+                                                       {"invalid": True})
+        mock_send.assert_not_called()
 
 class GCMCanonicalTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.warning')
@@ -1386,7 +1403,7 @@ class GCMCanonicalTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
                                              "already matches our ID 1!")
 
@@ -1409,7 +1426,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'3333'), 0)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         msg = ("GCM: Got canonical ref %s "
                "replacing %s but new ID not "
                "registered! Updating.")
@@ -1437,7 +1454,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'2222'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
@@ -1461,7 +1478,7 @@ class GCMNotRegisteredTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
         self.assertEqual(get_count(u'1111'), 0)
 
@@ -1475,7 +1492,7 @@ class GCMFailureTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data, {})
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
 

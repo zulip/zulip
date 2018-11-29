@@ -128,6 +128,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     user_id = payload['user_id']
     gcm_payload = payload['gcm_payload']
     apns_payload = payload['apns_payload']
+    gcm_options = payload.get('gcm_options', {})
 
     android_devices = list(RemotePushDeviceToken.objects.filter(
         user_id=user_id,
@@ -142,7 +143,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     ))
 
     if android_devices:
-        send_android_push_notification(android_devices, gcm_payload, remote=True)
+        send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
 
     if apple_devices:
         send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
