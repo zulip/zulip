@@ -80,6 +80,8 @@ below, and add more to your repertoire as needed.
 
 * **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
 
+* **Narrow to current compose box recipient**: `Ctrl` + `.`
+
 ## Composing messages
 
 * **Reply to message**: `r` or `Enter` — Reply to the selected
