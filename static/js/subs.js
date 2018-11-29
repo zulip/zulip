@@ -292,6 +292,14 @@ exports.show_active_stream_in_left_panel = function () {
     }
 };
 
+exports.add_tooltips_to_left_panel = function () {
+    _.each($("#subscriptions_table .stream-row"), function (row) {
+        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+            placement: 'left', animation: false,
+        });
+    });
+};
+
 exports.update_settings_for_unsubscribed = function (sub) {
     var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
@@ -421,11 +429,9 @@ exports.filter_table = function (query) {
         }
 
         widgets[stream_id] = $(row).detach();
-
-        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-            placement: 'left', animation: false,
-        });
     });
+
+    exports.add_tooltips_to_left_panel();
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
