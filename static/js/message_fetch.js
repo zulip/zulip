@@ -18,7 +18,7 @@ var consts = {
 function process_result(data, opts) {
     var messages = data.messages;
 
-    if (!($('#connection-error').hasClass('get-events-error'))) {
+    if (!$('#connection-error').hasClass('get-events-error')) {
         ui_report.hide_error($("#connection-error"));
     }
 
