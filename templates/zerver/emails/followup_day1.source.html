@@ -22,10 +22,14 @@
 <p>
     {{ _('Your account details:') }}
     <li>{{ _('Organization URL:') }} {{ realm_uri }}<br/></li>
-    {% if ldap_username %}
-    <li>{{ _('Use your LDAP account to login') }}<br/></li>
+    {% if ldap %}
+        {% if ldap_username %}
+        <li>{{ _('Username:') }} {{ ldap_username }}<br/></li>
+        {% else %}
+        <li>{{ _('Use your LDAP account to login') }}<br/></li>
+        {% endif %}
     {% else %}
-    <li>{{ _('Email:') }} {{ email }}<br/></li>
+        <li>{{ _('Email:') }} {{ email }}<br/></li>
     {% endif %}
     {% trans %}
     (you'll need these to sign in to the <a href="https://zulipchat.com/apps">mobile and desktop</a> apps)
