@@ -5,12 +5,14 @@ time when working with Git on the Zulip project.
 
 ## Set up git repo script
 
-In the `tools` directory of [zulip/zulip][github-zulip-zulip] you'll
-find a bash script `setup-git-repo`. This script installs the Zulip
-pre-commit hook.  This hook will run each time you `git commit` to
-automatically run Zulip's linters on just the files that the commit
-modifies. The hook passes no matter the result of the linter, but you
-should still pay attention to any notices or warnings it displays.
+**Extremely useful**.  In the `tools` directory of
+[zulip/zulip][github-zulip-zulip] you'll find a bash script
+`setup-git-repo`. This script installs a pre-commit hook, which will
+run each time you `git commit` to automatically run
+[Zulip's linter suite](../testing/linters.html) on just the files that
+the commit modifies (which is really fast!). The hook passes no matter
+the result of the linter, but you should still pay attention to any
+notices or warnings it displays.
 
 It's simple to use. Make sure you're in the clone of zulip and run the following:
 

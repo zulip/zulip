@@ -31,17 +31,23 @@ and exempting legacy files from lint checks.
 
 ## Running the linters
 
-If you run `./tools/test-all`, it will automatically run the linters (with
-one small exception: it does not run mypy against scripts).
-
-You can also run them individually:
+If you run `./tools/test-all`, it will automatically run the linters.
+You can also run them individually or pass specific files:
 
     ./tools/lint
+    ./tools/lint static/js/compose.js
+    ./tools/lint static/js/
     ./tools/run-mypy
-    ./tools/run-mypy --scripts-only
 
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
+
+**Important:** We provide a
+  [Git pre-commit hook](http://localhost:9991/docs/git/zulip-tools.html#set-up-git-repo-script)
+  that can automatically run `tools/lint` on just the files that
+  changed (in a few 100ms) whenever you make a commit.  This can save
+  you a lot of time, by automatically detecting linter errors as you
+  make them.
 
 **Note:** The linters only check files that git tracks. Remember to `git add`
 new files before running lint checks.
