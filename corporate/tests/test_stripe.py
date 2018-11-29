@@ -188,9 +188,13 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("Product.create", "Plan.create", "Coupon.create", generate=False)
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
-
-        self.quantity = 8
-        self.signed_seat_count, self.salt = sign_string(str(self.quantity))
+        # Unfortunately this test suite is likely not robust to users being
+        # added in populate_db. A quick hack if you're adding a user and
+        # these tests are failing is to set the user to be a bot in this setUp function.
+        # The correct fix is probably to patch get_seat_count for the class, but that may
+        # require some care.
+        self.seat_count = 8
+        self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
@@ -284,7 +288,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(stripe_subscription.days_until_due, None)
         self.assertEqual(stripe_subscription.plan.id,
                          Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id)
-        self.assertEqual(stripe_subscription.quantity, self.quantity)
+        self.assertEqual(stripe_subscription.quantity, self.seat_count)
         self.assertEqual(stripe_subscription.status, 'active')
         self.assertEqual(stripe_subscription.tax_percent, 0)
 
@@ -313,7 +317,7 @@ class StripeTest(ZulipTestCase):
         # Check /billing has the correct information
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['Pay annually'], response)
-        for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
+        for substring in ['Your plan will renew on', '$%s.00' % (80 * self.seat_count,),
                           'Card ending in 4242', 'Update card']:
             self.assert_in_response(substring, response)
 
@@ -351,7 +355,7 @@ class StripeTest(ZulipTestCase):
         stripe_customer = stripe_get_customer(
             Customer.objects.get(realm=get_realm('zulip')).stripe_customer_id)
         stripe_subscription = extract_current_subscription(stripe_customer)
-        self.assertEqual(stripe_subscription.quantity, self.quantity)
+        self.assertEqual(stripe_subscription.quantity, self.seat_count)
 
         # Check that we have the STRIPE_PLAN_QUANTITY_RESET entry, and that we
         # correctly handled the requires_billing_update field
@@ -453,7 +457,7 @@ class StripeTest(ZulipTestCase):
         with patch("corporate.views.MIN_INVOICED_SEAT_COUNT", 3):
             response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=4)
         self.assert_in_success_response(["Upgrade to Zulip Standard",
-                                         "at least %d users" % (self.quantity,)], response)
+                                         "at least %d users" % (self.seat_count,)], response)
         self.assertEqual(response['error_description'], 'lowball seat count')
         # Test not setting an invoiced_seat_count
         response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=None)
@@ -527,7 +531,7 @@ class StripeTest(ZulipTestCase):
         ])
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
-            {'quantity': self.quantity})
+            {'quantity': self.seat_count})
 
         # Check /billing has the correct information
         response = self.client_get("/billing/")
@@ -667,7 +671,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
         stripe_customer = stripe_get_customer(stripe_customer.id)
-        self.assertEqual(stripe_customer.account_balance, self.quantity * -8000)
+        self.assertEqual(stripe_customer.account_balance, self.seat_count * -8000)
         self.assertIsNone(extract_current_subscription(stripe_customer))
         stripe_subscription = stripe.Subscription.retrieve(stripe_subscription.id)
         self.assertEqual(stripe_subscription.status, "canceled")
@@ -793,20 +797,20 @@ class StripeTest(ZulipTestCase):
 
         # Test USER_CREATED
         user = do_create_user('newuser@zulip.com', 'password', get_realm('zulip'), 'full name', 'short name')
-        check_billing_processor_update(RealmAuditLog.USER_CREATED, self.quantity + 1)
+        check_billing_processor_update(RealmAuditLog.USER_CREATED, self.seat_count + 1)
 
         # Test USER_DEACTIVATED
         do_deactivate_user(user)
-        check_billing_processor_update(RealmAuditLog.USER_DEACTIVATED, self.quantity - 1)
+        check_billing_processor_update(RealmAuditLog.USER_DEACTIVATED, self.seat_count - 1)
 
         # Test USER_REACTIVATED
         do_reactivate_user(user)
-        check_billing_processor_update(RealmAuditLog.USER_REACTIVATED, self.quantity + 1)
+        check_billing_processor_update(RealmAuditLog.USER_REACTIVATED, self.seat_count + 1)
 
         # Test USER_ACTIVATED
         # Not a proper use of do_activate_user, but it's fine to call it like this for this test
         do_activate_user(user)
-        check_billing_processor_update(RealmAuditLog.USER_ACTIVATED, self.quantity + 1)
+        check_billing_processor_update(RealmAuditLog.USER_ACTIVATED, self.seat_count + 1)
 
 class RequiresBillingUpdateTest(ZulipTestCase):
     def test_activity_change_requires_seat_update(self) -> None:
