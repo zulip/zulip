@@ -189,7 +189,6 @@ class StripeTest(ZulipTestCase):
     def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         call_command("setup_stripe")
 
-        self.token = 'token'
         self.quantity = 8
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
 
@@ -200,6 +199,34 @@ class StripeTest(ZulipTestCase):
     def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
         return match.group(1) if match else None
+
+    def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
+                realm: Optional[Realm]=None, **kwargs: Any) -> HttpResponse:
+        host_args = {}
+        if realm is not None:
+            host_args['HTTP_HOST'] = realm.host
+        response = self.client_get("/upgrade/", **host_args)
+        params = {
+            'signed_seat_count': self.get_signed_seat_count_from_response(response),
+            'salt': self.get_salt_from_response(response),
+            'plan': Plan.CLOUD_ANNUAL}  # type: Dict[str, Any]
+        if invoice:  # send_invoice
+            params.update({
+                'invoiced_seat_count': 123,
+                'billing_modality': 'send_invoice'})
+        else:  # charge_automatically
+            stripe_token = None
+            if not talk_to_stripe:
+                stripe_token = 'token'
+            stripe_token = kwargs.get('stripe_token', stripe_token)
+            if stripe_token is None:
+                stripe_token = stripe_create_token().id
+            params.update({
+                'stripeToken': stripe_token,
+                'billing_modality': 'charge_automatically',
+            })
+        params.update(kwargs)
+        return self.client_post("/upgrade/", params, **host_args)
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_catch_stripe_errors(self, mock_billing_logger_error: Mock) -> None:
@@ -241,12 +268,7 @@ class StripeTest(ZulipTestCase):
         self.assertFalse(Customer.objects.filter(realm=user.realm).exists())
 
         # Click "Make payment" in Stripe Checkout
-        self.client_post("/upgrade/", {
-            'stripeToken': stripe_create_token().id,
-            'signed_seat_count': self.get_signed_seat_count_from_response(response),
-            'salt': self.get_salt_from_response(response),
-            'plan': Plan.CLOUD_ANNUAL,
-            'billing_modality': 'charge_automatically'})
+        self.upgrade()
 
         # Check that we correctly created Customer and Subscription objects in Stripe
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
@@ -304,11 +326,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
         # Check that non-admins can sign up and pay
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         # Check that the non-admin hamlet can still access /billing
         response = self.client_get("/billing/")
         self.assert_in_success_response(["for billing history or to make changes"], response)
@@ -327,14 +345,8 @@ class StripeTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
-        response = self.client_get("/upgrade/")
         with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
-            self.client_post("/upgrade/", {
-                'stripeToken': stripe_create_token().id,
-                'signed_seat_count': self.get_signed_seat_count_from_response(response),
-                'salt': self.get_salt_from_response(response),
-                'plan': Plan.CLOUD_ANNUAL,
-                'billing_modality': 'charge_automatically'})
+            self.upgrade()
         # Check that the subscription call used the old quantity, not new_seat_count
         stripe_customer = stripe_get_customer(
             Customer.objects.get(realm=get_realm('zulip')).stripe_customer_id)
@@ -365,11 +377,7 @@ class StripeTest(ZulipTestCase):
         self.login(user.email)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
         # a Customer object succeeds, but attempts to charge the customer fail.
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token('4000000000000341').id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade(stripe_token=stripe_create_token('4000000000000341').id)
         # Check that we created a Customer object with has_billing_relationship False
         customer = Customer.objects.get(realm=get_realm('zulip'))
         self.assertFalse(customer.has_billing_relationship)
@@ -391,11 +399,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         # Try again, with a valid card
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         customer = Customer.objects.get(realm=get_realm('zulip'))
         # Impossible to create two Customers, but check that we didn't
         # change stripe_customer_id and that we updated has_billing_relationship
@@ -422,71 +426,37 @@ class StripeTest(ZulipTestCase):
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
-        response = self.client_post("/upgrade/", {
-            'stripeToken': self.token,
-            'signed_seat_count': "randomsalt",
-            'salt': self.salt,
-            'plan': Plan.CLOUD_ANNUAL,
-            'billing_modality': 'charge_automatically',
-        })
+        response = self.upgrade(talk_to_stripe=False, salt='badsalt')
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered seat count')
 
     def test_upgrade_with_tampered_plan(self) -> None:
         # Test with an unknown plan
         self.login(self.example_email("hamlet"))
-        response = self.client_post("/upgrade/", {
-            'stripeToken': self.token,
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
-            'plan': "invalid",
-            'billing_modality': 'charge_automatically',
-        })
+        response = self.upgrade(talk_to_stripe=False, plan='badplan')
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
         # Test with a plan that's valid, but not if you're paying by invoice
-        response = self.client_post("/upgrade/", {
-            'invoiced_seat_count': 123,
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
-            'plan': Plan.CLOUD_MONTHLY,
-            'billing_modality': 'send_invoice',
-        })
+        response = self.upgrade(invoice=True, talk_to_stripe=False, plan=Plan.CLOUD_MONTHLY)
         self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
         self.assertEqual(response['error_description'], 'tampered plan')
 
     def test_upgrade_with_insufficient_invoiced_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
         # Test invoicing for less than MIN_INVOICED_SEAT_COUNT
-        response = self.client_post("/upgrade/", {
-            'invoiced_seat_count': self.quantity,
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
-            'plan': Plan.CLOUD_ANNUAL,
-            'billing_modality': 'send_invoice',
-        })
+        response = self.upgrade(invoice=True, talk_to_stripe=False,
+                                invoiced_seat_count=MIN_INVOICED_SEAT_COUNT - 1)
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
         self.assertEqual(response['error_description'], 'lowball seat count')
         # Test invoicing for less than your user count
         with patch("corporate.views.MIN_INVOICED_SEAT_COUNT", 3):
-            response = self.client_post("/upgrade/", {
-                'invoiced_seat_count': self.quantity - 1,
-                'signed_seat_count': self.signed_seat_count,
-                'salt': self.salt,
-                'plan': Plan.CLOUD_ANNUAL,
-                'billing_modality': 'send_invoice',
-            })
+            response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=4)
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "at least %d users" % (self.quantity,)], response)
         self.assertEqual(response['error_description'], 'lowball seat count')
         # Test not setting an invoiced_seat_count
-        response = self.client_post("/upgrade/", {
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
-            'plan': Plan.CLOUD_ANNUAL,
-            'billing_modality': 'send_invoice',
-        })
+        response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=None)
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
         self.assertEqual(response['error_description'], 'lowball seat count')
@@ -495,13 +465,7 @@ class StripeTest(ZulipTestCase):
     def test_upgrade_with_uncaught_exception(self, mock1: Mock) -> None:
         self.login(self.example_email("hamlet"))
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
-            response = self.client_post("/upgrade/", {
-                'stripeToken': self.token,
-                'signed_seat_count': self.signed_seat_count,
-                'salt': self.salt,
-                'plan': Plan.CLOUD_ANNUAL,
-                'billing_modality': 'charge_automatically',
-            })
+            response = self.upgrade(talk_to_stripe=False)
         self.assert_in_success_response(["Upgrade to Zulip Standard",
                                          "Something went wrong. Please contact"], response)
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
@@ -512,12 +476,7 @@ class StripeTest(ZulipTestCase):
                                         mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
-        self.client_post("/upgrade/", {
-            'invoiced_seat_count': 123,
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
-            'plan': Plan.CLOUD_ANNUAL,
-            'billing_modality': 'send_invoice'})
+        self.upgrade(invoice=True)
         process_all_billing_log_entries()
 
         # Check that we correctly created a Customer in Stripe
@@ -630,11 +589,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         do_create_customer(user, stripe_create_token().id)
         self.login(user.email)
-        self.client_post("/upgrade/", {'invoiced_seat_count': 123,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'send_invoice'})
+        self.upgrade(invoice=True)
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         self.assertEqual('Billed by invoice', payment_method_string(stripe_customer))
 
@@ -643,12 +598,7 @@ class StripeTest(ZulipTestCase):
         realm = do_create_realm('realm1', 'realm1')
         user = do_create_user('name@realm1.com', 'password', realm, 'name', 'name')
         self.login(user.email, password='password', realm=realm)
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'},
-                         HTTP_HOST=realm.host)
+        self.upgrade(realm=realm)
         with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
             process_downgrade(user)
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
@@ -659,12 +609,7 @@ class StripeTest(ZulipTestCase):
         realm = do_create_realm('realm2', 'realm2')
         user = do_create_user('name@realm2.com', 'password', realm, 'name', 'name')
         self.login(user.email, password='password', realm=realm)
-        self.client_post("/upgrade/", {'invoiced_seat_count': 123,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'send_invoice'},
-                         HTTP_HOST=realm.host)
+        self.upgrade(invoice=True, realm=realm)
         with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
             process_downgrade(user)
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
@@ -678,12 +623,7 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         attach_discount_to_realm(user, 85)
         self.login(user.email)
-        response = self.client_get("/upgrade/")
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.get_signed_seat_count_from_response(response),
-                                       'salt': self.get_salt_from_response(response),
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         assert(stripe_customer.discount is not None)  # for mypy
         self.assertEqual(stripe_customer.discount.coupon.percent_off, 85.0)
@@ -711,11 +651,7 @@ class StripeTest(ZulipTestCase):
                        mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         realm = get_realm('zulip')
         self.assertEqual(realm.has_seat_based_plan, True)
         self.assertEqual(realm.plan_type, Realm.STANDARD)
@@ -772,11 +708,7 @@ class StripeTest(ZulipTestCase):
                                        mock2: Mock, mock1: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         self.assertEqual(stripe_customer.account_balance, 0)
         stripe_subscription = extract_current_subscription(stripe_customer)
@@ -802,11 +734,7 @@ class StripeTest(ZulipTestCase):
                                     mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
-        self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                       'signed_seat_count': self.signed_seat_count,
-                                       'salt': self.salt,
-                                       'plan': Plan.CLOUD_ANNUAL,
-                                       'billing_modality': 'charge_automatically'})
+        self.upgrade()
         # Try replacing with a valid card
         stripe_token = stripe_create_token(card_number='5555555555554444').id
         response = self.client_post("/json/billing/sources/change",
@@ -860,11 +788,7 @@ class StripeTest(ZulipTestCase):
         new_seat_count = 123
         # change the seat count while the user is going through the upgrade flow
         with patch('corporate.lib.stripe.get_seat_count', return_value=new_seat_count):
-            self.client_post("/upgrade/", {'stripeToken': stripe_create_token().id,
-                                           'signed_seat_count': self.signed_seat_count,
-                                           'salt': self.salt,
-                                           'plan': Plan.CLOUD_ANNUAL,
-                                           'billing_modality': 'charge_automatically'})
+            self.upgrade()
         check_billing_processor_update(RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, new_seat_count)
 
         # Test USER_CREATED
