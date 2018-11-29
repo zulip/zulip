@@ -592,7 +592,9 @@ urls += [
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends,
         name='zerver.views.auth.api_get_auth_backends'),
 
-    # used by mobile apps to check if they are compatible with the server
+    # Used as a global check by all mobile clients, which currently send
+    # requests to https://zulipchat.com/compatibility almost immediately after
+    # starting up.
     url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
 
     # This json format view used by the mobile apps accepts a username
