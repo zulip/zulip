@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
+from __future__ import (print_function)
 import os
 import sys
 import types
+if sys.version_info <= (3, 0):
+    print("Error: Zulip is a Python 3 project, and cannot be run with Python 2.")
+    print("Use e.g. `/path/to/manage.py` not `python /path/to/manage.py`.")
+    sys.exit(1)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
