@@ -599,7 +599,7 @@ urls += [
     # Used as a global check by all mobile clients, which currently send
     # requests to https://zulipchat.com/compatibility almost immediately after
     # starting up.
-    url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
+    url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
