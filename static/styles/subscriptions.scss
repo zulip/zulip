@@ -625,27 +625,27 @@ form#add_new_subscription {
     background-position: center center;
 }
 
-.stream-row .check svg {
+.stream-row img.check {
     fill: transparent;
     width: 70%;
     margin: 0% 15%;
 }
 
-.stream-row:hover .check:not(.checked) svg,
-.stream-row.active:hover .check:not(.checked) svg {
+.stream-row:hover img.check:not(.checked),
+.stream-row.active:hover img.check:not(.checked) {
     fill: hsl(0, 0%, 87%);
 }
 
-.stream-row .check:not(.checked):hover svg,
-.stream-row.active .check:not(.checked):hover svg {
+.stream-row img.check:not(.checked):hover,
+.stream-row.active img.check:not(.checked):hover {
     fill: hsl(0, 0%, 72%);
 }
 
-.stream-row .check.checked:hover svg {
+.stream-row img.check.checked:hover {
     opacity: 0.5;
 }
 
-.stream-row .checked svg {
+.stream-row img.checked {
     fill: hsl(170, 48%, 54%);
 }
 
