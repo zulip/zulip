@@ -12,8 +12,12 @@ You've joined the Zulip organization {{ realm_name }}.
 
 {{ _('Your account details:') }}
 * {{ _('Organization URL:') }} {{ realm_uri }}
+{% if ldap %}
 {% if ldap_username %}
-* {{ _('LDAP username:') }} {{ ldap_username }}
+* {{ _('Username:') }} {{ ldap_username }}
+{% else %}
+* {{ _('Use your LDAP account to login') }}
+{% endif %}
 {% else %}
 * {{ _('Email:') }} {{ email }}
 {% endif %}

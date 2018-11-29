@@ -3,11 +3,13 @@ import os
 import random
 import re
 import ujson
+import ldap
 
 from django.conf import settings
 from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
+from django_auth_ldap.config import LDAPSearch
 from email.utils import formataddr
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Optional
@@ -52,12 +54,11 @@ class TestFollowupEmails(ZulipTestCase):
                          "http://zulip.testserver/help/getting-your-organization-started-with-zulip")
         self.assertNotIn("ldap_username", email_data["context"])
 
+    # See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
+    # for case details.
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
-    def test_day1_email_ldap_login_credentials(self) -> None:
-        password = "testing"
-        email = "newuser@zulip.com"
-
+    def test_day1_email_ldap_case_a_login_credentials(self) -> None:
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
 
         ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
@@ -65,11 +66,42 @@ class TestFollowupEmails(ZulipTestCase):
         mock_ldap = MockLDAP()
         mock_initialize.return_value = mock_ldap
 
-        full_name = 'New LDAP fullname'
+        mock_ldap.directory = {
+            "uid=newuser@zulip.com,ou=users,dc=zulip,dc=com": {
+                'userPassword': 'testing',
+                'fn': ['full_name'],
+                'sn': ['shortname'],
+            }
+        }
+
+        ldap_search = LDAPSearch("ou=users,dc=zulip,dc=com", ldap.SCOPE_SUBTREE, "(email=%(user)s)")
+        with self.settings(
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
+                AUTH_LDAP_USER_SEARCH=ldap_search):
+            self.login_with_return("newuser@zulip.com", "testing")
+            user = UserProfile.objects.get(email="newuser@zulip.com")
+            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+
+            self.assertEqual(len(scheduled_emails), 2)
+            email_data = ujson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["context"]["ldap"], True)
+            self.assertEqual(email_data["context"]["ldap_username"], "newuser@zulip.com")
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_day1_email_ldap_case_b_login_credentials(self) -> None:
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
                 'userPassword': 'testing',
-                'fn': [full_name],
+                'fn': ['full_name'],
                 'sn': ['shortname'],
             }
         }
@@ -78,14 +110,48 @@ class TestFollowupEmails(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            self.login_with_return(email, password)
 
-            user = UserProfile.objects.get(email=email)
+            self.login_with_return("newuser@zulip.com", "testing")
+
+            user = UserProfile.objects.get(email="newuser@zulip.com")
             scheduled_emails = ScheduledEmail.objects.filter(user=user)
 
             self.assertEqual(len(scheduled_emails), 2)
             email_data = ujson.loads(scheduled_emails[0].data)
-            self.assertEqual(email_data["context"]["ldap_username"], True)
+            self.assertEqual(email_data["context"]["ldap"], True)
+            self.assertEqual(email_data["context"]["ldap_username"], "newuser")
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_day1_email_ldap_case_c_login_credentials(self) -> None:
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': ['full_name'],
+                'sn': ['shortname'],
+                'email': ['newuser_email@zulip.com'],
+            }
+        }
+
+        with self.settings(
+                LDAP_EMAIL_ATTR='email',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            self.login_with_return("newuser", "testing")
+            user = UserProfile.objects.get(email="newuser_email@zulip.com")
+            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+
+            self.assertEqual(len(scheduled_emails), 2)
+            email_data = ujson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["context"]["ldap"], True)
+            self.assertNotIn("ldap_username", email_data["context"])
 
     def test_followup_emails_count(self) -> None:
         hamlet = self.example_user("hamlet")

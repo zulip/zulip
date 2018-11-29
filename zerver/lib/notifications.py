@@ -523,8 +523,15 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context['getting_started_link'] = "https://zulipchat.com"
 
     from zproject.backends import email_belongs_to_ldap, require_email_format_usernames
-    if email_belongs_to_ldap(user.realm, user.email) and not require_email_format_usernames(user.realm):
-        context["ldap_username"] = True
+
+    if email_belongs_to_ldap(user.realm, user.email):
+        context["ldap"] = True
+        if settings.LDAP_APPEND_DOMAIN:
+            for backend in get_backends():
+                if isinstance(backend, LDAPBackend):
+                    context["ldap_username"] = backend.django_to_ldap_username(user.email)
+        elif not settings.LDAP_EMAIL_ATTR:
+            context["ldap_username"] = user.email
 
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
