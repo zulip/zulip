@@ -198,9 +198,10 @@ class StripeTest(ZulipTestCase):
             for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False) \
                                            .exclude(email__in=[
                                                self.example_email('hamlet'),
-                                               self.example_email('iago')])[:seat_count - 8]:
+                                               self.example_email('iago')])[6:]:
                 user.is_active = False
                 user.save(update_fields=['is_active'])
+        self.assertEqual(get_seat_count(get_realm('zulip')), 8)
         self.seat_count = 8
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
 
