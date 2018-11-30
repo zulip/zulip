@@ -1,6 +1,6 @@
 {
   "account_balance": 0,
-  "created": 1543270381,
+  "created": 1543537894,
   "currency": "usd",
   "default_source": "card_NORMALIZED00000000000001",
   "delinquent": false,
@@ -20,13 +20,13 @@
       "object": "coupon",
       "percent_off": 25.0,
       "redeem_by": null,
-      "times_redeemed": 19,
+      "times_redeemed": 20,
       "valid": true
     },
     "customer": "cus_NORMALIZED0001",
     "end": null,
     "object": "discount",
-    "start": 1543270387,
+    "start": 1543537901,
     "subscription": null
   },
   "email": "hamlet@zulip.com",
@@ -77,12 +77,12 @@
       {
         "application_fee_percent": null,
         "billing": "charge_automatically",
-        "billing_cycle_anchor": 1543270384,
+        "billing_cycle_anchor": 1543537898,
         "cancel_at_period_end": false,
         "canceled_at": null,
-        "created": 1543270384,
-        "current_period_end": 1574806384,
-        "current_period_start": 1543270384,
+        "created": 1543537898,
+        "current_period_end": 1575073898,
+        "current_period_start": 1543537898,
         "customer": "cus_NORMALIZED0001",
         "days_until_due": null,
         "default_source": null,
@@ -92,7 +92,7 @@
         "items": {
           "data": [
             {
-              "created": 1543270384,
+              "created": 1543537898,
               "id": "si_NORMALIZED0001",
               "metadata": {},
               "object": "subscription_item",
@@ -151,7 +151,7 @@
           "usage_type": "licensed"
         },
         "quantity": 8,
-        "start": 1543270384,
+        "start": 1543537898,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,

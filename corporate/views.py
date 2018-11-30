@@ -79,6 +79,12 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if customer is not None and customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
+    percent_off = 0
+    if customer is not None:
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        if stripe_customer.discount is not None:
+            percent_off = stripe_customer.discount.coupon.percent_off
+
     if request.method == 'POST':
         try:
             plan, seat_count = unsign_and_check_upgrade_parameters(
@@ -126,6 +132,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'nickname_monthly': Plan.CLOUD_MONTHLY,
             'annual_price': 8000,
             'monthly_price': 800,
+            'percent_off': percent_off,
         }),
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)

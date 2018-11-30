@@ -10,7 +10,7 @@
   "charge": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1574806384,
+  "date": 1575073898,
   "default_source": null,
   "description": "",
   "discount": {
@@ -28,13 +28,13 @@
       "object": "coupon",
       "percent_off": 25.0,
       "redeem_by": null,
-      "times_redeemed": 19,
+      "times_redeemed": 20,
       "valid": true
     },
     "customer": "cus_NORMALIZED0001",
     "end": null,
     "object": "discount",
-    "start": 1543270387,
+    "start": 1543537901,
     "subscription": null
   },
   "due_date": null,
@@ -52,8 +52,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1606428784,
-          "start": 1574806384
+          "end": 1606696298,
+          "start": 1575073898
         },
         "plan": {
           "active": true,
@@ -90,13 +90,13 @@
   },
   "livemode": false,
   "metadata": {},
-  "next_payment_attempt": 1574809984,
+  "next_payment_attempt": 1575077498,
   "number": "NORMALI-0001",
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1574806384,
-  "period_start": 1543270384,
+  "period_end": 1575073898,
+  "period_start": 1543537898,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,
