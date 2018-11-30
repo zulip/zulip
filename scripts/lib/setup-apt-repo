@@ -5,7 +5,7 @@ SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
 STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
-apt-get install -y lsb-release apt-transport-https
+apt-get install -y lsb-release apt-transport-https gnupg
 
 SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
 
