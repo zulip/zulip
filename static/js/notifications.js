@@ -514,12 +514,22 @@ function get_message_header(message) {
 }
 
 exports.check_local_echo_in_view = function (local_id) {
-    var echo_offset_y = $('[zid=' + Math.round(local_id) + ']').offset().top;
+    var echo = $('[zid=' + Math.floor(local_id) + ']');
+    var echo_offset_y = 0;
+    // We can have two message elements with the same `zid`
+    // Just go through both of them and check which one has the top offset non 0
+    // Offset 0 means that the element or its parent elements have display none
+    echo.each(function () {
+        var temp_offset = $(this).offset().top;
+        if (temp_offset !== 0) {
+            echo_offset_y = temp_offset;
+            return false;
+        }
+    });
+
     var compose_box_y = $('#compose-container').offset().top;
 
-    // When the local_echo is not in view, the top offset is 0
-    // When the top offset is positive and less than compose box top
-    // it can be considered to be in view
+    // Check if it lies between top and above the compose box
     if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
         return true;
     }
