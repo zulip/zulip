@@ -58,7 +58,7 @@ Here's some notes on how we handle these cases:
 * `hashchange.hashchanged` is the function used to handle the hash,
   when it's changed by the browser (e.g. by clicking on a link to
   a hash or using the back button).
-* `hashchange.should_ignore` is the function `hashchange.hashchanged`
+* `hashchange.is_overlay_hash` is the function `hashchange.hashchanged`
   calls to make it possible for clicking on links within a given
   overlay to just be managed by code within that overlay, without
   reloading the overlay.  It primarily checks whether the "main hash"
@@ -67,7 +67,7 @@ Here's some notes on how we handle these cases:
   browser.  If the hash is nonempty, it ensures the relevant overlay
   is opened or the user is narrowed as part of the page load process.
   It is also is called by `hashchange.hashchanged` when the hash
-  changes outside the `should_ignore` boundaries, since the logic for
+  changes outside the `is_overlay_hash` boundaries, since the logic for
   that case is identical.
 * `reload.preserve_state` is called when a server-initiated browser
   reload happens, and encodes a bunch of data like the current scroll
