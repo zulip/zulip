@@ -226,7 +226,6 @@ function hashchanged(from_reload, e) {
     var old_hash;
     if (e) {
         old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
-        ignore.last = old_hash;
         ignore.old_hash = window.location.hash;
     }
 
