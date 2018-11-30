@@ -60,8 +60,8 @@ number of purposes:
      [queue](../subsystems/queuing.html) to actually send the
      message.  See `maybe_enqueue_notifications` and related code for
      this part of the logic.
-   * Splicing user-dependent data (like the `mentioned` flag) into the
-   events, so that each user correctly.
+   * Splicing user-dependent data (E.g. `flags` such as when the user
+   was `mentioned`) into the events.
    * Handling the [local echo details](#local-echo).
    * Handling certain client configuration options that affect
      messages.  E.g. determining whether to send the
