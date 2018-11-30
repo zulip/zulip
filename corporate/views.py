@@ -64,7 +64,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     # do for a particular customer that would land them here. E.g. by default we
     # don't support ACH for automatic payments, but in theory we could add it for
     # a customer via the Stripe dashboard.
-    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))
+    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
