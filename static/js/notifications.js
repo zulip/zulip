@@ -560,6 +560,23 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
+exports.get_echo_not_in_view_reason = function (message) {
+    // Check the offset of last message in the current message list;
+    // if it's placement is such that it's below the compose box, we
+    // notify the user.
+    var row = current_msg_list.get_row(message.local_id);
+    var echo_offset_y = row.offset().top;
+    var compose_box_y = $('#compose-container').offset().top;
+
+    if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
+        // If it lies between top and above the compose box
+        // Message can be said to be visible
+        return;
+    }
+
+    return "Sent! Scroll down to view your message.";
+};
+
 exports.get_local_notify_mix_reason = function (message) {
     var row = current_msg_list.get_row(message.id);
     if (row.length > 0) {
@@ -604,6 +621,15 @@ exports.notify_local_mixes = function (messages) {
         var reason = exports.get_local_notify_mix_reason(message);
 
         if (!reason) {
+            // Check if local_echo is not in view
+            reason = exports.get_echo_not_in_view_reason(message);
+            if (reason) {
+                exports.notify_above_composebox(reason, "", null, "");
+                setTimeout(function () {
+                    $('#out-of-view-notification').hide();
+                }, 3000);
+            }
+
             // This is more than normal, just continue on.
             return;
         }
