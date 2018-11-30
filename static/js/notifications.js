@@ -513,6 +513,37 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
+exports.check_local_echo_in_view = function () {
+    var focused_table_rec_rows = $('.focused_table .recipient_row');
+    // If the message is first in its narrow
+    if (focused_table_rec_rows.length === 0) {
+        return true;
+    }
+    var echo = $(focused_table_rec_rows[focused_table_rec_rows.length - 1]).children('.message_row');
+    // Offset of the last message in the focused_table
+    var echo_offset_y = $(echo[echo.length - 1]).offset().top;
+    var compose_box_y = $('#compose-container').offset().top;
+    // Check if it lies between top and above the compose box
+    if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
+        return true;
+    }
+    return false;
+};
+
+exports.notify_local_echo_not_in_view = function (local_id) {
+    // Once the message is inserted, we can check if the local_echo is in view
+    // Before that, we need to check if there were no other local mixes
+    // For that we can simply check if there were any notifications while inserting
+    if ($('#out-of-view-notification').css('display') === 'none') {
+        if (!exports.check_local_echo_in_view(local_id)) {
+            exports.notify_above_composebox("Sending...", "compose_notification_narrow_by_topic", local_id, "");
+            // If notified
+            return true;
+        }
+    }
+    return false;
+};
+
 exports.get_local_notify_mix_reason = function (message) {
     var row = current_msg_list.get_row(message.id);
     if (row.length > 0) {
