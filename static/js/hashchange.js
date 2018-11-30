@@ -160,7 +160,7 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- READ THIS BEFORE TOUCHING ANYTHING BELOW -- -- -- -- -- -- //
 // HOW THE HASH CHANGE MECHANISM WORKS:
 // When going from a normal view (eg. `narrow/is/private`) to a settings panel
-// (eg. `settings/your-bots`) it should trigger the `should_ignore` function and
+// (eg. `settings/your-bots`) it should trigger the `is_overlay_hash` function and
 // return `true` for the current state -- we want to ignore hash changes from
 // within the settings page. The previous hash however should return `false` as it
 // was outside of the scope of settings.
@@ -214,12 +214,12 @@ var get_hash_group = (function () {
     };
 }());
 
-function should_ignore(hash) {
+function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
     var main_hash = get_main_hash(hash);
 
-    return ignore_list.indexOf(main_hash) > -1;
+    return overlay_list.indexOf(main_hash) > -1;
 }
 
 function hashchanged(from_reload, e) {
@@ -232,17 +232,17 @@ function hashchanged(from_reload, e) {
 
     var base = get_main_hash(window.location.hash);
 
-    if (should_ignore(window.location.hash)) {
+    if (is_overlay_hash(window.location.hash)) {
         // if the old has was a standard non-ignore hash OR the ignore hash
         // base has changed, something needs to run again.
 
-        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
+        if (!is_overlay_hash(old_hash || "#") || ignore.group !== get_hash_group(base)) {
             if (ignore.group !== get_hash_group(base)) {
                 overlays.close_for_hash_change();
             }
 
             // now only if the previous one should not have been ignored.
-            if (!should_ignore(old_hash || "#")) {
+            if (!is_overlay_hash(old_hash || "#")) {
                 ignore.prev = old_hash;
             }
 
@@ -261,7 +261,7 @@ function hashchanged(from_reload, e) {
         } else {
             subs.change_state(get_hash_components());
         }
-    } else if (!should_ignore(window.location.hash) && !ignore.flag) {
+    } else if (!is_overlay_hash(window.location.hash) && !ignore.flag) {
         overlays.close_for_hash_change();
         changing_hash = true;
         var ret = do_hashchange(from_reload);
@@ -286,7 +286,7 @@ exports.initialize = function () {
 };
 
 exports.exit_overlay = function (callback) {
-    if (should_ignore(window.location.hash)) {
+    if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
         ignore.flag = true;
         window.location.hash = ignore.prev || "#";
