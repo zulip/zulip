@@ -42,6 +42,7 @@ preparing a new release.
   add to SHA256SUMS.txt.
 * Create a Git tag and push the tag.
 * Post the release on GitHub, using the text from `changelog.md`.
+* Update the [Docker image](https://github.com/zulip/docker-zulip) and do a release of that.
 * Publish the blog post.
 * Email zulip-announce, and send a tweet.
 * For a major release: submit blog post to aggregators.
