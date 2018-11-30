@@ -1,6 +1,6 @@
 {
   "account_balance": 0,
-  "created": 1543554341,
+  "created": 1543537894,
   "currency": "usd",
   "default_source": {
     "address_city": "Pacific",
@@ -13,14 +13,14 @@
     "address_zip_check": "pass",
     "brand": "Visa",
     "country": "US",
-    "customer": "cus_NORMALIZED0002",
+    "customer": "cus_NORMALIZED0001",
     "cvc_check": "pass",
     "dynamic_last4": null,
     "exp_month": 3,
     "exp_year": 2033,
     "fingerprint": "NORMALIZED000001",
     "funding": "credit",
-    "id": "card_NORMALIZED00000000000002",
+    "id": "card_NORMALIZED00000000000001",
     "last4": "4242",
     "metadata": {},
     "name": "Ada Starr",
@@ -28,15 +28,38 @@
     "tokenization_method": null
   },
   "delinquent": false,
-  "description": "realm1 (realm1)",
-  "discount": null,
-  "email": "name@realm1.com",
-  "id": "cus_NORMALIZED0002",
-  "invoice_prefix": "NORMA02",
+  "description": "zulip (Zulip Dev)",
+  "discount": {
+    "coupon": {
+      "amount_off": null,
+      "created": 1539831972,
+      "currency": null,
+      "duration": "forever",
+      "duration_in_months": null,
+      "id": "wqkGqs8t",
+      "livemode": false,
+      "max_redemptions": null,
+      "metadata": {},
+      "name": "85% discount",
+      "object": "coupon",
+      "percent_off": 85.0,
+      "redeem_by": null,
+      "times_redeemed": 42,
+      "valid": true
+    },
+    "customer": "cus_NORMALIZED0001",
+    "end": null,
+    "object": "discount",
+    "start": 1543537894,
+    "subscription": null
+  },
+  "email": "hamlet@zulip.com",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
   "livemode": false,
   "metadata": {
-    "realm_id": "4",
-    "realm_str": "realm1"
+    "realm_id": "1",
+    "realm_str": "zulip"
   },
   "object": "customer",
   "shipping": null,
@@ -53,14 +76,14 @@
         "address_zip_check": "pass",
         "brand": "Visa",
         "country": "US",
-        "customer": "cus_NORMALIZED0002",
+        "customer": "cus_NORMALIZED0001",
         "cvc_check": "pass",
         "dynamic_last4": null,
         "exp_month": 3,
         "exp_year": 2033,
         "fingerprint": "NORMALIZED000001",
         "funding": "credit",
-        "id": "card_NORMALIZED00000000000002",
+        "id": "card_NORMALIZED00000000000001",
         "last4": "4242",
         "metadata": {},
         "name": "Ada Starr",
@@ -71,30 +94,30 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/customers/cus_NORMALIZED0002/sources"
+    "url": "/v1/customers/cus_NORMALIZED0001/sources"
   },
   "subscriptions": {
     "data": [
       {
         "application_fee_percent": null,
         "billing": "charge_automatically",
-        "billing_cycle_anchor": 1543554341,
+        "billing_cycle_anchor": 1543537898,
         "cancel_at_period_end": false,
         "canceled_at": null,
-        "created": 1543554341,
-        "current_period_end": 1575090341,
-        "current_period_start": 1543554341,
-        "customer": "cus_NORMALIZED0002",
+        "created": 1543537898,
+        "current_period_end": 1575073898,
+        "current_period_start": 1543537898,
+        "customer": "cus_NORMALIZED0001",
         "days_until_due": null,
         "default_source": null,
         "discount": null,
         "ended_at": null,
-        "id": "sub_NORMALIZED0002",
+        "id": "sub_NORMALIZED0001",
         "items": {
           "data": [
             {
-              "created": 1543554342,
-              "id": "si_NORMALIZED0002",
+              "created": 1543537898,
+              "id": "si_NORMALIZED0001",
               "metadata": {},
               "object": "subscription_item",
               "plan": {
@@ -118,14 +141,14 @@
                 "trial_period_days": null,
                 "usage_type": "licensed"
               },
-              "quantity": 1,
-              "subscription": "sub_NORMALIZED0002"
+              "quantity": 8,
+              "subscription": "sub_NORMALIZED0001"
             }
           ],
           "has_more": false,
           "object": "list",
           "total_count": 1,
-          "url": "/v1/subscription_items?subscription=sub_NORMALIZED0002"
+          "url": "/v1/subscription_items?subscription=sub_NORMALIZED0001"
         },
         "livemode": false,
         "metadata": {},
@@ -151,8 +174,8 @@
           "trial_period_days": null,
           "usage_type": "licensed"
         },
-        "quantity": 1,
-        "start": 1543554341,
+        "quantity": 8,
+        "start": 1543537898,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,
@@ -162,7 +185,7 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/customers/cus_NORMALIZED0002/subscriptions"
+    "url": "/v1/customers/cus_NORMALIZED0001/subscriptions"
   },
   "tax_info": null,
   "tax_info_verification": null
