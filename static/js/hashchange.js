@@ -172,7 +172,7 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var ignore = {
     flag: false,
-    prev: null,
+    hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
     group: null,
 };
@@ -242,7 +242,7 @@ function hashchanged(from_reload, e) {
 
             // now only if the previous one should not have been ignored.
             if (!is_overlay_hash(old_hash || "#")) {
-                ignore.prev = old_hash;
+                ignore.hash_before_overlay = old_hash;
             }
 
             if (base === "streams") {
@@ -288,7 +288,7 @@ exports.exit_overlay = function (callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
         ignore.flag = true;
-        window.location.hash = ignore.prev || "#";
+        window.location.hash = ignore.hash_before_overlay || "#";
         if (typeof callback === "function") {
             callback();
         }
