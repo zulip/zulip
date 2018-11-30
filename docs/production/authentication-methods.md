@@ -253,7 +253,8 @@ implementation of `GitHubAuthBackend`, which is a small wrapper around
 the popular [python-social-auth] library.  You can write a similar
 class, and add a few settings to control it.  To test your backend
 (which we'd require for a pull request to the main Zulip codebase,)
-see the framework in `test_auth_backends.py`.
+see the framework in `test_auth_backends.py`.  See also our
+[developer documentation on testing auth backends](../subsystems/auth.html).
 
 [python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
 
