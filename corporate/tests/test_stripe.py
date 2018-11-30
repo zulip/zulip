@@ -638,6 +638,8 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         attach_discount_to_realm(user, 85)
         self.login(user.email)
+        # Check that the discount appears in page_params
+        self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
         self.upgrade()
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
         assert(stripe_customer.discount is not None)  # for mypy

@@ -78,9 +78,9 @@ $(function () {
     if (window.location.pathname === '/upgrade/') {
         var prices = {};
         prices[page_params.nickname_annual] =
-            page_params.annual_price
+            page_params.annual_price * (1 - page_params.percent_off / 100);
         prices[page_params.nickname_monthly] =
-            page_params.monthly_price
+            page_params.monthly_price * (1 - page_params.percent_off / 100);
 
         function update_charged_amount(plan_nickname) {
             $("#charged_amount").text(

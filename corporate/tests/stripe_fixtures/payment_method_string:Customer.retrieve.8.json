@@ -1,7 +1,7 @@
 {
   "account_balance": 0,
   "created": 1543554344,
-  "currency": null,
+  "currency": "usd",
   "default_source": null,
   "delinquent": false,
   "description": "realm2 (realm2)",
