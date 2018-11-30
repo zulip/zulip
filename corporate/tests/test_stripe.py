@@ -625,7 +625,9 @@ class StripeTest(ZulipTestCase):
         with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
             process_downgrade(user)
         stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        self.assertIn('Unknown payment method.', payment_method_string(stripe_customer))
+        # Could be either one, depending on exact timing with the test
+        self.assertTrue('Unknown payment method' in payment_method_string(stripe_customer) or
+                        'No payment method' in payment_method_string(stripe_customer))
 
     @mock_stripe("Customer.save", "Customer.retrieve", "Customer.create", "Invoice.upcoming",
                  "Token.create", "Charge.list", "Subscription.create")
