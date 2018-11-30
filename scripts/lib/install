@@ -315,7 +315,7 @@ if [ "$has_appserver" = 0 ]; then
         # If we're installing from a git checkout, we need to run
         # `tools/update-prod-static` in order to build the static
         # assets.
-        su zulip -c "/home/zulip/deployments/current/tools/update-prod-static --authors-not-required"
+        su zulip -c '/home/zulip/deployments/current/tools/update-prod-static --authors-not-required'
     fi
 fi
 
@@ -331,7 +331,7 @@ if [ -n "$NO_INIT_DB" ]; then
 
  Stopping because --no-init-db was passed.  To complete the installation, run:
 
-   su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+   su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 EOF
     exit 0
 fi
