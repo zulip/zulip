@@ -10,7 +10,7 @@
   "charge": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1574808829,
+  "date": 1575222256,
   "default_source": null,
   "description": "",
   "discount": null,
@@ -22,16 +22,16 @@
       {
         "amount": -984000,
         "currency": "usd",
-        "description": "Unused time on 123 \u00d7 Zulip Cloud Premium after 26 Nov 2018",
+        "description": "Unused time on 123 \u00d7 Zulip Cloud Premium after 01 Dec 2018",
         "discountable": false,
-        "id": "ii_1DasxhGh0CmXqmnwkp7QaeXP",
-        "invoice_item": "ii_1DasxhGh0CmXqmnwkp7QaeXP",
+        "id": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1574808829,
-          "start": 1543272833
+          "end": 1575222256,
+          "start": 1543686264
         },
         "plan": {
           "active": true,
@@ -63,16 +63,16 @@
       {
         "amount": -64000,
         "currency": "usd",
-        "description": "Unused time on 8 \u00d7 Zulip Cloud Premium after 26 Nov 2018",
+        "description": "Unused time on 8 \u00d7 Zulip Cloud Premium after 01 Dec 2018",
         "discountable": false,
-        "id": "ii_1DasxgGh0CmXqmnwTfZM8HU8",
-        "invoice_item": "ii_1DasxgGh0CmXqmnwTfZM8HU8",
+        "id": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1574808829,
-          "start": 1543272831
+          "end": 1575222256,
+          "start": 1543686260
         },
         "plan": {
           "active": true,
@@ -104,16 +104,16 @@
       {
         "amount": 984000,
         "currency": "usd",
-        "description": "Remaining time on 123 \u00d7 Zulip Cloud Premium after 26 Nov 2018",
+        "description": "Remaining time on 123 \u00d7 Zulip Cloud Premium after 01 Dec 2018",
         "discountable": false,
-        "id": "ii_1DasxgGh0CmXqmnwgPcO2e7X",
-        "invoice_item": "ii_1DasxgGh0CmXqmnwgPcO2e7X",
+        "id": "ii_NORMALIZED00000000000003",
+        "invoice_item": "ii_NORMALIZED00000000000003",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1574808829,
-          "start": 1543272831
+          "end": 1575222256,
+          "start": 1543686260
         },
         "plan": {
           "active": true,
@@ -152,8 +152,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1606431229,
-          "start": 1574808829
+          "end": 1606844656,
+          "start": 1575222256
         },
         "plan": {
           "active": true,
@@ -190,19 +190,19 @@
   },
   "livemode": false,
   "metadata": {},
-  "next_payment_attempt": 1574812429,
+  "next_payment_attempt": 1575225856,
   "number": "NORMALI-0001",
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1574808829,
-  "period_start": 1543272829,
+  "period_end": 1575222256,
+  "period_start": 1543686256,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,
   "status": "draft",
   "subscription": "sub_NORMALIZED0001",
-  "subscription_proration_date": 1543272833,
+  "subscription_proration_date": 1543686264,
   "subtotal": -64000,
   "tax": 0,
   "tax_percent": 0.0,

@@ -1,8 +1,52 @@
 {
   "account_balance": 0,
-  "created": 1543088274,
+  "created": 1543686354,
   "currency": "usd",
-  "default_source": null,
+  "default_source": {
+    "ach_credit_transfer": {
+      "account_number": "test_NORMALIZED02",
+      "bank_name": "TEST BANK",
+      "fingerprint": "NORMALIZED000001",
+      "refund_account_holder_name": null,
+      "refund_account_holder_type": null,
+      "refund_account_number": null,
+      "refund_routing_number": null,
+      "routing_number": "110000000",
+      "swift_code": "TSTEZ122"
+    },
+    "amount": null,
+    "client_secret": "src_client_secret_NORMALIZED00000000000001",
+    "created": 1543686357,
+    "currency": "usd",
+    "customer": "cus_NORMALIZED0001",
+    "flow": "receiver",
+    "id": "src_NORMALIZED00000000000001",
+    "livemode": false,
+    "metadata": {},
+    "object": "source",
+    "owner": {
+      "address": null,
+      "email": "amount_0@stripe.com",
+      "name": null,
+      "phone": null,
+      "verified_address": null,
+      "verified_email": null,
+      "verified_name": null,
+      "verified_phone": null
+    },
+    "receiver": {
+      "address": "000000000-test_NORMALIZED02",
+      "amount_charged": 0,
+      "amount_received": 0,
+      "amount_returned": 0,
+      "refund_attributes_method": "email",
+      "refund_attributes_status": "missing"
+    },
+    "statement_descriptor": null,
+    "status": "pending",
+    "type": "ach_credit_transfer",
+    "usage": "reusable"
+  },
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
@@ -17,10 +61,56 @@
   "object": "customer",
   "shipping": null,
   "sources": {
-    "data": [],
+    "data": [
+      {
+        "ach_credit_transfer": {
+          "account_number": "test_NORMALIZED02",
+          "bank_name": "TEST BANK",
+          "fingerprint": "NORMALIZED000001",
+          "refund_account_holder_name": null,
+          "refund_account_holder_type": null,
+          "refund_account_number": null,
+          "refund_routing_number": null,
+          "routing_number": "110000000",
+          "swift_code": "TSTEZ122"
+        },
+        "amount": null,
+        "client_secret": "src_client_secret_NORMALIZED00000000000001",
+        "created": 1543686357,
+        "currency": "usd",
+        "customer": "cus_NORMALIZED0001",
+        "flow": "receiver",
+        "id": "src_NORMALIZED00000000000001",
+        "livemode": false,
+        "metadata": {},
+        "object": "source",
+        "owner": {
+          "address": null,
+          "email": "amount_0@stripe.com",
+          "name": null,
+          "phone": null,
+          "verified_address": null,
+          "verified_email": null,
+          "verified_name": null,
+          "verified_phone": null
+        },
+        "receiver": {
+          "address": "000000000-test_NORMALIZED02",
+          "amount_charged": 0,
+          "amount_received": 0,
+          "amount_returned": 0,
+          "refund_attributes_method": "email",
+          "refund_attributes_status": "missing"
+        },
+        "statement_descriptor": null,
+        "status": "pending",
+        "type": "ach_credit_transfer",
+        "usage": "reusable"
+      }
+    ],
     "has_more": false,
     "object": "list",
-    "total_count": 0,
+    "total_count": 1,
     "url": "/v1/customers/cus_NORMALIZED0001/sources"
   },
   "subscriptions": {
@@ -28,12 +118,12 @@
       {
         "application_fee_percent": null,
         "billing": "send_invoice",
-        "billing_cycle_anchor": 1543088275,
+        "billing_cycle_anchor": 1543686356,
         "cancel_at_period_end": false,
         "canceled_at": null,
-        "created": 1543088275,
-        "current_period_end": 1574624275,
-        "current_period_start": 1543088275,
+        "created": 1543686356,
+        "current_period_end": 1575222356,
+        "current_period_start": 1543686356,
         "customer": "cus_NORMALIZED0001",
         "days_until_due": 30,
         "default_source": null,
@@ -43,7 +133,7 @@
         "items": {
           "data": [
             {
-              "created": 1543088275,
+              "created": 1543686356,
               "id": "si_NORMALIZED0001",
               "metadata": {},
               "object": "subscription_item",
@@ -102,7 +192,7 @@
           "usage_type": "licensed"
         },
         "quantity": 8,
-        "start": 1543088276,
+        "start": 1543686359,
         "status": "active",
         "tax_percent": 0.0,
         "trial_end": null,

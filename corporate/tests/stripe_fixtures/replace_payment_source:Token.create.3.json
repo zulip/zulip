@@ -24,7 +24,7 @@
     "tokenization_method": null
   },
   "client_ip": "0.0.0.0",
-  "created": 1543394655,
+  "created": 1500000000,
   "id": "tok_NORMALIZED00000000000003",
   "livemode": false,
   "object": "token",
