@@ -356,6 +356,8 @@ def process_billing_log_entry(processor: BillingProcessor, log_row: RealmAuditLo
     customer = Customer.objects.get(realm=log_row.realm)
     timestamp = datetime_to_timestamp(log_row.event_time)
     idempotency_key = 'process_billing_log_entry:%s' % (log_row.id,)
+    if settings.TEST_SUITE:
+        idempotency_key += '+' + generate_random_token(10)
     extra_args = {}  # type: Dict[str, Any]
     if log_row.extra_data is not None:
         extra_args = ujson.loads(log_row.extra_data)

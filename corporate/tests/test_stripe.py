@@ -795,7 +795,8 @@ class StripeTest(ZulipTestCase):
                 self.assertEqual(subscription.quantity, quantity)
                 log_row = RealmAuditLog.objects.filter(
                     event_type=event_type, requires_billing_update=True).order_by('-id').first()
-                self.assertEqual(idempotency_key, 'process_billing_log_entry:%s' % (log_row.id,))
+                self.assertEqual(idempotency_key.split('+')[0],
+                                 'process_billing_log_entry:%s' % (log_row.id,))
                 self.assertEqual(subscription.proration_date, datetime_to_timestamp(log_row.event_time))
             with patch.object(stripe.Subscription, 'save', autospec=True,
                               side_effect=check_subscription_save):
