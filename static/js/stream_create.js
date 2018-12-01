@@ -234,11 +234,6 @@ exports.new_stream_clicked = function (stream_name) {
     if (window.innerWidth > 700) {
         $('#create_stream_name').focus();
     }
-
-    // change the hash to #streams/new to allow for linking and
-    // easy discovery.
-
-    window.location.hash = "#streams/new";
 };
 
 function clear_error_display() {

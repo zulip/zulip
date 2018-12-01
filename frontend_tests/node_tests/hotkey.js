@@ -227,7 +227,7 @@ run_test('basic_chars', () => {
     overlays.is_active = return_true;
     assert_mapping('S', 'subs.keyboard_sub');
     assert_mapping('V', 'subs.view_stream');
-    assert_mapping('n', 'subs.new_stream_clicked');
+    assert_mapping('n', 'subs.open_create_stream');
     page_params.can_create_streams = false;
     assert_unmapped('n');
     overlays.streams_open = return_false;
