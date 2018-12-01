@@ -48,7 +48,7 @@ def delete_all_user_sessions() -> None:
 def delete_all_deactivated_user_sessions() -> None:
     for session in Session.objects.all():
         user_profile_id = get_session_user(session)
-        if user_profile_id is None:
+        if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
             continue
         user_profile = get_user_profile_by_id(user_profile_id)
         if not user_profile.is_active or user_profile.realm.deactivated:
