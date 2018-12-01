@@ -596,6 +596,22 @@ exports.onlaunchtrigger = function () {
     }
 };
 
+exports.switch_to_stream_row = function (stream_id) {
+    var stream_row = row_for_stream_id(stream_id);
+
+    get_active_data().row.removeClass("active");
+    stream_row.addClass("active");
+
+    scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
+
+    // It's dubious that we need this timeout any more.
+    setTimeout(function () {
+        if (stream_id === get_active_data().id) {
+            stream_row.click();
+        }
+    }, 100);
+};
+
 exports.change_state = (function () {
     var prevent_next = false;
 
@@ -616,18 +632,8 @@ exports.change_state = (function () {
                 maybe_select_tab("subscribed");
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
-                var stream_row = row_for_stream_id(hash.arguments[0]);
-
-                get_active_data().row.removeClass("active");
-                stream_row.addClass("active");
-
-                scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
-
-                setTimeout(function () {
-                    if (hash.arguments[0] === get_active_data().id) {
-                        stream_row.click();
-                    }
-                }, 100);
+                var stream_id = hash.arguments[0];
+                exports.switch_to_stream_row(stream_id);
             }
         }
     };
