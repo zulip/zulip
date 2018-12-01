@@ -168,6 +168,7 @@ function do_hashchange(from_reload) {
 // hash change functionally inert.
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var state = {
+    is_internal_change: false,
     is_exiting_overlay: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
@@ -269,7 +270,29 @@ function hashchanged_overlay(old_hash) {
     state.old_overlay_group = get_hash_group(base);
 }
 
+exports.update_browser_history = function (new_hash) {
+    var old_hash = window.location.hash;
+
+    if (old_hash === new_hash) {
+        // If somebody is calling us with the same hash we already have, it's
+        // probably harmless, and we just ignore it.  But it could be a symptom
+        // of disorganized code that's prone to an infinite loop of repeatedly
+        // assigning the same hash.
+        blueslip.info('ignoring probably-harmless call to pdate_browser_history: ' + new_hash);
+        return;
+    }
+
+    state.old_hash = old_hash;
+    state.is_internal_change = true;
+    window.location.hash = new_hash;
+};
+
 function hashchanged(from_reload, e) {
+    if (state.is_internal_change) {
+        state.is_internal_change = false;
+        return;
+    }
+
     var old_hash;
     if (e) {
         old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
