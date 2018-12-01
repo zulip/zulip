@@ -612,29 +612,26 @@ exports.switch_to_stream_row = function (stream_id) {
     }, 100);
 };
 
-exports.change_state = (function () {
+exports.change_state = function (hash) {
+    if (hash.arguments.length === 0) {
+        return;
+    }
 
-    // TODO: flatten this code
-    var func = function (hash) {
-        // if there are any arguments the state should be modified.
-        if (hash.arguments.length > 0) {
-            // if in #streams/new form.
-            if (hash.arguments[0] === "new") {
-                exports.do_open_create_stream();
-            } else if (hash.arguments[0] === "all") {
-                maybe_select_tab("all-streams");
-            } else if (hash.arguments[0] === "subscribed") {
-                maybe_select_tab("subscribed");
-            // if the first argument is a valid number.
-            } else if (/\d+/.test(hash.arguments[0])) {
-                var stream_id = hash.arguments[0];
-                exports.switch_to_stream_row(stream_id);
-            }
-        }
-    };
+    var base = hash.arguments[0];
 
-    return func;
-}());
+    // if in #streams/new form.
+    if (base === "new") {
+        exports.do_open_create_stream();
+    } else if (base === "all") {
+        maybe_select_tab("all-streams");
+    } else if (base === "subscribed") {
+        maybe_select_tab("subscribed");
+    // if the first argument is a valid number.
+    } else if (/\d+/.test(base)) {
+        var stream_id = base;
+        exports.switch_to_stream_row(stream_id);
+    }
+};
 
 exports.launch = function (hash) {
     exports.setup_page(function () {
