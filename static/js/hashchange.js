@@ -174,7 +174,7 @@ var ignore = {
     is_exiting_overlay: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-    group: null,
+    old_overlay_group: null,
 };
 
 function get_main_hash(hash) {
@@ -228,8 +228,8 @@ function hashchanged_overlay(old_hash) {
     // if the old has was a standard non-ignore hash OR the ignore hash
     // base has changed, something needs to run again.
 
-    if (!is_overlay_hash(old_hash || "#") || ignore.group !== get_hash_group(base)) {
-        if (ignore.group !== get_hash_group(base)) {
+    if (!is_overlay_hash(old_hash || "#") || ignore.old_overlay_group !== get_hash_group(base)) {
+        if (ignore.old_overlay_group !== get_hash_group(base)) {
             overlays.close_for_hash_change();
         }
 
@@ -249,7 +249,7 @@ function hashchanged_overlay(old_hash) {
             invite.launch();
         }
 
-        ignore.group = get_hash_group(base);
+        ignore.old_overlay_group = get_hash_group(base);
     } else {
         subs.change_state(get_hash_components());
     }
