@@ -613,14 +613,9 @@ exports.switch_to_stream_row = function (stream_id) {
 };
 
 exports.change_state = (function () {
-    var prevent_next = false;
 
+    // TODO: flatten this code
     var func = function (hash) {
-        if (prevent_next) {
-            prevent_next = false;
-            return;
-        }
-
         // if there are any arguments the state should be modified.
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
@@ -636,10 +631,6 @@ exports.change_state = (function () {
                 exports.switch_to_stream_row(stream_id);
             }
         }
-    };
-
-    func.prevent_once = function () {
-        prevent_next = true;
     };
 
     return func;
@@ -796,11 +787,7 @@ exports.do_open_create_stream = function () {
 
 exports.open_create_stream = function () {
     exports.do_open_create_stream();
-
-    // this will change the hash which will attempt to retrigger the create
-    // stream code, so we prevent this once.
-    exports.change_state.prevent_once();
-    window.location.hash = "#streams/new";
+    hashchange.update_browser_history('#streams/new');
 };
 
 
