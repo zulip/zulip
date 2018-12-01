@@ -613,7 +613,7 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         }
         if (event_name === 'n_key' && overlays.streams_open() && page_params.can_create_streams) {
-            subs.new_stream_clicked();
+            subs.open_create_stream();
             return true;
         }
         return false;
