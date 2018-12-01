@@ -170,7 +170,7 @@ function do_hashchange(from_reload) {
 // (eg. narrow/is/private). This saves the state, scroll position, and makes the
 // hash change functionally inert.
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
-var ignore = {
+var state = {
     is_exiting_overlay: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
@@ -228,14 +228,14 @@ function hashchanged_overlay(old_hash) {
     // if the old has was a standard non-ignore hash OR the ignore hash
     // base has changed, something needs to run again.
 
-    if (!is_overlay_hash(old_hash || "#") || ignore.old_overlay_group !== get_hash_group(base)) {
-        if (ignore.old_overlay_group !== get_hash_group(base)) {
+    if (!is_overlay_hash(old_hash || "#") || state.old_overlay_group !== get_hash_group(base)) {
+        if (state.old_overlay_group !== get_hash_group(base)) {
             overlays.close_for_hash_change();
         }
 
         // now only if the previous one should not have been ignored.
         if (!is_overlay_hash(old_hash || "#")) {
-            ignore.hash_before_overlay = old_hash;
+            state.hash_before_overlay = old_hash;
         }
 
         if (base === "streams") {
@@ -249,7 +249,7 @@ function hashchanged_overlay(old_hash) {
             invite.launch();
         }
 
-        ignore.old_overlay_group = get_hash_group(base);
+        state.old_overlay_group = get_hash_group(base);
     } else {
         subs.change_state(get_hash_components());
     }
@@ -258,8 +258,8 @@ function hashchanged_overlay(old_hash) {
 function hashchanged(from_reload, e) {
     var old_hash;
     if (e) {
-        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
-        ignore.old_hash = window.location.hash;
+        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
+        state.old_hash = window.location.hash;
     }
 
     if (is_overlay_hash(window.location.hash)) {
@@ -269,11 +269,11 @@ function hashchanged(from_reload, e) {
 
     // We know we are going to a "main screen" view at this point, but
     // it may have been due to us closing an overlay.
-    if (ignore.is_exiting_overlay) {
+    if (state.is_exiting_overlay) {
         // Some click handler or something caused us to exit the overlay,
         // and we updated the browser location.  When we get this function
         // triggered, we already did the work of closing the overlay.
-        ignore.is_exiting_overlay = false;
+        state.is_exiting_overlay = false;
         return;
     }
 
@@ -297,8 +297,8 @@ exports.initialize = function () {
 exports.exit_overlay = function (callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        ignore.is_exiting_overlay = true;
-        window.location.hash = ignore.hash_before_overlay || "#";
+        state.is_exiting_overlay = true;
+        window.location.hash = state.hash_before_overlay || "#";
         if (typeof callback === "function") {
             callback();
         }
