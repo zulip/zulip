@@ -881,7 +881,7 @@ exports.initialize = function () {
 
         $("#subscriptions_table").on("click", sel, function (e) {
             if ($(e.target).is(sel)) {
-                stream_edit.show_stream_row(this, false);
+                stream_edit.open_edit_panel_empty();
             }
         });
     }());

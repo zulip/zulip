@@ -78,18 +78,22 @@ exports.show_sub_settings = function (sub) {
     $settings.find(".regular_subscription_settings").addClass('in');
 };
 
-exports.show_stream_row = function (node, show_settings) {
+function clear_edit_panel() {
     $(".display-type #add_new_stream_title").hide();
     $(".display-type #stream_settings_title, .right .settings").show();
     $(".stream-row.active").removeClass("active");
-    if (show_settings) {
-        subs.show_subs_pane.settings();
+}
 
-        $(node).addClass("active");
-        stream_edit.show_settings_for(node);
-    } else {
-        subs.show_subs_pane.nothing_selected();
-    }
+exports.open_edit_panel_for_row = function (stream_row) {
+    clear_edit_panel();
+    subs.show_subs_pane.settings();
+    $(stream_row).addClass("active");
+    stream_edit.show_settings_for(stream_row);
+};
+
+exports.open_edit_panel_empty = function () {
+    clear_edit_panel();
+    subs.show_subs_pane.nothing_selected();
 };
 
 function format_member_list_elem(email) {
@@ -636,7 +640,7 @@ exports.initialize = function () {
         var regular_sub_settings = sub_settings.find(".regular_subscription_settings");
         if (!sub.subscribed) {
             regular_sub_settings.addClass("in");
-            exports.show_stream_row(stream_row, true);
+            exports.open_edit_panel_for_row(stream_row);
         } else {
             regular_sub_settings.removeClass("in");
         }
@@ -679,7 +683,7 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            exports.show_stream_row(this, true);
+            exports.open_edit_panel_for_row(this);
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
             setup_subscriptions_stream_hash(sub);
