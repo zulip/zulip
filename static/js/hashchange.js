@@ -264,19 +264,25 @@ function hashchanged(from_reload, e) {
 
     if (is_overlay_hash(window.location.hash)) {
         hashchanged_overlay(old_hash);
-    } else if (!ignore.is_exiting_overlay) {
-        overlays.close_for_hash_change();
-        changing_hash = true;
-        var ret = do_hashchange(from_reload);
-        changing_hash = false;
-        return ret;
-    // once we unignore the hash, we have to set the hash back to what it was
-    // originally (eg. '#narrow/stream/999-Denmark' instead of '#settings'). We
-    // therefore ignore the hash change once more while we change it back for
-    // no interruptions.
-    } else if (ignore.is_exiting_overlay) {
-        ignore.is_exiting_overlay = false;
+        return;
     }
+
+    // We know we are going to a "main screen" view at this point, but
+    // it may have been due to us closing an overlay.
+    if (ignore.is_exiting_overlay) {
+        // Some click handler or something caused us to exit the overlay,
+        // and we updated the browser location.  When we get this function
+        // triggered, we already did the work of closing the overlay.
+        ignore.is_exiting_overlay = false;
+        return;
+    }
+
+    // We are changing to a "main screen" view.
+    overlays.close_for_hash_change();
+    changing_hash = true;
+    var ret = do_hashchange(from_reload);
+    changing_hash = false;
+    return ret;
 }
 
 exports.initialize = function () {
