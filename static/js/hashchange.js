@@ -171,7 +171,7 @@ function do_hashchange(from_reload) {
 // hash change functionally inert.
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var ignore = {
-    flag: false,
+    is_exiting_overlay: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
     group: null,
@@ -264,7 +264,7 @@ function hashchanged(from_reload, e) {
 
     if (is_overlay_hash(window.location.hash)) {
         hashchanged_overlay(old_hash);
-    } else if (!ignore.flag) {
+    } else if (!ignore.is_exiting_overlay) {
         overlays.close_for_hash_change();
         changing_hash = true;
         var ret = do_hashchange(from_reload);
@@ -274,8 +274,8 @@ function hashchanged(from_reload, e) {
     // originally (eg. '#narrow/stream/999-Denmark' instead of '#settings'). We
     // therefore ignore the hash change once more while we change it back for
     // no interruptions.
-    } else if (ignore.flag) {
-        ignore.flag = false;
+    } else if (ignore.is_exiting_overlay) {
+        ignore.is_exiting_overlay = false;
     }
 }
 
@@ -291,7 +291,7 @@ exports.initialize = function () {
 exports.exit_overlay = function (callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        ignore.flag = true;
+        ignore.is_exiting_overlay = true;
         window.location.hash = ignore.hash_before_overlay || "#";
         if (typeof callback === "function") {
             callback();
