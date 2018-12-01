@@ -132,9 +132,6 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#streams":
-        ui_util.change_tab_to("#streams");
-        break;
     case "#keyboard-shortcuts":
         info_overlay.show("keyboard-shortcuts");
         break;
@@ -147,11 +144,11 @@ function do_hashchange(from_reload) {
     case "#drafts":
         ui_util.change_tab_to("#drafts");
         break;
+    case "#invite":
+    case "#streams":
     case "#organization":
-        ui_util.change_tab_to("#organization");
-        break;
     case "#settings":
-        ui_util.change_tab_to("#settings");
+        blueslip.error('overlay logic skipped for: ' + hash);
         break;
     }
     return false;
