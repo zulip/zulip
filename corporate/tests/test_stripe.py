@@ -112,10 +112,12 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
     for fixture_file in fixture_files_for_function(decorated_function):
         os.remove(fixture_file)
 
-def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
+def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
-        ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24)]
+        ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
+        ('txn', 24), ('ch', 24), ('in', 24), ('ii', 24), ('test', 12), ('src_client_secret', 24),
+        ('src', 24)]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations = {
         "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
@@ -126,6 +128,7 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
         '"invoice_prefix": "[A-Za-z0-9]{7}"': '"invoice_prefix": "NORMA%02d"',
         '"fingerprint": "[A-Za-z0-9]{16}"': '"fingerprint": "NORMALIZED%06d"',
         '"number": "[A-Za-z0-9]{7}-[A-Za-z0-9]{4}"': '"number": "NORMALI-%04d"',
+        '"address": "[A-Za-z0-9]{9}-test_[A-Za-z0-9]{12}"': '"address": "000000000-test_NORMALIZED%02d"',
     })
 
     normalized_values = {pattern: {}
@@ -138,12 +141,19 @@ def normalize_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
                 if match not in normalized_values[pattern]:
                     normalized_values[pattern][match] = translation % (len(normalized_values[pattern]) + 1,)
                 file_content = file_content.replace(match, normalized_values[pattern][match])
-        # Overwrite all IP addresses
+        file_content = re.sub(r'"risk_score": \d+', '"risk_score": 00', file_content)
+        file_content = re.sub(r'"times_redeemed": \d+', '"times_redeemed": 00', file_content)
+        # Dates
+        file_content = re.sub(r'[0-3]\d [A-Z][a-z]{2} 20[1-2]\d', 'NORMALIZED DATE', file_content)
+        # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
+        if "timestamps" not in keep:
+            file_content = re.sub(r': 1[5-9][0-9]{8},', ': 1000000000,', file_content)
+
         with open(fixture_file, "w") as f:
             f.write(file_content)
 
-def mock_stripe(*mocked_function_names: str,
+def mock_stripe(*mocked_function_names: str, keep: List[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
@@ -164,7 +174,7 @@ def mock_stripe(*mocked_function_names: str,
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
                 val = decorated_function(*args, **kwargs)
-                normalize_fixture_data(decorated_function)
+                normalize_fixture_data(decorated_function, keep)
                 return val
             else:
                 return decorated_function(*args, **kwargs)
@@ -270,7 +280,8 @@ class StripeTest(ZulipTestCase):
             response = self.client_get("/upgrade/")
             self.assert_in_success_response(["Page not found (404)"], response)
 
-    @mock_stripe("Customer.retrieve", "Subscription.create", "Customer.create", "Token.create", "Invoice.upcoming")
+    @mock_stripe("Customer.retrieve", "Subscription.create", "Customer.create", "Token.create",
+                 "Invoice.upcoming", keep=["timestamps"])
     def test_initial_upgrade(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -352,7 +363,8 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock_stripe("Token.create", "Customer.create", "Subscription.create", "Customer.retrieve")
+    @mock_stripe("Token.create", "Customer.create", "Subscription.create",
+                 "Customer.retrieve", keep=["timestamps"])
     def test_upgrade_with_outdated_seat_count(
             self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         self.login(self.example_email("hamlet"))
@@ -484,7 +496,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
     @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
-                 "Customer.retrieve", "Invoice.list", "Invoice.upcoming")
+                 "Customer.retrieve", "Invoice.list", "Invoice.upcoming", keep=["timestamps"])
     def test_upgrade_billing_by_invoice(self, mock6: Mock, mock5: Mock, mock4: Mock, mock3: Mock,
                                         mock2: Mock, mock1: Mock) -> None:
         user = self.example_user("hamlet")
@@ -663,7 +675,7 @@ class StripeTest(ZulipTestCase):
     # subscription for more than 0 time.
     @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save", "Invoice.upcoming",
                  "Subscription.create", "Subscription.retrieve", "Subscription.save",
-                 "Subscription.delete", "Token.create")
+                 "Subscription.delete", "Token.create", keep=["timestamps"])
     def test_downgrade(self, mock9: Mock, mock8: Mock, mock7: Mock, mock6: Mock, mock5: Mock,
                        mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
         user = self.example_user('iago')
@@ -782,7 +794,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    @mock_stripe("Subscription.create", "Customer.create", "Customer.retrieve", "Token.create")
+    @mock_stripe("Subscription.create", "Customer.create", "Customer.retrieve",
+                 "Token.create", keep=["timestamps"])
     def test_billing_quantity_changes_end_to_end(self, mock4: Mock, mock3: Mock, mock2: Mock,
                                                  mock1: Mock) -> None:
         # A full end to end check would check the InvoiceItems, but this test is partway there

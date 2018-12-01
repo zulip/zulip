@@ -10,11 +10,11 @@
   "charge": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1574624275,
+  "date": 1575321123,
   "default_source": null,
   "description": "",
   "discount": null,
-  "due_date": 1577216275,
+  "due_date": 1577913123,
   "ending_balance": -856000,
   "finalized_at": null,
   "lines": {
@@ -22,16 +22,16 @@
       {
         "amount": -984000,
         "currency": "usd",
-        "description": "Unused time on 123 \u00d7 Zulip Cloud Premium after 24 Nov 2018",
+        "description": "Unused time on 123 \u00d7 Zulip Cloud Premium after NORMALIZED DATE",
         "discountable": false,
-        "id": "ii_1Da6wyGh0CmXqmnwgou1s917",
-        "invoice_item": "ii_1Da6wyGh0CmXqmnwgou1s917",
+        "id": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1574624275,
-          "start": 1543088275
+          "end": 1575321123,
+          "start": 1543785123
         },
         "plan": {
           "active": true,
@@ -63,16 +63,16 @@
       {
         "amount": 64000,
         "currency": "usd",
-        "description": "Remaining time on 8 \u00d7 Zulip Cloud Premium after 24 Nov 2018",
+        "description": "Remaining time on 8 \u00d7 Zulip Cloud Premium after NORMALIZED DATE",
         "discountable": false,
-        "id": "ii_1Da6wyGh0CmXqmnwKQBPI88u",
-        "invoice_item": "ii_1Da6wyGh0CmXqmnwKQBPI88u",
+        "id": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1574624275,
-          "start": 1543088275
+          "end": 1575321123,
+          "start": 1543785123
         },
         "plan": {
           "active": true,
@@ -111,8 +111,8 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1606246675,
-          "start": 1574624275
+          "end": 1606943523,
+          "start": 1575321123
         },
         "plan": {
           "active": true,
@@ -154,8 +154,8 @@
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1574624275,
-  "period_start": 1543088275,
+  "period_end": 1575321123,
+  "period_start": 1543785123,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,

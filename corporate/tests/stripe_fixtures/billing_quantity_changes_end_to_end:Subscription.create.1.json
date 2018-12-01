@@ -1,12 +1,12 @@
 {
   "application_fee_percent": null,
   "billing": "charge_automatically",
-  "billing_cycle_anchor": 1543439472,
+  "billing_cycle_anchor": 1543785081,
   "cancel_at_period_end": false,
   "canceled_at": null,
-  "created": 1543439472,
-  "current_period_end": 1574975472,
-  "current_period_start": 1543439472,
+  "created": 1543785081,
+  "current_period_end": 1575321081,
+  "current_period_start": 1543785081,
   "customer": "cus_NORMALIZED0001",
   "days_until_due": null,
   "default_source": null,
@@ -16,7 +16,7 @@
   "items": {
     "data": [
       {
-        "created": 1543439473,
+        "created": 1543785082,
         "id": "si_NORMALIZED0001",
         "metadata": {},
         "object": "subscription_item",
@@ -75,7 +75,7 @@
     "usage_type": "licensed"
   },
   "quantity": 8,
-  "start": 1543439472,
+  "start": 1543785081,
   "status": "active",
   "tax_percent": 0.0,
   "trial_end": null,
