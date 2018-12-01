@@ -225,34 +225,51 @@ function is_overlay_hash(hash) {
 function hashchanged_overlay(old_hash) {
     var base = get_main_hash(window.location.hash);
 
-    // if the old has was a standard non-ignore hash OR the ignore hash
-    // base has changed, something needs to run again.
+    var coming_from_overlay = is_overlay_hash(old_hash || '#');
 
-    if (!is_overlay_hash(old_hash || "#") || state.old_overlay_group !== get_hash_group(base)) {
-        if (state.old_overlay_group !== get_hash_group(base)) {
-            overlays.close_for_hash_change();
+    // Start by handling the specific case of going
+    // from something like streams/all to streams_subscribed.
+    //
+    // In most situations we skip by this logic and load
+    // the new overlay.
+    if (coming_from_overlay) {
+        if (state.old_overlay_group === get_hash_group(base)) {
+            if (base === 'streams') {
+                subs.change_state(get_hash_components());
+            }
+
+            // TODO: handle other cases like internal settings
+            //       changes.
+            return;
         }
-
-        // now only if the previous one should not have been ignored.
-        if (!is_overlay_hash(old_hash || "#")) {
-            state.hash_before_overlay = old_hash;
-        }
-
-        if (base === "streams") {
-            subs.launch(get_hash_components());
-        } else if (base === "drafts") {
-            drafts.launch();
-        } else if (/settings|organization/.test(base)) {
-            settings.setup_page();
-            admin.setup_page();
-        } else if (base === "invite") {
-            invite.launch();
-        }
-
-        state.old_overlay_group = get_hash_group(base);
-    } else {
-        subs.change_state(get_hash_components());
     }
+
+    // It's not super likely that an overlay is already open,
+    // but you can jump from /settings to /streams by using
+    // the browser's history menu or hand-editing the URL or
+    // whatever.  If so, just close the overlays.
+    if (state.old_overlay_group !== get_hash_group(base)) {
+        overlays.close_for_hash_change();
+    }
+
+    // NORMAL FLOW: basically, launch the overlay:
+
+    if (!coming_from_overlay) {
+        state.hash_before_overlay = old_hash;
+    }
+
+    if (base === "streams") {
+        subs.launch(get_hash_components());
+    } else if (base === "drafts") {
+        drafts.launch();
+    } else if (/settings|organization/.test(base)) {
+        settings.setup_page();
+        admin.setup_page();
+    } else if (base === "invite") {
+        invite.launch();
+    }
+
+    state.old_overlay_group = get_hash_group(base);
 }
 
 function hashchanged(from_reload, e) {
