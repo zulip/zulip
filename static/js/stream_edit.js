@@ -4,9 +4,9 @@ var exports = {};
 
 function setup_subscriptions_stream_hash(sub) {
     var id = sub.stream_id;
-    subs.change_state.prevent_once();
 
-    window.location.hash = "#streams" + "/" + id + "/" + hash_util.encodeHashComponent(sub.name);
+    var hash = "#streams" + "/" + id + "/" + hash_util.encodeHashComponent(sub.name);
+    hashchange.update_browser_history(hash);
 }
 
 function settings_for_sub(sub) {
