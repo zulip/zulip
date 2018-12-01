@@ -609,7 +609,7 @@ exports.change_state = (function () {
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
-                exports.new_stream_clicked();
+                exports.do_open_create_stream();
             } else if (hash.arguments[0] === "all") {
                 maybe_select_tab("all-streams");
             } else if (hash.arguments[0] === "subscribed") {
@@ -772,7 +772,10 @@ function ajaxUnsubscribe(sub) {
     });
 }
 
-exports.new_stream_clicked = function () {
+exports.do_open_create_stream = function () {
+    // Only call this directly for hash changes.
+    // Prefer open_create_stream().
+
     var stream = $.trim($("#search_stream_name").val());
 
     if (!should_list_all_streams()) {
@@ -784,6 +787,16 @@ exports.new_stream_clicked = function () {
 
     stream_create.new_stream_clicked(stream);
 };
+
+exports.open_create_stream = function () {
+    exports.do_open_create_stream();
+
+    // this will change the hash which will attempt to retrigger the create
+    // stream code, so we prevent this once.
+    exports.change_state.prevent_once();
+    window.location.hash = "#streams/new";
+};
+
 
 exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
@@ -806,10 +819,7 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
-        exports.new_stream_clicked();
-        // this will change the hash which will attempt to retrigger the create
-        // stream code, so we prevent this once.
-        exports.change_state.prevent_once();
+        exports.open_create_stream();
     });
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {
