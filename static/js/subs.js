@@ -481,14 +481,27 @@ var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 // Make it explicit that our toggler is not created right away.
 exports.toggler = undefined;
 
-function maybe_select_tab(tab_name) {
-    if (!exports.toggler) {
-        blueslip.warn('We tried to go to a tab before setup completed: ' + tab_name);
-        return;
+exports.switch_stream_tab = function (tab_name) {
+    /*
+        This switches the stream tab, but it doesn't update
+        the toggler widget.  You may instead want to
+        use `toggler.goto`.
+    */
+
+    if (tab_name === "all-streams") {
+        subscribed_only = false;
+    } else if (tab_name === "subscribed") {
+        subscribed_only = true;
     }
 
-    exports.toggler.goto(tab_name);
-}
+    exports.actually_filter_streams();
+
+    if (tab_name === "all-streams") {
+        hashchange.update_browser_history('#streams/all');
+    } else if (tab_name === "subscribed") {
+        hashchange.update_browser_history('#streams/subscribed');
+    }
+};
 
 exports.setup_page = function (callback) {
     // We should strongly consider only setting up the page once,
@@ -512,17 +525,7 @@ exports.setup_page = function (callback) {
                 { label: i18n.t("All streams"), key: "all-streams" },
             ],
             callback: function (value, key) {
-                // if you aren't on a particular stream (`streams/:id/:name`)
-                // then redirect to `streams/all` when you click "all-streams".
-                if (key === "all-streams") {
-                    window.location.hash = "streams/all";
-                    subscribed_only = false;
-                } else if (key === "subscribed") {
-                    window.location.hash = "streams/subscribed";
-                    subscribed_only = true;
-                }
-
-                exports.actually_filter_streams();
+                exports.switch_stream_tab(key);
             },
         });
 
@@ -623,9 +626,9 @@ exports.change_state = function (hash) {
     if (base === "new") {
         exports.do_open_create_stream();
     } else if (base === "all") {
-        maybe_select_tab("all-streams");
+        exports.toggler.goto('all-streams');
     } else if (base === "subscribed") {
-        maybe_select_tab("subscribed");
+        exports.toggler.goto('subscribed');
     // if the first argument is a valid number.
     } else if (/\d+/.test(base)) {
         var stream_id = base;
@@ -704,13 +707,11 @@ exports.keyboard_sub = function () {
 
 exports.toggle_view = function (event) {
     var active_data = get_active_data();
-    var hash;
+
     if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
-        hash = ['#streams', 'all'];
-        export_hash(hash);
+        exports.toggler.goto('all-streams');
     } else if (event === 'left_arrow' && active_data.tab.text() === 'All streams') {
-        hash = ['#streams', 'subscribed'];
-        export_hash(hash);
+        exports.toggler.goto('subscribed');
     }
 };
 
