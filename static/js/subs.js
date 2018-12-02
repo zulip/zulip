@@ -1,8 +1,5 @@
 var subs = (function () {
 
-var meta = {
-    callbacks: {},
-};
 var exports = {};
 
 exports.show_subs_pane = {
@@ -558,7 +555,6 @@ exports.setup_page = function (callback) {
 
         if (callback) {
             callback();
-            exports.onlaunchtrigger();
         }
     }
 
@@ -566,28 +562,6 @@ exports.setup_page = function (callback) {
 
     if (!should_list_all_streams()) {
         $('.create_stream_button').val(i18n.t("Subscribe"));
-    }
-};
-
-// add a function to run on subscription page launch by name,
-// and specify whether it should be kept or just run once (boolean).
-exports.onlaunch = function (name, callback, keep) {
-    meta.callbacks[name] = {
-        func: callback,
-        keep: keep,
-    };
-};
-
-exports.onlaunchtrigger = function () {
-    for (var x in meta.callbacks) {
-        if (typeof meta.callbacks[x].func === "function") {
-            meta.callbacks[x].func();
-
-            // delete if it should not be kept.
-            if (!meta.callbacks[x].keep) {
-                delete meta.callbacks[x];
-            }
-        }
     }
 };
 
