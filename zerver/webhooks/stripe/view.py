@@ -55,7 +55,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_success()
     if category == 'charge':
         if resource == 'charge':
-            if not topic:
+            if not topic:  # only in legacy fixtures
                 topic = 'charges'
             body = "{resource} for {amount} {verbed}".format(
                 resource=linkified_id(object_['id']),
@@ -207,6 +207,9 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
         'si': ('Subscription item', 'subscription_items'),
         # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
         'mbur': ('Usage record', None),
+
+        # Undocumented :|
+        'py': ('Payment', 'payments'),
 
         # Connect, Fraud, Orders, etc not implemented
     }  # type: Dict[str, Tuple[str, Optional[str]]]
