@@ -62,14 +62,6 @@ function get_hash_safe() {
     return "";
 }
 
-function export_hash(hash) {
-    var hash_components = {
-        base: hash.shift(),
-        arguments: hash,
-    };
-    exports.change_state(hash_components);
-}
-
 function selectText(element) {
     var range;
     var sel;
@@ -684,9 +676,8 @@ exports.switch_rows = function (event) {
 
     var row_data = get_row_data(switch_row);
     if (row_data) {
-        var switch_row_name = row_data.object.name;
-        var hash = ['#streams', row_data.id, switch_row_name];
-        export_hash(hash);
+        var stream_id = row_data.id;
+        exports.switch_to_stream_row(stream_id);
     } else if (event === 'up_arrow' && !row_data) {
         $('#search_stream_name').focus();
     }
