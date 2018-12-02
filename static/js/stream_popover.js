@@ -209,12 +209,8 @@ exports.register_stream_handlers = function () {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
 
-        hashchange.go_to_location("#streams");
-        // the template for subs needs to render.
-
-        subs.onlaunch("narrow_to_row", function () {
-            $(".stream-row[data-stream-id='" + sub.stream_id + "']").click();
-        }, false);
+        var stream_edit_hash = hash_util.stream_edit_uri(sub);
+        hashchange.go_to_location(stream_edit_hash);
     });
 
     // Narrow to stream
