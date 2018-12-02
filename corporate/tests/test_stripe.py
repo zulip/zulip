@@ -196,7 +196,7 @@ def process_all_billing_log_entries() -> None:
 
 class StripeTest(ZulipTestCase):
     @mock_stripe("Product.create", "Plan.create", "Coupon.create", generate=False)
-    def setUp(self, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def setUp(self, *mocks: Mock) -> None:
         call_command("setup_stripe")
         # Unfortunately this test suite is likely not robust to users being
         # added in populate_db. A quick hack for now to ensure get_seat_count is 8
@@ -282,7 +282,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Customer.retrieve", "Subscription.create", "Customer.create", "Token.create",
                  "Invoice.upcoming", keep=["timestamps"])
-    def test_initial_upgrade(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def test_initial_upgrade(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         response = self.client_get("/upgrade/")
@@ -342,8 +342,7 @@ class StripeTest(ZulipTestCase):
             self.assert_in_response(substring, response)
 
     @mock_stripe("Token.create", "Invoice.upcoming", "Customer.retrieve", "Customer.create", "Subscription.create")
-    def test_billing_page_permissions(self, mock5: Mock, mock4: Mock, mock3: Mock,
-                                      mock2: Mock, mock1: Mock) -> None:
+    def test_billing_page_permissions(self, *mocks: Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login(self.example_email('hamlet'))
         response = self.client_get("/billing/")
@@ -365,8 +364,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Token.create", "Customer.create", "Subscription.create",
                  "Customer.retrieve", keep=["timestamps"])
-    def test_upgrade_with_outdated_seat_count(
-            self, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def test_upgrade_with_outdated_seat_count(self, *mocks: Mock) -> None:
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
@@ -396,8 +394,7 @@ class StripeTest(ZulipTestCase):
             {'quantity': new_seat_count})
 
     @mock_stripe("Token.create", "Customer.create", "Subscription.create", "Customer.retrieve", "Customer.save")
-    def test_upgrade_where_subscription_save_fails_at_first(
-            self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def test_upgrade_where_subscription_save_fails_at_first(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         # From https://stripe.com/docs/testing#cards: Attaching this card to
@@ -487,7 +484,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response['error_description'], 'lowball seat count')
 
     @patch("corporate.lib.stripe.billing_logger.error")
-    def test_upgrade_with_uncaught_exception(self, mock1: Mock) -> None:
+    def test_upgrade_with_uncaught_exception(self, mock_: Mock) -> None:
         self.login(self.example_email("hamlet"))
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
             response = self.upgrade(talk_to_stripe=False)
@@ -497,8 +494,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
                  "Customer.retrieve", "Invoice.list", "Invoice.upcoming", keep=["timestamps"])
-    def test_upgrade_billing_by_invoice(self, mock6: Mock, mock5: Mock, mock4: Mock, mock3: Mock,
-                                        mock2: Mock, mock1: Mock) -> None:
+    def test_upgrade_billing_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         self.upgrade(invoice=True)
@@ -604,8 +600,7 @@ class StripeTest(ZulipTestCase):
     # histories don't throw errors
     @mock_stripe("Token.create", "Customer.retrieve", "Customer.create", "Subscription.create",
                  "Subscription.delete")
-    def test_payment_method_string(self, mock5: Mock, mock4: Mock, mock3: Mock, mock2: Mock,
-                                   mock1: Mock) -> None:
+    def test_payment_method_string(self, *mocks: Mock) -> None:
         # If you signup with a card, we should show your card as the payment method
         # Already tested in test_initial_upgrade
 
@@ -644,8 +639,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Customer.save", "Customer.retrieve", "Customer.create", "Invoice.upcoming",
                  "Token.create", "Charge.list", "Subscription.create")
-    def test_attach_discount_to_realm(self, mock7: Mock, mock6: Mock, mock5: Mock, mock4: Mock,
-                                      mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
         attach_discount_to_realm(user, 85)
@@ -676,8 +670,7 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save", "Invoice.upcoming",
                  "Subscription.create", "Subscription.retrieve", "Subscription.save",
                  "Subscription.delete", "Token.create", keep=["timestamps"])
-    def test_downgrade(self, mock9: Mock, mock8: Mock, mock7: Mock, mock6: Mock, mock5: Mock,
-                       mock4: Mock, mock3: Mock, mock2: Mock, mock1: Mock) -> None:
+    def test_downgrade(self, *mocks: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
         self.upgrade()
@@ -718,7 +711,7 @@ class StripeTest(ZulipTestCase):
             {'plan': None, 'quantity': 123})
 
     @mock_stripe("Customer.retrieve", "Customer.create")
-    def test_downgrade_with_no_subscription(self, mock2: Mock, mock1: Mock) -> None:
+    def test_downgrade_with_no_subscription(self, *mocks: Mock) -> None:
         user = self.example_user("iago")
         do_create_customer(user)
         self.login(user.email)
@@ -732,9 +725,7 @@ class StripeTest(ZulipTestCase):
     @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save", "Invoice.upcoming",
                  "Subscription.create", "Subscription.retrieve", "Subscription.save",
                  "Subscription.delete", "Token.create", "InvoiceItem.create")
-    def test_downgrade_with_money_owed(self, mock10: Mock, mock9: Mock, mock8: Mock, mock7: Mock,
-                                       mock6: Mock, mock5: Mock, mock4: Mock, mock3: Mock,
-                                       mock2: Mock, mock1: Mock) -> None:
+    def test_downgrade_with_money_owed(self, *mocks: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
         self.upgrade()
@@ -759,8 +750,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save",
                  "Subscription.create", "Token.create")
-    def test_replace_payment_source(self, mock5: Mock, mock4: Mock, mock3: Mock,
-                                    mock2: Mock, mock1: Mock) -> None:
+    def test_replace_payment_source(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         self.upgrade()
@@ -796,8 +786,7 @@ class StripeTest(ZulipTestCase):
 
     @mock_stripe("Subscription.create", "Customer.create", "Customer.retrieve",
                  "Token.create", keep=["timestamps"])
-    def test_billing_quantity_changes_end_to_end(self, mock4: Mock, mock3: Mock, mock2: Mock,
-                                                 mock1: Mock) -> None:
+    def test_billing_quantity_changes_end_to_end(self, *mocks: Mock) -> None:
         # A full end to end check would check the InvoiceItems, but this test is partway there
         self.login(self.example_email("hamlet"))
         processor = BillingProcessor.objects.create(
