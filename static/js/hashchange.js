@@ -287,6 +287,12 @@ exports.update_browser_history = function (new_hash) {
     window.location.hash = new_hash;
 };
 
+exports.go_to_location = function (hash) {
+    // Call this function when you WANT the hashchanged
+    // function to run.
+    window.location.hash = hash;
+};
+
 function hashchanged(from_reload, e) {
     if (state.is_internal_change) {
         state.is_internal_change = false;
