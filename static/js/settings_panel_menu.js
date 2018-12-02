@@ -12,9 +12,8 @@ exports.make_menu = function (opts) {
 
     self.show = function () {
         main_elem.show();
-        self.activate_section({
-            li_elem: curr_li,
-        });
+        var section = self.current_tab();
+        self.activate_section(section);
         curr_li.focus();
     };
 
@@ -24,6 +23,11 @@ exports.make_menu = function (opts) {
 
     self.current_tab = function () {
         return curr_li.data('section');
+    };
+
+    self.li_for_section = function (section) {
+        var li = $("#settings_overlay_container li[data-section='" + section + "']");
+        return li;
     };
 
     self.set_key_handlers = function (toggler) {
@@ -58,15 +62,12 @@ exports.make_menu = function (opts) {
         return true;
     };
 
-    self.activate_section = function (opts) {
-        var li_elem = opts.li_elem;
-        var section = li_elem.data('section');
-
-        curr_li = li_elem;
+    self.activate_section = function (section) {
+        curr_li = self.li_for_section(section);
 
         main_elem.children("li").removeClass("active no-border");
-        li_elem.addClass("active");
-        li_elem.prev().addClass("no-border");
+        curr_li.addClass("active");
+        curr_li.prev().addClass("no-border");
 
         var settings_section_hash = hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
@@ -88,15 +89,15 @@ exports.make_menu = function (opts) {
     };
 
     main_elem.on("click", "li[data-section]", function (e) {
-        self.activate_section({
-            li_elem: $(this),
-        });
+        var section = $(this).attr('data-section');
+
+        self.activate_section(section);
 
         var $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
 
-        settings.set_settings_header($(this).attr("data-section"));
+        settings.set_settings_header(section);
 
         e.stopPropagation();
     });
