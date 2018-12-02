@@ -155,12 +155,9 @@ exports.setup_page = function () {
     }
 };
 
-exports.launch_page = function (tab) {
-    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
-
+exports.launch_page = function (section) {
     overlays.open_settings();
-
-    $active_tab.click();
+    settings_panel_menu.normal_settings.activate_section(section);
 };
 
 exports.set_settings_header = function (key) {
