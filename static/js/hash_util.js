@@ -122,6 +122,11 @@ exports.by_conversation_and_time_uri = function (message) {
     return absolute_url + people.pm_perma_link(message) + suffix;
 };
 
+exports.stream_edit_uri = function (sub) {
+    var hash = "#streams" + "/" + sub.stream_id + "/" + exports.encodeHashComponent(sub.name);
+    return hash;
+};
+
 return exports;
 
 }());

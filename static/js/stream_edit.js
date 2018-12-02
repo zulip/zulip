@@ -3,9 +3,7 @@ var stream_edit = (function () {
 var exports = {};
 
 function setup_subscriptions_stream_hash(sub) {
-    var id = sub.stream_id;
-
-    var hash = "#streams" + "/" + id + "/" + hash_util.encodeHashComponent(sub.name);
+    var hash = hash_util.stream_edit_uri(sub);
     hashchange.update_browser_history(hash);
 }
 

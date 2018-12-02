@@ -63,6 +63,15 @@ run_test('hash_util', () => {
     encode_decode_operand(operator, operand, 'testing.20123');
 });
 
+run_test('test_stream_edit_uri', () => {
+    var sub = {
+        name: 'research & development',
+        stream_id: 42,
+    };
+    assert.equal(hash_util.stream_edit_uri(sub),
+                 '#streams/42/research.20.26.20development');
+});
+
 run_test('test_by_conversation_and_time_uri', () => {
     var message = {
         type: 'stream',
