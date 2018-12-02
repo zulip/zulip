@@ -67,7 +67,9 @@ exports.make_menu = function (opts) {
         main_elem.children("li").removeClass("active no-border");
         li_elem.addClass("active");
         li_elem.prev().addClass("no-border");
-        window.location.hash = hash_prefix + section;
+
+        var settings_section_hash = hash_prefix + section;
+        hashchange.update_browser_history(settings_section_hash);
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
