@@ -38,6 +38,7 @@ function filter_streams_by_search(streams, search_term) {
 }
 
 exports.sort_groups = function (search_term) {
+    var by_recency = false;
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
@@ -65,9 +66,16 @@ exports.sort_groups = function (search_term) {
         }
     });
 
-    pinned_streams.sort(util.strcmp);
-    normal_streams.sort(util.strcmp);
-    dormant_streams.sort(util.strcmp);
+    var sorting_fct = util.strcmp;
+    if (by_recency) {
+        sorting_fct = function (s1, s2) {
+            return recent_streams.compare_by_recency(stream_data.get_stream_id(s1), stream_data.get_stream_id(s2));
+        }
+    }
+
+    pinned_streams.sort(sorting_fct);
+    normal_streams.sort(sorting_fct);
+    dormant_streams.sort(sorting_fct);
 
     var same_as_before =
         previous_pinned !== undefined &&

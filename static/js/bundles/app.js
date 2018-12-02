@@ -60,6 +60,7 @@ import "js/topic_list.js";
 import "js/pm_list.js";
 import "js/pm_conversations.js";
 import "js/recent_senders.js";
+import "js/recent_streams.js";
 import "js/stream_sort.js";
 import "js/topic_generator.js";
 import "js/top_left_corner.js";
