@@ -140,6 +140,7 @@ exports.add_message_metadata = function (message) {
         });
 
         recent_senders.process_message_for_senders(message);
+        recent_streams.process_message_for_senders(message);
         break;
 
     case 'private':

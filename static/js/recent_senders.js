@@ -39,7 +39,7 @@ exports.compare_by_recency = function (user_a, user_b, stream_id, topic) {
 
     var topic_dict = topic_senders.get(stream_id);
     if (topic !== undefined && topic_dict !== undefined) {
-        var sender_message_ids = topic_dict.get(topic);
+        var sender_message_ids = topic_dict.get(topic); 
         if (sender_message_ids !== undefined) {
             b_message_id = sender_message_ids.get(user_b.user_id) || Number.NEGATIVE_INFINITY;
             a_message_id = sender_message_ids.get(user_a.user_id) || Number.NEGATIVE_INFINITY;
