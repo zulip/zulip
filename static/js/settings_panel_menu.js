@@ -79,6 +79,12 @@ exports.make_menu = function (opts) {
         load_section(section);
 
         self.get_panel().addClass('show');
+
+        var $settings_overlay_container = $("#settings_overlay_container");
+        $settings_overlay_container.find(".right").addClass("show");
+        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+
+        settings.set_settings_header(section);
     };
 
     self.get_panel = function () {
@@ -93,11 +99,8 @@ exports.make_menu = function (opts) {
 
         self.activate_section(section);
 
-        var $settings_overlay_container = $("#settings_overlay_container");
-        $settings_overlay_container.find(".right").addClass("show");
-        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
-
-        settings.set_settings_header(section);
+        // You generally want to add logic to activate_section,
+        // not to this click handler.
 
         e.stopPropagation();
     });
