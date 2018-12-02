@@ -55,6 +55,7 @@ exports.sort_groups = function (search_term) {
 
     _.each(streams, function (stream) {
         var sub = stream_data.get_sub(stream);
+        console.log(sub)
         var pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);
