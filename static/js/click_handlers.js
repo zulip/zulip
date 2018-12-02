@@ -511,7 +511,7 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        window.location.hash = "streams/all";
+        hashchange.go_to_location('streams/all');
     });
 
     $("#streams_filter_icon").click(function (e) {

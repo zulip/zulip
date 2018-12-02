@@ -84,7 +84,7 @@ exports.process = function (message_content) {
     }
 
     if (content === '/settings') {
-        window.location.hash = 'settings/your-account';
+        hashchange.go_to_location('settings/your-account');
         return true;
     }
 

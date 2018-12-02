@@ -710,7 +710,8 @@ exports.view_stream = function () {
     var active_data = get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
-        window.location.hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
+        var stream_narrow_hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
+        hashchange.go_to_location(stream_narrow_hash);
     }
 };
 
