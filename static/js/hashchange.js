@@ -169,7 +169,6 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var state = {
     is_internal_change: false,
-    is_exiting_overlay: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
     old_overlay_group: null,
@@ -310,16 +309,6 @@ function hashchanged(from_reload, e) {
         return;
     }
 
-    // We know we are going to a "main screen" view at this point, but
-    // it may have been due to us closing an overlay.
-    if (state.is_exiting_overlay) {
-        // Some click handler or something caused us to exit the overlay,
-        // and we updated the browser location.  When we get this function
-        // triggered, we already did the work of closing the overlay.
-        state.is_exiting_overlay = false;
-        return;
-    }
-
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     changing_hash = true;
@@ -340,11 +329,12 @@ exports.initialize = function () {
 exports.exit_overlay = function (callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        state.is_exiting_overlay = true;
-        window.location.hash = state.hash_before_overlay || "#";
+        var new_hash = state.hash_before_overlay || "#";
+        exports.update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();
         }
+
     }
 };
 
