@@ -171,7 +171,6 @@ var state = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-    old_overlay_group: null,
 };
 
 function get_main_hash(hash) {
@@ -187,30 +186,6 @@ function get_hash_components() {
     };
 }
 
-// different groups require different reloads. The grouped elements don't
-// require a reload or overlay change to run.
-var get_hash_group = (function () {
-    var groups = [
-        ["streams"],
-        ["settings", "organization"],
-        ["invite"],
-    ];
-
-    return function (value) {
-        var idx = null;
-
-        _.find(groups, function (o, i) {
-            if (o.indexOf(value) !== -1) {
-                idx = i;
-                return true;
-            }
-            return false;
-        });
-
-        return idx;
-    };
-}());
-
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
@@ -221,6 +196,7 @@ function is_overlay_hash(hash) {
 
 function hashchanged_overlay(old_hash) {
     var base = get_main_hash(window.location.hash);
+    var old_base = get_main_hash(old_hash);
 
     var coming_from_overlay = is_overlay_hash(old_hash || '#');
 
@@ -230,7 +206,7 @@ function hashchanged_overlay(old_hash) {
     // In most situations we skip by this logic and load
     // the new overlay.
     if (coming_from_overlay) {
-        if (state.old_overlay_group === get_hash_group(base)) {
+        if (base === old_base) {
             if (base === 'streams') {
                 subs.change_state(get_hash_components());
             }
@@ -245,7 +221,7 @@ function hashchanged_overlay(old_hash) {
     // but you can jump from /settings to /streams by using
     // the browser's history menu or hand-editing the URL or
     // whatever.  If so, just close the overlays.
-    if (state.old_overlay_group !== get_hash_group(base)) {
+    if (base !== old_base) {
         overlays.close_for_hash_change();
     }
 
@@ -265,8 +241,6 @@ function hashchanged_overlay(old_hash) {
     } else if (base === "invite") {
         invite.launch();
     }
-
-    state.old_overlay_group = get_hash_group(base);
 }
 
 exports.update_browser_history = function (new_hash) {
