@@ -12,7 +12,7 @@
   "object": "invoiceitem",
   "period": {
     "end": 1000000000,
-    "start": 1000000006
+    "start": 1000000000
   },
   "plan": null,
   "proration": false,
