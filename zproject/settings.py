@@ -787,6 +787,13 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
 
 # Bots that are created for each realm like the reminder-bot goes here.
 REALM_INTERNAL_BOTS = []
+# These are realm-internal bots that may exist in some organizations,
+# so configure power the setting, but should not be auto-created at this time.
+DISABLED_REALM_INTERNAL_BOTS = [
+    {'var_name': 'REMINDER_BOT',
+     'email_template': 'reminder-bot@%s',
+     'name': 'Reminder Bot'}
+]
 
 if PRODUCTION:
     INTERNAL_BOTS += [
@@ -801,7 +808,7 @@ if PRODUCTION:
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # Set the realm-specific bot names
-for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS:
+for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS + DISABLED_REALM_INTERNAL_BOTS:
     if vars().get(bot['var_name']) is None:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name']] = bot_email
