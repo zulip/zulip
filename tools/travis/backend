@@ -17,8 +17,7 @@ set -x
 
 ./tools/test-migrations
 ./tools/setup/optimize-svg
-# tabbott re-enabled test-documentation link checking, due to bugs slipping through.
-./tools/test-documentation # ${CIRCLECI:+--skip-check-links}
+./tools/test-documentation ${CIRCLECI:+--skip-check-links}
 ./tools/test-help-documentation
 ./tools/test-api
 ./tools/test-locked-requirements
