@@ -129,6 +129,9 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         '"fingerprint": "([A-Za-z0-9]{16})"': 'NORMALIZED%06d',
         '"number": "([A-Za-z0-9]{7}-[A-Za-z0-9]{4})"': 'NORMALI-%04d',
         '"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': '000000000-test_NORMALIZED%02d',
+        # Don't use (..) notation, since the matched strings may be small integers that will also match
+        # elsewhere in the file
+        '"realm_id": "[0-9]+"': '"realm_id": "%d"',
         # Does not preserve relative ordering of the timestamps, nor any
         # coordination with the timestamps in setUp mocks (e.g. Plan.created).
         ': (1[5-9][0-9]{8})(?![0-9-])': '1%09d',
@@ -147,6 +150,7 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         file_content = re.sub(r'(?<="risk_score": )(\d+)', '00', file_content)
         file_content = re.sub(r'(?<="times_redeemed": )(\d+)', '00', file_content)
         # Dates
+        file_content = re.sub(r'(?<="Date": )"(.* GMT)"', '"NORMALIZED DATETIME"', file_content)
         file_content = re.sub(r'[0-3]\d [A-Z][a-z]{2} 20[1-2]\d', 'NORMALIZED DATE', file_content)
         # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
