@@ -153,14 +153,27 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         with open(fixture_file, "w") as f:
             f.write(file_content)
 
-def mock_stripe(*mocked_function_names: str, keep: List[str]=[],
+MOCKED_STRIPE_FUNCTION_NAMES = ["stripe.{}".format(name) for name in [
+    "Charge.list",
+    "Coupon.create",
+    "Customer.create", "Customer.retrieve", "Customer.save",
+    "Invoice.list", "Invoice.upcoming",
+    "InvoiceItem.create",
+    "Plan.create",
+    "Product.create",
+    "Subscription.create", "Subscription.delete", "Subscription.retrieve", "Subscription.save",
+    "Token.create",
+]]
+
+def mock_stripe(keep: List[str]=[], dont_mock: List[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
             generate_fixture = GENERATE_STRIPE_FIXTURES
-        mocked_function_names_ = ["stripe.{}".format(name) for name in mocked_function_names]
-        for mocked_function_name in mocked_function_names_:
+        for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
+            if mocked_function_name in dont_mock:
+                continue
             mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
             if generate_fixture:
                 side_effect = generate_and_save_stripe_fixture(
@@ -195,7 +208,7 @@ def process_all_billing_log_entries() -> None:
         pass
 
 class StripeTest(ZulipTestCase):
-    @mock_stripe("Product.create", "Plan.create", "Coupon.create", generate=False)
+    @mock_stripe(generate=False)
     def setUp(self, *mocks: Mock) -> None:
         call_command("setup_stripe")
         # Unfortunately this test suite is likely not robust to users being
@@ -280,8 +293,7 @@ class StripeTest(ZulipTestCase):
             response = self.client_get("/upgrade/")
             self.assert_in_success_response(["Page not found (404)"], response)
 
-    @mock_stripe("Customer.retrieve", "Subscription.create", "Customer.create", "Token.create",
-                 "Invoice.upcoming", keep=["timestamps"])
+    @mock_stripe(keep=["timestamps"])
     def test_initial_upgrade(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -341,7 +353,7 @@ class StripeTest(ZulipTestCase):
                           'Card ending in 4242', 'Update card']:
             self.assert_in_response(substring, response)
 
-    @mock_stripe("Token.create", "Invoice.upcoming", "Customer.retrieve", "Customer.create", "Subscription.create")
+    @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login(self.example_email('hamlet'))
@@ -362,8 +374,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock_stripe("Token.create", "Customer.create", "Subscription.create",
-                 "Customer.retrieve", keep=["timestamps"])
+    @mock_stripe(keep=["timestamps"])
     def test_upgrade_with_outdated_seat_count(self, *mocks: Mock) -> None:
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
@@ -393,7 +404,7 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
-    @mock_stripe("Token.create", "Customer.create", "Subscription.create", "Customer.retrieve", "Customer.save")
+    @mock_stripe()
     def test_upgrade_where_subscription_save_fails_at_first(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -492,8 +503,7 @@ class StripeTest(ZulipTestCase):
                                          "Something went wrong. Please contact"], response)
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
-    @mock_stripe("Customer.create", "Subscription.create", "Subscription.save",
-                 "Customer.retrieve", "Invoice.list", "Invoice.upcoming", keep=["timestamps"])
+    @mock_stripe(keep=["timestamps"])
     def test_upgrade_billing_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -598,8 +608,7 @@ class StripeTest(ZulipTestCase):
     # This tests both the payment method string, and also is a very basic
     # test that the various upgrade paths involving non-standard payment
     # histories don't throw errors
-    @mock_stripe("Token.create", "Customer.retrieve", "Customer.create", "Subscription.create",
-                 "Subscription.delete")
+    @mock_stripe()
     def test_payment_method_string(self, *mocks: Mock) -> None:
         # If you signup with a card, we should show your card as the payment method
         # Already tested in test_initial_upgrade
@@ -637,8 +646,7 @@ class StripeTest(ZulipTestCase):
         self.assertTrue('Unknown payment method' in payment_method_string(stripe_customer) or
                         'No payment method' in payment_method_string(stripe_customer))
 
-    @mock_stripe("Customer.save", "Customer.retrieve", "Customer.create", "Invoice.upcoming",
-                 "Token.create", "Charge.list", "Subscription.create")
+    @mock_stripe()
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
@@ -667,9 +675,7 @@ class StripeTest(ZulipTestCase):
     # Tests upgrade followed by immediate downgrade. Doesn't test the
     # calculations for how much credit they should get if they had the
     # subscription for more than 0 time.
-    @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save", "Invoice.upcoming",
-                 "Subscription.create", "Subscription.retrieve", "Subscription.save",
-                 "Subscription.delete", "Token.create", keep=["timestamps"])
+    @mock_stripe(keep=["timestamps"])
     def test_downgrade(self, *mocks: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
@@ -710,7 +716,7 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_CHANGED).values_list('extra_data', flat=True).first()),
             {'plan': None, 'quantity': 123})
 
-    @mock_stripe("Customer.retrieve", "Customer.create")
+    @mock_stripe()
     def test_downgrade_with_no_subscription(self, *mocks: Mock) -> None:
         user = self.example_user("iago")
         do_create_customer(user)
@@ -722,9 +728,7 @@ class StripeTest(ZulipTestCase):
         self.assert_json_error_contains(response, 'Please reload')
         self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
 
-    @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save", "Invoice.upcoming",
-                 "Subscription.create", "Subscription.retrieve", "Subscription.save",
-                 "Subscription.delete", "Token.create", "InvoiceItem.create")
+    @mock_stripe()
     def test_downgrade_with_money_owed(self, *mocks: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
@@ -748,8 +752,7 @@ class StripeTest(ZulipTestCase):
         stripe_subscription = stripe.Subscription.retrieve(stripe_subscription.id)
         self.assertEqual(stripe_subscription.status, "canceled")
 
-    @mock_stripe("Customer.create", "Customer.retrieve", "Customer.save",
-                 "Subscription.create", "Token.create")
+    @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -784,8 +787,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    @mock_stripe("Subscription.create", "Customer.create", "Customer.retrieve",
-                 "Token.create", keep=["timestamps"])
+    @mock_stripe(keep=["timestamps"], dont_mock=["stripe.Subscription.save"])
     def test_billing_quantity_changes_end_to_end(self, *mocks: Mock) -> None:
         # A full end to end check would check the InvoiceItems, but this test is partway there
         self.login(self.example_email("hamlet"))

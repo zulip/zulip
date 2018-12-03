@@ -80,7 +80,7 @@
         "billing": "charge_automatically",
         "billing_cycle_anchor": 1000000000,
         "cancel_at_period_end": false,
-        "canceled_at": null,
+        "canceled_at": 1000000000,
         "created": 1000000000,
         "current_period_end": 1000000000,
         "current_period_start": 1000000000,
@@ -88,7 +88,7 @@
         "days_until_due": null,
         "default_source": null,
         "discount": null,
-        "ended_at": null,
+        "ended_at": 1000000000,
         "id": "sub_NORMALIZED0002",
         "items": {
           "data": [
@@ -153,7 +153,7 @@
         },
         "quantity": 1,
         "start": 1000000000,
-        "status": "active",
+        "status": "canceled",
         "tax_percent": 0.0,
         "trial_end": null,
         "trial_start": null
