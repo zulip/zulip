@@ -272,6 +272,11 @@ function hashchanged_overlay(old_hash) {
 exports.update_browser_history = function (new_hash) {
     var old_hash = window.location.hash;
 
+    if (!new_hash.startsWith('#')) {
+        blueslip.error('programming error: prefix hashes with #: ' + new_hash);
+        return;
+    }
+
     if (old_hash === new_hash) {
         // If somebody is calling us with the same hash we already have, it's
         // probably harmless, and we just ignore it.  But it could be a symptom
