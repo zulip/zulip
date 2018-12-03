@@ -31,7 +31,7 @@
         "object": "line_item",
         "period": {
           "end": 1000000000,
-          "start": 1000000005
+          "start": 1000000000
         },
         "plan": {
           "active": true,
@@ -72,7 +72,7 @@
         "object": "line_item",
         "period": {
           "end": 1000000000,
-          "start": 1000000006
+          "start": 1000000000
         },
         "plan": null,
         "proration": false,
@@ -91,7 +91,7 @@
         "object": "line_item",
         "period": {
           "end": 1000000000,
-          "start": 1000000002
+          "start": 1000000000
         },
         "plan": {
           "active": true,

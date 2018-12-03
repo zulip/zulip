@@ -112,7 +112,8 @@ def delete_fixture_data(decorated_function: CallableT) -> None:  # nocoverage
     for fixture_file in fixture_files_for_function(decorated_function):
         os.remove(fixture_file)
 
-def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) -> None:  # nocoverage
+def normalize_fixture_data(decorated_function: CallableT,
+                           tested_timestamp_fields: List[str]=[]) -> None:  # nocoverage
     # stripe ids are all of the form cus_D7OT2jf5YAtZQ2
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
@@ -132,10 +133,14 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         # Don't use (..) notation, since the matched strings may be small integers that will also match
         # elsewhere in the file
         '"realm_id": "[0-9]+"': '"realm_id": "%d"',
-        # Does not preserve relative ordering of the timestamps, nor any
-        # coordination with the timestamps in setUp mocks (e.g. Plan.created).
-        ': (1[5-9][0-9]{8})(?![0-9-])': '1%09d',
     })
+    # Normalizing across all timestamps still causes a lot of variance run to run, which is
+    # why we're doing something a bit more complicated
+    for i, timestamp_field in enumerate(tested_timestamp_fields):
+        # Don't use (..) notation, since the matched timestamp can easily appear in other fields
+        pattern_translations[
+            '"%s": 1[5-9][0-9]{8}(?![0-9-])' % (timestamp_field,)
+        ] = '"%s": 1%02d%%07d' % (timestamp_field, i+1)
 
     normalized_values = {pattern: {}
                          for pattern in pattern_translations.keys()}  # type: Dict[str, Dict[str, str]]
@@ -154,10 +159,8 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         file_content = re.sub(r'[0-3]\d [A-Z][a-z]{2} 20[1-2]\d', 'NORMALIZED DATE', file_content)
         # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
-        # Even normalized timestamps vary a lot run to run, so suppress
-        # timestamp differences entirely unless we explicitly ask to keep them
-        if "timestamps" not in keep:
-            file_content = re.sub(r': 10000000\d{2}(?=[,$])', ': 1000000000', file_content)
+        # All timestamps not in tested_timestamp_fields
+        file_content = re.sub(r': (1[5-9][0-9]{8})(?![0-9-])', ': 1000000000', file_content)
 
         with open(fixture_file, "w") as f:
             f.write(file_content)
@@ -174,7 +177,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = ["stripe.{}".format(name) for name in [
     "Token.create",
 ]]
 
-def mock_stripe(keep: List[str]=[], dont_mock: List[str]=[],
+def mock_stripe(tested_timestamp_fields: List[str]=[], dont_mock: List[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
@@ -196,7 +199,7 @@ def mock_stripe(keep: List[str]=[], dont_mock: List[str]=[],
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
                 val = decorated_function(*args, **kwargs)
-                normalize_fixture_data(decorated_function, keep)
+                normalize_fixture_data(decorated_function, tested_timestamp_fields)
                 return val
             else:
                 return decorated_function(*args, **kwargs)
@@ -302,7 +305,7 @@ class StripeTest(ZulipTestCase):
             response = self.client_get("/upgrade/")
             self.assert_in_success_response(["Page not found (404)"], response)
 
-    @mock_stripe(keep=["timestamps"])
+    @mock_stripe(tested_timestamp_fields=["created"])
     def test_initial_upgrade(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -383,7 +386,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock_stripe(keep=["timestamps"])
+    @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_with_outdated_seat_count(self, *mocks: Mock) -> None:
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
@@ -512,7 +515,7 @@ class StripeTest(ZulipTestCase):
                                          "Something went wrong. Please contact"], response)
         self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
 
-    @mock_stripe(keep=["timestamps"])
+    @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_billing_by_invoice(self, *mocks: Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
@@ -684,7 +687,7 @@ class StripeTest(ZulipTestCase):
     # Tests upgrade followed by immediate downgrade. Doesn't test the
     # calculations for how much credit they should get if they had the
     # subscription for more than 0 time.
-    @mock_stripe(keep=["timestamps"])
+    @mock_stripe(tested_timestamp_fields=["canceled_at"])
     def test_downgrade(self, *mocks: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
@@ -796,7 +799,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    @mock_stripe(keep=["timestamps"], dont_mock=["stripe.Subscription.save"])
+    @mock_stripe(dont_mock=["stripe.Subscription.save"])
     def test_billing_quantity_changes_end_to_end(self, *mocks: Mock) -> None:
         # A full end to end check would check the InvoiceItems, but this test is partway there
         self.login(self.example_email("hamlet"))

@@ -10,7 +10,7 @@
   "charge": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1000000003,
+  "date": 1000000000,
   "default_source": null,
   "description": "",
   "discount": null,
@@ -30,15 +30,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000003,
-          "start": 1000000007
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1000000005,
+          "created": 1000000000,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -71,15 +71,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000003,
-          "start": 1000000006
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1000000005,
+          "created": 1000000000,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -112,15 +112,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000003,
-          "start": 1000000006
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1000000005,
+          "created": 1000000000,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -152,15 +152,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1000000008,
-          "start": 1000000003
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1000000005,
+          "created": 1000000000,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -190,19 +190,19 @@
   },
   "livemode": false,
   "metadata": {},
-  "next_payment_attempt": 1000000009,
+  "next_payment_attempt": 1000000000,
   "number": "NORMALI-0001",
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1000000003,
-  "period_start": 1000000002,
+  "period_end": 1000000000,
+  "period_start": 1000000000,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,
   "status": "draft",
   "subscription": "sub_NORMALIZED0001",
-  "subscription_proration_date": 1000000007,
+  "subscription_proration_date": 1000000000,
   "subtotal": -64000,
   "tax": 0,
   "tax_percent": 0.0,
