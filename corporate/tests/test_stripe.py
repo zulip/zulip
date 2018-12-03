@@ -129,6 +129,9 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         '"fingerprint": "[A-Za-z0-9]{16}"': '"fingerprint": "NORMALIZED%06d"',
         '"number": "[A-Za-z0-9]{7}-[A-Za-z0-9]{4}"': '"number": "NORMALI-%04d"',
         '"address": "[A-Za-z0-9]{9}-test_[A-Za-z0-9]{12}"': '"address": "000000000-test_NORMALIZED%02d"',
+        # Does not preserve relative ordering of the timestamps, nor any
+        # coordination with the timestamps in setUp mocks (e.g. Plan.created).
+        ': (1[5-9][0-9]{8})(?![0-9-])': '1%09d',
     })
 
     normalized_values = {pattern: {}
@@ -147,8 +150,10 @@ def normalize_fixture_data(decorated_function: CallableT, keep: List[str]=[]) ->
         file_content = re.sub(r'[0-3]\d [A-Z][a-z]{2} 20[1-2]\d', 'NORMALIZED DATE', file_content)
         # IP addresses
         file_content = re.sub(r'"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"', '"0.0.0.0"', file_content)
+        # Even normalized timestamps vary a lot run to run, so suppress
+        # timestamp differences entirely unless we explicitly ask to keep them
         if "timestamps" not in keep:
-            file_content = re.sub(r': 1[5-9][0-9]{8},', ': 1000000000,', file_content)
+            file_content = re.sub(r': 10000000\d{2}(?=[,$])', ': 1000000000', file_content)
 
         with open(fixture_file, "w") as f:
             f.write(file_content)

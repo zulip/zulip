@@ -10,11 +10,11 @@
   "charge": null,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1575321123,
+  "date": 1000000003,
   "default_source": null,
   "description": "",
   "discount": null,
-  "due_date": 1577913123,
+  "due_date": 1000000007,
   "ending_balance": -856000,
   "finalized_at": null,
   "lines": {
@@ -30,15 +30,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1575321123,
-          "start": 1543785123
+          "end": 1000000003,
+          "start": 1000000002
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1539831971,
+          "created": 1000000004,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -71,15 +71,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1575321123,
-          "start": 1543785123
+          "end": 1000000003,
+          "start": 1000000002
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1539831971,
+          "created": 1000000004,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -111,15 +111,15 @@
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1606943523,
-          "start": 1575321123
+          "end": 1000000008,
+          "start": 1000000003
         },
         "plan": {
           "active": true,
           "aggregate_usage": null,
           "amount": 8000,
           "billing_scheme": "per_unit",
-          "created": 1539831971,
+          "created": 1000000004,
           "currency": "usd",
           "id": "plan_Do3xCvbzO89OsR",
           "interval": "year",
@@ -154,8 +154,8 @@
   "object": "invoice",
   "paid": false,
   "payment_intent": null,
-  "period_end": 1575321123,
-  "period_start": 1543785123,
+  "period_end": 1000000003,
+  "period_start": 1000000002,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": null,
