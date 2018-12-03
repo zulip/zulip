@@ -69,7 +69,7 @@ exports.make_menu = function (opts) {
         curr_li.addClass("active");
         curr_li.prev().addClass("no-border");
 
-        var settings_section_hash = hash_prefix + section;
+        var settings_section_hash = '#' + hash_prefix + section;
         hashchange.update_browser_history(settings_section_hash);
 
         $(".settings-section, .settings-wrapper").removeClass("show");
