@@ -288,6 +288,7 @@ run_test('hash_interactions', () => {
     helper.clear_events();
     window.onhashchange();
     helper.assert_events([
+        'overlays.close_for_hash_change',
         'settings.setup_page',
         'admin.setup_page',
     ]);
