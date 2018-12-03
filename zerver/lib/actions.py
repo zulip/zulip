@@ -45,7 +45,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
@@ -797,7 +797,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         'new_email': new_email,
         'activate_url': activation_url
     })
-    send_email('zerver/emails/confirm_new_email', to_email=new_email,
+    send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
                from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
                context=context)
 
@@ -4395,7 +4395,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     context = {'referrer_full_name': referrer.full_name, 'referrer_email': referrer.email,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
     from_name = "%s (via Zulip)" % (referrer.full_name,)
-    send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
+    send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
                from_address=FromAddress.tokenized_no_reply_address(), context=context)
 
 def email_not_system_bot(email: str) -> None:
@@ -5143,12 +5143,10 @@ def missing_any_realm_internal_bots() -> bool:
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
     confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
-    admins = realm.get_admin_users()
     context = {'confirmation_url': confirmation_url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}
-    for admin in admins:
-        send_email(
-            'zerver/emails/realm_reactivation', to_email=admin.email,
-            from_address=FromAddress.tokenized_no_reply_address(),
-            from_name="Zulip Account Security", context=context)
+    send_email_to_admins(
+        'zerver/emails/realm_reactivation', realm,
+        from_address=FromAddress.tokenized_no_reply_address(),
+        from_name="Zulip Account Security", context=context)

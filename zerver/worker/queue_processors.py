@@ -233,7 +233,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         send_future_email(
             "zerver/emails/invitation_reminder",
             referrer.realm,
-            to_email=invitee.email,
+            to_emails=[invitee.email],
             from_address=FromAddress.tokenized_no_reply_address(),
             context=context,
             delay=datetime.timedelta(days=2))

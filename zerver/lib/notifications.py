@@ -382,7 +382,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
-        'to_user_id': user_profile.id,
+        'to_user_ids': [user_profile.id],
         'from_name': from_name,
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
@@ -527,12 +527,12 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context["ldap_username"] = True
 
     send_future_email(
-        "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,
         from_address=from_address, context=context)
 
     if other_account_count == 0:
         send_future_email(
-            "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
+            "zerver/emails/followup_day2", user.realm, to_user_ids=[user.id], from_name=from_name,
             from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: str) -> str:
