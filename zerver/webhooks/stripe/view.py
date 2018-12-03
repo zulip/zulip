@@ -153,7 +153,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         previous_attributes = payload['data']['previous_attributes']
     else:
         previous_attributes = {}
-    body += '\n' + update_string(previous_attributes)
+    body += update_string(object_, previous_attributes)
     body = body.strip()
 
     check_send_webhook_message(request, user_profile, topic, body)
@@ -171,9 +171,9 @@ def amount_string(amount: int, currency: str) -> str:
         return '$' + decimal_amount
     return decimal_amount + ' {}'.format(currency.upper())
 
-def update_string(previous_attributes: Dict[str, Any]) -> str:
-    return '\n'.join(attribute.replace('_', ' ').capitalize() + ' updated'
-                     for attribute in previous_attributes)
+def update_string(object_: Dict[str, Any], previous_attributes: Dict[str, Any]) -> str:
+    return ''.join('\n* ' + attribute.replace('_', ' ').capitalize() + ' is now ' + str(object_[attribute])
+                   for attribute in previous_attributes)
 
 def linkified_id(object_id: str, lower: bool=False) -> str:
     names_and_urls = {
