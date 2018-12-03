@@ -30,7 +30,7 @@
         "object": "line_item",
         "period": {
           "end": 1000000000,
-          "start": 1575321076
+          "start": 1000000002
         },
         "plan": {
           "active": true,
