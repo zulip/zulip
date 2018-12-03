@@ -2551,6 +2551,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     for sub in all_subs_query:
         subs_by_user[sub.user_profile_id].append(sub)
 
+    realm = users[0].realm
+
     already_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
     subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
     new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
@@ -2586,11 +2588,11 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # TODO: XXX: This transaction really needs to be done at the serializeable
     # transaction isolation level.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_before = list(get_occupied_streams(realm))
         Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
         sub_ids = [sub.id for (sub, stream) in subs_to_activate]
         Subscription.objects.filter(id__in=sub_ids).update(active=True)
-        occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_after = list(get_occupied_streams(realm))
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
@@ -2598,7 +2600,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_add:
-        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+        all_subscription_logs.append(RealmAuditLog(realm=realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
@@ -2606,7 +2608,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                                    event_time=event_time))
     for (sub, stream) in subs_to_activate:
-        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+        all_subscription_logs.append(RealmAuditLog(realm=realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
@@ -2623,7 +2625,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         event = dict(type="stream", op="occupy",
                      streams=[stream.to_dict()
                               for stream in new_occupied_streams])
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+        send_event(realm, event, active_user_ids(realm.id))
 
     # Notify all existing users on streams that users have joined
 
@@ -2655,7 +2657,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             # they get the "subscribe" notification, and the latter so
             # they can manage the new stream.
             # Realm admins already have all created private streams.
-            realm_admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+            realm_admin_ids = [user.id for user in realm.get_admin_users()]
             new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
                              user.id not in realm_admin_ids]
             send_stream_creation_event(stream, new_users_ids)
@@ -2692,7 +2694,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
                              user_id=new_user_id)
-                send_event(stream.realm, event, peer_user_ids)
+                send_event(realm, event, peer_user_ids)
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
