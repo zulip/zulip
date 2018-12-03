@@ -360,7 +360,7 @@ def prepare_activation_url(email: str, request: HttpRequest,
     return activation_url
 
 def send_confirm_registration_email(email: str, activation_url: str) -> None:
-    send_email('zerver/emails/confirm_registration', to_email=email,
+    send_email('zerver/emails/confirm_registration', to_emails=[email],
                from_address=FromAddress.tokenized_no_reply_address(),
                context={'activate_url': activation_url})
 
@@ -490,7 +490,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     'realm_uri': user_profile.realm.uri,
                     'realm_name': user_profile.realm.name,
                 }
-                send_email('zerver/emails/find_team', to_user_id=user_profile.id, context=ctx)
+                send_email('zerver/emails/find_team', to_user_ids=[user_profile.id], context=ctx)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
