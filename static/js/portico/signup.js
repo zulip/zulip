@@ -44,6 +44,26 @@ $(function () {
         common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
     }
 
+    if ($("#registration").length > 0) {
+        if ($("#id_team_name").length === 1) {
+            common.autofocus('#id_team_name');
+        } else if ($('#id_email').length === 1 && !$('#id_email').attr('disabled')) {
+            common.autofocus('#id_email');
+        } else if ($("#source_realm_select").length === 1) {
+            common.autofocus('#source_realm_select');
+        } else {
+            common.autofocus('#id_full_name');
+        }
+
+        // reset error message displays
+        $('#id_team_subdomain_error_client').css('display', 'none');
+        if ($('.team_subdomain_error_server').text() === '') {
+            $('.team_subdomain_error_server').css('display', 'none');
+        }
+
+        $("#timezone").val(moment.tz.guess());
+    }
+
     password_field.on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
