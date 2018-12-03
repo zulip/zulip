@@ -11,7 +11,7 @@
     "Connection": "keep-alive",
     "Content-Length": "241",
     "Content-Type": "application/json",
-    "Date": "Mon, NORMALIZED DATE 20:52:47 GMT",
+    "Date": "NORMALIZED DATETIME",
     "Request-Id": "req_NORMALIZED0001",
     "Server": "nginx",
     "Strict-Transport-Security": "max-age=31556926; includeSubDomains; preload",

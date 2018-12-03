@@ -11,7 +11,7 @@
   "invoice_prefix": "NORMA03",
   "livemode": false,
   "metadata": {
-    "realm_id": "8",
+    "realm_id": "3",
     "realm_str": "realm2"
   },
   "object": "customer",
