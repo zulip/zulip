@@ -131,6 +131,10 @@ function initialize_kitchen_sink_stuff() {
         $("body").addClass("more_dense_mode");
     }
 
+    if (page_params.stream_sorted_by_recency) {
+        $("body").addClass("stream_sorted_by_recency-contrast");
+    }
+
     $("#main_div").on("mouseover", ".message_row", function () {
         var row = $(this).closest(".message_row");
         message_hover(row);

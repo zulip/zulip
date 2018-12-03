@@ -53,6 +53,13 @@
               "is_checked" page_params.starred_message_counts
               "label" settings_label.starred_message_counts}}
             {{/if}}
+
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "stream_sorted_by_recency"
+              "is_checked" page_params.stream_sorted_by_recency
+              "label" settings_label.stream_sorted_by_recency}}
+            {{/if}}
         </div>
 
         <div id="user-time-settings">
