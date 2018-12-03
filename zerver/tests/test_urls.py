@@ -47,7 +47,8 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent", "/help/include/admin"],
+                    404: ["/help/nonexistent", "/help/include/admin",
+                          "/help/" + "z" * 1000],
                     }
 
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
@@ -55,7 +56,7 @@ class PublicURLTest(ZulipTestCase):
         for doc in os.listdir('./templates/zerver/help'):
             if doc.startswith(".") or '~' in doc or '#' in doc:
                 continue  # nocoverage -- just here for convenience
-            if doc not in {'main.html', 'index.md', 'include'}:
+            if doc not in {'main.html', 'index.md', 'include', 'missing.md'}:
                 get_urls[200].append('/help/' + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {200: ["/accounts/login/"],

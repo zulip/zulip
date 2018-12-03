@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Tuple
 from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
@@ -7,6 +7,7 @@ from django.template import loader
 from django.shortcuts import render
 
 import os
+import re
 import ujson
 
 from zerver.lib import bugdown
@@ -61,37 +62,42 @@ class APIView(ApiURLView):
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
 
-    def get_path(self, article: str) -> str:
+    def get_path(self, article: str) -> Tuple[str, int]:
+        http_status = 200
         if article == "":
             article = "index"
         elif article == "include/sidebar_index":
             pass
         elif "/" in article:
             article = "missing"
-        return self.path_template % (article,)
+            http_status = 404
+        if len(article) > 100 or not re.match('^[0-9a-zA-Z_-]+$', article):
+            article = "missing"
+            http_status = 404
+        path = self.path_template % (article,)
+        try:
+            loader.get_template(path)
+            return (path, http_status)
+        except loader.TemplateDoesNotExist:
+            return (self.path_template % ("missing",), 404)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
         context = super().get_context_data()  # type: Dict[str, Any]
-        path = self.get_path(article)
-        try:
-            loader.get_template(path)
-            context["article"] = path
-        except loader.TemplateDoesNotExist:
-            context["article"] = self.get_path("missing")
+        (context["article"], http_status_ignored) = self.get_path(article)
 
         # For disabling the "Back to home" on the homepage
-        context["not_index_page"] = not path.endswith("/index.md")
+        context["not_index_page"] = not context["article"].endswith("/index.md")
         if self.path_template == '/zerver/help/%s.md':
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
-            sidebar_index = self.get_path("include/sidebar_index")
+            (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
             # We want the sliding/collapsing behavior for /help pages only
             sidebar_class = "sidebar slide"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
-            sidebar_index = self.get_path("sidebar_index")
+            (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
             sidebar_class = "sidebar"
 
         context["sidebar_index"] = sidebar_index
@@ -103,15 +109,10 @@ class MarkdownDirectoryView(ApiURLView):
         return context
 
     def get(self, request: HttpRequest, article: str="") -> HttpResponse:
-        path = self.get_path(article)
+        (path, http_status) = self.get_path(article)
         result = super().get(self, article=article)
-        try:
-            loader.get_template(path)
-        except loader.TemplateDoesNotExist:
-            # Ensure a 404 response code if no such document
-            result.status_code = 404
-        if "/" in article:
-            result.status_code = 404
+        if http_status != 200:
+            result.status_code = http_status
         return result
 
 
