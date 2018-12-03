@@ -248,7 +248,7 @@ class WorkerTest(ZulipTestCase):
 
         data = {
             'template_prefix': 'zerver/emails/confirm_new_email',
-            'to_email': self.example_email("hamlet"),
+            'to_emails': [self.example_email("hamlet")],
             'from_name': 'Zulip Account Security',
             'from_address': FromAddress.NOREPLY,
             'context': {}

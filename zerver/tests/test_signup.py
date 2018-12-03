@@ -1159,8 +1159,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             'referrer_realm_name': referrer.realm.name,
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
+            email = data["email"]
             send_future_email(
-                "zerver/emails/invitation_reminder", referrer.realm, to_email=data["email"],
+                "zerver/emails/invitation_reminder", referrer.realm, to_emails=[email],
                 from_address=FromAddress.NOREPLY, context=context)
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
@@ -1553,7 +1554,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         context = {'name': '', 'realm_uri': '', 'unread_pms': [], 'hot_conversations': [],
                    'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
         send_future_email('zerver/emails/digest', user_profile.realm,
-                          to_user_id=user_profile.id, context=context)
+                          to_user_ids=[user_profile.id], context=context)
 
         self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
 

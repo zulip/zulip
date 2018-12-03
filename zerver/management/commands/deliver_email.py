@@ -48,6 +48,14 @@ Usage: ./manage.py deliver_email
                     scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
+                        # Reformat any jobs that used the old to_email
+                        # and to_user_ids argument formats.
+                        if 'to_email' in job:
+                            job['to_emails'] = [job['to_email']]
+                            del job['to_email']
+                        if 'to_user_ids' in job:
+                            job['to_user_ids'] = [job['to_user_id']]
+                            del job['to_user_ids']
                         try:
                             send_email(**loads(job.data))
                             job.delete()

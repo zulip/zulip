@@ -40,7 +40,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(mock_send_future_email.call_count, 1)
 
         kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_id'], user_profile.id)
+        self.assertEqual(kwargs['to_user_ids'], [user_profile.id])
         html = kwargs['context']['unread_pms'][0]['header']['html']
         expected_url = "'http://zulip.testserver/#narrow/pm-with/{id}-hamlet'".format(id=hamlet.id)
         self.assertIn(expected_url, html)
@@ -74,7 +74,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(mock_send_future_email.call_count, 1)
 
         kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_id'], user_profile.id)
+        self.assertEqual(kwargs['to_user_ids'], [user_profile.id])
         html = kwargs['context']['unread_pms'][0]['header']['html']
 
         other_user_ids = sorted([
@@ -125,7 +125,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
-        self.assertEqual(kwargs['to_user_id'], othello.id)
+        self.assertEqual(kwargs['to_user_ids'], [othello.id])
 
         hot_convo = kwargs['context']['hot_conversations'][0]
 
