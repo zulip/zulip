@@ -63,6 +63,25 @@ run_test('hash_util', () => {
     encode_decode_operand(operator, operand, 'testing.20123');
 });
 
+run_test('test_get_hash_category', () => {
+    assert.deepEqual(
+        hash_util.get_hash_category('streams/subscribed'),
+        'streams'
+    );
+    assert.deepEqual(
+        hash_util.get_hash_category('#settings/display-settings'),
+        'settings'
+    );
+    assert.deepEqual(
+        hash_util.get_hash_category('#drafts'),
+        'drafts'
+    );
+    assert.deepEqual(
+        hash_util.get_hash_category('invites'),
+        'invites'
+    );
+});
+
 run_test('test_parse_narrow', () => {
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', 'stream', '11-social']),
