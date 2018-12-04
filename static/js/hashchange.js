@@ -81,7 +81,7 @@ function activate_home_tab() {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange(from_reload) {
+function do_hashchange_normal(from_reload) {
     // If window.location.hash changed because our app explicitly
     // changed it, then we don't need to do anything.
     // (This function only neds to jump into action if it changed
@@ -194,7 +194,7 @@ function is_overlay_hash(hash) {
     return overlay_list.indexOf(main_hash) > -1;
 }
 
-function hashchanged_overlay(old_hash) {
+function do_hashchange_overlay(old_hash) {
     var base = get_main_hash(window.location.hash);
     var old_base = get_main_hash(old_hash);
 
@@ -284,14 +284,14 @@ function hashchanged(from_reload, e) {
     }
 
     if (is_overlay_hash(window.location.hash)) {
-        hashchanged_overlay(old_hash);
+        do_hashchange_overlay(old_hash);
         return;
     }
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     changing_hash = true;
-    var ret = do_hashchange(from_reload);
+    var ret = do_hashchange_normal(from_reload);
     changing_hash = false;
     return ret;
 }
