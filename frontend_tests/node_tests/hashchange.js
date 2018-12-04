@@ -17,6 +17,7 @@ set_global('drafts', {});
 set_global('favicon', {});
 set_global('floating_recipient_bar', {});
 set_global('info_overlay', {});
+set_global('message_viewport', {});
 set_global('narrow', {});
 set_global('overlays', {});
 set_global('settings', {});
@@ -113,17 +114,6 @@ run_test('people_slugs', () => {
     assert.equal(hash, '#narrow/pm-with/42-alice');
 });
 
-function stub_trigger(f) {
-    set_global('$', () => {
-        return {
-            trigger: f,
-        };
-    });
-    $.Event = (name) => {
-        assert.equal(name, 'zuliphashchange.zulip');
-    };
-}
-
 function test_helper() {
     var events = [];
     var narrow_terms;
@@ -138,13 +128,12 @@ function test_helper() {
     stub('drafts', 'launch');
     stub('favicon', 'reset');
     stub('floating_recipient_bar', 'update');
+    stub('message_viewport', 'stop_auto_scrolling');
     stub('narrow', 'deactivate');
     stub('overlays', 'close_for_hash_change');
     stub('settings', 'setup_page');
     stub('subs', 'launch');
     stub('ui_util', 'blur_active_element');
-
-    stub_trigger(() => { events.push('trigger event'); });
 
     ui_util.change_tab_to = (hash) => {
         events.push('change_tab_to ' + hash);
@@ -181,7 +170,7 @@ run_test('hash_interactions', () => {
     hashchange.initialize();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.deactivate',
         'floating_recipient_bar.update',
@@ -191,7 +180,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.deactivate',
         'floating_recipient_bar.update',
@@ -203,7 +192,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.activate',
         'floating_recipient_bar.update',
@@ -217,7 +206,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.activate',
         'floating_recipient_bar.update',
@@ -240,7 +229,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: keyboard-shortcuts',
     ]);
 
@@ -250,7 +239,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: message-formatting',
     ]);
 
@@ -260,7 +249,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: search-operators',
     ]);
 
@@ -316,7 +305,7 @@ run_test('save_narrow', () => {
 
     hashchange.save_narrow(operators);
     helper.assert_events([
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'favicon.reset',
     ]);
     assert.equal(window.location.hash, '#narrow/is/private');
@@ -333,7 +322,7 @@ run_test('save_narrow', () => {
     helper.clear_events();
     hashchange.save_narrow(operators);
     helper.assert_events([
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'favicon.reset',
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');
