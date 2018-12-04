@@ -66,6 +66,14 @@ class JiraHookTests(WebhookTestCase):
         self.assertEqual(msg.content, expected_message)
         self.assertEqual(msg.topic_name(), expected_topic)
 
+    def test_created_with_topic_with_spaces_double_escaped(self) -> None:
+        self.url = self.build_webhook_url(topic=quote(quote('alerts test')))
+        expected_topic = "alerts test"
+        expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with hook"""
+        self.send_and_test_stream_message('created_v1', expected_topic, expected_message)
+
     def test_created_with_unicode(self) -> None:
             expected_topic = u"BUG-15: New bug with à hook"
             expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
