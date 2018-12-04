@@ -177,15 +177,13 @@ MOCKED_STRIPE_FUNCTION_NAMES = ["stripe.{}".format(name) for name in [
     "Token.create",
 ]]
 
-def mock_stripe(tested_timestamp_fields: List[str]=[], dont_mock: List[str]=[],
+def mock_stripe(tested_timestamp_fields: List[str]=[],
                 generate: Optional[bool]=None) -> Callable[[CallableT], CallableT]:
     def _mock_stripe(decorated_function: CallableT) -> CallableT:
         generate_fixture = generate
         if generate_fixture is None:
             generate_fixture = GENERATE_STRIPE_FIXTURES
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
-            if mocked_function_name in dont_mock:
-                continue
             mocked_function = operator.attrgetter(mocked_function_name)(sys.modules[__name__])
             if generate_fixture:
                 side_effect = generate_and_save_stripe_fixture(
@@ -799,7 +797,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
 
-    @mock_stripe(dont_mock=["stripe.Subscription.save"])
+    @mock_stripe()
     def test_billing_quantity_changes_end_to_end(self, *mocks: Mock) -> None:
         # A full end to end check would check the InvoiceItems, but this test is partway there
         self.login(self.example_email("hamlet"))
@@ -814,8 +812,7 @@ class StripeTest(ZulipTestCase):
                 self.assertEqual(idempotency_key.split('+')[0],
                                  'process_billing_log_entry:%s' % (log_row.id,))
                 self.assertEqual(subscription.proration_date, datetime_to_timestamp(log_row.event_time))
-            with patch.object(stripe.Subscription, 'save', autospec=True,
-                              side_effect=check_subscription_save):
+            with patch('stripe.Subscription.save', side_effect=check_subscription_save):
                 run_billing_processor_one_step(processor)
 
         # Test STRIPE_PLAN_QUANTITY_RESET
