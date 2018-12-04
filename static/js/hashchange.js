@@ -47,33 +47,6 @@ exports.save_narrow = function (operators) {
     exports.changehash(new_hash);
 };
 
-exports.parse_narrow = function (hash) {
-    var i;
-    var operators = [];
-    for (i = 1; i < hash.length; i += 2) {
-        // We don't construct URLs with an odd number of components,
-        // but the user might write one.
-        try {
-            var operator = hash_util.decodeHashComponent(hash[i]);
-            // Do not parse further if empty operator encountered.
-            if (operator === '') {
-                break;
-            }
-
-            var operand  = hash_util.decode_operand(operator, hash[i + 1] || '');
-            var negated = false;
-            if (operator[0] === '-') {
-                negated = true;
-                operator = operator.slice(1);
-            }
-            operators.push({negated: negated, operator: operator, operand: operand});
-        } catch (err) {
-            return;
-        }
-    }
-    return operators;
-};
-
 function activate_home_tab() {
     ui_util.change_tab_to("#home");
     narrow.deactivate();
@@ -118,7 +91,7 @@ function do_hashchange_normal(from_reload) {
     switch (hash[0]) {
     case "#narrow":
         ui_util.change_tab_to("#home");
-        var operators = exports.parse_narrow(hash);
+        var operators = hash_util.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab

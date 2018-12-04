@@ -127,6 +127,33 @@ exports.stream_edit_uri = function (sub) {
     return hash;
 };
 
+exports.parse_narrow = function (hash) {
+    var i;
+    var operators = [];
+    for (i = 1; i < hash.length; i += 2) {
+        // We don't construct URLs with an odd number of components,
+        // but the user might write one.
+        try {
+            var operator = exports.decodeHashComponent(hash[i]);
+            // Do not parse further if empty operator encountered.
+            if (operator === '') {
+                break;
+            }
+
+            var operand  = exports.decode_operand(operator, hash[i + 1] || '');
+            var negated = false;
+            if (operator[0] === '-') {
+                negated = true;
+                operator = operator.slice(1);
+            }
+            operators.push({negated: negated, operator: operator, operand: operand});
+        } catch (err) {
+            return;
+        }
+    }
+    return operators;
+};
+
 return exports;
 
 }());
