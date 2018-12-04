@@ -3,7 +3,6 @@ var hashchange = (function () {
 
 var exports = {};
 
-var expected_hash;
 var changing_hash = false;
 
 function set_hash(hash) {
@@ -82,20 +81,6 @@ function activate_home_tab() {
 
 // Returns true if this function performed a narrow
 function do_hashchange_normal(from_reload) {
-    // If window.location.hash changed because our app explicitly
-    // changed it, then we don't need to do anything.
-    // (This function only neds to jump into action if it changed
-    // because e.g. the back button was pressed by the user)
-    //
-    // The second case is for handling the fact that some browsers
-    // automatically convert '#' to '' when you change the hash to '#'.
-    if (window.location.hash === expected_hash ||
-        expected_hash !== undefined &&
-         window.location.hash.replace(/^#/, '') === '' &&
-         expected_hash.replace(/^#/, '') === '') {
-        return false;
-    }
-
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
