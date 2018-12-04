@@ -513,35 +513,21 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
-exports.check_local_echo_in_view = function () {
+exports.get_echo_not_in_view_reason = function () {
     var focused_table_rec_rows = $('.focused_table .recipient_row');
     // If the message is first in its narrow
     if (focused_table_rec_rows.length === 0) {
-        return true;
+        return;
     }
-    var echo = $(focused_table_rec_rows[focused_table_rec_rows.length - 1]).children('.message_row');
+    var echo = $(focused_table_rec_rows.get(-1)).children('.message_row');
     // Offset of the last message in the focused_table
-    var echo_offset_y = $(echo[echo.length - 1]).offset().top;
+    var echo_offset_y = $(echo.get(-1)).offset().top;
     var compose_box_y = $('#compose-container').offset().top;
     // Check if it lies between top and above the compose box
     if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
-        return true;
+        return;
     }
-    return false;
-};
-
-exports.notify_local_echo_not_in_view = function (local_id) {
-    // Once the message is inserted, we can check if the local_echo is in view
-    // Before that, we need to check if there were no other local mixes
-    // For that we can simply check if there were any notifications while inserting
-    if ($('#out-of-view-notification').css('display') === 'none') {
-        if (!exports.check_local_echo_in_view(local_id)) {
-            exports.notify_above_composebox("Sending...", "compose_notification_narrow_by_topic", local_id, "");
-            // If notified
-            return true;
-        }
-    }
-    return false;
+    return "Sent! Scroll down to view your message.";
 };
 
 exports.get_local_notify_mix_reason = function (message) {
@@ -588,6 +574,15 @@ exports.notify_local_mixes = function (messages) {
         var reason = exports.get_local_notify_mix_reason(message);
 
         if (!reason) {
+            // Check if local_echo is not in view
+            reason = exports.get_echo_not_in_view_reason();
+            if (reason) {
+                exports.notify_above_composebox(reason, "", null, "");
+                setTimeout(function () {
+                    $('#out-of-view-notification').hide();
+                }, 3000);
+            }
+
             // This is more than normal, just continue on.
             return;
         }
