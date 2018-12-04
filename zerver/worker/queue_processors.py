@@ -32,7 +32,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
-    FromAddress, EmailNotDeliveredException
+    FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.streams import access_stream_by_id
 from zerver.decorator import JsonableError
@@ -335,6 +335,7 @@ class EmailSendingWorker(QueueProcessingWorker):
         copied_event = copy.deepcopy(event)
         if 'failed_tries' in copied_event:
             del copied_event['failed_tries']
+        handle_send_email_format_changes(copied_event)
         send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')

@@ -21,7 +21,8 @@ from ujson import loads
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
-from zerver.lib.send_email import EmailNotDeliveredException, send_email
+from zerver.lib.send_email import EmailNotDeliveredException, send_email, \
+    handle_send_email_format_changes
 from zerver.models import ScheduledEmail
 
 ## Setup ##
@@ -48,14 +49,7 @@ Usage: ./manage.py deliver_email
                     scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
-                        # Reformat any jobs that used the old to_email
-                        # and to_user_ids argument formats.
-                        if 'to_email' in job:
-                            job['to_emails'] = [job['to_email']]
-                            del job['to_email']
-                        if 'to_user_ids' in job:
-                            job['to_user_ids'] = [job['to_user_id']]
-                            del job['to_user_ids']
+                        handle_send_email_format_changes(job)
                         try:
                             send_email(**loads(job.data))
                             job.delete()
