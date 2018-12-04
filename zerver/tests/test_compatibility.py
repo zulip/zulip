@@ -8,6 +8,7 @@ class VersionTest(ZulipTestCase):
         1.2.3    =  1.2.3
         1.4.1    >  1.2.3
         1.002a   =  1.2a
+        1.2      <  1.2.3
         1.2.3    ?  1.2-dev
         1.2-dev  ?  1.2a
         1.2a     ?  1.2rc3

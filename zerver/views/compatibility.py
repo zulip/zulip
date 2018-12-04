@@ -6,11 +6,13 @@ from typing import Any, List, Dict, Optional, Tuple, Union
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
 
-def pop_int(ver: str) -> Tuple[Optional[int], str]:
-    match = re.search(r'^(\d+)(.*)', ver)
+def pop_numerals(ver: str) -> Tuple[List[int], str]:
+    match = re.search(r'^( \d+ (?: \. \d+ )* ) (.*)', ver, re.X)
     if match is None:
-        return None, ver
-    return int(match.group(1)), match.group(2)
+        return [], ver
+    numerals, rest = match.groups()
+    numbers = [int(n) for n in numerals.split('.')]
+    return numbers, rest
 
 def version_lt(ver1: str, ver2: str) -> Optional[bool]:
     '''
@@ -27,26 +29,29 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
       False if ver1 >= ver2
       None if can't tell.
     '''
-    while True:
-        # Pull off the leading numeral from each version.
-        maj1, rest1 = pop_int(ver1)
-        maj2, rest2 = pop_int(ver2)
-        if maj1 is None or maj2 is None:
-            # One or both has no leading numeral; some unknown format.
-            return None
-        if maj1 < maj2:
-            return True
-        if maj1 > maj2:
-            return False
-        # Leading numerals are equal.
+    num1, rest1 = pop_numerals(ver1)
+    num2, rest2 = pop_numerals(ver2)
+    common_len = min(len(num1), len(num2))
+    common_num1, rest_num1 = num1[:common_len], num1[common_len:]
+    common_num2, rest_num2 = num2[:common_len], num2[common_len:]
 
-        if rest1 == rest2:
-            return False
-        if not(rest1.startswith('.') and rest2.startswith('.')):
-            return None
-        ver1 = rest1[1:]
-        ver2 = rest2[1:]
+    # Leading numbers win.
+    if common_num1 != common_num2:
+        return common_num1 < common_num2
 
+    # More numbers beats end-of-string, but ??? vs trailing text.
+    # (NB at most one of rest_num1, rest_num2 is nonempty.)
+    if not rest1 and rest_num2:
+        return True
+    if rest_num1 and not rest2:
+        return False
+    if rest_num1 or rest_num2:
+        return None
+
+    # Trailing text we can only compare for equality.
+    if rest1 == rest2:
+        return False
+    return None
 
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
