@@ -89,8 +89,7 @@ run_test('initizalize', () => {
         assert.equal(opts.fixed, true);
         assert.equal(opts.items, 12);
         assert.equal(opts.naturalSearch, true);
-        assert.equal(opts.tabOpensEmptyTypeahead, true);
-        assert.equal(opts.helpOnEmptyStrings, false);
+        assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
 
         {

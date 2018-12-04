@@ -70,7 +70,6 @@ exports.initialize = function () {
     // just represents the key of the hash, so it's redundant.)
     var search_object = {};
 
-    // tabOpensEmptyTypeahead overrides helpOnEmptyStrings.
     search_query_box.typeahead({
         source: function (query) {
             var suggestions;
@@ -87,8 +86,7 @@ exports.initialize = function () {
         },
         fixed: true,
         items: 12,
-        tabOpensEmptyTypeahead: page_params.search_pills_enabled,
-        helpOnEmptyStrings: !page_params.search_pills_enabled,
+        helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
             var obj = search_object[item];
