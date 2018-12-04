@@ -20,7 +20,10 @@ class VersionTest(ZulipTestCase):
         15.1.95  <  16.2.96
         16.2.96  =  16.2.96
         20.0.103 >  16.2.96
-    '''.strip().split('\n')]
+    '''.strip().split('\n')] + [
+        ['', '?', '1'],
+        ['', '?', 'a'],
+    ]
 
     def test_version_lt(self) -> None:
         for ver1, cmp, ver2 in self.data:
