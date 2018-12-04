@@ -772,7 +772,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     night_mode = models.BooleanField(default=False)  # type: bool
     translate_emoticons = models.BooleanField(default=False)  # type: bool
     dense_mode = models.BooleanField(default=True)  # type: bool
-    stream_sorted_by_recency = models.BooleanField(default=False) 
+    stream_sorted_by_recency = models.BooleanField(default=False) # type: bool
     starred_message_counts = models.BooleanField(default=False)  # type: bool
 
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
