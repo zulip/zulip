@@ -913,8 +913,8 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         color = next(colors)
-        for fn in by_lang['css']:
-            if custom_check_file(fn, 'css', css_rules, color):
+        for fn in by_lang['scss']:
+            if custom_check_file(fn, 'scss', css_rules, color):
                 failed = True
 
         color = next(colors)
