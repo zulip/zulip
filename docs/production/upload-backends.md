@@ -39,10 +39,11 @@ created (e.g. `exampleinc-zulip-uploads`).
     [configure boto](http://boto.cloudhackers.com/en/latest/boto_config_tut.html)
     to use AWS's SIGv4 signature format (because AWS has stopped
     supporting the older v3 format in those regions).  You can do this
-    by adding an `/etc/boto.cfg` containing the following:
+    by adding an `/etc/zulip/boto.cfg` containing the following:
     ```
     [s3]
     use-sigv4 = True
+    host = s3.eu-central-1.amazonaws.com  # Substitute your AWS region here
     ```
 
 1. You will need to configure `nginx` to direct requests for uploaded
