@@ -45,14 +45,13 @@ $(function () {
     }
 
     if ($("#registration").length > 0) {
-        if ($("#id_team_name").length === 1) {
-            common.autofocus('#id_team_name');
-        } else if ($('#id_email').length === 1 && !$('#id_email').attr('disabled')) {
-            common.autofocus('#id_email');
-        } else if ($("#source_realm_select").length === 1) {
-            common.autofocus('#source_realm_select');
-        } else {
-            common.autofocus('#id_full_name');
+        // Check if there is no input field with errors.
+        if ($('.help-inline:not(:empty)').length === 0) {
+            // Find the first input field present in the form that is
+            // not hidden and disabled and store it in a variable.
+            var firstInputElement = $("input:not(:hidden, :disabled):first");
+            // Focus on the first input field in the form.
+            common.autofocus(firstInputElement);
         }
 
         // reset error message displays
