@@ -55,6 +55,15 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
         return False
     return None
 
+
+def find_mobile_os(user_agent: str) -> Optional[str]:
+    if re.search(r'\b Android \b', user_agent, re.I | re.X):
+        return 'android'
+    if re.search(r'\b(?: iOS | iPhone\ OS )\b', user_agent, re.I | re.X):
+        return 'ios'
+    return None
+
+
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
     if user_agent['name'] == "ZulipInvalid":
