@@ -31,6 +31,8 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
     '''
     num1, rest1 = pop_numerals(ver1)
     num2, rest2 = pop_numerals(ver2)
+    if not num1 or not num2:
+        return None
     common_len = min(len(num1), len(num2))
     common_num1, rest_num1 = num1[:common_len], num1[common_len:]
     common_num2, rest_num2 = num2[:common_len], num2[common_len:]
