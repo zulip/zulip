@@ -1,4 +1,5 @@
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
+// or locally: docs/subsystems/hashchange-system.md
 var hashchange = (function () {
 
 var exports = {};
@@ -139,19 +140,6 @@ function do_hashchange_normal(from_reload) {
     return false;
 }
 
-// -- -- -- -- -- -- READ THIS BEFORE TOUCHING ANYTHING BELOW -- -- -- -- -- -- //
-// HOW THE HASH CHANGE MECHANISM WORKS:
-// When going from a normal view (eg. `narrow/is/private`) to a settings panel
-// (eg. `settings/your-bots`) it should trigger the `is_overlay_hash` function and
-// return `true` for the current state -- we want to ignore hash changes from
-// within the settings page. The previous hash however should return `false` as it
-// was outside of the scope of settings.
-// there is then an `exit_overlay` function that allows the hash to change exactly
-// once without triggering any events. This allows the hash to reset back from
-// a settings page to the previous view available before the settings page
-// (eg. narrow/is/private). This saves the state, scroll position, and makes the
-// hash change functionally inert.
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var state = {
     is_internal_change: false,
     hash_before_overlay: null,
