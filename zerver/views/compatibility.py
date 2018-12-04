@@ -64,8 +64,19 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
     return None
 
 
+# Zulip Mobile release 16.2.96 was made 2018-08-22.  It fixed a
+# bug in our Android code that causes spammy, obviously-broken
+# notifications once the "remove_push_notification" feature is
+# enabled on the user's Zulip server.
+android_min_app_version = '16.2.96'
+
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
     user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
     if user_agent['name'] == "ZulipInvalid":
-        return json_error("Client is too old")
+        return json_error("Client is too old")  # take 0
+    if user_agent['name'] == "ZulipMobile":
+        user_os = find_mobile_os(request.META["HTTP_USER_AGENT"])
+        if (user_os == 'android'
+                and version_lt(user_agent['version'], android_min_app_version)):
+            return json_error("Client is too old")
     return json_success()

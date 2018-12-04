@@ -501,6 +501,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/tests']),
          'exclude_line': set([
              # We don't want this string tagged for translation.
+             ('zerver/views/compatibility.py', 'return json_error("Client is too old")  # take 0'),
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
