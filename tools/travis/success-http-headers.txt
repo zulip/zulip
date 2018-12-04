@@ -6,16 +6,6 @@ WARNING: no certificate subject alternative name matches
   Content-Type: text/html; charset=utf-8
   Content-Length: 0
   Connection: keep-alive
-  Location: /login
-  Strict-Transport-Security: max-age=15768000
-  X-Frame-Options: DENY
-Location: /login [following]
-Reusing existing connection to localhost:443.
-  HTTP/1.1 301 Moved Permanently
-  Server: nginx/1.4.6 (Ubuntu)
-  Content-Type: text/html; charset=utf-8
-  Content-Length: 0
-  Connection: keep-alive
   Location: /login/
   Strict-Transport-Security: max-age=15768000
   X-Frame-Options: DENY

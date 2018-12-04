@@ -18,7 +18,7 @@ function log_in(credentials) {
     }
 
     casper.test.info('Logging in');
-    casper.fill('form[action^="/accounts/login"]', {
+    casper.fill('form[action^="/accounts/login/"]', {
         username: credentials.username,
         password: credentials.password,
     }, true /* submit form */);
@@ -106,7 +106,7 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
+    var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login/";
     exports.init_viewport();
     casper.start(log_in_url, function () {
         exports.initialize_casper(viewport);

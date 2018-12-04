@@ -1304,17 +1304,17 @@ USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION
 
 if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
                                           "zproject.backends.ZulipRemoteUserBackend"):
-    HOME_NOT_LOGGED_IN = "/accounts/login/sso"
+    HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
     ONLY_SSO = True
 else:
-    HOME_NOT_LOGGED_IN = '/login'
+    HOME_NOT_LOGGED_IN = '/login/'
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
-# Redirect to /devlogin by default in dev mode
+# Redirect to /devlogin/ by default in dev mode
 if DEVELOPMENT:
-    HOME_NOT_LOGGED_IN = '/devlogin'
-    LOGIN_URL = '/devlogin'
+    HOME_NOT_LOGGED_IN = '/devlogin/'
+    LOGIN_URL = '/devlogin/'
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 

@@ -216,10 +216,10 @@ to debug.
 
 * Since you've configured `/etc/zulip/settings.py` to only define the
   `zproject.backends.ZulipRemoteUserBackend`, `zproject/settings.py`
-  configures `/accounts/login/sso` as `HOME_NOT_LOGGED_IN`.  This
+  configures `/accounts/login/sso/` as `HOME_NOT_LOGGED_IN`.  This
   makes `https://zulip.example.com/` (a.k.a. the homepage for the main
   Zulip Django app running behind nginx) redirect to
-  `/accounts/login/sso` for a user that isn't logged in.
+  `/accounts/login/sso/` for a user that isn't logged in.
 
 * nginx proxies requests to `/accounts/login/sso/` to an Apache
   instance listening on `localhost:8888`, via the config in

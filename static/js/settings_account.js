@@ -472,7 +472,7 @@ exports.set_up = function () {
                 url: '/json/users/me',
                 success: function () {
                     $("#deactivate_self_modal").modal("hide");
-                    window.location.href = "/login";
+                    window.location.href = "/login/";
                 },
                 error: function (xhr) {
                     var error_last_admin = i18n.t("Error: Cannot deactivate the only organization administrator.");
