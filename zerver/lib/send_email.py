@@ -155,3 +155,13 @@ def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional
     admin_user_ids = [admin.id for admin in admins]
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
                from_address=from_address, context=context)
+
+def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
+    # Reformat any jobs that used the old to_email
+    # and to_user_ids argument formats.
+    if 'to_email' in job:
+        job['to_emails'] = [job['to_email']]
+        del job['to_email']
+    if 'to_user_id' in job:
+        job['to_user_ids'] = [job['to_user_id']]
+        del job['to_user_ids']
