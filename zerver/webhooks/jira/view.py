@@ -243,5 +243,5 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
 
     check_send_webhook_message(request, user_profile,
                                subject, content,
-                               unquote_stream=True)
+                               unquote_url_parameters=True)
     return json_success()
