@@ -1,4 +1,6 @@
 
+from django.http import HttpResponse
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, version_lt
 
@@ -59,7 +61,8 @@ class VersionTest(ZulipTestCase):
 
 class CompatibilityTest(ZulipTestCase):
     def test_compatibility(self) -> None:
-        result = self.client_get("/compatibility", HTTP_USER_AGENT='ZulipMobile/5.0')
-        self.assert_json_success(result)
-        result = self.client_get("/compatibility", HTTP_USER_AGENT='ZulipInvalid/5.0')
-        self.assert_json_error(result, "Client is too old")
+        def get(user_agent: str) -> HttpResponse:
+            return self.client_get("/compatibility", HTTP_USER_AGENT=user_agent)
+
+        self.assert_json_success(get('ZulipMobile/5.0'))
+        self.assert_json_error(get('ZulipInvalid/5.0'), "Client is too old")
