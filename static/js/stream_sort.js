@@ -38,8 +38,6 @@ function filter_streams_by_search(streams, search_term) {
 }
 
 exports.sort_groups = function (search_term) {
-    var by_recency = page_params.stream_sorted_by_recency;
-    console.log(by_recency);
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
@@ -68,6 +66,7 @@ exports.sort_groups = function (search_term) {
     });
 
     var sorting_fct = util.strcmp;
+    var by_recency = page_params.stream_sorted_by_recency;
     if (by_recency) {
         sorting_fct = function (s1, s2) {
             return recent_streams.compare_by_recency(stream_data.get_stream_id(s1), stream_data.get_stream_id(s2));

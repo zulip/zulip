@@ -7,7 +7,6 @@ var meta = {
 };
 
 function change_display_setting(data, status_element, success_msg, sticky) {
-    console.log([data, status_element, success_msg, sticky]);
     var $status_el = $(status_element);
     var status_is_sticky = $status_el.data('is_sticky');
     var display_message = status_is_sticky ? $status_el.data('sticky_msg') : success_msg;
@@ -87,13 +86,7 @@ exports.set_up = function () {
     });
 
     $('#stream_sorted_by_recency').change(function () {
-        console.log("change");
         var stream_sorted_by_recency = this.checked;
-        // if (stream_sorted_by_recency) {
-        //     $("body").addClass("stream_sorted_by_recency");
-        // } else {
-        //     $("body").removeClass("stream_sorted_by_recency");
-        // }
         var data = {};
         data.stream_sorted_by_recency = JSON.stringify(stream_sorted_by_recency);
         change_display_setting(data, '#display-settings-status');
