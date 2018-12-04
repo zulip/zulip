@@ -64,5 +64,12 @@ class CompatibilityTest(ZulipTestCase):
         def get(user_agent: str) -> HttpResponse:
             return self.client_get("/compatibility", HTTP_USER_AGENT=user_agent)
 
-        self.assert_json_success(get('ZulipMobile/5.0'))
         self.assert_json_error(get('ZulipInvalid/5.0'), "Client is too old")
+        self.assert_json_success(get('ZulipMobile/5.0'))
+        self.assert_json_success(get('ZulipMobile/5.0 (iOS 11)'))
+        self.assert_json_success(get('ZulipMobile/5.0 (Androidish 9)'))
+        self.assert_json_error(get('ZulipMobile/5.0 (Android 9)'), "Client is too old")
+        self.assert_json_error(get('ZulipMobile/15.1.95 (Android 9)'), "Client is too old")
+        self.assert_json_error(get('ZulipMobile/16.1.94 (Android 9)'), "Client is too old")
+        self.assert_json_success(get('ZulipMobile/16.2.96 (Android 9)'))
+        self.assert_json_success(get('ZulipMobile/20.0.103 (Android 9)'))
