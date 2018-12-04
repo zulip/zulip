@@ -38,7 +38,8 @@ function filter_streams_by_search(streams, search_term) {
 }
 
 exports.sort_groups = function (search_term) {
-    var by_recency = false;
+    var by_recency = page_params.stream_sorted_by_recency;
+    console.log(by_recency);
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
@@ -56,7 +57,6 @@ exports.sort_groups = function (search_term) {
 
     _.each(streams, function (stream) {
         var sub = stream_data.get_sub(stream);
-        console.log(sub)
         var pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);

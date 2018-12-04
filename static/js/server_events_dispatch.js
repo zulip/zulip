@@ -357,7 +357,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
+            'stream_sorted_by_recency',
         ];
+        console.log(event.setting_name);
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
         }
@@ -390,6 +392,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 $("body").fadeIn(300);
             }, 300);
         }
+        if (event.setting_name === 'stream_sorted_by_recency') {
+            $("body").toggleClass("stream_sorted_by_recency");
+            console.log("stream_sorted_by_recency checked");
+         }
         if (event.setting_name === 'starred_message_counts') {
             starred_messages.rerender_ui();
         }

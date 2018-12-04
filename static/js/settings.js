@@ -111,6 +111,7 @@ function setup_settings_label() {
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
         night_mode: i18n.t("Night mode"),
+        stream_sorted_by_recency: i18n.t("Sort streams by recency"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
         translate_emoticons: i18n.t("Convert emoticons before sending (<code>:)</code> becomes 😃)"),

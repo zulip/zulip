@@ -89,11 +89,11 @@ exports.set_up = function () {
     $('#stream_sorted_by_recency').change(function () {
         console.log("change");
         var stream_sorted_by_recency = this.checked;
-        if (stream_sorted_by_recency) {
-            $("body").addClass("stream_sorted_by_recency");
-        } else {
-            $("body").removeClass("stream_sorted_by_recency");
-        }
+        // if (stream_sorted_by_recency) {
+        //     $("body").addClass("stream_sorted_by_recency");
+        // } else {
+        //     $("body").removeClass("stream_sorted_by_recency");
+        // }
         var data = {};
         data.stream_sorted_by_recency = JSON.stringify(stream_sorted_by_recency);
         change_display_setting(data, '#display-settings-status');
