@@ -59,10 +59,6 @@ var state = {
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
 };
 
-function get_main_hash(hash) {
-    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
-}
-
 function get_hash_components() {
     var hash = window.location.hash.split(/\//);
 
@@ -75,7 +71,7 @@ function get_hash_components() {
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
-    var main_hash = get_main_hash(hash);
+    var main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.indexOf(main_hash) > -1;
 }
@@ -141,8 +137,8 @@ function do_hashchange_normal(from_reload) {
 }
 
 function do_hashchange_overlay(old_hash) {
-    var base = get_main_hash(window.location.hash);
-    var old_base = get_main_hash(old_hash);
+    var base = hash_util.get_hash_category(window.location.hash);
+    var old_base = hash_util.get_hash_category(old_hash);
 
     var coming_from_overlay = is_overlay_hash(old_hash || '#');
 
