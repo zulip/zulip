@@ -138,6 +138,7 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         assert(UserProfile.objects.filter(id__in=to_user_ids, realm=realm).exists())
         to_field = {'user_id': to_user_ids[0]}  # type: Dict[str, Any]
     else:
+        assert to_emails is not None
         assert(len(to_emails) == 1)
         to_field = {'address': parseaddr(to_emails[0])[1]}
 
