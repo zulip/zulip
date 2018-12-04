@@ -80,6 +80,33 @@ function activate_home_tab() {
     floating_recipient_bar.update();
 }
 
+var state = {
+    is_internal_change: false,
+    hash_before_overlay: null,
+    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+};
+
+function get_main_hash(hash) {
+    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
+}
+
+function get_hash_components() {
+    var hash = window.location.hash.split(/\//);
+
+    return {
+        base: hash.shift(),
+        arguments: hash,
+    };
+}
+
+function is_overlay_hash(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var main_hash = get_main_hash(hash);
+
+    return overlay_list.indexOf(main_hash) > -1;
+}
+
 // Returns true if this function performed a narrow
 function do_hashchange_normal(from_reload) {
     message_viewport.stop_auto_scrolling();
@@ -140,33 +167,6 @@ function do_hashchange_normal(from_reload) {
     return false;
 }
 
-var state = {
-    is_internal_change: false,
-    hash_before_overlay: null,
-    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-};
-
-function get_main_hash(hash) {
-    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
-}
-
-function get_hash_components() {
-    var hash = window.location.hash.split(/\//);
-
-    return {
-        base: hash.shift(),
-        arguments: hash,
-    };
-}
-
-function is_overlay_hash(hash) {
-    // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
-    var main_hash = get_main_hash(hash);
-
-    return overlay_list.indexOf(main_hash) > -1;
-}
-
 function do_hashchange_overlay(old_hash) {
     var base = get_main_hash(window.location.hash);
     var old_base = get_main_hash(old_hash);
@@ -216,6 +216,31 @@ function do_hashchange_overlay(old_hash) {
     }
 }
 
+function hashchanged(from_reload, e) {
+    if (state.is_internal_change) {
+        state.is_internal_change = false;
+        return;
+    }
+
+    var old_hash;
+    if (e) {
+        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
+        state.old_hash = window.location.hash;
+    }
+
+    if (is_overlay_hash(window.location.hash)) {
+        do_hashchange_overlay(old_hash);
+        return;
+    }
+
+    // We are changing to a "main screen" view.
+    overlays.close_for_hash_change();
+    changing_hash = true;
+    var ret = do_hashchange_normal(from_reload);
+    changing_hash = false;
+    return ret;
+}
+
 exports.update_browser_history = function (new_hash) {
     var old_hash = window.location.hash;
 
@@ -243,31 +268,6 @@ exports.go_to_location = function (hash) {
     // function to run.
     window.location.hash = hash;
 };
-
-function hashchanged(from_reload, e) {
-    if (state.is_internal_change) {
-        state.is_internal_change = false;
-        return;
-    }
-
-    var old_hash;
-    if (e) {
-        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
-        state.old_hash = window.location.hash;
-    }
-
-    if (is_overlay_hash(window.location.hash)) {
-        do_hashchange_overlay(old_hash);
-        return;
-    }
-
-    // We are changing to a "main screen" view.
-    overlays.close_for_hash_change();
-    changing_hash = true;
-    var ret = do_hashchange_normal(from_reload);
-    changing_hash = false;
-    return ret;
-}
 
 exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
