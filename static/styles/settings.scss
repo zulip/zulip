@@ -1562,13 +1562,14 @@ input[type=text]#settings_search {
 }
 
 #settings_page .sidebar li .text,
-#settings_page .sidebar li .icon {
+#settings_page .sidebar li .icon,
+#settings_page .sidebar li .locked {
     display: inline-block;
     vertical-align: top;
 }
 
 #settings_page .sidebar li .text {
-    width: calc(100% - 55px);
+    width: calc(100% - 90px);
     padding: 10px 12px 10px 0px;
 }
 
@@ -1579,6 +1580,18 @@ input[type=text]#settings_search {
 
     font-size: 1.4em;
     color: hsl(0, 0%, 53%);
+
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#settings_page .sidebar li .locked {
+    width: 18px;
+    height: 18px;
+    margin: 14px 8px 6px;
+
+    font-size: 1em;
+    color: hsl(0, 0%, 62%);
 
     background-size: cover;
     background-repeat: no-repeat;
