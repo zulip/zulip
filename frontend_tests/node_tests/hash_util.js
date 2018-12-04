@@ -69,10 +69,9 @@ run_test('test_parse_narrow', () => {
         [{negated: false, operator: 'stream', operand: '11-social'}]
     );
 
-    // This should probably return undefined.
-    assert.deepEqual(
+    assert.equal(
         hash_util.parse_narrow(['narrow', 'BOGUS']),
-        [{negated: false, operator: 'BOGUS', operand: ''}]
+        undefined
     );
 });
 
