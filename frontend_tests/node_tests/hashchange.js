@@ -37,7 +37,7 @@ run_test('operators_round_trip', () => {
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/topic/algol');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -50,7 +50,7 @@ run_test('operators_round_trip', () => {
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/-topic/visual.20c.2B.2B');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'visual c++', negated: true},
@@ -67,7 +67,7 @@ run_test('operators_round_trip', () => {
     ];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/987-Florida.2C-USA');
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'Florida, USA', negated: false},
     ]);
@@ -78,7 +78,7 @@ run_test('operators_trailing_slash', () => {
     var narrow;
 
     hash = '#narrow/stream/devel/topic/algol/';
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -102,7 +102,7 @@ run_test('people_slugs', () => {
     ];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'sender', operand: 'alice@example.com', negated: false},
     ]);

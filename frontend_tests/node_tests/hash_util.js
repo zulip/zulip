@@ -63,6 +63,19 @@ run_test('hash_util', () => {
     encode_decode_operand(operator, operand, 'testing.20123');
 });
 
+run_test('test_parse_narrow', () => {
+    assert.deepEqual(
+        hash_util.parse_narrow(['narrow', 'stream', '11-social']),
+        [{negated: false, operator: 'stream', operand: '11-social'}]
+    );
+
+    // This should probably return undefined.
+    assert.deepEqual(
+        hash_util.parse_narrow(['narrow', 'BOGUS']),
+        [{negated: false, operator: 'BOGUS', operand: ''}]
+    );
+});
+
 run_test('test_stream_edit_uri', () => {
     var sub = {
         name: 'research & development',
