@@ -12,16 +12,14 @@ aliases:
           sudo chown -R circleci "${dirs[@]}"
 
   - &restore_cache_package_json
-    # Workaround until arbitrary env var lookup is implemented by CircleCI
-    # https://discuss.circleci.com/t/cannot-use-circle-yml-environment-variables-in-cache-keys/10994/8
     restore_cache:
       keys:
-      - v1-npm-base.{{ checksum "_dist.txt" }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      - v1-npm-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
 
   - &restore_cache_requirements
     restore_cache:
       keys:
-      - v1-venv-base.{{ checksum "_dist.txt" }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
   - &install_dependencies
     run:
@@ -32,22 +30,17 @@ aliases:
         rm -f /home/circleci/.gitconfig
         mispipe "tools/ci/setup-backend" ts
 
-  # Note: CircleCI doesn't support any sort of basic variable
-  # substitution, so we have to do this `_dist.txt` hack where we
-  # checksum the distro name in the cache path, just because that's
-  # the only way we can express this without duplicating our cache
-  # management code.
   - &save_cache_package_json
     save_cache:
       paths:
         - /srv/zulip-npm-cache
-      key: v1-npm-base.{{ checksum "_dist.txt" }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+      key: v1-npm-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
 
   - &save_cache_requirements
     save_cache:
       paths:
         - /srv/zulip-venv-cache
-      key: v1-venv-base.{{ checksum "_dist.txt" }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      key: v1-venv-base.{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
     # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
   - &run_backend_tests
@@ -84,7 +77,6 @@ jobs:
       - checkout
 
       - *create_cache_directories
-      - run: echo "trusty" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
 
@@ -130,7 +122,6 @@ jobs:
     steps:
       - checkout
       - *create_cache_directories
-      - run: echo "xenial" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
       - *install_dependencies
@@ -158,7 +149,6 @@ jobs:
               # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
               redis-server --daemonize yes
 
-      - run: echo "bionic" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
       - *install_dependencies
