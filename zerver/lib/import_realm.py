@@ -519,6 +519,7 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
 def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
                          processing_avatars: bool=False,
                          processing_emojis: bool=False) -> None:
+    timestamp = datetime_to_timestamp(timezone_now())
     count = 0
     for record in records:
         count += 1
@@ -538,6 +539,7 @@ def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
+            record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
