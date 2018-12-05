@@ -11,6 +11,18 @@ aliases:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R circleci "${dirs[@]}"
 
+  - &restore_cache_package_json
+    # Workaround until arbitrary env var lookup is implemented by CircleCI
+    # https://discuss.circleci.com/t/cannot-use-circle-yml-environment-variables-in-cache-keys/10994/8
+    restore_cache:
+      keys:
+      - v1-npm-base.{{ checksum "_dist.txt" }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+
+  - &restore_cache_requirements
+    restore_cache:
+      keys:
+      - v1-venv-base.{{ checksum "_dist.txt" }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+
   - &install_dependencies
     run:
       name: install dependencies
@@ -55,12 +67,9 @@ jobs:
 
       - *create_cache_directories
 
-      - restore_cache:
-          keys:
-          - v1-npm-base.trusty-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          keys:
-          - v1-venv-base.trusty-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - run: echo "trusty" > _dist.txt
+      - *restore_cache_package_json
+      - *restore_cache_requirements
 
       - run:
           name: install dependencies
@@ -118,12 +127,9 @@ jobs:
 
       - *create_cache_directories
 
-      - restore_cache:
-          keys:
-          - v1-npm-base.xenial-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          keys:
-          - v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - run: echo "xenial" > _dist.txt
+      - *restore_cache_package_json
+      - *restore_cache_requirements
 
       - *install_dependencies
 
@@ -159,12 +165,9 @@ jobs:
               # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
               redis-server --daemonize yes
 
-      - restore_cache:
-          keys:
-          - v1-npm-base.bionic-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          keys:
-          - v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - run: echo "bionic" > _dist.txt
+      - *restore_cache_package_json
+      - *restore_cache_requirements
 
       - *install_dependencies
 
