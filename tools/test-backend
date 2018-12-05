@@ -28,6 +28,11 @@ target_fully_covered = {path for target in [
     # zerver/ and zerver/lib/ are important core files
     'zerver/*.py',
     'zerver/lib/*.py',
+    'zerver/lib/*/*.py',
+    'zerver/lib/*/*/*.py',
+    'zerver/data_import/*.py',
+    'zerver/templatetags/*.py',
+    'zerver/tornado/*.py',
     # Billing files require 100% test coverage
     'corporate/lib/stripe.py',
     'corporate/views.py',
@@ -43,10 +48,10 @@ target_fully_covered = {path for target in [
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
-    'zerver/worker/queue_processor.py',
+    'zerver/worker/*.py',
 ] for path in glob.glob(target)}
 
-not_yet_fully_covered = {
+not_yet_fully_covered = {path for target in [
     # Analytics fixtures library is used to generate test fixtures;
     # isn't properly accounted for in test coverage analysis since it
     # runs before tests.
@@ -61,6 +66,14 @@ not_yet_fully_covered = {
     'zerver/lib/i18n.py',
     'zerver/lib/notifications.py',
     'zerver/lib/send_email.py',
+    'zerver/lib/webhooks/common.py',
+    'zerver/lib/url_preview/preview.py',
+    'zerver/worker/queue_processors.py',
+    # Bugdown sub-libs should have full coverage too; a lot are really close
+    'zerver/lib/bugdown/api_arguments_table_generator.py',
+    'zerver/lib/bugdown/fenced_code.py',
+    'zerver/lib/bugdown/help_relative_links.py',
+    'zerver/lib/bugdown/nested_code_blocks.py',
     # Other lib files that ideally would coverage, but aren't sorted
     'zerver/__init__.py',
     'zerver/filters.py',
@@ -89,13 +102,28 @@ not_yet_fully_covered = {
     'zerver/lib/unminify.py',
     'zerver/lib/utils.py',
     'zerver/lib/zephyr.py',
+    'zerver/templatetags/app_filters.py',
+    'zerver/templatetags/minified_js.py',
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/lib/api_test_helpers.py',
-    # Data import files
+    # Tornado should ideally have full coverage, but we're not there.
+    'zerver/tornado/autoreload.py',
+    'zerver/tornado/descriptors.py',
+    'zerver/tornado/event_queue.py',
+    'zerver/tornado/exceptions.py',
+    'zerver/tornado/handlers.py',
+    'zerver/tornado/ioloop_logging.py',
+    'zerver/tornado/sharding.py',
+    'zerver/tornado/socket.py',
+    'zerver/tornado/views.py',
+    'zerver/tornado/websocket_client.py',
+    # Data import files; relatively low priority
+    'zerver/data_import/hipchat*.py',
+    'zerver/data_import/sequencer.py',
     'zerver/data_import/slack.py',
     'zerver/data_import/gitter.py',
     'zerver/data_import/import_util.py',
@@ -110,7 +138,7 @@ not_yet_fully_covered = {
     'zerver/webhooks/teamcity/view.py',
     'zerver/webhooks/travis/view.py',
     'zerver/webhooks/zapier/view.py',
-}
+] for path in glob.glob(target)}
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
 
