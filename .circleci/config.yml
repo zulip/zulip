@@ -32,6 +32,19 @@ aliases:
         rm -f /home/circleci/.gitconfig
         mispipe "tools/travis/setup-backend" ts
 
+  - &save_cache_package_json
+    save_cache:
+      paths:
+        - /srv/zulip-npm-cache
+      key: v1-npm-base.{{ checksum "_dist.txt" }}-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
+
+  - &save_cache_requirements
+    save_cache:
+      paths:
+        - /srv/zulip-venv-cache
+      key: v1-venv-base.{{ checksum "_dist.txt" }}-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+    # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
+
   - &run_backend_tests
     run:
       name: run backend tests
@@ -92,15 +105,8 @@ jobs:
             # most builds don't get to write to the cache.
             # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
 
-      - save_cache:
-          paths:
-            - /srv/zulip-npm-cache
-          key: v1-npm-base.trusty-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - save_cache:
-          paths:
-            - /srv/zulip-venv-cache
-          key: v1-venv-base.trusty-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
-      # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
+      - *save_cache_package_json
+      - *save_cache_requirements
 
       # The moment of truth!  Run the tests.
 
@@ -133,14 +139,8 @@ jobs:
 
       - *install_dependencies
 
-      - save_cache:
-          paths:
-            - /srv/zulip-npm-cache
-          key: v1-npm-base.xenial-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - save_cache:
-          paths:
-            - /srv/zulip-venv-cache
-          key: v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - *save_cache_package_json
+      - *save_cache_requirements
 
       - *run_backend_tests
 
@@ -171,14 +171,8 @@ jobs:
 
       - *install_dependencies
 
-      - save_cache:
-          paths:
-            - /srv/zulip-npm-cache
-          key: v1-npm-base.bionic-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
-      - save_cache:
-          paths:
-            - /srv/zulip-venv-cache
-          key: v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
+      - *save_cache_package_json
+      - *save_cache_requirements
 
       - *run_backend_tests
 
