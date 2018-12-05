@@ -579,35 +579,42 @@ exports.switch_to_stream_row = function (stream_id) {
     }, 100);
 };
 
-exports.change_state = function (hash) {
-    if (hash.arguments.length === 0) {
+exports.change_state = function (section) {
+    // if in #streams/new form.
+    if (section === "new") {
+        exports.do_open_create_stream();
         return;
     }
 
-    var base = hash.arguments[0];
-
-    // if in #streams/new form.
-    if (base === "new") {
-        exports.do_open_create_stream();
-    } else if (base === "all") {
+    if (section === "all") {
         exports.toggler.goto('all-streams');
-    } else if (base === "subscribed") {
-        exports.toggler.goto('subscribed');
-    // if the first argument is a valid number.
-    } else if (/\d+/.test(base)) {
-        var stream_id = base;
-        exports.switch_to_stream_row(stream_id);
+        return;
     }
+
+    if (section === "subscribed") {
+        exports.toggler.goto('subscribed');
+        return;
+    }
+
+    // if the section is a valid number.
+    if (/\d+/.test(section)) {
+        var stream_id = section;
+        exports.switch_to_stream_row(stream_id);
+        return;
+    }
+
+    blueslip.warn('invalid section for streams: ' + section);
+    exports.toggler.goto('subscribed');
 };
 
-exports.launch = function (hash) {
+exports.launch = function (section) {
     exports.setup_page(function () {
         overlays.open_overlay({
             name: 'subscriptions',
             overlay: $("#subscription_overlay"),
             on_close: exports.close,
         });
-        exports.change_state(hash);
+        exports.change_state(section);
 
         ui.set_up_scrollbar($("#subscription_overlay .streams-list"));
         ui.set_up_scrollbar($("#subscription_overlay .settings"));
