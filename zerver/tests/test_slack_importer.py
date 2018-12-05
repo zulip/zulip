@@ -501,7 +501,7 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_get_all_messages.side_effect = [zerver_message]
+        mock_get_all_messages.side_effect = [iter(zerver_message)]
         mock_message.side_effect = [[zerver_message[:1], zerver_usermessage[:2],
                                      attachments, uploads, reactions[:1]],
                                     [zerver_message[1:2], zerver_usermessage[2:5],
