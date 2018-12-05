@@ -10,11 +10,13 @@ import logging
 import random
 import requests
 
+from collections import defaultdict
+
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
-from typing import Any, Dict, List, Optional, Tuple, Set
+from typing import Any, Dict, List, Optional, Tuple, Set, Iterator
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient, \
     CustomProfileField, CustomProfileFieldValue
@@ -448,11 +450,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     2. uploads, which is a list of uploads to be mapped in uploads records.json
     3. attachment, which is a list of the attachments
     """
-    all_messages = get_all_messages(slack_data_dir, added_channels)
-
-    # we sort the messages according to the timestamp to show messages with
-    # the proper date order
-    all_messages = sorted(all_messages, key=lambda message: message['ts'])
+    all_messages = get_messages_iterator(slack_data_dir, added_channels)
 
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
@@ -461,8 +459,6 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     total_uploads = []  # type: List[ZerverFieldsT]
 
     # The messages are stored in batches
-    low_index = 0
-    upper_index = low_index + chunk_size
     dump_file_id = 1
 
     subscriber_map = make_subscriber_map(
@@ -470,9 +466,16 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     )
 
     while True:
-        message_data = all_messages[low_index:upper_index]
+        message_data = []
+        _counter = 0
+        for msg in all_messages:
+            _counter += 1
+            message_data.append(msg)
+            if _counter == chunk_size:
+                break
         if len(message_data) == 0:
             break
+
         zerver_message, zerver_usermessage, attachment, uploads, reactions = \
             channel_message_to_zerver_message(
                 realm_id, users, added_users, added_recipient, message_data,
@@ -491,26 +494,38 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
         total_attachments += attachment
         total_uploads += uploads
 
-        low_index = upper_index
-        upper_index = chunk_size + low_index
         dump_file_id += 1
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
     return total_reactions, total_uploads, total_attachments
 
-def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> List[ZerverFieldsT]:
-    all_messages = []  # type: List[ZerverFieldsT]
+def get_messages_iterator(slack_data_dir: str, added_channels: AddedChannelsT) -> Iterator[ZerverFieldsT]:
+    """This function is an iterator that returns all the messages across
+       all Slack channels, in order by timestamp.  It's important to
+       not read all the messages into memory at once, because for
+       large imports that can OOM kill."""
+    all_json_names = defaultdict(list)  # type: Dict[str, List[str]]
     for channel_name in added_channels.keys():
         channel_dir = os.path.join(slack_data_dir, channel_name)
         json_names = os.listdir(channel_dir)
         for json_name in json_names:
+            all_json_names[json_name].append(channel_dir)
+
+    # Sort json_name by date
+    for json_name in sorted(all_json_names.keys()):
+        messages_for_one_day = []  # type: List[ZerverFieldsT]
+        for channel_dir in all_json_names[json_name]:
             message_dir = os.path.join(channel_dir, json_name)
             messages = get_data_file(message_dir)
             for message in messages:
                 # To give every message the channel information
                 message['channel_name'] = channel_name
-            all_messages += messages
-    return all_messages
+            messages_for_one_day += messages
+
+        # we sort the messages according to the timestamp to show messages with
+        # the proper date order
+        for message in sorted(messages_for_one_day, key=lambda m: m['ts']):
+            yield message
 
 def channel_message_to_zerver_message(realm_id: int,
                                       users: List[ZerverFieldsT],
