@@ -181,9 +181,6 @@ class ClientDescriptor:
         return self.event_types is None or "message" in self.event_types
 
     def idle(self, now: float) -> bool:
-        if not hasattr(self, 'queue_timeout'):
-            self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
-
         return (self.current_handler_id is None and
                 now - self.last_connection_time >= self.queue_timeout)
 
