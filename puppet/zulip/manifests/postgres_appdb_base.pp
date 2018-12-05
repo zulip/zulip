@@ -11,7 +11,7 @@ class zulip::postgres_appdb_base {
   zulip::safepackage {
     $appdb_packages:
       ensure  => 'installed',
-      require => Apt::Source['zulip'],
+      require => Exec['setup_apt_repo'],
   }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
@@ -49,14 +49,14 @@ class zulip::postgres_appdb_base {
 
   $pgroonga = zulipconf('machine', 'pgroonga', '')
   if $pgroonga == 'enabled' {
-    apt::ppa {'ppa:groonga/ppa':
+    exec {'setup_apt_repo':
       before => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
     }
 
     # Needed for optional our full text search system
     package{"postgresql-${zulip::base::postgres_version}-pgroonga":
       ensure  => 'installed',
-      require => Package["postgresql-${zulip::base::postgres_version}"],
+      require => [Package["postgresql-${zulip::base::postgres_version}"]],
     }
 
     $pgroonga_setup_sql_path = "/usr/share/postgresql/${zulip::base::postgres_version}/pgroonga_setup.sql"
