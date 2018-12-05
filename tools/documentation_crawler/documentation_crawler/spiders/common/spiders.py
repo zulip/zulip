@@ -34,7 +34,7 @@ class BaseDocumentationSpider(scrapy.Spider):
     def __init__(self, skip_external=None, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.has_error = False
-        self.skip_external=skip_external 
+        self.skip_external = skip_external 
 
     def _set_error_state(self) -> None:
         self.has_error = True
@@ -51,10 +51,10 @@ class BaseDocumentationSpider(scrapy.Spider):
     def _is_external_link(self, url: str) -> bool:
         if "zulip.readthedoc" in url or "zulipchat" in url:
             return False
-            #Checking links in zulip websites is a must.
-        elif (len(url)>4 and url[:4]=="file") or "localhost" in url:
+            # Checking links in zulip websites is a must.
+        elif (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
             return False
-            #Passing all links pointing to localhost.
+            # Passing all links pointing to localhost.
         return True
 
     def check_permalink(self, response: Any) -> None:
@@ -84,8 +84,8 @@ class BaseDocumentationSpider(scrapy.Spider):
             elif '#' in link.url:
                 dont_filter = True
                 callback = self.check_permalink
-            if(self.skip_external!=None):   # checks if flag is set to skip external link check.
-                if(self._is_external_link(link.url)):
+            if (self.skip_external is not None):   # checks if flag is set to skip external link check.
+                if (self._is_external_link(link.url)):
                     continue
             yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
                           errback=self.error_callback)
