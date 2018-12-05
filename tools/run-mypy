@@ -85,4 +85,8 @@ if args.daemon:
 else:
     rc = subprocess.call([mypy_command] + mypy_args)
 
+if rc != 0:
+    print("")
+    print("See https://github.com/zulip/zulip/blob/master/docs/contributing/mypy.md for debugging tips.")
+
 sys.exit(rc)
