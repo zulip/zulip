@@ -11,6 +11,15 @@ aliases:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R circleci "${dirs[@]}"
 
+  - &install_dependencies
+    run:
+      name: install dependencies
+      command: |
+        sudo apt-get update
+        sudo apt-get install -y moreutils
+        rm -f /home/circleci/.gitconfig
+        mispipe "tools/travis/setup-backend" ts
+
 jobs:
   "trusty-python-3.4":
     docker:
@@ -107,13 +116,7 @@ jobs:
           keys:
           - v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
-      - run:
-          name: install dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y moreutils
-            rm -f /home/circleci/.gitconfig
-            mispipe "tools/travis/setup-backend" ts
+      - *install_dependencies
 
       - save_cache:
           paths:
@@ -163,13 +166,7 @@ jobs:
           keys:
           - v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
-      - run:
-          name: install dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y moreutils
-            rm -f /home/circleci/.gitconfig
-            mispipe "tools/travis/setup-backend" ts
+      - *install_dependencies
 
       - save_cache:
           paths:
