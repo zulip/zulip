@@ -528,28 +528,30 @@ def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
-            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path)
+            relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
             if record['s3_path'].endswith('.original'):
-                file_path += '.original'
+                relative_path += '.original'
             else:
-                file_path += '.png'
+                relative_path += '.png'
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
-            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
-            s3_file_name = "/".join([
+            relative_path = "/".join([
                 str(record['realm_id']),
                 random_name(18),
                 sanitize_name(os.path.basename(record['path']))
             ])
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", s3_file_name)
-            path_maps['attachment_path'][record['path']] = s3_file_name
+            path_maps['attachment_path'][record['path']] = relative_path
+
+        if processing_avatars or processing_emojis:
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
+        else:
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
 
         orig_file_path = os.path.join(import_dir, record['path'])
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -571,29 +573,27 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str
             logging.info("Processed %s/%s uploads" % (count, len(records)))
 
         if processing_avatars:
-            # For avatars, we need to rehash the user's email with the
+            # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
-            avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
-            key.key = avatar_path
+            relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
             if record['s3_path'].endswith('.original'):
-                key.key += '.original'
+                relative_path += '.original'
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
-            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
-            key.key = emoji_path
             record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
-            s3_file_name = "/".join([
+            relative_path = "/".join([
                 str(record['realm_id']),
                 random_name(18),
                 sanitize_name(os.path.basename(record['path']))
             ])
-            key.key = s3_file_name
-            path_maps['attachment_path'][record['s3_path']] = s3_file_name
+            path_maps['attachment_path'][record['s3_path']] = relative_path
+        key.key = relative_path
 
         # Exported custom emoji from tools like Slack don't have
         # the data for what user uploaded them in `user_profile_id`.
