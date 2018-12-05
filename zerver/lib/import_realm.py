@@ -22,7 +22,7 @@ from zerver.lib.export import DATE_FIELDS, realm_tables, \
 from zerver.lib.message import do_render_markdown, RealmAlertWords
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
-    S3UploadBackend, LocalUploadBackend, guess_type
+    guess_type
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
@@ -555,30 +555,9 @@ def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         shutil.copy(orig_file_path, file_path)
 
-    if processing_avatars:
-        # Ensure that we have medium-size avatar images for every
-        # avatar.  TODO: This implementation is hacky, both in that it
-        # does get_user_profile_by_id for each user, and in that it
-        # might be better to require the export to just have these.
-        upload_backend = LocalUploadBackend()
-        for record in records:
-            if record['s3_path'].endswith('.original'):
-                user_profile = get_user_profile_by_id(record['user_profile_id'])
-                avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
-                medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
-                                                avatar_path) + '-medium.png'
-                if os.path.exists(medium_file_path):
-                    # We remove the image here primarily to deal with
-                    # issues when running the import script multiple
-                    # times in development (where one might reuse the
-                    # same realm ID from a previous iteration).
-                    os.remove(medium_file_path)
-                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
-
 def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str, Any]],
                       processing_avatars: bool=False,
                       processing_emojis: bool=False) -> None:
-    upload_backend = S3UploadBackend()
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     timestamp = datetime_to_timestamp(timezone_now())
@@ -639,17 +618,6 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
-    if processing_avatars:
-        # Ensure that we have medium-size avatar images for every
-        # avatar.  TODO: This implementation is hacky, both in that it
-        # does get_user_profile_by_id for each user, and in that it
-        # might be better to require the export to just have these.
-        upload_backend = S3UploadBackend()
-        for record in records:
-            if record['s3_path'].endswith('.original'):
-                user_profile = get_user_profile_by_id(record['user_profile_id'])
-                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
-
 def import_uploads(import_dir: Path, processing_avatars: bool=False,
                    processing_emojis: bool=False) -> None:
     if processing_avatars and processing_emojis:
@@ -681,6 +649,27 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         import_uploads_s3(bucket_name, import_dir, records, processing_avatars=processing_avatars,
                           processing_emojis=processing_emojis)
+
+    if processing_avatars:
+        from zerver.lib.upload import upload_backend
+        # Ensure that we have medium-size avatar images for every
+        # avatar.  TODO: This implementation is hacky, both in that it
+        # does get_user_profile_by_id for each user, and in that it
+        # might be better to require the export to just have these.
+        for record in records:
+            if record['s3_path'].endswith('.original'):
+                user_profile = get_user_profile_by_id(record['user_profile_id'])
+                if settings.LOCAL_UPLOADS_DIR is not None:
+                    avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
+                    medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                                    avatar_path) + '-medium.png'
+                    if os.path.exists(medium_file_path):
+                        # We remove the image here primarily to deal with
+                        # issues when running the import script multiple
+                        # times in development (where one might reuse the
+                        # same realm ID from a previous iteration).
+                        os.remove(medium_file_path)
+                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
