@@ -127,6 +127,11 @@ html {
     font-weight: 400;
 }
 
+.app-main.goto-account-page-container {
+    width: 500px;
+    font-weight: 400;
+}
+
 .app-main.confirm-continue-page-container {
     width: 400px;
     font-weight: 400;
@@ -933,6 +938,7 @@ button.login-google-button {
     .app-main.register-page-container,
     .app-main.login-page-container,
     .app-main.find-account-page-container,
+    .app-main.goto-account-page-container,
     .app-main.forgot-password-container {
         display: inline-block;
         padding: 20px;
@@ -993,4 +999,37 @@ button.login-google-button {
     font-size: 1.2rem;
     height: 45px;
     width: 325px;
+}
+
+.goto-account-page {
+    #realm_redirect_subdomain {
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+    }
+
+    #realm_redirect_external_host {
+        font-size: 20px;
+        top: 13px;
+        left: 5px;
+        position: relative;
+    }
+
+    #realm_redirect_description {
+        top: 15px;
+        position: relative;
+    }
+
+    #enter-realm-button {
+        margin-top: 14px;
+    }
+
+    #find-account-section {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .find-account-link {
+        color: hsl(165, 100.0%, 14.7%);
+    }
 }
