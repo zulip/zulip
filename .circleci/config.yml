@@ -79,7 +79,6 @@ jobs:
       - checkout
 
       - *create_cache_directories
-
       - run: echo "trusty" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
@@ -111,9 +110,7 @@ jobs:
       # The moment of truth!  Run the tests.
 
       - *run_backend_tests
-
       - *run_frontend_tests
-
       - *upload_coverage_report
 
       # - store_artifacts:  # TODO
@@ -130,20 +127,14 @@ jobs:
 
     steps:
       - checkout
-
       - *create_cache_directories
-
       - run: echo "xenial" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
-
       - *install_dependencies
-
       - *save_cache_package_json
       - *save_cache_requirements
-
       - *run_backend_tests
-
       - *upload_coverage_report
 
   "bionic-python-3.6":
@@ -168,14 +159,10 @@ jobs:
       - run: echo "bionic" > _dist.txt
       - *restore_cache_package_json
       - *restore_cache_requirements
-
       - *install_dependencies
-
       - *save_cache_package_json
       - *save_cache_requirements
-
       - *run_backend_tests
-
       - *upload_coverage_report
 
 workflows:
