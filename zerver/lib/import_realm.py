@@ -580,6 +580,8 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str
             relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
             if record['s3_path'].endswith('.original'):
                 relative_path += '.original'
+            else:
+                relative_path += '.png'
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
