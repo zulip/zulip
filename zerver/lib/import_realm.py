@@ -516,17 +516,9 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
+def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
+                         processing_avatars: bool=False,
                          processing_emojis: bool=False) -> None:
-    records_filename = os.path.join(import_dir, "records.json")
-    with open(records_filename) as records_file:
-        records = ujson.loads(records_file.read())
-
-    re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
-                                 id_field=True)
-    if not processing_emojis:
-        re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
-                                     related_table="user_profile", id_field=True)
     count = 0
     for record in records:
         count += 1
@@ -583,22 +575,14 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
                     os.remove(medium_file_path)
                 upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
-def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False,
+def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str, Any]],
+                      processing_avatars: bool=False,
                       processing_emojis: bool=False) -> None:
     upload_backend = S3UploadBackend()
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
-
-    records_filename = os.path.join(import_dir, "records.json")
-    with open(records_filename) as records_file:
-        records = ujson.loads(records_file.read())
-
-    re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
-                                 id_field=True)
     timestamp = datetime_to_timestamp(timezone_now())
-    if not processing_emojis:
-        re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
-                                     related_table="user_profile", id_field=True)
+
     count = 0
     for record in records:
         key = Key(bucket)
@@ -651,7 +635,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         content_type = record.get("content_type")
         if content_type is None:
             content_type = guess_type(record['s3_path'])[0]
-        headers = {'Content-Type': content_type}
+        headers = {'Content-Type': content_type}  # type: Dict[str, Any]
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
@@ -676,15 +660,26 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
         logging.info("Importing emojis")
     else:
         logging.info("Importing uploaded files")
+
+    records_filename = os.path.join(import_dir, "records.json")
+    with open(records_filename) as records_file:
+        records = ujson.loads(records_file.read())  # type: List[Dict[str, Any]]
+
+    re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
+                                 id_field=True)
+    if not processing_emojis:
+        re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
+                                     related_table="user_profile", id_field=True)
+
     if settings.LOCAL_UPLOADS_DIR:
-        import_uploads_local(import_dir, processing_avatars=processing_avatars,
+        import_uploads_local(import_dir, records, processing_avatars=processing_avatars,
                              processing_emojis=processing_emojis)
     else:
         if processing_avatars or processing_emojis:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        import_uploads_s3(bucket_name, import_dir, processing_avatars=processing_avatars,
+        import_uploads_s3(bucket_name, import_dir, records, processing_avatars=processing_avatars,
                           processing_emojis=processing_emojis)
 
 # Importing data suffers from a difficult ordering problem because of
