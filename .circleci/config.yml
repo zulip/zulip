@@ -34,6 +34,14 @@ aliases:
         . /srv/zulip-py3-venv/bin/activate
         mispipe ./tools/travis/frontend ts
 
+  - &upload_coverage_report
+    run:
+     name: upload coverage report
+     command: |
+       . /srv/zulip-py3-venv/bin/activate
+       pip install codecov && codecov \
+         || echo "Error in uploading coverage reports to codecov.io."
+
 jobs:
   "trusty-python-3.4":
     docker:
@@ -91,12 +99,7 @@ jobs:
 
       - *run_frontend_tests
 
-      -  run:
-          name: upload coverage report
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            pip install codecov && codecov \
-              || echo "Error in uploading coverage reports to codecov.io."
+      - *upload_coverage_report
 
       # - store_artifacts:  # TODO
       #     path: var/casper/
@@ -135,12 +138,7 @@ jobs:
 
       - *run_backend_tests
 
-      -  run:
-          name: upload coverage report
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            pip install codecov && codecov \
-              || echo "Error in uploading coverage reports to codecov.io."
+      - *upload_coverage_report
 
   "bionic-python-3.6":
     docker:
@@ -181,13 +179,7 @@ jobs:
 
       - *run_backend_tests
 
-      -  run:
-          name: upload coverage report
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            pip install codecov && codecov \
-              || echo "Error in uploading coverage reports to codecov.io."
-
+      - *upload_coverage_report
 
 workflows:
   version: 2
