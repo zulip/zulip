@@ -52,11 +52,11 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
     def test_notify_bot_owner_on_invalid_json(self)-> None:
         @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=False)
-        def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 
         @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=True)
-        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> None:
+        def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
 
         webhook_bot_email = 'webhook-bot@zulip.com'
@@ -70,7 +70,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
 
         last_message_id = self.get_last_message().id
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
-            my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            my_webhook_no_notify(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # First verify that without the setting, it doesn't send a PM to bot owner.
         msg = self.get_last_message()
@@ -78,7 +78,8 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertNotEqual(msg.content, expected_msg.strip())
 
         # Then verify that with the setting, it does send such a message.
-        my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
+        with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
+            my_webhook_notify(request)  # type: ignore # mypy doesn't seem to apply the decorator
         msg = self.get_last_message()
         self.assertNotEqual(msg.id, last_message_id)
         self.assertEqual(msg.sender.email, self.notification_bot().email)
