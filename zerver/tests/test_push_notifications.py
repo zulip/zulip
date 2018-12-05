@@ -491,10 +491,12 @@ class HandlePushNotificationTest(PushNotificationTest):
         # Now, delete the message the normal way
         do_delete_message(user_profile, message)
 
-        with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check:
+        with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
+                mock.patch('logging.error') as mock_logging_error:
             apn.handle_push_notification(user_profile.id, missed_message)
-            # Check we didn't proceed through.
+            # Check we didn't proceed through and didn't log anything.
             mock_check.assert_not_called()
+            mock_logging_error.assert_not_called()
 
     def test_missing_message(self) -> None:
         """Simulates the race where message is missing when handling push notifications"""
@@ -749,6 +751,22 @@ class TestAPNs(PushNotificationTest):
             mock_logging.warning.assert_called_once_with(
                 "APNs: HTTP error sending for user %d to device %s: %s",
                 self.user_profile.id, self.devices()[0].token, "StreamResetError")
+            for device in self.devices():
+                mock_logging.info.assert_any_call(
+                    "APNs: Success sending for user %d to device %s",
+                    self.user_profile.id, device.token)
+
+    def test_http_retry_pipefail(self) -> None:
+        import hyper
+        with self.mock_apns() as mock_apns, \
+                mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
+            mock_apns.get_notification_result.side_effect = itertools.chain(
+                [BrokenPipeError()],
+                itertools.repeat('Success'))
+            self.send()
+            mock_logging.warning.assert_called_once_with(
+                "APNs: BrokenPipeError sending for user %d to device %s: %s",
+                self.user_profile.id, self.devices()[0].token, "BrokenPipeError")
             for device in self.devices():
                 mock_logging.info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",

@@ -145,7 +145,7 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                                user_id, device.token, e.__class__.__name__)
                 return None
             except BrokenPipeError as e:
-                logger.warning("APNs: HTTP BrokenPipeError error sending for user %d to device %s: %s",
+                logger.warning("APNs: BrokenPipeError sending for user %d to device %s: %s",
                                user_id, device.token, e.__class__.__name__)
                 return None
 
