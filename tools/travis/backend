@@ -17,7 +17,8 @@ set -x
 
 ./tools/test-migrations
 ./tools/setup/optimize-svg
-./tools/test-documentation ${CIRCLECI:+--skip-check-links}
+# In CI, we only test links we control in test-documentation to avoid flakes
+./tools/test-documentation --skip-external-links
 ./tools/test-help-documentation
 ./tools/test-api
 ./tools/test-locked-requirements
