@@ -548,7 +548,7 @@ def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
                 random_name(18),
                 sanitize_name(os.path.basename(record['path']))
             ])
-            path_maps['attachment_path'][record['path']] = relative_path
+            path_maps['attachment_path'][record['s3_path']] = relative_path
 
         if processing_avatars or processing_emojis:
             file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
