@@ -71,12 +71,15 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
 android_min_app_version = '16.2.96'
 
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
+    # This string should not be tagged for translation, since old
+    # clients are checking for an extra string.
+    legacy_compatibility_error_message = "Client is too old"
     user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
     if user_agent['name'] == "ZulipInvalid":
-        return json_error("Client is too old")  # take 0
+        return json_error(legacy_compatibility_error_message)
     if user_agent['name'] == "ZulipMobile":
         user_os = find_mobile_os(request.META["HTTP_USER_AGENT"])
         if (user_os == 'android'
                 and version_lt(user_agent['version'], android_min_app_version)):
-            return json_error("Client is too old")
+            return json_error(legacy_compatibility_error_message)
     return json_success()
