@@ -348,16 +348,15 @@ def api_key_only_webhook_view(
                 rate_limit_user(request, user_profile, domain='all')
             try:
                 return view_func(request, user_profile, *args, **kwargs)
-            except InvalidJSONError as e:
-                if not notify_bot_owner_on_invalid_json:
-                    raise e
-                # NOTE: importing this at the top of file leads to a
-                # cyclic import; correct fix is probably to move
-                # notify_bot_owner_about_invalid_json to a smaller file.
-                from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
-                notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
             except Exception as err:
-                log_exception_to_webhook_logger(request, user_profile)
+                if isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
+                    # NOTE: importing this at the top of file leads to a
+                    # cyclic import; correct fix is probably to move
+                    # notify_bot_owner_about_invalid_json to a smaller file.
+                    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
+                    notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
+                else:
+                    log_exception_to_webhook_logger(request, user_profile)
                 raise err
 
         return _wrapped_func_arguments
