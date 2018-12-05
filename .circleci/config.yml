@@ -32,6 +32,11 @@ aliases:
         rm -f /home/circleci/.gitconfig
         mispipe "tools/travis/setup-backend" ts
 
+  # Note: CircleCI doesn't support any sort of basic variable
+  # substitution, so we have to do this `_dist.txt` hack where we
+  # checksum the distro name in the cache path, just because that's
+  # the only way we can express this without duplicating our cache
+  # management code.
   - &save_cache_package_json
     save_cache:
       paths:
