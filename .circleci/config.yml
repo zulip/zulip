@@ -26,9 +26,23 @@ aliases:
       name: install dependencies
       command: |
         sudo apt-get update
+        # Install moreutils so we can use `ts` and `mispipe` in the following.
         sudo apt-get install -y moreutils
+
+        # CircleCI sets the following in Git config at clone time:
+        #   url.ssh://git@github.com.insteadOf https://github.com
+        # This breaks the Git clones in the NVM `install.sh` we run
+        # in `install-node`.
+        # TODO: figure out why that breaks, and whether we want it.
+        #   (Is it an optimization?)
         rm -f /home/circleci/.gitconfig
+
+        # This is the main setup job for the test suite
         mispipe "tools/ci/setup-backend" ts
+
+        # Cleaning caches is mostly unnecessary in Circle, because
+        # most builds don't get to write to the cache.
+        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
 
   - &save_cache_package_json
     save_cache:
@@ -79,28 +93,7 @@ jobs:
       - *create_cache_directories
       - *restore_cache_package_json
       - *restore_cache_requirements
-
-      - run:
-          name: install dependencies
-          command: |
-            # Install moreutils so we can use `ts` and `mispipe` in the following.
-            sudo apt-get install -y moreutils
-
-            # CircleCI sets the following in Git config at clone time:
-            #   url.ssh://git@github.com.insteadOf https://github.com
-            # This breaks the Git clones in the NVM `install.sh` we run
-            # in `install-node`.
-            # TODO: figure out why that breaks, and whether we want it.
-            #   (Is it an optimization?)
-            rm -f /home/circleci/.gitconfig
-
-            # This is the main setup job for the test suite
-            mispipe "tools/ci/setup-backend" ts
-
-            # Cleaning caches is mostly unnecessary in Circle, because
-            # most builds don't get to write to the cache.
-            # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
-
+      - *install_dependencies
       - *save_cache_package_json
       - *save_cache_requirements
       - *run_backend_tests
