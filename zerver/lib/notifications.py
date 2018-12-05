@@ -400,6 +400,9 @@ def handle_missedmessage_emails(user_profile_id: int,
     if not receives_offline_email_notifications(user_profile):
         return
 
+    # Note: This query structure automatically filters out any
+    # messages that were permanently deleted, since those would now be
+    # in the ArchivedMessage table, not the Message table.
     messages = Message.objects.filter(usermessage__user_profile_id=user_profile,
                                       id__in=message_ids,
                                       usermessage__flags=~UserMessage.flags.read)

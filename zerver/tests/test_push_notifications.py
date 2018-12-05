@@ -34,6 +34,7 @@ from zerver.models import (
     Stream,
     Subscription,
 )
+from zerver.lib.actions import do_delete_message
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
@@ -473,6 +474,51 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         apn.handle_push_notification(user_profile.id, missed_message)
+
+    def test_deleted_message(self) -> None:
+        """Simulates the race where message is deleted before handlingx push notifications"""
+        user_profile = self.example_user('hamlet')
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=user_profile,
+            flags=UserMessage.flags.read,
+            message=message
+        )
+        missed_message = {
+            'message_id': message.id,
+            'trigger': 'private_message',
+        }
+        # Now, delete the message the normal way
+        do_delete_message(user_profile, message)
+
+        with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check:
+            apn.handle_push_notification(user_profile.id, missed_message)
+            # Check we didn't proceed through.
+            mock_check.assert_not_called()
+
+    def test_missing_message(self) -> None:
+        """Simulates the race where message is missing when handling push notifications"""
+        user_profile = self.example_user('hamlet')
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=user_profile,
+            flags=UserMessage.flags.read,
+            message=message
+        )
+        missed_message = {
+            'message_id': message.id,
+            'trigger': 'private_message',
+        }
+        # Now delete the message forcefully, so it just doesn't exist.
+        message.delete()
+
+        # This should log an error
+        with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
+                mock.patch('logging.error') as mock_logging_error:
+            apn.handle_push_notification(user_profile.id, missed_message)
+            # Check we didn't proceed through.
+            mock_check.assert_not_called()
+            mock_logging_error.assert_called_once()
 
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
