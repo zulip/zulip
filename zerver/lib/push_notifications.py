@@ -30,7 +30,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_push_notifications, \
-    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
+    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id, \
+    ArchivedMessage
 from version import ZULIP_VERSION
 
 logger = logging.getLogger(__name__)
@@ -650,7 +651,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    try:
+        (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    except JsonableError:
+        if ArchivedMessage.objects.filter(id=missed_message['message_id']).exists():
+            # If the cause is a race with the message being deleted,
+            # that's normal and we have no need to log an error.
+            return
+        logging.error("Unexpected message access failure handling push notifications: %s %s" % (
+            user_profile.id, missed_message['message_id']))
+        return
+
     if user_message is not None:
         # If the user has read the message already, don't push-notify.
         #
