@@ -35,8 +35,18 @@ for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
 
 # We use the puppet configuration from the same Zulip checkout as this script
 puppet_module_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "puppet")
-puppet_cmd = ["puppet", "apply", "--modulepath", puppet_module_path, "-e", puppet_config]
+puppet_cmd = ["/opt/puppetlabs/bin/puppet", "apply", "--modulepath", puppet_module_path, "-e", puppet_config]
 puppet_cmd += extra_args
+
+#
+subprocess.call(["wget", "https://apt.puppetlabs.com/puppetlabs-release-pc1-trusty.deb"])
+subprocess.call(["dpkg", "-i", "puppetlabs-release-pc1-trusty.deb"])
+subprocess.call(["apt-get", "update"])
+subprocess.call(["apt-get", "install", "puppet-agent", "ruby2.0"])
+subprocess.call(["/opt/puppetlabs/puppet/bin/gem", "install", "r10k"])
+subprocess.call(["/opt/puppetlabs/puppet/bin/gem", "environment"])
+subprocess.call(["sed", "-i", "1s;^;moduledir '" + puppet_module_path + "'\n;", "Puppetfile"])
+subprocess.call(["/opt/puppetlabs/puppet/bin/r10k", "puppetfile", "install"])
 
 if not force:
     subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'])
