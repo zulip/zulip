@@ -20,6 +20,13 @@ aliases:
         rm -f /home/circleci/.gitconfig
         mispipe "tools/travis/setup-backend" ts
 
+  - &run_backend_tests
+    run:
+      name: run backend tests
+      command: |
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe ./tools/travis/backend ts
+
 jobs:
   "trusty-python-3.4":
     docker:
@@ -73,11 +80,7 @@ jobs:
 
       # The moment of truth!  Run the tests.
 
-      - run:
-          name: run backend tests
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            mispipe ./tools/travis/backend ts
+      - *run_backend_tests
 
       - run:
           name: run frontend tests
@@ -127,11 +130,7 @@ jobs:
             - /srv/zulip-venv-cache
           key: v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
-      - run:
-          name: run backend tests
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            mispipe ./tools/travis/backend ts
+      - *run_backend_tests
 
       -  run:
           name: upload coverage report
@@ -177,11 +176,7 @@ jobs:
             - /srv/zulip-venv-cache
           key: v1-venv-base.bionic-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
-      - run:
-          name: run backend tests
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            mispipe ./tools/travis/backend ts
+      - *run_backend_tests
 
       -  run:
           name: upload coverage report
