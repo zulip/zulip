@@ -82,7 +82,6 @@ class ClientDescriptor:
         self.current_handler_id = None  # type: Optional[int]
         self.current_client_name = None  # type: Optional[str]
         self.event_queue = event_queue
-        self.queue_timeout = lifespan_secs
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
@@ -93,9 +92,11 @@ class ClientDescriptor:
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
-        # Clamp queue_timeout to between minimum and maximum timeouts
-        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS,
-                                 min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
+        # Default for lifespan_secs is IDLE_EVENT_QUEUE_TIMEOUT_SECS;
+        # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
+        if lifespan_secs <= 0:
+            lifespan_secs = IDLE_EVENT_QUEUE_TIMEOUT_SECS
+        self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> Dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
