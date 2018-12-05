@@ -180,7 +180,7 @@ class ClientDescriptor:
     def accepts_messages(self) -> bool:
         return self.event_types is None or "message" in self.event_types
 
-    def idle(self, now: float) -> bool:
+    def expired(self, now: float) -> bool:
         return (self.current_handler_id is None and
                 now - self.last_connection_time >= self.queue_timeout)
 
@@ -398,18 +398,18 @@ def gc_event_queues(port: int) -> None:
     affected_users = set()  # type: Set[int]
     affected_realms = set()  # type: Set[int]
     for (id, client) in clients.items():
-        if client.idle(start):
+        if client.expired(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
 
     # We don't need to call e.g. finish_current_handler on the clients
-    # being removed because they are guaranteed to be idle and thus
-    # not have a current handler.
+    # being removed because they are guaranteed to be idle (because
+    # they are expired) and thus not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     if settings.PRODUCTION:
-        logging.info(('Tornado %d removed %d idle event queues owned by %d users in %.3fs.' +
+        logging.info(('Tornado %d removed %d expired event queues owned by %d users in %.3fs.' +
                       '  Now %d active queues, %s')
                      % (port, len(to_remove), len(affected_users), time.time() - start,
                         len(clients), handler_stats_string()))
