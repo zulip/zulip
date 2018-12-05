@@ -44,7 +44,7 @@ for host in ['127.0.0.1', 'localhost']:
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
 # due to the accumulation of message data in those queues.
-IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
+DEFAULT_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 # We garbage-collect every minute; this is totally fine given that the
 # GC scan takes ~2ms with 1000 event queues.
 EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 1
@@ -92,10 +92,10 @@ class ClientDescriptor:
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
-        # Default for lifespan_secs is IDLE_EVENT_QUEUE_TIMEOUT_SECS;
+        # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
         if lifespan_secs <= 0:
-            lifespan_secs = IDLE_EVENT_QUEUE_TIMEOUT_SECS
+            lifespan_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
         self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -629,14 +629,14 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
     has no active client suffers from a somewhat fundamental race
     condition.  If the client is no longer on the Internet,
     receiver_is_off_zulip will still return true for
-    IDLE_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
     garbage-collected.  This would cause us to reliably miss
     push/email notifying users for messages arriving during the
-    IDLE_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
     example).  We address this by, when the queue is garbage-collected
     at the end of those 10 minutes, checking to see if it's the last
     one, and if so, potentially triggering notifications to the user
-    at that time, resulting in at most a IDLE_EVENT_QUEUE_TIMEOUT_SECS
+    at that time, resulting in at most a DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
     delay in the arrival of their notifications.
 
     As Zulip's APIs get more popular and the mobile apps start using
