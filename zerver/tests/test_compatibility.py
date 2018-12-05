@@ -1,6 +1,4 @@
 
-from django.http import HttpResponse
-
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, version_lt
 
@@ -60,16 +58,33 @@ class VersionTest(ZulipTestCase):
 
 
 class CompatibilityTest(ZulipTestCase):
-    def test_compatibility(self) -> None:
-        def get(user_agent: str) -> HttpResponse:
-            return self.client_get("/compatibility", HTTP_USER_AGENT=user_agent)
+    data = [case.split(None, 1) for case in '''
+      old ZulipInvalid/5.0
+      ok  ZulipMobile/5.0
+      ok  ZulipMobile/5.0 (iOS 11)
+      ok  ZulipMobile/5.0 (Androidish 9)
+      old ZulipMobile/5.0 (Android 9)
+      old ZulipMobile/15.1.95 (Android 9)
+      old ZulipMobile/16.1.94 (Android 9)
+      ok  ZulipMobile/16.2.96 (Android 9)
+      ok  ZulipMobile/20.0.103 (Android 9)
 
-        self.assert_json_error(get('ZulipInvalid/5.0'), "Client is too old")
-        self.assert_json_success(get('ZulipMobile/5.0'))
-        self.assert_json_success(get('ZulipMobile/5.0 (iOS 11)'))
-        self.assert_json_success(get('ZulipMobile/5.0 (Androidish 9)'))
-        self.assert_json_error(get('ZulipMobile/5.0 (Android 9)'), "Client is too old")
-        self.assert_json_error(get('ZulipMobile/15.1.95 (Android 9)'), "Client is too old")
-        self.assert_json_error(get('ZulipMobile/16.1.94 (Android 9)'), "Client is too old")
-        self.assert_json_success(get('ZulipMobile/16.2.96 (Android 9)'))
-        self.assert_json_success(get('ZulipMobile/20.0.103 (Android 9)'))
+      ok  ZulipMobile/0.7.1.1 (iOS 11.4)
+      old ZulipMobile/1.0.13 (Android 9)
+      ok  ZulipMobile/17.1.98 (iOS 12.0)
+      ok  ZulipMobile/19.2.102 (Android 6.0)
+      ok  ZulipMobile/1 CFNetwork/974.2.1 Darwin/18.0.0
+      ok  ZulipMobile/20.0.103 (Android 6.0.1)
+      ok  ZulipMobile/20.0.103 (iOS 12.1)
+    '''.strip().split('\n') if case]
+
+    def test_compatibility(self) -> None:
+        for expected, user_agent in self.data:
+            result = self.client_get("/compatibility",
+                                     HTTP_USER_AGENT=user_agent)
+            if expected == 'ok':
+                self.assert_json_success(result)
+            elif expected == 'old':
+                self.assert_json_error(result, "Client is too old")
+            else:
+                assert False  # nocoverage
