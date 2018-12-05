@@ -27,6 +27,13 @@ aliases:
         . /srv/zulip-py3-venv/bin/activate
         mispipe ./tools/travis/backend ts
 
+  - &run_frontend_tests
+    run:
+      name: run frontend tests
+      command: |
+        . /srv/zulip-py3-venv/bin/activate
+        mispipe ./tools/travis/frontend ts
+
 jobs:
   "trusty-python-3.4":
     docker:
@@ -82,11 +89,7 @@ jobs:
 
       - *run_backend_tests
 
-      - run:
-          name: run frontend tests
-          command: |
-            . /srv/zulip-py3-venv/bin/activate
-            mispipe ./tools/travis/frontend ts
+      - *run_frontend_tests
 
       -  run:
           name: upload coverage report
