@@ -121,8 +121,7 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA][zulip-ppa] (for 14.04
-     Trusty, 16.04 Xenial, or 18.04 Bionic):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty, 16.04 Xenial, or 18.04 Bionic):
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
