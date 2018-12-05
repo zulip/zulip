@@ -2,6 +2,15 @@
 #   https://circleci.com/docs/2.0/language-python/
 #
 version: 2
+aliases:
+  - &create_cache_directories
+    run:
+      name: create cache directories
+      command: |
+          dirs=(/srv/zulip-{npm,venv}-cache)
+          sudo mkdir -p "${dirs[@]}"
+          sudo chown -R circleci "${dirs[@]}"
+
 jobs:
   "trusty-python-3.4":
     docker:
@@ -13,12 +22,7 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: create cache directories
-          command: |
-              dirs=(/srv/zulip-{npm,venv}-cache)
-              sudo mkdir -p "${dirs[@]}"
-              sudo chown -R circleci "${dirs[@]}"
+      - *create_cache_directories
 
       - restore_cache:
           keys:
@@ -94,12 +98,7 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: create cache directories
-          command: |
-              dirs=(/srv/zulip-{npm,venv}-cache)
-              sudo mkdir -p "${dirs[@]}"
-              sudo chown -R circleci "${dirs[@]}"
+      - *create_cache_directories
 
       - restore_cache:
           keys:
@@ -148,12 +147,11 @@ jobs:
     steps:
       - checkout
 
+      - *create_cache_directories
+
       - run:
-          name: create cache directories
+          name: do Bionic hack
           command: |
-              dirs=(/srv/zulip-{npm,venv}-cache)
-              sudo mkdir -p "${dirs[@]}"
-              sudo chown -R circleci "${dirs[@]}"
               # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
               # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
               redis-server --daemonize yes
