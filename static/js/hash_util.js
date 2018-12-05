@@ -7,6 +7,18 @@ exports.get_hash_category = function (hash) {
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
 };
 
+exports.get_hash_section = function (hash) {
+    // given "#settings/your-account", returns "your-account"
+    // given '#streams/5/social", returns "5"
+    if (!hash) {
+        return '';
+    }
+
+    var parts = hash.replace(/\/$/, "").split(/\//);
+
+    return parts[1] || '';
+};
+
 // Some browsers zealously URI-decode the contents of
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).

@@ -82,6 +82,31 @@ run_test('test_get_hash_category', () => {
     );
 });
 
+run_test('test_get_hash_section', () => {
+    assert.equal(
+        hash_util.get_hash_section('streams/subscribed'),
+        'subscribed'
+    );
+    assert.equal(
+        hash_util.get_hash_section('#settings/your-account'),
+        'your-account'
+    );
+
+    assert.equal(
+        hash_util.get_hash_section('settings/10/general/'),
+        '10'
+    );
+
+    assert.equal(
+        hash_util.get_hash_section('#drafts'),
+        ''
+    );
+    assert.equal(
+        hash_util.get_hash_section(''),
+        ''
+    );
+});
+
 run_test('test_parse_narrow', () => {
     assert.deepEqual(
         hash_util.parse_narrow(['narrow', 'stream', '11-social']),
