@@ -30,10 +30,11 @@ class BaseDocumentationSpider(scrapy.Spider):
     file_extensions = ['.' + ext for ext in IGNORED_EXTENSIONS]  # type: List[str]
     tags = ('a', 'area', 'img')
     attrs = ('href', 'src')
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    
+    def __init__(self, skip_external=None, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.has_error = False
+        self.skip_external=skip_external 
 
     def _set_error_state(self) -> None:
         self.has_error = True
@@ -46,6 +47,15 @@ class BaseDocumentationSpider(scrapy.Spider):
 
     def check_existing(self, response: Any) -> None:
         self.log(response)
+
+    def _is_external_link(self, url: str) -> bool:
+        if "zulip.readthedoc" in url or "zulipchat" in url:
+            return False
+            #Checking links in zulip websites is a must.
+        elif (len(url)>4 and url[:4]=="file") or "localhost" in url:
+            return False
+            #Passing all links pointing to localhost.
+        return True
 
     def check_permalink(self, response: Any) -> None:
         self.log(response)
@@ -74,6 +84,9 @@ class BaseDocumentationSpider(scrapy.Spider):
             elif '#' in link.url:
                 dont_filter = True
                 callback = self.check_permalink
+            if(self.skip_external!=None):   # checks if flag is set to skip external link check.
+                if(self._is_external_link(link.url)):
+                    continue
             yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
                           errback=self.error_callback)
 
