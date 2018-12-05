@@ -776,7 +776,6 @@ def build_custom_checkers(by_lang):
              # Old-style email templates need to use inline style
              # attributes; it should be possible to clean these up
              # when we convert these templates to use premailer.
-             'templates/zerver/emails/digest.html',
              'templates/zerver/emails/missed_message.html',
              'templates/zerver/emails/email_base_messages.html',
 
@@ -868,6 +867,10 @@ def build_custom_checkers(by_lang):
          'include_only': set(['docs/']),
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },
+        {'pattern': "su zulip -c [^']",
+         'include_only': set(['docs/']),
+         'description': "Always quote arguments using `su zulip -c '` to avoid confusion about how su works.",
+         },
         {'pattern': r'\][(][^#h]',
          'include_only': set(['README.md', 'CONTRIBUTING.md']),
          'description': "Use absolute links from docs served by GitHub",
@@ -910,8 +913,8 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         color = next(colors)
-        for fn in by_lang['css']:
-            if custom_check_file(fn, 'css', css_rules, color):
+        for fn in by_lang['scss']:
+            if custom_check_file(fn, 'scss', css_rules, color):
                 failed = True
 
         color = next(colors)

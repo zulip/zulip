@@ -29,7 +29,7 @@ follows:
     registration command:
     ```
     # As root:
-    su zulip -c /home/zulip/deployments/current/manage.py register_server
+    su zulip -c '/home/zulip/deployments/current/manage.py register_server'
     # Or as the zulip user, you can skip the `su zulip -c`:
     /home/zulip/deployments/current/manage.py register_server
     ```

@@ -466,6 +466,39 @@ the code) of a management command before using it, since they are
 generally less polished and more designed for expert use than the rest
 of the Zulip system.
 
+### Running management commands
+
+Many management commands require the Zulip realm/organization to
+interact with as an argument, which you can specify via numeric or
+string ID.
+
+You can see all the organizations on your Zulip server using
+`./manage.py list_realms`.
+
+```
+zulip@zulip:~$ /home/zulip/deployments/current/manage.py list_realms
+id    string_id                                name
+--    ---------                                ----
+1     zulip                                    None
+2                                              Zulip Community
+```
+
+(Note that every Zulip server has a special `zulip` realm containing
+system-internal bots like `welcome-bot`; you are unlikely to need to
+interact with that realm.)
+
+Unless you are
+[hosting multiple organizations on your Zulip server](../production/multiple-organizations.html),
+your single Zulip organization on the root domain will have the empty
+string (`''`) as its `string_id`.  So you can run e.g.:
+```
+zulip@zulip:~$ /home/zulip/deployments/current/manage.py show_admins -r ''
+```
+
+Otherwise, the `string_id` will correspond to the organization's
+subdomain.  E.g. on `it.zulip.example.com`, use
+`/home/zulip/deployments/current/manage.py show_admins -r it`.
+
 ### manage.py shell
 
 You can get an iPython shell with full access to code within the Zulip

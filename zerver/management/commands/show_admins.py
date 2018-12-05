@@ -3,26 +3,20 @@ import sys
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 
-from zerver.models import Realm, get_realm
+from zerver.lib.management import ZulipBaseCommand
+from zerver.models import get_realm
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """Show the admins in a realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('realm', metavar='<realm>', type=str,
-                            help="realm to show admins for")
+        self.add_realm_args(parser, required=True)
 
-    def handle(self, *args: Any, **options: str) -> None:
-        realm_name = options['realm']
-
-        try:
-            realm = get_realm(realm_name)
-        except Realm.DoesNotExist:
-            print('There is no realm called %s.' % (realm_name,))
-            sys.exit(1)
-
+    def handle(self, *args: Any, **options: Any) -> None:
+        realm = self.get_realm(options)
+        assert realm is not None  # True because of required=True above
         users = realm.get_admin_users()
 
         if users:
@@ -32,4 +26,5 @@ class Command(BaseCommand):
         else:
             print('There are no admins for this realm!')
 
-        print('\nYou can use the "knight" management command to knight admins.')
+        print('\nYou can use the "knight" management command to make more users admins.')
+        print('\nOr with the --revoke argument, remove admin status from users.')

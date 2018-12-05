@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#websockets
+# for high-level documentation on this subsystem.
 
 from typing import Any, Dict, Mapping, Optional, Union
 

@@ -1071,10 +1071,10 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('person', check_dict_only([
                 ('user_id', check_int),
-                ('custom_profile_field', check_dict_only([
+                ('custom_profile_field', check_dict([
                     ('id', check_int),
                     ('value', check_none_or(check_string)),
-                ])),
+                ], _allow_only_listed_keys=False)),
             ])),
         ])
 

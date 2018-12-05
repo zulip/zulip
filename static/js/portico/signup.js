@@ -44,6 +44,30 @@ $(function () {
         common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
     }
 
+    if ($("#registration").length > 0) {
+        // Check if there is no input field with errors.
+        if ($('.help-inline:not(:empty)').length === 0) {
+            // Find the first input field present in the form that is
+            // not hidden and disabled and store it in a variable.
+            var firstInputElement = $("input:not(:hidden, :disabled):first");
+            // Focus on the first input field in the form.
+            common.autofocus(firstInputElement);
+        } else { // If input field with errors is present.
+            // Find the input field having errors and stores it in a variable.
+            var inputElementWithError = $('.help-inline:not(:empty):first').parent().find('input');
+            // Focus on the input field having errors.
+            common.autofocus(inputElementWithError);
+        }
+
+        // reset error message displays
+        $('#id_team_subdomain_error_client').css('display', 'none');
+        if ($('.team_subdomain_error_server').text() === '') {
+            $('.team_subdomain_error_server').css('display', 'none');
+        }
+
+        $("#timezone").val(moment.tz.guess());
+    }
+
     password_field.on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.

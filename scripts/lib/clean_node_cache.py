@@ -45,7 +45,8 @@ def get_caches_in_use(threshold_days):
             # If 'package.json' file doesn't exist then no node_modules
             # cache is associated with this setup.
             continue
-        caches_in_use.add(os.readlink(node_modules_link_path))
+        # The actual cache path doesn't include the /node_modules
+        caches_in_use.add(os.path.dirname(os.readlink(node_modules_link_path)))
 
     return caches_in_use
 

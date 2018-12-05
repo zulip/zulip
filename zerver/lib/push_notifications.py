@@ -433,6 +433,9 @@ def push_notifications_enabled() -> bool:
 
 def initialize_push_notifications() -> None:
     if not push_notifications_enabled():
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # Avoid unnecessary spam on development environment startup
+            return
         logger.warning("Mobile push notifications are not configured.\n  "
                        "See https://zulip.readthedocs.io/en/latest/"
                        "production/mobile-push-notifications.html")

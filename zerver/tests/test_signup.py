@@ -1159,8 +1159,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             'referrer_realm_name': referrer.realm.name,
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
+            email = data["email"]
             send_future_email(
-                "zerver/emails/invitation_reminder", referrer.realm, to_email=data["email"],
+                "zerver/emails/invitation_reminder", referrer.realm, to_emails=[email],
                 from_address=FromAddress.NOREPLY, context=context)
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now())
@@ -1553,7 +1554,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         context = {'name': '', 'realm_uri': '', 'unread_pms': [], 'hot_conversations': [],
                    'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
         send_future_email('zerver/emails/digest', user_profile.realm,
-                          to_user_id=user_profile.id, context=context)
+                          to_user_ids=[user_profile.id], context=context)
 
         self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
 
@@ -2918,7 +2919,11 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/')
+
+            result = self.client_get("/en/login/?next=/upgrade/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_redirects_for_root_domain(self, mock_get_host: MagicMock) -> None:
@@ -2926,7 +2931,11 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/')
+
+            result = self.client_get("/en/login/?next=/upgrade/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
         mock_get_host.return_value = 'www.testserver.com'
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True,
@@ -2934,7 +2943,11 @@ class TestLoginPage(ZulipTestCase):
                            ROOT_SUBDOMAIN_ALIASES=['test']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/')
+
+            result = self.client_get("/en/login/?next=/upgrade/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/accounts/go/?next=%2Fupgrade%2F')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
@@ -3149,3 +3162,23 @@ class TwoFactorAuthTest(ZulipTestCase):
 class NameRestrictionsTest(ZulipTestCase):
     def test_whitelisted_disposable_domains(self) -> None:
         self.assertFalse(is_disposable_domain('OPayQ.com'))
+
+class RealmRedirectTest(ZulipTestCase):
+    def test_realm_redirect_without_next_param(self) -> None:
+        result = self.client_get("/accounts/go/")
+        self.assert_in_success_response(["Enter your organization URL"], result)
+
+        result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "http://zephyr.testserver")
+
+        result = self.client_post("/accounts/go/", {"subdomain": "invalid"})
+        self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
+
+    def test_realm_redirect_with_next_param(self) -> None:
+        result = self.client_get("/accounts/go/?next=billing")
+        self.assert_in_success_response(['Enter your organization URL', 'action="/accounts/go/?next=billing"'], result)
+
+        result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "http://lear.testserver/billing")

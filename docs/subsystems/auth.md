@@ -51,6 +51,16 @@ The steps to do this are a variation of the steps documented in
   `SOCIAL_AUTH_GITHUB_KEY` to the client ID, and in
   `dev-secrets.conf`, set `social_auth_github_secret` to the client secret.
 
+### When SSL is required
+
+Some OAuth providers (such as Facebook) require HTTPS on the callback
+URL they post back to, which isn't supported directly by the Zulip
+development environment.  If you run a
+[remote Zulip development server](../development/remote.html), we have
+instructions for
+[an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
+that you can use for your development efforts.
+
 ## Testing LDAP in development
 
 Historically, one of the more common classes of bug reports with

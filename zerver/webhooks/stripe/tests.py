@@ -27,10 +27,18 @@ class StripeHookTests(WebhookTestCase):
         self.send_and_test_stream_message('charge_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_charge_succeeded(self) -> None:
-        expected_topic = u"charges"
-        expected_message = u"[Charge](https://dashboard.stripe.com/charges/ch_00000000000000) for 1.00 AUD succeeded"
-        self.send_and_test_stream_message('charge_succeeded', expected_topic, expected_message,
+    # Credit card charge
+    def test_charge_succeeded__card(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Charge](https://dashboard.stripe.com/charges/ch_000000000000000000000000) for 1.00 AUD succeeded"
+        self.send_and_test_stream_message('charge_succeeded__card', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    # ACH payment (really a 'payment', rather than a 'charge')
+    def test_charge_succeeded__invoice(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = u"[Payment](https://dashboard.stripe.com/payments/py_000000000000000000000000) for $1.00 succeeded"
+        self.send_and_test_stream_message('charge_succeeded__invoice', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_customer_created(self) -> None:
@@ -75,6 +83,13 @@ Quantity: 1"""
             self.send_and_test_stream_message('customer_subscription_trial_will_end',
                                               expected_topic, expected_message,
                                               content_type="application/x-www-form-urlencoded")
+
+    def test_customer_updated__delinquency(self) -> None:
+        expected_topic = "cus_00000000000000"
+        expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated" + \
+                           "\n* Delinquent is now False"
+        self.send_and_test_stream_message('customer_updated__delinquency', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_discount_created(self) -> None:
         expected_topic = u"cus_00000000000000"

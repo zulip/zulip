@@ -1,4 +1,5 @@
 var server_events = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 var exports = {};
 
@@ -142,6 +143,16 @@ function get_events_success(events) {
     });
 }
 
+function show_ui_connection_error() {
+    ui_report.show_error($("#connection-error"));
+    $("#connection-error").addClass('get-events-error');
+}
+
+function hide_ui_connection_error() {
+    ui_report.hide_error($("#connection-error"));
+    $("#connection-error").removeClass('get-events-error');
+}
+
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
@@ -183,7 +194,7 @@ function get_events(options) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                ui_report.hide_error($("#connection-error"));
+                hide_ui_connection_error();
 
                 get_events_success(data.events);
             } catch (ex) {
@@ -214,15 +225,15 @@ function get_events(options) {
                 } else if (error_type === 'timeout') {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    ui_report.hide_error($("#connection-error"));
+                    hide_ui_connection_error();
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 5) {
-                    ui_report.show_error($("#connection-error"));
+                    show_ui_connection_error();
                 } else {
-                    ui_report.hide_error($("#connection-error"));
+                    hide_ui_connection_error();
                 }
             } catch (ex) {
                 blueslip.error('Failed to handle get_events error\n' +

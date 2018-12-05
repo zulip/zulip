@@ -5,6 +5,7 @@
 // modified from the original implementation.
 
 var markdown = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
 var exports = {};
 

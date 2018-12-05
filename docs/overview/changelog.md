@@ -7,6 +7,19 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 1.9.1 -- 2018-11-30
+
+This release is primarily intended to improve the experience for new
+Zulip installations; it has minimal changes for existing servers.
+
+- Added support for getting multi-domain certificates with setup-certbot.
+- Improved various installer error messages and sections of the
+  installation documentation to help avoid for common mistakes.
+- The Google auth integration now always offers an account chooser.
+- Fixed buggy handling of avatars in Slack import.
+- Fixed nginx configuration for mobile API authentication to access uploads.
+- Updated translation data, including significant new Italian strings.
+
 ### 1.9.0 -- 2018-11-07
 
 **Highlights:**

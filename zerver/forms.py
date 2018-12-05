@@ -250,7 +250,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if user is not None:
             context['active_account_in_realm'] = True
             context['reset_url'] = generate_password_reset_url(user, token_generator)
-            send_email('zerver/emails/password_reset', to_user_id=user.id,
+            send_email('zerver/emails/password_reset', to_user_ids=[user.id],
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),
                        context=context)
@@ -259,7 +259,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             active_accounts_in_other_realms = UserProfile.objects.filter(email__iexact=email, is_active=True)
             if active_accounts_in_other_realms:
                 context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
-            send_email('zerver/emails/password_reset', to_email=email,
+            send_email('zerver/emails/password_reset', to_emails=[email],
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),
                        context=context)
@@ -349,3 +349,12 @@ class FindMyTeamForm(forms.Form):
             raise forms.ValidationError(_("Please enter at most 10 emails."))
 
         return emails
+
+class RealmRedirectForm(forms.Form):
+    subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=True)
+
+    def clean_subdomain(self) -> str:
+        subdomain = self.cleaned_data['subdomain']
+        if get_realm(subdomain) is None:
+            raise ValidationError(_("We couldn't find that Zulip organization."))
+        return subdomain

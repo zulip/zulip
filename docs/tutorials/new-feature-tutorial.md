@@ -17,11 +17,14 @@ Zulip is a web application built using the
 processes listed in this tutorial, such as database migrations and
 tests, use Django's tooling.
 
-Zulip's [directory structure](../overview/directory-structure.html) will also be
-helpful to review when creating a new feature. Many aspects of the structure
-will be familiar to Django developers. Visit
+Zulip's [directory structure](../overview/directory-structure.html)
+will also be helpful to review when creating a new feature. Many
+aspects of the structure will be familiar to Django developers. Visit
 [Django's documentation](https://docs.djangoproject.com/en/1.11/#index-first-steps)
-for more information about how Django projects are typically organized.
+for more information about how Django projects are typically
+organized.  And finally, the
+[message sending](../subsystems/sending-messages.html) documentation on
+the additional complexity involved in sending messages.
 
 ## General Process
 

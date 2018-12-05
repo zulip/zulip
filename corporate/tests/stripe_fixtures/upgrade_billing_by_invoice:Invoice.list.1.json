@@ -13,15 +13,15 @@
       "charge": null,
       "currency": "usd",
       "customer": "cus_NORMALIZED0001",
-      "date": 1543088275,
+      "date": 1000000000,
       "default_source": null,
       "description": "",
       "discount": null,
-      "due_date": 1545680275,
+      "due_date": 1000000000,
       "ending_balance": null,
       "finalized_at": null,
       "hosted_invoice_url": null,
-      "id": "in_1Da6wxGh0CmXqmnwfILsY1kf",
+      "id": "in_NORMALIZED00000000000001",
       "invoice_pdf": null,
       "lines": {
         "data": [
@@ -35,15 +35,15 @@
             "metadata": {},
             "object": "line_item",
             "period": {
-              "end": 1574624275,
-              "start": 1543088275
+              "end": 1000000000,
+              "start": 1000000000
             },
             "plan": {
               "active": true,
               "aggregate_usage": null,
               "amount": 8000,
               "billing_scheme": "per_unit",
-              "created": 1539831971,
+              "created": 1010000003,
               "currency": "usd",
               "id": "plan_Do3xCvbzO89OsR",
               "interval": "year",
@@ -69,7 +69,7 @@
         "has_more": false,
         "object": "list",
         "total_count": 1,
-        "url": "/v1/invoices/in_1Da6wxGh0CmXqmnwfILsY1kf/lines"
+        "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
       },
       "livemode": false,
       "metadata": {},
@@ -78,8 +78,8 @@
       "object": "invoice",
       "paid": false,
       "payment_intent": null,
-      "period_end": 1543088275,
-      "period_start": 1543088275,
+      "period_end": 1000000000,
+      "period_start": 1000000000,
       "receipt_number": null,
       "starting_balance": 0,
       "statement_descriptor": null,
@@ -89,7 +89,7 @@
       "tax": 0,
       "tax_percent": 0.0,
       "total": 984000,
-      "webhooks_delivered_at": 1543088275
+      "webhooks_delivered_at": 1000000000
     }
   ],
   "has_more": false,

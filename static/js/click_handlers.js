@@ -197,7 +197,7 @@ exports.initialize = function () {
         // so we re-encode the hash.
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
         if (stream) {
-            window.location.href = '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
+            hashchange.go_to_location(hash_util.by_stream_uri(stream.name));
             return;
         }
         window.location.href = $(this).attr('href');
@@ -511,7 +511,7 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        window.location.hash = "streams/all";
+        hashchange.go_to_location('streams/all');
     });
 
     $("#streams_filter_icon").click(function (e) {

@@ -47,18 +47,30 @@
                 <li tabindex="0" data-section="organization-profile">
                     <i class="icon fa fa-lock" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization profile') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="organization-settings">
                     <i class="icon fa fa-flask" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization settings') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="organization-permissions">
                     <i class="icon fa fa-lock" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization permissions') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="emoji-settings">
                     <i class="icon fa fa-smile-o" aria-hidden="true"></i>
                     <div class="text">{{ _('Custom emoji') }}</div>
+                    {% if not is_admin and user_profile.realm.add_emoji_by_admins_only %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="user-groups-admin">
                     <i class="icon fa fa-group" aria-hidden="true"></i>
@@ -67,10 +79,16 @@
                 <li tabindex="0" data-section="auth-methods">
                     <i class="icon fa fa-lock" aria-hidden="true"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="user-list-admin">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Users') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 {% if is_admin %}
                 <li tabindex="0" data-section="deactivated-users-admin">
@@ -81,18 +99,30 @@
                 <li tabindex="0" data-section="bot-list-admin">
                     <i class="icon fa fa-github" aria-hidden="true"></i>
                     <div class="text">{{ _('Bots') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="default-streams-list">
                     <i class="icon fa fa-exchange" aria-hidden="true"></i>
                     <div class="text">{{ _('Default streams') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="filter-settings">
                     <i class="icon fa fa-font" aria-hidden="true"></i>
                     <div class="text">{{ _('Linkifiers') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="profile-field-settings">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
                     <div class="text">{{ _('Custom profile fields') }}</div>
+                    {% if not is_admin %}
+                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% endif %}
                 </li>
                 {% if is_admin %}
                 <li tabindex="0" data-section="invites-list-admin">

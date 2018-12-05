@@ -67,7 +67,7 @@ def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
         topic: str, body: str, stream: Optional[str]=REQ(default=None),
         user_specified_topic: Optional[str]=REQ("topic", default=None),
-        unquote_stream: Optional[bool]=False
+        unquote_url_parameters: Optional[bool]=False
 ) -> None:
 
     if stream is None:
@@ -78,12 +78,14 @@ def check_send_webhook_message(
         # Some third-party websites (such as Atlassian's JIRA), tend to
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
-        # that the stream name is decoded on our end.
-        if unquote_stream:
+        # that the URL parameters are decoded on our end.
+        if unquote_url_parameters:
             stream = unquote(stream)
 
         if user_specified_topic is not None:
             topic = user_specified_topic
+            if unquote_url_parameters:
+                topic = unquote(topic)
 
         try:
             check_send_stream_message(user_profile, request.client,

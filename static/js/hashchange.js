@@ -3,7 +3,6 @@ var hashchange = (function () {
 
 var exports = {};
 
-var expected_hash;
 var changing_hash = false;
 
 function set_hash(hash) {
@@ -34,7 +33,7 @@ exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
-    $(document).trigger($.Event('zuliphashchange.zulip'));
+    message_viewport.stop_auto_scrolling();
     set_hash(newhash);
     favicon.reset();
 };
@@ -81,22 +80,8 @@ function activate_home_tab() {
 }
 
 // Returns true if this function performed a narrow
-function do_hashchange(from_reload) {
-    // If window.location.hash changed because our app explicitly
-    // changed it, then we don't need to do anything.
-    // (This function only neds to jump into action if it changed
-    // because e.g. the back button was pressed by the user)
-    //
-    // The second case is for handling the fact that some browsers
-    // automatically convert '#' to '' when you change the hash to '#'.
-    if (window.location.hash === expected_hash ||
-        expected_hash !== undefined &&
-         window.location.hash.replace(/^#/, '') === '' &&
-         expected_hash.replace(/^#/, '') === '') {
-        return false;
-    }
-
-    $(document).trigger($.Event('zuliphashchange.zulip'));
+function do_hashchange_normal(from_reload) {
+    message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
@@ -132,9 +117,6 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#streams":
-        ui_util.change_tab_to("#streams");
-        break;
     case "#keyboard-shortcuts":
         info_overlay.show("keyboard-shortcuts");
         break;
@@ -147,11 +129,11 @@ function do_hashchange(from_reload) {
     case "#drafts":
         ui_util.change_tab_to("#drafts");
         break;
+    case "#invite":
+    case "#streams":
     case "#organization":
-        ui_util.change_tab_to("#organization");
-        break;
     case "#settings":
-        ui_util.change_tab_to("#settings");
+        blueslip.error('overlay logic skipped for: ' + hash);
         break;
     }
     return false;
@@ -160,7 +142,7 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- READ THIS BEFORE TOUCHING ANYTHING BELOW -- -- -- -- -- -- //
 // HOW THE HASH CHANGE MECHANISM WORKS:
 // When going from a normal view (eg. `narrow/is/private`) to a settings panel
-// (eg. `settings/your-bots`) it should trigger the `should_ignore` function and
+// (eg. `settings/your-bots`) it should trigger the `is_overlay_hash` function and
 // return `true` for the current state -- we want to ignore hash changes from
 // within the settings page. The previous hash however should return `false` as it
 // was outside of the scope of settings.
@@ -170,11 +152,10 @@ function do_hashchange(from_reload) {
 // (eg. narrow/is/private). This saves the state, scroll position, and makes the
 // hash change functionally inert.
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
-var ignore = {
-    flag: false,
-    prev: null,
+var state = {
+    is_internal_change: false,
+    hash_before_overlay: null,
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-    group: null,
 };
 
 function get_main_hash(hash) {
@@ -190,90 +171,114 @@ function get_hash_components() {
     };
 }
 
-// different groups require different reloads. The grouped elements don't
-// require a reload or overlay change to run.
-var get_hash_group = (function () {
-    var groups = [
-        ["streams"],
-        ["settings", "organization"],
-        ["invite"],
-    ];
-
-    return function (value) {
-        var idx = null;
-
-        _.find(groups, function (o, i) {
-            if (o.indexOf(value) !== -1) {
-                idx = i;
-                return true;
-            }
-            return false;
-        });
-
-        return idx;
-    };
-}());
-
-function should_ignore(hash) {
+function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "organization", "invite"];
+    var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
     var main_hash = get_main_hash(hash);
 
-    return ignore_list.indexOf(main_hash) > -1;
+    return overlay_list.indexOf(main_hash) > -1;
 }
 
+function do_hashchange_overlay(old_hash) {
+    var base = get_main_hash(window.location.hash);
+    var old_base = get_main_hash(old_hash);
+
+    var coming_from_overlay = is_overlay_hash(old_hash || '#');
+
+    // Start by handling the specific case of going
+    // from something like streams/all to streams_subscribed.
+    //
+    // In most situations we skip by this logic and load
+    // the new overlay.
+    if (coming_from_overlay) {
+        if (base === old_base) {
+            if (base === 'streams') {
+                subs.change_state(get_hash_components());
+            }
+
+            // TODO: handle other cases like internal settings
+            //       changes.
+            return;
+        }
+    }
+
+    // It's not super likely that an overlay is already open,
+    // but you can jump from /settings to /streams by using
+    // the browser's history menu or hand-editing the URL or
+    // whatever.  If so, just close the overlays.
+    if (base !== old_base) {
+        overlays.close_for_hash_change();
+    }
+
+    // NORMAL FLOW: basically, launch the overlay:
+
+    if (!coming_from_overlay) {
+        state.hash_before_overlay = old_hash;
+    }
+
+    if (base === "streams") {
+        subs.launch(get_hash_components());
+    } else if (base === "drafts") {
+        drafts.launch();
+    } else if (/settings|organization/.test(base)) {
+        settings.setup_page();
+        admin.setup_page();
+    } else if (base === "invite") {
+        invite.launch();
+    }
+}
+
+exports.update_browser_history = function (new_hash) {
+    var old_hash = window.location.hash;
+
+    if (!new_hash.startsWith('#')) {
+        blueslip.error('programming error: prefix hashes with #: ' + new_hash);
+        return;
+    }
+
+    if (old_hash === new_hash) {
+        // If somebody is calling us with the same hash we already have, it's
+        // probably harmless, and we just ignore it.  But it could be a symptom
+        // of disorganized code that's prone to an infinite loop of repeatedly
+        // assigning the same hash.
+        blueslip.info('ignoring probably-harmless call to update_browser_history: ' + new_hash);
+        return;
+    }
+
+    state.old_hash = old_hash;
+    state.is_internal_change = true;
+    window.location.hash = new_hash;
+};
+
+exports.go_to_location = function (hash) {
+    // Call this function when you WANT the hashchanged
+    // function to run.
+    window.location.hash = hash;
+};
+
 function hashchanged(from_reload, e) {
+    if (state.is_internal_change) {
+        state.is_internal_change = false;
+        return;
+    }
+
     var old_hash;
     if (e) {
-        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
-        ignore.last = old_hash;
-        ignore.old_hash = window.location.hash;
+        old_hash = "#" + (e.oldURL || state.old_hash).split(/#/).slice(1).join("");
+        state.old_hash = window.location.hash;
     }
 
-    var base = get_main_hash(window.location.hash);
-
-    if (should_ignore(window.location.hash)) {
-        // if the old has was a standard non-ignore hash OR the ignore hash
-        // base has changed, something needs to run again.
-
-        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
-            if (ignore.group !== get_hash_group(base)) {
-                overlays.close_for_hash_change();
-            }
-
-            // now only if the previous one should not have been ignored.
-            if (!should_ignore(old_hash || "#")) {
-                ignore.prev = old_hash;
-            }
-
-            if (base === "streams") {
-                subs.launch(get_hash_components());
-            } else if (base === "drafts") {
-                drafts.launch();
-            } else if (/settings|organization/.test(base)) {
-                settings.setup_page();
-                admin.setup_page();
-            } else if (base === "invite") {
-                invite.launch();
-            }
-
-            ignore.group = get_hash_group(base);
-        } else {
-            subs.change_state(get_hash_components());
-        }
-    } else if (!should_ignore(window.location.hash) && !ignore.flag) {
-        overlays.close_for_hash_change();
-        changing_hash = true;
-        var ret = do_hashchange(from_reload);
-        changing_hash = false;
-        return ret;
-    // once we unignore the hash, we have to set the hash back to what it was
-    // originally (eg. '#narrow/stream/999-Denmark' instead of '#settings'). We
-    // therefore ignore the hash change once more while we change it back for
-    // no interruptions.
-    } else if (ignore.flag) {
-        ignore.flag = false;
+    if (is_overlay_hash(window.location.hash)) {
+        do_hashchange_overlay(old_hash);
+        return;
     }
+
+    // We are changing to a "main screen" view.
+    overlays.close_for_hash_change();
+    changing_hash = true;
+    var ret = do_hashchange_normal(from_reload);
+    changing_hash = false;
+    return ret;
 }
 
 exports.initialize = function () {
@@ -286,13 +291,14 @@ exports.initialize = function () {
 };
 
 exports.exit_overlay = function (callback) {
-    if (should_ignore(window.location.hash)) {
+    if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
-        ignore.flag = true;
-        window.location.hash = ignore.prev || "#";
+        var new_hash = state.hash_before_overlay || "#";
+        exports.update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();
         }
+
     }
 };
 

@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.conf import settings
 
 from zerver.decorator import zulip_login_required, require_billing_access
+from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
@@ -63,7 +64,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     # do for a particular customer that would land them here. E.g. by default we
     # don't support ACH for automatic payments, but in theory we could add it for
     # a customer via the Stripe dashboard.
-    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))
+    return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
@@ -77,6 +78,12 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is not None and customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
+
+    percent_off = 0
+    if customer is not None:
+        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+        if stripe_customer.discount is not None:
+            percent_off = stripe_customer.discount.coupon.percent_off
 
     if request.method == 'POST':
         try:
@@ -94,7 +101,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
                         'lowball seat count',
                         "You must invoice for at least %d users." % (min_required_seat_count,))
                 seat_count = invoiced_seat_count
-            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripeToken', None))
+            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripe_token', None))
         except BillingError as e:
             error_message = e.message
             error_description = e.description
@@ -119,9 +126,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
         'error_message': error_message,
-        'cloud_monthly_price': 8,
-        'cloud_annual_price': 80,
-        'cloud_annual_price_per_month': 6.67,
+        'page_params': JSONEncoderForHTML().encode({
+            'seat_count': seat_count,
+            'nickname_annual': Plan.CLOUD_ANNUAL,
+            'nickname_monthly': Plan.CLOUD_MONTHLY,
+            'annual_price': 8000,
+            'monthly_price': 800,
+            'percent_off': percent_off,
+        }),
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     response['error_description'] = error_description

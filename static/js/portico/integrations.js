@@ -81,14 +81,10 @@ function update_categories() {
     $('[data-category="' + state.category + '"]').addClass('selected');
 
     var $dropdown_label = $('.integration-categories-dropdown .dropdown-category-label');
-    var $dropdown_icon = $('.integration-categories-dropdown i');
     if (state.category === INITIAL_STATE.category) {
         $dropdown_label.text(i18n.t('Filter by category'));
     } else {
         $dropdown_label.text(CATEGORIES[state.category]);
-        $dropdown_icon
-            .removeClass('fa-angle-right')
-            .addClass('fa-angle-down');
     }
 
     $('.integration-lozenges').animate(
@@ -319,6 +315,11 @@ function dispatch(action, payload) {
     }
 }
 
+function toggle_categories_dropdown() {
+    var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
+    $dropdown_list.slideToggle(250);
+}
+
 function integration_events() {
     $('#integration-search input[type="text"]').keypress(function (e) {
         var integrations = $('.integration-lozenges').children().toArray();
@@ -335,19 +336,7 @@ function integration_events() {
     });
 
     $('.integration-categories-dropdown .dropdown-toggle').click(function () {
-        var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
-        $dropdown_list.toggle();
-
-        if ($dropdown_list.css('display') === 'none' &&
-            state.category === INITIAL_STATE.category) {
-            $('.integration-categories-dropdown i')
-                .removeClass('fa-angle-down')
-                .addClass('fa-angle-right');
-        } else {
-            $('.integration-categories-dropdown i')
-                .removeClass('fa-angle-right')
-                .addClass('fa-angle-down');
-        }
+        toggle_categories_dropdown();
     });
 
     $('.integration-instruction-block').on('click', 'a .integration-category', function (e) {
@@ -359,6 +348,7 @@ function integration_events() {
     $('.integrations a .integration-category').on('click', function (e) {
         var category = $(e.target).data('category');
         dispatch('CHANGE_CATEGORY', { category: category });
+        toggle_categories_dropdown();
         return false;
     });
 

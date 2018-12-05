@@ -17,7 +17,8 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
 
 from zerver.lib.bugdown import (
     version as bugdown_version,
-    url_embed_preview_enabled_for_realm
+    url_embed_preview_enabled_for_realm,
+    convert as bugdown_convert
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.bot_config import (
@@ -42,7 +43,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import send_email, FromAddress
+from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
@@ -794,7 +795,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         'new_email': new_email,
         'activate_url': activation_url
     })
-    send_email('zerver/emails/confirm_new_email', to_email=new_email,
+    send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
                from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
                context=context)
 
@@ -1129,6 +1130,11 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
 
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: Optional[bool]=False) -> List[int]:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
+
     # Filter out messages which didn't pass internal_prep_message properly
     messages = [message for message in messages_maybe_none if message is not None]
 
@@ -2047,6 +2053,10 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   local_id: Optional[str]=None,
                   sender_queue_id: Optional[str]=None,
                   widget_content: Optional[str]=None) -> Dict[str, Any]:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
     stream = None
 
     message_content = message_content_raw.rstrip()
@@ -2541,6 +2551,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     for sub in all_subs_query:
         subs_by_user[sub.user_profile_id].append(sub)
 
+    realm = users[0].realm
+
     already_subscribed = []  # type: List[Tuple[UserProfile, Stream]]
     subs_to_activate = []  # type: List[Tuple[Subscription, Stream]]
     new_subs = []  # type: List[Tuple[UserProfile, int, Stream]]
@@ -2576,11 +2588,11 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # TODO: XXX: This transaction really needs to be done at the serializeable
     # transaction isolation level.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_before = list(get_occupied_streams(realm))
         Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
         sub_ids = [sub.id for (sub, stream) in subs_to_activate]
         Subscription.objects.filter(id__in=sub_ids).update(active=True)
-        occupied_streams_after = list(get_occupied_streams(user_profile.realm))
+        occupied_streams_after = list(get_occupied_streams(realm))
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
@@ -2588,7 +2600,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_add:
-        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+        all_subscription_logs.append(RealmAuditLog(realm=realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
@@ -2596,7 +2608,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                                    event_time=event_time))
     for (sub, stream) in subs_to_activate:
-        all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
+        all_subscription_logs.append(RealmAuditLog(realm=realm,
                                                    acting_user=acting_user,
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
@@ -2613,7 +2625,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         event = dict(type="stream", op="occupy",
                      streams=[stream.to_dict()
                               for stream in new_occupied_streams])
-        send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+        send_event(realm, event, active_user_ids(realm.id))
 
     # Notify all existing users on streams that users have joined
 
@@ -2645,7 +2657,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             # they get the "subscribe" notification, and the latter so
             # they can manage the new stream.
             # Realm admins already have all created private streams.
-            realm_admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+            realm_admin_ids = [user.id for user in realm.get_admin_users()]
             new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
                              user.id not in realm_admin_ids]
             send_stream_creation_event(stream, new_users_ids)
@@ -2682,7 +2694,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
                              user_id=new_user_id)
-                send_event(stream.realm, event, peer_user_ids)
+                send_event(realm, event, peer_user_ids)
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
@@ -4417,7 +4429,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
     context = {'referrer_full_name': referrer.full_name, 'referrer_email': referrer.email,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
     from_name = "%s (via Zulip)" % (referrer.full_name,)
-    send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
+    send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
                from_address=FromAddress.tokenized_no_reply_address(), context=context)
 
 def email_not_system_bot(email: str) -> None:
@@ -4945,12 +4957,14 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
 
 def notify_user_update_custom_profile_data(user_profile: UserProfile,
                                            field: Dict[str, Union[int, str, List[int], None]]) -> None:
+    data = dict(id=field['id'])
     if field['type'] == CustomProfileField.USER:
-        field_value = ujson.dumps(field['value'])  # type: Union[int, str, List[int], None]
+        data["value"] = ujson.dumps(field['value'])
     else:
-        field_value = field['value']
-    payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
-                                                                      value=field_value))
+        data['value'] = field['value']
+    if field['rendered_value']:
+        data['rendered_value'] = field['rendered_value']
+    payload = dict(user_id=user_profile.id, custom_profile_field=data)
     event = dict(type="realm_user", op="update", person=payload)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm.id))
 
@@ -4958,13 +4972,19 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
                                        data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
     with transaction.atomic():
         for field in data:
-            field_value, created = CustomProfileFieldValue.objects.update_or_create(
+            field_value, created = CustomProfileFieldValue.objects.get_or_create(
                 user_profile=user_profile,
-                field_id=field['id'],
-                defaults={'value': field['value']})
+                field_id=field['id'])
+            field_value.value = field['value']
+            if field_value.field.is_renderable():
+                field_value.rendered_value = bugdown_convert(str(field['value']))
+                field_value.save(update_fields=['value', 'rendered_value'])
+            else:
+                field_value.save(update_fields=['value'])
             notify_user_update_custom_profile_data(user_profile, {
                 "id": field_value.field_id,
                 "value": field_value.value,
+                "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type})
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
@@ -5165,12 +5185,10 @@ def missing_any_realm_internal_bots() -> bool:
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
     confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
-    admins = realm.get_admin_users()
     context = {'confirmation_url': confirmation_url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}
-    for admin in admins:
-        send_email(
-            'zerver/emails/realm_reactivation', to_email=admin.email,
-            from_address=FromAddress.tokenized_no_reply_address(),
-            from_name="Zulip Account Security", context=context)
+    send_email_to_admins(
+        'zerver/emails/realm_reactivation', realm,
+        from_address=FromAddress.tokenized_no_reply_address(),
+        from_name="Zulip Account Security", context=context)

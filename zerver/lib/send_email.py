@@ -33,17 +33,17 @@ class FromAddress:
             return parseaddr(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS)[1].format(token=generate_key())
         return FromAddress.NOREPLY
 
-def build_email(template_prefix: str, to_user_id: Optional[int]=None,
-                to_email: Optional[str]=None, from_name: Optional[str]=None,
+def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
+                to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
                 context: Optional[Dict[str, Any]]=None) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
-    assert (to_user_id is None) ^ (to_email is None)
-    if to_user_id is not None:
-        to_user = get_user_profile_by_id(to_user_id)
+    assert (to_user_ids is None) ^ (to_emails is None)
+    if to_user_ids is not None:
+        to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
         # Change to formataddr((to_user.full_name, to_user.email)) once
         # https://github.com/zulip/zulip/issues/4676 is resolved
-        to_email = to_user.delivery_email
+        to_emails = [to_user.delivery_email for to_user in to_users]
 
     if context is None:
         context = {}
@@ -81,7 +81,7 @@ def build_email(template_prefix: str, to_user_id: Optional[int]=None,
     elif from_address == FromAddress.NOREPLY:
         reply_to = [FromAddress.NOREPLY]
 
-    mail = EmailMultiAlternatives(subject, message, from_email, [to_email], reply_to=reply_to)
+    mail = EmailMultiAlternatives(subject, message, from_email, to_emails, reply_to=reply_to)
     if html_message is not None:
         mail.attach_alternative(html_message, 'text/html')
     return mail
@@ -91,10 +91,11 @@ class EmailNotDeliveredException(Exception):
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
-def send_email(template_prefix: str, to_user_id: Optional[int]=None, to_email: Optional[str]=None,
-               from_name: Optional[str]=None, from_address: Optional[str]=None,
-               reply_to_email: Optional[str]=None, context: Dict[str, Any]={}) -> None:
-    mail = build_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
+def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
+               to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
+               from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
+               context: Dict[str, Any]={}) -> None:
+    mail = build_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails, from_name=from_name,
                        from_address=from_address, reply_to_email=reply_to_email, context=context)
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s" % (template, mail.to))
@@ -106,27 +107,40 @@ def send_email(template_prefix: str, to_user_id: Optional[int]=None, to_email: O
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
     send_email(**dict(email_dict))
 
-def send_future_email(template_prefix: str, realm: Realm, to_user_id: Optional[int]=None,
-                      to_email: Optional[str]=None, from_name: Optional[str]=None,
+def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[List[int]]=None,
+                      to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                       from_address: Optional[str]=None, context: Dict[str, Any]={},
                       delay: datetime.timedelta=datetime.timedelta(0)) -> None:
+    # WARNING: Be careful when using this with multiple recipients;
+    # because the current ScheduledEmail model (used primarily for
+    # cancelling planned emails) does not support multiple recipients,
+    # this is only valid to use for such emails where we don't expect
+    # the cancellation feature to be relevant.
+    #
+    # For that reason, we currently assert that the list of
+    # to_user_ids/to_emails is 1 below, but in theory that could be
+    # changed as long as the callers are in a situation where the
+    # above problem is not relevant.
     template_name = template_prefix.split('/')[-1]
-    email_fields = {'template_prefix': template_prefix, 'to_user_id': to_user_id, 'to_email': to_email,
+    email_fields = {'template_prefix': template_prefix, 'to_user_ids': to_user_ids, 'to_emails': to_emails,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
 
     if settings.DEVELOPMENT and not settings.TEST_SUITE:
-        send_email(template_prefix, to_user_id=to_user_id, to_email=to_email, from_name=from_name,
+        send_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails, from_name=from_name,
                    from_address=from_address, context=context)
         # For logging the email
 
-    assert (to_user_id is None) ^ (to_email is None)
-    if to_user_id is not None:
+    assert (to_user_ids is None) ^ (to_emails is None)
+    if to_user_ids is not None:
         # The realm is redundant if we have a to_user_id; this assert just
         # expresses that fact
-        assert(UserProfile.objects.filter(id=to_user_id, realm=realm).exists())
-        to_field = {'user_id': to_user_id}  # type: Dict[str, Any]
+        assert(len(to_user_ids) == 1)
+        assert(UserProfile.objects.filter(id__in=to_user_ids, realm=realm).exists())
+        to_field = {'user_id': to_user_ids[0]}  # type: Dict[str, Any]
     else:
-        to_field = {'address': parseaddr(to_email)[1]}
+        assert to_emails is not None
+        assert(len(to_emails) == 1)
+        to_field = {'address': parseaddr(to_emails[0])[1]}
 
     ScheduledEmail.objects.create(
         type=EMAIL_TYPES[template_name],
@@ -134,3 +148,10 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_id: Optional[i
         realm=realm,
         data=ujson.dumps(email_fields),
         **to_field)
+
+def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
+                         from_address: Optional[str]=None, context: Dict[str, Any]={}) -> None:
+    admins = realm.get_admin_users()
+    admin_user_ids = [admin.id for admin in admins]
+    send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
+               from_address=from_address, context=context)

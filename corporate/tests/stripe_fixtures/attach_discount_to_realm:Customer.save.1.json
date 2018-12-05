@@ -1,6 +1,6 @@
 {
   "account_balance": 0,
-  "created": 1543270381,
+  "created": 1000000000,
   "currency": null,
   "default_source": "card_NORMALIZED00000000000001",
   "delinquent": false,
@@ -8,7 +8,7 @@
   "discount": {
     "coupon": {
       "amount_off": null,
-      "created": 1539831972,
+      "created": 1000000000,
       "currency": null,
       "duration": "forever",
       "duration_in_months": null,
@@ -20,13 +20,13 @@
       "object": "coupon",
       "percent_off": 85.0,
       "redeem_by": null,
-      "times_redeemed": 37,
+      "times_redeemed": 00,
       "valid": true
     },
     "customer": "cus_NORMALIZED0001",
     "end": null,
     "object": "discount",
-    "start": 1543270381,
+    "start": 1000000000,
     "subscription": null
   },
   "email": "hamlet@zulip.com",

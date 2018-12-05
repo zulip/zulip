@@ -983,7 +983,7 @@ a.bottom-signup-button {
 
 .contributors-list {
     margin-left: -40px;
-    width: calc(100% + 80px);
+    width: calc(100% - -80px);
 }
 
 .contributors {
@@ -2177,4 +2177,34 @@ input.new-organization-button {
 #third-party-apps {
     margin-top: 20px;
     padding-right: 10px;
+}
+
+#realm_redirect_subdomain {
+    text-align: right;
+    position: relative;
+    padding-right: 10px;
+}
+
+#realm_redirect_external_host {
+    font-size: 20px;
+    top: 13px;
+    left: 5px;
+    position: relative;
+}
+
+#realm_redirect_description {
+    top: 15px;
+    position: relative;
+}
+
+.realm-redirect-form #find-account-link {
+    color: hsl(165, 100.0%, 14.7%);
+}
+
+.realm-redirect-form #find-account-section {
+    margin-top: 20px;
+}
+
+.realm-redirect-form #enter-realm-button {
+    margin-top: 10px;
 }

@@ -101,6 +101,7 @@ run_test('mappings', () => {
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
     assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
+    assert.equal(map_down(190, false, true).name, 'narrow_to_compose_target'); // ctrl + .
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -133,6 +134,8 @@ run_test('mappings', () => {
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
     assert.equal(map_down(83, false, false, true).name, 'star_message'); // cmd + s
     assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
+    assert.equal(map_down(190, false, false, true).name, 'narrow_to_compose_target'); // cmd + .
+    assert.equal(map_down(190, false, true, false), undefined); // ctrl + .
     // Reset userAgent
     global.navigator.userAgent = '';
 });
@@ -227,7 +230,7 @@ run_test('basic_chars', () => {
     overlays.is_active = return_true;
     assert_mapping('S', 'subs.keyboard_sub');
     assert_mapping('V', 'subs.view_stream');
-    assert_mapping('n', 'subs.new_stream_clicked');
+    assert_mapping('n', 'subs.open_create_stream');
     page_params.can_create_streams = false;
     assert_unmapped('n');
     overlays.streams_open = return_false;
@@ -309,9 +312,7 @@ run_test('basic_chars', () => {
 
     global.current_msg_list.empty = return_true;
     assert_mapping('n', 'narrow.narrow_to_next_topic');
-
     global.current_msg_list.empty = return_false;
-
 });
 
 run_test('motion_keys', () => {

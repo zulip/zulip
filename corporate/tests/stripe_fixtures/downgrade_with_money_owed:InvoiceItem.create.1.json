@@ -2,17 +2,17 @@
   "amount": 100000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "date": 1543276134,
+  "date": 1000000000,
   "description": null,
   "discountable": true,
-  "id": "ii_1DatowGh0CmXqmnw46fSvmhb",
+  "id": "ii_NORMALIZED00000000000002",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1543276134,
-    "start": 1543276134
+    "end": 1000000000,
+    "start": 1000000000
   },
   "plan": null,
   "proration": false,

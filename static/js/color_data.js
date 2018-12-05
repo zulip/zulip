@@ -2,9 +2,8 @@ var color_data = (function () {
 
 var exports = {};
 
-// Auto-assigned colors should be from the default palette so it's easy to undo
-// changes, so if that palette changes, change these colors.
-var stream_assignment_colors = [
+// These colors are used now for streams.
+var stream_colors = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
     "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
     "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
@@ -13,24 +12,50 @@ var stream_assignment_colors = [
     "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462",
 ];
 
-exports.pick_color = function (used_colors) {
-    var colors = _.shuffle(stream_assignment_colors);
-    var used_color_hash = {};
+// Shuffle our colors on page load to prevent
+// bias toward "early" colors.
+exports.colors = _.shuffle(stream_colors);
 
-    _.each(used_colors, function (color) {
-        used_color_hash[color] = true;
-    });
+exports.reset = function () {
+    exports.unused_colors = exports.colors.slice();
+};
 
-    var color = _.find(colors, function (color) {
-        return !_.has(used_color_hash, color);
-    });
+exports.reset();
 
-    if (color) {
-        return color;
+exports.claim_color = function (color) {
+    var i = exports.unused_colors.indexOf(color);
+
+    if (i < 0) {
+        return;
     }
 
-    // All available colors were used.
-    return colors[0];
+    exports.unused_colors.splice(i, 1);
+
+    if (exports.unused_colors.length === 0) {
+        exports.reset();
+    }
+};
+
+exports.claim_colors = function (subs) {
+    var used_colors = new Dict();
+
+    _.each(subs, function (sub) {
+        if (sub.color) {
+            used_colors.set(sub.color, true);
+        }
+    });
+
+    _.each(used_colors.keys(), function (color) {
+        exports.claim_color(color);
+    });
+};
+
+exports.pick_color = function () {
+    var color = exports.unused_colors[0];
+
+    exports.claim_color(color);
+
+    return color;
 };
 
 return exports;

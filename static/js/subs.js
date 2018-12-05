@@ -1,8 +1,5 @@
 var subs = (function () {
 
-var meta = {
-    callbacks: {},
-};
 var exports = {};
 
 exports.show_subs_pane = {
@@ -60,14 +57,6 @@ function get_hash_safe() {
     }
 
     return "";
-}
-
-function export_hash(hash) {
-    var hash_components = {
-        base: hash.shift(),
-        arguments: hash,
-    };
-    exports.change_state(hash_components);
 }
 
 function selectText(element) {
@@ -283,6 +272,23 @@ exports.update_settings_for_subscribed = function (sub) {
     stream_edit.show_sub_settings(sub);
 };
 
+exports.show_active_stream_in_left_panel = function () {
+    var selected_row = get_hash_safe().split(/\//)[1];
+
+    if (parseFloat(selected_row)) {
+        var sub_row = row_for_stream_id(selected_row);
+        sub_row.addClass("active");
+    }
+};
+
+exports.add_tooltips_to_left_panel = function () {
+    _.each($("#subscriptions_table .stream-row"), function (row) {
+        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+            placement: 'left', animation: false,
+        });
+    });
+};
+
 exports.update_settings_for_unsubscribed = function (sub) {
     var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
@@ -381,12 +387,7 @@ exports.populate_stream_settings_left_panel = function () {
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
-    var selected_row = get_hash_safe().split(/\//)[1];
-
-    if (parseFloat(selected_row)) {
-        var sub_row = row_for_stream_id(selected_row);
-        sub_row.addClass("active");
-    }
+    exports.show_active_stream_in_left_panel();
 
     var widgets = {};
     var streams_list_scrolltop = $(".streams-list").scrollTop();
@@ -417,11 +418,9 @@ exports.filter_table = function (query) {
         }
 
         widgets[stream_id] = $(row).detach();
-
-        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-            placement: 'left', animation: false,
-        });
     });
+
+    exports.add_tooltips_to_left_panel();
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
@@ -435,11 +434,7 @@ exports.filter_table = function (query) {
         $('#subscriptions_table .streams-list').append(widgets[stream_id]);
     });
 
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
-        $(".right .settings").hide();
-        $(".nothing-selected").show();
-        $(".stream-row.active").removeClass("active");
-    }
+    exports.maybe_reset_right_panel();
 
     // this puts the scrollTop back to what it was before the list was updated again.
     $(".streams-list").scrollTop(streams_list_scrolltop);
@@ -447,10 +442,27 @@ exports.filter_table = function (query) {
 
 var subscribed_only = true;
 
-exports.actually_filter_streams = function () {
+exports.get_search_params = function () {
     var search_box = $("#add_new_subscription input[type='text']");
-    var query = search_box.expectOne().val().trim();
-    exports.filter_table({ input: query, subscribed_only: subscribed_only });
+    var input = search_box.expectOne().val().trim();
+    var params = {
+        input: input,
+        subscribed_only: subscribed_only,
+    };
+    return params;
+};
+
+exports.maybe_reset_right_panel = function () {
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        $(".right .settings").hide();
+        $(".nothing-selected").show();
+        $(".stream-row.active").removeClass("active");
+    }
+};
+
+exports.actually_filter_streams = function () {
+    var search_params = exports.get_search_params();
+    exports.filter_table(search_params);
 };
 
 var filter_streams = _.throttle(exports.actually_filter_streams, 50);
@@ -458,14 +470,27 @@ var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 // Make it explicit that our toggler is not created right away.
 exports.toggler = undefined;
 
-function maybe_select_tab(tab_name) {
-    if (!exports.toggler) {
-        blueslip.warn('We tried to go to a tab before setup completed: ' + tab_name);
-        return;
+exports.switch_stream_tab = function (tab_name) {
+    /*
+        This switches the stream tab, but it doesn't update
+        the toggler widget.  You may instead want to
+        use `toggler.goto`.
+    */
+
+    if (tab_name === "all-streams") {
+        subscribed_only = false;
+    } else if (tab_name === "subscribed") {
+        subscribed_only = true;
     }
 
-    exports.toggler.goto(tab_name);
-}
+    exports.actually_filter_streams();
+
+    if (tab_name === "all-streams") {
+        hashchange.update_browser_history('#streams/all');
+    } else if (tab_name === "subscribed") {
+        hashchange.update_browser_history('#streams/subscribed');
+    }
+};
 
 exports.setup_page = function (callback) {
     // We should strongly consider only setting up the page once,
@@ -489,17 +514,7 @@ exports.setup_page = function (callback) {
                 { label: i18n.t("All streams"), key: "all-streams" },
             ],
             callback: function (value, key) {
-                // if you aren't on a particular stream (`streams/:id/:name`)
-                // then redirect to `streams/all` when you click "all-streams".
-                if (key === "all-streams") {
-                    window.location.hash = "streams/all";
-                    subscribed_only = false;
-                } else if (key === "subscribed") {
-                    window.location.hash = "streams/subscribed";
-                    subscribed_only = true;
-                }
-
-                exports.actually_filter_streams();
+                exports.switch_stream_tab(key);
             },
         });
 
@@ -540,7 +555,6 @@ exports.setup_page = function (callback) {
 
         if (callback) {
             callback();
-            exports.onlaunchtrigger();
         }
     }
 
@@ -551,70 +565,42 @@ exports.setup_page = function (callback) {
     }
 };
 
-// add a function to run on subscription page launch by name,
-// and specify whether it should be kept or just run once (boolean).
-exports.onlaunch = function (name, callback, keep) {
-    meta.callbacks[name] = {
-        func: callback,
-        keep: keep,
-    };
+exports.switch_to_stream_row = function (stream_id) {
+    var stream_row = row_for_stream_id(stream_id);
+
+    get_active_data().row.removeClass("active");
+    stream_row.addClass("active");
+
+    scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
+
+    // It's dubious that we need this timeout any more.
+    setTimeout(function () {
+        if (stream_id === get_active_data().id) {
+            stream_row.click();
+        }
+    }, 100);
 };
 
-exports.onlaunchtrigger = function () {
-    for (var x in meta.callbacks) {
-        if (typeof meta.callbacks[x].func === "function") {
-            meta.callbacks[x].func();
+exports.change_state = function (hash) {
+    if (hash.arguments.length === 0) {
+        return;
+    }
 
-            // delete if it should not be kept.
-            if (!meta.callbacks[x].keep) {
-                delete meta.callbacks[x];
-            }
-        }
+    var base = hash.arguments[0];
+
+    // if in #streams/new form.
+    if (base === "new") {
+        exports.do_open_create_stream();
+    } else if (base === "all") {
+        exports.toggler.goto('all-streams');
+    } else if (base === "subscribed") {
+        exports.toggler.goto('subscribed');
+    // if the first argument is a valid number.
+    } else if (/\d+/.test(base)) {
+        var stream_id = base;
+        exports.switch_to_stream_row(stream_id);
     }
 };
-
-exports.change_state = (function () {
-    var prevent_next = false;
-
-    var func = function (hash) {
-        if (prevent_next) {
-            prevent_next = false;
-            return;
-        }
-
-        // if there are any arguments the state should be modified.
-        if (hash.arguments.length > 0) {
-            // if in #streams/new form.
-            if (hash.arguments[0] === "new") {
-                exports.new_stream_clicked();
-            } else if (hash.arguments[0] === "all") {
-                maybe_select_tab("all-streams");
-            } else if (hash.arguments[0] === "subscribed") {
-                maybe_select_tab("subscribed");
-            // if the first argument is a valid number.
-            } else if (/\d+/.test(hash.arguments[0])) {
-                var stream_row = row_for_stream_id(hash.arguments[0]);
-
-                get_active_data().row.removeClass("active");
-                stream_row.addClass("active");
-
-                scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
-
-                setTimeout(function () {
-                    if (hash.arguments[0] === get_active_data().id) {
-                        stream_row.click();
-                    }
-                }, 100);
-            }
-        }
-    };
-
-    func.prevent_once = function () {
-        prevent_next = true;
-    };
-
-    return func;
-}());
 
 exports.launch = function (hash) {
     exports.setup_page(function () {
@@ -664,9 +650,8 @@ exports.switch_rows = function (event) {
 
     var row_data = get_row_data(switch_row);
     if (row_data) {
-        var switch_row_name = row_data.object.name;
-        var hash = ['#streams', row_data.id, switch_row_name];
-        export_hash(hash);
+        var stream_id = row_data.id;
+        exports.switch_to_stream_row(stream_id);
     } else if (event === 'up_arrow' && !row_data) {
         $('#search_stream_name').focus();
     }
@@ -687,13 +672,11 @@ exports.keyboard_sub = function () {
 
 exports.toggle_view = function (event) {
     var active_data = get_active_data();
-    var hash;
+
     if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
-        hash = ['#streams', 'all'];
-        export_hash(hash);
+        exports.toggler.goto('all-streams');
     } else if (event === 'left_arrow' && active_data.tab.text() === 'All streams') {
-        hash = ['#streams', 'subscribed'];
-        export_hash(hash);
+        exports.toggler.goto('subscribed');
     }
 };
 
@@ -701,7 +684,8 @@ exports.view_stream = function () {
     var active_data = get_active_data();
     var row_data = get_row_data(active_data.row);
     if (row_data) {
-        window.location.hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
+        var stream_narrow_hash = '#narrow/stream/' + hash_util.encode_stream_name(row_data.object.name);
+        hashchange.go_to_location(stream_narrow_hash);
     }
 };
 
@@ -749,7 +733,10 @@ function ajaxUnsubscribe(sub) {
     });
 }
 
-exports.new_stream_clicked = function () {
+exports.do_open_create_stream = function () {
+    // Only call this directly for hash changes.
+    // Prefer open_create_stream().
+
     var stream = $.trim($("#search_stream_name").val());
 
     if (!should_list_all_streams()) {
@@ -761,6 +748,12 @@ exports.new_stream_clicked = function () {
 
     stream_create.new_stream_clicked(stream);
 };
+
+exports.open_create_stream = function () {
+    exports.do_open_create_stream();
+    hashchange.update_browser_history('#streams/new');
+};
+
 
 exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
@@ -783,10 +776,7 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
-        exports.new_stream_clicked();
-        // this will change the hash which will attempt to retrigger the create
-        // stream code, so we prevent this once.
-        exports.change_state.prevent_once();
+        exports.open_create_stream();
     });
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {
@@ -848,7 +838,7 @@ exports.initialize = function () {
 
         $("#subscriptions_table").on("click", sel, function (e) {
             if ($(e.target).is(sel)) {
-                stream_edit.show_stream_row(this, false);
+                stream_edit.open_edit_panel_empty();
             }
         });
     }());

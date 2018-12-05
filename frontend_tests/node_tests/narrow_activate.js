@@ -23,7 +23,9 @@ set_global('notifications', {});
 set_global('page_params', {});
 set_global('search', {});
 set_global('stream_list', {});
+set_global('tab_bar', {});
 set_global('top_left_corner', {});
+set_global('typing_events', {});
 set_global('ui_util', {});
 set_global('util', {});
 set_global('unread_ops', {});
@@ -43,14 +45,6 @@ global.patch_builtin('setTimeout', (f, t) => {
     assert.equal(t, 0);
     f();
 });
-
-function stub_trigger(f) {
-    set_global('document', 'document-stub');
-    $('document-stub').trigger = f;
-    $.Event = (name) => {
-        assert.equal(name, 'narrow_activated.zulip');
-    };
-}
 
 set_global('muting', {
     is_topic_muted: () => false,
@@ -82,13 +76,13 @@ function test_helper() {
     stub('notifications', 'redraw_title');
     stub('search', 'update_button_visibility');
     stub('stream_list', 'handle_narrow_activated');
+    stub('tab_bar', 'initialize');
     stub('top_left_corner', 'handle_narrow_activated');
+    stub('typing_events', 'render_notifications_for_narrow');
     stub('ui_util', 'change_tab_to');
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_stream_button_for_stream');
     stub('compose', 'update_stream_button_for_private');
-
-    stub_trigger(() => { events.push('trigger event'); });
 
     blueslip.debug = noop;
 
@@ -217,7 +211,8 @@ run_test('basics', () => {
         'compose_actions.on_narrow',
         'top_left_corner.handle_narrow_activated',
         'stream_list.handle_narrow_activated',
-        'trigger event',
+        'typing_events.render_notifications_for_narrow',
+        'tab_bar.initialize',
     ]);
 
     current_msg_list.selected_id = () => { return -1; };

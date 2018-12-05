@@ -382,7 +382,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
-        'to_user_id': user_profile.id,
+        'to_user_ids': [user_profile.id],
         'from_name': from_name,
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
@@ -523,16 +523,23 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         context['getting_started_link'] = "https://zulipchat.com"
 
     from zproject.backends import email_belongs_to_ldap, require_email_format_usernames
-    if email_belongs_to_ldap(user.realm, user.email) and not require_email_format_usernames(user.realm):
-        context["ldap_username"] = True
+
+    if email_belongs_to_ldap(user.realm, user.email):
+        context["ldap"] = True
+        if settings.LDAP_APPEND_DOMAIN:
+            for backend in get_backends():
+                if isinstance(backend, LDAPBackend):
+                    context["ldap_username"] = backend.django_to_ldap_username(user.email)
+        elif not settings.LDAP_EMAIL_ATTR:
+            context["ldap_username"] = user.email
 
     send_future_email(
-        "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,
         from_address=from_address, context=context)
 
     if other_account_count == 0:
         send_future_email(
-            "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
+            "zerver/emails/followup_day2", user.realm, to_user_ids=[user.id], from_name=from_name,
             from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: str) -> str:

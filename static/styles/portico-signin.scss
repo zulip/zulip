@@ -641,6 +641,18 @@ button.login-google-button {
     font-size: 0.8em;
 }
 
+#find-account-section {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    #find-account-link {
+        color: hsl(164, 100%, 23%);
+    }
+}
+
 .split-view .actions a,
 .back-to-login {
     color: hsl(164, 100%, 23%);

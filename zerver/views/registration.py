@@ -23,7 +23,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     email_not_system_bot, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm
+    CreateUserForm, FindMyTeamForm, RealmRedirectForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
@@ -34,9 +34,9 @@ from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.views.auth import create_preregistration_user, \
-    redirect_and_log_into_subdomain, \
-    redirect_to_deactivation_notice
+from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
+    redirect_to_deactivation_notice, get_safe_redirect_to
+
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend, \
     ZulipLDAPException, email_auth_enabled
 
@@ -360,7 +360,7 @@ def prepare_activation_url(email: str, request: HttpRequest,
     return activation_url
 
 def send_confirm_registration_email(email: str, activation_url: str) -> None:
-    send_email('zerver/emails/confirm_registration', to_email=email,
+    send_email('zerver/emails/confirm_registration', to_emails=[email],
                from_address=FromAddress.tokenized_no_reply_address(),
                context={'activate_url': activation_url})
 
@@ -490,7 +490,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     'realm_uri': user_profile.realm.uri,
                     'realm_name': user_profile.realm.name,
                 }
-                send_email('zerver/emails/find_team', to_user_id=user_profile.id, context=ctx)
+                send_email('zerver/emails/find_team', to_user_ids=[user_profile.id], context=ctx)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
@@ -515,3 +515,16 @@ def find_account(request: HttpRequest) -> HttpResponse:
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
                            'emails': emails},)
+
+def realm_redirect(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = RealmRedirectForm(request.POST)
+        if form.is_valid():
+            subdomain = form.cleaned_data['subdomain']
+            realm = get_realm(subdomain)
+            redirect_to = get_safe_redirect_to(request.GET.get("next", ""), realm.uri)
+            return HttpResponseRedirect(redirect_to)
+    else:
+        form = RealmRedirectForm()
+
+    return render(request, 'zerver/realm_redirect.html', context={'form': form})
