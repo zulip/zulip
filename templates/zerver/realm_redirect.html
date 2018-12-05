@@ -2,13 +2,13 @@
 
 {% block portico_content %}
 
-<div class="app find-account-page flex full-page">
+<div class="app goto-account-page flex full-page">
     <div class="inline-block new-style">
         <div class="lead">
             <h1 class="get-started">{{ _("Log in to your organization") }}</h1>
         </div>
 
-        <div class="app-main find-account-page-container white-box">
+        <div class="app-main goto-account-page-container white-box">
             <div class="realm-redirect-form">
                 <form class="form-inline" name="realm_redirect_form"
                   action="/accounts/go/?{{ request.GET.urlencode() }}" method="post">
@@ -32,7 +32,7 @@
                         <button id="enter-realm-button" type="submit">{{ _('Next') }}</button>
                         <p id="find-account-section">
                             {{ _("Can't remember your organization URL?") }}
-                            <a target="_blank" id="find-account-link" href="/accounts/find/">{{ _("Find your account.") }}</a>
+                            <a target="_blank" class="find-account-link" href="/accounts/find/">{{ _("Find your account.") }}</a>
                         </p>
                     </div>
                 </form>
