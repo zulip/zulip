@@ -94,7 +94,7 @@ class ClientDescriptor:
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
-        if lifespan_secs <= 0:
+        if lifespan_secs == 0:
             lifespan_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
         self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
 
