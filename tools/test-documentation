@@ -12,6 +12,8 @@ case $1 in
     -h|--help)
         echo "--help, -h                   show this help message and exit"
         echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+        echo "--skip-check-links           skip checking of links"
+        echo "--skip-external-links        skip checking of external links"
         exit 0
         ;;
     -L|--loglevel)
@@ -19,6 +21,9 @@ case $1 in
         ;;
     --skip-check-links)
         skip_check_links=1
+        ;;
+    --skip-external-links)
+        skip_external_links=1
         ;;
 esac
 
@@ -34,6 +39,22 @@ sphinx-build -j8 -b html -d _build/doctrees -D html_theme_options.collapse_navig
 if [ -n "$skip_check_links" ]; then
     color_message 94 "Skipped testing links in documentation."
     exit 0
+fi
+
+if [ -n "$skip_external_links" ]; then
+    color_message 94 "Testing only internal links in documentation..."
+    cd ../tools/documentation_crawler
+    set +e
+    scrapy crawl documentation_crawler -a skip_external=set "${loglevel[@]}"
+    # calling crawl directly as parameter needs to be passed
+    result=$?
+    if [ "$result" = 1 ]; then
+        color_message 91 "Failed!"
+        exit 1
+    else
+        color_message 92 "Passed!"
+        exit 0
+    fi
 fi
 
 color_message 94 "Testing links in documentation..."
