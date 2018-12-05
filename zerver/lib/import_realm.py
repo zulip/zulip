@@ -527,7 +527,12 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
     if not processing_emojis:
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
+    count = 0
     for record in records:
+        count += 1
+        if count % 1000 == 0:
+            logging.info("Processed %s/%s uploads" % (count, len(records)))
+
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
@@ -594,8 +599,13 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
     if not processing_emojis:
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
+    count = 0
     for record in records:
         key = Key(bucket)
+
+        count += 1
+        if count % 1000 == 0:
+            logging.info("Processed %s/%s uploads" % (count, len(records)))
 
         if processing_avatars:
             # For avatars, we need to rehash the user's email with the
