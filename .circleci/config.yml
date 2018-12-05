@@ -40,10 +40,6 @@ aliases:
         # This is the main setup job for the test suite
         mispipe "tools/ci/setup-backend" ts
 
-        # Cleaning caches is mostly unnecessary in Circle, because
-        # most builds don't get to write to the cache.
-        # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0" ts
-
   - &save_cache_package_json
     save_cache:
       paths:
