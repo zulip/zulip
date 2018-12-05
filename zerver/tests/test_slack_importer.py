@@ -486,8 +486,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]['sender'], 24)
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
-    @mock.patch("zerver.data_import.slack.get_all_messages")
-    def test_convert_slack_workspace_messages(self, mock_get_all_messages: mock.Mock,
+    @mock.patch("zerver.data_import.slack.get_messages_iterator")
+    def test_convert_slack_workspace_messages(self, mock_get_messages_iterator: mock.Mock,
                                               mock_message: mock.Mock) -> None:
         os.makedirs('var/test-slack-import', exist_ok=True)
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
@@ -501,7 +501,7 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_get_all_messages.side_effect = [zerver_message]
+        mock_get_messages_iterator.side_effect = [iter(zerver_message)]
         mock_message.side_effect = [[zerver_message[:1], zerver_usermessage[:2],
                                      attachments, uploads, reactions[:1]],
                                     [zerver_message[1:2], zerver_usermessage[2:5],
