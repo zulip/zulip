@@ -65,15 +65,6 @@ var state = {
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
 };
 
-function get_hash_components() {
-    var hash = window.location.hash.split(/\//);
-
-    return {
-        base: hash.shift(),
-        arguments: hash,
-    };
-}
-
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     var overlay_list = ["streams", "drafts", "settings", "organization", "invite"];
@@ -143,6 +134,7 @@ function do_hashchange_normal(from_reload) {
 function do_hashchange_overlay(old_hash) {
     var base = hash_util.get_hash_category(window.location.hash);
     var old_base = hash_util.get_hash_category(old_hash);
+    var section = hash_util.get_hash_section(window.location.hash);
 
     var coming_from_overlay = is_overlay_hash(old_hash || '#');
 
@@ -154,7 +146,7 @@ function do_hashchange_overlay(old_hash) {
     if (coming_from_overlay) {
         if (base === old_base) {
             if (base === 'streams') {
-                subs.change_state(get_hash_components());
+                subs.change_state(section);
             }
 
             // TODO: handle other cases like internal settings
@@ -178,7 +170,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "streams") {
-        subs.launch(get_hash_components());
+        subs.launch(section);
     } else if (base === "drafts") {
         drafts.launch();
     } else if (/settings|organization/.test(base)) {
