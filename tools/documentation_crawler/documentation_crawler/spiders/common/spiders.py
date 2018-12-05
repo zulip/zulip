@@ -34,7 +34,7 @@ class BaseDocumentationSpider(scrapy.Spider):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.has_error = False
-        self.skip_external = kwargs.get('skip_external',None)
+        self.skip_external = kwargs.get('skip_external', None)
 
     def _set_error_state(self) -> None:
         self.has_error = True
