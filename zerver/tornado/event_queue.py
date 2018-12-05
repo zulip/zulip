@@ -45,7 +45,9 @@ for host in ['127.0.0.1', 'localhost']:
 # situation, queues from dead browser sessions would grow quite large
 # due to the accumulation of message data in those queues.
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
-EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 5
+# We garbage-collect every minute; this is totally fine given that the
+# GC scan takes ~2ms with 1000 event queues.
+EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 1
 
 # Capped limit for how long a client can request an event queue
 # to live
