@@ -285,7 +285,7 @@ exports.initialize = function () {
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
         if (overlays.is_active()) {
-            ui_util.change_tab_to('#home');
+            overlays.close_active();
         }
 
         var stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
