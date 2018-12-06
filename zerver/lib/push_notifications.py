@@ -148,6 +148,10 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
                 logger.warning("APNs: BrokenPipeError sending for user %d to device %s: %s",
                                user_id, device.token, e.__class__.__name__)
                 return None
+            except ConnectionError as e:  # nocoverage
+                logger.warning("APNs: ConnectionError sending for user %d to device %s: %s",
+                               user_id, device.token, e.__class__.__name__)
+                return None
 
         result = attempt_send()
         while result is None and retries_left > 0:
