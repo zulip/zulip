@@ -20,6 +20,10 @@ def bulk_create_users(realm: Realm,
         realm=realm).values_list('email', flat=True))
     users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
 
+    # If we have a different email_address_visibility mode, the code
+    # below doesn't have the logic to set user_profile.email properly.
+    assert realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
     # Now create user_profiles
     profiles_to_create = []  # type: List[UserProfile]
     for (email, full_name, short_name, active) in users:

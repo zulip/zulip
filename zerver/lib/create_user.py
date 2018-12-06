@@ -31,6 +31,12 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
 
     copy_hotpots(source_profile, target_profile)
 
+def get_display_email_address(user_profile: UserProfile, realm: Realm) -> str:
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # TODO: realm.host isn't always a valid option here.
+        return "user%s@%s" % (user_profile.id, realm.host.split(':')[0])
+    return user_profile.delivery_email
+
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates
@@ -48,7 +54,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
     now = timezone_now()
     email = UserManager.normalize_email(email)
 
-    user_profile = UserProfile(email=email, is_staff=False, is_active=active,
+    user_profile = UserProfile(is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
                                pointer=-1, is_bot=bool(bot_type), bot_type=bot_type,
@@ -63,9 +69,10 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 
     if bot_type or not active:
         password = None
-
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # If emails are visible to everyone, we can set this here and save a DB query
+        user_profile.email = get_display_email_address(user_profile, realm)
     user_profile.set_password(password)
-
     user_profile.api_key = generate_api_key()
     return user_profile
 
@@ -106,6 +113,13 @@ def create_user(email: str, password: Optional[str], realm: Realm,
         copy_user_settings(source_profile, user_profile)
     else:
         user_profile.save()
+
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # With restricted access to email addresses, we can't generate
+        # the fake email addresses we use for display purposes without
+        # a User ID, which isn't generated until the .save() above.
+        user_profile.email = get_display_email_address(user_profile, realm)
+        user_profile.save(update_fields=['email'])
 
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
