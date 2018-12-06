@@ -94,6 +94,8 @@ exports.setup_page = function () {
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
+    $("#id_realm_default_language").val(page_params.realm_default_language);
+
     // Since we just swapped in a whole new page, we need to
     // tell admin_sections nothing is loaded.
     admin_sections.reset_sections();
