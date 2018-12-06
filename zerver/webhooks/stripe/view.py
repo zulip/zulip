@@ -138,8 +138,8 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                     days=int((object_["trial_end"] - time.time() + DAY//2) // DAY))
             if event == 'created':
                 if object_['plan']:
-                    body += '\nPlan: [{plan_name}](https://dashboard.stripe.com/plans/{plan_id})'.format(
-                        plan_name=object_['plan']['name'], plan_id=object_['plan']['id'])
+                    body += '\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})'.format(
+                        plan_nickname=object_['plan']['nickname'], plan_id=object_['plan']['id'])
                 if object_['quantity']:
                     body += '\nQuantity: {}'.format(object_['quantity'])
                 if 'billing' in object_:  # nocoverage

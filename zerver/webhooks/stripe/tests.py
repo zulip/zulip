@@ -62,9 +62,10 @@ class StripeHookTests(WebhookTestCase):
     def test_customer_subscription_created(self) -> None:
         expected_topic = u"cus_00000000000000"
         expected_message = u"""\
-[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) created
-Plan: [Gold Special](https://dashboard.stripe.com/plans/gold_00000000000000)
-Quantity: 1"""
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) created
+Plan: [flatrate](https://dashboard.stripe.com/plans/plan_E6SQ6RAtmLVtzg)
+Quantity: 800
+Billing method: send invoice"""
         self.send_and_test_stream_message('customer_subscription_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
