@@ -134,13 +134,14 @@ strength allowed is controlled by two settings in
 
 ## Users and Bots
 
-* There are three types of users in a Zulip organization: Organization
-  administrators, normal users, and bots.  Administrators have the
-  ability to deactivate and reactivate other human and bot users,
-  delete streams, add/remove administrator privileges, as well as
-  change configuration for the organization.
+* There are four types of users in a Zulip organization: Organization
+  Administrators, Members (normal users), Guests, and Bots.
 
-* Being an organization administrator does not generally provide the ability
+* Administrators have the ability to deactivate and reactivate other
+  human and bot users, delete streams, add/remove administrator
+  privileges, as well as change configuration for the organization.
+
+  Being an organization administrator does not generally provide the ability
   to read other users' private messages or messages sent to private
   streams to which the administrator is not subscribed. There are two
   exceptions:
@@ -172,6 +173,9 @@ strength allowed is controlled by two settings in
   the API key to authenticate all future interactions with the site.
   Thus, if a user's phone is lost, in addition to changing passwords,
   you should rotate the user's Zulip API key.
+
+* Guest users are like Members, but they do not have automatic access
+  to public streams.
 
 * Zulip supports several kinds of bots with different capabilities.
 
