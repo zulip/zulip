@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -16,6 +16,9 @@ from zerver.models import UserProfile
 class NotImplementedEventType(Exception):
     pass
 
+class SuppressedEvent(Exception):
+    pass
+
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
@@ -25,6 +28,8 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
     try:
         check_send_webhook_message(request, user_profile, topic, body)
     except NotImplementedEventType:  # nocoverage
+        pass
+    except SuppressedEvent:  # nocoverage
         pass
     return json_success()
 
@@ -47,14 +52,29 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         topic = customer_id
     body = None
 
-    def default_body() -> str:
-        return '{resource} {verbed}'.format(
+    def update_string(blacklist: List[str]=[]) -> str:
+        assert('previous_attributes' in payload['data'])
+        previous_attributes = payload['data']['previous_attributes']
+        for attribute in blacklist:
+            previous_attributes.pop(attribute, None)
+        if not previous_attributes:  # nocoverage
+            raise SuppressedEvent()
+        return ''.join('\n* ' + attribute.replace('_', ' ').capitalize() +
+                       ' is now ' + str(object_[attribute])
+                       for attribute in sorted(previous_attributes.keys()))
+
+    def default_body(update_blacklist: List[str]=[]) -> str:
+        body = '{resource} {verbed}'.format(
             resource=linkified_id(object_['id']), verbed=event.replace('_', ' '))
+        if event == 'updated':
+            return body + update_string(blacklist=update_blacklist)
+        return body
 
     if category == 'account':  # nocoverage
-        if event == 'updated':
-            topic = "account updates"
-            body = ''
+        if resource == 'account':
+            if event == 'updated':
+                topic = "account updates"
+                body = update_string()
         else:
             # Part of Stripe Connect
             raise NotImplementedEventType()
@@ -93,7 +113,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             # Running into the 60 character topic limit.
             # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (object_['id'], object_['id'])
             topic = object_['id']
-            body = default_body()
+            body = default_body(update_blacklist=['delinquent', 'currency', 'default_source'])
             if event == 'created':
                 if object_['email']:
                     body += '\nEmail: {}'.format(object_['email'])
@@ -131,7 +151,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         if event == 'upcoming':  # nocoverage
             body = 'Upcoming invoice created'
         else:
-            body = default_body()
+            body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at'])
         if event == 'created':  # nocoverage
             # Could potentially add link to invoice PDF here
             body += ' ({reason})\nBilling method: {method}\nTotal: {total}\nAmount due: {due}'.format(
@@ -140,7 +160,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 total=amount_string(object_['total'], object_['currency']),
                 due=amount_string(object_['amount_due'], object_['currency']))
     if category == 'invoiceitem':  # nocoverage
-        body = default_body()
+        body = default_body(update_blacklist=['description'])
         if event == 'created':
             body += ' for {amount}'.format(amount=amount_string(object_['amount'], object_['currency']))
     if category.startswith('issuing'):  # nocoverage
@@ -159,13 +179,6 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
 
     if body is None:
         raise UnexpectedWebhookEventType('Stripe', event_type)
-
-    if 'previous_attributes' in payload['data']:  # nocoverage
-        previous_attributes = payload['data']['previous_attributes']
-    else:
-        previous_attributes = {}
-    body += update_string(object_, previous_attributes)
-    body = body.strip()
     return (topic, body)
 
 def amount_string(amount: int, currency: str) -> str:
@@ -179,10 +192,6 @@ def amount_string(amount: int, currency: str) -> str:
     if currency == 'usd':  # nocoverage
         return '$' + decimal_amount
     return decimal_amount + ' {}'.format(currency.upper())
-
-def update_string(object_: Dict[str, Any], previous_attributes: Dict[str, Any]) -> str:
-    return ''.join('\n* ' + attribute.replace('_', ' ').capitalize() + ' is now ' + str(object_[attribute])
-                   for attribute in previous_attributes)
 
 def linkified_id(object_id: str, lower: bool=False) -> str:
     names_and_urls = {

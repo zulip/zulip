@@ -1,0 +1,188 @@
+{
+    "id": "evt_1DbqCuDEQaroqDjsIkZIT6uP",
+    "object": "event",
+    "api_version": "2018-11-08",
+    "created": 1543500572,
+    "data": {
+        "object": {
+            "id": "cus_00000000000000",
+            "object": "customer",
+            "account_balance": 100,
+            "created": 1543971209,
+            "currency": "usd",
+            "default_source": "src_1DdoduGh0CmXqmnwKJmq8lpv",
+            "delinquent": false,
+            "description": "zulip (Zulip Dev)",
+            "discount": null,
+            "email": "hamlet@zulip.com",
+            "invoice_prefix": "6E2831C",
+            "livemode": false,
+            "metadata": {
+                "realm_id": "1",
+                "realm_str": "zulip"
+            },
+            "shipping": null,
+            "sources": {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "src_1DdoduGh0CmXqmnwKJmq8lpv",
+                        "object": "source",
+                        "ach_credit_transfer": {
+                            "account_number": "test_a479e261d1bb",
+                            "bank_name": "TEST BANK",
+                            "fingerprint": "cAzkzdbKgZYS8NhC",
+                            "routing_number": "110000000",
+                            "swift_code": "TSTEZ122",
+                            "refund_routing_number": null,
+                            "refund_account_number": null,
+                            "refund_account_holder_type": null,
+                            "refund_account_holder_name": null
+                        },
+                        "amount": null,
+                        "client_secret": "src_client_secret_E60fLRPcrzhAJNmOjvsUHTli",
+                        "created": 1543971214,
+                        "currency": "usd",
+                        "customer": "cus_E60fF1CuG8K36D",
+                        "flow": "receiver",
+                        "livemode": false,
+                        "metadata": {
+                        },
+                        "owner": {
+                            "address": null,
+                            "email": "amount_0@stripe.com",
+                            "name": null,
+                            "phone": null,
+                            "verified_address": null,
+                            "verified_email": null,
+                            "verified_name": null,
+                            "verified_phone": null
+                        },
+                        "receiver": {
+                            "address": "110000000-test_a479e261d1bb",
+                            "amount_charged": 0,
+                            "amount_received": 0,
+                            "amount_returned": 0,
+                            "refund_attributes_method": "email",
+                            "refund_attributes_status": "missing"
+                        },
+                        "statement_descriptor": null,
+                        "status": "pending",
+                        "type": "ach_credit_transfer",
+                        "usage": "reusable"
+                    }
+                ],
+                "has_more": false,
+                "total_count": 1,
+                "url": "/v1/customers/cus_E60fF1CuG8K36D/sources"
+            },
+            "subscriptions": {
+                "object": "list",
+                "data": [
+                    {
+                        "id": "sub_E60fxv28JMUWOG",
+                        "object": "subscription",
+                        "application_fee_percent": null,
+                        "billing": "send_invoice",
+                        "billing_cycle_anchor": 1543971209,
+                        "cancel_at_period_end": false,
+                        "canceled_at": null,
+                        "created": 1543971209,
+                        "current_period_end": 1575507209,
+                        "current_period_start": 1543971209,
+                        "customer": "cus_E60fF1CuG8K36D",
+                        "days_until_due": 30,
+                        "default_source": null,
+                        "discount": null,
+                        "ended_at": null,
+                        "items": {
+                            "object": "list",
+                            "data": [
+                                {
+                                    "id": "si_E60fDuBL4e55ZF",
+                                    "object": "subscription_item",
+                                    "created": 1543971210,
+                                    "metadata": {
+                                    },
+                                    "plan": {
+                                        "id": "plan_Do3xCvbzO89OsR",
+                                        "object": "plan",
+                                        "active": true,
+                                        "aggregate_usage": null,
+                                        "amount": 8000,
+                                        "billing_scheme": "per_unit",
+                                        "created": 1539831971,
+                                        "currency": "usd",
+                                        "interval": "year",
+                                        "interval_count": 1,
+                                        "livemode": false,
+                                        "metadata": {
+                                        },
+                                        "nickname": "annual",
+                                        "product": "prod_Do3x494SetTDpx",
+                                        "tiers": null,
+                                        "tiers_mode": null,
+                                        "transform_usage": null,
+                                        "trial_period_days": null,
+                                        "usage_type": "licensed"
+                                    },
+                                    "quantity": 8,
+                                    "subscription": "sub_E60fxv28JMUWOG"
+                                }
+                            ],
+                            "has_more": false,
+                            "total_count": 1,
+                            "url": "/v1/subscription_items?subscription=sub_E60fxv28JMUWOG"
+                        },
+                        "livemode": false,
+                        "metadata": {
+                        },
+                        "plan": {
+                            "id": "plan_Do3xCvbzO89OsR",
+                            "object": "plan",
+                            "active": true,
+                            "aggregate_usage": null,
+                            "amount": 8000,
+                            "billing_scheme": "per_unit",
+                            "created": 1539831971,
+                            "currency": "usd",
+                            "interval": "year",
+                            "interval_count": 1,
+                            "livemode": false,
+                            "metadata": {
+                            },
+                            "nickname": "annual",
+                            "product": "prod_Do3x494SetTDpx",
+                            "tiers": null,
+                            "tiers_mode": null,
+                            "transform_usage": null,
+                            "trial_period_days": null,
+                            "usage_type": "licensed"
+                        },
+                        "quantity": 8,
+                        "start": 1543971210,
+                        "status": "active",
+                        "tax_percent": 0,
+                        "trial_end": null,
+                        "trial_start": null
+                    }
+                ],
+                "has_more": false,
+                "total_count": 1,
+                "url": "/v1/customers/cus_E60fF1CuG8K36D/subscriptions"
+            },
+            "tax_info": null,
+            "tax_info_verification": null
+        },
+        "previous_attributes": {
+            "account_balance": 0
+        }
+    },
+    "livemode": true,
+    "pending_webhooks": 1,
+    "request": {
+        "id": null,
+        "idempotency_key": null
+    },
+    "type": "customer.updated"
+}

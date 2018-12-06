@@ -84,11 +84,11 @@ Quantity: 1"""
                                               expected_topic, expected_message,
                                               content_type="application/x-www-form-urlencoded")
 
-    def test_customer_updated__delinquency(self) -> None:
+    def test_customer_updated__account_balance(self) -> None:
         expected_topic = "cus_00000000000000"
         expected_message = "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated" + \
-                           "\n* Delinquent is now False"
-        self.send_and_test_stream_message('customer_updated__delinquency', expected_topic, expected_message,
+                           "\n* Account balance is now 100"
+        self.send_and_test_stream_message('customer_updated__account_balance', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_customer_discount_created(self) -> None:
