@@ -124,14 +124,14 @@ function test_helper() {
         };
     }
 
-    stub('admin', 'setup_page');
+    stub('admin', 'launch');
     stub('drafts', 'launch');
     stub('favicon', 'reset');
     stub('floating_recipient_bar', 'update');
     stub('message_viewport', 'stop_auto_scrolling');
     stub('narrow', 'deactivate');
     stub('overlays', 'close_for_hash_change');
-    stub('settings', 'setup_page');
+    stub('settings', 'launch');
     stub('subs', 'launch');
     stub('ui_util', 'blur_active_element');
 
@@ -268,8 +268,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'settings.setup_page',
-        'admin.setup_page',
+        'settings.launch',
     ]);
 
     window.location.hash = '#organization/user-list-admin';
@@ -278,8 +277,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'settings.setup_page',
-        'admin.setup_page',
+        'admin.launch',
     ]);
 
     var called_back;
