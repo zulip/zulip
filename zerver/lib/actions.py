@@ -126,7 +126,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import generate_api_key
-from zerver.lib.create_user import create_user
+from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, \
@@ -565,6 +565,20 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
     )
     send_event(realm, event, active_user_ids(realm.id))
 
+    if name == "email_address_visibility":
+        for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False):
+            # TODO: This does linear queries in the number of users
+            # and thus is potentially very slow.  Probably not super
+            # important since this is a feature few folks will toggle,
+            # but as a policy matter, we don't do linear queries
+            # ~anywhere in Zulip.
+            old_email = user_profile.email
+            user_profile.email = get_display_email_address(user_profile, realm)
+            user_profile.save(update_fields=["email"])
+
+            # TODO: Design a bulk event for this or force-reload all clients
+            if user_profile.email != old_email:
+                send_user_email_update_event(user_profile)
 
 def do_set_realm_authentication_methods(realm: Realm,
                                         authentication_methods: Dict[str, bool]) -> None:
@@ -788,10 +802,12 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
+    user_profile.delivery_email = new_email
     if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         user_profile.email = new_email
-    user_profile.delivery_email = new_email
-    user_profile.save(update_fields=["email", "delivery_email"])
+        user_profile.save(update_fields=["email", "delivery_email"])
+    else:
+        user_profile.save(update_fields=["delivery_email"])
 
     # We notify just the target user (and eventually org admins) about
     # their new delivery email, since that field is private.
