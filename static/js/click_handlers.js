@@ -723,6 +723,12 @@ exports.initialize = function () {
             popovers.hide_all();
         }
 
+        // If user clicks outside an active modal
+        if ($('.modal.in').has(e.target).length === 0) {
+            // Enable mouse events for the background as the modal closes
+            $('.overlay.show').attr("style", null);
+        }
+
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
