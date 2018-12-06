@@ -1,5 +1,6 @@
 class zulip_ops::zmirror_personals {
   include zulip_ops::base
+  include zulip_ops::apt_repository_debathena
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
@@ -17,16 +18,11 @@ class zulip_ops::zmirror_personals {
     'cython3',
     'cython',
   ]
-  package { $zmirror_packages: ensure => 'installed' }
-
-  apt::source {'debathena':
-    location    => 'http://debathena.mit.edu/apt',
-    release     => 'xenial',
-    repos       => 'debathena debathena-config',
-    key         => 'D1CD49BDD30B677273A75C66E4EE62700D8A9E8F',
-    key_source  => 'https://debathena.mit.edu/apt/debathena-archive.asc',
-    include_src => true,
+  package { $zmirror_packages:
+    ensure  => 'installed',
+    require => Exec['setup_apt_repo_debathena'],
   }
+
   file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
           '/home/zulip/mirror_status']:
     ensure => directory,
