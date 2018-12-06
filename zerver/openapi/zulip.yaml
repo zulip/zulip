@@ -1705,6 +1705,11 @@ paths:
                       type: boolean
                       description: Whether mobile/push notifications are
                         enabled.
+                    is_incompatible:
+                      type: boolean
+                      description: Whether the Zulip client that has sent a
+                        request to this endpoint is deemed incompatible with
+                        the server.
                     email_auth_enabled:
                       type: boolean
                       description: Setting for allowing users authenticate with
