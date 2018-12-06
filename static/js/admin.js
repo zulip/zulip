@@ -2,15 +2,6 @@ var admin = (function () {
 
 var exports = {};
 
-exports.show_or_hide_menu_item = function () {
-    var item = $('.admin-menu-item').expectOne();
-    if (page_params.is_admin) {
-        item.find("span").text(i18n.t("Manage organization"));
-    } else {
-        item.find("span").text(i18n.t("Organization settings"));
-    }
-};
-
 var admin_settings_label = {
     // Organization settings
     realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
@@ -99,11 +90,6 @@ exports.setup_page = function () {
         exports.launch_page(tab);
         settings_toggle.highlight_toggle('organization');
     }
-
-
-    // Do this after calling the setup_up methods, so that we can
-    // disable any dynamically rendered elements.
-    exports.show_or_hide_menu_item();
 };
 
 exports.launch_page = function (section) {
