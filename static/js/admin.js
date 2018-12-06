@@ -17,7 +17,7 @@ var admin_settings_label = {
     realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
 };
 
-exports.setup_page = function () {
+exports.build_page = function () {
     var options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
@@ -73,6 +73,10 @@ exports.setup_page = function () {
     // Since we just swapped in a whole new page, we need to
     // tell admin_sections nothing is loaded.
     admin_sections.reset_sections();
+};
+
+exports.setup_page = function () {
+    exports.build_page();
 
     var tab = (function () {
         var tab = false;
