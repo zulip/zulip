@@ -3,7 +3,7 @@ import ujson
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.send_email import FromAddress
-from zerver.models import Recipient, get_user, get_realm
+from zerver.models import Recipient, get_user_by_delivery_email, get_realm
 from zerver.webhooks.teamcity.view import MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE
 
 class TeamcityHookTests(WebhookTestCase):
@@ -44,7 +44,7 @@ class TeamcityHookTests(WebhookTestCase):
 
     def test_non_generic_payload_ignore_pm_notification(self) -> None:
         expected_message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
-            bot_name=get_user('webhook-bot@zulip.com', get_realm('zulip')).full_name,
+            bot_name=get_user_by_delivery_email('webhook-bot@zulip.com', get_realm('zulip')).full_name,
             support_email=FromAddress.SUPPORT
         ).strip()
         payload = self.get_body('slack_non_generic_payload')

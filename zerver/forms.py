@@ -24,7 +24,8 @@ from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user, UserProfile, get_realm, email_to_domain, \
+from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
+    email_to_domain, \
     email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError
 from zproject.backends import email_auth_enabled, email_belongs_to_ldap
@@ -234,7 +235,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         user = None  # type: Optional[UserProfile]
         try:
-            user = get_user(email, realm)
+            user = get_user_by_delivery_email(email, realm)
         except UserProfile.DoesNotExist:
             pass
 
@@ -256,7 +257,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
                        context=context)
         else:
             context['active_account_in_realm'] = False
-            active_accounts_in_other_realms = UserProfile.objects.filter(email__iexact=email, is_active=True)
+            active_accounts_in_other_realms = UserProfile.objects.filter(
+                delivery_email__iexact=email, is_active=True)
             if active_accounts_in_other_realms:
                 context['active_accounts_in_other_realms'] = active_accounts_in_other_realms
             send_email('zerver/emails/password_reset', to_emails=[email],

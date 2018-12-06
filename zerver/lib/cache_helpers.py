@@ -48,7 +48,8 @@ def user_cache_items(items_for_remote_cache: Dict[str, Tuple[UserProfile]],
                      user_profile: UserProfile) -> None:
     for api_key in get_all_api_keys(user_profile):
         items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
-    items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (user_profile,)
+    items_for_remote_cache[user_profile_cache_key(user_profile.email,
+                                                  user_profile.realm)] = (user_profile,)
     # We have other user_profile caches, but none of them are on the
     # core serving path for lots of requests.
 

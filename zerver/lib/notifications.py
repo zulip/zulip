@@ -508,7 +508,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_address = FromAddress.SUPPORT
 
     other_account_count = UserProfile.objects.filter(
-        email__iexact=user.email).exclude(id=user.id).count()
+        delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
     context = common_context(user)
     context.update({

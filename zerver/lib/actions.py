@@ -87,7 +87,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user, get_stream_cache_key, active_non_guest_user_ids, \
+    get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \
     get_old_unclaimed_attachments, is_cross_realm_bot_email, \
@@ -364,12 +364,12 @@ def process_new_human_user(user_profile: UserProfile,
     # inactive so we can keep track of the PreregistrationUser we
     # actually used for analytics
     if prereg_user is not None:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).exclude(
+        PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).exclude(
             id=prereg_user.id).update(status=0)
         if prereg_user.referred_by is not None:
             notify_invites_changed(user_profile)
     else:
-        PreregistrationUser.objects.filter(email__iexact=user_profile.email).update(status=0)
+        PreregistrationUser.objects.filter(email__iexact=user_profile.delivery_email).update(status=0)
 
     notify_new_user(user_profile)
     if user_profile.realm.send_welcome_emails:
@@ -810,7 +810,7 @@ def compute_jabber_user_fullname(email: str) -> str:
 def create_mirror_user_if_needed(realm: Realm, email: str,
                                  email_to_fullname: Callable[[str], str]) -> UserProfile:
     try:
-        return get_user(email, realm)
+        return get_user_by_delivery_email(email, realm)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
@@ -824,7 +824,7 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
                 is_mirror_dummy=True,
             )
         except IntegrityError:
-            return get_user(email, realm)
+            return get_user_by_delivery_email(email, realm)
 
 def send_welcome_bot_response(message: MutableMapping[str, Any]) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
@@ -4440,7 +4440,7 @@ def validate_email_for_realm(target_realm: Realm, email: str) -> None:
     email_not_system_bot(email)
 
     try:
-        existing_user_profile = get_user(email, target_realm)
+        existing_user_profile = get_user_by_delivery_email(email, target_realm)
     except UserProfile.DoesNotExist:
         return
 
