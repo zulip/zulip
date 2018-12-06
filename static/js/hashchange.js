@@ -182,6 +182,8 @@ function do_hashchange_overlay(old_hash) {
     if (base === 'settings') {
         if (!section) {
             section = settings_panel_menu.normal_settings.current_tab();
+            var settings_hash = '#settings/' + section;
+            exports.replace_hash(settings_hash);
         }
 
         settings.launch(section);
@@ -191,6 +193,8 @@ function do_hashchange_overlay(old_hash) {
     if (base === 'organization') {
         if (!section) {
             section = settings_panel_menu.org_settings.current_tab();
+            var org_hash = '#organization/' + section;
+            exports.replace_hash(org_hash);
         }
 
         admin.launch(section);
@@ -248,6 +252,17 @@ exports.update_browser_history = function (new_hash) {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
+};
+
+exports.replace_hash = function (hash) {
+    if (!window.history.replaceState) {
+        // We may have strange behavior with the back button.
+        blueslip.warn('browser does not support replaceState');
+        return;
+    }
+
+    var url = get_full_url(hash);
+    window.history.replaceState(null, null, url);
 };
 
 exports.go_to_location = function (hash) {
