@@ -164,4 +164,4 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         del job['to_email']
     if 'to_user_id' in job:
         job['to_user_ids'] = [job['to_user_id']]
-        del job['to_user_ids']
+        del job['to_user_id']
