@@ -32,7 +32,6 @@ Subsystems Documentation
    logging
    typing-indicators
    users
-   guest-users
    django-upgrades
    release-checklist
    api-release-checklist
