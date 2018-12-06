@@ -74,6 +74,20 @@ Quantity: 1"""
         self.send_and_test_stream_message('customer_subscription_deleted', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_customer_subscription_updated(self) -> None:
+        expected_topic = u"cus_00000000000000"
+        expected_message = """\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) updated
+* Billing cycle anchor is now Nov 01, 2019, 12:00:00 UTC
+* Current period end is now Nov 01, 2019, 12:00:00 UTC
+* Current period start is now Dec 06, 2018, 05:53:55 UTC
+* Start is now Dec 06, 2018, 05:53:55 UTC
+* Status is now trialing
+* Trial end is now Nov 01, 2019, 12:00:00 UTC
+* Trial start is now Dec 06, 2018, 05:53:55 UTC"""
+        self.send_and_test_stream_message('customer_subscription_updated', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
     def test_customer_subscription_trial_will_end(self) -> None:
         expected_topic = u"cus_00000000000000"
         expected_message = u"[Subscription](https://dashboard.stripe.com/subscriptions/sub_00000000000000) trial will end in 3 days"

@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
@@ -60,7 +61,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         if not previous_attributes:  # nocoverage
             raise SuppressedEvent()
         return ''.join('\n* ' + attribute.replace('_', ' ').capitalize() +
-                       ' is now ' + str(object_[attribute])
+                       ' is now ' + stringify(object_[attribute])
                        for attribute in sorted(previous_attributes.keys()))
 
     def default_body(update_blacklist: List[str]=[]) -> str:
@@ -237,3 +238,8 @@ def linkified_id(object_id: str, lower: bool=False) -> str:
     if url_prefix is None:  # nocoverage
         return name
     return '[{}](https://dashboard.stripe.com/{}/{})'.format(name, url_prefix, object_id)
+
+def stringify(value: Any) -> str:
+    if isinstance(value, int) and value > 1500000000 and value < 2000000000:
+        return timestamp_to_datetime(value).strftime('%b %d, %Y, %H:%M:%S %Z')
+    return str(value)
