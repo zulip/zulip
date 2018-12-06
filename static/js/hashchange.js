@@ -6,27 +6,32 @@ var exports = {};
 
 var changing_hash = false;
 
-function set_hash(hash) {
+function get_full_url(hash) {
     var location = window.location;
 
+    if (hash === '' || hash.charAt(0) !== '#') {
+        hash = '#' + hash;
+    }
+
+    // IE returns pathname as undefined and missing the leading /
+    var pathname = location.pathname;
+    if (pathname === undefined) {
+        pathname = '/';
+    } else if (pathname === '' || pathname.charAt(0) !== '/') {
+        pathname = '/' + pathname;
+    }
+
+    // Build a full URL to not have same origin problems
+    var url =  location.protocol + '//' + location.host + pathname + hash;
+    return url;
+}
+
+function set_hash(hash) {
     if (history.pushState) {
-        if (hash === '' || hash.charAt(0) !== '#') {
-            hash = '#' + hash;
-        }
-
-        // IE returns pathname as undefined and missing the leading /
-        var pathname = location.pathname;
-        if (pathname === undefined) {
-            pathname = '/';
-        } else if (pathname === '' || pathname.charAt(0) !== '/') {
-            pathname = '/' + pathname;
-        }
-
-        // Build a full URL to not have same origin problems
-        var url =  location.protocol + '//' + location.host + pathname + hash;
+        var url = get_full_url(hash);
         history.pushState(null, null, url);
     } else {
-        location.hash = hash;
+        window.location.hash = hash;
     }
 }
 
