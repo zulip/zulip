@@ -71,9 +71,10 @@ class MarkdownDirectoryView(ApiURLView):
         elif "/" in article:
             article = "missing"
             http_status = 404
-        if len(article) > 100 or not re.match('^[0-9a-zA-Z_-]+$', article):
+        elif len(article) > 100 or not re.match('^[0-9a-zA-Z_-]+$', article):
             article = "missing"
             http_status = 404
+
         path = self.path_template % (article,)
         try:
             loader.get_template(path)
