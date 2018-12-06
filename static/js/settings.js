@@ -117,19 +117,9 @@ function setup_settings_label() {
     };
 }
 
-exports.setup_page = function () {
+exports.build_page = function () {
     ui.set_up_scrollbar($("#settings_page .sidebar.left"));
     ui.set_up_scrollbar($("#settings_content"));
-
-    var tab = (function () {
-        var tab = false;
-        var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(settings)/.test(hash_sequence[0])) {
-            tab = hash_sequence[1];
-            return tab || settings_panel_menu.normal_settings.current_tab();
-        }
-        return tab;
-    }());
 
     setup_settings_label();
 
@@ -148,6 +138,20 @@ exports.setup_page = function () {
     // Since we just swapped in a whole new settings widget, we need to
     // tell settings_sections nothing is loaded.
     settings_sections.reset_sections();
+};
+
+exports.setup_page = function () {
+    exports.build_page();
+
+    var tab = (function () {
+        var tab = false;
+        var hash_sequence = window.location.hash.split(/\//);
+        if (/#*(settings)/.test(hash_sequence[0])) {
+            tab = hash_sequence[1];
+            return tab || settings_panel_menu.normal_settings.current_tab();
+        }
+        return tab;
+    }());
 
     if (tab) {
         exports.launch_page(tab);
