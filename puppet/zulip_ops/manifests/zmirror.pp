@@ -1,5 +1,6 @@
 class zulip_ops::zmirror {
   include zulip_ops::base
+  include zulip_ops::apt_repository
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
@@ -17,7 +18,10 @@ class zulip_ops::zmirror {
     'cython3',
     'cython',
   ]
-  package { $zmirror_packages: ensure => 'installed' }
+  package { $zmirror_packages:
+    ensure  => 'installed',
+    require => Exec['setup_apt_repo_debathena'],
+  }
 
   apt::source {'debathena':
     location    => 'http://debathena.mit.edu/apt',
