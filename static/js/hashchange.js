@@ -179,9 +179,21 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    if (/settings|organization/.test(base)) {
-        settings.setup_page();
-        admin.setup_page();
+    if (base === 'settings') {
+        if (!section) {
+            section = settings_panel_menu.normal_settings.current_tab();
+        }
+
+        settings.launch(section);
+        return;
+    }
+
+    if (base === 'organization') {
+        if (!section) {
+            section = settings_panel_menu.org_settings.current_tab();
+        }
+
+        admin.launch(section);
         return;
     }
 
