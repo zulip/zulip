@@ -68,13 +68,21 @@
                 <li tabindex="0" data-section="emoji-settings">
                     <i class="icon fa fa-smile-o" aria-hidden="true"></i>
                     <div class="text">{{ _('Custom emoji') }}</div>
-                    {% if not is_admin and user_profile.realm.add_emoji_by_admins_only %}
-                    <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                    {% if is_guest %}
+                        <i class="locked fa fa-lock" title="{{ _('Guest users cannot edit custom emoji.') }}"></i>
+                    {% else %}
+                        {% if not is_admin and user_profile.realm.add_emoji_by_admins_only %}
+                        <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
+                        {% endif %}
                     {% endif %}
                 </li>
                 <li tabindex="0" data-section="user-groups-admin">
                     <i class="icon fa fa-group" aria-hidden="true"></i>
                     <div class="text">{{ _('User groups') }}</div>
+                    {% if is_guest %}
+                    <i class="locked fa fa-lock"
+                      title="{{ _('Only group members and organization administrators can modify a group.') }}"></i>
+                    {% endif %}
                 </li>
                 <li tabindex="0" data-section="auth-methods">
                     <i class="icon fa fa-lock" aria-hidden="true"></i>
