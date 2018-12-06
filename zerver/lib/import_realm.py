@@ -516,112 +516,6 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads_local(import_dir: Path, records: List[Dict[str, Any]],
-                         processing_avatars: bool=False,
-                         processing_emojis: bool=False) -> None:
-    timestamp = datetime_to_timestamp(timezone_now())
-    count = 0
-    for record in records:
-        count += 1
-        if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads" % (count, len(records)))
-
-        if processing_avatars:
-            # For avatars, we need to rehash the user ID with the
-            # new server's avatar salt
-            relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
-            if record['s3_path'].endswith('.original'):
-                relative_path += '.original'
-            else:
-                relative_path += '.png'
-        elif processing_emojis:
-            # For emojis we follow the function 'upload_emoji_image'
-            relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-                realm_id=record['realm_id'],
-                emoji_file_name=record['file_name'])
-            record['last_modified'] = timestamp
-        else:
-            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_image'
-            relative_path = "/".join([
-                str(record['realm_id']),
-                random_name(18),
-                sanitize_name(os.path.basename(record['path']))
-            ])
-            path_maps['attachment_path'][record['s3_path']] = relative_path
-
-        if processing_avatars or processing_emojis:
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
-        else:
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
-
-        orig_file_path = os.path.join(import_dir, record['path'])
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        shutil.copy(orig_file_path, file_path)
-
-def import_uploads_s3(bucket_name: str, import_dir: Path, records: List[Dict[str, Any]],
-                      processing_avatars: bool=False,
-                      processing_emojis: bool=False) -> None:
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = conn.get_bucket(bucket_name, validate=True)
-    timestamp = datetime_to_timestamp(timezone_now())
-
-    count = 0
-    for record in records:
-        key = Key(bucket)
-
-        count += 1
-        if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads" % (count, len(records)))
-
-        if processing_avatars:
-            # For avatars, we need to rehash the user ID with the
-            # new server's avatar salt
-            relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
-            if record['s3_path'].endswith('.original'):
-                relative_path += '.original'
-            else:
-                relative_path += '.png'
-        elif processing_emojis:
-            # For emojis we follow the function 'upload_emoji_image'
-            relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-                realm_id=record['realm_id'],
-                emoji_file_name=record['file_name'])
-            record['last_modified'] = timestamp
-        else:
-            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
-            # function 'upload_message_image'
-            relative_path = "/".join([
-                str(record['realm_id']),
-                random_name(18),
-                sanitize_name(os.path.basename(record['path']))
-            ])
-            path_maps['attachment_path'][record['s3_path']] = relative_path
-        key.key = relative_path
-
-        # Exported custom emoji from tools like Slack don't have
-        # the data for what user uploaded them in `user_profile_id`.
-        if not processing_emojis:
-            user_profile_id = int(record['user_profile_id'])
-            # Support email gateway bot and other cross-realm messages
-            if user_profile_id in ID_MAP["user_profile"]:
-                logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
-                user_profile_id = ID_MAP["user_profile"][user_profile_id]
-            user_profile = get_user_profile_by_id(user_profile_id)
-            key.set_metadata("user_profile_id", str(user_profile.id))
-
-        if 'last_modified' in record:
-            key.set_metadata("orig_last_modified", record['last_modified'])
-        key.set_metadata("realm_id", str(record['realm_id']))
-
-        # Zulip exports will always have a content-type, but third-party exports might not.
-        content_type = record.get("content_type")
-        if content_type is None:
-            content_type = guess_type(record['s3_path'])[0]
-        headers = {'Content-Type': content_type}  # type: Dict[str, Any]
-
-        key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
-
 def import_uploads(import_dir: Path, processing_avatars: bool=False,
                    processing_emojis: bool=False) -> None:
     if processing_avatars and processing_emojis:
@@ -636,6 +530,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())  # type: List[Dict[str, Any]]
+    timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
                                  id_field=True)
@@ -643,16 +538,79 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
 
-    if settings.LOCAL_UPLOADS_DIR:
-        import_uploads_local(import_dir, records, processing_avatars=processing_avatars,
-                             processing_emojis=processing_emojis)
-    else:
+    s3_uploads = settings.LOCAL_UPLOADS_DIR is None
+
+    if s3_uploads:
         if processing_avatars or processing_emojis:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        import_uploads_s3(bucket_name, import_dir, records, processing_avatars=processing_avatars,
-                          processing_emojis=processing_emojis)
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.get_bucket(bucket_name, validate=True)
+
+    count = 0
+    for record in records:
+        count += 1
+        if count % 1000 == 0:
+            logging.info("Processed %s/%s uploads" % (count, len(records)))
+
+        if processing_avatars:
+            # For avatars, we need to rehash the user ID with the
+            # new server's avatar salt
+            relative_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
+            if record['s3_path'].endswith('.original'):
+                relative_path += '.original'
+            else:
+                relative_path += '.png'
+        elif processing_emojis:
+            # For emojis we follow the function 'upload_emoji_image'
+            relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+                realm_id=record['realm_id'],
+                emoji_file_name=record['file_name'])
+            record['last_modified'] = timestamp
+        else:
+            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
+            # function 'upload_message_file'
+            relative_path = "/".join([
+                str(record['realm_id']),
+                random_name(18),
+                sanitize_name(os.path.basename(record['path']))
+            ])
+            path_maps['attachment_path'][record['s3_path']] = relative_path
+
+        if s3_uploads:
+            key = Key(bucket)
+            key.key = relative_path
+            # Exported custom emoji from tools like Slack don't have
+            # the data for what user uploaded them in `user_profile_id`.
+            if not processing_emojis:
+                user_profile_id = int(record['user_profile_id'])
+                # Support email gateway bot and other cross-realm messages
+                if user_profile_id in ID_MAP["user_profile"]:
+                    logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
+                    user_profile_id = ID_MAP["user_profile"][user_profile_id]
+                user_profile = get_user_profile_by_id(user_profile_id)
+                key.set_metadata("user_profile_id", str(user_profile.id))
+
+            if 'last_modified' in record:
+                key.set_metadata("orig_last_modified", record['last_modified'])
+            key.set_metadata("realm_id", str(record['realm_id']))
+
+            # Zulip exports will always have a content-type, but third-party exports might not.
+            content_type = record.get("content_type")
+            if content_type is None:
+                content_type = guess_type(record['s3_path'])[0]
+            headers = {'Content-Type': content_type}  # type: Dict[str, Any]
+
+            key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+        else:
+            if processing_avatars or processing_emojis:
+                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)
+            else:
+                file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", relative_path)
+            orig_file_path = os.path.join(import_dir, record['path'])
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            shutil.copy(orig_file_path, file_path)
 
     if processing_avatars:
         from zerver.lib.upload import upload_backend
