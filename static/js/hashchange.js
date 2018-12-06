@@ -31,6 +31,7 @@ function set_hash(hash) {
         var url = get_full_url(hash);
         history.pushState(null, null, url);
     } else {
+        blueslip.warn('browser does not support pushState');
         window.location.hash = hash;
     }
 }
