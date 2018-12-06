@@ -92,6 +92,8 @@ exports.setup_page = function () {
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
+    $("#id_realm_default_language").val(page_params.realm_default_language);
+
     // Since we just swapped in a whole new page, we need to
     // tell admin_sections nothing is loaded.
     admin_sections.reset_sections();
@@ -111,8 +113,6 @@ exports.setup_page = function () {
         settings_toggle.highlight_toggle('organization');
     }
 
-
-    $("#id_realm_default_language").val(page_params.realm_default_language);
 
     // Do this after calling the setup_up methods, so that we can
     // disable any dynamically rendered elements.
