@@ -28,11 +28,7 @@ Files: docs/code-of-conduct.md
 Copyright: 2017, Kandra Labs Inc.
 License: CC-BY-SA-4.0
 
-Files: puppet/apt/*
-Copyright: 2011, Evolving Web Inc.
-License: Expat
-
-Files: puppet/stdlib/*
+Files: puppet/zulip/lib/puppet/parser/functions/join.rb puppet/zulip/lib/puppet/parser/functions/range.rb
 Copyright: 2011, Krzysztof Wilczynski
  2011, Puppet Labs Inc
 License: Apache-2.0

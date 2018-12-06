@@ -28,7 +28,6 @@ if not os.path.exists("/etc/puppet/hiera.yaml"):
 
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
-include apt
 """
 
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):

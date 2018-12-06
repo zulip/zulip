@@ -1,13 +1,8 @@
 # Exclude some directories and files from lint checking
 EXCLUDED_FILES = [
     # Third-party code that doesn't match our style
-    "puppet/apt/.forge-release",
-    "puppet/apt/README.md",
-    "puppet/apt/manifests/backports.pp",
-    "puppet/apt/manifests/params.pp",
-    "puppet/apt/manifests/release.pp",
-    "puppet/apt/manifests/unattended_upgrades.pp",
-    "puppet/stdlib/tests/file_line.pp",
+    "puppet/zulip/lib/puppet/parser/functions/join.rb",
+    "puppet/zulip/lib/puppet/parser/functions/range.rb",
     "puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh",
     "scripts/lib/third",
     "static/third",
