@@ -1462,6 +1462,7 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 
 .modal.fade.in {
     top: 50%;
+    pointer-events: all;
 }
 
 #id_realm_create_stream_permission,
