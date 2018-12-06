@@ -2,10 +2,10 @@
   "active": true,
   "attributes": [],
   "caption": null,
-  "created": 1539831970,
+  "created": 1000000000,
   "deactivate_on": [],
   "description": null,
-  "id": "prod_Do3x494SetTDpx",
+  "id": "prod_NORMALIZED0001",
   "images": [],
   "livemode": false,
   "metadata": {},
@@ -16,6 +16,6 @@
   "statement_descriptor": "Zulip Cloud Standard",
   "type": "service",
   "unit_label": "user",
-  "updated": 1539831970,
+  "updated": 1000000000,
   "url": null
 }

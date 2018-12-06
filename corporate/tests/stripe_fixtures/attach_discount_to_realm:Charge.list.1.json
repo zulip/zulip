@@ -33,7 +33,7 @@
       },
       "paid": true,
       "payment_intent": null,
-      "receipt_email": "hamlet@zulip.com",
+      "receipt_email": null,
       "receipt_number": null,
       "refunded": false,
       "refunds": {},
@@ -65,7 +65,7 @@
         "tokenization_method": null
       },
       "source_transfer": null,
-      "statement_descriptor": "Zulip Cloud Premium",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "succeeded",
       "transfer_group": null
     }

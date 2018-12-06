@@ -1,17 +1,17 @@
 {
   "amount_off": null,
-  "created": 1539831971,
+  "created": 1000000000,
   "currency": null,
   "duration": "forever",
   "duration_in_months": null,
-  "id": "00otHgC9",
+  "id": "NORMAL02",
   "livemode": false,
   "max_redemptions": null,
   "metadata": {},
-  "name": "25% discount",
+  "name": "85% discount",
   "object": "coupon",
-  "percent_off": 25.0,
+  "percent_off": 85.0,
   "redeem_by": null,
-  "times_redeemed": 0,
+  "times_redeemed": 00,
   "valid": true
 }

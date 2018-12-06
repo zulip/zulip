@@ -118,7 +118,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
         ('txn', 24), ('ch', 24), ('in', 24), ('ii', 24), ('test', 12), ('src_client_secret', 24),
-        ('src', 24)]
+        ('src', 24), ('plan', 14), ('prod', 14)]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations = {
         "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
@@ -130,10 +130,13 @@ def normalize_fixture_data(decorated_function: CallableT,
         '"fingerprint": "([A-Za-z0-9]{16})"': 'NORMALIZED%06d',
         '"number": "([A-Za-z0-9]{7}-[A-Za-z0-9]{4})"': 'NORMALI-%04d',
         '"address": "([A-Za-z0-9]{9}-test_[A-Za-z0-9]{12})"': '000000000-test_NORMALIZED%02d',
+        # Coupon ID
+        '"id": "([A-Za-z0-9]{8})"': 'NORMAL%02d',
         # Don't use (..) notation, since the matched strings may be small integers that will also match
         # elsewhere in the file
         '"realm_id": "[0-9]+"': '"realm_id": "%d"',
     })
+
     # Normalizing across all timestamps still causes a lot of variance run to run, which is
     # why we're doing something a bit more complicated
     for i, timestamp_field in enumerate(tested_timestamp_fields):
@@ -218,9 +221,13 @@ def process_all_billing_log_entries() -> None:
         pass
 
 class StripeTest(ZulipTestCase):
-    @mock_stripe(generate=False)
-    def setUp(self, *mocks: Mock) -> None:
+    @classmethod
+    @mock_stripe()
+    def setUpClass(cls, *mocks: Mock) -> None:
+        super(StripeTest, cls).setUpClass()
         call_command("setup_stripe")
+
+    def setUp(self) -> None:
         # Unfortunately this test suite is likely not robust to users being
         # added in populate_db. A quick hack for now to ensure get_seat_count is 8
         # for these tests (8, since that's what it was when the tests were written).
@@ -328,8 +335,7 @@ class StripeTest(ZulipTestCase):
         stripe_subscription = extract_current_subscription(stripe_customer)
         self.assertEqual(stripe_subscription.billing, 'charge_automatically')
         self.assertEqual(stripe_subscription.days_until_due, None)
-        self.assertEqual(stripe_subscription.plan.id,
-                         Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id)
+        self.assertEqual(stripe_subscription.plan.nickname, Plan.CLOUD_ANNUAL)
         self.assertEqual(stripe_subscription.quantity, self.seat_count)
         self.assertEqual(stripe_subscription.status, 'active')
         self.assertEqual(stripe_subscription.tax_percent, 0)
@@ -535,8 +541,7 @@ class StripeTest(ZulipTestCase):
         stripe_subscription = extract_current_subscription(stripe_customer)
         self.assertEqual(stripe_subscription.billing, 'send_invoice')
         self.assertEqual(stripe_subscription.days_until_due, DEFAULT_INVOICE_DAYS_UNTIL_DUE)
-        self.assertEqual(stripe_subscription.plan.id,
-                         Plan.objects.get(nickname=Plan.CLOUD_ANNUAL).stripe_plan_id)
+        self.assertEqual(stripe_subscription.plan.nickname, Plan.CLOUD_ANNUAL)
         self.assertEqual(stripe_subscription.quantity, get_seat_count(user.realm))
         self.assertEqual(stripe_subscription.status, 'active')
         # Check that we correctly created an initial Invoice in Stripe
