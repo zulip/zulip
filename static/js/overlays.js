@@ -102,6 +102,8 @@ exports.open_modal = function (name) {
     blueslip.debug('open modal: ' + name);
 
     $("#" + name).modal("show").attr("aria-hidden", false);
+    // Disable background mouse events when modal is active
+    $('.overlay.show').attr("style", "pointer-events: none");
     // Remove previous alert messsages from modal, if exists.
     $("#" + name).find(".alert").hide();
 };
@@ -163,6 +165,9 @@ exports.close_modal = function (name) {
     blueslip.debug('close modal: ' + name);
 
     $("#" + name).modal("hide").attr("aria-hidden", true);
+    // Enable mouse events for the background as the modal closes.
+    $('.overlay.show').attr("style", null);
+
 };
 
 exports.close_active_modal = function () {
