@@ -57,7 +57,10 @@ class AnalyticsTestCase(TestCase):
             'api_key': '42'}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return UserProfile.objects.create(**kwargs)
+        kwargs['delivery_email'] = kwargs['email']
+        user_profile = UserProfile.objects.create(**kwargs)
+        # TODO: Make this pass user_profile.full_clean()
+        return user_profile
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
