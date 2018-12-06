@@ -296,7 +296,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
-        auth_result = authenticate(username=user_profile.email,
+        auth_result = authenticate(username=user_profile.delivery_email,
                                    realm=realm,
                                    return_data=return_data,
                                    use_dummy_backend=True)

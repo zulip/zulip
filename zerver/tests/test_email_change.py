@@ -12,7 +12,8 @@ from zerver.lib.actions import do_start_email_change_process, do_set_realm_prope
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_realm
+from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_realm, \
+    Realm, UserProfile, get_user, get_user_profile_by_id
 
 
 class EmailChangeTestCase(ZulipTestCase):
@@ -186,3 +187,37 @@ class EmailChangeTestCase(ZulipTestCase):
         result = self.client_patch(url, data)
         self.assertEqual('success', result.json()['result'])
         self.assertEqual('', result.json()['msg'])
+
+    def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
+        user_profile = self.example_user('hamlet')
+        do_set_realm_property(user_profile.realm, 'email_address_visibility',
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+
+        old_email = user_profile.email
+        new_email = 'hamlet-new@zulip.com'
+        self.login(self.example_email('hamlet'))
+        obj = EmailChangeStatus.objects.create(new_email=new_email,
+                                               old_email=old_email,
+                                               user_profile=user_profile,
+                                               realm=user_profile.realm)
+        key = generate_key()
+        Confirmation.objects.create(content_object=obj,
+                                    date_sent=now(),
+                                    confirmation_key=key,
+                                    type=Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        response = self.client_get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assert_in_success_response(["This confirms that the email address for your Zulip"],
+                                        response)
+        user_profile = get_user_profile_by_id(user_profile.id)
+        self.assertEqual(user_profile.delivery_email, new_email)
+        self.assertEqual(user_profile.email, "user4@zulip.testserver")
+        obj.refresh_from_db()
+        self.assertEqual(obj.status, 1)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user(old_email, user_profile.realm)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_delivery_email(old_email, user_profile.realm)
+        self.assertEqual(get_user_by_delivery_email(new_email, user_profile.realm), user_profile)

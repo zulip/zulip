@@ -27,7 +27,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_runner import slow
 from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_stream, \
-    CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email
+    CustomProfileField, Message, UserMessage, Attachment, get_user_profile_by_email, \
+    get_user_profile_by_id
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
@@ -364,8 +365,8 @@ class RealmTest(ZulipTestCase):
 
     def test_change_email_address_visibility(self) -> None:
         # We need an admin user.
-        email = 'iago@zulip.com'
-        self.login(email)
+        user_profile = self.example_user("iago")
+        self.login(user_profile.email)
         invalid_value = 4
         req = dict(email_address_visibility = ujson.dumps(invalid_value))
         result = self.client_patch('/json/realm', req)
@@ -378,6 +379,9 @@ class RealmTest(ZulipTestCase):
         self.assert_json_success(result)
         realm = get_realm("zulip")
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+
+        edited_user_profile = get_user_profile_by_id(user_profile.id)
+        self.assertEqual(edited_user_profile.email, "user%s@zulip.testserver" % (edited_user_profile.id,))
 
     def test_change_video_chat_provider(self) -> None:
         self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
