@@ -34,7 +34,7 @@ from django.core.handlers import base
 from functools import wraps
 import base64
 import datetime
-import rapidjson as ujson
+import ujson
 import logging
 from io import BytesIO
 import urllib

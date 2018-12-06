@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 
 import copy
-import rapidjson as ujson
+import ujson
 
 from collections import defaultdict
 from django.utils.translation import ugettext as _

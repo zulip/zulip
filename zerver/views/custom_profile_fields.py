@@ -1,7 +1,7 @@
 
 from typing import Union, List, Dict, Optional, cast
 import logging
-import rapidjson as ujson
+import ujson
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, connection
