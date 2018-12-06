@@ -71,7 +71,7 @@ from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAut
 import json
 import urllib
 from http.cookies import SimpleCookie
-import ujson
+import rapidjson as ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 
 class AuthBackendTest(ZulipTestCase):

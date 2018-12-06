@@ -5,7 +5,7 @@ from zerver.lib.test_helpers import message_stream_count, most_recent_message
 from zerver.models import get_realm, get_user, Recipient, UserProfile
 
 from typing import Any, Dict
-import ujson
+import rapidjson as ujson
 
 class TutorialTests(ZulipTestCase):
     def setUp(self) -> None:

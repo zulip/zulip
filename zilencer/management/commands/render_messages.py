@@ -1,7 +1,7 @@
 import os
 from typing import Any, Iterator
 
-import ujson
+import rapidjson as ujson
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
 

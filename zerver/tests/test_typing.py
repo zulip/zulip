@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import ujson
+import rapidjson as ujson
 from typing import Any, Mapping, List
 
 from django.core.exceptions import ValidationError

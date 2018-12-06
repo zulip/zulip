@@ -1,7 +1,7 @@
 
 import os
 import time
-import ujson
+import rapidjson as ujson
 import smtplib
 
 from django.conf import settings

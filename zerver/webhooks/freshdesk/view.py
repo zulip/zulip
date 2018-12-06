@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 

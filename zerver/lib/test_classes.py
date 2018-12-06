@@ -59,7 +59,7 @@ import base64
 import mock
 import os
 import re
-import ujson
+import rapidjson as ujson
 import urllib
 
 API_KEYS = {}  # type: Dict[str, str]

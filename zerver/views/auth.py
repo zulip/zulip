@@ -48,7 +48,7 @@ import jwt
 import logging
 import requests
 import time
-import ujson
+import rapidjson as ujson
 
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView

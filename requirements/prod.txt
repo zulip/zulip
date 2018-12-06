@@ -129,3 +129,4 @@ uwsgi==2.0.17.1
 virtualenv-clone==0.4.0
 wcwidth==0.1.7            # via prompt-toolkit
 yamole==2.1.5
+python-rapidjson

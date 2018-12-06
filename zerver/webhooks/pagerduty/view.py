@@ -3,7 +3,7 @@
 import pprint
 from typing import Any, Dict, Iterable, Optional
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view

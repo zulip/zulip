@@ -103,7 +103,7 @@ import datetime
 import DNS
 import mock
 import time
-import ujson
+import rapidjson as ujson
 from typing import Any, Dict, List, Optional, Set
 
 from collections import namedtuple

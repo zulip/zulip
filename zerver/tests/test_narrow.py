@@ -51,7 +51,7 @@ from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Op
 import mock
 import os
 import re
-import ujson
+import rapidjson as ujson
 
 def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     dialect = get_sqlalchemy_connection().dialect

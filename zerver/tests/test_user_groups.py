@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Any, List, Optional
 
-import ujson
+import rapidjson as ujson
 import django
 import mock
 

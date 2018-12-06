@@ -1,7 +1,7 @@
 
 import os
 
-import ujson
+import rapidjson as ujson
 from django.conf import settings
 from django.core.management.base import CommandParser
 from django.test import Client

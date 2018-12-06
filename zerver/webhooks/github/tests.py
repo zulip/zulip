@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-import ujson
+import rapidjson as ujson
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase

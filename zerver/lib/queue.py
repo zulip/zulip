@@ -11,7 +11,7 @@ import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 from tornado import ioloop
-import ujson
+import rapidjson as ujson
 
 from zerver.lib.utils import statsd
 

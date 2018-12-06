@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import ujson
+import rapidjson as ujson
 import logging
 import mock
 import requests

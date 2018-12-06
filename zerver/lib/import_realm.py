@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-import ujson
+import rapidjson as ujson
 import shutil
 
 from boto.s3.connection import S3Connection

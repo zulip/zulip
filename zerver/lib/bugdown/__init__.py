@@ -15,7 +15,7 @@ import html
 import platform
 import time
 import functools
-import ujson
+import rapidjson as ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 

@@ -12,7 +12,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
     RealmDomain, DomainNotAllowedForRealmError
 
-import ujson
+import rapidjson as ujson
 
 
 class RealmDomainTest(ZulipTestCase):

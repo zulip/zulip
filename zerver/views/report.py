@@ -21,7 +21,7 @@ from zerver.models import UserProfile
 import subprocess
 import os
 import logging
-import ujson
+import rapidjson as ujson
 
 js_source_map = None  # type: Optional[SourceMap]
 

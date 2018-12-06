@@ -9,7 +9,7 @@ from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
 import datetime
 from email.utils import parseaddr, formataddr
 import logging
-import ujson
+import rapidjson as ujson
 
 import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional

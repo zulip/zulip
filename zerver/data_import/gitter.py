@@ -5,7 +5,7 @@ import requests
 import logging
 import shutil
 import subprocess
-import ujson
+import rapidjson as ujson
 
 from django.conf import settings
 from django.forms.models import model_to_dict

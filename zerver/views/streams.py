@@ -35,7 +35,7 @@ from zerver.models import UserProfile, Stream, Realm, Subscription, \
     get_system_bot, get_active_user
 
 from collections import defaultdict
-import ujson
+import rapidjson as ujson
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL

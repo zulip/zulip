@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpResponse
 from typing import Any, Dict, List, Mapping
 from unittest import mock

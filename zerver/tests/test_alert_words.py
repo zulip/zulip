@@ -21,7 +21,7 @@ from zerver.models import (
     UserProfile,
 )
 
-import ujson
+import rapidjson as ujson
 
 class AlertWordTests(ZulipTestCase):
     interesting_alert_word_list = ['alert', 'multi-word word', u'☃']

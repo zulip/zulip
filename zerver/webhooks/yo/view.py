@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from typing import Optional
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view

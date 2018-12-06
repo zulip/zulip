@@ -2,7 +2,7 @@
 from django.http import HttpResponse, HttpRequest
 from typing import List
 
-import ujson
+import rapidjson as ujson
 
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import do_mute_topic, do_unmute_topic

@@ -72,7 +72,7 @@ from zerver.context_processors import common_context
 from collections import defaultdict
 import re
 import smtplib
-import ujson
+import rapidjson as ujson
 
 from typing import Any, Dict, List, Optional, Set
 

@@ -1,7 +1,7 @@
 
 import filecmp
 import os
-import ujson
+import rapidjson as ujson
 
 from django.core import mail
 from django.http import HttpResponse

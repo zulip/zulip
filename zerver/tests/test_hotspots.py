@@ -8,7 +8,7 @@ from zerver.views.hotspots import mark_hotspot_as_read
 
 from django.conf import settings
 from typing import Any, Dict
-import ujson
+import rapidjson as ujson
 import mock
 
 # Splitting this out, since I imagine this will eventually have most of the

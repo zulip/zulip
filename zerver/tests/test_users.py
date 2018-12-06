@@ -50,7 +50,7 @@ import mock
 import os
 import sys
 import time
-import ujson
+import rapidjson as ujson
 
 K = TypeVar('K')
 V = TypeVar('V')

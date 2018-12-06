@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import ujson
+import rapidjson as ujson
 
 from collections import defaultdict
 from django.conf import settings

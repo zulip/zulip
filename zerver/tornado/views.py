@@ -2,7 +2,7 @@
 import time
 from typing import Iterable, List, Optional, Sequence, Union
 
-import ujson
+import rapidjson as ujson
 from django.core.handlers.base import BaseHandler
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

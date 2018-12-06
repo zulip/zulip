@@ -5,7 +5,7 @@ import random
 from typing import Any, Callable, Dict, Iterable, List, \
     Mapping, Optional, Sequence, Set, Tuple
 
-import ujson
+import rapidjson as ujson
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser

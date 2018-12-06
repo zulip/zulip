@@ -10,7 +10,7 @@ from collections import deque
 import os
 import time
 import logging
-import ujson
+import rapidjson as ujson
 import requests
 import atexit
 import sys

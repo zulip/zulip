@@ -40,7 +40,7 @@ from zerver.management.commands import email_mirror
 from email.mime.text import MIMEText
 
 import re
-import ujson
+import rapidjson as ujson
 import mock
 import os
 import sys

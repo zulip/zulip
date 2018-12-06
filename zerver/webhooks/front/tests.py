@@ -1,4 +1,4 @@
-import ujson
+import rapidjson as ujson
 
 from zerver.lib.test_classes import WebhookTestCase
 

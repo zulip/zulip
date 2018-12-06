@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
-import ujson
+import rapidjson as ujson
 from django.apps import apps
 from django.db import models
 from django.db.models import Sum

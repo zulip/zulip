@@ -11,7 +11,7 @@ from zerver.models import (
     get_service_profile, get_user, get_realm
 )
 
-import ujson
+import rapidjson as ujson
 
 class TestEmbeddedBotMessaging(ZulipTestCase):
     def setUp(self) -> None:

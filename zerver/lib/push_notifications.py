@@ -19,7 +19,7 @@ from django.utils.translation import ugettext as _
 from gcm import GCM
 import requests
 import urllib
-import ujson
+import rapidjson as ujson
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url

@@ -2,7 +2,7 @@
 
 import importlib
 import os
-import ujson
+import rapidjson as ujson
 
 import django.urls.resolvers
 from django.test import TestCase, Client

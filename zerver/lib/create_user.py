@@ -7,7 +7,7 @@ from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
 
 import base64
-import ujson
+import rapidjson as ujson
 import os
 import string
 

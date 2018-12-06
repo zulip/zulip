@@ -9,7 +9,7 @@ It requires implementation of 'get_app' method to initialize tornado application
 
 import time
 
-import ujson
+import rapidjson as ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.db import close_old_connections

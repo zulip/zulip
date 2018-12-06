@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import mock
-import ujson
+import rapidjson as ujson
 from typing import Any
 from requests.exceptions import ConnectionError
 from django.test import override_settings

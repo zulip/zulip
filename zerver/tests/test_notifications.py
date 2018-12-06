@@ -2,7 +2,7 @@
 import os
 import random
 import re
-import ujson
+import rapidjson as ujson
 import ldap
 
 from django.conf import settings

@@ -8,7 +8,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
-import ujson
+import rapidjson as ujson
 
 ZABBIX_TOPIC_TEMPLATE = '{hostname}'
 ZABBIX_MESSAGE_TEMPLATE = '{status} ({severity}) alert on [{hostname}]({link}).\n{trigger}\n{item}'

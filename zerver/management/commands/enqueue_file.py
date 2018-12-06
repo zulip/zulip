@@ -3,7 +3,7 @@ import sys
 from argparse import ArgumentParser
 from typing import IO, Any
 
-import ujson
+import rapidjson as ujson
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish

@@ -22,7 +22,7 @@ from zerver.models import (
     Recipient,
 )
 
-import ujson
+import rapidjson as ujson
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: 'outgoing_webhooks',

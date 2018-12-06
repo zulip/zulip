@@ -17,7 +17,7 @@ except ImportError:
 import sockjs.tornado
 from sockjs.tornado.session import ConnectionInfo
 import tornado.ioloop
-import ujson
+import rapidjson as ujson
 import logging
 import time
 

@@ -10,7 +10,7 @@ from django.utils.timezone import is_naive as timezone_is_naive
 import glob
 import logging
 import os
-import ujson
+import rapidjson as ujson
 import subprocess
 import tempfile
 import shutil

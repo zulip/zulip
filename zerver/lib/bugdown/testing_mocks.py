@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import Any, Dict, Optional
-import ujson
+import rapidjson as ujson
 
 
 NORMAL_TWEET = """{

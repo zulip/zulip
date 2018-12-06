@@ -13,7 +13,7 @@ from zerver.models import UserProfile
 import base64
 import logging
 import subprocess
-import ujson
+import rapidjson as ujson
 
 
 # Hack for mit.edu users whose Kerberos usernames don't match what they zephyr

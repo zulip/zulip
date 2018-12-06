@@ -1,7 +1,7 @@
 from typing import Callable, Union, Optional, Dict, Any, List, Tuple
 
 import os
-import ujson
+import rapidjson as ujson
 
 from django.http import HttpRequest, HttpResponse
 

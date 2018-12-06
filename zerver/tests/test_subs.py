@@ -84,7 +84,7 @@ from django.http import HttpResponse
 from datetime import timedelta
 import mock
 import random
-import ujson
+import rapidjson as ujson
 import urllib
 
 class TestMiscStuff(ZulipTestCase):

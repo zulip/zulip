@@ -140,7 +140,7 @@ from zerver.tornado.views import get_events
 from collections import OrderedDict
 import mock
 import time
-import ujson
+import rapidjson as ujson
 
 
 class LogEventsTest(ZulipTestCase):

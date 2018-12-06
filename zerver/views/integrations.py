@@ -8,7 +8,7 @@ from django.shortcuts import render
 
 import os
 import re
-import ujson
+import rapidjson as ujson
 
 from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \

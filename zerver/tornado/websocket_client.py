@@ -1,6 +1,6 @@
 import logging
 import requests
-import ujson
+import rapidjson as ujson
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, HASH_SESSION_KEY

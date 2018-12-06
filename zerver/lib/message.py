@@ -1,6 +1,6 @@
 
 import datetime
-import ujson
+import rapidjson as ujson
 import zlib
 
 from django.utils.translation import ugettext as _

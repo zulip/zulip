@@ -36,7 +36,7 @@ from lxml.cssselect import CSSSelector
 import lxml.html
 import re
 import subprocess
-import ujson
+import rapidjson as ujson
 from collections import defaultdict
 import pytz
 

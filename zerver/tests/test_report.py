@@ -9,7 +9,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.utils import statsd
 
 import mock
-import ujson
+import rapidjson as ujson
 import os
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:

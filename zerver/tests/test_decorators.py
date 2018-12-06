@@ -50,7 +50,7 @@ from zerver.lib.validator import (
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm, Recipient
 
-import ujson
+import rapidjson as ujson
 
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self) -> None:

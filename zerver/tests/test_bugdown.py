@@ -48,7 +48,7 @@ from zerver.models import (
 import copy
 import mock
 import os
-import ujson
+import rapidjson as ujson
 
 import urllib
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple

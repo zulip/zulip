@@ -4,7 +4,7 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-import ujson
+import rapidjson as ujson
 from defusedxml.ElementTree import fromstring as xml_fromstring
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

@@ -6,7 +6,7 @@
 # Because request.pyi exists, the type annotations in this file are
 # mostly not processed by mypy.
 from functools import wraps
-import ujson
+import rapidjson as ujson
 
 from django.utils.translation import ugettext as _
 

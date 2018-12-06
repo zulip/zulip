@@ -1,5 +1,5 @@
 import itertools
-import ujson
+import rapidjson as ujson
 import random
 from typing import List, Dict, Any, Optional
 

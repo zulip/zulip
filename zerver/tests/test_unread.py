@@ -32,7 +32,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.topic_mutes import add_topic_mute
 
 import mock
-import ujson
+import rapidjson as ujson
 
 class PointerTest(ZulipTestCase):
 

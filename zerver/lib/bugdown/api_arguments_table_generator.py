@@ -1,6 +1,6 @@
 import re
 import os
-import ujson
+import rapidjson as ujson
 
 from django.utils.html import escape as escape_html
 from markdown.extensions import Extension

@@ -58,7 +58,7 @@ import os
 import re
 import sys
 import time
-import ujson
+import rapidjson as ujson
 import unittest
 import urllib
 from moto import mock_s3_deprecated

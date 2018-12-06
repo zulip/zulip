@@ -1,5 +1,5 @@
 import os
-import ujson
+import rapidjson as ujson
 import hashlib
 import sys
 import argparse

@@ -25,7 +25,7 @@ from zerver.data_import.gitter import (
     get_usermentions,
 )
 
-import ujson
+import rapidjson as ujson
 import json
 import logging
 import shutil

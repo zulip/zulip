@@ -58,7 +58,7 @@ from sqlalchemy.sql import select, join, column, literal_column, literal, and_, 
 
 from dateutil.parser import parse as dateparser
 import re
-import ujson
+import rapidjson as ujson
 import datetime
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000

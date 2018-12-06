@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
-import ujson
+import rapidjson as ujson
 
 class CustomProfileFieldTest(ZulipTestCase):
     def setUp(self) -> None:

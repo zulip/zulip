@@ -1,7 +1,7 @@
 # Webhooks pfor external integrations.
 from typing import Any, Dict
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 

@@ -4,7 +4,7 @@ from django.conf import settings
 
 import os
 import shutil
-import ujson
+import rapidjson as ujson
 import io
 from PIL import Image
 

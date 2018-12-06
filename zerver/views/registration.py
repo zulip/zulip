@@ -47,7 +47,7 @@ from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyE
 import logging
 import requests
 import smtplib
-import ujson
+import rapidjson as ujson
 
 import urllib
 

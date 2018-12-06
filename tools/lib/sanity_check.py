@@ -6,7 +6,7 @@ def check_venv(filename):
     # type: (str) -> None
     try:
         import django
-        import ujson
+        import rapidjson as ujson
         import zulip
     except ImportError:
         print("You need to run %s inside a Zulip dev environment." % (filename,))

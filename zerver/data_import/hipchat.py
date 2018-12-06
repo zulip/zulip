@@ -6,7 +6,7 @@ import os
 import re
 import shutil
 import subprocess
-import ujson
+import rapidjson as ujson
 
 from typing import Any, Callable, Dict, List, Optional, Set
 

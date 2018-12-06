@@ -1,6 +1,6 @@
 
 from django.http import HttpResponse, HttpResponseNotAllowed
-import ujson
+import rapidjson as ujson
 
 from typing import Optional, Any, Dict, List
 from zerver.lib.exceptions import JsonableError

@@ -12,7 +12,7 @@ from zerver.lib.users import get_api_key
 
 from io import StringIO
 from boto.s3.connection import S3Connection
-import ujson
+import rapidjson as ujson
 import urllib
 import base64
 

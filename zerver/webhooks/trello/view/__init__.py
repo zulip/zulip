@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-import ujson
+import rapidjson as ujson
 from typing import Mapping, Any, Tuple, Optional
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse

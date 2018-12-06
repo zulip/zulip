@@ -3,7 +3,7 @@ import json
 import os
 import polib
 import re
-import ujson
+import rapidjson as ujson
 from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List
 

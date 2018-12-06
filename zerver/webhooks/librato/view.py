@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _

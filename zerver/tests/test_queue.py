@@ -1,7 +1,7 @@
 import mock
 import os
 from typing import Any, Dict
-import ujson
+import rapidjson as ujson
 
 from django.test import override_settings
 from pika.exceptions import ConnectionClosed, AMQPConnectionError

@@ -1,6 +1,6 @@
 
 import datetime
-import ujson
+import rapidjson as ujson
 import re
 import mock
 from email.utils import parseaddr

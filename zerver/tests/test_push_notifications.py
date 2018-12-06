@@ -11,7 +11,7 @@ import base64
 import gcm
 import json
 import os
-import ujson
+import rapidjson as ujson
 import uuid
 
 from django.test import TestCase, override_settings

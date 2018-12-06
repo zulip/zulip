@@ -48,7 +48,7 @@ from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQ
 
 import os
 import sys
-import ujson
+import rapidjson as ujson
 from collections import defaultdict
 import email
 import time

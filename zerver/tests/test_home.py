@@ -2,7 +2,7 @@
 import datetime
 import os
 import re
-import ujson
+import rapidjson as ujson
 
 from django.conf import settings
 from django.http import HttpResponse

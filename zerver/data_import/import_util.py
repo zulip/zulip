@@ -4,7 +4,7 @@ import shutil
 import logging
 import os
 import traceback
-import ujson
+import rapidjson as ujson
 
 from typing import List, Dict, Any, Optional, Set, Callable, Iterable, Tuple, TypeVar
 from django.forms.models import model_to_dict

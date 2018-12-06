@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-import ujson
+import rapidjson as ujson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 

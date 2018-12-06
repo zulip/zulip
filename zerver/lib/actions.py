@@ -142,7 +142,7 @@ from zerver.lib.types import ProfileFieldData
 
 from analytics.models import StreamCount
 
-import ujson
+import rapidjson as ujson
 import time
 import re
 import datetime

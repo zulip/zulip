@@ -1,4 +1,4 @@
-import ujson
+import rapidjson as ujson
 
 from typing import Dict, Any
 

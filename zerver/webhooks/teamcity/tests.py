@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import ujson
+import rapidjson as ujson
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.send_email import FromAddress

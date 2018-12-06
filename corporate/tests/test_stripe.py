@@ -6,7 +6,7 @@ import os
 import re
 import sys
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Tuple, cast
-import ujson
+import rapidjson as ujson
 import json
 
 from django.core import signing

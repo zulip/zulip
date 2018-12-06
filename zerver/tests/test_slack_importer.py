@@ -51,7 +51,7 @@ from zerver.models import (
 )
 from zerver.lib import mdiff
 
-import ujson
+import rapidjson as ujson
 import json
 import logging
 import shutil

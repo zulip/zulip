@@ -8,7 +8,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
-import ujson
+import rapidjson as ujson
 import operator
 
 ANSIBLETOWER_DEFAULT_MESSAGE_TEMPLATE = "{friendly_name}: [#{id} {name}]({url}) {status}\n"

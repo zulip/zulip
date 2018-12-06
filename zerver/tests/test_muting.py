@@ -1,5 +1,5 @@
 
-import ujson
+import rapidjson as ujson
 
 from django.http import HttpResponse
 from mock import patch

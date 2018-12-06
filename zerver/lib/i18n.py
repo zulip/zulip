@@ -10,7 +10,7 @@ from itertools import zip_longest
 from typing import Any, List, Dict, Optional
 
 import os
-import ujson
+import rapidjson as ujson
 
 def with_language(string: str, language: str) -> str:
     """

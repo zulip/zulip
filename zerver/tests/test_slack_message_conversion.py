@@ -10,7 +10,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib import mdiff
-import ujson
+import rapidjson as ujson
 
 import os
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple

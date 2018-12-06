@@ -3,7 +3,7 @@ from functools import wraps
 import logging
 import os
 from typing import Any, Callable, Dict, Optional, TypeVar, Tuple
-import ujson
+import rapidjson as ujson
 
 from django.conf import settings
 from django.db import transaction

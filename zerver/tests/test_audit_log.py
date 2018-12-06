@@ -13,7 +13,7 @@ from analytics.models import StreamCount
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
 
-import ujson
+import rapidjson as ujson
 
 class TestRealmAuditLog(ZulipTestCase):
     def test_user_activation(self) -> None:

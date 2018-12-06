@@ -1,7 +1,7 @@
 
 import os
 import re
-import ujson
+import rapidjson as ujson
 
 from django.conf import settings
 from django.utils.translation import ugettext as _

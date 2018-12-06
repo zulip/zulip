@@ -16,7 +16,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
-from ujson import loads
+from rapidjson import loads
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
