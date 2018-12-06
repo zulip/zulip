@@ -57,7 +57,7 @@ exports.update_person = function update(person) {
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.is_admin = person.is_admin;
-            admin.show_or_hide_menu_item();
+            gear_menu.update_org_settings_menu_item();
             admin_sections.maybe_disable_widgets();
         }
     }

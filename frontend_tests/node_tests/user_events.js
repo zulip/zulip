@@ -12,8 +12,8 @@ set_global('settings_users', {
 set_global('admin_sections', {
     maybe_disable_widgets: function () {},
 });
-set_global('admin', {
-    show_or_hide_menu_item: function () {},
+set_global('gear_menu', {
+    update_org_settings_menu_item: function () {},
 });
 set_global('page_params', {
     is_admin: true,

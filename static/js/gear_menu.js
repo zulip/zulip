@@ -78,8 +78,17 @@ the selector and then calls info_overlay.show.
 // when we switch back.)
 var scroll_positions = {};
 
+exports.update_org_settings_menu_item = function () {
+    var item = $('.admin-menu-item').expectOne();
+    if (page_params.is_admin) {
+        item.find("span").text(i18n.t("Manage organization"));
+    } else {
+        item.find("span").text(i18n.t("Organization settings"));
+    }
+};
+
 exports.initialize = function () {
-    admin.show_or_hide_menu_item();
+    exports.update_org_settings_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
