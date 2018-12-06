@@ -11,7 +11,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
-from zerver.models import ScheduledMessage, Message, get_user
+from zerver.models import ScheduledMessage, Message, get_user_by_delivery_email
 from zerver.lib.actions import do_send_messages
 from zerver.lib.addressee import Addressee
 
@@ -44,7 +44,7 @@ Usage: ./manage.py deliver_scheduled_messages
         if delivery_type == ScheduledMessage.SEND_LATER:
             message.sender = original_sender
         elif delivery_type == ScheduledMessage.REMIND:
-            message.sender = get_user(settings.REMINDER_BOT, original_sender.realm)
+            message.sender = get_user_by_delivery_email(settings.REMINDER_BOT, original_sender.realm)
 
         return {'message': message, 'stream': scheduled_message.stream,
                 'realm': scheduled_message.realm}

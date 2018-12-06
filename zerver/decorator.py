@@ -235,7 +235,7 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     process_client(request, user_profile, client_name=client_name)
 
     return user_profile
@@ -257,7 +257,7 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
         logging.warning("User %s (%s) attempted to access API on wrong subdomain (%s)" % (
-            user_profile.email, user_profile.realm.subdomain, get_subdomain(request)))
+            user_profile.delivery_email, user_profile.realm.subdomain, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
 
 def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[str]=None) -> UserProfile:
@@ -265,7 +265,7 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("Invalid API key"))
-    if email is not None and email.lower() != user_profile.email.lower():
+    if email is not None and email.lower() != user_profile.delivery_email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
@@ -311,7 +311,7 @@ body:
 
 {body}
     """.format(
-        email=user_profile.email,
+        email=user_profile.delivery_email,
         realm=user_profile.realm.string_id,
         client_name=request.client.name,
         body=payload,
@@ -426,7 +426,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Login with two factor authentication as well.
@@ -442,7 +442,7 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
 def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        request._email = request.user.email
+        request._email = request.user.delivery_email
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
@@ -660,7 +660,7 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged

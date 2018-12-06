@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
-from zerver.models import get_realm, get_user
+from zerver.models import get_realm, get_user_by_delivery_email
 from zerver.lib.notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
 from zproject.email_backends import (
@@ -94,7 +94,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Email change successful
     key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest('id').confirmation_key
     url = confirmation_url(key, realm.host, Confirmation.EMAIL_CHANGE)
-    user_profile = get_user(registered_email, realm)
+    user_profile = get_user_by_delivery_email(registered_email, realm)
     result = client.get(url)
     assert result.status_code == 200
 
@@ -106,6 +106,6 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     enqueue_welcome_emails(user_profile)
 
     # Follow up day1 day2 emails for admin user
-    enqueue_welcome_emails(get_user("iago@zulip.com", realm), realm_creation=True)
+    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
 
     return redirect(email_page)

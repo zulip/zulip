@@ -15,7 +15,8 @@ from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool
-from zerver.models import UserActivity, UserPresence, UserProfile, get_active_user
+from zerver.models import UserActivity, UserPresence, UserProfile, \
+    get_active_user_by_delivery_email
 
 def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
     return {'presences': get_status_dict(requesting_user_profile),
@@ -24,7 +25,7 @@ def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
     try:
-        target = get_active_user(email, user_profile.realm)
+        target = get_active_user_by_delivery_email(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:

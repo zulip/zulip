@@ -45,7 +45,7 @@ from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client,
+    get_client, get_user
 )
 
 from zerver.lib.actions import (
@@ -53,7 +53,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user, set_default_streams, check_stream_name, do_get_streams,
+    set_default_streams, check_stream_name, do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,

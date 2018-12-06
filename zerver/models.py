@@ -1784,15 +1784,31 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     return UserProfile.objects.select_related().get(api_key=api_key)
 
+def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
+    # Fetches users by delivery_email for use in
+    # authentication/registration contexts. Do not use for user-facing
+    # views (e.g. Zulip API endpoints); for that, you want get_user.
+    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(), realm=realm)
+
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
+    # Fetches the user by its visible-to-other users username (in the
+    # `email` field).  For use in API contexts; do not use in
+    # authentication/registration contexts; for that, you need to use
+    # get_user_by_delivery_email.
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+
+def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
+    user_profile = get_user_by_delivery_email(email, realm)
+    if not user_profile.is_active:
+        raise UserProfile.DoesNotExist()
+    return user_profile
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     user_profile = get_user(email, realm)
@@ -1858,7 +1874,7 @@ def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
         return None
 
     try:
-        return get_user(email, realm)
+        return get_user_by_delivery_email(email, realm)
     except UserProfile.DoesNotExist:
         return None
 

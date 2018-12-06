@@ -14,7 +14,7 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user, get_default_stream_groups, DisposableEmailError, \
+    get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
     DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
@@ -219,7 +219,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if not realm_creation:
             try:
-                existing_user_profile = get_user(email, realm)  # type: Optional[UserProfile]
+                existing_user_profile = get_user_by_delivery_email(email, realm)  # type: Optional[UserProfile]
             except UserProfile.DoesNotExist:
                 existing_user_profile = None
         else:

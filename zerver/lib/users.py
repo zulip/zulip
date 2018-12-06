@@ -185,7 +185,7 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
 def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
     if settings.PRODUCTION:  # nocoverage
         return []
-    profiles = UserProfile.objects.select_related('realm').filter(email__iexact=email.strip(),
+    profiles = UserProfile.objects.select_related('realm').filter(delivery_email__iexact=email.strip(),
                                                                   is_active=True,
                                                                   is_bot=False,
                                                                   realm__deactivated=False)
