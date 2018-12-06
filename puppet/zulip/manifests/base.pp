@@ -1,5 +1,4 @@
 class zulip::base {
-  include apt
   $base_packages = [
     # Accurate time is essential
     'ntp',
