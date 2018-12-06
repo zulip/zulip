@@ -147,6 +147,29 @@ function do_hashchange_overlay(old_hash) {
         if (base === old_base) {
             if (base === 'streams') {
                 subs.change_state(section);
+                return;
+            }
+
+            if (base === 'settings') {
+                if (!section) {
+                    // We may be on a really old browser or somebody
+                    // hand-typed a hash.
+                    blueslip.warn('missing section for settings');
+                    section = 'your-account';
+                }
+                settings_panel_menu.normal_settings.activate_section(section);
+                return;
+            }
+
+            if (base === 'organization') {
+                if (!section) {
+                    // We may be on a really old browser or somebody
+                    // hand-typed a hash.
+                    blueslip.warn('missing section for organization');
+                    section = 'organization-profile';
+                }
+                settings_panel_menu.org_settings.activate_section(section);
+                return;
             }
 
             // TODO: handle other cases like internal settings
