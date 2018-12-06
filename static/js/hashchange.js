@@ -124,8 +124,6 @@ function do_hashchange_normal(from_reload) {
         info_overlay.show("search-operators");
         break;
     case "#drafts":
-        ui_util.change_tab_to("#drafts");
-        break;
     case "#invite":
     case "#streams":
     case "#organization":
