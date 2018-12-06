@@ -1,8 +1,14 @@
 #!/bin/bash
 set -x
+set -e
 
 SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
 STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+
+# Ensure that the sources file exists
+touch "$SOURCES_FILE"
+
+# Hash it to check if the sources file is changed by the script later.
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
 apt-get install -y lsb-release apt-transport-https gnupg
@@ -13,7 +19,7 @@ release=$(lsb_release -sc)
 if [ "$release" = "trusty" ] || [ "$release" = "xenial" ] || [ "$release" = "bionic" ]; then
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
     apt-key add "$SCRIPTS_PATH"/setup/zulip-ppa.asc
-    cat >/etc/apt/sources.list.d/zulip.list <<EOF
+    cat >$SOURCES_FILE <<EOF
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
@@ -23,7 +29,7 @@ elif [ "$release" = "stretch" ]; then
     apt-get install -y debian-archive-keyring
     apt-key add "$SCRIPTS_PATH"/setup/packagecloud.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
-    cat >/etc/apt/sources.list.d/zulip.list <<EOF
+    cat >$SOURCES_FILE <<EOF
 deb https://packagecloud.io/zulip/server/debian/ stretch main
 deb https://packages.groonga.org/debian/ stretch main
 deb-src https://packages.groonga.org/debian/ stretch main
