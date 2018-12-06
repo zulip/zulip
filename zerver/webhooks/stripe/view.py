@@ -13,11 +13,22 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
+class NotImplementedEventType(Exception):
+    pass
+
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: str=REQ(default='test')) -> HttpResponse:
+    topic, body = topic_and_body(payload)
+    try:
+        check_send_webhook_message(request, user_profile, topic, body)
+    except NotImplementedEventType:  # nocoverage
+        pass
+    return json_success()
+
+def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     event_type = payload["type"]  # invoice.created, customer.subscription.created, etc
     if len(event_type.split('.')) == 3:
         category, resource, event = event_type.split('.')
@@ -46,13 +57,13 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
             body = ''
         else:
             # Part of Stripe Connect
-            return json_success()
+            raise NotImplementedEventType()
     if category == 'application_fee':  # nocoverage
         # Part of Stripe Connect
-        return json_success()
+        raise NotImplementedEventType()
     if category == 'balance':  # nocoverage
         # Not that interesting to most businesses, I think
-        return json_success()
+        raise NotImplementedEventType()
     if category == 'charge':
         if resource == 'charge':
             if not topic:  # only in legacy fixtures
@@ -73,10 +84,10 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 charge=linkified_id(object_['charge'], lower=True), amount=object_['amount'])
     if category == 'checkout_beta':  # nocoverage
         # Not sure what this is
-        return json_success()
+        raise NotImplementedEventType()
     if category == 'coupon':  # nocoverage
         # Not something that likely happens programmatically
-        return json_success()
+        raise NotImplementedEventType()
     if category == 'customer':
         if resource == 'customer':
             # Running into the 60 character topic limit.
@@ -134,17 +145,17 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
             body += ' for {amount}'.format(amount=amount_string(object_['amount'], object_['currency']))
     if category.startswith('issuing'):  # nocoverage
         # Not implemented
-        return json_success()
+        raise NotImplementedEventType()
     if category.startswith('order'):  # nocoverage
         # Not implemented
-        return json_success()
+        raise NotImplementedEventType()
     if category in ['payment_intent', 'payout', 'plan', 'product', 'recipient',
                     'reporting', 'review', 'sigma', 'sku', 'source', 'subscription_schedule',
                     'topup', 'transfer']:  # nocoverage
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
-        return json_success()
+        raise NotImplementedEventType()
 
     if body is None:
         raise UnexpectedWebhookEventType('Stripe', event_type)
@@ -155,9 +166,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         previous_attributes = {}
     body += update_string(object_, previous_attributes)
     body = body.strip()
-
-    check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return (topic, body)
 
 def amount_string(amount: int, currency: str) -> str:
     zero_decimal_currencies = ["bif", "djf", "jpy", "krw", "pyg", "vnd", "xaf",
