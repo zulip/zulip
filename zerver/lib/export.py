@@ -1289,8 +1289,6 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     if not settings.TEST_SUITE:
         assert threads >= 1
 
-    assert os.path.exists("./manage.py")
-
     realm_config = get_realm_config()
 
     create_soft_link(source=output_dir, in_progress=True)
