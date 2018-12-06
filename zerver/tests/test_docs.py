@@ -171,8 +171,10 @@ class DocPageTest(ZulipTestCase):
 class HelpTest(ZulipTestCase):
     def test_help_settings_links(self) -> None:
         result = self.client_get('/help/change-the-time-format')
-        self.assertIn('Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
+        self.assertIn('Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content))
+        # Check that the sidebar was rendered properly.
+        self.assertIn('Getting started with Zulip', str(result.content))
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get('/help/change-the-time-format', subdomain="")
