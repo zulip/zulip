@@ -389,7 +389,7 @@ exports.initialize = function () {
 
     $(".brand").on('click', function (e) {
         if (overlays.is_active()) {
-            ui_util.change_tab_to('#home');
+            overlays.close_active();
         } else {
             narrow.restore_home_state();
         }
