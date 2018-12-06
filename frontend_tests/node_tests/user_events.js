@@ -9,6 +9,9 @@ set_global('activity', {
 set_global('settings_users', {
     update_user_data: function () {},
 });
+set_global('admin_sections', {
+    maybe_disable_widgets: function () {},
+});
 set_global('admin', {
     show_or_hide_menu_item: function () {},
 });

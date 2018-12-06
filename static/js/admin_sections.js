@@ -4,6 +4,32 @@ var exports = {};
 
 var is_loaded = new Dict(); // section -> bool
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    // Ideally we'd do this on a per-page basis, but there
+    // are some tactical advantages of having all this code
+    // in the same place.
+
+    $(".organization-box [data-name='organization-profile']")
+        .find("input, textarea, button, select").attr("disabled", true);
+    $(".organization-box [data-name='organization-settings']")
+        .find("input, textarea, button, select").attr("disabled", true);
+    $(".organization-box [data-name='organization-permissions']")
+        .find("input, textarea, button, select").attr("disabled", true);
+    $(".organization-box [data-name='auth-methods']")
+        .find("input, button, select, checked").attr("disabled", true);
+    $(".organization-box [data-name='default-streams-list']")
+        .find("input:not(.search), button, select").attr("disabled", true);
+    $(".organization-box [data-name='filter-settings']")
+        .find("input, button, select").attr("disabled", true);
+    $(".organization-box [data-name='profile-field-settings']")
+        .find("input, button, select").attr("disabled", true);
+    $(".control-label-disabled").addClass('enabled');
+};
+
 exports.load_admin_section = function (name) {
     var section;
 
@@ -77,6 +103,8 @@ exports.load_admin_section = function (name) {
         blueslip.error('programming error for section ' + section);
         return;
     }
+
+    exports.maybe_disable_widgets();
 
     is_loaded.set(section, true);
 };

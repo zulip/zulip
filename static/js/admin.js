@@ -8,21 +8,6 @@ exports.show_or_hide_menu_item = function () {
         item.find("span").text(i18n.t("Manage organization"));
     } else {
         item.find("span").text(i18n.t("Organization settings"));
-        $(".organization-box [data-name='organization-profile']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='organization-settings']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='organization-permissions']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='auth-methods']")
-            .find("input, button, select, checked").attr("disabled", true);
-        $(".organization-box [data-name='default-streams-list']")
-            .find("input:not(.search), button, select").attr("disabled", true);
-        $(".organization-box [data-name='filter-settings']")
-            .find("input, button, select").attr("disabled", true);
-        $(".organization-box [data-name='profile-field-settings']")
-            .find("input, button, select").attr("disabled", true);
-        $(".control-label-disabled").addClass('enabled');
     }
 };
 
