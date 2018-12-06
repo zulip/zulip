@@ -1,8 +1,6 @@
 <div id="emoji-settings" data-name="emoji-settings" class="settings-section {{#if can_add_emojis}}can-edit{{/if}}">
     <div class="emoji-settings-tip-container">
-        {{#unless is_guest}}
         {{partial "emoji-settings-tip"}}
-        {{/unless}}
     </div>
     <form class="form-horizontal admin-emoji-form {{#unless can_add_emojis}}hide{{/unless}}">
         <div class="add-new-emoji-box grey-box">
