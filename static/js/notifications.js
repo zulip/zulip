@@ -514,19 +514,28 @@ function get_message_header(message) {
 }
 
 exports.get_echo_not_in_view_reason = function () {
+    // To check position of local_echo before server response
+    // Check the offset of last message in the focused_table
+    // It is a fine approximation as we get result locally
     var focused_table_rec_rows = $('.focused_table .recipient_row');
-    // If the message is first in its narrow
+
     if (focused_table_rec_rows.length === 0) {
+        // If the message is first in its narrow, there is no last message
+        // Exit immediately
         return;
     }
+
+    // Offset of the last message in the focused_table and compose box
     var echo = $(focused_table_rec_rows.get(-1)).children('.message_row');
-    // Offset of the last message in the focused_table
     var echo_offset_y = $(echo.get(-1)).offset().top;
     var compose_box_y = $('#compose-container').offset().top;
-    // Check if it lies between top and above the compose box
+
     if (echo_offset_y > 0 && echo_offset_y < compose_box_y) {
+        // If it lies between top and above the compose box
+        // Message can be said to be visible
         return;
     }
+
     return "Sent! Scroll down to view your message.";
 };
 
