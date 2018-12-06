@@ -131,6 +131,7 @@ class HomeTest(ZulipTestCase):
             "realm_digest_emails_enabled",
             "realm_disallow_disposable_email_addresses",
             "realm_domains",
+            "realm_email_address_visibility",
             "realm_email_auth_enabled",
             "realm_email_changes_disabled",
             "realm_emails_restricted_to_domains",

@@ -59,9 +59,10 @@ def update_realm(
         message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        email_address_visibility: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[str]=REQ(validator=check_string, default=None),
-        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None)
+        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -81,9 +82,13 @@ def update_realm(
         except ValidationError as e:
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
 
-    # Additional validation of permissions values to add new bot
+    # Additional validation of enum-style values
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:
         return json_error(_("Invalid bot creation policy"))
+    if email_address_visibility is not None and \
+            email_address_visibility not in Realm.EMAIL_ADDRESS_VISIBILITY_TYPES:
+        return json_error(_("Invalid email address visibility policy"))
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
