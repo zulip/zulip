@@ -77,28 +77,14 @@ exports.build_page = function () {
     admin_sections.reset_sections();
 };
 
-exports.setup_page = function () {
+
+exports.launch = function (section) {
+    settings.build_page();
     exports.build_page();
 
-    var tab = (function () {
-        var tab = false;
-        var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(organization)/.test(hash_sequence[0])) {
-            tab = hash_sequence[1];
-            return tab || settings_panel_menu.org_settings.current_tab();
-        }
-        return tab;
-    }());
-
-    if (tab) {
-        exports.launch_page(tab);
-        settings_toggle.highlight_toggle('organization');
-    }
-};
-
-exports.launch_page = function (section) {
     overlays.open_settings();
     settings_panel_menu.org_settings.activate_section(section);
+    settings_toggle.highlight_toggle('organization');
 };
 
 return exports;

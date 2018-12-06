@@ -140,28 +140,13 @@ exports.build_page = function () {
     settings_sections.reset_sections();
 };
 
-exports.setup_page = function () {
+exports.launch = function (section) {
     exports.build_page();
+    admin.build_page();
 
-    var tab = (function () {
-        var tab = false;
-        var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(settings)/.test(hash_sequence[0])) {
-            tab = hash_sequence[1];
-            return tab || settings_panel_menu.normal_settings.current_tab();
-        }
-        return tab;
-    }());
-
-    if (tab) {
-        exports.launch_page(tab);
-        settings_toggle.highlight_toggle('settings');
-    }
-};
-
-exports.launch_page = function (section) {
     overlays.open_settings();
     settings_panel_menu.normal_settings.activate_section(section);
+    settings_toggle.highlight_toggle('settings');
 };
 
 exports.set_settings_header = function (key) {
