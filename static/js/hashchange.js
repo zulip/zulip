@@ -171,13 +171,23 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "streams") {
         subs.launch(section);
-    } else if (base === "drafts") {
+        return;
+    }
+
+    if (base === "drafts") {
         drafts.launch();
-    } else if (/settings|organization/.test(base)) {
+        return;
+    }
+
+    if (/settings|organization/.test(base)) {
         settings.setup_page();
         admin.setup_page();
-    } else if (base === "invite") {
+        return;
+    }
+
+    if (base === "invite") {
         invite.launch();
+        return;
     }
 }
 
