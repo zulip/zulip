@@ -862,9 +862,9 @@ if DEBUG:
         'pipeline.finders.PipelineFinder',
     )
     if PIPELINE_ENABLED:
-        STATIC_ROOT = os.path.abspath('prod-static/serve')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'prod-static/serve'))
     else:
-        STATIC_ROOT = os.path.abspath('static/')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'static/'))
 else:
     STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
@@ -874,7 +874,7 @@ else:
     if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
-        STATIC_ROOT = os.path.abspath('prod-static/serve')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'prod-static/serve'))
 
 # If changing this, you need to also the hack modifications to this in
 # our compilemessages management command.
