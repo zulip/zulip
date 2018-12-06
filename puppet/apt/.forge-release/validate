@@ -1,6 +1,0 @@
-#!/bin/sh
-#
-# Perform GitHub publish
-MODULES_ROOT=`pwd`
-cd $(dirname $0)
-mvn -q -s settings.xml -Dforge.modules.root="$MODULES_ROOT" compile
