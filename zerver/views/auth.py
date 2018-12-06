@@ -31,6 +31,7 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
@@ -843,6 +844,10 @@ def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     auth_backends['zulip_version'] = ZULIP_VERSION
     return json_success(auth_backends)
 
+def check_server_incompatibility(request: HttpRequest) -> bool:
+    user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    return user_agent['name'] == "ZulipInvalid"
+
 @require_GET
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
@@ -850,6 +855,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
         push_notifications_enabled=push_notifications_enabled(),
+        is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)
     # IMPORTANT NOTE:

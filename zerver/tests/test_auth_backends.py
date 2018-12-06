@@ -1528,6 +1528,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ('password', check_bool),
                 ])),
                 ('email_auth_enabled', check_bool),
+                ('is_incompatible', check_bool),
                 ('require_email_format_usernames', check_bool),
                 ('realm_uri', check_string),
                 ('zulip_version', check_string),
@@ -1537,15 +1538,18 @@ class FetchAuthBackends(ZulipTestCase):
             ] + extra_fields)
             self.assert_on_error(checker("data", result.json()))
 
-        result = self.client_get("/api/v1/server_settings", subdomain="")
+        result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
+        check_result(result)
+
+        result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid")
+        self.assertTrue(result.json()["is_incompatible"])
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
+            result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-            result = self.client_get("/api/v1/server_settings", subdomain="")
-        check_result(result)
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-            result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+            result = self.client_get("/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT="")
         check_result(result, [
             ('realm_name', check_string),
             ('realm_description', check_string),

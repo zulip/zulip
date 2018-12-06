@@ -590,7 +590,8 @@ urls += [
 urls += [
     # This json format view used by the mobile apps lists which
     # authentication backends the server allows as well as details
-    # like the requested subdomains'd realm icon (if known).
+    # like the requested subdomains'd realm icon (if known) and
+    # server-specific compatibility.
     url(r'^api/v1/server_settings', zerver.views.auth.api_get_server_settings),
     # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends,
