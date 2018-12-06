@@ -551,8 +551,6 @@ exports.setup_page = function (callback) {
             filter_streams();
         });
 
-        $(document).trigger($.Event('subs_page_loaded.zulip'));
-
         if (callback) {
             callback();
         }
@@ -843,23 +841,6 @@ exports.initialize = function () {
         });
     }());
 
-};
-
-function focus_on_narrowed_stream() {
-    var stream_name = narrow_state.stream();
-    if (stream_name === undefined) {
-        return;
-    }
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        // This stream doesn't exist, so prep for creating it.
-        $("#create_stream_name").val(stream_name);
-    }
-}
-
-exports.show_and_focus_on_narrow = function () {
-    $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
-    ui_util.change_tab_to("#streams");
 };
 
 return exports;
