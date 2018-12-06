@@ -365,6 +365,23 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid bot creation policy')
 
+    def test_change_email_address_visibility(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        invalid_value = 4
+        req = dict(email_address_visibility = ujson.dumps(invalid_value))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid email address visibility policy')
+
+        realm = get_realm("zulip")
+        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        req = dict(email_address_visibility = ujson.dumps(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+
     def test_change_video_chat_provider(self) -> None:
         self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
         email = self.example_email("iago")
@@ -461,6 +478,8 @@ class RealmAPITest(ZulipTestCase):
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
             bot_creation_policy=[1, 2],
+            email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+                                      Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             video_chat_provider=[u'Jitsi', u'Hangouts'],
             google_hangouts_domain=[u'zulip.com', u'zulip.org'],
         )  # type: Dict[str, Any]

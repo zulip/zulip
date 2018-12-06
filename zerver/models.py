@@ -185,6 +185,20 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
 
+    # Who in the organization has access to users' actual email
+    # addresses.  Controls whether the UserProfile.email field is the
+    # same as UserProfile.delivery_email, or is instead garbage.
+    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
+    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
+    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    email_address_visibility = models.PositiveSmallIntegerField(default=EMAIL_ADDRESS_VISIBILITY_EVERYONE)  # type: int
+    EMAIL_ADDRESS_VISIBILITY_TYPES = [
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        # The MEMBERS level is not yet implemented on the backend.
+        ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+        EMAIL_ADDRESS_VISIBILITY_ADMINS,
+    ]
+
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
@@ -257,6 +271,7 @@ class Realm(models.Model):
         default_twenty_four_hour_time = bool,
         description=str,
         disallow_disposable_email_addresses=bool,
+        email_address_visibility=int,
         email_changes_disabled=bool,
         google_hangouts_domain=str,
         invite_required=bool,
@@ -656,7 +671,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         EMBEDDED_BOT,
     ]
 
-    # The display email address, used for Zulip APIs, etc.
+    # The display email address, used for Zulip APIs, etc.  This field
+    # should never be used for actually emailing someone because it
+    # will be invalid for various values of
+    # Realm.email_address_visibility; for that, see delivery_email.
     email = models.EmailField(blank=False, db_index=True)  # type: str
 
     # delivery_email is just used for sending emails.  In almost all

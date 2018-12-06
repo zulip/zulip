@@ -1410,6 +1410,7 @@ class EventsRegisterTest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[u'Google Hangouts', u'Jitsi'],
             google_hangouts_domain=[u"zulip.com", u"zulip.org"],
