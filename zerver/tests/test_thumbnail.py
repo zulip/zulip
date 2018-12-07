@@ -4,6 +4,7 @@ from django.conf import settings
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     use_s3_backend,
+    create_s3_buckets,
     override_settings,
     get_test_image_file
 )
@@ -11,7 +12,6 @@ from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
 from io import StringIO
-from boto.s3.connection import S3Connection
 import ujson
 import urllib
 import base64
@@ -27,9 +27,9 @@ class ThumbnailTest(ZulipTestCase):
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (hex_uri)
 
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET,
+            settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
