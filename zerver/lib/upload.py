@@ -10,9 +10,9 @@ import unicodedata
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import JsonableError, ErrorCode
 
-from boto.s3.bucket import Bucket
-from boto.s3.key import Key
-from boto.s3.connection import S3Connection
+import boto3
+import botocore.exceptions
+
 from mimetypes import guess_type, guess_extension
 
 from zerver.models import get_user_profile_by_id
@@ -260,17 +260,12 @@ class ZulipUploadBackend:
 
 ### S3
 
-def get_bucket(conn: S3Connection, bucket_name: str) -> Bucket:
-    # Calling get_bucket() with validate=True can apparently lead
-    # to expensive S3 bills:
-    #    https://www.appneta.com/blog/s3-list-get-bucket-default/
-    # The benefits of validation aren't completely clear to us, and
-    # we want to save on our bills, so we set the validate flag to False.
-    # (We think setting validate to True would cause us to fail faster
-    #  in situations where buckets don't exist, but that shouldn't be
-    #  an issue for us.)
-    bucket = conn.get_bucket(bucket_name, validate=False)
-    return bucket
+def get_s3_object(bucket_name: str, file_name: str) -> boto3.resources.base.ServiceResource:
+    session = boto3.Session(
+        aws_access_key_id=settings.S3_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    return s3.Object(bucket_name, file_name)
 
 def upload_image_to_s3(
         bucket_name: str,
@@ -279,20 +274,16 @@ def upload_image_to_s3(
         user_profile: UserProfile,
         contents: bytes) -> None:
 
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = get_bucket(conn, bucket_name)
-    key = Key(bucket)
-    key.key = file_name
-    key.set_metadata("user_profile_id", str(user_profile.id))
-    key.set_metadata("realm_id", str(user_profile.realm_id))
+    s3_object = get_s3_object(bucket_name, file_name)
+    metadata = {
+        "user_profile_id": str(user_profile.id),
+        "realm_id": str(user_profile.realm_id)
+    }
 
-    headers = {}
     if content_type is not None:
-        headers["Content-Type"] = content_type
+        s3_object.put(Body=contents, ContentType=content_type, Metadata=metadata)
     if content_type not in INLINE_MIME_TYPES:
-        headers["Content-Disposition"] = "attachment"
-
-    key.set_contents_from_string(contents, headers=headers)
+        s3_object.put(Body=contents, Metadata=metadata)
 
 def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     upload_quota = realm.upload_quota_bytes()
@@ -322,33 +313,52 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
 
 
 def get_signed_upload_url(path: str) -> str:
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    return conn.generate_url(15, 'GET', bucket=settings.S3_AUTH_UPLOADS_BUCKET, key=path)
+    client = boto3.client(
+        's3',
+        aws_access_key_id=settings.S3_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY)
+    params = {
+        'Bucket': settings.S3_AUTH_UPLOADS_BUCKET,
+        'Key': path}
+    return client.generate_presigned_url(
+        ClientMethod='get_object',
+        Params=params,
+        ExpiresIn=15,
+        HttpMethod='GET')
 
 def get_realm_for_filename(path: str) -> Optional[int]:
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = get_bucket(conn, settings.S3_AUTH_UPLOADS_BUCKET).get_key(path)  # type: Optional[Key]
-    if key is None:
-        # This happens if the key does not exist.
-        return None
-    return get_user_profile_by_id(key.metadata["user_profile_id"]).realm_id
+    s3_object = get_s3_object(settings.S3_AUTH_UPLOADS_BUCKET, path)
+    try:
+        user_profile_id = s3_object.metadata['user_profile_id']
+    except botocore.exceptions.ClientError as error:
+        if error.response['Error']['Code'] == '404':
+            return None
+        else:
+            raise
+    else:
+        return get_user_profile_by_id(user_profile_id).realm_id
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
-        self.connection = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
 
     def delete_file_from_s3(self, path_id: str, bucket_name: str) -> bool:
-        bucket = get_bucket(self.connection, bucket_name)
-
-        # check if file exists
-        key = bucket.get_key(path_id)  # type: Optional[Key]
-        if key is not None:
-            bucket.delete_key(key)
+        s3_object = get_s3_object(settings.S3_AUTH_UPLOADS_BUCKET, path_id)
+        try:
+            # Call `HEAD object` to see if the object exists
+            s3_object.load()
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == '404':
+                file_name = path_id.split("/")[-1]
+                logging.warning(
+                    "%s does not exist. Its entry in the database will be removed."
+                    % (file_name,))
+                return False
+            else:
+                raise
+        else:
+            s3_object.delete()
             return True
-
-        file_name = path_id.split("/")[-1]
-        logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
-        return False
 
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,
@@ -430,19 +440,12 @@ class S3UploadBackend(ZulipUploadBackend):
         self.delete_file_from_s3(path_id + "-medium.png", bucket_name)
         self.delete_file_from_s3(path_id, bucket_name)
 
-    def get_avatar_key(self, file_name: str) -> Key:
-        bucket = get_bucket(self.connection, settings.S3_AVATAR_BUCKET)
-
-        key = bucket.get_key(file_name)
-        return key
-
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         s3_source_file_name = user_avatar_path(source_profile)
         s3_target_file_name = user_avatar_path(target_profile)
-
-        key = self.get_avatar_key(s3_source_file_name + ".original")
-        image_data = key.get_contents_as_string()
-        content_type = key.content_type
+        s3_object = get_s3_object(settings.S3_AVATAR_BUCKET, s3_source_file_name + ".original")
+        image_data = s3_object.get()['Body'].read()
+        content_type = s3_object.content_type
 
         self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)
 
@@ -450,7 +453,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.%s/%s%s?x=x" % (bucket, self.connection.DefaultHost,
+        return "https://%s.%s/%s%s?x=x" % (bucket, self.sessionn.DefaultHost,
                                            hash_key, medium_suffix)
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
@@ -490,7 +493,7 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
         return "https://%s.%s/%s/realm/icon.png?version=%s" % (
-            bucket, self.connection.DefaultHost, realm_id, version)
+            bucket, self.session.DefaultHost, realm_id, version)
 
     def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
                                 night: bool) -> None:
@@ -530,16 +533,15 @@ class S3UploadBackend(ZulipUploadBackend):
         else:
             file_name = 'night_logo.png'
         return "https://%s.%s/%s/realm/%s?version=%s" % (
-            bucket, self.connection.DefaultHost, realm_id, file_name, version)
+            bucket, self.session.DefaultHost, realm_id, file_name, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
         s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
-        bucket = get_bucket(self.connection, bucket_name)
-        key = bucket.get_key(file_path + ".original")
-        image_data = key.get_contents_as_string()
+        s3_object = get_s3_object(settings.S3_AVATAR_BUCKET, file_path)
+        image_data = s3_object.get()['Body'].read()
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         upload_image_to_s3(
@@ -557,9 +559,9 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
-        bucket = get_bucket(self.connection, bucket_name)
-        key = bucket.get_key(file_path + ".original")
-        image_data = key.get_contents_as_string()
+
+        s3_object = get_s3_object(settings.S3_AVATAR_BUCKET, file_path)
+        image_data = s3_object.get()['Body'].read()
 
         resized_avatar = resize_avatar(image_data)
         upload_image_to_s3(
@@ -600,16 +602,16 @@ class S3UploadBackend(ZulipUploadBackend):
         bucket = settings.S3_AVATAR_BUCKET
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id,
                                                         emoji_file_name=emoji_file_name)
-        return "https://%s.%s/%s" % (bucket, self.connection.DefaultHost, emoji_path)
+        return "https://%s.%s/%s" % (bucket, self.session.DefaultHost, emoji_path)
 
     def upload_export_tarball(self, realm: Optional[Realm], tarball_path: str) -> str:
         def percent_callback(complete: Any, total: Any) -> None:
             sys.stdout.write('.')
             sys.stdout.flush()
 
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         # We use the avatar bucket, because it's world-readable.
-        bucket = get_bucket(conn, settings.S3_AVATAR_BUCKET)
+        bucket = get_bucket(session, settings.S3_AVATAR_BUCKET)
         key = Key(bucket)
         key.key = os.path.join("exports", generate_random_token(32), os.path.basename(tarball_path))
         key.set_contents_from_filename(tarball_path, cb=percent_callback, num_cb=40)
