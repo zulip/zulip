@@ -419,11 +419,11 @@ run_test('alert_word_settings_item', () => {
     var li = $(html).find("li.alert-word-item:first");
     var value = li.find('.value');
     var button = li.find('button');
-    assert.equal(li.attr('data-word'),'lunch');
+    assert.equal(li.attr('data-word'), 'lunch');
     assert.equal(value.length, 1);
     assert.equal(value.text(), 'lunch');
     assert.equal(button.attr('title'), 'translated: Delete alert word');
-    assert.equal(button.attr('data-word'),'lunch');
+    assert.equal(button.attr('data-word'), 'lunch');
 
     var title = $(html).find('.new-alert-word-section-title');
     var textbox = $(html).find('#create_alert_word_name');

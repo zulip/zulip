@@ -114,7 +114,7 @@ casper.then(function () {
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form for an outgoing webhook bot');
 
-    casper.fill('#create_bot_form',{
+    casper.fill('#create_bot_form', {
         bot_name: 'Bot 1',
         bot_short_name: '1',
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
@@ -146,7 +146,7 @@ casper.then(function () {
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form for a normal bot');
 
-    casper.fill('#create_bot_form',{
+    casper.fill('#create_bot_form', {
         bot_name: 'Bot 2',
         bot_short_name: '2',
         bot_type: GENERIC_BOT_TYPE,

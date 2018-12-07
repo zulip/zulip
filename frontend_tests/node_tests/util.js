@@ -126,10 +126,10 @@ run_test('is_mobile', () => {
 
 run_test('array_compare', () => {
     assert(util.array_compare([], []));
-    assert(util.array_compare([1,2,3], [1,2,3]));
-    assert(!util.array_compare([1,2], [1,2,3]));
-    assert(!util.array_compare([1,2,3], [1,2]));
-    assert(!util.array_compare([1,2,3,4], [1,2,3,5]));
+    assert(util.array_compare([1, 2, 3], [1, 2, 3]));
+    assert(!util.array_compare([1, 2], [1, 2, 3]));
+    assert(!util.array_compare([1, 2, 3], [1, 2]));
+    assert(!util.array_compare([1, 2, 3, 4], [1, 2, 3, 5]));
 });
 
 run_test('normalize_recipients', () => {

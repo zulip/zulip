@@ -106,10 +106,10 @@ run_test('event_dispatch_error', () => {
 
     const logs = blueslip.get_test_logs('error');
     assert.equal(logs.length, 1);
-    assert.equal(logs[0].more_info.event.type , 'stream');
-    assert.equal(logs[0].more_info.event.op , 'update');
-    assert.equal(logs[0].more_info.event.id , 1);
-    assert.equal(logs[0].more_info.other , undefined);
+    assert.equal(logs[0].more_info.event.type, 'stream');
+    assert.equal(logs[0].more_info.event.op, 'update');
+    assert.equal(logs[0].more_info.event.id, 1);
+    assert.equal(logs[0].more_info.other, undefined);
     blueslip.clear_test_data();
 });
 
