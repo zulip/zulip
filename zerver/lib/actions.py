@@ -765,6 +765,13 @@ def do_deactivate_stream(stream: Stream, log: bool=True) -> None:
                  streams=[stream_dict])
     send_event(stream.realm, event, affected_user_ids)
 
+def send_user_email_update_event(user_profile: UserProfile) -> None:
+    payload = dict(user_id=user_profile.id,
+                   new_email=user_profile.email)
+    send_event(user_profile.realm,
+               dict(type='realm_user', op='update', person=payload),
+               active_user_ids(user_profile.realm_id))
+
 def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
@@ -772,11 +779,8 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
     user_profile.delivery_email = new_email
     user_profile.save(update_fields=["email", "delivery_email"])
 
-    payload = dict(user_id=user_profile.id,
-                   new_email=new_email)
-    send_event(user_profile.realm,
-               dict(type='realm_user', op='update', person=payload),
-               active_user_ids(user_profile.realm_id))
+    send_user_email_update_event(user_profile)
+
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_EMAIL_CHANGED,
