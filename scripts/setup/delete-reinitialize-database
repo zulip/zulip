@@ -3,6 +3,11 @@
 set -e
 set -x
 
+if [ "$(id -u)" -ne "0" ]; then
+  >&2 echo "$0 must be run as root."
+  exit 1
+fi
+
 cat <<EOF
 This script will completely wipe your database, including all users, chat
 messages, and metadata.  It will not modify your existing /etc/zulip
@@ -17,11 +22,6 @@ read -r yesno
 if [ "x$yesno" != "xYES" ]; then
   >&2 echo "Exiting without changes."
   exit 1;
-fi
-
-if [ "$(id -u)" -ne "0" ]; then
-  >&2 echo "Exiting because root is not available."
-  exit 1
 fi
 
 /home/zulip/deployments/current/scripts/setup/postgres-init-db
