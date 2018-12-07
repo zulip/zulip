@@ -9,8 +9,8 @@ from django.conf import settings
 from django.test import override_settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.migrations.state import StateApps
-from boto.s3.connection import S3Connection
-from boto.s3.bucket import Bucket
+import boto3
+from boto3.resources.base import ServiceResource
 
 import zerver.lib.upload
 from zerver.lib.actions import do_set_realm_property
@@ -48,7 +48,7 @@ import re
 import sys
 import time
 import ujson
-from moto import mock_s3_deprecated
+from moto import mock_s3
 
 import fakeldap
 import ldap
@@ -456,7 +456,7 @@ def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
 def use_s3_backend(method: FuncT) -> FuncT:
-    @mock_s3_deprecated
+    @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()
@@ -466,9 +466,10 @@ def use_s3_backend(method: FuncT) -> FuncT:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
-def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    buckets = [conn.create_bucket(name) for name in bucket_names]
+def create_s3_buckets(*bucket_names: Tuple[str]) -> List[ServiceResource]:
+    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
     return buckets
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:  # nocoverage

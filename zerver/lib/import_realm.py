@@ -4,8 +4,7 @@ import os
 import ujson
 import shutil
 
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
+import boto3
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import connection
@@ -614,8 +613,8 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.get_bucket(bucket_name, validate=True)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = session.resource('s3').Bucket(bucket_name)
 
     count = 0
     for record in records:
@@ -657,8 +656,8 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
             path_maps['attachment_path'][record['s3_path']] = relative_path
 
         if s3_uploads:
-            key = Key(bucket)
-            key.key = relative_path
+            key = bucket.Object(relative_path)
+            metadata = {}
             if processing_emojis and "user_profile_id" not in record:
                 # Exported custom emoji from tools like Slack don't have
                 # the data for what user uploaded them in `user_profile_id`.
@@ -674,11 +673,11 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
                     user_profile_id = ID_MAP["user_profile"][user_profile_id]
                 user_profile = get_user_profile_by_id(user_profile_id)
-                key.set_metadata("user_profile_id", str(user_profile.id))
+                metadata["user_profile_id"] = str(user_profile.id)
 
             if 'last_modified' in record:
-                key.set_metadata("orig_last_modified", str(record['last_modified']))
-            key.set_metadata("realm_id", str(record['realm_id']))
+                metadata["orig_last_modified"] = str(record['last_modified'])
+            metadata["realm_id"] = str(record['realm_id'])
 
             # Zulip exports will always have a content-type, but third-party exports might not.
             content_type = record.get("content_type")
@@ -690,9 +689,11 @@ def import_uploads(realm: Realm, import_dir: Path, processes: int, processing_av
                     # set; that is OK, because those are never served
                     # directly anyway.
                     content_type = 'application/octet-stream'
-            headers: Dict[str, Any] = {'Content-Type': content_type}
 
-            key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+            key.upload_file(os.path.join(import_dir, record['path']),
+                            ExtraArgs={
+                                'ContentType': content_type,
+                                'Metadata': metadata})
         else:
             if processing_avatars or processing_emojis or processing_realm_icons:
                 file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", relative_path)

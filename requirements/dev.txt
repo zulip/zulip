@@ -72,11 +72,11 @@ beautifulsoup4==4.9.0 \
 boto3==1.12.41 \
     --hash=sha256:c2c1ee703cb0fa03c5df84b7f00eaa462c808be477dc9014c1e8eef269122770 \
     --hash=sha256:ef16d7dc5f357faf1b081411d2faf62a01793f79a9d664c8b6b1b3ff37aa5e44 \
-    # via aws-sam-translator, moto
+    # via -r requirements/common.in, aws-sam-translator, moto
 boto==2.49.0 \
     --hash=sha256:147758d41ae7240dc989f0039f27da8ca0d53734be0eb869ef16e3adcfa462e8 \
     --hash=sha256:ea0d3b40a2d852767be77ca343b58a9e3a4b00d9db440efb8da74b4e58025e5a \
-    # via -r requirements/common.in, moto
+    # via moto
 botocore==1.15.41 \
     --hash=sha256:a45a65ba036bc980decfc3ce6c2688a2d5fffd76e4b02ea4d59e63ff0f6896d4 \
     --hash=sha256:b12a5b642aa210a72d84204da18618276eeae052fbff58958f57d28ef3193034 \
