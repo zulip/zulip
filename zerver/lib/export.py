@@ -1,5 +1,6 @@
 import datetime
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key  # for mypy
 from django.apps import apps
 from django.conf import settings
 from django.db import connection
@@ -1064,6 +1065,23 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
                              output_dir=emoji_output_dir,
                              processing_emoji=True)
 
+def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
+                        key: Key, processing_avatars: bool,
+                        realm: Realm, user_ids: Set[int]) -> None:
+    # Helper function for export_files_from_s3
+    if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
+        if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
+            raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+        # Email gateway bot sends messages, potentially including attachments, cross-realm.
+        print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
+    elif processing_avatars:
+        if 'user_profile_id' not in key.metadata:
+            raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
+        if int(key.metadata['user_profile_id']) not in user_ids:
+            raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
+    elif 'realm_id' not in key.metadata:
+        raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
                          processing_emoji: bool=False) -> None:
@@ -1099,18 +1117,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         key = bucket.get_key(bkey.name)
 
         # This can happen if an email address has moved realms
-        if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
-            if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-                raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
-            # Email gateway bot sends messages, potentially including attachments, cross-realm.
-            print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
-        elif processing_avatars:
-            if 'user_profile_id' not in key.metadata:
-                raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
-            if int(key.metadata['user_profile_id']) not in user_ids:
-                raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
-        elif 'realm_id' not in key.metadata:
-            raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
 
         record = dict(s3_path=key.name, bucket=bucket_name,
                       size=key.size, last_modified=key.last_modified,
