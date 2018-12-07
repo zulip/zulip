@@ -14,7 +14,7 @@ from zerver.decorator import zulip_login_required, require_billing_access
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_string
+from zerver.lib.validator import check_string, check_int
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
@@ -66,15 +66,41 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     # a customer via the Stripe dashboard.
     return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
 
+@has_request_variables
+def upgrade(request: HttpRequest, user: UserProfile,
+            plan: str=REQ(validator=check_string),
+            signed_seat_count: str=REQ(validator=check_string),
+            salt: str=REQ(validator=check_string),
+            billing_modality: str=REQ(validator=check_string),
+            invoiced_seat_count: int=REQ(validator=check_int, default=-1),
+            stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
+    try:
+        plan, seat_count = unsign_and_check_upgrade_parameters(user, plan, signed_seat_count,
+                                                               salt, billing_modality)
+        if billing_modality == 'send_invoice':
+            min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
+            if invoiced_seat_count < min_required_seat_count:
+                raise BillingError(
+                    'lowball seat count',
+                    "You must invoice for at least %d users." % (min_required_seat_count,))
+            seat_count = invoiced_seat_count
+        process_initial_upgrade(user, plan, seat_count, stripe_token)
+    except BillingError as e:
+        return json_error(e.message, data={'error_description': e.description})
+    except Exception as e:
+        billing_logger.exception("Uncaught exception in billing: %s" % (e,))
+        error_message = BillingError.CONTACT_SUPPORT
+        error_description = "uncaught exception during upgrade"
+        return json_error(error_message, data={'error_description': error_description})
+    else:
+        return json_success()
+
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
     if not settings.BILLING_ENABLED:
         return render(request, "404.html")
 
     user = request.user
-    error_message = ""
-    error_description = ""  # only used in tests
-
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is not None and customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
@@ -84,33 +110,6 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         stripe_customer = stripe_get_customer(customer.stripe_customer_id)
         if stripe_customer.discount is not None:
             percent_off = stripe_customer.discount.coupon.percent_off
-
-    if request.method == 'POST':
-        try:
-            plan, seat_count = unsign_and_check_upgrade_parameters(
-                user, request.POST['plan'], request.POST['signed_seat_count'], request.POST['salt'],
-                request.POST['billing_modality'])
-            if request.POST['billing_modality'] == 'send_invoice':
-                try:
-                    invoiced_seat_count = int(request.POST['invoiced_seat_count'])
-                except (KeyError, ValueError):
-                    invoiced_seat_count = -1
-                min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
-                if invoiced_seat_count < min_required_seat_count:
-                    raise BillingError(
-                        'lowball seat count',
-                        "You must invoice for at least %d users." % (min_required_seat_count,))
-                seat_count = invoiced_seat_count
-            process_initial_upgrade(user, plan, seat_count, request.POST.get('stripe_token', None))
-        except BillingError as e:
-            error_message = e.message
-            error_description = e.description
-        except Exception as e:
-            billing_logger.exception("Uncaught exception in billing: %s" % (e,))
-            error_message = BillingError.CONTACT_SUPPORT
-            error_description = "uncaught exception during upgrade"
-        else:
-            return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
     seat_count = get_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
@@ -125,7 +124,6 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'plan': "Zulip Standard",
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
-        'error_message': error_message,
         'page_params': JSONEncoderForHTML().encode({
             'seat_count': seat_count,
             'nickname_annual': Plan.CLOUD_ANNUAL,
@@ -136,7 +134,6 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         }),
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
-    response['error_description'] = error_description
     return response
 
 PLAN_NAMES = {

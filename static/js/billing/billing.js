@@ -1,47 +1,49 @@
 $(function () {
-    var stripe_key = $("#payment-method").data("key");
-    var handler = StripeCheckout.configure({ // eslint-disable-line no-undef
-        key: stripe_key,
-        image: '/static/images/logo/zulip-icon-128x128.png',
-        locale: 'auto',
-        token: function (stripe_token) {
-            var csrf_token = $("#payment-method").data("csrf");
-            loading.make_indicator($('#updating_card_indicator'),
-                                   {text: 'Updating card. Please wait ...', abs_positioned: true});
-            $("#payment-section").hide();
-            $("#loading-section").show();
-            $.post({
-                url: "/json/billing/sources/change",
-                data: {
-                    stripe_token: JSON.stringify(stripe_token.id),
-                    csrfmiddlewaretoken: csrf_token,
-                },
-                success: function () {
-                    $("#loading-section").hide();
-                    $("#card-updated-message").show();
-                    location.reload();
-                },
-                error: function (xhr) {
-                    $("#loading-section").hide();
-                    $('#error-message-box').show().text(JSON.parse(xhr.responseText).msg);
-                },
-            });
-        },
-    });
-
-    $('#update-card-button').on('click', function (e) {
-        var email = $("#payment-method").data("email");
-        handler.open({
-            name: 'Zulip',
-            zipCode: true,
-            billingAddress: true,
-            panelLabel: "Update card",
-            email: email,
-            label: "Update card",
-            allowRememberMe: false,
+    if (window.location.pathname === '/billing/') {
+        var stripe_key = $("#payment-method").data("key");
+        var card_change_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
+            key: stripe_key,
+            image: '/static/images/logo/zulip-icon-128x128.png',
+            locale: 'auto',
+            token: function (stripe_token) {
+                var csrf_token = $("#payment-method").data("csrf");
+                loading.make_indicator($('#updating_card_indicator'),
+                                       {text: 'Updating card. Please wait ...', abs_positioned: true});
+                $("#payment-section").hide();
+                $("#loading-section").show();
+                $.post({
+                    url: "/json/billing/sources/change",
+                    data: {
+                        stripe_token: JSON.stringify(stripe_token.id),
+                        csrfmiddlewaretoken: csrf_token,
+                    },
+                    success: function () {
+                        $("#loading-section").hide();
+                        $("#card-updated-message").show();
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        $("#loading-section").hide();
+                        $('#error-message-box').show().text(JSON.parse(xhr.responseText).msg);
+                    },
+                });
+            },
         });
-        e.preventDefault();
-    });
+
+        $('#update-card-button').on('click', function (e) {
+            var email = $("#payment-method").data("email");
+            card_change_handler.open({
+                name: 'Zulip',
+                zipCode: true,
+                billingAddress: true,
+                panelLabel: "Update card",
+                email: email,
+                label: "Update card",
+                allowRememberMe: false,
+            });
+            e.preventDefault();
+        });
+    }
 
     var hash = window.location.hash;
     if (hash) {
@@ -76,6 +78,101 @@ $(function () {
     }
 
     if (window.location.pathname === '/upgrade/') {
+        var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
+            key: $("#autopay-form").data("key"),
+            image: '/static/images/logo/zulip-icon-128x128.png',
+            locale: 'auto',
+            token: function (stripe_token) {
+                function get_form_input(name) {
+                    return JSON.stringify($("#autopay-form input[name='" + name + "']").val());
+                }
+
+                loading.make_indicator($('#autopay_loading_indicator'),
+                                       {text: 'Processing ...', abs_positioned: true});
+                $("#autopay-input-section").hide();
+                $('#autopay-error').hide();
+                $("#autopay-loading").show();
+                $.post({
+                    url: "/json/billing/upgrade",
+                    data: {
+                        stripe_token: JSON.stringify(stripe_token.id),
+                        csrfmiddlewaretoken: $("#autopay-form input[name='csrf']").val(),
+                        signed_seat_count: get_form_input("signed_seat_count"),
+                        salt:  get_form_input("salt"),
+                        plan:  get_form_input("plan"),
+                        billing_modality:  get_form_input("billing_modality"),
+                    },
+                    success: function () {
+                        $("#autopay-loading").hide();
+                        $('#autopay-error').hide();
+                        $("#autopay-success").show();
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        $("#autopay-loading").hide();
+                        $('#autopay-error').show().text(JSON.parse(xhr.responseText).msg);
+                        $("#autopay-input-section").show();
+                    },
+                });
+            },
+        });
+
+        $('#add-card-button').on('click', function (e) {
+            add_card_handler.open({
+                name: 'Zulip',
+                zipCode: true,
+                billingAddress: true,
+                panelLabel: "Make payment",
+                email: $("#autopay-form").data("email"),
+                label: "Add card",
+                allowRememberMe: false,
+                description: "Zulip Cloud Standard",
+            });
+            e.preventDefault();
+        });
+
+        $("#invoice-button").on("click", function (e) {
+            if ($("#invoiced_seat_count")[0].checkValidity() === false) {
+                return;
+            }
+            e.preventDefault();
+
+            function get_form_input(name, stringify = true) {
+                var value = $("#invoice-form input[name='" + name + "']").val();
+                if (stringify) {
+                    value = JSON.stringify(value);
+                }
+                return value;
+            }
+            loading.make_indicator($('#invoice_loading_indicator'),
+                                   {text: 'Processing ...', abs_positioned: true});
+            $("#invoice-input-section").hide();
+            $('#invoice-error').hide();
+            $("#invoice-loading").show();
+            $.post({
+                url: "/json/billing/upgrade",
+                data: {
+                    csrfmiddlewaretoken: get_form_input("csrfmiddlewaretoken", false),
+                    signed_seat_count: get_form_input("signed_seat_count"),
+                    salt: get_form_input("salt"),
+                    plan: get_form_input("plan"),
+                    billing_modality:  get_form_input("billing_modality"),
+                    invoiced_seat_count:  get_form_input("invoiced_seat_count", false),
+                },
+                success: function () {
+                    $("#invoice-loading").hide();
+                    $('#invoice-error').hide();
+                    $("#invoice-success").show();
+                    location.reload();
+                },
+                error: function (xhr) {
+                    $("#invoice-loading").hide();
+                    $('#invoice-error').show().text(JSON.parse(xhr.responseText).msg);
+                    $("#invoice-input-section").show();
+                },
+            });
+        });
+
         var prices = {};
         prices[page_params.nickname_annual] =
             page_params.annual_price * (1 - page_params.percent_off / 100);

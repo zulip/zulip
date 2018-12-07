@@ -17,6 +17,8 @@ i18n_urlpatterns = [
 ]  # type: Any
 
 v1_api_and_json_patterns = [
+    url(r'^billing/upgrade$', rest_dispatch,
+        {'POST': 'corporate.views.upgrade'}),
     url(r'^billing/downgrade$', rest_dispatch,
         {'POST': 'corporate.views.downgrade'}),
     url(r'^billing/sources/change', rest_dispatch,

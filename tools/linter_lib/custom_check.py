@@ -750,7 +750,7 @@ def build_custom_checkers(by_lang):
          'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
                         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
                         "the DOM is ready (inside a $(function () {...}) block).",
-         'exclude': set(['templates/zerver/dev_login.html']),
+         'exclude': set(['templates/zerver/dev_login.html', 'templates/corporate/upgrade.html']),
          'good_lines': ["($('#foo').on('click', function () {}"],
          'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
         {'pattern': 'style ?=',
@@ -795,6 +795,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
              'templates/corporate/billing.html',
+             'templates/corporate/upgrade.html',
 
              # Miscellaneous violations to be cleaned up
              'static/templates/user_info_popover_title.handlebars',
