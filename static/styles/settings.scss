@@ -1401,12 +1401,24 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
-#account-settings .user-role button {
-    cursor: default;
-}
+#account-settings {
+    .user-role button {
+        cursor: default;
+    }
 
-#account-settings .custom_user_field .field_hint {
-    color: hsl(0, 0%, 67%);
+    .custom_user_field .field_hint {
+        color: hsl(0, 0%, 67%);
+    }
+
+    #show_my_user_profile_modal {
+        width: 219px;
+        margin-top: 20px;
+    }
+
+    #show_my_user_profile_modal i {
+        padding-left: 2px;
+        vertical-align: middle;
+    }
 }
 
 #settings_page .custom_user_field {
@@ -1441,16 +1453,6 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 
 #settings_page .custom_user_field .person_picker {
     min-width: 206px;
-}
-
-#account-settings #show_my_user_profile_modal {
-    width: 219px;
-    margin-top: 20px;
-}
-
-#account-settings #show_my_user_profile_modal i {
-    padding-left: 2px;
-    vertical-align: middle;
 }
 
 #settings_page #change_password_modal .change_password_info,
