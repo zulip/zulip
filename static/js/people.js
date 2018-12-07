@@ -744,10 +744,10 @@ function remove_diacritics(s) {
         return s;
     }
 
-    return s.replace(/[áàãâä]/g,"a")
-        .replace(/[éèëê]/g,"e")
-        .replace(/[íìïî]/g,"i")
-        .replace(/[óòöôõ]/g,"o")
+    return s.replace(/[áàãâä]/g, "a")
+        .replace(/[éèëê]/g, "e")
+        .replace(/[íìïî]/g, "i")
+        .replace(/[óòöôõ]/g, "o")
         .replace(/[úùüû]/g, "u")
         .replace(/[ç]/g, "c")
         .replace(/[ñ]/g, "n");
@@ -840,7 +840,7 @@ exports.track_duplicate_full_name = function (full_name, user_id, to_remove) {
     if (to_remove && user_id && ids.has(user_id)) {
         ids.del(user_id);
     }
-    duplicate_full_name_data.set(full_name,ids);
+    duplicate_full_name_data.set(full_name, ids);
 };
 
 exports.is_duplicate_full_name = function (full_name) {

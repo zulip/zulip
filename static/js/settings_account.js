@@ -458,7 +458,7 @@ exports.set_up = function () {
         }
     });
 
-    $("#do_deactivate_self_button").on('click',function () {
+    $("#do_deactivate_self_button").on('click', function () {
         $("#do_deactivate_self_button .loader").css('display', 'inline-block');
         $("#do_deactivate_self_button span").hide();
         $("#do_deactivate_self_button object").on("load", function () {

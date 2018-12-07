@@ -234,7 +234,7 @@ function encodeOperand(operand) {
 
 function decodeOperand(encoded, operator) {
     encoded = encoded.replace(/"/g, '');
-    if (_.contains(['group-pm-with','pm-with','sender','from'],operator) === false) {
+    if (_.contains(['group-pm-with', 'pm-with', 'sender', 'from'], operator) === false) {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded).trim();

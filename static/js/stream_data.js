@@ -506,7 +506,7 @@ exports.get_streams_for_settings_page = function () {
     var unsubscribed_rows = exports.unsubscribed_subs();
 
     // Sort and combine all our streams.
-    function by_name(a,b) {
+    function by_name(a, b) {
         return util.strcmp(a.name, b.name);
     }
     subscribed_rows.sort(by_name);
@@ -544,7 +544,7 @@ exports.sort_for_stream_settings = function (stream_ids) {
 
 exports.get_streams_for_admin = function () {
     // Sort and combine all our streams.
-    function by_name(a,b) {
+    function by_name(a, b) {
         return util.strcmp(a.name, b.name);
     }
 

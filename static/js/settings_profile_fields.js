@@ -181,7 +181,7 @@ function open_edit_form(e) {
 
     profile_field.row.hide();
     profile_field.form.show();
-    var field = get_profile_field(parseInt(field_id,10));
+    var field = get_profile_field(parseInt(field_id, 10));
     // Set initial value in edit form
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
