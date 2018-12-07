@@ -11,7 +11,6 @@ from PIL import Image
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
-from boto.s3.connection import Location, S3Connection
 
 from zerver.lib.export import (
     do_export_realm,
@@ -40,6 +39,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_helpers import (
     use_s3_backend,
+    create_s3_buckets,
 )
 
 from zerver.lib.topic_mutes import (
@@ -338,9 +338,9 @@ class ImportExportTest(ZulipTestCase):
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET,
+            settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
         attachment_path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
@@ -768,9 +768,9 @@ class ImportExportTest(ZulipTestCase):
 
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        uploads_bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        avatar_bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        uploads_bucket, avatar_bucket = create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET,
+            settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()

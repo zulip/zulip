@@ -15,6 +15,8 @@ from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.utils import IntegrityError
 from django.db.migrations.state import StateApps
+from boto.s3.connection import Location, S3Connection
+from boto.s3.bucket import Bucket
 
 import zerver.lib.upload
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
@@ -464,6 +466,11 @@ def use_s3_backend(method: FuncT) -> FuncT:
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
+
+def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    buckets = [conn.create_bucket(name) for name in bucket_names]
+    return buckets
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
     def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:

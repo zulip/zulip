@@ -16,6 +16,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     POSTRequestMock,
     use_s3_backend,
+    create_s3_buckets,
     queries_captured,
 )
 from zerver.lib.test_runner import slow
@@ -42,7 +43,6 @@ from zerver.views.upload import upload_file_backend, serve_local
 import urllib
 from PIL import Image
 
-from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from io import StringIO
 import mock
@@ -1305,8 +1305,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1327,8 +1326,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
@@ -1340,8 +1338,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1358,8 +1355,7 @@ class S3Test(ZulipTestCase):
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -1384,8 +1380,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user('hamlet')
         path_id = user_avatar_path(user_profile)
@@ -1414,8 +1409,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_copy_avatar_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         self.login(self.example_email("hamlet"))
         with get_test_image_file('img.png') as image_file:
@@ -1460,8 +1454,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_delete_avatar_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         self.login(self.example_email("hamlet"))
         with get_test_image_file('img.png') as image_file:
@@ -1487,8 +1480,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1501,8 +1493,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
@@ -1520,8 +1511,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
