@@ -165,7 +165,7 @@ function copy_handler() {
             selection.addRange(range);
         });
         $('#copytempdiv').remove();
-    },0);
+    }, 0);
 }
 
 exports.paste_handler_converter = function (paste_html) {

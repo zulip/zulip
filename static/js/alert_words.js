@@ -28,7 +28,7 @@ exports.process_message = function (message) {
 
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
-                               '(' + after_punctuation + ')' , 'ig');
+                               '(' + after_punctuation + ')', 'ig');
         message.content = message.content.replace(regex, function (match, before, word,
                                                                    after, offset, content) {
             // Logic for ensuring that we don't muck up rendered HTML.

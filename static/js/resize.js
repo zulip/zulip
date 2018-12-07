@@ -77,12 +77,12 @@ function get_new_heights() {
     var usable_height =
         res.right_sidebar_height
         - $("#feedback_section").safeOuterHeight(true)
-        - parseInt(buddy_list_wrapper.css("marginTop"),10)
+        - parseInt(buddy_list_wrapper.css("marginTop"), 10)
         - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
         - $("#userlist-header").safeOuterHeight(true)
         - $(".user-list-filter").safeOuterHeight(true)
         - invite_user_link_height
-        - parseInt(group_pms.css("marginTop"),10)
+        - parseInt(group_pms.css("marginTop"), 10)
         - parseInt(group_pms.css("marginBottom"), 10)
         - $("#group-pm-header").safeOuterHeight(true)
         - keyboard_popover_shortcut.safeOuterHeight(true)
@@ -121,8 +121,8 @@ function left_userlist_get_new_heights() {
     res.main_div_min_height = viewport_height - top_navbar_height;
 
     res.bottom_sidebar_height = viewport_height
-                                - parseInt($("#left-sidebar").css("marginTop"),10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"),10);
+                                - parseInt($("#left-sidebar").css("marginTop"), 10)
+                                - parseInt($(".bottom_sidebar").css("marginTop"), 10);
 
 
     res.total_leftlist_height = res.bottom_sidebar_height
@@ -131,7 +131,7 @@ function left_userlist_get_new_heights() {
                                 - $("#userlist-header").safeOuterHeight(true)
                                 - $(".user-list-filter").safeOuterHeight(true)
                                 - $("#group-pm-header").safeOuterHeight(true)
-                                - parseInt(stream_filters.css("marginBottom"),10)
+                                - parseInt(stream_filters.css("marginBottom"), 10)
                                 - parseInt(buddy_list_wrapper.css("marginTop"), 10)
                                 - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
                                 - parseInt(group_pms.css("marginTop"), 10)

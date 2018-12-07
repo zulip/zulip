@@ -163,7 +163,7 @@ exports.initialize = function () {
     $('#search_exit').on('click', narrow.deactivate);
 
     search_query_box.on('focus', exports.focus_search);
-    search_query_box.on('blur' , function () {
+    search_query_box.on('blur', function () {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should

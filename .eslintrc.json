@@ -223,6 +223,12 @@
                 "functions": "never"
             }
         ],
+        "comma-spacing": [ "error",
+            {
+                "before": false,
+                "after": true
+            }
+        ],
         "complexity": [ 0, 4 ],
         "curly": 2,
         "dot-notation": [ "error", { "allowKeywords": true } ],

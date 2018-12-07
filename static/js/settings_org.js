@@ -605,7 +605,7 @@ exports.set_up = function () {
         subsection.find('.save-button').show();
         var properties_elements = get_subsection_property_elements(subsection);
         var show_change_process_button = false;
-        _.each(properties_elements , function (elem) {
+        _.each(properties_elements, function (elem) {
             if (check_property_changed(elem)) {
                 show_change_process_button = true;
             }

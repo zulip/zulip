@@ -206,7 +206,7 @@ exports.setup_page = function (callback) {
         _.each(data, function (draft, id) {
             data_array.push([id, data[id]]);
         });
-        var data_sorted = data_array.sort(function (draft_a,draft_b) {
+        var data_sorted = data_array.sort(function (draft_a, draft_b) {
             return draft_a[1].updatedAt - draft_b[1].updatedAt;
         });
         _.each(data_sorted, function (data_element) {
@@ -279,7 +279,7 @@ exports.setup_page = function (callback) {
     function populate_and_fill() {
         $('#drafts_table').empty();
         var drafts = format_drafts(draft_model.get());
-        var rendered = templates.render('draft_table_body',{
+        var rendered = templates.render('draft_table_body', {
             drafts: drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });

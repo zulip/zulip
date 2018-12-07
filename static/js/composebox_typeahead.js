@@ -319,7 +319,7 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
-    var syntax_token = current_token.substring(0,3);
+    var syntax_token = current_token.substring(0, 3);
     if (this.options.completions.syntax && (syntax_token === '```' || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
