@@ -4086,14 +4086,14 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         original_image_path_id = path_id + ".original"
         medium_path_id = path_id + "-medium.png"
 
-        original_image_key = bucket.get_key(original_image_path_id)
-        medium_image_key = bucket.get_key(medium_path_id)
+        original_image_key = bucket.Object(original_image_path_id)
+        medium_image_key = bucket.Object(medium_path_id)
 
-        image_data = original_image_key.get_contents_as_string()
+        image_data = original_image_key.get()['Body'].read()
         self.assertEqual(image_data, test_image_data)
 
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
-        medium_image_data = medium_image_key.get_contents_as_string()
+        medium_image_data = medium_image_key.get()['Body'].read()
         self.assertEqual(medium_image_data, test_medium_image_data)
 
         # Try to use invalid data as the image:

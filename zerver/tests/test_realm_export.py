@@ -15,6 +15,7 @@ from zerver.views.realm_export import export_realm
 
 import os
 import ujson
+import botocore.exceptions
 
 class RealmExportTest(ZulipTestCase):
     """
@@ -60,7 +61,7 @@ class RealmExportTest(ZulipTestCase):
         # Test that the file is hosted, and the contents are as expected.
         path_id = ujson.loads(audit_log_entry.extra_data).get('export_path')
         self.assertIsNotNone(path_id)
-        self.assertEqual(bucket.get_key(path_id).get_contents_as_string(), b'zulip!')
+        self.assertEqual(bucket.Object(path_id).get()['Body'].read(), b'zulip!')
 
         result = self.client_get('/json/export/realm')
         self.assert_json_success(result)
@@ -79,7 +80,8 @@ class RealmExportTest(ZulipTestCase):
         # Finally, delete the file.
         result = self.client_delete('/json/export/realm/{id}'.format(id=audit_log_entry.id))
         self.assert_json_success(result)
-        self.assertIsNone(bucket.get_key(path_id))
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(path_id).load()
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()

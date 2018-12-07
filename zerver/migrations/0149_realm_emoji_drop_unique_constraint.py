@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from boto.s3.connection import S3Connection
+import boto3
 from django.conf import settings
 from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
@@ -53,12 +53,13 @@ class LocalUploader(Uploader):
 class S3Uploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.bucket_name = settings.S3_AVATAR_BUCKET
-        self.bucket = conn.get_bucket(self.bucket_name, validate=False)
+        self.bucket = session.resource('s3').Bucket(self.bucket_name)
 
     def copy_files(self, src_key: str, dst_key: str) -> None:
-        self.bucket.copy_key(dst_key, self.bucket_name, src_key)
+        source = dict(Bucket=self.bucket_name, Key=src_key)
+        self.bucket.copy(source, dst_key)
 
 def get_uploader() -> Uploader:
     if settings.LOCAL_UPLOADS_DIR is None:
