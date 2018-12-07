@@ -271,8 +271,11 @@ class StripeTest(ZulipTestCase):
                 'stripe_token': stripe_token,
                 'billing_modality': 'charge_automatically',
             })
+
         params.update(kwargs)
-        return self.client_post("/upgrade/", params, **host_args)
+        for key, value in params.items():
+            params[key] = ujson.dumps(value)
+        return self.client_post("/json/billing/upgrade", params, **host_args)
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_catch_stripe_errors(self, mock_billing_logger_error: Mock) -> None:
@@ -471,48 +474,43 @@ class StripeTest(ZulipTestCase):
     def test_upgrade_with_tampered_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
         response = self.upgrade(talk_to_stripe=False, salt='badsalt')
-        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
-        self.assertEqual(response['error_description'], 'tampered seat count')
+        self.assert_json_error_contains(response, "Something went wrong. Please contact")
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered seat count')
 
     def test_upgrade_with_tampered_plan(self) -> None:
         # Test with an unknown plan
         self.login(self.example_email("hamlet"))
         response = self.upgrade(talk_to_stripe=False, plan='badplan')
-        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
-        self.assertEqual(response['error_description'], 'tampered plan')
+        self.assert_json_error_contains(response, "Something went wrong. Please contact")
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered plan')
         # Test with a plan that's valid, but not if you're paying by invoice
         response = self.upgrade(invoice=True, talk_to_stripe=False, plan=Plan.CLOUD_MONTHLY)
-        self.assert_in_success_response(["Upgrade to Zulip Standard"], response)
-        self.assertEqual(response['error_description'], 'tampered plan')
+        self.assert_json_error_contains(response, "Something went wrong. Please contact")
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered plan')
 
     def test_upgrade_with_insufficient_invoiced_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
         # Test invoicing for less than MIN_INVOICED_SEAT_COUNT
         response = self.upgrade(invoice=True, talk_to_stripe=False,
                                 invoiced_seat_count=MIN_INVOICED_SEAT_COUNT - 1)
-        self.assert_in_success_response(["Upgrade to Zulip Standard",
-                                         "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
-        self.assertEqual(response['error_description'], 'lowball seat count')
+        self.assert_json_error_contains(response, "at least {} users.".format(MIN_INVOICED_SEAT_COUNT))
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'lowball seat count')
         # Test invoicing for less than your user count
         with patch("corporate.views.MIN_INVOICED_SEAT_COUNT", 3):
             response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=4)
-        self.assert_in_success_response(["Upgrade to Zulip Standard",
-                                         "at least %d users" % (self.seat_count,)], response)
-        self.assertEqual(response['error_description'], 'lowball seat count')
-        # Test not setting an invoiced_seat_count
+        self.assert_json_error_contains(response, "at least {} users.".format(self.seat_count))
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'lowball seat count')
+        # Test not setting invoiced_seat_count
         response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=None)
-        self.assert_in_success_response(["Upgrade to Zulip Standard",
-                                         "at least %d users" % (MIN_INVOICED_SEAT_COUNT,)], response)
-        self.assertEqual(response['error_description'], 'lowball seat count')
+        self.assert_json_error_contains(response, "invoiced_seat_count is not an integer")
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock_: Mock) -> None:
         self.login(self.example_email("hamlet"))
         with patch("corporate.views.process_initial_upgrade", side_effect=Exception):
             response = self.upgrade(talk_to_stripe=False)
-        self.assert_in_success_response(["Upgrade to Zulip Standard",
-                                         "Something went wrong. Please contact"], response)
-        self.assertEqual(response['error_description'], 'uncaught exception during upgrade')
+        self.assert_json_error_contains(response, "Something went wrong. Please contact zulip-admin@example.com.")
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'uncaught exception during upgrade')
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_billing_by_invoice(self, *mocks: Mock) -> None:
@@ -908,7 +906,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         params = [
             ("/json/billing/sources/change", "do_replace_payment_source",
              {'stripe_token': ujson.dumps('token')}),
-            ("/json/billing/downgrade", "process_downgrade", {})
+            ("/json/billing/downgrade", "process_downgrade", {}),
         ]  # type: List[Tuple[str, str, Dict[str, Any]]]
 
         for (url, mocked_function_name, data) in params:
@@ -919,6 +917,9 @@ class RequiresBillingAccessTest(ZulipTestCase):
         string_with_all_endpoints = str(get_resolver('corporate.urls').reverse_dict)
         json_endpoints = set([word.strip("\"'()[],$") for word in string_with_all_endpoints.split()
                               if 'json' in word])
+        # No need to test upgrade endpoint as it only requires user to be logged in.
+        json_endpoints.remove("json/billing/upgrade")
+
         self.assertEqual(len(json_endpoints), len(params))
 
 class BillingProcessorTest(ZulipTestCase):
