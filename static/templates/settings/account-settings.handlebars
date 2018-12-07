@@ -124,6 +124,19 @@
                 </div>
             </form>
 
+            <div class="user-role input-group grid">
+                <label for="user_role" class="inline-block title">{{t "Role" }}</label>
+                <button class="button small rounded">
+                    {{#if page_params.is_admin}}
+                    {{t "Administrator" }}
+                    {{else if page_params.is_guest}}
+                    {{t "Guest" }}
+                    {{else}}
+                    {{t "Member" }}
+                    {{/if}}
+                </button>
+            </div>
+
             <form class="deactivate_account grid">
                 <div class="input-group">
                     <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">

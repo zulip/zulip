@@ -1401,6 +1401,10 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
+#account-settings .user-role button {
+    cursor: default;
+}
+
 #account-settings .custom_user_field .field_hint {
     color: hsl(0, 0%, 67%);
 }
