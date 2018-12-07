@@ -453,9 +453,6 @@ function keydown_enter_key() {
         return;
     }
 
-    if (overlays.is_active()) {
-        overlays.close_active();
-    }
     exports.clear_and_hide_search();
     narrow.by('stream', sub.name, {trigger: 'sidebar enter key'});
 }
@@ -483,9 +480,6 @@ exports.initialize = function () {
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
-        }
-        if (overlays.is_active()) {
-            overlays.close_active();
         }
         var stream_id = $(e.target).parents('li').attr('data-stream-id');
         var sub = stream_data.get_sub_by_id(stream_id);

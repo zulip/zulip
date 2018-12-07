@@ -284,9 +284,6 @@ exports.initialize = function () {
 
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
-        if (overlays.is_active()) {
-            overlays.close_active();
-        }
 
         var stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
         var sub = stream_data.get_sub_by_id(stream_id);
