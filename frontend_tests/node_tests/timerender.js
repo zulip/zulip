@@ -1,6 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-set_global('page_params' , {
+set_global('page_params', {
     twenty_four_hour_time: true,
 });
 zrequire('XDate', 'xdate');

@@ -137,7 +137,7 @@ run_test('test_basics', () => {
     (function test_get_editable() {
         let can_admin;
 
-        bot_data.add({...test_bot ,user_id: 44, owner: 'owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 44, owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
 

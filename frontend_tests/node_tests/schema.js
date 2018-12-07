@@ -2,7 +2,7 @@ zrequire('schema');
 
 run_test('basics', () => {
     assert.equal(schema.check_string('x', 'fred'), undefined);
-    assert.equal(schema.check_string('x', [1,2]), 'x is not a string');
+    assert.equal(schema.check_string('x', [1, 2]), 'x is not a string');
 
     const fields = {
         foo: schema.check_string,

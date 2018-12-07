@@ -13,7 +13,7 @@ set_global('alert_words', {
     process_message: noop,
 });
 
-set_global('topic_data' , {
+set_global('topic_data', {
     add_message: noop,
 });
 

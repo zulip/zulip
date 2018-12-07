@@ -1245,8 +1245,8 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
-    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
-                               {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('da', [{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
+                                {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
     assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
