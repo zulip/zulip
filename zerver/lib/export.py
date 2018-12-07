@@ -1082,6 +1082,32 @@ def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
     elif 'realm_id' not in key.metadata:
         raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
 
+def _get_exported_s3_record(
+        bucket_name: str,
+        key: Key,
+        processing_avatars: bool,
+        processing_emoji: bool) -> Dict[str, Union[str, int]]:
+    # Helper function for export_files_from_s3
+    record = dict(s3_path=key.name, bucket=bucket_name,
+                  size=key.size, last_modified=key.last_modified,
+                  content_type=key.content_type, md5=key.md5)
+    record.update(key.metadata)
+
+    if processing_emoji:
+        record['file_name'] = os.path.basename(key.name)
+
+    # A few early avatars don't have 'realm_id' on the object; fix their metadata
+    user_profile = get_user_profile_by_id(record['user_profile_id'])
+    if 'realm_id' not in record:
+        record['realm_id'] = user_profile.realm_id
+    record['user_profile_email'] = user_profile.email
+
+    # Fix the record ids
+    record['user_profile_id'] = int(record['user_profile_id'])
+    record['realm_id'] = int(record['realm_id'])
+
+    return record
+
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
                          processing_emoji: bool=False) -> None:
@@ -1118,24 +1144,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
 
         # This can happen if an email address has moved realms
         _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
-
-        record = dict(s3_path=key.name, bucket=bucket_name,
-                      size=key.size, last_modified=key.last_modified,
-                      content_type=key.content_type, md5=key.md5)
-        record.update(key.metadata)
-
-        if processing_emoji:
-            record['file_name'] = os.path.basename(key.name)
-
-        # A few early avatars don't have 'realm_id' on the object; fix their metadata
-        user_profile = get_user_profile_by_id(record['user_profile_id'])
-        if 'realm_id' not in record:
-            record['realm_id'] = user_profile.realm_id
-        record['user_profile_email'] = user_profile.email
-
-        # Fix the record ids
-        record['user_profile_id'] = int(record['user_profile_id'])
-        record['realm_id'] = int(record['realm_id'])
+        record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
 
         record['path'] = key.name
         if processing_avatars or processing_emoji:
