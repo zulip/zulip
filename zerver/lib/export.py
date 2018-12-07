@@ -1108,6 +1108,26 @@ def _get_exported_s3_record(
 
     return record
 
+def _save_s3_object_to_file(
+        key: Key,
+        output_dir: str,
+        processing_avatars: bool,
+        processing_emoji: bool) -> None:
+
+    # Helper function for export_files_from_s3
+    if processing_avatars or processing_emoji:
+        filename = os.path.join(output_dir, key.name)
+    else:
+        fields = key.name.split('/')
+        if len(fields) != 3:
+            raise AssertionError("Suspicious key with invalid format %s" % (key.name))
+        filename = os.path.join(output_dir, key.name)
+
+    dirname = os.path.dirname(filename)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    key.get_contents_to_filename(filename)
+
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
                          processing_emoji: bool=False) -> None:
@@ -1147,18 +1167,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
 
         record['path'] = key.name
-        if processing_avatars or processing_emoji:
-            filename = os.path.join(output_dir, key.name)
-        else:
-            fields = key.name.split('/')
-            if len(fields) != 3:
-                raise AssertionError("Suspicious key with invalid format %s" % (key.name))
-            filename = os.path.join(output_dir, key.name)
-
-        dirname = os.path.dirname(filename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-        key.get_contents_to_filename(filename)
+        _save_s3_object_to_file(key, output_dir, processing_avatars, processing_emoji)
 
         records.append(record)
         count += 1
