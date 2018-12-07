@@ -503,7 +503,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         action()
         events = client.event_queue.contents()
-        self.assertTrue(len(events) == num_events)
+        self.assertEqual(len(events), num_events)
 
         before = ujson.dumps(hybrid_state)
         apply_events(hybrid_state, events, self.user_profile,
