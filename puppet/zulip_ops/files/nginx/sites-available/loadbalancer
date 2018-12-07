@@ -26,8 +26,8 @@ server {
     server_name zulipstaging.com *.zulipstaging.com;
 
     ssl on;
-    ssl_certificate /etc/letsencrypt/live/zulipstaging.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/zulipstaging.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulipchat.com/privkey.pem;
 
     location / {
         proxy_pass https://staging/;
