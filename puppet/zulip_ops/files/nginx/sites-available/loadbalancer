@@ -22,7 +22,7 @@ server {
 server {
     # The listen needs to be `www.zulipstaging.com` since bare zulipstaging.com
     # is not a CNAME and thus has the public IP inside EC2
-    listen www.zulipstaging.com:443;
+    listen www.zulipstaging.com:443 http2;
     server_name zulipstaging.com *.zulipstaging.com;
 
     ssl on;
@@ -51,7 +51,7 @@ server {
 server {
     # The listen needs to be `www.zulipchat.com` since bare zulipchat.com
     # is not a CNAME and thus has the public IP inside EC2
-    listen www.zulipchat.com:443 default_server;
+    listen www.zulipchat.com:443 default_server http2;
     server_name zulipchat.com *.zulipchat.com;
 
     ssl on;
@@ -79,7 +79,7 @@ server {
 server {
     # The listen needs to be `www.zulip.com` since bare zulip.com
     # is not a CNAME and thus has the public IP inside EC2
-    listen www.zulip.com:443;
+    listen www.zulip.com:443 http2;
     server_name zulip.com *.zulip.com;
 
     ssl on;
@@ -105,7 +105,7 @@ server {
 }
 
 server {
-    listen chat.hl7.org:443;
+    listen chat.hl7.org:443 http2;
     server_name chat.hl7.org;
     ssl_certificate /etc/letsencrypt/live/chat.hl7.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/chat.hl7.org/privkey.pem;
@@ -129,7 +129,7 @@ server {
 }
 
 server {
-    listen uploads.zulipusercontent.net:443;
+    listen uploads.zulipusercontent.net:443 http2;
     server_name uploads.zulipusercontent.net;
 
     ssl on;
