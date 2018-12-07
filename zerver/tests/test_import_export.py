@@ -36,6 +36,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_helpers import (
+    get_test_image_file,
     use_s3_backend,
     create_s3_buckets,
 )
@@ -87,10 +88,6 @@ from zerver.models import (
     get_realm,
     get_stream,
     get_huddle_hash,
-)
-
-from zerver.lib.test_helpers import (
-    get_test_image_file,
 )
 
 class QueryUtilTest(ZulipTestCase):
@@ -1096,7 +1093,7 @@ class ImportExportTest(ZulipTestCase):
         uploaded_file = Attachment.objects.get(realm=imported_realm)
         self.assertEqual(len(b'zulip!'), uploaded_file.size)
 
-        attachment_content = uploads_bucket.get_key(uploaded_file.path_id).get_contents_as_string()
+        attachment_content = uploads_bucket.Object(uploaded_file.path_id).get()['Body'].read()
         self.assertEqual(b"zulip!", attachment_content)
 
         # Test emojis
@@ -1105,43 +1102,43 @@ class ImportExportTest(ZulipTestCase):
             realm_id=imported_realm.id,
             emoji_file_name=realm_emoji.file_name,
         )
-        emoji_key = avatar_bucket.get_key(emoji_path)
-        self.assertIsNotNone(emoji_key)
+        emoji_key = avatar_bucket.Object(emoji_path)
+        self.assertIsNotNone(emoji_key.get()['Body'].read())
         self.assertEqual(emoji_key.key, emoji_path)
 
         # Test avatars
         user_email = Message.objects.all()[0].sender.email
         user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
-        original_image_key = avatar_bucket.get_key(avatar_path_id)
+        original_image_key = avatar_bucket.Object(avatar_path_id)
         self.assertEqual(original_image_key.key, avatar_path_id)
-        image_data = original_image_key.get_contents_as_string()
+        image_data = avatar_bucket.Object(avatar_path_id).get()['Body'].read()
         self.assertEqual(image_data, test_image_data)
 
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
 
         original_icon_path_id = os.path.join(upload_path, "icon.original")
-        original_icon_key = avatar_bucket.get_key(original_icon_path_id)
-        self.assertEqual(original_icon_key.get_contents_as_string(), test_image_data)
+        original_icon_key = avatar_bucket.Object(original_icon_path_id)
+        self.assertEqual(original_icon_key.get()['Body'].read(), test_image_data)
         resized_icon_path_id = os.path.join(upload_path, "icon.png")
-        resized_icon_key = avatar_bucket.get_key(resized_icon_path_id)
+        resized_icon_key = avatar_bucket.Object(resized_icon_path_id)
         self.assertEqual(resized_icon_key.key, resized_icon_path_id)
         self.assertEqual(imported_realm.icon_source, Realm.ICON_UPLOADED)
 
         original_logo_path_id = os.path.join(upload_path, "logo.original")
-        original_logo_key = avatar_bucket.get_key(original_logo_path_id)
-        self.assertEqual(original_logo_key.get_contents_as_string(), test_image_data)
+        original_logo_key = avatar_bucket.Object(original_logo_path_id)
+        self.assertEqual(original_logo_key.get()['Body'].read(), test_image_data)
         resized_logo_path_id = os.path.join(upload_path, "logo.png")
-        resized_logo_key = avatar_bucket.get_key(resized_logo_path_id)
+        resized_logo_key = avatar_bucket.Object(resized_logo_path_id)
         self.assertEqual(resized_logo_key.key, resized_logo_path_id)
         self.assertEqual(imported_realm.logo_source, Realm.LOGO_UPLOADED)
 
         night_logo_original_path_id = os.path.join(upload_path, "night_logo.original")
-        night_logo_original_key = avatar_bucket.get_key(night_logo_original_path_id)
-        self.assertEqual(night_logo_original_key.get_contents_as_string(), test_image_data)
+        night_logo_original_key = avatar_bucket.Object(night_logo_original_path_id)
+        self.assertEqual(night_logo_original_key.get()['Body'].read(), test_image_data)
         resized_night_logo_path_id = os.path.join(upload_path, "night_logo.png")
-        resized_night_logo_key = avatar_bucket.get_key(resized_night_logo_path_id)
+        resized_night_logo_key = avatar_bucket.Object(resized_night_logo_path_id)
         self.assertEqual(resized_night_logo_key.key, resized_night_logo_path_id)
         self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
 

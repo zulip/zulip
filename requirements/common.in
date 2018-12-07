@@ -30,7 +30,7 @@ SQLAlchemy
 argon2-cffi
 
 # Needed for S3 file uploads
-boto
+boto3
 
 # Needed for integrations
 defusedxml

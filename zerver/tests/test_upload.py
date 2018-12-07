@@ -46,6 +46,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 import urllib
 import ujson
 from PIL import Image
+import botocore.exceptions
 
 from io import StringIO
 from unittest import mock
@@ -1577,7 +1578,7 @@ class S3Test(ZulipTestCase):
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        content = bucket.get_key(path_id).get_contents_as_string()
+        content = bucket.Object(path_id).get()['Body'].read()
         self.assertEqual(b"zulip!", content)
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
@@ -1595,7 +1596,7 @@ class S3Test(ZulipTestCase):
         uri = upload_message_file('dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        self.assertEqual(b"zulip!", bucket.Object(path_id).get()['Body'].read())
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assertEqual(len(b"zulip!"), uploaded_file.size)
 
@@ -1618,7 +1619,7 @@ class S3Test(ZulipTestCase):
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
-        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
 
         self.login('hamlet')
         fp = StringIO("zulip!")
@@ -1632,9 +1633,9 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, uri[:len(base)])
 
         response = self.client_get(uri)
-        self.assertEqual(response.status_code, 302)
         redirect_url = response['Location']
-        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
+        key = urllib.parse.urlparse(redirect_url).path
+        self.assertEqual(b"zulip!", bucket.Object(key).get()['Body'].read())
 
         # Now try the endpoint that's supposed to return a temporary url for access
         # to the file.
@@ -1642,7 +1643,8 @@ class S3Test(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         url_only_url = data['url']
-        self.assertEqual(b"zulip!", urllib.request.urlopen(url_only_url).read().strip())
+        key = urllib.parse.urlparse(url_only_url).path
+        self.assertEqual(b"zulip!", bucket.Object(key).get()['Body'].read())
 
         # Note: Depending on whether the calls happened in the same
         # second (resulting in the same timestamp+signature),
@@ -1667,19 +1669,19 @@ class S3Test(ZulipTestCase):
             test_image_data = f.read()
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
-        original_image_key = bucket.get_key(original_image_path_id)
+        original_image_key = bucket.Object(original_image_path_id)
         self.assertEqual(original_image_key.key, original_image_path_id)
-        image_data = original_image_key.get_contents_as_string()
+        image_data = original_image_key.get()['Body'].read()
         self.assertEqual(image_data, test_image_data)
 
-        medium_image_key = bucket.get_key(medium_path_id)
+        medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
-        medium_image_data = medium_image_key.get_contents_as_string()
+        medium_image_data = medium_image_key.get()['Body'].read()
         self.assertEqual(medium_image_data, test_medium_image_data)
-        bucket.delete_key(medium_image_key)
 
+        bucket.Object(medium_image_key.key).delete()
         zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
-        medium_image_key = bucket.get_key(medium_path_id)
+        medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
 
     @use_s3_backend
@@ -1699,32 +1701,31 @@ class S3Test(ZulipTestCase):
         target_path_id = user_avatar_path(target_user_profile)
         self.assertNotEqual(source_path_id, target_path_id)
 
-        source_image_key = bucket.get_key(source_path_id)
-        target_image_key = bucket.get_key(target_path_id)
+        source_image_key = bucket.Object(source_path_id)
+        target_image_key = bucket.Object(target_path_id)
         self.assertEqual(target_image_key.key, target_path_id)
         self.assertEqual(source_image_key.content_type, target_image_key.content_type)
-        source_image_data = source_image_key.get_contents_as_string()
-        target_image_data = target_image_key.get_contents_as_string()
-        self.assertEqual(source_image_data, target_image_data)
+        source_image_data = source_image_key.get()['Body'].read()
+        target_image_data = target_image_key.get()['Body'].read()
 
         source_original_image_path_id = source_path_id + ".original"
         target_original_image_path_id = target_path_id + ".original"
-        target_original_image_key = bucket.get_key(target_original_image_path_id)
+        target_original_image_key = bucket.Object(target_original_image_path_id)
         self.assertEqual(target_original_image_key.key, target_original_image_path_id)
-        source_original_image_key = bucket.get_key(source_original_image_path_id)
+        source_original_image_key = bucket.Object(source_original_image_path_id)
         self.assertEqual(source_original_image_key.content_type, target_original_image_key.content_type)
-        source_image_data = source_original_image_key.get_contents_as_string()
-        target_image_data = target_original_image_key.get_contents_as_string()
+        source_image_data = source_original_image_key.get()['Body'].read()
+        target_image_data = target_original_image_key.get()['Body'].read()
         self.assertEqual(source_image_data, target_image_data)
 
         target_medium_path_id = target_path_id + "-medium.png"
         source_medium_path_id = source_path_id + "-medium.png"
-        source_medium_image_key = bucket.get_key(source_medium_path_id)
-        target_medium_image_key = bucket.get_key(target_medium_path_id)
+        source_medium_image_key = bucket.Object(source_medium_path_id)
+        target_medium_image_key = bucket.Object(target_medium_path_id)
         self.assertEqual(target_medium_image_key.key, target_medium_path_id)
         self.assertEqual(source_medium_image_key.content_type, target_medium_image_key.content_type)
-        source_medium_image_data = source_medium_image_key.get_contents_as_string()
-        target_medium_image_data = target_medium_image_key.get_contents_as_string()
+        source_medium_image_data = source_medium_image_key.get()['Body'].read()
+        target_medium_image_data = target_medium_image_key.get()['Body'].read()
         self.assertEqual(source_medium_image_data, target_medium_image_data)
 
     @use_s3_backend
@@ -1742,16 +1743,21 @@ class S3Test(ZulipTestCase):
         avatar_medium_path_id = avatar_path_id + "-medium.png"
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
-        self.assertIsNotNone(bucket.get_key(avatar_path_id))
-        self.assertIsNotNone(bucket.get_key(avatar_original_image_path_id))
-        self.assertIsNotNone(bucket.get_key(avatar_medium_path_id))
+        self.assertIsNotNone(bucket.Object(avatar_path_id))
+        self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
+        self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
         zerver.lib.actions.do_delete_avatar_image(user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
-        self.assertIsNone(bucket.get_key(avatar_path_id))
-        self.assertIsNone(bucket.get_key(avatar_original_image_path_id))
-        self.assertIsNone(bucket.get_key(avatar_medium_path_id))
+
+        # Confirm that the avatar files no longer exist in S3.
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(avatar_path_id).load()
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(avatar_original_image_path_id).load()
+        with self.assertRaises(botocore.exceptions.ClientError):
+            bucket.Object(avatar_medium_path_id).load()
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:
@@ -1764,7 +1770,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
-        self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
+        self.assertIsNone(get_realm_for_filename('non-existent-file-path'))
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:
@@ -1775,13 +1781,12 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
-        original_key = bucket.get_key(original_path_id)
+        original_key = bucket.Object(original_path_id)
         image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
-        resized_data = bucket.get_key(resized_path_id).read()
-        # resized image size should be 100 x 100 because thumbnail keeps aspect ratio
+        resized_data = bucket.Object(resized_path_id).get()['Body'].read()
         # while trying to fit in a 800 x 100 box without losing part of the image
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
@@ -1795,12 +1800,12 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name,))
-        original_key = bucket.get_key(original_path_id)
+        original_key = bucket.Object(original_path_id)
         image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name,))
-        resized_data = bucket.get_key(resized_path_id).read()
+        resized_data = bucket.Object(resized_path_id).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
 
@@ -1821,11 +1826,11 @@ class S3Test(ZulipTestCase):
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
-        original_key = bucket.get_key(emoji_path + ".original")
+        original_key = bucket.Object(emoji_path + ".original")
         image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
-        resized_data = bucket.get_key(emoji_path).read()
+        resized_data = bucket.Object(emoji_path).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data))
         self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 
@@ -1858,7 +1863,7 @@ class S3Test(ZulipTestCase):
         result = re.search(re.compile(r"([0-9a-fA-F]{32})"), uri)
         if result is not None:
             hex_value = result.group(1)
-        expected_url = "https://{bucket}.s3.amazonaws.com:443/exports/{hex_value}/{path}".format(
+        expected_url = "https://{bucket}.s3.amazonaws.com/exports/{hex_value}/{path}".format(
             bucket=bucket.name,
             hex_value=hex_value,
             path=os.path.basename(tarball_path))
