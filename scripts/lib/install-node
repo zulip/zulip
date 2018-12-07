@@ -6,7 +6,7 @@ ZULIP_SRV="/srv"
 if [ "$TRAVIS" ] ; then
     ZULIP_SRV="/home/travis"
 fi
-YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
+YARN_PACKAGE_JSON="$ZULIP_SRV/zulip-yarn/package.json"
 node_version=8.11.1
 yarn_version=1.7.0
 
@@ -20,7 +20,12 @@ if node_wrapper_path="$(command -v node)"; then
     current_node_version="$(node --version)"
 fi
 
-if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
+current_yarn_version="none"
+if [ -e "$YARN_PACKAGE_JSON" ]; then
+    current_yarn_version=$(jq -r '.version' "$YARN_PACKAGE_JSON")
+fi
+
+if [ "$current_yarn_version" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
     echo "Node version $node_version and yarn version $yarn_version are already installed."
     exit 0
 fi

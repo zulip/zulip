@@ -163,7 +163,7 @@ fi
 
 apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
 if ! apt-get install -y \
-    puppet git curl wget \
+    puppet git curl wget jq \
     python python3 python-six python3-six crudini \
     "${ADDITIONAL_PACKAGES[@]}"; then
     set +x
