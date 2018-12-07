@@ -1846,10 +1846,17 @@ input.new-organization-button {
         transition: all 0.3s ease;
     }
 
+    .help .sidebar .content:not(.show) {
+        visibility: hidden;
+    }
+
     .app.help .sidebar.show {
         pointer-events: initial;
         transform: translateX(calc(100% - 50px));
         overflow: auto;
+        .content {
+            visibility: visible;
+        }
     }
 
     .app.help .sidebar.show + .hamburger {
