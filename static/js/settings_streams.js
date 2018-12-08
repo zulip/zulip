@@ -10,6 +10,15 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='default-streams-list']")
+        .find("input:not(.search), button, select").attr("disabled", true);
+};
+
 exports.build_default_stream_table = function (streams_data) {
     var self = {};
 
