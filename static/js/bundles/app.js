@@ -183,7 +183,6 @@ import "js/settings_invites.js";
 import "js/settings_user_groups.js";
 import "js/settings_profile_fields.js";
 import "js/settings.js";
-import "js/admin_sections.js";
 import "js/admin.js";
 import "js/tab_bar.js";
 import "js/emoji.js";

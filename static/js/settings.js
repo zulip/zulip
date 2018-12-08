@@ -135,15 +135,12 @@ exports.build_page = function () {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-
-    // Since we just swapped in a whole new settings widget, we need to
-    // tell settings_sections nothing is loaded.
-    settings_sections.reset_sections();
 };
 
 exports.launch = function (section) {
     exports.build_page();
     admin.build_page();
+    settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.normal_settings.activate_section(section);

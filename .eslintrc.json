@@ -26,7 +26,6 @@
         "_": false,
         "activity": false,
         "admin": false,
-        "admin_sections": false,
         "alert_words": false,
         "alert_words_ui": false,
         "attachments_ui": false,
