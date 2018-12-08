@@ -81,6 +81,30 @@ var org_permissions = {
     },
 };
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='organization-profile']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-settings']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-settings']")
+        .find(".control-label-disabled").addClass('enabled');
+
+    $(".organization-box [data-name='organization-permissions']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-permissions']")
+        .find(".control-label-disabled").addClass('enabled');
+
+    $(".organization-box [data-name='auth-methods']")
+        .find("input, button, select, checked").attr("disabled", true);
+};
+
 exports.email_address_visibility_values = {
     everyone: {
         code: 1,

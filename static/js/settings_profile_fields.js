@@ -6,6 +6,15 @@ var meta = {
     loaded: false,
 };
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='profile-field-settings']")
+        .find("input, button, select").attr("disabled", true);
+};
+
 var order = [];
 var field_types = page_params.custom_profile_field_types;
 
