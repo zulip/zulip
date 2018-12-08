@@ -334,7 +334,12 @@ def main(options):
         print("No need to run `tools/setup/build_pygments_data`.")
 
     run(["scripts/setup/generate_secrets.py", "--development"])
-    run(["tools/update-authors-json", "--use-fixture"])
+
+    update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
+    if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
+        run(["tools/update-authors-json", "--use-fixture"])
+    else:
+        print("No need to run `tools/update-authors-json`.")
 
     email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
