@@ -97,7 +97,7 @@ matrix-client==0.3.2
 mock==2.0.0
 moto==1.3.3
 mypy-extensions==0.4.1
-mypy==0.641
+mypy==0.650
 ndg-httpsclient==0.5.1
 oauth2client==4.1.3
 oauthlib==2.1.0
