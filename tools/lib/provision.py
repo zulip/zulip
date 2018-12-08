@@ -118,25 +118,41 @@ POSTGRES_VERSION_MAP = {
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
-UBUNTU_COMMON_APT_DEPENDENCIES = [
+COMMON_DEPENDENCIES = [
     "closure-compiler",
     "memcached",
     "rabbitmq-server",
-    "redis-server",
-    "hunspell-en-us",
     "supervisor",
     "git",
-    "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
     "puppet",               # Used by lint (`puppet parser validate`)
-    "puppet-lint",
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
-    "netcat",               # Used for flushing memcached
     "moreutils",            # Used for sponge command
+]
+
+UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
+    "redis-server",
+    "hunspell-en-us",
+    "yui-compressor",
+    "puppet-lint",
+    "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
 ] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
+
+COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
+    "redis",
+    "hunspell-en-US",
+    "yuicompressor",
+    "rubygem-puppet-lint",
+    "nmap-ncat",
+    "fontconfig",  # phantomjs dependencies from here until libstdc++
+    "freetype",
+    "freetype-devel",
+    "fontconfig-devel",
+    "libstdc++"
+]
 
 APT_DEPENDENCIES = {
     "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
