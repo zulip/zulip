@@ -21,7 +21,7 @@ class AbstractEnum(Enum):
     def value(self) -> None:
         raise AssertionError("Not implemented")
 
-    def __reduce_ex__(self, proto: int) -> NoReturn:
+    def __reduce_ex__(self, proto: object) -> NoReturn:
         raise AssertionError("Not implemented")
 
 class ErrorCode(AbstractEnum):
