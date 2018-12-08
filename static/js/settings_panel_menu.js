@@ -5,7 +5,6 @@ var exports = {};
 exports.make_menu = function (opts) {
     var main_elem = opts.main_elem;
     var hash_prefix = opts.hash_prefix;
-    var load_section = opts.load_section;
     var curr_li = main_elem.children('li').eq(0);
 
     var self = {};
@@ -76,7 +75,7 @@ exports.make_menu = function (opts) {
 
         ui.update_scrollbar($("#settings_content"));
 
-        load_section(section);
+        settings_sections.load_settings_section(section);
 
         self.get_panel().addClass('show');
 
@@ -112,16 +111,10 @@ exports.initialize = function () {
     exports.normal_settings = exports.make_menu({
         main_elem: $('.normal-settings-list'),
         hash_prefix: "settings/",
-        load_section: function (section) {
-            settings_sections.load_settings_section(section);
-        },
     });
     exports.org_settings = exports.make_menu({
         main_elem: $('.org-settings-list'),
         hash_prefix: "organization/",
-        load_section: function (section) {
-            admin_sections.load_admin_section(section);
-        },
     });
 };
 
