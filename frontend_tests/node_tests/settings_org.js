@@ -689,6 +689,7 @@ run_test('set_up', () => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
+    settings_org.maybe_disable_widgets = noop;
     settings_org.set_up();
 
     verify_realm_domains();

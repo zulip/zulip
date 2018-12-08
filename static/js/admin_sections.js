@@ -4,13 +4,6 @@ var exports = {};
 
 var is_loaded = new Dict(); // section -> bool
 
-exports.maybe_disable_widgets = function () {
-    settings_org.maybe_disable_widgets();
-    settings_streams.maybe_disable_widgets();
-    settings_filters.maybe_disable_widgets();
-    settings_profile_fields.maybe_disable_widgets();
-};
-
 exports.load_admin_section = function (name) {
     var section;
 
@@ -84,8 +77,6 @@ exports.load_admin_section = function (name) {
         blueslip.error('programming error for section ' + section);
         return;
     }
-
-    exports.maybe_disable_widgets();
 
     is_loaded.set(section, true);
 };
