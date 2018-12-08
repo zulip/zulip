@@ -198,7 +198,7 @@ su zulip
 
 # Enable EPEL 7 repo so we can install rabbitmq-server, redis and
 # other dependencies
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum install epel-release
 
 # Install dependencies
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
