@@ -351,7 +351,11 @@ function set_up_choices_field() {
 }
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
 
+exports.build_page = function () {
     // create loading indicators
     loading.make_indicator($('#admin_page_profile_fields_loading_indicator'));
     // Populate profile_fields table

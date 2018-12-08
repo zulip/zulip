@@ -548,6 +548,11 @@ exports.change_save_button_state = function ($element, state) {
 };
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
+
+exports.build_page = function () {
     meta.loaded = true;
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
