@@ -44,6 +44,11 @@ exports.populate_filters = function (filters_data) {
 };
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
+
+exports.build_page = function () {
     meta.loaded = true;
 
     // create loading indicators

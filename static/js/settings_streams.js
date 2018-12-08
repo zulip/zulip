@@ -109,6 +109,11 @@ exports.delete_default_stream = function (stream_name, default_stream_row, alert
 };
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
+
+exports.build_page = function () {
     meta.loaded = true;
 
     exports.update_default_streams_table();
