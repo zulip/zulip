@@ -69,16 +69,13 @@ exports.build_page = function () {
     $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
-
-    // Since we just swapped in a whole new page, we need to
-    // tell admin_sections nothing is loaded.
-    admin_sections.reset_sections();
 };
 
 
 exports.launch = function (section) {
     settings.build_page();
     exports.build_page();
+    settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.org_settings.activate_section(section);
