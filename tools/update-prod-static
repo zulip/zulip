@@ -44,7 +44,7 @@ run(['./tools/setup/emoji/build_emoji'], stdout=fp, stderr=fp)
 run(['./tools/inline-email-css'], stdout=fp, stderr=fp)
 
 # Copy over static files from the zulip_bots package
-run(['./tools/setup/generate_zulip_bots_static_files'], stdout=fp, stderr=fp)
+run(['./tools/setup/generate_zulip_bots_static_files.py'], stdout=fp, stderr=fp)
 
 # Generate custom icon webfont
 run(['./tools/setup/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
