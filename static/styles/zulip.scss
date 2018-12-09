@@ -2450,7 +2450,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #invite-user .overlay-content {
     position: relative;
-    width: 500px;
+    max-width: 500px;
     border-radius: 4px;
 }
 
