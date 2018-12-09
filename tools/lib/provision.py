@@ -24,6 +24,7 @@ from version import PROVISION_VERSION
 if False:
     from typing import Any
 
+from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_file
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -299,7 +300,7 @@ def main(options):
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
-    run(["tools/setup/generate_zulip_bots_static_files"])
+    generate_zulip_bots_static_file()
 
     webfont_paths = ["tools/setup/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
     webfont_paths += glob.glob('static/assets/icons/*')
