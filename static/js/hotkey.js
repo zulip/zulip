@@ -385,7 +385,8 @@ exports.process_tab_key = function () {
     var focused_message_edit_content = $(".message_edit_content").filter(":focus");
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
-        message_edit_form.find(".message_edit_save").focus();
+        // Open message edit forms either have a save button or a close button, but not both.
+        message_edit_form.find(".message_edit_save,.message_edit_close").focus();
         return true;
     }
 
