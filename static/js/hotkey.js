@@ -386,6 +386,7 @@ exports.process_tab_key = function () {
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
         message_edit_form.find(".message_edit_save").focus();
+        message_edit_form.find(".message_edit_close").focus();
         return true;
     }
 
