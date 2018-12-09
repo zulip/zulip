@@ -356,7 +356,7 @@ sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/inline-email-css
 ./tools/setup/generate-custom-icon-webfont
 ./tools/setup/build_pygments_data
-./tools/setup/generate_zulip_bots_static_files
+./tools/setup/generate_zulip_bots_static_files.py
 ./scripts/setup/generate_secrets.py --development
 if [ $(uname) = "OpenBSD" ]; then
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
