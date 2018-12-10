@@ -72,7 +72,7 @@ sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' ~/succ
 if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     set +x
     echo
-    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
     echo "Displaying the contents of the server's error log:"
     echo
     cat /var/log/zulip/errors.log

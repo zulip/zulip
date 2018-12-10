@@ -15,7 +15,7 @@ install:
   - mispipe "pip install codecov" ts || mispipe "pip install codecov" ts
 
   # This is the main setup job for the test suite
-  - mispipe "tools/travis/setup-$TEST_SUITE" ts
+  - mispipe "tools/ci/setup-$TEST_SUITE" ts
 
   # Clean any caches that are not in use to avoid our cache
   # becoming huge.
@@ -26,7 +26,7 @@ script:
   # broken running their system puppet with Ruby.  See
   # https://travis-ci.org/zulip/zulip/jobs/240120991 for an example traceback.
   - unset GEM_PATH
-  - mispipe "./tools/travis/$TEST_SUITE" ts
+  - mispipe "./tools/ci/$TEST_SUITE" ts
 cache:
   yarn: true
   apt: false

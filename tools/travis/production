@@ -1,5 +1,0 @@
-#!/bin/bash
-set -e
-set -x
-
-sudo ./tools/travis/production-helper

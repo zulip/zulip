@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source tools/travis/activate-venv
+source tools/ci/activate-venv
 echo "Test suite is running under $(python --version)."
 
 set -e
