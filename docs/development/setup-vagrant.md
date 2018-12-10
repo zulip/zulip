@@ -592,7 +592,7 @@ Next, read the following to learn more about developing for Zulip:
 
 * [Git & GitHub Guide][rtd-git-guide]
 * [Using the Development Environment][rtd-using-dev-env]
-* [Testing][rtd-testing] (and [Configuring Travis CI][travis-ci] to
+* [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
@@ -1061,4 +1061,4 @@ for the IP address that means any IP address can connect to your development ser
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.html
-[travis-ci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

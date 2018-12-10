@@ -76,7 +76,7 @@ Once you've installed the Zulip development environment, you'll want
 to read these documents to learn how to use it:
 
 * [Using the Development Environment][using-dev-env]
-* [Testing][testing] (and [Configuring Travis CI][travis-ci])
+* [Testing][testing] (and [Configuring CI][ci])
 
 And if you've setup the Zulip development environment on a remote
 machine, take a look at our tips for
@@ -92,4 +92,4 @@ machine, take a look at our tips for
 [configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
 [using-dev-env]: using.html
 [testing]: ../testing/testing.html
-[travis-ci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

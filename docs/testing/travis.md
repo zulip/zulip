@@ -70,7 +70,7 @@ our configuration, you'll want to look at these closely.
   that every remote branch you push will be tested, which can be
   helpful when debugging something complicated.
 
-[travis-fork]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[travis-fork]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
 
 ## Performance optimizations
 
