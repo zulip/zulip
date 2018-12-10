@@ -100,7 +100,8 @@ else:
 
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
-if not os.path.exists("/usr/bin/lsb_release"):
+is_rhel_based = os.path.exists("/etc/redhat-release")
+if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
     subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 
 distro_info = parse_lsb_release()
