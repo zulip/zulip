@@ -29,14 +29,14 @@ The specific test suites we have are listed in the `matrix` section,
 which has a matrix of Python versions and test suites (`$TEST_SUITE`).
 We've configured it to use a few helper scripts for each job:
 
-* `tools/travis/setup-$TEST_SUITE`: The script that sets up the test
+* `tools/ci/setup-$TEST_SUITE`: The script that sets up the test
   environment for that suite (E.g., installing dependencies).
   * For the backend and frontend suites, this is a thin wrapper around
     `tools/provision`, aka the development environment provision script.
   * For the production suite, this is a more complicated process
     because of all the packages Travis installs.  See the comments in
-    `tools/travis/setup-production` for details.
-* `tools/travis/$TEST_SUITE`: The script that runs the actual test
+    `tools/ci/setup-production` for details.
+* `tools/ci/$TEST_SUITE`: The script that runs the actual test
   suite.
 
 The main purpose of the distinction between the two is that if the
@@ -111,6 +111,6 @@ build workers (e.g. several copies of Postgres, Java, MySQL, etc.).
 In order to make Zulip's tests performance reasonably well, we
 uninstall (or mark with `apt-mark hold`) many of these dependencies
 that are irrelevant to Zulip in
-[`tools/travis/setup-production`][setup-production].
+[`tools/ci/setup-production`][setup-production].
 
-[setup-production]: https://github.com/zulip/zulip/blob/master/tools/travis/setup-production
+[setup-production]: https://github.com/zulip/zulip/blob/master/tools/ci/setup-production

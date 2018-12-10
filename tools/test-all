@@ -38,7 +38,7 @@ function run {
 run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 
-# travis/backend
+# ci/backend
 run ./tools/lint --backend $FORCEARG
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
@@ -57,7 +57,7 @@ run ./tools/test-api
 # Not running queue worker reload tests since it's low-churn code
 # run ./tools/test-queue-worker-reload
 
-# travis/frontend
+# ci/frontend
 run ./tools/lint --frontend $FORCEARG
 run ./tools/test-js-with-node
 run ./manage.py makemessages --locale en

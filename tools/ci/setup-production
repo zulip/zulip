@@ -32,8 +32,8 @@ if ! tools/provision --production-travis; then
     tools/provision --production-travis
 fi
 
-cp -a tools/travis/success-http-headers.txt ~/
-source tools/travis/activate-venv
+cp -a tools/ci/success-http-headers.txt ~/
+source tools/ci/activate-venv
 
 # Force OpenJDK 8 JRE. This is a workaround for Travis CI having
 # broken their java install, but also nicely provides consistency.

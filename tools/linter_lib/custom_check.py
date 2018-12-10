@@ -239,7 +239,7 @@ def build_custom_checkers(by_lang):
          },
         {'pattern': '\t',
          'strip': '\n',
-         'exclude': set(['tools/travis/success-http-headers.txt']),
+         'exclude': set(['tools/ci/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
     comma_whitespace_rule = [
