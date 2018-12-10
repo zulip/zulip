@@ -322,7 +322,17 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
 
 def parse_lsb_release():
     # type: () -> Dict[str, str]
-    distro_info = {}
+    distro_info = {}  # type: Dict[str, str]
+    if os.path.exists("/etc/redhat-release"):
+        with open('/etc/redhat-release', 'r') as fp:
+            info = fp.read().strip().split(' ')
+        vendor = info[0]
+        codename = 'centos' + info[3][0]
+        distro_info = dict(
+            DISTRIB_CODENAME=codename,
+            DISTRIB_ID=vendor
+        )
+        return distro_info
     try:
         # For performance reasons, we read /etc/lsb-release directly,
         # rather than using the lsb_release command; this saves ~50ms
