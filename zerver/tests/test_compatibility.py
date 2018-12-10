@@ -78,6 +78,10 @@ class CompatibilityTest(ZulipTestCase):
       ok  ZulipMobile/20.0.103 (iOS 12.1)
     '''.strip().split('\n') if case]
 
+    def test_compatibility_without_user_agent(self) -> None:
+        result = self.client_get("/compatibility")
+        self.assert_json_error(result, 'User-Agent header missing from request')
+
     def test_compatibility(self) -> None:
         for expected, user_agent in self.data:
             result = self.client_get("/compatibility",
