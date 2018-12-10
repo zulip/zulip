@@ -3,6 +3,8 @@ from django.http import HttpResponse, HttpRequest
 import re
 from typing import Any, List, Dict, Optional, Tuple, Union
 
+from django.utils.translation import ugettext as _
+
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent
 
@@ -71,6 +73,9 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
 android_min_app_version = '16.2.96'
 
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
+    if request.META.get('HTTP_USER_AGENT') is None:
+        return json_error(_('User-Agent header missing from request'))
+
     # This string should not be tagged for translation, since old
     # clients are checking for an extra string.
     legacy_compatibility_error_message = "Client is too old"
