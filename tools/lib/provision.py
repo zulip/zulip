@@ -236,7 +236,6 @@ def main(options):
     # project.
     os.chdir(ZULIP_PATH)
 
-    # setup-apt-repo does an `apt-get update`
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
