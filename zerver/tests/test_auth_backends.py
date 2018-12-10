@@ -1911,7 +1911,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
-    def test_login_mobile_flow_otp_success(self) -> None:
+    def test_login_mobile_flow_otp_success_email(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
         user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
@@ -1936,6 +1936,49 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp=mobile_flow_otp),
                                   REMOTE_USER=email,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zulip on Android', mail.outbox[0].body)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(SSO_APPEND_DOMAIN="zulip.com")
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
+    def test_login_mobile_flow_otp_success_username(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        remote_user = email_to_username(email)
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
+        mobile_flow_otp = '1234abcd' * 8
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp="1234"),
+                                  REMOTE_USER=remote_user,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp="invalido" * 8),
+                                  REMOTE_USER=remote_user,
+                                  HTTP_USER_AGENT = "ZulipAndroid")
+        self.assertIs(get_session_dict_user(self.client.session), None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_post('/accounts/login/sso/',
+                                  dict(mobile_flow_otp=mobile_flow_otp),
+                                  REMOTE_USER=remote_user,
                                   HTTP_USER_AGENT = "ZulipAndroid")
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']

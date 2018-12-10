@@ -142,11 +142,12 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False,
                                   redirect_to: str='') -> HttpResponse:
+    email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
-        # We have verified the user controls an email address
-        # (remote_username) but there's no associated Zulip user
-        # account.  Consider sending the request to registration.
-        return maybe_send_to_registration(request, remote_user_to_email(remote_username),
+        # We have verified the user controls an email address, but
+        # there's no associated Zulip user account.  Consider sending
+        # the request to registration.
+        return maybe_send_to_registration(request, email,
                                           full_name, password_required=False, is_signup=is_signup)
 
     # Otherwise, the user has successfully authenticated to an
@@ -158,7 +159,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
         api_key = get_api_key(user_profile)
         params = {
             'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
-            'email': remote_username,
+            'email': email,
             'realm': user_profile.realm.uri,
         }
         # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
