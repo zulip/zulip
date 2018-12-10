@@ -105,7 +105,7 @@ The exact lists of `apt` packages needed by Zulip are maintained in a
 few places:
 * For production, in our puppet configuration, `puppet/zulip/`, using
   the `Package` and `SafePackage` directives.
-* For development, in `APT_DEPENDENCIES` in `tools/lib/provision.py`.
+* For development, in `SYSTEM_DEPENDENCIES` in `tools/lib/provision.py`.
 * The packages needed to build a Zulip virtualenv, in
   `VENV_DEPENDENCIES` in `scripts/lib/setup_venv.py`.  These are
   separate from the rest because (1) we may need to install a

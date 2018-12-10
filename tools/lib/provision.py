@@ -156,7 +156,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "libstdc++"
 ] + YUM_VENV_DEPENDENCIES + YUM_THUMBOR_VENV_DEPENDENCIES
 
-APT_DEPENDENCIES = {
+SYSTEM_DEPENDENCIES = {
     "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.6",
         "postgresql-9.6-tsearch-extras",
@@ -218,7 +218,7 @@ def install_apt_deps():
     # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # By doing list -> set -> list conversion we remove duplicates.
-    deps_to_install = list(set(APT_DEPENDENCIES[codename]))
+    deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 def main(options):
@@ -232,7 +232,7 @@ def main(options):
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
-    for apt_depedency in APT_DEPENDENCIES[codename]:
+    for apt_depedency in SYSTEM_DEPENDENCIES[codename]:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
     sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
