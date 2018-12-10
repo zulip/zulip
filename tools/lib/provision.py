@@ -36,6 +36,9 @@ SUPPORTED_PLATFORMS = {
     "Debian": [
         "stretch",
     ],
+    "CentOS": [
+        "centos7",
+    ]
 }
 
 VENV_PATH = "/srv/zulip-py3-venv"
@@ -227,7 +230,14 @@ def install_apt_deps():
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # By doing list -> set -> list conversion we remove duplicates.
     deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
-    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+    if vendor == 'CentOS':
+        print(WARNING + "CentOS support is still experimental.")
+        run(["sudo", "yum", "install", "-y", "epel-release"])
+        # "Development Tools" is the equivalent of build-essential
+        run(["sudo", "yum", "groupinstall", "-y", "Development Tools"])
+        run(["sudo", "yum", "install", "-y"] + deps_to_install)
+    else:
+        run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 def main(options):
     # type: (Any) -> int
