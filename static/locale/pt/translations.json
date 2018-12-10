@@ -276,7 +276,7 @@
   "Mark all messages in <b>__stream.name__</b> as read": "Marcar todas as mensagens em <b>__stream.name__</b> como lidas",
   "Mark all messages in <b>__topic_name__</b> as read": "Marcar todas as mensagens em <b>__topic_name__</b> como lidas",
   "Marketing team": "Time de marketing",
-  "Marking all messages as read\u2026": "Marcando todas as mensagens como lidas...",
+  "Marking all messages as read\u2026": "Marcando todas as mensagens como lidas\\\\u2026",
   "Member": "Membro",
   "Members and admins": "Membros e administradores",
   "Members and admins, but only admins can add generic bots": "Membros e administradores, mas apenas administradores podem adicionar bots genéricos",

@@ -14,8 +14,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-03 00:32+0000\n"
-"PO-Revision-Date: 2018-11-03 00:04+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2018-11-08 07:30+0000\n"
+"Last-Translator: longjiang li <cqlilon@live.com>\n"
 "Language-Team: Chinese Simplified (http://www.transifex.com/zulip/zulip/language/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -318,7 +318,7 @@ msgstr "保存为草稿"
 
 #: templates/zerver/app/compose.html:20
 msgid "New message"
-msgstr ""
+msgstr "新消息"
 
 #: templates/zerver/app/compose.html:27 templates/zerver/app/compose.html:28
 msgid "New topic"
@@ -1380,7 +1380,7 @@ msgid ""
 "    If you did not request this change, please contact us immediately at\n"
 "    <a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>.\n"
 "    "
-msgstr ""
+msgstr "\n如果您没有发送修改请求，请立即联系我们<a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:29
 #: templates/zerver/emails/compiled/confirm_registration.html:27
@@ -1450,7 +1450,7 @@ msgid ""
 "    <a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>,\n"
 "    if you have any questions.\n"
 "    "
-msgstr ""
+msgstr "\n如果您有任何问题，都可以告诉我们<a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>"
 
 #: templates/zerver/emails/compiled/find_team.html:9
 #: templates/zerver/emails/find_team.source.html:8
@@ -1511,7 +1511,7 @@ msgid ""
 "    Zulip works best when it's always open, so we suggest downloading\n"
 "    our <a href=\"https://zulipchat.com/apps\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">desktop and mobile apps</a>.\n"
 "    "
-msgstr ""
+msgstr "\n为了使用Zulip时获得更好的体验，建议下载使用<a href=\"https://zulipchat.com/apps\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">桌面端和移动端App</a>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:19
 #: templates/zerver/emails/followup_day1.source.html:18
@@ -1528,7 +1528,7 @@ msgid ""
 "    Become a Zulip pro with a few\n"
 "    <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">keyboard shortcuts</a>:\n"
 "    "
-msgstr ""
+msgstr "\n为了更方便的使用Zulip，了解一下<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">快捷键</a>："
 
 #: templates/zerver/emails/compiled/followup_day1.html:34
 #: templates/zerver/emails/followup_day1.source.html:33
@@ -1555,7 +1555,7 @@ msgid ""
 "    Give our <a href=\"%(getting_started_link)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">guide for new\n"
 "    %(user_role_group)s</a> a spin.\n"
 "    "
-msgstr ""
+msgstr "\n快速浏览<a href=\"%(getting_started_link)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(user_role_group)s新手教程</a>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:47
 msgid ""
@@ -1576,7 +1576,7 @@ msgid ""
 "    chat with us live on the\n"
 "    <a href=\"https://chat.zulip.org\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">Zulip community server</a>!\n"
 "    "
-msgstr ""
+msgstr "\n例如：关注我们的<a href=\"https://twitter.com/zulip\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">Twitter</a>，给我们的<a href=\"https://github.com/zulip/zulip\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">GitHub</a>加星，或者在<a href=\"https://chat.zulip.org\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">Zulip community server</a>和我们在线交流"
 
 #: templates/zerver/emails/compiled/invitation.html:12
 #, python-format
@@ -1601,7 +1601,7 @@ msgid ""
 "Feel free to give us a shout at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:hsl(164, 42%%, 47%%); text-"
 "decoration:underline\">%(support_email)s</a>, if you have any questions."
-msgstr ""
+msgstr "如果您有任何问题，都可以告诉我们<a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>"
 
 #: templates/zerver/emails/compiled/invitation.html:27
 #: templates/zerver/emails/compiled/invitation_reminder.html:23
@@ -1625,7 +1625,7 @@ msgid ""
 "href=\"mailto:%(referrer_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-"
 "decoration:underline\">%(referrer_email)s</a>) wants you to join them on "
 "Zulip, a workplace chat tool that actually makes you more productive."
-msgstr ""
+msgstr "友情提示：%(referrer_name)s(<a href=\"mailto:%(referrer_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(referrer_email)s</a>)邀请你加入他们的Zulip,一个能大大提高工作效率的交流工具"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #, python-format
@@ -1633,7 +1633,7 @@ msgid ""
 "We're here for you at <a href=\"mailto:%(support_email)s\" "
 "style=\"color:hsl(164, 42%%, 47%%); text-"
 "decoration:underline\">%(support_email)s</a> if you have any questions."
-msgstr ""
+msgstr "如果您有任何问题请联系我们<a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -1651,7 +1651,7 @@ msgid ""
 "change, please contact us immediately at <a "
 "href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-"
 "decoration:underline\">%(support_email)s</a>."
-msgstr ""
+msgstr "您Zulip账户关联的电子邮件变更为<a href=\"%(new_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(new_email)s</a>。如果不是您请求的变更请立即联系我们<a href=\"mailto:%(support_email)s\" style=\"color:hsl(164, 42%%, 47%%); text-decoration:underline\">%(support_email)s</a>"
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:14
 #: templates/zerver/emails/notify_change_in_email.source.html:13
@@ -2371,7 +2371,7 @@ msgstr "必须是组织管理员"
 
 #: zerver/decorator.py:142
 msgid "Must be a billing administrator or an organization administrator"
-msgstr ""
+msgstr "必须是账单管理员或者组织管理员"
 
 #: zerver/decorator.py:224
 msgid "Invalid subdomain for push notifications bouncer"
@@ -3011,7 +3011,7 @@ msgstr "名称中有无效字符！"
 
 #: zerver/lib/users.py:39
 msgid "Name is already in use!"
-msgstr ""
+msgstr "用户名已被占用"
 
 #: zerver/lib/users.py:44 zerver/views/users.py:283 zerver/views/users.py:455
 msgid "Bad name or username"
@@ -3736,7 +3736,7 @@ msgstr "无法停用唯一的社群管理员"
 
 #: zerver/views/users.py:97
 msgid "Guests cannot be organization administrators"
-msgstr ""
+msgstr "访客不能是组织管理员"
 
 #: zerver/views/users.py:101
 msgid "Cannot remove the only organization administrator"

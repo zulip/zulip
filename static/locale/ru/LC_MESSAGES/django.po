@@ -11,7 +11,7 @@
 # Sergey Korablin <s.korablin@gmail.com>, 2018
 # Sergey Korablin <s.korablin@gmail.com>, 2018
 # Никита Радченко <aygolan@gmail.com>, 2016
-# Султонбек Ахмедов <cooltonbek@gmail.com>, 2018
+# Султонбек Ахмедов <nyfe@bk.ru>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
