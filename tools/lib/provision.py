@@ -16,7 +16,8 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
-    setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
+    setup_virtualenv, VENV_DEPENDENCIES, YUM_VENV_DEPENDENCIES,
+    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
@@ -153,7 +154,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "freetype-devel",
     "fontconfig-devel",
     "libstdc++"
-]
+] + YUM_VENV_DEPENDENCIES + YUM_THUMBOR_VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
     "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
