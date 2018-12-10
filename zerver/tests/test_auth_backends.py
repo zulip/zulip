@@ -1514,6 +1514,10 @@ class FetchAuthBackends(ZulipTestCase):
         if error:
             raise AssertionError(error)
 
+    def test_get_server_settings_without_user_agent(self) -> None:
+        result = self.client_get("/api/v1/server_settings", subdomain="")
+        self.assert_json_error(result, 'User-Agent header missing from request')
+
     def test_get_server_settings(self) -> None:
         def check_result(result: HttpResponse, extra_fields: List[Tuple[str, Validator]]=[]) -> None:
             self.assert_json_success(result)

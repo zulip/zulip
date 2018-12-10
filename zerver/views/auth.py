@@ -851,6 +851,9 @@ def check_server_incompatibility(request: HttpRequest) -> bool:
 @require_GET
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
+    if request.META.get('HTTP_USER_AGENT') is None:
+        return json_error(_('User-Agent header missing from request'))
+
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
