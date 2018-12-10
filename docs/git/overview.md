@@ -46,7 +46,7 @@ with these details in mind:
   tasks of testing other contributors' pull requests to single commands.
 
 Finally, install the [Zulip developer environment][zulip-rtd-dev-overview], and then
-[configure your fork for use with Travis CI][zulip-git-guide-travisci].
+[configure continuous integration for your fork][zulip-git-guide-fork-ci].
 
 ***
 
@@ -59,7 +59,7 @@ git workflow, or if you'd like a git refresher.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [travis-ci]: https://travis-ci.org/
-[zulip-git-guide-travisci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[zulip-git-guide-fork-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
 [zulip-rtd-code-style]: ../contributing/code-style.html
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
