@@ -117,6 +117,7 @@ POSTGRES_VERSION_MAP = {
     "trusty": "9.3",
     "xenial": "9.5",
     "bionic": "10",
+    "centos7": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -177,6 +178,13 @@ SYSTEM_DEPENDENCIES = {
         "postgresql-10-pgroonga",
         "postgresql-10-tsearch-extras",
     ],
+    "centos7": COMMON_YUM_DEPENDENCIES + [
+        "postgresql10-server",  # TODO add the source
+        "postgresql10",
+        "postgresql10-devel",
+        "postgresql10-pgroonga",  # TODO add the source
+        # TODO tsearch-extras must be compiled from scratch
+    ]
 }
 
 TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
