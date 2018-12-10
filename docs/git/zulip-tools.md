@@ -29,9 +29,9 @@ $ ls -l .git/hooks
 pre-commit -> ../../tools/pre-commit
 ```
 
-## Set up Travis CI integration
+## Configure continuous integration for your Zulip fork
 
-You might also wish to [configure your fork for use with Travis CI][zulip-git-guide-travisci].
+You might also wish to [configure continuous integration for your fork][zulip-git-guide-ci].
 
 ## Reset to pull request
 
@@ -149,4 +149,4 @@ git rebase --continue
 
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [zulip-git-guide-fetch-pr]: ../git/collaborate.html#checkout-a-pull-request-locally
-[zulip-git-guide-travisci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[zulip-git-guide-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
