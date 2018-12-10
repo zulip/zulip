@@ -45,6 +45,27 @@ VENV_DEPENDENCIES = [
     "jq",                   # Used by scripts/lib/install-node to check yarn version
 ]
 
+YUM_VENV_DEPENDENCIES = [
+    "libffi-devel",
+    "freetype-devel",
+    "zlib-devel",
+    "libjpeg-turbo-devel",
+    "openldap-devel",
+    "libmemcached-devel",
+    "python34-devel",
+    "python-devel",
+    "python34-pip",
+    "python2-pip",
+    "python-virtualenv",
+    "python34-six",
+    "python-six",
+    "libxml2-devel",
+    "libxslt-devel",
+    "postgresql-libs",  # libpq-dev on apt
+    "openssl-devel",
+    "jq",
+]
+
 codename = parse_lsb_release()["DISTRIB_CODENAME"]
 
 if codename != "trusty":
@@ -57,6 +78,15 @@ THUMBOR_VENV_DEPENDENCIES = [
     "zlib1g-dev",
     "libfreetype6-dev",
     "libpng-dev",
+    "gifsicle",
+]
+
+YUM_THUMBOR_VENV_DEPENDENCIES = [
+    "libcurl-devel",
+    "libjpeg-turbo-devel",
+    "zlib-devel",
+    "freetype-devel",
+    "libpng-devel",
     "gifsicle",
 ]
 
