@@ -181,13 +181,13 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
 def process_client(request: HttpRequest, user_profile: UserProfile,
                    *, is_browser_view: bool=False,
                    client_name: Optional[str]=None,
-                   remote_server_request: bool=False,
+                   skip_update_user_activity: bool=False,
                    query: Optional[str]=None) -> None:
     if client_name is None:
         client_name = get_client_name(request, is_browser_view)
 
     request.client = get_client(client_name)
-    if not remote_server_request:
+    if not skip_update_user_activity:
         update_user_activity(request, user_profile, query)
 
 class InvalidZulipServerError(JsonableError):
@@ -227,7 +227,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         request.user = remote_server
         request._email = "zulip-server:" + role
         remote_server.rate_limits = ""
-        process_client(request, remote_server, remote_server_request=True)
+        # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
+        process_client(request, remote_server, skip_update_user_activity=True)
         return remote_server
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
