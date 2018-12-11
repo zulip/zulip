@@ -851,6 +851,8 @@ def check_server_incompatibility(request: HttpRequest) -> bool:
 @require_GET
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
+    # Log which client is making this request.
+    process_client(request, request.user, skip_update_user_activity=True)
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
