@@ -2,8 +2,24 @@
 set -x
 set -e
 
+# Ensure the directory for LAST_DEPENDENCIES_HASH exists
+mkdir -p /var/lib/zulip
+
 SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
 STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+
+ZULIP_SCRIPTS="$(dirname "$(dirname "$0")")"
+DEPENDENCIES_HASH=$(sha1sum "$ZULIP_SCRIPTS/setup/"*.asc "$0")
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state"
+# Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
+touch "$DEPENDENCIES_HASH_FILE"
+LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
+
+# First, we only do anything in setup-apt-repo if any of its inputs
+# (apt keys, code, etc.)  changed.
+if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
+    exit 0
+fi
 
 # Ensure that the sources file exists
 touch "$SOURCES_FILE"
@@ -48,3 +64,5 @@ else
     touch "$STAMP_FILE"
     apt-get update && rm -f "$STAMP_FILE"
 fi
+
+echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
