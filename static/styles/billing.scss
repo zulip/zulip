@@ -177,6 +177,22 @@
         display: none;
     }
 
+    #autopay-loading {
+        display: none;
+        min-height: 55px;
+        text-align: center;
+    }
+
+    #autopay-success {
+        text-align: center;
+        display: none;
+    }
+
+    #autopay-error {
+        text-align: center;
+        display: none;
+    }
+
     #update-card-button-span {
         display: block;
         min-height: 30px;
@@ -217,7 +233,30 @@
         border-radius: 6px;
     }
 
-    .loading_indicator_text {
+    #updating_card_indicator .loading_indicator_text {
         margin-left: -75px;
+    }
+
+    #autopay_loading_indicator {
+        margin: 10px auto;
+    }
+
+    #autopay_loading_indicator_box_container {
+        position: absolute;
+        left: 50%;
+    }
+
+    #autopay_loading_indicator_box {
+        position: relative;
+        left: -50%;
+        top: -41px;
+        z-index: 1;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+    }
+
+    #autopay_loading_indicator .loading_indicator_text {
+        margin-left: -115px;
     }
 }

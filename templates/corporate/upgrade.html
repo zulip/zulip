@@ -13,6 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ render_bundle('landing-page') }}
 {{ render_bundle('billing') }}
+<script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -42,56 +43,63 @@
 
                 <div class="tab-content">
                     <div class="tab-pane active" id="autopay">
-                        <form method="post">
-                            {{ csrf_input }}
-                            <input type="hidden" name="seat_count" value="{{ seat_count }}">
-                            <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
-                            <input type="hidden" name="salt" value="{{ salt }}">
-                            <input type="hidden" name="billing_modality" value="charge_automatically">
-                            <div class="payment-schedule">
-                                <h3>{{ _("Payment schedule") }}</h3>
-                                <label>
-                                    <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
-                                    <div class="box">
-                                        <div class="schedule-time annually">{{ _("Pay annually") }}</div>
-                                        <div class="schedule-amount">
-                                            $<span id="autopay_annual_price_per_month"></span>/user/month
-                                            <div class="schedule-amount-2">
-                                                ($<span id="autopay_annual_price"></span>/user/year)
+                        <div id="autopay-input-section">
+                            <form id="autopay-form" data-key="{{ publishable_key }}" data-email="{{email}}" method="post">
+                                <input type="hidden" name="seat_count" value="{{ seat_count }}">
+                                <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                                <input type="hidden" name="salt" value="{{ salt }}">
+                                <input type="hidden" name="billing_modality" value="charge_automatically">
+                                <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                                <div class="payment-schedule">
+                                    <h3>{{ _("Payment schedule") }}</h3>
+                                    <label>
+                                        <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
+                                        <div class="box">
+                                            <div class="schedule-time annually">{{ _("Pay annually") }}</div>
+                                            <div class="schedule-amount">
+                                                $<span id="autopay_annual_price_per_month"></span>/user/month
+                                                <div class="schedule-amount-2">
+                                                    ($<span id="autopay_annual_price"></span>/user/year)
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </label>
-                                <label>
-                                    <input type="radio" name="plan" value="{{ nickname_monthly }}" />
-                                    <div class="box">
-                                        <div class="schedule-time">{{ _("Pay monthly") }}</div>
-                                        <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
-                                    </div>
-                                </label>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="plan" value="{{ nickname_monthly }}" />
+                                        <div class="box">
+                                            <div class="schedule-time">{{ _("Pay monthly") }}</div>
+                                            <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p>
+                                    You&rsquo;ll initially be charged
+                                    <b>$<span id="charged_amount"></span></b>
+                                    for <b>{{ seat_count }}</b> users. We’ll automatically charge you
+                                    when new users are added, and give you credit when users are deactivated.
+                                </p>
+                                <button id="add-card-button" class="stripe-button-el">
+                                    <span id="add-card-button-span">Add card</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div id="autopay-loading">
+                            <div class="updating-card-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
+                                    <g transform="translate(-297.14285,-466.64792)">
+                                        <circle cx="317.14285" cy="486.64792" r="19.030317" style="stroke-width:1.93936479;"/>
+                                        <path d="m309.24286 477.14791 14.2 0 1.6 3.9-11.2 11.9 9.6 0 1.6 3.2-14.2 0-1.6-3.9 11.2-11.9-9.6 0z"/>
+                                    </g>
+                                </svg>
                             </div>
-                            <p>
-                                You&rsquo;ll initially be charged
-                                <b>$<span id="charged_amount"></span></b>
-                                for <b>{{ seat_count }}</b> users. We’ll automatically charge you
-                                when new users are added, and give you credit when users are deactivated.
-                            </p>
-                            <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                    data-key="{{ publishable_key }}"
-                                    data-image="/static/images/logo/zulip-icon-128x128.png"
-                                    data-name="Zulip"
-                                    data-description="Zulip Cloud Standard"
-                                    data-locale="auto"
-                                    data-zip-code="true"
-                                    data-billing-address="true"
-                                    data-panel-label="Make payment"
-                                    data-email="{{ email }}"
-                                    data-label="{{ _('Add card') }}"
-                                    data-allow-remember-me="false"
-                                    >
-                            </script>
-                        </form>
+                            <div id="autopay_loading_indicator"></div>
+                        </div>
+                        <div id="autopay-success" class="alert alert-success">
+                            Upgrade complete! The page will now reload.
+                        </div>
+                        <div id="autopay-error" class="alert alert-danger"></div>
                     </div>
+
                     <div class="tab-pane" id="invoice">
                         <form method="post">
                             {{ csrf_input }}

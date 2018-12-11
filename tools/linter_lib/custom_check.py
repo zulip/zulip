@@ -795,6 +795,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
              'templates/corporate/billing.html',
+             'templates/corporate/upgrade.html',
 
              # Miscellaneous violations to be cleaned up
              'static/templates/user_info_popover_title.handlebars',
