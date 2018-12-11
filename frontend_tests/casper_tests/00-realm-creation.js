@@ -35,7 +35,7 @@ casper.then(function () {
 // Make sure the realm creation page is loaded correctly
 casper.then(function () {
     this.waitUntilVisible('.pitch', function () {
-        this.test.assertSelectorContains('.pitch', "You're almost there.");
+        this.test.assertSelectorContains('.pitch', "We just need you to do one last thing.");
     });
 
     this.waitUntilVisible('#id_email', function () {
