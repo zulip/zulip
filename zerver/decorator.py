@@ -558,7 +558,7 @@ def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], View
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
 # HTTP basic authentication headers.
-def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
+def authenticated_uploads_api_view(skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
@@ -567,7 +567,10 @@ def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
                                     api_key: str=REQ(),
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
-            limited_func = rate_limit()(view_func)
+            if not skip_rate_limiting:
+                limited_func = rate_limit()(view_func)
+            else:
+                limited_func = view_func
             return limited_func(request, user_profile, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
@@ -578,7 +581,8 @@ def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
 def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
-                                is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+                                is_webhook: bool=False,
+                                skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @wraps(view_func)
@@ -606,8 +610,12 @@ def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
             except JsonableError as e:
                 return json_unauthorized(e.msg)
             try:
-                # Apply rate limiting
-                return rate_limit()(view_func)(request, profile, *args, **kwargs)
+                if not skip_rate_limiting:
+                    # Apply rate limiting
+                    target_view_func = rate_limit()(view_func)
+                else:
+                    target_view_func = view_func
+                return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
                 if is_webhook or webhook_client_name is not None:
                     request_body = request.POST.get('payload')
@@ -650,7 +658,8 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
 def authenticate_log_and_execute_json(request: HttpRequest,
                                       view_func: ViewFuncT,
-                                      *args: Any, **kwargs: Any) -> HttpResponse:
+                                      *args: Any, skip_rate_limiting: bool = False,
+                                      **kwargs: Any) -> HttpResponse:
     if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
     user_profile = request.user
@@ -662,7 +671,9 @@ def authenticate_log_and_execute_json(request: HttpRequest,
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
     request._email = user_profile.delivery_email
-    return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
+    if not skip_rate_limiting:
+        view_func = rate_limit()(view_func)
+    return view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
@@ -676,10 +687,11 @@ def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def authenticated_json_view(view_func: ViewFuncT) -> ViewFuncT:
+def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs["skip_rate_limiting"] = skip_rate_limiting
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
