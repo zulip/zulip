@@ -649,6 +649,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
+    if not push_notifications_enabled():
+        return
     user_profile = get_user_profile_by_id(user_profile_id)
     if not (receives_offline_push_notifications(user_profile) or
             receives_online_notifications(user_profile)):
