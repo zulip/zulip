@@ -845,7 +845,7 @@ def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     return json_success(auth_backends)
 
 def check_server_incompatibility(request: HttpRequest) -> bool:
-    user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
     return user_agent['name'] == "ZulipInvalid"
 
 @require_GET
