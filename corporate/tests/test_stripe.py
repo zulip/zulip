@@ -29,7 +29,7 @@ from corporate.lib.stripe import catch_stripe_errors, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
     DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT, do_create_customer
-from corporate.models import Customer, Plan, Coupon
+from corporate.models import Customer, CustomerPlan, Plan, Coupon
 from corporate.views import payment_method_string
 import corporate.urls
 
@@ -247,7 +247,7 @@ class StripeTest(ZulipTestCase):
         params = {
             'signed_seat_count': self.get_signed_seat_count_from_response(response),
             'salt': self.get_salt_from_response(response),
-            'plan': Plan.CLOUD_ANNUAL}  # type: Dict[str, Any]
+            'schedule': 'annual'}  # type: Dict[str, Any]
         if invoice:  # send_invoice
             params.update({
                 'invoiced_seat_count': 123,
@@ -469,16 +469,16 @@ class StripeTest(ZulipTestCase):
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
         self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered seat count')
 
-    def test_upgrade_with_tampered_plan(self) -> None:
+    def test_upgrade_with_tampered_schedule(self) -> None:
         # Test with an unknown plan
         self.login(self.example_email("hamlet"))
-        response = self.upgrade(talk_to_stripe=False, plan='badplan')
+        response = self.upgrade(talk_to_stripe=False, schedule='biweekly')
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered plan')
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered schedule')
         # Test with a plan that's valid, but not if you're paying by invoice
-        response = self.upgrade(invoice=True, talk_to_stripe=False, plan=Plan.CLOUD_MONTHLY)
+        response = self.upgrade(invoice=True, talk_to_stripe=False, schedule='monthly')
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered plan')
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered schedule')
 
     def test_upgrade_with_insufficient_invoiced_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))

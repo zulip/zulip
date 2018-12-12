@@ -19,7 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
-from corporate.models import Customer, Plan, Coupon
+from corporate.models import Customer, CustomerPlan, Plan, Coupon
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -227,8 +227,12 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
 
-def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int,
+def process_initial_upgrade(user: UserProfile, seat_count: int, schedule: int,
                             stripe_token: Optional[str]) -> None:
+    if schedule == CustomerPlan.ANNUAL:
+        plan = Plan.objects.get(nickname=Plan.CLOUD_ANNUAL)
+    else:  # schedule == CustomerPlan.MONTHLY:
+        plan = Plan.objects.get(nickname=Plan.CLOUD_MONTHLY)
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
         stripe_customer = do_create_customer(user, stripe_token=stripe_token)

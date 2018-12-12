@@ -17,6 +17,12 @@ class Customer(models.Model):
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 
+class CustomerPlan(object):
+    ANNUAL = 1
+    MONTHLY = 2
+
+# Everything below here is legacy
+
 class Plan(models.Model):
     # The two possible values for nickname
     CLOUD_MONTHLY = 'monthly'
@@ -24,8 +30,6 @@ class Plan(models.Model):
     nickname = models.CharField(max_length=40, unique=True)  # type: str
 
     stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
-
-# Everything below here is legacy
 
 class Coupon(models.Model):
     percent_off = models.SmallIntegerField(unique=True)  # type: int
