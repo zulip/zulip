@@ -54,7 +54,7 @@
                                     <div id="autopay-error" class="alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
                                     <label>
-                                        <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
+                                        <input type="radio" name="schedule" value="annual" checked />
                                         <div class="box">
                                             <div class="schedule-time annually">{{ _("Pay annually") }}</div>
                                             <div class="schedule-amount">
@@ -66,7 +66,7 @@
                                         </div>
                                     </label>
                                     <label>
-                                        <input type="radio" name="plan" value="{{ nickname_monthly }}" />
+                                        <input type="radio" name="schedule" value="monthly" />
                                         <div class="box">
                                             <div class="schedule-time">{{ _("Pay monthly") }}</div>
                                             <div class="schedule-amount">$<span id="autopay_monthly_price"></span>/user/month</div>
@@ -163,7 +163,7 @@
                                 <div class="payment-schedule">
                                     <h3>{{ _("Payment schedule") }}</h3>
                                     <label>
-                                        <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
+                                        <input type="radio" name="schedule" value="annual" checked />
                                         <div class="box">
                                             <div class="schedule-time annually">{{ _("Pay annually") }}</div>
                                             <div class="schedule-amount">

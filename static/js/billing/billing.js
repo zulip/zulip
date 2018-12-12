@@ -111,7 +111,7 @@ $(function () {
                         csrfmiddlewaretoken: $("#autopay-form input[name='csrf']").val(),
                         signed_seat_count: get_form_input("autopay", "signed_seat_count"),
                         salt: get_form_input("autopay", "salt"),
-                        plan: get_form_input("autopay", "plan"),
+                        schedule: get_form_input("autopay", "schedule"),
                         license_management: JSON.stringify(license_management),
                         invoiced_seat_count: $("#" + license_management + "_license_count").val(),
                         billing_modality: get_form_input("autopay", "billing_modality"),
@@ -165,7 +165,7 @@ $(function () {
                     csrfmiddlewaretoken: get_form_input("invoice", "csrfmiddlewaretoken", false),
                     signed_seat_count: get_form_input("invoice", "signed_seat_count"),
                     salt: get_form_input("invoice", "salt"),
-                    plan: get_form_input("invoice", "plan"),
+                    schedule: get_form_input("invoice", "schedule"),
                     billing_modality: get_form_input("invoice", "billing_modality"),
                     invoiced_seat_count: get_form_input("invoice", "invoiced_seat_count", false),
                 },
@@ -184,14 +184,12 @@ $(function () {
         });
 
         var prices = {};
-        prices[page_params.nickname_annual] =
-            page_params.annual_price * (1 - page_params.percent_off / 100);
-        prices[page_params.nickname_monthly] =
-            page_params.monthly_price * (1 - page_params.percent_off / 100);
+        prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
+        prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
 
-        function update_charged_amount(plan_nickname) {
+        function update_charged_amount(schedule) {
             $("#charged_amount").text(
-                format_money(page_params.seat_count * prices[plan_nickname])
+                format_money(page_params.seat_count * prices[schedule])
             );
         }
 
@@ -208,17 +206,17 @@ $(function () {
             show_license_section($(this).val());
         });
 
-        $('input[type=radio][name=plan]').change(function () {
+        $('input[type=radio][name=schedule]').change(function () {
             update_charged_amount($(this).val());
         });
 
-        $("#autopay_annual_price").text(format_money(prices[page_params.nickname_annual]));
-        $("#autopay_annual_price_per_month").text(format_money(prices[page_params.nickname_annual] / 12));
-        $("#autopay_monthly_price").text(format_money(prices[page_params.nickname_monthly]));
-        $("#invoice_annual_price").text(format_money(prices[page_params.nickname_annual]));
-        $("#invoice_annual_price_per_month").text(format_money(prices[page_params.nickname_annual] / 12));
+        $("#autopay_annual_price").text(format_money(prices.annual));
+        $("#autopay_annual_price_per_month").text(format_money(prices.annual / 12));
+        $("#autopay_monthly_price").text(format_money(prices.monthly));
+        $("#invoice_annual_price").text(format_money(prices.annual));
+        $("#invoice_annual_price_per_month").text(format_money(prices.annual / 12));
 
         show_license_section($('input[type=radio][name=license_management]:checked').val());
-        update_charged_amount($('input[type=radio][name=plan]:checked').val());
+        update_charged_amount($('input[type=radio][name=schedule]:checked').val());
     }
 });
