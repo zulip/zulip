@@ -9,7 +9,7 @@ over 300 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest growing open source group chat project.
 
 [![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip)
-[![Travis Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
+[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
 [![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
