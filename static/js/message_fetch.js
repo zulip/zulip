@@ -320,6 +320,8 @@ exports.initialize = function () {
         var messages = data.messages;
         var latest_id = messages[messages.length - 1].id;
 
+        home_msg_list.fetch_status.start_newer_batch();
+        message_list.all.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: latest_id.toFixed(),
             num_before: 0,
