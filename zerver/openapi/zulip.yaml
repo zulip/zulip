@@ -1374,6 +1374,27 @@ paths:
                           "msg": "Topic is not muted",
                           "result": "error"
                       }
+  /realm/emoji/<emoji_name>:
+    post:
+      description: Upload a single emoji file.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                filename:
+                  type: string
+                  format: binary
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
   /realm/emoji:
     get:
       description: Get all the custom emoji in the user's realm.
