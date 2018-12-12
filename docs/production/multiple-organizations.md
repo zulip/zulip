@@ -122,3 +122,10 @@ bots".  You can get a list of these on your system via
 like "Notification Bot", "Welcome Bot", etc. exist.  In the future,
 we're considering moving these bots to exist in every realm, so that
 we wouldn't need the system realm anymore.
+
+### Migrating / Troubleshooting
+
+If you're migrating from a configuration using the root domain to one
+with realms hosted on subdomains, be sure to clear cookies in any
+browsers that were logged in on the root domain; otherwise, those
+browsers will experience weird/confusing redirects.
