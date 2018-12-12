@@ -73,8 +73,8 @@ In either configuration, you will need to do the following:
    in your LDAP database.
 
 4. Tell Zulip how to map the user information in your LDAP database to
-   the form it needs.  There are three supported ways to set up the
-   username and/or email mapping:
+   the form it needs for authentication.  There are three supported
+   ways to set up the username and/or email mapping:
 
    (A) Using email addresses as usernames, if LDAP has each user's
       email address.  To do this, just set `AUTH_LDAP_USER_SEARCH` to
@@ -115,6 +115,16 @@ configuring this integration, you will need to run:
 ```
 to sync names for existing users.  You may want to run this in a cron
 job to pick up name changes made on your LDAP server.
+
+### Synchronizing avatars
+
+Starting with Zulip 2.0, Zulip supports syncing LDAP / Active
+Directory profile pictures (usually available in the `thumbnailPhoto`
+or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
+`AUTH_LDAP_USER_ATTR_MAP`.  This uses the same mechanism as populating
+names: Users will automatically receive the appropriate avatar on
+account creation, and `manage.py sync_ldap_user_data` will
+automatically update their avatar from the data in LDAP.
 
 ### Multiple LDAP searches
 

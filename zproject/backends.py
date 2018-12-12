@@ -336,6 +336,23 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
         return username
 
+    def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
+        if 'avatar' in settings.AUTH_LDAP_USER_ATTR_MAP:
+            # We do local imports here to avoid import loops
+            from zerver.lib.upload import upload_avatar_image
+            from zerver.lib.actions import do_change_avatar_fields
+            from io import BytesIO
+
+            avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
+            upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
+            do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+
+    def get_or_build_user(self, username: str,
+                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:  # nocoverage
+        (user, built) = super().get_or_build_user(username, ldap_user)
+        self.sync_avatar_from_ldap(user, ldap_user)
+        return (user, built)
+
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
@@ -404,6 +421,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             short_name = ldap_user.attrs[short_name_attr][0]
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        self.sync_avatar_from_ldap(user_profile, ldap_user)
 
         return user_profile, True
 
