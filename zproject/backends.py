@@ -114,24 +114,22 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Se
         names.append(('LDAP User %d' % (i,), 'ldapuser%d@zulip.com' % (i,)))
 
     ldap_dir = {}
-    if mode == 'a':
-        for name in names:
+    for name in names:
+        if mode == 'a':
             email = name[1].lower()
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
                 'userPassword':  email_username,
             }
-    elif mode == 'b':
-        for name in names:
+        elif mode == 'b':
             email = name[1].lower()
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
                 'userPassword': email_username,
             }
-    elif mode == 'c':
-        for name in names:
+        elif mode == 'c':
             email = name[1].lower()
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
