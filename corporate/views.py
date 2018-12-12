@@ -106,10 +106,8 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
     percent_off = 0
-    if customer is not None:
-        stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-        if stripe_customer.discount is not None:
-            percent_off = stripe_customer.discount.coupon.percent_off
+    if customer is not None and customer.default_discount is not None:
+        percent_off = customer.default_discount
 
     seat_count = get_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
@@ -130,7 +128,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
             'nickname_monthly': Plan.CLOUD_MONTHLY,
             'annual_price': 8000,
             'monthly_price': 800,
-            'percent_off': percent_off,
+            'percent_off': float(percent_off),
         }),
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)

@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 from functools import wraps
 import logging
 import os
@@ -125,17 +126,14 @@ def estimate_customer_arr(stripe_customer: stripe.Customer) -> int:  # nocoverag
     estimated_arr = stripe_subscription.plan.amount * stripe_subscription.quantity / 100.
     if stripe_subscription.plan.interval == 'month':
         estimated_arr *= 12
-    if stripe_customer.discount is not None:
-        estimated_arr *= 1 - stripe_customer.discount.coupon.percent_off/100.
+    discount = Customer.objects.get(stripe_customer_id=stripe_customer.id).default_discount
+    if discount is not None:
+        estimated_arr *= 1 - discount/100.
     return int(estimated_arr)
 
 @catch_stripe_errors
-def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
-                       coupon: Optional[Coupon]=None) -> stripe.Customer:
+def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> stripe.Customer:
     realm = user.realm
-    stripe_coupon_id = None
-    if coupon is not None:
-        stripe_coupon_id = coupon.stripe_coupon_id
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
     # bad thing that will happen is that we will create an extra stripe
@@ -144,8 +142,7 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
         description="%s (%s)" % (realm.string_id, realm.name),
         email=user.email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
-        source=stripe_token,
-        coupon=stripe_coupon_id)
+        source=stripe_token)
     event_time = timestamp_to_datetime(stripe_customer.created)
     with transaction.atomic():
         RealmAuditLog.objects.create(
@@ -172,12 +169,6 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
         event_time=timezone_now())
     return updated_stripe_customer
-
-@catch_stripe_errors
-def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
-    stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-    stripe_customer.coupon = coupon.stripe_coupon_id
-    return stripe.Customer.save(stripe_customer)
 
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Customer, stripe_plan_id: str,
@@ -258,13 +249,13 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int,
         charge_automatically=(stripe_token is not None))
     do_change_plan_type(user.realm, Realm.STANDARD)
 
-def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
-    coupon = Coupon.objects.get(percent_off=percent_off)
+def attach_discount_to_realm(user: UserProfile, discount: Decimal) -> None:
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
-        do_create_customer(user, coupon=coupon)
-    else:
-        do_replace_coupon(user, coupon)
+        do_create_customer(user)
+    customer = Customer.objects.filter(realm=user.realm).first()
+    customer.default_discount = discount
+    customer.save()
 
 def process_downgrade(user: UserProfile) -> None:  # nocoverage
     pass
