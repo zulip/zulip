@@ -56,11 +56,24 @@ function process_result(data, opts) {
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
-        opts.cont(data, opts);
+        opts.cont(data);
     }
 }
 
 function get_messages_success(data, opts) {
+    if (opts.num_before > 0) {
+        opts.msg_list.fetch_status.finish_older_batch({
+            found_oldest: data.found_oldest,
+            history_limited: data.history_limited,
+        });
+        if (opts.msg_list === home_msg_list) {
+            message_list.all.fetch_status.finish_older_batch({
+                found_oldest: data.found_oldest,
+                history_limited: data.history_limited,
+            });
+        }
+    }
+
     if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
         // We unnarrowed before receiving new messages so
         // don't bother processing the newly arrived messages.
@@ -223,17 +236,7 @@ exports.do_backfill = function (opts) {
         num_before: opts.num_before,
         num_after: 0,
         msg_list: msg_list,
-        cont: function (data) {
-            msg_list.fetch_status.finish_older_batch({
-                found_oldest: data.found_oldest,
-                history_limited: data.history_limited,
-            });
-            if (msg_list === home_msg_list) {
-                message_list.all.fetch_status.finish_older_batch({
-                    found_oldest: data.found_oldest,
-                    history_limited: data.history_limited,
-                });
-            }
+        cont: function () {
             if (opts.cont) {
                 opts.cont();
             }
@@ -291,7 +294,7 @@ exports.start_backfilling_messages = function () {
 
 exports.initialize = function () {
     // get the initial message list
-    function load_more(data, opts) {
+    function load_more(data) {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
@@ -301,19 +304,6 @@ exports.initialize = function () {
             home_msg_list.select_id(page_params.pointer,
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
-        }
-
-        if (opts.num_before > 0) {
-            // Only the initial call with num_before=consts.num_before_pointer
-            // has an older batch to finish.
-            home_msg_list.fetch_status.finish_older_batch({
-                found_oldest: data.found_oldest,
-                history_limited: data.history_limited,
-            });
-            message_list.all.fetch_status.finish_older_batch({
-                found_oldest: data.found_oldest,
-                history_limited: data.history_limited,
-            });
         }
 
         home_msg_list.fetch_status.finish_newer_batch({

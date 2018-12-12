@@ -15,10 +15,7 @@ var FetchStatus = function () {
 
     self.finish_initial_narrow = function (opts) {
         loading_newer = false;
-        loading_older = false;
-        found_oldest = opts.found_oldest;
         found_newest = opts.found_newest;
-        history_limited = opts.history_limited;
     };
 
     self.start_older_batch = function () {
