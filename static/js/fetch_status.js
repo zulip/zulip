@@ -6,6 +6,7 @@ var FetchStatus = function () {
     var loading_newer = false;
     var found_oldest = false;
     var found_newest = false;
+    var history_limited = false;
 
     self.start_initial_narrow = function () {
         loading_newer = true;
@@ -17,6 +18,7 @@ var FetchStatus = function () {
         loading_older = false;
         found_oldest = opts.found_oldest;
         found_newest = opts.found_newest;
+        history_limited = opts.history_limited;
     };
 
     self.start_older_batch = function () {
@@ -26,10 +28,15 @@ var FetchStatus = function () {
     self.finish_older_batch = function (opts) {
         loading_older = false;
         found_oldest = opts.found_oldest;
+        history_limited = opts.history_limited;
     };
 
     self.can_load_older_messages = function () {
         return !loading_older && !found_oldest;
+    };
+
+    self.history_limited = function () {
+        return history_limited;
     };
 
     self.start_newer_batch = function () {
