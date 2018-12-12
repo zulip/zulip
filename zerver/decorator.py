@@ -27,7 +27,7 @@ from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
 from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser
+    api_calls_left, RateLimitedUser, RateLimiterLockingException
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -785,7 +785,14 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
         statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
         raise RateLimited()
 
-    incr_ratelimit(entity)
+    try:
+        incr_ratelimit(entity)
+    except RateLimiterLockingException:  # nocoverage # Should add on next rate limit pass
+        logging.warning("Deadlock trying to incr_ratelimit for %s on %s" % (
+            user.id, request.path))
+        # rate-limit users who are hitting the API so hard we can't update our stats.
+        raise RateLimited()
+
     calls_remaining, time_reset = api_calls_left(entity)
 
     request._ratelimit_remaining = calls_remaining
