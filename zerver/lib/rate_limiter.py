@@ -20,6 +20,9 @@ rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 
 KEY_PREFIX = ''
 
+class RateLimiterLockingException(Exception):
+    pass
+
 class RateLimitedObject:
     def get_keys(self) -> List[str]:
         key_fragment = self.key_fragment()
@@ -227,9 +230,7 @@ def incr_ratelimit(entity: RateLimitedObject) -> None:
                 break
             except redis.WatchError:
                 if count > 10:
-                    logging.error("Failed to complete incr_ratelimit transaction without "
-                                  "interference 10 times in a row! Aborting rate-limit increment")
-                    break
+                    raise RateLimiterLockingException()
                 count += 1
 
                 continue
