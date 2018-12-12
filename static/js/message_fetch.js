@@ -56,7 +56,7 @@ function process_result(data, opts) {
     stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
-        opts.cont(data);
+        opts.cont(data, opts);
     }
 }
 
@@ -289,7 +289,7 @@ exports.start_backfilling_messages = function () {
 
 exports.initialize = function () {
     // get the initial message list
-    function load_more(data) {
+    function load_more(data, opts) {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
@@ -299,6 +299,17 @@ exports.initialize = function () {
             home_msg_list.select_id(page_params.pointer,
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
+        }
+
+        if (opts.num_before > 0) {
+            // Only the initial call with num_before=consts.num_before_pointer
+            // has an older batch to finish.
+            home_msg_list.fetch_status.finish_older_batch({
+                found_oldest: data.found_oldest,
+            });
+            message_list.all.fetch_status.finish_older_batch({
+                found_oldest: data.found_oldest,
+            });
         }
 
         home_msg_list.fetch_status.finish_newer_batch({
@@ -335,6 +346,8 @@ exports.initialize = function () {
     if (page_params.have_initial_messages) {
         home_msg_list.fetch_status.start_newer_batch();
         message_list.all.fetch_status.start_newer_batch();
+        home_msg_list.fetch_status.start_older_batch();
+        message_list.all.fetch_status.start_older_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,
