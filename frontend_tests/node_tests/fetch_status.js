@@ -30,6 +30,14 @@ function has_not_found_newest() {
     assert.equal(fetch_status.has_found_newest(), false);
 }
 
+function can_load_history() {
+    assert.equal(fetch_status.history_limited(), false);
+}
+
+function blocked_history() {
+    assert.equal(fetch_status.history_limited(), true);
+}
+
 run_test('basics', () => {
     reset();
 
@@ -37,16 +45,19 @@ run_test('basics', () => {
 
     blocked_newer();
     blocked_older();
+    can_load_history();
     has_not_found_newest();
 
     fetch_status.finish_initial_narrow({
         found_oldest: true,
         found_newest: true,
+        history_limited: true,
     });
 
     has_found_newest();
     blocked_newer();
     blocked_older();
+    blocked_history();
 
     reset();
 
@@ -54,14 +65,17 @@ run_test('basics', () => {
 
     blocked_newer();
     blocked_older();
+    can_load_history();
 
     fetch_status.finish_initial_narrow({
         found_oldest: false,
         found_newest: false,
+        history_limited: false,
     });
 
     can_load_older();
     can_load_newer();
+    can_load_history();
 
     reset();
 
@@ -71,25 +85,31 @@ run_test('basics', () => {
 
     blocked_older();
     can_load_newer();
+    can_load_history();
 
     fetch_status.finish_older_batch({
         found_oldest: false,
+        history_limited: false,
     });
 
     can_load_older();
     can_load_newer();
+    can_load_history();
 
     fetch_status.start_older_batch();
 
     blocked_older();
     can_load_newer();
+    can_load_history();
 
     fetch_status.finish_older_batch({
         found_oldest: true,
+        history_limited: true,
     });
 
     blocked_older();
     can_load_newer();
+    blocked_history();
 
     reset();
 
