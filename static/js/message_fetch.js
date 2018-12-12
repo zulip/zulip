@@ -226,10 +226,12 @@ exports.do_backfill = function (opts) {
         cont: function (data) {
             msg_list.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
+                history_limited: data.history_limited,
             });
             if (msg_list === home_msg_list) {
                 message_list.all.fetch_status.finish_older_batch({
                     found_oldest: data.found_oldest,
+                    history_limited: data.history_limited,
                 });
             }
             if (opts.cont) {
@@ -306,9 +308,11 @@ exports.initialize = function () {
             // has an older batch to finish.
             home_msg_list.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
+                history_limited: data.history_limited,
             });
             message_list.all.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
+                history_limited: data.history_limited,
             });
         }
 
