@@ -622,6 +622,7 @@ NOTIFY_AFTER_IDLE_HOURS = 1
 def build_offline_notification(user_profile_id: int, message_id: int) -> Dict[str, Any]:
     return {"user_profile_id": user_profile_id,
             "message_id": message_id,
+            "type": "add",
             "timestamp": time.time()}
 
 def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_client: bool) -> None:
