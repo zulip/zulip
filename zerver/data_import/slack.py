@@ -265,6 +265,9 @@ def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: Ze
                                      user_id: int, custom_field_id: int,
                                      custom_field_values: List[ZerverFieldsT]) -> int:
     for field, value in fields.items():
+        if value['value'] == "":
+            # Skip writing entries for fields with an empty value
+            continue
         custom_field_value = CustomProfileFieldValue(
             id=custom_field_id,
             value=value['value'])
