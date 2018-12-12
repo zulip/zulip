@@ -280,6 +280,24 @@ class ZulipLDAPConfigurationError(Exception):
     pass
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
+    def __init__(self) -> None:
+        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
+            # We only use this in development.  Importing mock inside
+            # this function is an import time optimization, which
+            # avoids the expensive import of the mock module (slow
+            # because its dependency pbr uses pkgresources, which is
+            # really slow to import.)
+            import mock
+            from fakeldap import MockLDAP
+
+            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+            self.mock_initialize = ldap_patcher.start()
+            self.mock_ldap = MockLDAP()
+            self.mock_initialize.return_value = self.mock_ldap
+
+            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                             settings.FAKE_LDAP_NUM_USERS)
+
     # Don't use Django LDAP's permissions functions
     def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
         # Using Any type is safe because we are not doing anything with
@@ -314,24 +332,6 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
-
-    def __init__(self) -> None:
-        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
-            # We only use this in development.  Importing mock inside
-            # this function is an import time optimization, which
-            # avoids the expensive import of the mock module (slow
-            # because its dependency pbr uses pkgresources, which is
-            # really slow to import.)
-            import mock
-            from fakeldap import MockLDAP
-
-            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
-            self.mock_initialize = ldap_patcher.start()
-            self.mock_ldap = MockLDAP()
-            self.mock_initialize.return_value = self.mock_ldap
-
-            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_NUM_USERS)
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
