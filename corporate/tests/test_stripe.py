@@ -27,8 +27,7 @@ from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT, do_create_customer, \
-    process_downgrade
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT, do_create_customer
 from corporate.models import Customer, Plan, Coupon
 from corporate.views import payment_method_string
 import corporate.urls
@@ -625,27 +624,11 @@ class StripeTest(ZulipTestCase):
 
         # If you signup with a card and then downgrade, we still have your
         # card on file, and should show it
-        realm = do_create_realm('realm1', 'realm1')
-        user = do_create_user('name@realm1.com', 'password', realm, 'name', 'name')
-        self.login(user.email, password='password', realm=realm)
-        self.upgrade(realm=realm)
-        with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
-            process_downgrade(user)
-        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        self.assertEqual('Card ending in 4242', payment_method_string(stripe_customer))
+        # TODO
 
         # If you signup via invoice, and then downgrade immediately, the
         # default_source is in a weird intermediate state.
-        realm = do_create_realm('realm2', 'realm2')
-        user = do_create_user('name@realm2.com', 'password', realm, 'name', 'name')
-        self.login(user.email, password='password', realm=realm)
-        self.upgrade(invoice=True, realm=realm)
-        with patch('corporate.lib.stripe.preview_invoice_total_for_downgrade', return_value=1):
-            process_downgrade(user)
-        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        # Could be either one, depending on exact timing with the test
-        self.assertTrue('Unknown payment method' in payment_method_string(stripe_customer) or
-                        'No payment method' in payment_method_string(stripe_customer))
+        # TODO
 
     @mock_stripe()
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
@@ -672,86 +655,6 @@ class StripeTest(ZulipTestCase):
         # Check upcoming invoice reflects the new discount
         upcoming_invoice = stripe.Invoice.upcoming(customer=stripe_customer.id)
         self.assertEqual(upcoming_invoice.amount_due, get_seat_count(user.realm) * 80 * 75)
-
-    # Tests upgrade followed by immediate downgrade. Doesn't test the
-    # calculations for how much credit they should get if they had the
-    # subscription for more than 0 time.
-    @mock_stripe(tested_timestamp_fields=["canceled_at"])
-    def test_downgrade(self, *mocks: Mock) -> None:
-        user = self.example_user('iago')
-        self.login(user.email)
-        self.upgrade()
-        realm = get_realm('zulip')
-        self.assertEqual(realm.has_seat_based_plan, True)
-        self.assertEqual(realm.plan_type, Realm.STANDARD)
-        RealmAuditLog.objects.filter(realm=realm).delete()
-
-        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        self.assertEqual(stripe_customer.account_balance, 0)
-        # Change subscription in Stripe, but don't pay for it
-        stripe_subscription = extract_current_subscription(stripe_customer)
-        stripe_subscription.quantity = 123
-        stripe.Subscription.save(stripe_subscription)
-
-        response = self.client_post("/json/billing/downgrade", {})
-        self.assert_json_success(response)
-        stripe_customer = stripe_get_customer(stripe_customer.id)
-        self.assertEqual(stripe_customer.account_balance, self.seat_count * -8000)
-        self.assertIsNone(extract_current_subscription(stripe_customer))
-        stripe_subscription = stripe.Subscription.retrieve(stripe_subscription.id)
-        self.assertEqual(stripe_subscription.status, "canceled")
-
-        realm = get_realm('zulip')
-        self.assertEqual(realm.plan_type, Realm.LIMITED)
-        self.assertFalse(realm.has_seat_based_plan)
-
-        audit_log_entries = list(RealmAuditLog.objects.filter(realm=realm)
-                                 .values_list('event_type', 'event_time',
-                                              'requires_billing_update').order_by('id'))
-        self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_PLAN_CHANGED,
-             timestamp_to_datetime(stripe_subscription.canceled_at), False),
-            (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra(), False),
-        ])
-        self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STRIPE_PLAN_CHANGED).values_list('extra_data', flat=True).first()),
-            {'plan': None, 'quantity': 123})
-
-    @mock_stripe()
-    def test_downgrade_with_no_subscription(self, *mocks: Mock) -> None:
-        user = self.example_user("iago")
-        do_create_customer(user)
-        self.login(user.email)
-        with patch("stripe.Customer.save") as mock_save_customer:
-            with patch("corporate.lib.stripe.billing_logger.error"):
-                response = self.client_post("/json/billing/downgrade", {})
-        mock_save_customer.assert_not_called()
-        self.assert_json_error_contains(response, 'Please reload')
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
-
-    @mock_stripe()
-    def test_downgrade_with_money_owed(self, *mocks: Mock) -> None:
-        user = self.example_user('iago')
-        self.login(user.email)
-        self.upgrade()
-        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
-        self.assertEqual(stripe_customer.account_balance, 0)
-        stripe_subscription = extract_current_subscription(stripe_customer)
-        # Create a situation where customer net owes us money
-        stripe.InvoiceItem.create(
-            amount=100000,
-            currency='usd',
-            customer=stripe_customer,
-            subscription=stripe_subscription)
-
-        response = self.client_post("/json/billing/downgrade", {})
-        self.assert_json_success(response)
-        stripe_customer = stripe_get_customer(stripe_customer.id)
-        # Check that positive balance was forgiven
-        self.assertEqual(stripe_customer.account_balance, 0)
-        self.assertIsNone(extract_current_subscription(stripe_customer))
-        stripe_subscription = stripe.Subscription.retrieve(stripe_subscription.id)
-        self.assertEqual(stripe_subscription.status, "canceled")
 
     @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
@@ -856,6 +759,7 @@ class RequiresBillingAccessTest(ZulipTestCase):
         params = [
             ("/json/billing/sources/change", "do_replace_payment_source",
              {'stripe_token': ujson.dumps('token')}),
+            # TODO: second argument should be something like "process_downgrade"
             ("/json/billing/downgrade", "process_downgrade", {}),
         ]  # type: List[Tuple[str, str, Dict[str, Any]]]
 
