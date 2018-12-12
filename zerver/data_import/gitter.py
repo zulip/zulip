@@ -217,8 +217,13 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
                 gitter_mention = '@%s' % (mention['screenName'])
-                zulip_mention = ('@**%s**' %
-                                 (user_short_name_to_full_name[mention['screenName']]))
+                if mention['screenName'] not in user_short_name_to_full_name:
+                    logging.info("Mentioned user %s never sent any messages, so has no full name data" %
+                                 mention['screenName'])
+                    full_name = mention['screenName']
+                else:
+                    full_name = user_short_name_to_full_name[mention['screenName']]
+                zulip_mention = ('@**%s**' % (full_name,))
                 message['text'] = message['text'].replace(gitter_mention, zulip_mention)
 
                 mentioned_user_ids.append(user_map[mention['userId']])
