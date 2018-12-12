@@ -22,30 +22,29 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
     MIN_INVOICED_SEAT_COUNT, DEFAULT_INVOICE_DAYS_UNTIL_DUE
-from corporate.models import Customer, Plan
+from corporate.models import Customer, CustomerPlan, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
-def unsign_and_check_upgrade_parameters(user: UserProfile, plan_nickname: str,
+def unsign_and_check_upgrade_parameters(user: UserProfile, schedule: str,
                                         signed_seat_count: str, salt: str,
-                                        billing_modality: str) -> Tuple[Plan, int]:
-    provided_plans = {
-        'charge_automatically': [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY],
-        'send_invoice': [Plan.CLOUD_ANNUAL],
+                                        billing_modality: str) -> Tuple[int, int]:
+    provided_schedules = {
+        'charge_automatically': ['annual', 'monthly'],
+        'send_invoice': ['annual'],
     }
-    if plan_nickname not in provided_plans[billing_modality]:
-        billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
+    if schedule not in provided_schedules[billing_modality]:
+        billing_logger.warning("Tampered schedule during realm upgrade. user: %s, realm: %s (%s)."
                                % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError('tampered plan', BillingError.CONTACT_SUPPORT)
-    plan = Plan.objects.get(nickname=plan_nickname)
-
+        raise BillingError('tampered schedule', BillingError.CONTACT_SUPPORT)
+    billing_schedule = {'annual': CustomerPlan.ANNUAL, 'monthly': CustomerPlan.MONTHLY}[schedule]
     try:
         seat_count = int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
         billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
                                % (user.id, user.realm.id, user.realm.string_id))
         raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
-    return plan, seat_count
+    return seat_count, billing_schedule
 
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
     subscription = extract_current_subscription(stripe_customer)
@@ -68,7 +67,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
-            plan: str=REQ(validator=check_string),
+            schedule: str=REQ(validator=check_string),
             license_management: str=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string),
@@ -76,8 +75,8 @@ def upgrade(request: HttpRequest, user: UserProfile,
             invoiced_seat_count: int=REQ(validator=check_int, default=None),
             stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
     try:
-        plan, seat_count = unsign_and_check_upgrade_parameters(user, plan, signed_seat_count,
-                                                               salt, billing_modality)
+        seat_count, billing_schedule = unsign_and_check_upgrade_parameters(
+            user, schedule, signed_seat_count, salt, billing_modality)
         if billing_modality == 'send_invoice':
             min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
             if invoiced_seat_count < min_required_seat_count:
@@ -85,7 +84,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
                     'lowball seat count',
                     "You must invoice for at least %d users." % (min_required_seat_count,))
             seat_count = invoiced_seat_count
-        process_initial_upgrade(user, plan, seat_count, stripe_token)
+        process_initial_upgrade(user, seat_count, billing_schedule, stripe_token)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
@@ -121,12 +120,8 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'min_seat_count_for_invoice': max(seat_count, MIN_INVOICED_SEAT_COUNT),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
-        'nickname_monthly': Plan.CLOUD_MONTHLY,
-        'nickname_annual': Plan.CLOUD_ANNUAL,
         'page_params': JSONEncoderForHTML().encode({
             'seat_count': seat_count,
-            'nickname_annual': Plan.CLOUD_ANNUAL,
-            'nickname_monthly': Plan.CLOUD_MONTHLY,
             'annual_price': 8000,
             'monthly_price': 800,
             'percent_off': float(percent_off),
