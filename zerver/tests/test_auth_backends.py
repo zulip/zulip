@@ -32,6 +32,7 @@ from zerver.lib.actions import (
     ensure_stream,
     validate_email,
 )
+from zerver.lib.avatar import avatar_url
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
@@ -2409,12 +2410,17 @@ class TestLDAP(ZulipTestCase):
             self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    @override_settings(AUTH_LDAP_USER_ATTR_MAP={
+        "full_name": "cn",
+        "avatar": "thumbnailPhoto",
+    })
     def test_login_success_when_user_does_not_exist_with_valid_subdomain(
             self) -> None:
         self.mock_ldap.directory = {
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'cn': ['NonExisting', ],
-                'userPassword': 'testing'
+                'userPassword': 'testing',
+                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()],
             }
         }
         with self.settings(
@@ -2427,6 +2433,11 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.email, 'nonexisting@acme.com')
             self.assertEqual(user_profile.full_name, 'NonExisting')
             self.assertEqual(user_profile.realm.string_id, 'zulip')
+
+            # Verify avatar gets created
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+            result = self.client_get(avatar_url(user_profile))
+            self.assertEqual(result.status_code, 200)
 
 class TestZulipLDAPUserPopulator(ZulipTestCase):
     def test_authenticate(self) -> None:
