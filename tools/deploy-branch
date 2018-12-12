@@ -8,7 +8,7 @@ function error_out {
 }
 
 status=$(git status --porcelain | grep -v '^??')
-[ ! -z "$status" ] && error_out "Working directory or index not clean"
+[ -n "$status" ] && error_out "Working directory or index not clean"
 
 old_ref=$(git rev-list --max-count=1 HEAD)
 branch=$1
