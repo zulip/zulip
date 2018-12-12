@@ -1,4 +1,6 @@
 import datetime
+from decimal import Decimal
+from typing import Optional
 
 from django.db import models
 
@@ -10,6 +12,7 @@ class Customer(models.Model):
     # Becomes True the first time a payment successfully goes through, and never
     # goes back to being False
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
+    default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)  # type: Optional[Decimal]
 
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
@@ -22,6 +25,8 @@ class Plan(models.Model):
 
     stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
 
+# Everything below here is legacy
+
 class Coupon(models.Model):
     percent_off = models.SmallIntegerField(unique=True)  # type: int
     stripe_coupon_id = models.CharField(max_length=255, unique=True)  # type: str
@@ -29,7 +34,6 @@ class Coupon(models.Model):
     def __str__(self) -> str:
         return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
 
-# legacy
 class BillingProcessor(models.Model):
     log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
     # Exactly one processor, the global processor, has realm=None.
