@@ -702,12 +702,11 @@ def get_server_settings(client):
 
 def upload_file(client):
     # type: (Client) -> None
-    fp = StringIO("zulip")
-    fp.name = "zulip.txt"
+    path_to_file = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
 
     # {code_example|start}
     # Upload a file
-    # (Make sure that 'fp' is a file object)
+    fp = open(path_to_file, 'rb')
     result = client.call_endpoint(
         'user_uploads',
         method='POST',
@@ -752,6 +751,24 @@ def set_typing_status(client):
 
     validate_against_openapi_schema(result, '/typing', 'post', '200')
 
+def upload_custom_emoji(client):
+    # type: (Client) -> None
+    emoji_path = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
+
+    # {code_example|start}
+    # Upload a custom emoji; assume `emoji_path` is the path to your image.
+    fp = open(emoji_path, 'rb')
+    emoji_name = 'my_custom_emoji'
+    result = client.call_endpoint(
+        'realm/emoji/{}'.format(emoji_name),
+        method='POST',
+        files=[fp]
+    )
+    # {code_example|end}
+    fp.close()
+    validate_against_openapi_schema(result,
+                                    '/realm/emoji/<emoji_name>',
+                                    'post', '200')
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
@@ -796,6 +813,7 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions/properties:post': update_subscription_settings,
     '/users:get': get_members,
     '/realm/emoji:get': get_realm_emoji,
+    '/realm/emoji/<emoji_name>:post': upload_custom_emoji,
     '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
     '/realm/filters/<filter_id>:delete': remove_realm_filter,
@@ -922,6 +940,7 @@ def test_server_organizations(client):
     get_server_settings(client)
     remove_realm_filter(client)
     get_realm_emoji(client)
+    upload_custom_emoji(client)
 
 def test_errors(client):
     # type: (Client) -> None
