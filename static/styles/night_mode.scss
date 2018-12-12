@@ -369,6 +369,12 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid hsl(49, 38%, 46%);
     }
 
+    .alert.home-error-bar {
+        color: hsl(236, 33%, 90%);
+        background-color: hsla(35, 84%, 62%, 0.25);
+        border: 1px solid hsl(11, 46%, 54%);
+    }
+
     .alert {
         text-shadow: none;
     }
