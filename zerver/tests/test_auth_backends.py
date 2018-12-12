@@ -2166,14 +2166,14 @@ class TestLDAP(ZulipTestCase):
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword'])
+            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'thumbnailPhoto'])
 
         ldap_dir = generate_dev_ldap_dir('b', 9)
         self.assertEqual(len(ldap_dir), 9)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword'])
+            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'jpegPhoto'])
 
         ldap_dir = generate_dev_ldap_dir('c', 8)
         self.assertEqual(len(ldap_dir), 8)
