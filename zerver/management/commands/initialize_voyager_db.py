@@ -3,7 +3,6 @@ from argparse import ArgumentParser
 from typing import Any, Iterable, Tuple, Optional
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 
 from zerver.lib.bulk_create import bulk_create_users
@@ -58,7 +57,3 @@ class Command(BaseCommand):
         self.stdout.write("Successfully populated database with initial data.\n")
         self.stdout.write("Please run ./manage.py generate_realm_creation_link "
                           "to generate link for creating organization")
-
-    site = Site.objects.get_current()
-    site.domain = settings.EXTERNAL_HOST
-    site.save()

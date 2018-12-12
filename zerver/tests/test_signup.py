@@ -6,7 +6,6 @@ import re
 import django_otp
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpRequest
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
@@ -459,7 +458,6 @@ class LoginTest(ZulipTestCase):
         # Clear all the caches.
         flush_per_request_caches()
         ContentType.objects.clear_cache()
-        Site.objects.clear_cache()
 
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")

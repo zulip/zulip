@@ -492,13 +492,6 @@ TIME_ZONE = 'UTC'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-# The ID, as an integer, of the current site in the django_site database table.
-# This is used so that application data can hook into specific site(s) and a
-# single database can manage content for multiple sites.
-#
-# We set this site's string_id to 'zulip' in populate_db.
-SITE_ID = 1
-
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
@@ -566,7 +559,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.staticfiles',
     'confirmation',
     'pipeline',
