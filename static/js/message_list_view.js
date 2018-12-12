@@ -16,20 +16,25 @@ function MessageListView(list, table_name, collapse_messages) {
 
 (function () {
 
-function mention_button_refers_to_me(elem) {
+function get_user_id_for_mention_button(elem) {
     var user_id = $(elem).attr('data-user-id');
-    if (user_id === '*' || people.is_my_user_id(user_id)) {
-        return true;
-    }
-
     // Handle legacy markdown that was rendered before we cut
     // over to using data-user-id.
     var email = $(elem).attr('data-user-email');
-    if (email === '*' || people.is_current_user(email)) {
-        return true;
+
+    if (user_id === "*" || email === "*") {
+        return "*";
     }
 
-    return false;
+    if (user_id) {
+        return user_id;
+    }
+
+    if (email) {
+        // Will return undefined if there's no match
+        return people.get_by_email(email).user_id;
+    }
+    return;
 }
 
 function same_day(earlier_msg, later_msg) {
@@ -445,10 +450,21 @@ MessageListView.prototype = {
 
         if (row.hasClass('mention')) {
             row.find('.user-mention').each(function () {
+                var user_id = get_user_id_for_mention_button(this);
                 // We give special highlights to the mention buttons
                 // that refer to the current user.
-                if (mention_button_refers_to_me(this)) {
+                if (user_id === "*" || people.is_my_user_id(user_id)) {
+                    // Either a wildcard mention or us, so mark it.
                     $(this).addClass('user-mention-me');
+                    // TODO: We should probably also mark user groups
+                    // you're with the user-mention-me tag.
+                }
+                if (user_id && user_id !== "*" && !$(this).find(".highlight")) {
+                    // If it's a mention of a specific user, edit the
+                    // mention text to show the user's current name,
+                    // assuming that you're not searching for text
+                    // inside the highlight.
+                    $(this).text("@" + people.get_person_from_user_id(user_id).full_name);
                 }
             });
         }
