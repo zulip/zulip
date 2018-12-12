@@ -13,8 +13,8 @@ Upload a single file and get the corresponding URI.
 
 ## Arguments
 
-The file to upload must be provided, and it should be placed in the request's
-body as `multipart` media type.
+As described above, the file to upload must be provided in the
+request's body.
 
 ## Maximum file size
 

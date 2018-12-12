@@ -40,6 +40,7 @@
 * [Create linkifiers](/api/add-linkifiers)
 * [Remove linkifiers](/api/remove-linkifiers)
 * [Get all custom emoji](/api/get-org-emoji)
+* [Upload custom emoji](/api/upload-custom-emoji)
 
 #### Real-time events
 
