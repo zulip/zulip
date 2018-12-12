@@ -194,7 +194,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     return render(request, 'corporate/billing.html', context=context)
 
 @require_billing_access
-def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:
+def downgrade(request: HttpRequest, user: UserProfile) -> HttpResponse:  # nocoverage
     try:
         process_downgrade(user)
     except BillingError as e:
