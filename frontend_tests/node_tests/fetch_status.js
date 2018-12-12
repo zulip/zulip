@@ -48,11 +48,13 @@ run_test('basics', () => {
     can_load_history();
     has_not_found_newest();
 
-    fetch_status.finish_initial_narrow({
+    var data = {
         found_oldest: true,
         found_newest: true,
         history_limited: true,
-    });
+    };
+    fetch_status.finish_initial_narrow(data);
+    fetch_status.finish_older_batch(data);
 
     has_found_newest();
     blocked_newer();
@@ -67,11 +69,13 @@ run_test('basics', () => {
     blocked_older();
     can_load_history();
 
-    fetch_status.finish_initial_narrow({
+    data = {
         found_oldest: false,
         found_newest: false,
         history_limited: false,
-    });
+    };
+    fetch_status.finish_initial_narrow(data);
+    fetch_status.finish_older_batch(data);
 
     can_load_older();
     can_load_newer();
