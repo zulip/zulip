@@ -29,6 +29,7 @@ class Coupon(models.Model):
     def __str__(self) -> str:
         return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
 
+# legacy
 class BillingProcessor(models.Model):
     log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
     # Exactly one processor, the global processor, has realm=None.
