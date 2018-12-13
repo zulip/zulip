@@ -22,6 +22,14 @@ var me = {
 people.add(me);
 people.initialize_current_user(me.user_id);
 
+var social = {
+    stream_id: 200,
+    name: 'social',
+    subscribed: true,
+    in_home_view: true,
+};
+stream_data.add_sub('social', social);
+
 var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
@@ -177,24 +185,10 @@ run_test('changing_subjects', () => {
 });
 
 run_test('muting', () => {
-    stream_data.is_subscribed = function () {
-        return true;
-    };
-
-    stream_data.in_home_view = function () {
-        return true;
-    };
-
     unread.declare_bankruptcy();
 
-    var stream_id = 101;
+    var stream_id = social.stream_id;
     var unknown_stream_id = 555;
-
-    stream_data.get_sub_by_id = function (stream_id) {
-        if (stream_id === 101) {
-            return {name: 'social'};
-        }
-    };
 
     var message = {
         id: 15,
@@ -211,7 +205,7 @@ run_test('muting', () => {
     assert.equal(unread.num_unread_for_stream(stream_id), 1);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
 
-    muting.add_muted_topic('social', 'test_muting');
+    muting.add_muted_topic(social.stream_id, 'test_muting');
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id), 0);
     assert.equal(counts.home_unread_messages, 0);

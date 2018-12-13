@@ -86,7 +86,7 @@ exports.widget = function (parent_elem, my_stream_id) {
                 topic_name: topic_name,
                 unread: num_unread,
                 is_zero: num_unread === 0,
-                is_muted: muting.is_topic_muted(my_stream_name, topic_name),
+                is_muted: muting.is_topic_muted(my_stream_id, topic_name),
                 url: hash_util.by_stream_topic_uri(my_stream_name, topic_name),
             };
             var li = $(templates.render('topic_list_item', topic_info));

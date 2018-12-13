@@ -213,7 +213,7 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
         var stream_id = stream_data.get_stream_id(stream_name);
         var topics = topic_data.get_recent_names(stream_id);
         topics = _.reject(topics, function (topic) {
-            return muting.is_topic_muted(stream_name, topic);
+            return muting.is_topic_muted(stream_id, topic);
         });
         return topics;
     }
