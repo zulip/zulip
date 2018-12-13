@@ -112,6 +112,13 @@ exports.load_messages = function (opts) {
         data.use_first_unread_anchor = true;
     }
 
+    if (opts.num_before > 0) {
+        opts.msg_list.fetch_status.start_older_batch();
+        if (opts.msg_list === home_msg_list) {
+            message_list.all.fetch_status.start_older_batch();
+        }
+    }
+
     data.client_gravatar = true;
 
     channel.get({
@@ -223,12 +230,6 @@ exports.maybe_load_older_messages = function (opts) {
 
 exports.do_backfill = function (opts) {
     var msg_list = opts.msg_list;
-
-    msg_list.fetch_status.start_older_batch();
-    if (msg_list === home_msg_list) {
-        message_list.all.fetch_status.start_older_batch();
-    }
-
     var anchor = exports.get_backfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
@@ -340,8 +341,6 @@ exports.initialize = function () {
     if (page_params.have_initial_messages) {
         home_msg_list.fetch_status.start_newer_batch();
         message_list.all.fetch_status.start_newer_batch();
-        home_msg_list.fetch_status.start_older_batch();
-        message_list.all.fetch_status.start_older_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,
