@@ -537,7 +537,8 @@ class ImportExportTest(ZulipTestCase):
         self._export_realm(original_realm)
 
         with patch('logging.info'):
-            do_import_realm('var/test-export', 'test-zulip')
+            with self.settings(BILLING_ENABLED=False):
+                do_import_realm('var/test-export', 'test-zulip')
 
         # sanity checks
 

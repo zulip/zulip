@@ -13,7 +13,8 @@ from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable, cast
 
-from zerver.lib.actions import UserMessageLite, bulk_insert_ums
+from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
+    do_change_plan_type
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -683,10 +684,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_model_ids(Realm, data, 'realm')
 
     realm = Realm(**data['zerver_realm'][0])
-    if settings.BILLING_ENABLED:
-        realm.plan_type = Realm.LIMITED
-    else:
-        realm.plan_type = Realm.SELF_HOSTED
 
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
@@ -909,6 +906,9 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         data = ujson.load(f)
 
     import_attachments(data)
+
+    if settings.BILLING_ENABLED:
+        do_change_plan_type(realm, Realm.LIMITED)
     return realm
 
 # create_users and do_import_system_bots differ from their equivalent in
