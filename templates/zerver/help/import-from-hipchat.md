@@ -20,6 +20,8 @@ First, export your data from HipChat.
 
 1. Select the data to export.
 
+1. Set a **Password** to encrypt your export.
+
 1. Click **Export**.
 
 Once the export has completed, the export will be available to you in the
@@ -35,6 +37,8 @@ admin console.
 1. Click on **Server Admin > Export**.
 
 1. Select the data to export.
+
+1. Set a **Password** to encrypt your export.
 
 1. Click **Export**.
 
@@ -76,11 +80,13 @@ using [upgrade-zulip-from-git][upgrade-zulip-from-git].
 
 Log in to a shell on your Zulip server as the `zulip` user. To import with
 the most common configuration, run the following commands, replacing
-`<hipchat_export_file>` with the HipChat export file.
+`<exported_file>` with the HipChat export file and `<password>` with the
+password you set during the HipChat export.
 
 ```
 cd /home/zulip/deployments/current
-./manage.py convert_hipchat_data <hipchat_export_file> --output converted_hipchat_data
+openssl aes-256-cbc -d -in <exported_file> -out hipchat.tar.gz -md md5 -pass pass:<password>
+./manage.py convert_hipchat_data hipchat.tar.gz --output converted_hipchat_data
 ./manage.py import '' converted_hipchat_data
 ```
 
