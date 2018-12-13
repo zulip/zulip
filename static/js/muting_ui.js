@@ -25,8 +25,6 @@ exports.rerender = function () {
 
 exports.notify_with_undo_option = (function () {
     var meta = {
-        stream: null,
-        topic: null,
         hide_me_time: null,
         alert_hover_state: false,
         $mute: null,
@@ -49,7 +47,9 @@ exports.notify_with_undo_option = (function () {
         }
     }, 100);
 
-    return function (stream, topic) {
+    return function (stream_id, topic) {
+        var stream_name = stream_data.maybe_get_stream_name(stream_id);
+
         var $exit = $("#unmute_muted_topic_notification .exit-me");
 
         if (!meta.$mute) {
@@ -62,18 +62,16 @@ exports.notify_with_undo_option = (function () {
             meta.$mute.find("#unmute").click(function () {
                 // it should reference the meta variable and not get stuck with
                 // a pass-by-value of stream, topic.
-                exports.unmute(meta.stream, meta.topic);
+                exports.unmute(stream_name, topic);
                 animate.fadeOut();
             });
         }
 
-        meta.stream = stream;
-        meta.topic = topic;
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
 
+        meta.$mute.find(".stream").text(stream_name);
         meta.$mute.find(".topic").text(topic);
-        meta.$mute.find(".stream").text(stream);
 
         animate.fadeIn();
 
@@ -180,7 +178,7 @@ exports.mute = function (stream, topic) {
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_mute(stream_id, topic);
-    exports.notify_with_undo_option(stream, topic);
+    exports.notify_with_undo_option(stream_id, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
