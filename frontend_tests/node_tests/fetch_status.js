@@ -41,7 +41,7 @@ function blocked_history() {
 run_test('basics', () => {
     reset();
 
-    fetch_status.start_initial_narrow();
+    fetch_status.start_newer_batch();
     fetch_status.start_older_batch();
 
     blocked_newer();
@@ -64,7 +64,7 @@ run_test('basics', () => {
 
     reset();
 
-    fetch_status.start_initial_narrow();
+    fetch_status.start_newer_batch();
     fetch_status.start_older_batch();
 
     blocked_newer();

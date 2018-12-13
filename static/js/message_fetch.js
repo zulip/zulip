@@ -119,6 +119,13 @@ exports.load_messages = function (opts) {
         }
     }
 
+    if (opts.num_after > 0) {
+        opts.msg_list.fetch_status.start_newer_batch();
+        if (opts.msg_list === home_msg_list) {
+            message_list.all.fetch_status.start_newer_batch();
+        }
+    }
+
     data.client_gravatar = true;
 
     channel.get({
@@ -158,8 +165,6 @@ exports.load_messages = function (opts) {
 
 exports.load_messages_for_narrow = function (opts) {
     var msg_list = message_list.narrowed;
-
-    msg_list.fetch_status.start_initial_narrow();
 
     message_fetch.load_messages({
         anchor: opts.then_select_id.toFixed(),
@@ -257,11 +262,6 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
-    msg_list.fetch_status.start_newer_batch();
-    if (msg_list === home_msg_list) {
-        message_list.all.fetch_status.start_newer_batch();
-    }
-
     var anchor = exports.get_frontfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
@@ -326,8 +326,6 @@ exports.initialize = function () {
         var messages = data.messages;
         var latest_id = messages[messages.length - 1].id;
 
-        home_msg_list.fetch_status.start_newer_batch();
-        message_list.all.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: latest_id.toFixed(),
             num_before: 0,
@@ -339,8 +337,6 @@ exports.initialize = function () {
     }
 
     if (page_params.have_initial_messages) {
-        home_msg_list.fetch_status.start_newer_batch();
-        message_list.all.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,
