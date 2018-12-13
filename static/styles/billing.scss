@@ -167,27 +167,23 @@
         display: none;
     }
 
-    #loading-section {
-        display: none;
-        min-height: 55px;
-    }
-
-    #card-updated-message {
-        text-align: center;
-        display: none;
-    }
-
+    #loading-section,
+    #invoice-loading,
     #autopay-loading {
         display: none;
         min-height: 55px;
         text-align: center;
     }
 
+
+    #card-updated-message,
+    #invoice-success,
     #autopay-success {
         text-align: center;
         display: none;
     }
 
+    #invoice-error,
     #autopay-error {
         text-align: center;
         display: none;
@@ -198,54 +194,41 @@
         min-height: 30px;
     }
 
-    .updating-card-logo {
+    .zulip-loading-logo {
         margin: 0 auto;
         width: 24px;
         height: 24px;
     }
 
-    .updating-card-logo svg circle {
+    .zulip-loading-logo svg circle {
         fill: hsl(0, 0%, 27%);
         stroke: hsl(0, 0%, 27%);
     }
 
-    .updating-card-logo svg path {
+    .zulip-loading-logo svg path {
         fill: hsl(0, 0%, 100%);
         stroke: hsl(0, 0%, 100%);
     }
 
-    #updating_card_indicator {
+    #updating_card_indicator,
+    #invoice_loading_indicator,
+    #autopay_loading_indicator {
         margin: 10px auto;
-    }
-
-    #updating_card_indicator_box_container {
-        position: absolute;
-        left: 50%;
-    }
-
-    #updating_card_indicator_box {
-        position: relative;
-        left: -50%;
-        top: -41px;
-        z-index: 1;
-        -webkit-border-radius: 6px;
-        -moz-border-radius: 6px;
-        border-radius: 6px;
     }
 
     #updating_card_indicator .loading_indicator_text {
         margin-left: -75px;
     }
 
-    #autopay_loading_indicator {
-        margin: 10px auto;
-    }
-
+    #updating_card_indicator_box_container,
+    #invoice_loading_indicator_box_container,
     #autopay_loading_indicator_box_container {
         position: absolute;
         left: 50%;
     }
 
+    #updating_card_indicator_box,
+    #invoice_loading_indicator_box,
     #autopay_loading_indicator_box {
         position: relative;
         left: -50%;
@@ -256,6 +239,7 @@
         border-radius: 6px;
     }
 
+    #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
         margin-left: -115px;
     }

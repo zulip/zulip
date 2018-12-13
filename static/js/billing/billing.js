@@ -90,6 +90,7 @@ $(function () {
                 loading.make_indicator($('#autopay_loading_indicator'),
                                        {text: 'Processing ...', abs_positioned: true});
                 $("#autopay-input-section").hide();
+                $('#autopay-error').hide();
                 $("#autopay-loading").show();
                 $.post({
                     url: "/json/billing/upgrade",
@@ -103,12 +104,14 @@ $(function () {
                     },
                     success: function () {
                         $("#autopay-loading").hide();
+                        $('#autopay-error').hide();
                         $("#autopay-success").show();
                         location.reload();
                     },
                     error: function (xhr) {
                         $("#autopay-loading").hide();
                         $('#autopay-error').show().text(JSON.parse(xhr.responseText).msg);
+                        $("#autopay-input-section").show();
                     },
                 });
             },
@@ -126,6 +129,48 @@ $(function () {
                 description: "Zulip Cloud Standard",
             });
             e.preventDefault();
+        });
+
+        $("#invoice-button").on("click", function (e) {
+            if ($("#invoiced_seat_count")[0].checkValidity() === false) {
+                return;
+            }
+            e.preventDefault();
+
+            function get_form_input(name, stringify = true) {
+                var value = $("#invoice-form input[name='" + name + "']").val();
+                if (stringify) {
+                    value = JSON.stringify(value);
+                }
+                return value;
+            }
+            loading.make_indicator($('#invoice_loading_indicator'),
+                                   {text: 'Processing ...', abs_positioned: true});
+            $("#invoice-input-section").hide();
+            $('#invoice-error').hide();
+            $("#invoice-loading").show();
+            $.post({
+                url: "/json/billing/upgrade",
+                data: {
+                    csrfmiddlewaretoken: get_form_input("csrfmiddlewaretoken", false),
+                    signed_seat_count: get_form_input("signed_seat_count"),
+                    salt: get_form_input("salt"),
+                    plan: get_form_input("plan"),
+                    billing_modality:  get_form_input("billing_modality"),
+                    invoiced_seat_count:  get_form_input("invoiced_seat_count", false),
+                },
+                success: function () {
+                    $("#invoice-loading").hide();
+                    $('#invoice-error').hide();
+                    $("#invoice-success").show();
+                    location.reload();
+                },
+                error: function (xhr) {
+                    $("#invoice-loading").hide();
+                    $('#invoice-error').show().text(JSON.parse(xhr.responseText).msg);
+                    $("#invoice-input-section").show();
+                },
+            });
         });
 
         var prices = {};
