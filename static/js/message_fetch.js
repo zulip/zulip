@@ -74,6 +74,17 @@ function get_messages_success(data, opts) {
         }
     }
 
+    if (opts.num_after > 0) {
+        opts.msg_list.fetch_status.finish_newer_batch({
+            found_newest: data.found_newest,
+        });
+        if (opts.msg_list === home_msg_list) {
+            message_list.all.fetch_status.finish_newer_batch({
+                found_newest: data.found_newest,
+            });
+        }
+    }
+
     if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
         // We unnarrowed before receiving new messages so
         // don't bother processing the newly arrived messages.
@@ -172,11 +183,7 @@ exports.load_messages_for_narrow = function (opts) {
         num_after: consts.narrow_after,
         msg_list: msg_list,
         use_first_unread_anchor: opts.use_first_unread_anchor,
-        cont: function (data) {
-            msg_list.fetch_status.finish_initial_narrow({
-                found_oldest: data.found_oldest,
-                found_newest: data.found_newest,
-            });
+        cont: function () {
             message_scroll.hide_indicators();
             opts.cont();
         },
@@ -269,16 +276,6 @@ exports.maybe_load_newer_messages = function (opts) {
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list: msg_list,
-        cont: function (data) {
-            msg_list.fetch_status.finish_newer_batch({
-                found_newest: data.found_newest,
-            });
-            if (msg_list === home_msg_list) {
-                message_list.all.fetch_status.finish_newer_batch({
-                    found_newest: data.found_newest,
-                });
-            }
-        },
     });
 };
 
@@ -306,14 +303,6 @@ exports.initialize = function () {
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
         }
-
-        home_msg_list.fetch_status.finish_newer_batch({
-            found_newest: data.found_newest,
-        });
-
-        message_list.all.fetch_status.finish_newer_batch({
-            found_newest: data.found_newest,
-        });
 
         if (data.found_newest) {
             server_events.home_view_loaded();
