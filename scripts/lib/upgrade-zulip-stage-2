@@ -41,6 +41,8 @@ parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_t
                     help="Skip doing migrations.")
 parser.add_argument("--from-git", dest="from_git", action='store_true',
                     help="Upgrading from git, so run update-prod-static.")
+parser.add_argument("--skip-purge-old-deployments", dest="skip_purge_old_deployments",
+                    action="store_true", help="Skip purging old deployments.")
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
@@ -178,4 +180,8 @@ logging.info("Restarting Zulip...")
 subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
 logging.info("Upgrade complete!")
 
-subprocess.check_call(["./scripts/purge-old-deployments"])
+if not args.skip_purge_old_deployments:
+    logging.info("Purging old deployments...")
+    subprocess.check_call(["./scripts/purge-old-deployments"])
+else:
+    logging.info("Skipping purging old deployments.")
