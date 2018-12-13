@@ -84,7 +84,6 @@ function test_helper() {
     stub('compose', 'update_stream_button_for_stream');
     stub('compose', 'update_stream_button_for_private');
     stub('notifications', 'hide_history_limit_message');
-    stub('notifications', 'hide_or_show_history_limit_message');
 
     blueslip.debug = noop;
 
