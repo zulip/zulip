@@ -3295,9 +3295,6 @@ def do_create_realm(string_id: str, name: str,
     kwargs = {}  # type: Dict[str, Any]
     if emails_restricted_to_domains is not None:
         kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
-    if settings.BILLING_ENABLED:
-        kwargs['plan_type'] = Realm.LIMITED
-        kwargs['message_visibility_limit'] = Realm.MESSAGE_VISIBILITY_LIMITED
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -3311,6 +3308,9 @@ def do_create_realm(string_id: str, name: str,
     realm.signup_notifications_stream = signup_notifications_stream
 
     realm.save(update_fields=['notifications_stream', 'signup_notifications_stream'])
+
+    if settings.BILLING_ENABLED:
+        do_change_plan_type(realm, Realm.LIMITED)
 
     # Log the event
     log_event({"type": "realm_created",

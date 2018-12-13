@@ -561,7 +561,8 @@ class SlackImporter(ZulipTestCase):
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))
 
         # test import of the converted slack data into an existing database
-        do_import_realm(output_dir, test_realm_subdomain)
+        with self.settings(BILLING_ENABLED=False):
+            do_import_realm(output_dir, test_realm_subdomain)
         realm = get_realm(test_realm_subdomain)
         self.assertTrue(realm.name, test_realm_subdomain)
 
