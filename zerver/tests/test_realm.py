@@ -423,23 +423,22 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(get_realm('onpremise').message_visibility_limit, None)
 
     def test_change_plan_type(self) -> None:
-        user = self.example_user('iago')
         realm = get_realm('zulip')
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
 
-        do_change_plan_type(user, Realm.STANDARD)
+        do_change_plan_type(realm, Realm.STANDARD)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
 
-        do_change_plan_type(user, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
 
-        do_change_plan_type(user, Realm.STANDARD_FREE)
+        do_change_plan_type(realm, Realm.STANDARD_FREE)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)

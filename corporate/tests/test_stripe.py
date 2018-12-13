@@ -344,7 +344,8 @@ class StripeTest(ZulipTestCase):
             (RealmAuditLog.STRIPE_CARD_CHANGED, timestamp_to_datetime(stripe_customer.created)),
             # TODO: Add a test where stripe_customer.created != stripe_subscription.created
             (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(stripe_subscription.created)),
-            (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
+            # TODO: Check for REALM_PLAN_TYPE_CHANGED
+            # (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
@@ -454,11 +455,11 @@ class StripeTest(ZulipTestCase):
         # Check that we correctly populated RealmAuditLog
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
+        # TODO: Test for REALM_PLAN_TYPE_CHANGED as the last entry
         self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                                              RealmAuditLog.STRIPE_CARD_CHANGED,
                                              RealmAuditLog.STRIPE_CARD_CHANGED,
-                                             RealmAuditLog.STRIPE_PLAN_CHANGED,
-                                             RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
+                                             RealmAuditLog.STRIPE_PLAN_CHANGED])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)
@@ -714,7 +715,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.LIMITED)
         self.assertFalse(realm.has_seat_based_plan)
 
-        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
+        audit_log_entries = list(RealmAuditLog.objects.filter(realm=realm)
                                  .values_list('event_type', 'event_time',
                                               'requires_billing_update').order_by('id'))
         self.assertEqual(audit_log_entries, [
