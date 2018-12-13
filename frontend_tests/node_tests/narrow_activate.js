@@ -237,7 +237,6 @@ run_test('basics', () => {
     cont();
     helper.assert_events([
         'report narrow times',
-        'notifications.hide_or_show_history_limit_message',
     ]);
 
 });
