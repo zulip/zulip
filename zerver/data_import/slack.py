@@ -509,6 +509,7 @@ def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> Lis
         for json_name in json_names:
             message_dir = os.path.join(channel_dir, json_name)
             messages = get_data_file(message_dir)
+            channel_name = os.path.basename(channel_dir)
             for message in messages:
                 # To give every message the channel information
                 message['channel_name'] = channel_name
