@@ -8,11 +8,6 @@ var FetchStatus = function () {
     var found_newest = false;
     var history_limited = false;
 
-    self.finish_initial_narrow = function (opts) {
-        loading_newer = false;
-        found_newest = opts.found_newest;
-    };
-
     self.start_older_batch = function () {
         loading_older = true;
     };

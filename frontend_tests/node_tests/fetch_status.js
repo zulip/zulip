@@ -54,7 +54,7 @@ run_test('basics', () => {
         found_newest: true,
         history_limited: true,
     };
-    fetch_status.finish_initial_narrow(data);
+    fetch_status.finish_newer_batch(data);
     fetch_status.finish_older_batch(data);
 
     has_found_newest();
@@ -76,7 +76,7 @@ run_test('basics', () => {
         found_newest: false,
         history_limited: false,
     };
-    fetch_status.finish_initial_narrow(data);
+    fetch_status.finish_newer_batch(data);
     fetch_status.finish_older_batch(data);
 
     can_load_older();
