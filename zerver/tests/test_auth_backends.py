@@ -33,6 +33,7 @@ from zerver.lib.actions import (
     validate_email,
 )
 from zerver.lib.avatar import avatar_url
+from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
@@ -56,7 +57,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError, generate_dev_ldap_dir
+    ZulipLDAPConfigurationError
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user,
