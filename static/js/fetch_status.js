@@ -10,7 +10,6 @@ var FetchStatus = function () {
 
     self.start_initial_narrow = function () {
         loading_newer = true;
-        loading_older = true;
     };
 
     self.finish_initial_narrow = function (opts) {
