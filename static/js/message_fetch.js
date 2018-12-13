@@ -62,26 +62,16 @@ function process_result(data, opts) {
 
 function get_messages_success(data, opts) {
     if (opts.num_before > 0) {
-        opts.msg_list.fetch_status.finish_older_batch({
-            found_oldest: data.found_oldest,
-            history_limited: data.history_limited,
-        });
+        opts.msg_list.fetch_status.finish_older_batch(data);
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_older_batch({
-                found_oldest: data.found_oldest,
-                history_limited: data.history_limited,
-            });
+            message_list.all.fetch_status.finish_older_batch(data);
         }
     }
 
     if (opts.num_after > 0) {
-        opts.msg_list.fetch_status.finish_newer_batch({
-            found_newest: data.found_newest,
-        });
+        opts.msg_list.fetch_status.finish_newer_batch(data);
         if (opts.msg_list === home_msg_list) {
-            message_list.all.fetch_status.finish_newer_batch({
-                found_newest: data.found_newest,
-            });
+            message_list.all.fetch_status.finish_newer_batch(data);
         }
     }
 
