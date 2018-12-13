@@ -99,7 +99,14 @@ exports.dismiss_mute_confirmation = function () {
     }
 };
 
-exports.persist_mute = function (stream_name, topic_name) {
+exports.persist_mute = function (stream_id, topic_name) {
+    var stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!stream_name) {
+        blueslip.error('Trying to mute bogus stream id: ' + stream_id);
+        return;
+    }
+
     var data = {
         stream: stream_name,
         topic: topic_name,
@@ -113,7 +120,14 @@ exports.persist_mute = function (stream_name, topic_name) {
     });
 };
 
-exports.persist_unmute = function (stream_name, topic_name) {
+exports.persist_unmute = function (stream_id, topic_name) {
+    var stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!stream_name) {
+        blueslip.error('Trying to unmute bogus stream id: ' + stream_id);
+        return;
+    }
+
     var data = {
         stream: stream_name,
         topic: topic_name,
@@ -165,7 +179,7 @@ exports.mute = function (stream, topic) {
     muting.add_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_mute(stream, topic);
+    exports.persist_mute(stream_id, topic);
     exports.notify_with_undo_option(stream, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
@@ -185,7 +199,7 @@ exports.unmute = function (stream, topic) {
     muting.remove_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_unmute(stream, topic);
+    exports.persist_unmute(stream_id, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
     exports.dismiss_mute_confirmation();
 };
