@@ -42,6 +42,7 @@ run_test('basics', () => {
     reset();
 
     fetch_status.start_initial_narrow();
+    fetch_status.start_older_batch();
 
     blocked_newer();
     blocked_older();
@@ -64,6 +65,7 @@ run_test('basics', () => {
     reset();
 
     fetch_status.start_initial_narrow();
+    fetch_status.start_older_batch();
 
     blocked_newer();
     blocked_older();
