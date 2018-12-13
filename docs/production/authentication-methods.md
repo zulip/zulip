@@ -93,7 +93,7 @@ In either configuration, you will need to do the following:
 You can quickly test whether your configuration works by running:
 
 ```
-  ./manage.py query_ldap username
+/home/zulip/deployments/current/manage.py query_ldap username
 ```
 
 from the root of your Zulip installation.  If your configuration is
@@ -108,15 +108,31 @@ your settings changes take effect), you should be able to log into
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
-**If you are using LDAP to populate names in Zulip**: once you finish
-configuring this integration, you will need to run:
-```
-  ./manage.py sync_ldap_user_data
-```
-to sync names for existing users.  You may want to run this in a cron
-job to pick up name changes made on your LDAP server.
+### Synchronizing data
 
-### Synchronizing avatars
+Zulip can automatically synchronize data declared in
+`AUTH_LDAP_USER_ATTR_MAP` from LDAP into Zulip, via the following
+management command:
+
+```
+/home/zulip/deployments/current/manage.py sync_ldap_user_data
+```
+
+This will sync the fields declared in `AUTH_LDAP_USER_ATTR_MAP` for
+all of your users; in the default configuration, it will just
+synchronize users' `full_name`.
+
+We recommend running this command in a **regular cron job**, to pick
+up name changes made on your LDAP server.
+
+When using this feature, you may also want to
+[prevent users from changing their display name in the Zulip UI][restrict-name-changes],
+since any such changes would be automatically overwritten on the sync
+run of `manage.py sync_ldap_user_data`.
+
+[restrict-name-changes]: https://zulipchat.com/help/restrict-name-and-email-changes
+
+#### Synchronizing avatars
 
 Starting with Zulip 2.0, Zulip supports syncing LDAP / Active
 Directory profile pictures (usually available in the `thumbnailPhoto`
@@ -125,6 +141,28 @@ or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
 names: Users will automatically receive the appropriate avatar on
 account creation, and `manage.py sync_ldap_user_data` will
 automatically update their avatar from the data in LDAP.
+
+#### Automatically deactivating users with Active Directory
+
+Starting with Zulip 2.0, Zulip supports synchronizing the
+disabled/deactivated status of users from Active Directory.  You can
+configure this by uncommenting the sample line `"userAccountControl":
+"userAccountControl",` in `AUTH_LDAP_USER_ATTR_MAP` (and restarting
+the Zulip server).  Zulip will then treat users that are disabled via
+the "Disable Account" feature in Active Directory as deactivated in
+Zulip.
+
+Users disabled in active directory will be immediately unable to login
+to Zulip, since Zulip queries the LDAP/Active Directory server on
+every login attempt.  The user will be fully deactivated the next time
+your `manage.py sync_ldap_user_data` cron job runs (at which point
+they will be forcefully logged out from all active browser sessions,
+appear as deactivated in the Zulip UI, etc.).
+
+This feature works by checking for the `ACCOUNTDISABLE` flag on the
+`userAccountControl` field in Active Directory.  See
+[this handy resource](https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/)
+for details on the various `userAccountControl` flags.
 
 ### Multiple LDAP searches
 

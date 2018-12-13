@@ -18,7 +18,7 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
@@ -246,6 +246,8 @@ class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
 class ZulipLDAPConfigurationError(Exception):
     pass
 
+LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
+
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def __init__(self) -> None:
         if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
@@ -309,10 +311,25 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
             do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
 
+    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:  # nocoverage
+        account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
+        ldap_disabled = bool(account_control_value & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
+        return ldap_disabled
+
     def get_or_build_user(self, username: str,
                           ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:  # nocoverage
         (user, built) = super().get_or_build_user(username, ldap_user)
         self.sync_avatar_from_ldap(user, ldap_user)
+        user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
+        if user_disabled_in_ldap and user.is_active:
+            logging.info("Deactivating user %s because they are disabled in LDAP." %
+                         (user.email,))
+            do_deactivate_user(user)
+            return (user, built)
+        if not user_disabled_in_ldap and not user.is_active:
+            logging.info("Reactivating user %s because they are not disabled in LDAP." %
+                         (user.email,))
+            do_reactivate_user(user)
         return (user, built)
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
@@ -349,6 +366,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                     settings.LDAP_EMAIL_ATTR,))
 
             username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+
+        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
+            ldap_disabled = self.is_account_control_disabled_user(ldap_user)
+            if ldap_disabled:
+                # Treat disabled users as deactivated in Zulip.
+                return_data["inactive_user"] = True
+                raise ZulipLDAPException("User has been deactivated")
 
         user_profile = common_get_active_user(username, self._realm, return_data)
         if user_profile is not None:

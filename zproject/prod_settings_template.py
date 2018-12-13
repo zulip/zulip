@@ -445,8 +445,14 @@ LDAP_EMAIL_ATTR = None  # type: Optional[str]
 AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
+
     # User avatars can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
+
+    # This line is for having Zulip to automatically deactivate users
+    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
+    # See docs for usage details and precise semantics.
+    # "userAccountControl": "userAccountControl",
 }
 
 
