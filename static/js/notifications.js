@@ -446,7 +446,7 @@ exports.message_is_notifiable = function (message) {
     }
 
     if (message.type === "stream" &&
-        muting.is_topic_muted(message.stream, message.subject)) {
+        muting.is_topic_muted(message.stream_id, message.subject)) {
         return false;
     }
 
@@ -568,7 +568,7 @@ exports.get_local_notify_mix_reason = function (message) {
         return;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
+    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.subject)) {
         return "Sent! Your message was sent to a topic you have muted.";
     }
 

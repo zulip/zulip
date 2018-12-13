@@ -128,7 +128,7 @@ run_test('muting enabled', () => {
 });
 
 run_test('more muting', () => {
-    muting.is_topic_muted = function (stream, topic) {
+    muting.is_topic_muted = function (stream_id, topic) {
         return topic === 'muted';
     };
 

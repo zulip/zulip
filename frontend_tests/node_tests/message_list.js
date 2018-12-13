@@ -396,29 +396,31 @@ run_test('bookend', () => {
 run_test('unmuted_messages', () => {
     var list = new MessageList({});
 
+    var muted_stream_id = 999;
+
     var unmuted = [
         {
             id: 50,
-            stream: 'bad',
-            mentioned: true,
+            stream_id: muted_stream_id,
+            mentioned: true, // overrides mute
         },
         {
             id: 60,
-            stream: 'good',
+            stream_id: 42,
             mentioned: false,
         },
     ];
     var muted = [
         {
             id: 70,
-            stream: 'bad',
+            stream_id: muted_stream_id,
             mentioned: false,
         },
     ];
 
     with_overrides(function (override) {
-        override('muting.is_topic_muted', function (stream) {
-            return stream === 'bad';
+        override('muting.is_topic_muted', function (stream_id) {
+            return stream_id === muted_stream_id;
         });
 
         // Make sure unmuted_message filters out the "muted" entry,

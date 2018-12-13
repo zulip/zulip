@@ -2,7 +2,6 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('narrow_state', {});
-set_global('stream_data', {});
 set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
@@ -14,12 +13,18 @@ zrequire('unread');
 zrequire('topic_data');
 zrequire('topic_list');
 
+var devel = {
+    stream_id: 555,
+    name: 'devel',
+};
+
+stream_data.add_sub('devel', devel);
+
 run_test('topic_list_build_widget', () => {
-    var stream_id = 555;
 
     topic_data.reset();
     topic_data.add_message({
-        stream_id: stream_id,
+        stream_id: devel.stream_id,
         topic_name: 'coding',
         message_id: 400,
     });
@@ -34,13 +39,6 @@ run_test('topic_list_build_widget', () => {
         return 3;
     };
 
-    stream_data.get_sub_by_id = function (stream_id) {
-        assert.equal(stream_id, 555);
-        return {
-            name: 'devel',
-        };
-    };
-
     var checked_mutes;
     var rendered;
 
@@ -51,15 +49,15 @@ run_test('topic_list_build_widget', () => {
             unread: 3,
             is_zero: false,
             is_muted: false,
-            url: '#narrow/stream/devel/subject/coding',
+            url: '#narrow/stream/555-devel/subject/coding',
         };
         assert.deepEqual(info, expected);
         rendered = true;
         return '<topic list item>';
     };
 
-    muting.is_topic_muted = function (stream_name, topic_name) {
-        assert.equal(stream_name, 'devel');
+    muting.is_topic_muted = function (stream_id, topic_name) {
+        assert.equal(stream_id, devel.stream_id);
         assert.equal(topic_name, 'coding');
         checked_mutes = true;
         return false;
@@ -83,7 +81,7 @@ run_test('topic_list_build_widget', () => {
 
     assert.equal(topic_list.active_stream_id(), undefined);
 
-    var widget = topic_list.widget(parent_elem, stream_id);
+    var widget = topic_list.widget(parent_elem, devel.stream_id);
 
     widget.build_more_topics_section = function () {
         return $('<more topics>');
@@ -91,7 +89,7 @@ run_test('topic_list_build_widget', () => {
 
     widget.build();
 
-    assert(widget.is_for_stream(stream_id));
+    assert(widget.is_for_stream(devel.stream_id));
     assert.equal(widget.get_parent(), parent_elem);
 
     assert(checked_mutes);

@@ -298,7 +298,7 @@ exports.unread_topic_counter = (function () {
             per_stream_bucketer.each(function (msgs, topic) {
                 var topic_count = msgs.count();
                 res.topic_count.get(stream_id).set(topic, topic_count);
-                if (!muting.is_topic_muted(sub.name, topic)) {
+                if (!muting.is_topic_muted(stream_id, topic)) {
                     stream_count += topic_count;
                 }
             });
@@ -350,7 +350,7 @@ exports.unread_topic_counter = (function () {
 
         var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            if (sub && !muting.is_topic_muted(sub.name, topic)) {
+            if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 stream_count += msgs.count();
             }
         });
@@ -382,7 +382,7 @@ exports.unread_topic_counter = (function () {
         var topic_lists = [];
         var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            if (sub && !muting.is_topic_muted(sub.name, topic)) {
+            if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 topic_lists.push(msgs.members());
             }
         });

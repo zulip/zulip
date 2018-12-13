@@ -142,7 +142,7 @@ function build_topic_popover(e) {
     popovers.hide_all();
     exports.show_streamlist_sidebar();
 
-    var is_muted = muting.is_topic_muted(sub.name, topic_name);
+    var is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     var can_mute_topic = !is_muted;
     var can_unmute_topic = is_muted;
 

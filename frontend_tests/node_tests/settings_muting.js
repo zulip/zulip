@@ -1,14 +1,21 @@
 set_global('$', global.make_zjquery());
 
 zrequire('settings_muting');
+zrequire('stream_data');
 zrequire('muting');
 set_global('muting_ui', {});
 
 var noop = function () {};
 
+var frontend = {
+    stream_id: 101,
+    name: 'frontend',
+};
+stream_data.add_sub('frontend', frontend);
+
 run_test('settings', () => {
 
-    muting.add_muted_topic('frontend', 'js');
+    muting.add_muted_topic(frontend.stream_id, 'js');
     var set_up_ui_called = false;
     muting_ui.set_up_muted_topics_ui = function (opts) {
         assert.deepEqual(opts, [['frontend', 'js']]);
