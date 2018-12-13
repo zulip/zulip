@@ -4,6 +4,9 @@ from typing import Any, Dict
 
 from django.conf import settings
 
+LDAP_USER_ACCOUNT_CONTROL_NORMAL = 512
+LDAP_USER_ACCOUNT_CONTROL_DISABLED = 514
+
 def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Any]]:
     mode = mode.lower()
     names = []
@@ -20,7 +23,8 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
                 'userPassword':  email_username,
-                'thumbnailPhoto': [profile_images[i % len(profile_images)], ]
+                'thumbnailPhoto': [profile_images[i % len(profile_images)], ],
+                'userAccountControl': [LDAP_USER_ACCOUNT_CONTROL_NORMAL, ],
             }
         elif mode == 'b':
             email = name[1].lower()
@@ -28,7 +32,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
                 'userPassword': email_username,
-                'jpegPhoto': [profile_images[i % len(profile_images)], ]
+                'jpegPhoto': [profile_images[i % len(profile_images)], ],
             }
         elif mode == 'c':
             email = name[1].lower()
