@@ -380,11 +380,11 @@ exports.toggle_actions_popover = function (element, id) {
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
-                !muting.is_topic_muted(message.stream, message.subject);
+                !muting.is_topic_muted(message.stream_id, message.subject);
         var can_unmute_topic =
                 message.stream &&
                 message.subject &&
-                muting.is_topic_muted(message.stream, message.subject);
+                muting.is_topic_muted(message.stream_id, message.subject);
 
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;

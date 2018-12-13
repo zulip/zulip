@@ -154,8 +154,15 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 };
 
 exports.mute = function (stream, topic) {
+    // TODO: have callers pass in stream_id
+    var stream_id = stream_data.get_stream_id(stream);
+
+    if (!stream_id) {
+        return;
+    }
+
     stream_popover.hide_topic_popover();
-    muting.add_muted_topic(stream, topic);
+    muting.add_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_mute(stream, topic);
@@ -164,11 +171,18 @@ exports.mute = function (stream, topic) {
 };
 
 exports.unmute = function (stream, topic) {
+    // TODO: have callers pass in stream_id
+    var stream_id = stream_data.get_stream_id(stream);
+
+    if (!stream_id) {
+        return;
+    }
+
     // we don't run a unmute_notify function because it isn't an issue as much
     // if someone accidentally unmutes a stream rather than if they mute it
     // and miss out on info.
     stream_popover.hide_topic_popover();
-    muting.remove_muted_topic(stream, topic);
+    muting.remove_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_unmute(stream, topic);
@@ -177,7 +191,7 @@ exports.unmute = function (stream, topic) {
 };
 
 exports.toggle_mute = function (msg) {
-    if (muting.is_topic_muted(msg.stream, msg.subject)) {
+    if (muting.is_topic_muted(msg.stream_id, msg.subject)) {
         exports.unmute(msg.stream, msg.subject);
     } else if (msg.type === 'stream') {
         exports.mute(msg.stream, msg.subject);
