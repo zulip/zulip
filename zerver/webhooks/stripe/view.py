@@ -25,13 +25,13 @@ class SuppressedEvent(Exception):
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
                        stream: str=REQ(default='test')) -> HttpResponse:
-    topic, body = topic_and_body(payload)
     try:
-        check_send_webhook_message(request, user_profile, topic, body)
+        topic, body = topic_and_body(payload)
     except NotImplementedEventType:  # nocoverage
         pass
     except SuppressedEvent:  # nocoverage
         pass
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
 def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
