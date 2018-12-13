@@ -279,7 +279,7 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int,
         # use that to calculate taxes.
         tax_percent=0,
         charge_automatically=(stripe_token is not None))
-    do_change_plan_type(user, Realm.STANDARD)
+    do_change_plan_type(user.realm, Realm.STANDARD)
 
 def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
     coupon = Coupon.objects.get(percent_off=percent_off)
@@ -319,7 +319,7 @@ def process_downgrade(user: UserProfile) -> None:
     # product changes) that the downgrade succeeded.
     # Keeping it out of the transaction.atomic block because it will
     # eventually have a lot of stuff going on.
-    do_change_plan_type(user, Realm.LIMITED)
+    do_change_plan_type(user.realm, Realm.LIMITED)
 
 ## Process RealmAuditLog
 
