@@ -15,7 +15,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
+    overwrite_symlink
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, YUM_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES
@@ -232,6 +233,12 @@ def install_apt_deps():
         print(WARNING + "CentOS support is still experimental.")
         run(["sudo", "./scripts/lib/setup-yum-repo"])
         run(["sudo", "yum", "install", "-y"] + deps_to_install)
+        for cmd in ['pg_config', 'pg_isready', 'psql']:
+            # Our tooling expects these postgres scripts to be at
+            # well-known paths.  There's an argument for eventually
+            # making our tooling auto-detect, but this is simpler.
+            overwrite_symlink("/usr/pgsql-10/bin/%s" % (cmd,),
+                              "/usr/bin/%s" % (cmd,))
         # Compile tsearch-extras from scratch
         run(["sudo", "./scripts/lib/build-tsearch-extras"])
     else:
