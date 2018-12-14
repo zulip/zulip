@@ -1,0 +1,18 @@
+#!/bin/bash
+set -x
+set -e
+
+yum install -y epel-release
+yum update
+
+# "Development Tools" is the equivalent of build-essential
+yum groupinstall -y "Development Tools"
+
+RHVER="$(rpm -qf --queryformat="%{VERSION}" /etc/redhat-release)"
+RHARCH="$(rpm -qf --queryformat="%{ARCH}" /etc/redhat-release)"
+# PostgreSQL 10
+yum localinstall -y "https://yum.postgresql.org/10/redhat/rhel-$RHVER-$RHARCH/pgdg-centos10-10-2.noarch.rpm"
+
+# PGroonga
+# https://pgroonga.github.io/install/centos.html
+yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm

@@ -182,11 +182,10 @@ SYSTEM_DEPENDENCIES = {
         "postgresql-10-tsearch-extras",
     ],
     "centos7": COMMON_YUM_DEPENDENCIES + [
-        "postgresql10-server",  # TODO add the source
+        "postgresql10-server",
         "postgresql10",
         "postgresql10-devel",
-        "postgresql10-pgroonga",  # TODO add the source
-        # TODO tsearch-extras must be compiled from scratch
+        "postgresql10-pgroonga",
     ]
 }
 
@@ -226,17 +225,16 @@ def setup_shell_profile(shell_profile):
 
 def install_apt_deps():
     # type: () -> None
-    # setup-apt-repo does an `apt-get update`
-    run(["sudo", "./scripts/lib/setup-apt-repo"])
     # By doing list -> set -> list conversion we remove duplicates.
     deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
     if vendor == 'CentOS':
         print(WARNING + "CentOS support is still experimental.")
-        run(["sudo", "yum", "install", "-y", "epel-release"])
-        # "Development Tools" is the equivalent of build-essential
-        run(["sudo", "yum", "groupinstall", "-y", "Development Tools"])
+        run(["sudo", "./scripts/lib/setup-yum-repo"])
         run(["sudo", "yum", "install", "-y"] + deps_to_install)
+        # TODO tsearch-extras must be compiled from scratch
     else:
+        # setup-apt-repo does an `apt-get update`
+        run(["sudo", "./scripts/lib/setup-apt-repo"])
         run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 def main(options):
