@@ -241,6 +241,7 @@ def install_apt_deps():
                               "/usr/bin/%s" % (cmd,))
         # Compile tsearch-extras from scratch
         run(["sudo", "./scripts/lib/build-tsearch-extras"])
+        run(["sudo", "-H", "/usr/pgsql-10/bin/postgresql-10-setup", "initdb"])
     else:
         # setup-apt-repo does an `apt-get update`
         run(["sudo", "./scripts/lib/setup-apt-repo"])
