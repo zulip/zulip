@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import override as override_language
 from django.template.exceptions import TemplateDoesNotExist
 from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
     EMAIL_TYPES, Realm
@@ -12,7 +13,7 @@ import logging
 import ujson
 
 import os
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from zerver.lib.logging_util import log_to_file
 from confirmation.models import generate_key
@@ -53,19 +54,31 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
         'email_images_base_uri': settings.ROOT_DOMAIN_URI + '/static/images/emails',
         'physical_address': settings.PHYSICAL_ADDRESS,
     })
-    subject = loader.render_to_string(template_prefix + '.subject',
-                                      context=context,
-                                      using='Jinja2_plaintext').strip().replace('\n', '')
-    message = loader.render_to_string(template_prefix + '.txt',
-                                      context=context, using='Jinja2_plaintext')
 
-    try:
-        html_message = loader.render_to_string(template_prefix + '.html', context)
-    except TemplateDoesNotExist:
-        emails_dir = os.path.dirname(template_prefix)
-        template = os.path.basename(template_prefix)
-        compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
-        html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
+    def render_templates() -> Tuple[str, str, str]:
+        subject = loader.render_to_string(template_prefix + '.subject',
+                                          context=context,
+                                          using='Jinja2_plaintext').strip().replace('\n', '')
+        message = loader.render_to_string(template_prefix + '.txt',
+                                          context=context, using='Jinja2_plaintext')
+
+        try:
+            html_message = loader.render_to_string(template_prefix + '.html', context)
+        except TemplateDoesNotExist:
+            emails_dir = os.path.dirname(template_prefix)
+            template = os.path.basename(template_prefix)
+            compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
+            html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
+        return (html_message, message, subject)
+
+    if to_user_ids is not None:
+        language = to_users[0].default_language
+        with override_language(language):
+            # Make sure that we render the email using the target's native language
+            (html_message, message, subject) = render_templates()
+    else:
+        # TODO: We should use the realm's default language in this case, if available.
+        (html_message, message, subject) = render_templates()
 
     if from_name is None:
         from_name = "Zulip"
