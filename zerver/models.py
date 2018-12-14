@@ -564,7 +564,7 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
-    regex = re.compile(r'(?:[\w\-#]*)(\(\?P<\w+>.+\))')
+    regex = re.compile(r'^(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\))$')
     error_msg = 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)'
 
     if not regex.match(str(value)):
