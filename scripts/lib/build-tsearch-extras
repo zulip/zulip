@@ -1,0 +1,12 @@
+#!/bin/bash
+set -x
+set -e
+
+cd "$(mktemp -d)"
+
+git clone https://github.com/zulip/tsearch_extras
+(cd tsearch_extras && gmake && make install)
+
+# Link installed hunspell-en-US to tsearch data
+ln -sf /usr/share/myspell/en_US.dic /usr/pgsql-10/share/tsearch_data/en_us.dict
+ln -sf /usr/share/myspell/en_US.aff /usr/pgsql-10/share/tsearch_data/en_us.affix
