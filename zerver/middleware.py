@@ -450,7 +450,7 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
         def alter_content(content: bytes) -> bytes:
             str_content = content.decode("utf-8")
-            bs = BeautifulSoup(str_content)
+            bs = BeautifulSoup(str_content, features='lxml')
             # Skip any admonition (warning) blocks, since they're
             # usually something about users needing to be an
             # organization administrator, and not useful for
@@ -459,7 +459,7 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
                 tag.clear()
 
             # Find the first paragraph after that, and convert it from HTML to text.
-            first_paragraph_text = bs.find('p').text
+            first_paragraph_text = bs.find('p').text.replace('\n', ' ')
             return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
                                    first_paragraph_text.encode("utf-8"))
 

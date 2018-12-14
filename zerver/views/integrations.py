@@ -97,14 +97,13 @@ class MarkdownDirectoryView(ApiURLView):
             (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
             # We want the sliding/collapsing behavior for /help pages only
             sidebar_class = "sidebar slide"
-
-            title_prefix = "Zulip Help Center"
+            title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
             sidebar_class = "sidebar"
-            title_prefix = "Zulip API Documentation"
+            title_base = "Zulip API Documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.
@@ -115,9 +114,9 @@ class MarkdownDirectoryView(ApiURLView):
             # Strip the header and then use the first line to get the article title
             article_title = first_line.strip().lstrip("# ")
             if context["not_index_page"]:
-                context["OPEN_GRAPH_TITLE"] = "%s - %s" % (title_prefix, article_title)
+                context["OPEN_GRAPH_TITLE"] = "%s (%s)" % (article_title, title_base)
             else:
-                context["OPEN_GRAPH_TITLE"] = title_prefix
+                context["OPEN_GRAPH_TITLE"] = title_base
             self.request.placeholder_open_graph_description = (
                 "REPLACMENT_OPEN_GRAPH_DESCRIPTION_%s" % (int(2**24 * random.random()),))
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
