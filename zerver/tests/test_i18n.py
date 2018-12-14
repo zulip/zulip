@@ -8,13 +8,48 @@ from django.test import TestCase
 from django.utils import translation
 from django.conf import settings
 from django.http import HttpResponse
+from django.core import mail
 from http.cookies import SimpleCookie
 
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.management.commands import makemessages
+from zerver.lib.notifications import enqueue_welcome_emails
 
+from django.utils.timezone import now as timezone_now
+
+class EmailTranslationTestCase(ZulipTestCase):
+    def test_email_translation(self) -> None:
+        def check_translation(phrase: str, request_type: str, *args: Any, **kwargs: Any) -> None:
+            if request_type == "post":
+                self.client_post(*args, **kwargs)
+            elif request_type == "patch":
+                self.client_patch(*args, **kwargs)
+
+            email_message = mail.outbox[0]
+            self.assertIn(phrase, email_message.body)
+
+            for i in range(len(mail.outbox)):
+                mail.outbox.pop()
+
+        hamlet = self.example_user("hamlet")
+        hamlet.default_language = "de"
+        hamlet.save()
+        realm = hamlet.realm
+        realm.default_language = "de"
+        realm.save()
+
+        self.login(hamlet.email)
+
+        check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
+        check_translation("Felicidades", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
+        check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.email})
+        check_translation("Viele Grüße", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com", "stream": ["Denmark"]})
+
+        with self.settings(DEVELOPMENT_LOG_EMAILS=True):
+            enqueue_welcome_emails(hamlet)
+        check_translation("Viele Grüße", "")
 
 class TranslationTestCase(ZulipTestCase):
     """

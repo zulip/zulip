@@ -815,7 +815,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     })
     send_email('zerver/emails/confirm_new_email', to_emails=[new_email],
                from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
-               context=context)
+               language=user_profile.default_language, context=context)
 
 def compute_irc_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (IRC)"
@@ -4461,7 +4461,8 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
     from_name = "%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_emails=[invitee.email], from_name=from_name,
-               from_address=FromAddress.tokenized_no_reply_address(), context=context)
+               from_address=FromAddress.tokenized_no_reply_address(),
+               language=referrer.realm.default_language, context=context)
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):
