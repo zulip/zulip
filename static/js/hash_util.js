@@ -80,8 +80,8 @@ exports.decode_operand = function (operator, operand) {
     return operand;
 };
 
-exports.by_stream_uri = function (stream) {
-    return "#narrow/stream/" + exports.encode_stream_name(stream);
+exports.by_stream_uri = function (stream_id) {
+    return "#narrow/stream/" + exports.encode_stream_id(stream_id);
 };
 
 exports.by_stream_topic_uri = function (stream_id, subject) {

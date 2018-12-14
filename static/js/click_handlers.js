@@ -195,9 +195,9 @@ exports.initialize = function () {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
-        if (stream) {
-            hashchange.go_to_location(hash_util.by_stream_uri(stream.name));
+        var stream_id = $(this).attr('data-stream-id');
+        if (stream_id) {
+            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr('href');

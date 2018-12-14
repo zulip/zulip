@@ -629,14 +629,10 @@ run_test('update_count_in_dom', () => {
 narrow_state.active = () => false;
 
 run_test('rename_stream', () => {
-    const old_stream_id = stream_data.get_stream_id('devel');
-    const renamed_devel = {
-        name: 'Development',
-        stream_id: old_stream_id,
-        color: 'blue',
-        subscribed: true,
-        pin_to_top: true,
-    };
+    const sub = stream_data.get_sub_by_name('devel');
+    const new_name = 'Development';
+
+    stream_data.rename_sub(sub, new_name);
 
     const li_stub = $.create('li stub');
     templates.render = (name, payload) => {
@@ -644,7 +640,7 @@ run_test('rename_stream', () => {
         assert.deepEqual(payload, {
             name: 'Development',
             id: 1000,
-            uri: '#narrow/stream/Development',
+            uri: '#narrow/stream/1000-Development',
             not_in_home_view: false,
             invite_only: undefined,
             color: payload.color,
@@ -660,7 +656,7 @@ run_test('rename_stream', () => {
         count_updated = true;
     };
 
-    stream_list.rename_stream(renamed_devel);
+    stream_list.rename_stream(sub);
     assert(count_updated);
 });
 
