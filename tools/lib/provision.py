@@ -7,6 +7,7 @@ import platform
 import subprocess
 import glob
 import hashlib
+import traceback
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -264,6 +265,10 @@ def main(options):
         try:
             install_apt_deps()
         except subprocess.CalledProcessError:
+            # TODO: Remove this when we split install_apt_deps.
+            if vendor == 'CentOS':
+                traceback.print_exc()
+                exit(1)
             # Might be a failure due to network connection issues. Retrying...
             print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
             # Since a common failure mode is for the caching in
