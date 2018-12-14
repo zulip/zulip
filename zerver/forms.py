@@ -264,6 +264,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             send_email('zerver/emails/password_reset', to_emails=[email],
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),
+                       language=request.LANGUAGE_CODE,
                        context=context)
 
 class CreateUserForm(forms.Form):
