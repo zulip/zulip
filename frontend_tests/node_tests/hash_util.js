@@ -20,12 +20,12 @@ var hamlet = {
 
 people.add_in_realm(hamlet);
 
-var sub = {
+var frontend = {
     stream_id: 99,
     name: 'frontend',
 };
 
-stream_data.add_sub(sub.name, sub);
+stream_data.add_sub('frontend', frontend);
 
 run_test('hash_util', () => {
     // Test encodeHashComponent
@@ -131,7 +131,7 @@ run_test('test_stream_edit_uri', () => {
 run_test('test_by_conversation_and_time_uri', () => {
     var message = {
         type: 'stream',
-        stream: 'frontend',
+        stream_id: frontend.stream_id,
         subject: 'testing',
         id: 42,
     };
