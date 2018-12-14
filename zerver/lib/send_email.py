@@ -160,8 +160,10 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
     # and to_user_ids argument formats.
     if 'to_email' in job:
-        job['to_emails'] = [job['to_email']]
+        if job['to_email'] is not None:
+            job['to_emails'] = [job['to_email']]
         del job['to_email']
     if 'to_user_id' in job:
-        job['to_user_ids'] = [job['to_user_id']]
+        if job['to_user_id'] is not None:
+            job['to_user_ids'] = [job['to_user_id']]
         del job['to_user_id']
