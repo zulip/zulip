@@ -1,0 +1,88 @@
+{% extends "zerver/base.html" %}
+{% block content %}
+
+<div class="container" style="margin-right:auto; margin-left:auto; width:440px; "> 
+    <img src="{{ email_images_base_uri }}/email_logo.png" style="-ms-interpolation-mode:bicubic; border:none; max-width:100%; vertical-align:bottom" valign="bottom">
+    Hello {{ name }},
+    <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}" style="color:hsl(164, 42%, 47%); text-decoration:underline">Visit Zulip</a> to catch up.</p>
+    {% if unread_pms %}
+        <h2 style="color:hsl(0, 0%, 0%); font-family:sans-serif; font-weight:400; line-height:1.4; margin:0; margin-bottom:30px">Missed private messages</h2>
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">You have some missed private messages. Here are some of them:</p>
+        <div id="private-messages" style='font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; font-size:12px; overflow-y:scroll; width:600px' width="600">
+            {% for recipient_block in unread_pms %}
+                <div class="recipient_block" style="background-color:hsl(192, 20%, 95%); border:1px solid black; margin-bottom:4px" bgcolor="hsl(192, 20%, 95%)">
+                <div class="recipient_header" style="background-color:hsl(0, 0%, 27%); border-bottom:1px solid black; color:hsl(0, 0%, 100%); font-weight:bold; padding:2px" bgcolor="hsl(0, 0%, 27%)">{{ recipient_block.header.html|safe }}</div>
+                <div class="message_content" style="background-color:hsl(192, 20%, 95%); margin-left:1px; margin-right:2px" bgcolor="hsl(192, 20%, 95%)">
+            {% for sender_block in recipient_block.senders %}
+                {% if sender_block.sender %} <div class="message_sender" style="font-weight:bold; padding-top:1px">{{ sender_block.sender }}</div>{% endif %}
+                    {% for message_block in sender_block.content %}
+                        <div class="message_content_block" style="font-weight:normal; padding-left:6px">
+                            {{ message_block.html|safe }}
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+    {% if remaining_unread_pms_count > 0 %}<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0"><a href="{{ realm_uri }}/#narrow/is/private" style="color:hsl(164, 42%, 47%); text-decoration:underline">Catch up on the rest of your PMs.</a></p>
+        </div>
+    {% endif %}
+    {% if hot_conversations %}
+        <br>
+        <h2 style="color:hsl(0, 0%, 0%); font-family:sans-serif; font-weight:400; line-height:1.4; margin:0; margin-bottom:30px">Hot conversations</h2>
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+            Here are some of the hot conversations that have happened while you've been gone:
+        </p>
+        {% for convo in hot_conversations %}
+        <div id="messages" style='font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; font-size:12px; overflow-y:scroll; width:600px' width="600">
+            {% for recipient_block in convo.first_few_messages %}
+                <div class="hot_convo_recipient_block" style="border:1px solid black; margin-bottom:4px">
+                    <div class="hot_convo_recipient_header" style="background-color:hsl(213, 100%, 81%); border-bottom:1px solid black; font-weight:bold; padding:2px" bgcolor="hsl(213, 100%, 81%)">{{ recipient_block.header.html|safe }}</div>
+                    <div class="hot_convo_message_content" style="margin-left:1px; margin-right:2px">
+                        {% for sender_block in recipient_block.senders %}
+                            {% if sender_block.sender %} <div class="hot_convo_message_sender" style="font-weight:bold; padding-top:1px">{{ sender_block.sender }}</div>{% endif %}
+                            {% for message_block in sender_block.content %}
+                            <div class="hot_convo_message_content_block" style="font-weight:normal; padding-left:6px">
+                                {{ message_block.html|safe }}
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if convo.count > 0 %}<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0"><a href="{{ realm_uri }}" style="color:hsl(164, 42%, 47%); text-decoration:underline">Catch up on the rest of these conversations.</a></p>
+    {% endif %}
+    {% if new_users and new_streams.html %}
+        <br>
+        <h2 style="color:hsl(0, 0%, 0%); font-family:sans-serif; font-weight:400; line-height:1.4; margin:0; margin-bottom:30px">Group updates</h2>
+    {% elif new_users %}
+        <br>
+        <h2 style="color:hsl(0, 0%, 0%); font-family:sans-serif; font-weight:400; line-height:1.4; margin:0; margin-bottom:30px">New users</h2>
+    {% elif new_streams.html %}
+        <br>
+        <h2 style="color:hsl(0, 0%, 0%); font-family:sans-serif; font-weight:400; line-height:1.4; margin:0; margin-bottom:30px">New streams</h2>
+    {% endif %}
+    {% if new_streams.html %}
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0; color:hsl(164, 42%, 47%); text-decoration:underline ">{{ new_streams.html|display_list(4)|safe }}.</p>
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams" style="color:hsl(164, 42%, 47%); text-decoration:underline">Streams page</a> to subscribe.</p>
+    {% endif %}
+    {% if new_users %}
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!</p>
+    {% endif %}
+    <br>
+    <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0"><a href="{{ realm_uri }}" style="color:hsl(164, 42%, 47%); text-decoration:underline">Click here to log in to Zulip and catch up.</a></p>
+    <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">Cheers,<br>The Zulip Team</p>
+    <div class="footer" align="center">
+        <img src="{{ email_images_base_uri }}/footer.png" style="-ms-interpolation-mode:bicubic; border:none; max-width:100%; vertical-align:bottom" valign="bottom">
+        <span class="apple-link" style="color:hsl(0, 0%, 60%); font-size:12px; text-align:center" align="center">Zulip Headquarters, 123 Octo Stream, South Pacific Ocean</span>    
+        <p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+            <a href="{{ realm_uri }}/#settings/notifications" style="color:hsl(164, 42%, 47%); text-decoration:underline">Manage email preferences</a> |
+            <a href="{{ unsubscribe_link }}" style="color:hsl(164, 42%, 47%); text-decoration:underline">Unsubscribe from digest emails</a>
+        </p>
+    </div>
+{% endblock %}
