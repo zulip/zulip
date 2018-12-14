@@ -49,9 +49,10 @@ Usage: ./manage.py deliver_email
                     scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
-                        handle_send_email_format_changes(job)
+                        data = loads(job.data)
+                        handle_send_email_format_changes(data)
                         try:
-                            send_email(**loads(job.data))
+                            send_email(**data)
                             job.delete()
                         except EmailNotDeliveredException:
                             logger.warning("%r not delivered" % (job,))
