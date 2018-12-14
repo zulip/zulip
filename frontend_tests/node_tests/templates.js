@@ -1547,7 +1547,8 @@ run_test('user_profile_modal', () => {
 run_test('muted_topic_ui_row', () => {
     var args = {
         stream: 'Verona',
-        topic: 'Verona2',
+        stream_id: 99,
+        topic: 'pizza',
     };
 
     var html = '<table id="muted-topics-table">';
@@ -1556,8 +1557,8 @@ run_test('muted_topic_ui_row', () => {
     html += '</tbody>';
     html += '</table>';
 
-    assert.equal($(html).find("tr").data("stream"), "Verona");
-    assert.equal($(html).find("tr").data("topic"), "Verona2");
+    assert.equal($(html).find("tr").attr("data-stream-id"), 99);
+    assert.equal($(html).find("tr").attr("data-topic"), "pizza");
 });
 
 run_test('embedded_bot_config_item', () => {
