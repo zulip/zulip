@@ -39,12 +39,12 @@ run_test('settings', () => {
     };
 
     var data_called = 0;
-    tr_html.data = function (opts) {
-        if (opts === 'stream') {
+    tr_html.attr = function (opts) {
+        if (opts === 'data-stream-id') {
             data_called += 1;
-            return 'frontend';
+            return frontend.stream_id;
         }
-        if (opts === 'topic') {
+        if (opts === 'data-topic') {
             data_called += 1;
             return 'js';
         }

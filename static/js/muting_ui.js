@@ -159,8 +159,24 @@ exports.update_muted_topics = function (muted_topics) {
 exports.set_up_muted_topics_ui = function (muted_topics) {
     var muted_topics_table = $("#muted_topics_table tbody");
     muted_topics_table.empty();
-    _.each(muted_topics, function (list) {
-        var row = templates.render('muted_topic_ui_row', {stream: list[0], topic: list[1]});
+    _.each(muted_topics, function (tup) {
+        var stream = tup[0];
+        var topic = tup[1];
+
+        var stream_id = stream_data.get_stream_id(stream);
+
+        if (!stream_id) {
+            blueslip.warn('Unknown stream in set_up_muted_topics_ui: ' + stream);
+            return;
+        }
+
+        var template_data = {
+            stream: stream,
+            stream_id: stream_id,
+            topic: topic,
+        };
+
+        var row = templates.render('muted_topic_ui_row', template_data);
         muted_topics_table.append(row);
     });
 };

@@ -66,7 +66,7 @@ enforce_fully_covered = {
     'static/js/search_util.js',
     # Removed because we're migrating code from uncovered other settings pages to here.
     # 'static/js/settings_ui.js',
-    # 'static/js/settings_muting.js',
+    'static/js/settings_muting.js',
     'static/js/settings_user_groups.js',
     'static/js/stream_data.js',
     'static/js/stream_events.js',
