@@ -320,6 +320,22 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
         print("Configuring pip to use custom CA certificates...")
         add_cert_to_pipconf()
 
+    # CentOS-specific hack/workaround
+    # Install pycurl with custom flag due to this error when installing
+    # via pip:
+    # __main__.ConfigurationError: Curl is configured to use SSL, but
+    # we have not been able to determine which SSL backend it is using.
+    # Please see PycURL documentation for how to specify the SSL
+    # backend manually.
+    # See https://github.com/pycurl/pycurl/issues/526
+    # The fix exists on pycurl master, but not yet in any release
+    # We can likely remove this when pycurl > 7.43.0.2 comes out.
+    if os.path.exists("/etc/redhat-release"):
+        pycurl_env = os.environ.copy()
+        pycurl_env["PYCURL_SSL_LIBRARY"] = "nss"
+        run(["pip", "install", "pycurl==7.43.0.2", "--compile", "--no-cache-dir"],
+            env=pycurl_env)
+
     try:
         install_venv_deps(requirements_file)
     except subprocess.CalledProcessError:
