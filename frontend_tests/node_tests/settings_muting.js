@@ -18,7 +18,7 @@ run_test('settings', () => {
     muting.add_muted_topic(frontend.stream_id, 'js');
     var set_up_ui_called = false;
     muting_ui.set_up_muted_topics_ui = function (opts) {
-        assert.deepEqual(opts, [['frontend', 'js']]);
+        assert.deepEqual(opts, [[frontend.stream_id, 'js']]);
         set_up_ui_called = true;
     };
 

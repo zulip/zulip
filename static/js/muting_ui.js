@@ -160,13 +160,13 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
     var muted_topics_table = $("#muted_topics_table tbody");
     muted_topics_table.empty();
     _.each(muted_topics, function (tup) {
-        var stream = tup[0];
+        var stream_id = tup[0];
         var topic = tup[1];
 
-        var stream_id = stream_data.get_stream_id(stream);
+        var stream = stream_data.maybe_get_stream_name(stream_id);
 
-        if (!stream_id) {
-            blueslip.warn('Unknown stream in set_up_muted_topics_ui: ' + stream);
+        if (!stream) {
+            blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
             return;
         }
 

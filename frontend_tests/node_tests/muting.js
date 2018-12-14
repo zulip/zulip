@@ -66,8 +66,8 @@ run_test('get_and_set_muted_topics', () => {
     muting.add_muted_topic(office.stream_id, 'gossip');
     muting.add_muted_topic(devel.stream_id, 'java');
     assert.deepEqual(muting.get_muted_topics().sort(), [
-        ['devel', 'java'],
-        ['office', 'gossip'],
+        [devel.stream_id, 'java'],
+        [office.stream_id, 'gossip'],
     ]);
 
     blueslip.set_test_data('warn', 'Unknown stream in set_muted_topics: BOGUS STREAM');
@@ -82,8 +82,8 @@ run_test('get_and_set_muted_topics', () => {
 
 
     assert.deepEqual(muting.get_muted_topics().sort(), [
-        ['design', 'typography'],
-        ['social', 'breakfast'],
+        [design.stream_id, 'typography'],
+        [social.stream_id, 'breakfast'],
     ]);
 });
 
