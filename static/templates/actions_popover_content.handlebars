@@ -61,7 +61,7 @@
     {{/if}}
     {{#if can_mute_topic}}
     <li>
-        <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+        <a href="#" class="popover_mute_topic" data-msg-stream-id="{{message.stream_id}}" data-msg-topic="{{message.subject}}">
             <i class="fa fa-eye-slash" aria-hidden="true"></i>
             {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}} <span class="hotkey-hint">(M)</span>
         </a>
@@ -70,7 +70,7 @@
 
     {{#if can_unmute_topic}}
     <li>
-        <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+        <a href="#" class="popover_unmute_topic" data-msg-stream-id="{{message.stream_id}}" data-msg-topic="{{message.subject}}">
             <i class="fa fa-eye" aria-hidden="true"></i>
             {{#tr message}}Unmute the topic <b>__subject__</b>{{/tr}}
         </a>
