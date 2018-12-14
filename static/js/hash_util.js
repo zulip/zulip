@@ -43,6 +43,14 @@ exports.encode_operand = function (operator, operand) {
     return exports.encodeHashComponent(operand);
 };
 
+exports.encode_stream_id = function (stream_id) {
+    // stream_data appends the stream name, but it does not do the
+    // URI encoding piece
+    var slug = stream_data.id_to_slug(stream_id);
+
+    return exports.encodeHashComponent(slug);
+};
+
 exports.encode_stream_name = function (operand) {
     // stream_data prefixes the stream id, but it does not do the
     // URI encoding piece
@@ -76,8 +84,8 @@ exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + exports.encode_stream_name(stream);
 };
 
-exports.by_stream_topic_uri = function (stream, subject) {
-    return "#narrow/stream/" + exports.encode_stream_name(stream) +
+exports.by_stream_topic_uri = function (stream_id, subject) {
+    return "#narrow/stream/" + exports.encode_stream_id(stream_id) +
            "/subject/" + exports.encodeHashComponent(subject);
 };
 
@@ -132,7 +140,7 @@ exports.by_conversation_and_time_uri = function (message) {
 
     if (message.type === "stream") {
         return absolute_url +
-            exports.by_stream_topic_uri(message.stream, message.subject) +
+            exports.by_stream_topic_uri(message.stream_id, message.subject) +
             suffix;
     }
 

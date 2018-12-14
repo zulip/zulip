@@ -243,7 +243,7 @@ MessageListView.prototype = {
                         hash_util.by_stream_uri(message_container.msg.stream);
                     message_container.topic_url =
                         hash_util.by_stream_topic_uri(
-                            message_container.msg.stream,
+                            message_container.msg.stream_id,
                             message_container.msg.subject);
                 } else {
                     message_container.pm_with_url =
