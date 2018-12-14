@@ -32,12 +32,7 @@ exports.get_muted_topics = function () {
     var topics = [];
     muted_topics.each(function (sub_dict, stream_id) {
         _.each(sub_dict.keys(), function (topic) {
-            // TODO: make it so that callees can work w/stream_id
-            var stream_name = stream_data.maybe_get_stream_name(stream_id);
-
-            if (stream_name) {
-                topics.push([stream_name, topic]);
-            }
+            topics.push([stream_id, topic]);
         });
     });
     return topics;
