@@ -365,14 +365,14 @@ exports.register_topic_handlers = function () {
 
     // Mark all messages as read
     $('body').on('click', '.sidebar-popover-mark-topic-read', function (e) {
-        var sub = topic_popover_sub(e);
-        if (!sub) {
+        var stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
             return;
         }
 
         var topic = $(e.currentTarget).attr('data-topic-name');
         exports.hide_topic_popover();
-        unread_ops.mark_topic_as_read(sub.stream_id, topic);
+        unread_ops.mark_topic_as_read(stream_id, topic);
         e.stopPropagation();
     });
 };
