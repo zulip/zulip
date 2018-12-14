@@ -51,8 +51,8 @@ run_test('settings', () => {
     };
 
     var unmute_called = false;
-    muting_ui.unmute = function (stream, topic) {
-        assert.equal(stream, 'frontend');
+    muting_ui.unmute = function (stream_id, topic) {
+        assert.equal(stream_id, frontend.stream_id);
         assert.equal(topic, 'js');
         unmute_called = true;
     };

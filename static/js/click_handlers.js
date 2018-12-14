@@ -289,8 +289,7 @@ exports.initialize = function () {
         e.stopPropagation();
         var stream_id = $(e.currentTarget).attr('data-stream-id');
         var topic = $(e.currentTarget).attr('data-topic-name');
-        var stream = stream_data.get_sub_by_id(stream_id);
-        muting_ui.mute(stream.name, topic);
+        muting_ui.mute(stream_id, topic);
     });
 
     // RECIPIENT BARS
