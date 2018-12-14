@@ -164,6 +164,32 @@ This feature works by checking for the `ACCOUNTDISABLE` flag on the
 [this handy resource](https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/)
 for details on the various `userAccountControl` flags.
 
+#### Other fields
+
+Other fields you may want to sync from LDAP include:
+
+* Boolean flags; `is_realm_admin` (the organization's administrator
+  permission) is the main one.  You can use the
+  [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
+  `django-auth-ldap` to configure a group to get this permissions.
+  (We don't recommend using this flags feature for managing
+  `is_active` because deactivating a user this would way not disable
+  any active sessions the user might have; see the above discussion of
+  automatic deactivation for how to do that properly).
+* String fields like `default_language` (e.g. `en`) or `timezone`, if
+  you have that data in the right format in your LDAP database.
+* [Coming soon][custom-profile-fields-ldap]: Support for syncing
+  [custom profile fields](https://zulipchat.com/help/add-custom-profile-fields)
+  from your LDAP database.
+
+You can look at the [full list of fields][models-py] in the Zulip user
+model; search for `class UserProfile`, but the above should cover all
+the fields that would be useful to sync from your LDAP databases.
+
+[models-py]: https://github.com/zulip/zulip/blob/master/zerver/models.py
+[django-auth-booleans]: https://django-auth-ldap.readthedocs.io/en/latest/users.html#easy-attributes
+[custom-profile-fields-ldap]: https://github.com/zulip/zulip/issues/10976
+
 ### Multiple LDAP searches
 
 To do the union of multiple LDAP searches, use `LDAPSearchUnion`.  For example:
