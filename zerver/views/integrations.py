@@ -6,7 +6,9 @@ from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
 from django.shortcuts import render
 
+import lxml
 import os
+import random
 import re
 import ujson
 
@@ -95,11 +97,30 @@ class MarkdownDirectoryView(ApiURLView):
             (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
             # We want the sliding/collapsing behavior for /help pages only
             sidebar_class = "sidebar slide"
+
+            title_prefix = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
             sidebar_class = "sidebar"
+            title_prefix = "Zulip API Documentation"
+
+        # The following is a somewhat hacky approach to extract titles from articles.
+        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
+        article_path = os.path.join(settings.DEPLOY_ROOT, 'templates') + context["article"]
+        if os.path.exists(article_path):
+            with open(article_path) as article_file:
+                first_line = article_file.readlines()[0]
+            # Strip the header and then use the first line to get the article title
+            article_title = first_line.strip().lstrip("# ")
+            if context["not_index_page"]:
+                context["OPEN_GRAPH_TITLE"] = "%s - %s" % (title_prefix, article_title)
+            else:
+                context["OPEN_GRAPH_TITLE"] = title_prefix
+            self.request.placeholder_open_graph_description = (
+                "REPLACMENT_OPEN_GRAPH_DESCRIPTION_%s" % (int(2**24 * random.random()),))
+            context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
         context["sidebar_class"] = sidebar_class
@@ -115,7 +136,6 @@ class MarkdownDirectoryView(ApiURLView):
         if http_status != 200:
             result.status_code = http_status
         return result
-
 
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
