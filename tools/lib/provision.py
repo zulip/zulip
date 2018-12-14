@@ -231,7 +231,8 @@ def install_apt_deps():
         print(WARNING + "CentOS support is still experimental.")
         run(["sudo", "./scripts/lib/setup-yum-repo"])
         run(["sudo", "yum", "install", "-y"] + deps_to_install)
-        # TODO tsearch-extras must be compiled from scratch
+        # Compile tsearch-extras from scratch
+        run(["sudo", "./scripts/lib/build-tsearch-extras"])
     else:
         # setup-apt-repo does an `apt-get update`
         run(["sudo", "./scripts/lib/setup-apt-repo"])
