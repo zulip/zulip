@@ -543,6 +543,8 @@ MIDDLEWARE = (
     # Make sure 2FA middlewares come after authentication middleware.
     'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
+    # Needs to be after CommonMiddleware, which sets Content-Length
+    'zerver.middleware.FinalizeOpenGraphDescription',
 )
 
 ANONYMOUS_USER_ID = None
