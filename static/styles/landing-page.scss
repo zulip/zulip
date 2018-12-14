@@ -2267,6 +2267,12 @@ nav ul li.active::after {
     background-image: url(/static/images/landing-page/security.jpg);
 }
 
+.portico-landing.why-page .bg-pycon.atlassian {
+    background-size: 300px;
+    background-image: url(/static/images/landing-page/atlassian.jpg);
+    background-repeat: repeat-x;
+}
+
 .portico-landing.why-page .bg-pycon.why-zulip {
     background-image: url(/static/images/landing-page/why-zulip-threads.jpg);
 }
