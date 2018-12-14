@@ -8,9 +8,16 @@ exports.set_up = function () {
         var stream = $row.data("stream");
         var topic = $row.data("topic");
 
-        muting_ui.unmute(stream, topic);
-        $row.remove();
         e.stopImmediatePropagation();
+
+        var stream_id = stream_data.get_stream_id(stream);
+
+        if (!stream_id) {
+            return;
+        }
+
+        muting_ui.unmute(stream_id, topic);
+        $row.remove();
     });
 
     muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());

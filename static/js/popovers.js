@@ -900,8 +900,16 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_mute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
+
+        // TODO: use stream_id in markup
+        var stream_id = stream_data.get_stream_id(stream);
+
+        if (!stream_id) {
+            return;
+        }
+
         popovers.hide_actions_popover();
-        muting_ui.mute(stream, topic);
+        muting_ui.mute(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -909,8 +917,15 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_unmute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
+
+        var stream_id = stream_data.get_stream_id(stream);
+
+        if (!stream_id) {
+            return;
+        }
+
         popovers.hide_actions_popover();
-        muting_ui.unmute(stream, topic);
+        muting_ui.unmute(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
