@@ -97,6 +97,16 @@ exports.get_sub_by_name = function (name) {
     return subs_by_stream_id.get(stream_id);
 };
 
+exports.id_to_slug = function (stream_id) {
+    var name = exports.maybe_get_stream_name(stream_id) || 'unknown';
+
+    // The name part of the URL doesn't really matter, so we try to
+    // make it pretty.
+    name = name.replace(' ', '-');
+
+    return stream_id + '-' + name;
+};
+
 exports.name_to_slug = function (name) {
     var stream_id = exports.get_stream_id(name);
 
