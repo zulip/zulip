@@ -183,6 +183,7 @@ run_test('basic_notifications', () => {
         content: '@-mentions the user',
         avatar_url: 'url',
         sent_by_me: false,
+        sender_full_name: 'Jesse Pinkman',
         notification_sent: false,
         mentioned_me_directly: true,
         type: 'stream',
@@ -196,6 +197,7 @@ run_test('basic_notifications', () => {
         avatar_url: 'url',
         content: '@-mentions the user',
         sent_by_me: false,
+        sender_full_name: 'Gus Fring',
         notification_sent: false,
         mentioned_me_directly: true,
         type: 'stream',
@@ -207,14 +209,14 @@ run_test('basic_notifications', () => {
     // Send notification.
     notifications.process_notification({message: message_1, webkit_notify: true});
     n = notifications.get_notifications();
-    assert.equal('undefined to general > whatever' in n, true);
+    assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Remove notification.
     notifications.close_notification(message_1);
     n = notifications.get_notifications();
-    assert.equal('undefined to general > whatever' in n, false);
+    assert.equal('Jesse Pinkman to general > whatever' in n, false);
     assert.equal(Object.keys(n).length, 0);
     assert.equal(last_closed_message_id, message_1.id);
 
@@ -222,7 +224,7 @@ run_test('basic_notifications', () => {
     message_1.id = 1001;
     notifications.process_notification({message: message_1, webkit_notify: true});
     n = notifications.get_notifications();
-    assert.equal('undefined to general > whatever' in n, true);
+    assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
@@ -230,14 +232,15 @@ run_test('basic_notifications', () => {
     message_1.id = 1002;
     notifications.process_notification({message: message_1, webkit_notify: true});
     n = notifications.get_notifications();
-    assert.equal('undefined to general > whatever' in n, true);
+    assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 1);
     assert.equal(last_shown_message_id, message_1.id);
 
     // Send another message. Notification count should increase.
     notifications.process_notification({message: message_2, webkit_notify: true});
     n = notifications.get_notifications();
-    assert.equal('undefined to general > lunch' in n, true);
+    assert.equal('Gus Fring to general > lunch' in n, true);
+    assert.equal('Jesse Pinkman to general > whatever' in n, true);
     assert.equal(Object.keys(n).length, 2);
     assert.equal(last_shown_message_id, message_2.id);
 
@@ -245,7 +248,7 @@ run_test('basic_notifications', () => {
     notifications.close_notification(message_1);
     notifications.close_notification(message_2);
     n = notifications.get_notifications();
-    assert.equal('undefined to general > whatever' in n, false);
+    assert.equal('Jesse Pinkman to general > whatever' in n, false);
     assert.equal(Object.keys(n).length, 0);
     assert.equal(last_closed_message_id, message_2.id);
 });
