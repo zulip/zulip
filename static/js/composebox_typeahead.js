@@ -13,6 +13,28 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
+exports.emoji_collection = [];
+
+exports.update_emoji_data = function () {
+    exports.emoji_collection = [];
+    _.each(emoji.emojis_by_name, function (emoji_dict) {
+        if (emoji_dict.is_realm_emoji === true) {
+            exports.emoji_collection.push({
+                emoji_name: emoji_dict.name,
+                emoji_url: emoji_dict.url,
+                is_realm_emoji: true,
+            });
+        } else {
+            _.each(emoji_dict.aliases, function (alias) {
+                exports.emoji_collection.push({
+                    emoji_name: alias,
+                    emoji_code: emoji_dict.emoji_code,
+                });
+            });
+        }
+    });
+};
+
 exports.topics_seen_for = function (stream_name) {
     var stream_id = stream_data.get_stream_id(stream_name);
     if (!stream_id) {
@@ -376,7 +398,7 @@ exports.compose_content_begins_typeahead = function (query) {
         }
         this.completing = 'emoji';
         this.token = current_token.substring(1);
-        return emoji.emojis;
+        return exports.emoji_collection;
     }
 
     if (this.options.completions.mention && current_token[0] === '@') {
@@ -559,6 +581,7 @@ exports.initialize_compose_typeahead = function (selector) {
 };
 
 exports.initialize = function () {
+    exports.update_emoji_data();
     select_on_focus("stream_message_recipient_stream");
     select_on_focus("stream_message_recipient_topic");
     select_on_focus("private_message_recipient");
