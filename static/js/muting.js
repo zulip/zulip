@@ -56,6 +56,10 @@ exports.set_muted_topics = function (tuples) {
     });
 };
 
+exports.initialize = function () {
+    exports.set_muted_topics(page_params.muted_topics);
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

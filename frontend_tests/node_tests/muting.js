@@ -1,6 +1,7 @@
 zrequire('muting');
 zrequire('stream_data');
 set_global('blueslip', global.make_zblueslip());
+set_global('page_params', {});
 
 run_test('edge_cases', () => {
     // private messages
@@ -72,11 +73,12 @@ run_test('get_and_set_muted_topics', () => {
 
     blueslip.set_test_data('warn', 'Unknown stream in set_muted_topics: BOGUS STREAM');
 
-    muting.set_muted_topics([
+    page_params.muted_topics = [
         ['social', 'breakfast'],
         ['design', 'typography'],
         ['BOGUS STREAM', 'whatever'],
-    ]);
+    ];
+    muting.initialize();
 
     blueslip.clear_test_data();
 
