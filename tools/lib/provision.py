@@ -387,6 +387,10 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
+    elif vendor == 'CentOS':
+        for service in ["postgresql-10", "rabbitmq server", "memcached", "redis"]:
+            run(["sudo", "-H", "systemctl", "enable", service])
+            run(["sudo", "-H", "systemctl", "start", service])
     elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
