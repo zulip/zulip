@@ -15,9 +15,10 @@ import tempfile
 import time
 import json
 import uuid
+import configparser
 
 if False:
-    from typing import Sequence, Set, Any, Dict, List
+    from typing import Sequence, Set, Any, Dict, List, Optional
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -410,3 +411,18 @@ def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
     if not is_root():
         print("{} must be run as root.".format(script_name))
         sys.exit(1)
+
+def get_config(config_file, section, key, default_value=""):
+    # type: (configparser.RawConfigParser, str, str, str) -> str
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+def get_config_file() -> configparser.RawConfigParser:
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+    return config_file
+
+def get_deploy_options(config_file):
+    # type: (configparser.RawConfigParser) -> List[str]
+    return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()
