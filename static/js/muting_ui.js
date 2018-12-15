@@ -212,10 +212,6 @@ exports.toggle_mute = function (msg) {
     }
 };
 
-exports.initialize = function () {
-    exports.update_muted_topics(page_params.muted_topics);
-};
-
 return exports;
 }());
 
