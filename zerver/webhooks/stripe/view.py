@@ -14,10 +14,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
-class NotImplementedEventType(Exception):
+class SuppressedEvent(Exception):
     pass
 
-class SuppressedEvent(Exception):
+class NotImplementedEventType(SuppressedEvent):
     pass
 
 @api_key_only_webhook_view('Stripe')
@@ -27,10 +27,8 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        stream: str=REQ(default='test')) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
-    except NotImplementedEventType:  # nocoverage
-        pass
     except SuppressedEvent:  # nocoverage
-        pass
+        return json_success()
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
