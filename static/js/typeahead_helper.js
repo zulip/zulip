@@ -156,7 +156,7 @@ exports.render_emoji = function (item) {
     if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
         args.img_src = item.emoji_url;
     } else {
-        args.codepoint = item.codepoint;
+        args.emoji_code = item.emoji_code;
     }
     return exports.render_typeahead_item(args);
 };
@@ -168,7 +168,7 @@ function emoji_prefix_sort(query, objs, get_item) {
     var popular_emoji_matches = [];
     var other_emoji_matches = [];
     prefix_sort.matches.forEach(function (obj) {
-        if (emoji.frequently_used_emojis_list.indexOf(obj.codepoint) !== -1) {
+        if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
