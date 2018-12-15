@@ -100,7 +100,8 @@
                                     <p>
                                         You&rsquo;ll initially be charged
                                         <b>$<span id="charged_amount"></span></b> for <b>{{ seat_count }}</b>
-                                        users. We'll automatically charge you for additional licenses as users
+                                        users.<br>
+                                        We'll automatically charge you for additional licenses as users
                                         are added, and remove licenses not in use at the end of each billing
                                         period.
                                     </p>
@@ -109,8 +110,9 @@
 
                                 <div id="license-manual-section">
                                     <p>
-                                        Enter the number of users you would like to pay for. You'll need to
-                                        manually add licenses later to add or invite additional users.
+                                        Enter the number of users you would like to pay for.<br>
+                                        You'll need to manually add licenses to add or invite
+                                        additional users.
                                     </p>
 
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
@@ -121,9 +123,10 @@
 
                                 <div id="license-mix-section">
                                     <p>
-                                        Enter the number of users you would like to initially pay for. We'll
-                                        automatically charge you for additional licenses as users are added,
-                                        and remove licenses not in use at the end of each billing period.
+                                        Enter the number of users you would like to pay for.<br>
+                                        We'll automatically charge you for additional licenses as users are
+                                        added, and remove licenses not in use at the end of each billing
+                                        period.
                                     </p>
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
                                     <input pattern="\d*" oninvalid="this.setCustomValidity('Invalid input')"
@@ -176,8 +179,9 @@
                                     </label>
                                 </div>
                                 <p>
-                                    Enter the number of users you would like to pay for. We'll email you an
-                                    invoice in 1-2 hours. Invoices can be paid by ACH transfer or credit card.
+                                    Enter the number of users you would like to pay for.<br>
+                                    We'll email you an invoice in 1-2 hours. Invoices can be paid by
+                                    ACH transfer or credit card.
                                 </p>
                                 <h4>Number of users (minimum {{ min_invoiced_licenses }})</h4>
                                 <input pattern="\d*" oninvalid="this.setCustomValidity('Invalid input')"
