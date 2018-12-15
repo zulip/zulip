@@ -631,7 +631,7 @@ run_test('create_sub', () => {
     assert.equal(antarctica_sub.color, '#76ce90');
 });
 
-run_test('initialize_from_page_params', () => {
+run_test('initialize', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
@@ -651,7 +651,7 @@ run_test('initialize_from_page_params', () => {
 
     initialize();
     page_params.realm_notifications_stream_id = -1;
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
     assert(stream_names.indexOf('subscriptions') !== -1);
@@ -665,7 +665,7 @@ run_test('initialize_from_page_params', () => {
     // Simulate a private stream the user isn't subscribed to
     initialize();
     page_params.realm_notifications_stream_id = 89;
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
     assert.equal(page_params.notifications_stream, "");
 
     // Now actually subscribe the user to the stream
@@ -676,7 +676,7 @@ run_test('initialize_from_page_params', () => {
     };
 
     stream_data.add_sub('foo', foo);
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
     assert.equal(page_params.notifications_stream, "foo");
 });
 
