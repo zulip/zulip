@@ -32,59 +32,91 @@ set_global('blueslip', {});
 blueslip.warn = noop;
 
 var emoji_stadium = {
-    emoji_name: 'stadium',
+    name: 'stadium',
+    aliases: ['stadium'],
     emoji_url: 'TBD',
     emoji_code: '1f3df',
 };
 var emoji_tada = {
-    emoji_name: 'tada',
+    name: 'tada',
+    aliases: ['tada'],
     emoji_url: 'TBD',
     emoji_code: '1f389',
 };
 var emoji_moneybag = {
-    emoji_name: 'moneybag',
+    name: 'moneybag',
+    aliases: ['moneybag'],
     emoji_url: 'TBD',
     emoji_code: '1f4b0',
 };
 var emoji_japanese_post_office = {
-    emoji_name: 'japanese_post_office',
+    name: 'japanese_post_office',
+    aliases: ['japanese_post_office'],
     emoji_url: 'TBD',
     emoji_code: '1f3e3',
 };
 var emoji_panda_face = {
-    emoji_name: 'panda_face',
+    name: 'panda_face',
+    aliases: ['panda_face'],
     emoji_url: 'TBD',
     emoji_code: '1f43c',
 };
 var emoji_see_no_evil = {
-    emoji_name: 'see_no_evil',
+    name: 'see_no_evil',
+    aliases: ['see_no_evil'],
     emoji_url: 'TBD',
     emoji_code: '1f648',
 };
 var emoji_thumbs_up = {
-    emoji_name: 'thumbs_up',
+    name: 'thumbs_up',
+    aliases: ['thumbs_up'],
     emoji_url: 'TBD',
     emoji_code: '1f44d',
 };
 var emoji_thermometer = {
-    emoji_name: 'thermometer',
+    name: 'thermometer',
+    aliases: ['thermometer'],
     emoji_url: 'TBD',
     emoji_code: '1f321',
 };
 var emoji_heart = {
-    emoji_name: 'heart',
+    name: 'heart',
+    aliases: ['heart'],
     emoji_url: 'TBD',
     emoji_code: '2764',
 };
 var emoji_headphones = {
-    emoji_name: 'headphones',
+    name: 'headphones',
+    aliases: ['headphones'],
     emoji_url: 'TBD',
     emoji_code: '1f3a7',
 };
 
-var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
-                  emoji_heart, emoji_headphones];
+var emojis_by_name = {
+    tada: emoji_tada,
+    moneybag: emoji_moneybag,
+    stadium: emoji_stadium,
+    japanese_post_office: emoji_japanese_post_office,
+    panda_face: emoji_panda_face,
+    see_no_evil: emoji_see_no_evil,
+    thumbs_up: emoji_thumbs_up,
+    thermometer: emoji_thermometer,
+    heart: emoji_heart,
+    headphones: emoji_headphones,
+};
+var emoji_list = _.map(emojis_by_name, function (emoji_dict) {
+    if (emoji_dict.is_realm_emoji === true) {
+        return {
+            emoji_name: emoji_dict.name,
+            emoji_url: emoji_dict.url,
+            is_realm_emoji: true,
+        };
+    }
+    return {
+        emoji_name: emoji_dict.name,
+        emoji_code: emoji_dict.emoji_code,
+    };
+});
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -117,6 +149,7 @@ set_global('compose', {
 });
 
 emoji.active_realm_emojis = {};
+emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
 
 set_global('pygments_data', {langs:
@@ -188,6 +221,10 @@ var backend = {
 
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
+
+var make_emoji = function (emoji_dict) {
+    return { emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code };
+};
 
 run_test('topics_seen_for', () => {
     topic_data.get_recent_names = (stream_id) => {
@@ -665,8 +702,8 @@ run_test('initialize', () => {
 
         // options.matcher()
         fake_this = { completing: 'emoji', token: 'ta' };
-        assert.equal(options.matcher.call(fake_this, emoji_tada), true);
-        assert.equal(options.matcher.call(fake_this, emoji_moneybag), false);
+        assert.equal(options.matcher.call(fake_this, make_emoji(emoji_tada)), true);
+        assert.equal(options.matcher.call(fake_this, make_emoji(emoji_moneybag)), false);
 
         fake_this = { completing: 'mention', token: 'Cord' };
         assert.equal(options.matcher.call(fake_this, cordelia), true);
@@ -689,18 +726,21 @@ run_test('initialize', () => {
 
         // options.sorter()
         fake_this = { completing: 'emoji', token: 'ta' };
-        actual_value = options.sorter.call(fake_this, [emoji_stadium, emoji_tada]);
-        expected_value = [emoji_tada, emoji_stadium];
+        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_stadium),
+                                                       make_emoji(emoji_tada)]);
+        expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'emoji', token: 'th' };
-        actual_value = options.sorter.call(fake_this, [emoji_thermometer, emoji_thumbs_up]);
-        expected_value = [emoji_thumbs_up, emoji_thermometer];
+        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_thermometer),
+                                                       make_emoji(emoji_thumbs_up)]);
+        expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'emoji', token: 'he' };
-        actual_value = options.sorter.call(fake_this, [emoji_headphones, emoji_heart]);
-        expected_value = [emoji_heart, emoji_headphones];
+        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_headphones),
+                                                       make_emoji(emoji_heart)]);
+        expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };
@@ -1245,14 +1285,14 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
-    assert_emoji_matches('da', [{emoji_name: "tada", emoji_url: "TBD", emoji_code: "1f389"},
-                                {emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
+    assert_emoji_matches('da', [{emoji_name: "tada", emoji_code: "1f389"},
+                                {emoji_name: "panda_face", emoji_code: "1f43c"}]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
-    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
-    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
-    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", emoji_code: "1f3e3"}]);
-    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", emoji_code: "1f3e3"}]);
+    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
+    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
     assert_emoji_matches('notaemoji', []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches('cordelia', [cordelia]);
