@@ -1,13 +1,24 @@
 $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
-    var password_field = $('#id_password, #id_new_password1');
 
-    $.validator.addMethod('password_strength', function (value) {
-        return common.password_quality(value, undefined, password_field);
-    }, function () {
-        return common.password_warning(password_field.val(), password_field);
-    });
+    var password_field = $('#id_password, #id_new_password1');
+    if (password_field.length > 0) {
+        $.validator.addMethod('password_strength', function (value) {
+            return common.password_quality(value, undefined, password_field);
+        }, function () {
+            return common.password_warning(password_field.val(), password_field);
+        });
+        // Reset the state of the password strength bar if the page
+        // was just reloaded due to a validation failure on the backend.
+        common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
+
+        password_field.on('change keyup', function () {
+            // Update the password strength bar even if we aren't validating
+            // the field yet.
+            common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
+        });
+    }
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
@@ -38,12 +49,6 @@ $(function () {
         unhighlight: highlight('success'),
     });
 
-    if (password_field) {
-        // Reset the state of the password strength bar if the page
-        // was just reloaded due to a validation failure on the backend.
-        common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
-    }
-
     if ($("#registration").length > 0) {
         // Check if there is no input field with errors.
         if ($('.help-inline:not(:empty)').length === 0) {
@@ -67,12 +72,6 @@ $(function () {
 
         $("#timezone").val(moment.tz.guess());
     }
-
-    password_field.on('change keyup', function () {
-        // Update the password strength bar even if we aren't validating
-        // the field yet.
-        common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
-    });
 
     $("#send_confirm").validate({
         errorElement: "div",
