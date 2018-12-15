@@ -55,6 +55,9 @@ class Invoice:
     billing: str
     billing_reason: str
     default_source: Source
+    due_date: int
+    finalized_at: int
+    lines: List[InvoiceLineItem]
     status: str
     total: int
 
@@ -65,6 +68,18 @@ class Invoice:
 
     @staticmethod
     def list(customer: str=..., limit: Optional[int]=...) -> List[Invoice]:
+        ...
+
+    @staticmethod
+    def create(auto_advance: bool=..., billing: str=..., customer: str=...,
+               days_until_due: Optional[int]=..., statement_descriptor: str=...) -> Invoice:
+        ...
+
+    @staticmethod
+    def finalize_invoice(invoice: Invoice) -> Invoice:
+        ...
+
+    def get(self, key: str) -> Any:
         ...
 
 class Subscription:
@@ -138,12 +153,34 @@ class Token:
 
 class Charge:
     amount: int
+    description: str
+    failure_code: str
+    receipt_email: str
+    source: Source
+    statement_descriptor: str
 
     @staticmethod
     def list(customer: Optional[str]) -> List[Charge]:
         ...
 
+    @staticmethod
+    def create(amount: int=..., currency: str=..., customer: str=..., description: str=...,
+               receipt_email: str=..., statement_descriptor: str=...) -> Charge:
+        ...
+
 class InvoiceItem:
     @staticmethod
-    def create(amount: int, currency: str, customer: Customer, subscription: Subscription) -> Subscription:
+    def create(amount: int=..., currency: str=..., customer: str=..., description: str=...,
+               discountable: bool=..., period: Dict[str, int]=..., quantity: int=...,
+               unit_amount: int=...) -> InvoiceItem:
+        ...
+
+    @staticmethod
+    def list(customer: Optional[str]) -> List[InvoiceItem]:
+        ...
+
+class InvoiceLineItem:
+    amount: int
+
+    def get(self, key: str) -> Any:
         ...
