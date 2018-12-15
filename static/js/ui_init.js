@@ -277,13 +277,13 @@ function initialize_kitchen_sink_stuff() {
 $(function () {
     // initialize other stuff
     scroll_bar.initialize();
-    muting_ui.initialize();
     message_viewport.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize();
+    muting.initialize();
     subs.initialize();
     condense.initialize();
     lightbox.initialize();
