@@ -500,7 +500,7 @@ run_test('render_emoji', () => {
     var rendered = false;
     var test_emoji = {
         emoji_name: 'thumbs_up',
-        codepoint: '1f44d',
+        emoji_code: '1f44d',
     };
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
@@ -510,7 +510,7 @@ run_test('render_emoji', () => {
         assert.equal(template_name, 'typeahead_list_item');
         assert.deepEqual(args, {
             primary: 'thumbs up',
-            codepoint: '1f44d',
+            emoji_code: '1f44d',
             is_emoji: true,
             has_image: false,
             has_secondary: false,

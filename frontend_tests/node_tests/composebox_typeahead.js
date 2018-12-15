@@ -34,52 +34,52 @@ blueslip.warn = noop;
 var emoji_stadium = {
     emoji_name: 'stadium',
     emoji_url: 'TBD',
-    codepoint: '1f3df',
+    emoji_code: '1f3df',
 };
 var emoji_tada = {
     emoji_name: 'tada',
     emoji_url: 'TBD',
-    codepoint: '1f389',
+    emoji_code: '1f389',
 };
 var emoji_moneybag = {
     emoji_name: 'moneybag',
     emoji_url: 'TBD',
-    codepoint: '1f4b0',
+    emoji_code: '1f4b0',
 };
 var emoji_japanese_post_office = {
     emoji_name: 'japanese_post_office',
     emoji_url: 'TBD',
-    codepoint: '1f3e3',
+    emoji_code: '1f3e3',
 };
 var emoji_panda_face = {
     emoji_name: 'panda_face',
     emoji_url: 'TBD',
-    codepoint: '1f43c',
+    emoji_code: '1f43c',
 };
 var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
-    codepoint: '1f648',
+    emoji_code: '1f648',
 };
 var emoji_thumbs_up = {
     emoji_name: 'thumbs_up',
     emoji_url: 'TBD',
-    codepoint: '1f44d',
+    emoji_code: '1f44d',
 };
 var emoji_thermometer = {
     emoji_name: 'thermometer',
     emoji_url: 'TBD',
-    codepoint: '1f321',
+    emoji_code: '1f321',
 };
 var emoji_heart = {
     emoji_name: 'heart',
     emoji_url: 'TBD',
-    codepoint: '2764',
+    emoji_code: '2764',
 };
 var emoji_headphones = {
     emoji_name: 'headphones',
     emoji_url: 'TBD',
-    codepoint: '1f3a7',
+    emoji_code: '1f3a7',
 };
 
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
@@ -1245,14 +1245,14 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
-    assert_emoji_matches('da', [{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
-                                {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('da', [{emoji_name: "tada", emoji_url: "TBD", emoji_code: "1f389"},
+                                {emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
-    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
-    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
-    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
-    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
+    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
+    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", emoji_code: "1f43c"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", emoji_code: "1f3e3"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", emoji_code: "1f3e3"}]);
     assert_emoji_matches('notaemoji', []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches('cordelia', [cordelia]);

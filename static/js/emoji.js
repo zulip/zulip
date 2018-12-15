@@ -73,7 +73,7 @@ exports.initialize = function initialize() {
     _.each(emoji_codes.names, function (value) {
         var base_name = emoji_codes.name_to_codepoint[value];
         default_emojis.push({emoji_name: value,
-                             codepoint: emoji_codes.name_to_codepoint[value]});
+                             emoji_code: emoji_codes.name_to_codepoint[value]});
 
         if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
             exports.default_emoji_aliases[base_name].push(value);
