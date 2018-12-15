@@ -59,6 +59,10 @@ body.night-mode {
         color: inherit !important;
     }
 
+    .message_reaction:hover ,.reaction_button:hover{
+      border-color: white !important;
+    }
+
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
@@ -132,6 +136,10 @@ on a dark background, and don't change the dark labels dark either. */
     .message_reactions:hover .message_reaction + .reaction_button {
         background-color: hsla(0, 0%, 0%, 0.5);
         border-color: hsla(0, 0%, 0%, 0.9);
+    }
+
+    .message_reactions .message_reaction.reacted {
+        background-color: blue;
     }
 
     .message_reactions .message_reaction {
