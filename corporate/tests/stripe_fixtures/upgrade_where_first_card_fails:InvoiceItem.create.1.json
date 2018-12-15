@@ -1,0 +1,22 @@
+{
+  "amount": -184000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED0001",
+  "date": 1000000000,
+  "description": "Payment (Card ending in 4242)",
+  "discountable": false,
+  "id": "ii_NORMALIZED00000000000002",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "period": {
+    "end": 1000000000,
+    "start": 1000000000
+  },
+  "plan": null,
+  "proration": false,
+  "quantity": 1,
+  "subscription": null,
+  "unit_amount": -184000
+}

@@ -495,21 +495,12 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     # estimate annual subscription revenue
     total_amount = 0
     if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import estimate_customer_arr
-        from corporate.models import Customer
-        stripe.api_key = get_secret('stripe_secret_key')
-        estimated_arr = {}
-        try:
-            for stripe_customer in stripe.Customer.list(limit=100):
-                # TODO: could do a select_related to get the realm.string_id, potentially
-                customer = Customer.objects.filter(stripe_customer_id=stripe_customer.id).first()
-                if customer is not None:
-                    estimated_arr[customer.realm.string_id] = estimate_customer_arr(stripe_customer)
-        except stripe.error.StripeError:
-            pass
+        from corporate.lib.stripe import estimate_annual_recurring_revenue_by_realm
+        estimated_arrs = estimate_annual_recurring_revenue_by_realm()
         for row in rows:
-            row['amount'] = estimated_arr.get(row['string_id'], None)
-        total_amount = sum(estimated_arr.values())
+            if row['string_id'] in estimated_arrs:
+                row['amount'] = estimated_arrs[row['string_id']]
+        total_amount += sum(estimated_arrs.values())
 
     # augment data with realm_minutes
     total_hours = 0.0

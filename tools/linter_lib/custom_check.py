@@ -249,7 +249,7 @@ def build_custom_checkers(by_lang):
     ]  # type: RuleList
     comma_whitespace_rule = [
         {'pattern': ', {2,}[^#/ ]',
-         'exclude': set(['zerver/tests', 'frontend_tests/node_tests']),
+         'exclude': set(['zerver/tests', 'frontend_tests/node_tests', 'corporate/tests']),
          'description': "Remove multiple whitespaces after ','",
          'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
          'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},

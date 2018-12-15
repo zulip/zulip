@@ -14,15 +14,16 @@ from zerver.decorator import zulip_login_required, require_billing_access
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_string, check_int
+from zerver.lib.validator import check_string, check_int, check_bool
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    stripe_get_customer, upcoming_invoice_total, get_seat_count, \
-    extract_current_subscription, process_initial_upgrade, sign_string, \
+    stripe_get_customer, get_seat_count, \
+    process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
-    MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE
-from corporate.models import Customer, CustomerPlan, Plan
+    MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
+    next_renewal_date, renewal_amount
+from corporate.models import Customer, CustomerPlan, Plan, get_active_plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -53,8 +54,9 @@ def check_upgrade_parameters(
         raise BillingError('not enough licenses',
                            _("You must invoice for at least {} users.".format(min_licenses)))
 
-def payment_method_string(stripe_customer: stripe.Customer) -> str:
-    subscription = extract_current_subscription(stripe_customer)
+# TODO
+def payment_method_string(stripe_customer: stripe.Customer) -> str:  # nocoverage: TODO
+    subscription = None  # extract_current_subscription(stripe_customer)
     if subscription is not None and subscription.billing == "send_invoice":
         return _("Billed by invoice")
     stripe_source = stripe_customer.default_source
@@ -91,10 +93,11 @@ def upgrade(request: HttpRequest, user: UserProfile,
         check_upgrade_parameters(
             billing_modality, schedule, license_management, licenses,
             stripe_token is not None, seat_count)
+        automanage_licenses = license_management in ['automatic', 'mix']
 
         billing_schedule = {'annual': CustomerPlan.ANNUAL,
                             'monthly': CustomerPlan.MONTHLY}[schedule]
-        process_initial_upgrade(user, licenses, billing_schedule, stripe_token)
+        process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
     except BillingError as e:
         # TODO add a billing_logger.warning with all the upgrade parameters
         return json_error(e.message, data={'error_description': e.description})
@@ -113,7 +116,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
     user = request.user
     customer = Customer.objects.filter(realm=user.realm).first()
-    if customer is not None and customer.has_billing_relationship:
+    if customer is not None and CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.billing_home'))
 
     percent_off = 0
@@ -152,7 +155,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
-    if not customer.has_billing_relationship:
+    if not CustomerPlan.objects.filter(customer=customer).exists():
         return HttpResponseRedirect(reverse('corporate.views.initial_upgrade'))
 
     if not user.is_realm_admin and not user.is_billing_admin:
@@ -160,40 +163,44 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         return render(request, 'corporate/billing.html', context=context)
     context = {'admin_access': True}
 
-    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    if stripe_customer.account_balance > 0:  # nocoverage, waiting for mock_stripe to mature
-        context.update({'account_charges': '{:,.2f}'.format(stripe_customer.account_balance / 100.)})
-    if stripe_customer.account_balance < 0:  # nocoverage
-        context.update({'account_credits': '{:,.2f}'.format(-stripe_customer.account_balance / 100.)})
-
-    billed_by_invoice = False
-    subscription = extract_current_subscription(stripe_customer)
-    if subscription:
-        plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
-        licenses = subscription.quantity
+    charge_automatically = False
+    plan = get_active_plan(customer)
+    if plan is not None:
+        plan_name = {
+            CustomerPlan.STANDARD: 'Zulip Standard',
+            CustomerPlan.PLUS: 'Zulip Plus',
+        }[plan.tier]
+        licenses = plan.licenses
         # Need user's timezone to do this properly
-        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
-            dt=timestamp_to_datetime(subscription.current_period_end))
-        renewal_amount = upcoming_invoice_total(customer.stripe_customer_id)
-        if subscription.billing == 'send_invoice':
-            billed_by_invoice = True
+        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan))
+        renewal_cents = renewal_amount(plan)
+        charge_automatically = plan.charge_automatically
+        if charge_automatically:  # nocoverage: TODO
+            # TODO get last4
+            payment_method = 'Card on file'
+        else:  # nocoverage: TODO
+            payment_method = 'Billed by invoice'
+        billed_by_invoice = not plan.charge_automatically
     # Can only get here by subscribing and then downgrading. We don't support downgrading
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
         plan_name = "Zulip Free"
         licenses = 0
         renewal_date = ''
-        renewal_amount = 0
+        renewal_cents = 0
+        payment_method = ''
 
     context.update({
         'plan_name': plan_name,
         'licenses': licenses,
         'renewal_date': renewal_date,
-        'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
-        'payment_method': payment_method_string(stripe_customer),
+        'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
+        'payment_method': payment_method,
+        # TODO: Rename to charge_automatically
         'billed_by_invoice': billed_by_invoice,
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        'stripe_email': stripe_customer.email,
+        # TODO: get actual stripe email?
+        'stripe_email': user.email,
     })
 
     return render(request, 'corporate/billing.html', context=context)

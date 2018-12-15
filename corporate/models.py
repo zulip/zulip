@@ -9,17 +9,52 @@ from zerver.models import Realm, RealmAuditLog
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=models.CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
-    # Becomes True the first time a payment successfully goes through, and never
-    # goes back to being False
+    # Deprecated .. delete once everyone is migrated to new billing system
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)  # type: Optional[Decimal]
 
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 
-class CustomerPlan(object):
+class CustomerPlan(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # type: Customer
+    licenses = models.IntegerField()  # type: int
+    automanage_licenses = models.BooleanField(default=False)  # type: bool
+    charge_automatically = models.BooleanField(default=False)  # type: bool
+
+    # Both of these are in cents. Exactly one of price_per_license or
+    # fixed_price should be set. fixed_price is only for manual deals, and
+    # can't be set via the self-serve billing system.
+    price_per_license = models.IntegerField(null=True)  # type: Optional[int]
+    fixed_price = models.IntegerField(null=True)  # type: Optional[int]
+
+    # A percentage, like 85
+    discount = models.DecimalField(decimal_places=4, max_digits=6, null=True)  # type: Optional[Decimal]
+
+    billing_cycle_anchor = models.DateTimeField()  # type: datetime.datetime
     ANNUAL = 1
     MONTHLY = 2
+    billing_schedule = models.SmallIntegerField()  # type: int
+
+    # This is like analytic's FillState, but for billing
+    billed_through = models.DateTimeField()  # type: datetime.datetime
+    next_billing_date = models.DateTimeField(db_index=True)  # type: datetime.datetime
+
+    STANDARD = 1
+    PLUS = 2  # not available through self-serve signup
+    ENTERPRISE = 10
+    tier = models.SmallIntegerField()  # type: int
+
+    ACTIVE = 1
+    ENDED = 2
+    NEVER_STARTED = 3
+    # You can only have 1 active subscription at a time
+    status = models.SmallIntegerField(default=ACTIVE)  # type: int
+
+    # TODO maybe override setattr to ensure billing_cycle_anchor, etc are immutable
+
+def get_active_plan(customer: Customer) -> Optional[CustomerPlan]:
+    return CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).first()
 
 # Everything below here is legacy
 
