@@ -107,6 +107,7 @@ exports.build_emoji_data = function (realm_emojis) {
     _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
         emoji_dict = {
             name: realm_emoji_name,
+            display_name: realm_emoji_name,
             aliases: [realm_emoji_name],
             is_realm_emoji: true,
             url: realm_emoji.emoji_url,
@@ -122,6 +123,7 @@ exports.build_emoji_data = function (realm_emojis) {
                 if (!exports.emojis_by_name.hasOwnProperty(emoji_name)) {
                     emoji_dict = {
                         name: emoji_name,
+                        display_name: emoji_name,
                         aliases: emoji.default_emoji_aliases[codepoint],
                         is_realm_emoji: false,
                         emoji_code: codepoint,
