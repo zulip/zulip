@@ -191,7 +191,10 @@ SYSTEM_DEPENDENCIES = {
     ]
 }
 
-TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
+if vendor == 'CentOS':
+    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-10/share/tsearch_data/"
+else:
+    TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
