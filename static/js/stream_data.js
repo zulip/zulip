@@ -565,7 +565,7 @@ exports.get_streams_for_admin = function () {
     return subs;
 };
 
-exports.initialize_from_page_params = function () {
+exports.initialize = function () {
     color_data.claim_colors(page_params.subscriptions);
 
     function populate_subscriptions(subs, subscribed, previously_subscribed) {

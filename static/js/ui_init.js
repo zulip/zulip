@@ -283,6 +283,7 @@ $(function () {
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
+    stream_data.initialize();
     subs.initialize();
     condense.initialize();
     lightbox.initialize();

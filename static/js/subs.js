@@ -770,7 +770,6 @@ exports.sub_or_unsub = function (sub) {
 
 
 exports.initialize = function () {
-    stream_data.initialize_from_page_params();
     stream_list.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
