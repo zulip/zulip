@@ -6,25 +6,20 @@ import subprocess
 import logging
 import time
 import argparse
+from typing import List
+import configparser
 
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
 LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
-
-try:
-    remote_url = config_file.get('deployment', 'git_repo_url')
-except (configparser.NoSectionError, configparser.NoOptionError):
-    remote_url = "https://github.com/zulip/zulip.git"
-try:
-    deploy_options = config_file.get('deployment', 'deploy_options').strip().split()
-except (configparser.NoSectionError, configparser.NoOptionError):
-    deploy_options = []
-
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
-    get_deployment_lock, overwrite_symlink, release_deployment_lock, su_to_zulip, assert_running_as_root
+    get_deployment_lock, overwrite_symlink, release_deployment_lock, su_to_zulip, assert_running_as_root, \
+    get_config_file, get_deploy_options, get_config
+
+config_file = get_config_file()
+deploy_options = get_deploy_options(config_file)
+remote_url = get_config(config_file, 'deployment', 'git_repo_url', "https://github.com/zulip/zulip.git")
 
 assert_running_as_root(strip_lib_from_paths=True)
 
