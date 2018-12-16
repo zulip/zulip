@@ -323,7 +323,7 @@ exports.launch = function () {
     var drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
     exports.open_modal();
-    exports.set_initial_element();
+    exports.set_initial_element(drafts);
     setup_event_handlers();
 };
 
@@ -461,12 +461,11 @@ exports.open_modal = function () {
     });
 };
 
-exports.set_initial_element = function () {
-    var draft_list = drafts.draft_model.get();
-    var draft_id_list = Object.getOwnPropertyNames(draft_list);
-    if (draft_id_list.length > 0) {
-        var curr_draft = draft_id_list[draft_id_list.length - 1];
-        var curr_draft_element = document.querySelectorAll('[data-draft-id="' + curr_draft + '"]');
+exports.set_initial_element = function (drafts) {
+    if (drafts.length > 0) {
+        var curr_draft_id = drafts[drafts.length - 1].draft_id;
+        var selector = '[data-draft-id="' + curr_draft_id + '"]';
+        var curr_draft_element = document.querySelectorAll(selector);
         var focus_element = curr_draft_element[0].children[0];
         activate_element(focus_element);
         $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
