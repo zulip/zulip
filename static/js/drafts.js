@@ -202,17 +202,18 @@ exports.remove_old_drafts = remove_old_drafts;
 
 exports.launch = function () {
     function format_drafts(data) {
-        var drafts = {};
-        var data_array = [];
         _.each(data, function (draft, id) {
-            data_array.push([id, data[id]]);
+            draft.id = id;
         });
-        var data_sorted = data_array.sort(function (draft_a, draft_b) {
-            return draft_a[1].updatedAt - draft_b[1].updatedAt;
+
+        var unsorted_raw_drafts = _.values(data);
+
+        var sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
+            return draft_a.updatedAt - draft_b.updatedAt;
         });
-        _.each(data_sorted, function (data_element) {
-            var draft = data_element[1];
-            var id = data_element[0];
+
+        function format_draft(draft) {
+            var id = draft.id;
             var formatted;
             var time = new XDate(draft.updatedAt);
             var time_stamp = timerender.render_now(time).time_str;
@@ -231,7 +232,7 @@ exports.launch = function () {
                 }
 
                 formatted = {
-                    draft_id: id,
+                    draft_id: draft.id,
                     is_stream: true,
                     stream: stream,
                     stream_color: stream_data.get_color(draft.stream),
@@ -251,7 +252,7 @@ exports.launch = function () {
                 }).join(', ');
 
                 formatted = {
-                    draft_id: id,
+                    draft_id: draft.id,
                     is_stream: false,
                     recipients: recipients,
                     raw_content: draft.content,
@@ -275,9 +276,12 @@ exports.launch = function () {
                 return;
             }
 
-            drafts[id] = formatted;
-        });
-        return drafts;
+            return formatted;
+        }
+
+        var sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, format_draft));
+
+        return sorted_formatted_drafts;
     }
 
     function populate_and_fill() {
