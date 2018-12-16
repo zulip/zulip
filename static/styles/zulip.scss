@@ -33,12 +33,47 @@ textarea {
     line-height: normal;
 }
 
+input,
+select {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    transition: border 0.2s ease;
+    padding: 0px 5px;
+}
+
+input:focus {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+
 blockquote p {
     font-weight: normal;
 }
 
 a {
     cursor: pointer;
+}
+
+ul,
+ol {
+    padding: 0px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-family: inherit;
 }
 
 .no-select {
@@ -188,13 +223,10 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-    height: 40px;
 }
 
 #panels {
     -webkit-font-smoothing: antialiased;
-
-    font-size: 1rem;
 }
 
 #panels .alert {
@@ -287,12 +319,12 @@ p.n-margin {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
     z-index: 100;
+    top: 50px;
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 238px;
     padding-left: 0px;
 }
 
@@ -339,7 +371,7 @@ input[type="search"],
 input[type="tel"],
 input[type="color"] {
     font-size: inherit;
-    height: 1.4em;
+    height: 2em;
 }
 
 li,
@@ -739,7 +771,7 @@ td.pointer {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    line-height: 14px;
+    line-height: 1.5em;
     position: relative;
     z-index: 0;
 }
@@ -757,8 +789,8 @@ td.pointer {
     display: inline-block;
     padding: 4px 6px 3px 6px;
     font-weight: normal;
-    height: 17px;
-    line-height: 17px;
+    height: 25px;
+    line-height: 15px;
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
@@ -1036,8 +1068,8 @@ td.pointer {
     padding: 3px 6px 2px 6px;
     font-weight: normal;
     font-size: 14px;
-    height: 17px;
-    line-height: 17px;
+    height: 25px;
+    line-height: 15px;
     border-left-color: hsl(0, 0%, 27%);
 }
 
@@ -1712,7 +1744,6 @@ blockquote p {
     position: relative;
     background-color: hsl(0, 0%, 89%);
     width: 40px;
-    height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
 }
@@ -1806,7 +1837,7 @@ blockquote p {
         color: inherit;
         opacity: 0.5;
         text-shadow: none;
-        padding-left: 0px !important;
+        padding: 0px !important;
         background-color: inherit;
         box-shadow: inherit;
         -webkit-box-shadow: inherit;
@@ -1814,7 +1845,6 @@ blockquote p {
         display: block;
         position: absolute;
         right: 0px;
-        top: 3px;
     }
 
     .dropdown-toggle,
@@ -1850,9 +1880,9 @@ nav .column-left .company-name {
     display: inline-block;
     vertical-align: top;
     text-transform: uppercase;
-    margin-top: 12px;
+    margin-top: 9px;
     margin-left: 8px;
-    font-size: 1.2rem;
+    font-size: 1.9rem;
     font-weight: 600;
     color: hsl(170, 48%, 54%);
     letter-spacing: 0.1em;
@@ -3030,4 +3060,13 @@ div.message_content button.tictactoe-square:disabled {
 // Hide the up and down arrows in the Flatpickr datepicker year
 .flatpickr-months .numInputWrapper span {
     display: none;
+}
+
+.popover {
+    font-family: inherit;
+    max-width: 300px;
+}
+
+.popover li a {
+    padding: 5px 15px;
 }

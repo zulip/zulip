@@ -292,13 +292,11 @@
 }
 
 .input-append {
-    font-size: 90%;
     letter-spacing: -.3em;
 }
 
 .input-append input[type=text],
 .new-style input[type=text] {
-    border-radius: 5px;
     box-shadow: none;
     margin: 0px;
 }
@@ -316,12 +314,11 @@
 .clear_search_button:active,
 .clear_search_button[disabled]:hover {
     position: relative;
-    right: 20px;
+    right: 14px;
+    top: -24px;
     background: none;
     border: none;
     text-align: center;
-    padding-top: 8px;
-    padding-left: 4px;
     color: hsl(0, 0%, 80%);
     text-shadow: none;
     outline: none !important;

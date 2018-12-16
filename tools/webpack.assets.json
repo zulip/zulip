@@ -46,7 +46,6 @@
         "./node_modules/sortablejs/Sortable.js",
         "./static/third/bootstrap/css/bootstrap.css",
         "./static/third/bootstrap/css/bootstrap-btn.css",
-        "./static/third/bootstrap/css/bootstrap-responsive.css",
         "./node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
         "./node_modules/font-awesome/css/font-awesome.css",
         "./static/generated/icons/style.css",

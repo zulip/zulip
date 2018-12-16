@@ -1,6 +1,5 @@
 .right-sidebar {
     -webkit-font-smoothing: antialiased;
-    font-size: 0.89rem;
 }
 
 .right-sidebar a:hover {
@@ -48,6 +47,7 @@
     border-radius: 4px;
     margin: 1px 0px;
     padding-right: 15px;
+    padding-left: 5px;
 }
 
 #user_presences .arrow {
@@ -62,8 +62,8 @@
 .user-status-indicator,
 .group-pm-status-indicator {
     display: block;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     margin: 0px 5px;
     border-radius: 50%;
     border: 1px solid;
@@ -76,6 +76,7 @@
 .group-pm-status-indicator {
     background-color: hsl(106, 74%, 44%);
     border-color: hsl(106, 74%, 44%);
+    margin: 0;
 }
 
 .user_idle .user-status-indicator {
@@ -92,6 +93,7 @@
 }
 
 .user-status-indicator {
+    margin: 0;
     background-color: none;
     border-color: hsl(0, 0%, 50%);
 }
@@ -103,12 +105,13 @@
 #user_presences a,
 #group-pms a {
     color: inherit;
-    margin-left: 0px;
+    margin-left: 5px;
 }
 
 #invite-user-link i {
     text-decoration: none;
     margin-right: 5px;
+    padding-left: 5px;
 }
 
 .group-pms-sidebar-entry .selectable_sidebar_block {
@@ -198,7 +201,6 @@
     color: hsl(0, 0%, 52%);
     display: block;
     width: 40px;
-    height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
 }
@@ -214,6 +216,7 @@
 #userlist-header,
 #group-pm-header {
     margin-right: 10px;
+    padding-left: 5px;
 }
 
 .sidebar-items:first-of-type #userlist-header {
@@ -222,6 +225,11 @@
 
 #userlist-header {
     cursor: pointer;
+}
+
+.input-append input[type=text].user-list-filter {
+    margin-left: 5px;
+    width: 228px;
 }
 
 #user_filter_icon {

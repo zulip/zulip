@@ -310,7 +310,7 @@ div[id^="message-edit-send-status"],
 
 textarea.new_message_textarea {
     display: table-cell;
-    width: calc(100% - 12px);
+    width: 100%;
     padding: 5px;
     height: 1.5em;
     max-height: 22em;
@@ -340,8 +340,9 @@ textarea.new_message_textarea:focus,
 
 input.recipient_box {
     margin: 0px;
-    height: 1.1em;
+    height: inherit;
     border-radius: 3px;
+    padding: 3px 0px 3px 7px;
 }
 
 #stream_message_recipient_stream.recipient_box {
@@ -380,8 +381,6 @@ input.recipient_box {
 
 #send_controls #compose-send-button {
     border-radius: 4px;
-    padding-top: 3px;
-    padding-bottom: 3px;
     margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);

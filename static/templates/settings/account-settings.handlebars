@@ -7,7 +7,7 @@
                 <div class="input-group user-name-section">
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
-                        <button type="button" class="button small rounded inline-block" id='email_value'
+                        <button type="button" class="button rounded inline-block" id='email_value'
                           {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
                             {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
@@ -49,7 +49,7 @@
                     <div class="user-name-section inline-block">
                         <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
                         <a id="change_full_name" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_name_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
-                            <button type="button" class="button small white rounded inline-block" id="full_name"{{#unless page_params.is_admin}}{{#if page_params.realm_name_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                            <button type="button" class="button white rounded inline-block" id="full_name"{{#unless page_params.is_admin}}{{#if page_params.realm_name_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
                                 <span id="full_name_value">{{page_params.full_name}}</span>
                                 <i class="fa fa-pencil"></i>
                             </button>
@@ -85,7 +85,7 @@
                     <label class="inline-block title">{{t "Password" }}</label>
                     <a id="change_password" {{#if page_params.realm_email_auth_enabled}}href="#change_password"{{/if}}>
                         <div class="input-group inline-block" id="pw_change_link">
-                            <button type="button" class="change_password_button small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i>
+                            <button type="button" class="change_password_button button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i>
                             </button>
                         </div>
                     </a>

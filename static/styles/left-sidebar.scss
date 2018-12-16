@@ -1,13 +1,7 @@
 #left-sidebar {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-
-    font-size: 0.89rem;
-}
-
-#left-sidebar #user-list,
-#left-sidebar #group-pm-list {
-    padding-left: 10px;
+    padding-left: 5px;
 }
 
 #streams_inline_cog,
@@ -35,9 +29,9 @@
 
 .hashtag:empty::after {
     content: "#";
-    font-size: 1.3rem;
     font-weight: 800;
-    line-height: 0;
+    font-size: 140%;
+    line-height: 1em;
 }
 
 .tooltip {
@@ -51,16 +45,13 @@
     font-weight: normal;
 }
 
-.left-sidebar li {
-    margin: 1px 0px;
-}
-
 .left-sidebar li a:hover {
     text-decoration: none;
 }
 
 #stream_filters li {
     padding: 1px 0px;
+    padding-left: 5px;
 }
 
 #stream_filters li ul {
@@ -80,7 +71,8 @@
 }
 
 .input-append input[type=text].stream-list-filter {
-    margin-left: 10px;
+    margin-left: 5px;
+    width: 228px;
 }
 
 #global_filters li:hover,
@@ -125,20 +117,16 @@ li.active-sub-filter {
 
 #left-sidebar .filter-icon {
     display: inline-block;
-    width: 18px;
     text-align: center;
-    margin-right: 3px;
+    margin-right: 7px;
 }
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
+    padding: 1px 5px;
 }
 
 .left-sidebar li {
-    padding-top: 2px;
-    padding-bottom: 2px;
-
     border-radius: 4px;
 }
 
@@ -279,8 +267,6 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block {
     padding: 0px;
-    margin-right: 25px;
-    margin-left: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -323,7 +309,6 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 .stream-privacy .hashtag {
     position: relative;
-    top: 2px;
     margin-right: 5px;
 }
 
@@ -411,7 +396,7 @@ li.expanded_private_message a {
 
 #streams_header {
     margin-right: 0px;
-    padding-left: 10px;
+    padding-left: 5px;
     cursor: pointer;
 }
 
