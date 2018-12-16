@@ -277,7 +277,7 @@ exports.launch = function () {
         var unsorted_raw_drafts = _.values(data);
 
         var sorted_raw_drafts = unsorted_raw_drafts.sort(function (draft_a, draft_b) {
-            return draft_a.updatedAt - draft_b.updatedAt;
+            return draft_b.updatedAt - draft_a.updatedAt;
         });
 
         var sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
@@ -463,12 +463,12 @@ exports.open_modal = function () {
 
 exports.set_initial_element = function (drafts) {
     if (drafts.length > 0) {
-        var curr_draft_id = drafts[drafts.length - 1].draft_id;
+        var curr_draft_id = drafts[0].draft_id;
         var selector = '[data-draft-id="' + curr_draft_id + '"]';
         var curr_draft_element = document.querySelectorAll(selector);
         var focus_element = curr_draft_element[0].children[0];
         activate_element(focus_element);
-        $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+        $(".drafts-list")[0].scrollTop = 0;
     }
 };
 
