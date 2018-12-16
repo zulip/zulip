@@ -7,6 +7,46 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+**Highlights:**
+- Added support for synchronizing user avatars and disabled status
+from LDAP/active directory.
+- Added support for CentOS 7 in the development environment
+  provisioning process.  This is an important step towards production
+  CentOS/RHEL 7 support.
+- Added experimental support for not making email addresses available
+  to all other users.
+
+**Full feature changelog:**
+- Added API documentation for user groups and custom emoji.
+- Added display of a user's role (administrator, guest, etc.) in
+  various relevant places.
+- Added support for sending "topic" rather than the legacy "subject"
+  for the topic in most API endpoints.
+- Added helpful notifications for some common webhook
+  misconfigurations.
+- Added support for changing the default notification sound.
+- Added Ctrl+. shortcut for narrowing to current compose recipient.
+- Added icons to indicate which "organization settings" tabs are
+  available to regular users.
+- Added protocol for communicating version incompatibility to mobile apps.
+- Added support for copying avatar and other profile data when
+  creating a second account on a Zulip server with a given email address.
+- Added /digest endpoint for viewing the current digest email on the web.
+- Added alert for when a user sends a message when scrolled up.
+- Optimized performance of data import from Slack, HipChat, etc.
+- Improved "new user" emails to clearly indicator login details.
+- Eliminated UI lag when using "Quote and reply".
+- Expanded set of characters allowed in custom Linkifiers.
+- Optimized development provisioning; now takes 2s in the no-op case.
+- Fixed missing API authentication headers for mobile file access.
+- Fixed various select and copy-paste issues.
+- Fixed various back button bugs in settings UI.
+- Fixed some performance issues for organizations with 1000s of streams.
+- Fixed various error handling bugs sending push notifications.
+- Fixed several bugs with importing data into Zulip's S3 backend.
+- Fixed display of full recipients list in "private messages" hover.
+- Fixed bugs involving muting and renamed streams.
+
 ### 1.9.1 -- 2018-11-30
 
 This release is primarily intended to improve the experience for new
