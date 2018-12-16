@@ -202,6 +202,9 @@ exports.activate = function (opts) {
         }
         if (widget_data.question !== '') {
             elem.find('button.poll-question').text(i18n.t('Edit question'));
+            elem.find('.poll-comment-bar').show();
+        } else {
+            elem.find('.poll-comment-bar').hide();
         }
 
         elem.find("button.poll-vote").on('click', function (e) {
