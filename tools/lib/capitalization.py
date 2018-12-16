@@ -118,6 +118,10 @@ IGNORED_PHRASES = [
     # Used to refer custom time limits
     r"\bN\b",
 
+    r"group private messages with __recipient__",
+    r"private messages with __recipient__",
+    r"private messages with yourself",
+
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
     r"or Choose a user",
