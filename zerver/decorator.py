@@ -659,9 +659,22 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 def authenticate_log_and_execute_json(request: HttpRequest,
                                       view_func: ViewFuncT,
                                       *args: Any, skip_rate_limiting: bool = False,
+                                      allow_unauthenticated: bool=False,
                                       **kwargs: Any) -> HttpResponse:
+    if not skip_rate_limiting:
+        limited_view_func = rate_limit()(view_func)
+    else:
+        limited_view_func = view_func
+
     if not request.user.is_authenticated:
-        return json_error(_("Not logged in"), status=401)
+        if not allow_unauthenticated:
+            return json_error(_("Not logged in"), status=401)
+
+        process_client(request, request.user, is_browser_view=True,
+                       skip_update_user_activity=True,
+                       query=view_func.__name__)
+        return limited_view_func(request, request.user, *args, **kwargs)
+
     user_profile = request.user
     validate_account_and_subdomain(request, user_profile)
 
@@ -671,9 +684,7 @@ def authenticate_log_and_execute_json(request: HttpRequest,
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
     request._email = user_profile.delivery_email
-    if not skip_rate_limiting:
-        view_func = rate_limit()(view_func)
-    return view_func(request, user_profile, *args, **kwargs)
+    return limited_view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
@@ -687,11 +698,13 @@ def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False) -> ViewFuncT:
+def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False,
+                            allow_unauthenticated: bool=False) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
         kwargs["skip_rate_limiting"] = skip_rate_limiting
+        kwargs["allow_unauthenticated"] = allow_unauthenticated
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 

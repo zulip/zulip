@@ -152,6 +152,14 @@ class TestReport(ZulipTestCase):
         # fix_params (see above) adds quotes when JSON encoding.
         annotate.assert_called_once_with('"trace"')
 
+        # Now test without authentication.
+        self.logout()
+        with \
+                self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate:
+            result = self.client_post("/json/report/error", params)
+        self.assert_json_success(result)
+
     def test_report_csp_violations(self) -> None:
         fixture_data = self.fixture_data('csp_report.json')
         result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
