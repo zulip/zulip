@@ -15,8 +15,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
-    overwrite_symlink
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, YUM_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES
@@ -272,8 +271,8 @@ def install_yum_deps(deps_to_install, retry=False):
         # Our tooling expects these postgres scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        overwrite_symlink("/usr/%s/bin/%s" % (postgres_dir, cmd),
-                          "/usr/bin/%s" % (cmd,))
+        run(["sudo", "ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
+             "/usr/bin/%s" % (cmd,)])
     # Compile tsearch-extras from scratch
     run(["sudo", "./scripts/lib/build-tsearch-extras"])
     run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
