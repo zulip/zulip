@@ -296,6 +296,13 @@ exports.get_draft_topic = function (obj) {
     return obj.topic || obj.subject || '';
 };
 
+exports.get_reload_topic = function (obj) {
+    // When we first upgrade to releases that have
+    // topic=foo in the code, the user's reload URL
+    // may still have subject=foo from the prior version.
+    return obj.topic || obj.subject || '';
+};
+
 exports.set_topic = function (obj, topic) {
     obj.subject = topic;
 };
