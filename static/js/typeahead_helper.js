@@ -151,10 +151,10 @@ exports.render_stream = function (stream) {
 exports.render_emoji = function (item) {
     var args = {
         is_emoji: true,
-        primary: item.emoji_name.split("_").join(" "),
+        primary: item.display_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
-        args.img_src = item.emoji_url;
+    if (item.is_realm_emoji === true) {
+        args.img_src = item.url;
     } else {
         args.emoji_code = item.emoji_code;
     }
@@ -329,9 +329,45 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
     return result.concat(rest_sorted);
 };
 
+// This is a temporary hack until we merge the searching
+// and sorting code for both emoji picker and typeahead.
+function get_best_alias(query, aliases) {
+    // If there is a complete match return it. Otherwise,
+    // return first partial match.
+    if (aliases.indexOf(query) >= 0) {
+        return query;
+    }
+    // If there is a space in query then return longest match.
+    var queries = query.split(' ');
+    queries.sort(function (a, b) {
+        return b.length - a.length;
+    });
+    var partial_matches = [];
+    for (var i = 0; i < queries.length; i += 1) {
+        partial_matches = [];
+        for (var j = 0; j < aliases.length; j += 1) {
+            if (aliases[j].indexOf(queries[i]) >= 0) {
+                partial_matches.push(aliases[j]);
+            }
+        }
+        if (partial_matches.length > 0) {
+            partial_matches = util.prefix_sort(queries[i], partial_matches, function (x) {
+                return x;
+            });
+            return partial_matches.matches.concat(partial_matches.rest)[0];
+        }
+    }
+    // This happens only when `sort_emojis()` is called directly in node tests.
+    return aliases[0];
+}
+
 exports.sort_emojis = function (matches, query) {
-    // TODO: sort by category in v2
-    var results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    var results = [];
+    _.each(matches, function (emoji_dict) {
+        emoji_dict.display_name = get_best_alias(query, emoji_dict.aliases);
+        results.push(emoji_dict);
+    });
+    results = emoji_prefix_sort(query, results, function (x) { return x.display_name; });
     return results.matches.concat(results.rest);
 };
 

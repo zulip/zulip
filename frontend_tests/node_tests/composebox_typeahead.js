@@ -104,19 +104,10 @@ var emojis_by_name = {
     heart: emoji_heart,
     headphones: emoji_headphones,
 };
-var emoji_list = _.map(emojis_by_name, function (emoji_dict) {
-    if (emoji_dict.is_realm_emoji === true) {
-        return {
-            emoji_name: emoji_dict.name,
-            emoji_url: emoji_dict.url,
-            is_realm_emoji: true,
-        };
-    }
-    return {
-        emoji_name: emoji_dict.name,
-        emoji_code: emoji_dict.emoji_code,
-    };
-});
+var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
+                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
+                  emoji_heart, emoji_headphones];
+
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -222,8 +213,8 @@ var backend = {
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
 
-var make_emoji = function (emoji_dict) {
-    return { emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code };
+var make_emoji = function (emoji_dict, display_name) {
+    return _.extend({}, emoji_dict, { display_name: display_name });
 };
 
 run_test('topics_seen_for', () => {
@@ -276,7 +267,7 @@ run_test('content_typeahead_selected', () => {
     fake_this.query = ':octo';
     fake_this.token = 'octo';
     var item = {
-        emoji_name: 'octopus',
+        display_name: 'octopus',
     };
 
     var actual_value = ct.content_typeahead_selected.call(fake_this, item);
@@ -702,8 +693,8 @@ run_test('initialize', () => {
 
         // options.matcher()
         fake_this = { completing: 'emoji', token: 'ta' };
-        assert.equal(options.matcher.call(fake_this, make_emoji(emoji_tada)), true);
-        assert.equal(options.matcher.call(fake_this, make_emoji(emoji_moneybag)), false);
+        assert.equal(options.matcher.call(fake_this, emoji_tada), true);
+        assert.equal(options.matcher.call(fake_this, emoji_moneybag), false);
 
         fake_this = { completing: 'mention', token: 'Cord' };
         assert.equal(options.matcher.call(fake_this, cordelia), true);
@@ -726,21 +717,21 @@ run_test('initialize', () => {
 
         // options.sorter()
         fake_this = { completing: 'emoji', token: 'ta' };
-        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_stadium),
-                                                       make_emoji(emoji_tada)]);
-        expected_value = [make_emoji(emoji_tada), make_emoji(emoji_stadium)];
+        actual_value = options.sorter.call(fake_this, [emoji_stadium, emoji_tada]);
+        expected_value = [make_emoji(emoji_tada, 'tada'),
+                          make_emoji(emoji_stadium, 'stadium')];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'emoji', token: 'th' };
-        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_thermometer),
-                                                       make_emoji(emoji_thumbs_up)]);
-        expected_value = [make_emoji(emoji_thumbs_up), make_emoji(emoji_thermometer)];
+        actual_value = options.sorter.call(fake_this, [emoji_thermometer, emoji_thumbs_up]);
+        expected_value = [make_emoji(emoji_thumbs_up, 'thumbs_up'),
+                          make_emoji(emoji_thermometer, 'thermometer')];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'emoji', token: 'he' };
-        actual_value = options.sorter.call(fake_this, [make_emoji(emoji_headphones),
-                                                       make_emoji(emoji_heart)]);
-        expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
+        actual_value = options.sorter.call(fake_this, [emoji_headphones, emoji_heart]);
+        expected_value = [make_emoji(emoji_heart, 'heart'),
+                          make_emoji(emoji_headphones, 'headphones')];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };
@@ -1285,14 +1276,14 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
-    assert_emoji_matches('da', [{emoji_name: "tada", emoji_code: "1f389"},
-                                {emoji_name: "panda_face", emoji_code: "1f43c"}]);
+    assert_emoji_matches('da', [make_emoji(emoji_tada, 'tada'),
+                                make_emoji(emoji_panda_face, 'panda_face')]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
-    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
-    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
-    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
-    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_code: "1f3e3"}]);
+    assert_emoji_matches('panda ', [make_emoji(emoji_panda_face, 'panda_face')]);
+    assert_emoji_matches('panda_', [make_emoji(emoji_panda_face, 'panda_face')]);
+    assert_emoji_matches('japanese_post_', [make_emoji(emoji_japanese_post_office, 'japanese_post_office')]);
+    assert_emoji_matches('japanese post ', [make_emoji(emoji_japanese_post_office, 'japanese_post_office')]);
     assert_emoji_matches('notaemoji', []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches('cordelia', [cordelia]);

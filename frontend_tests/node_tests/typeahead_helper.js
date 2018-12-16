@@ -499,8 +499,9 @@ run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
     var rendered = false;
     var test_emoji = {
-        emoji_name: 'thumbs_up',
+        display_name: 'thumbs_up',
         emoji_code: '1f44d',
+        is_realm_emoji: false,
     };
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
@@ -524,8 +525,9 @@ run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
     rendered = false;
     test_emoji = {
-        emoji_name: 'realm_emoji',
-        emoji_url: 'TBD',
+        display_name: 'realm_emoji',
+        url: 'TBD',
+        is_realm_emoji: true,
     };
 
     global.templates.render = function (template_name, args) {
@@ -546,17 +548,28 @@ run_test('render_emoji', () => {
 
 run_test('sort_emojis', () => {
     var emoji_list = [
-        { emoji_name: '+1' },
-        { emoji_name: 'thumbs_up' },
-        { emoji_name: 'pig' },
-        { emoji_name: 'thumbs_down' },
+        { name: '-1', aliases: ['-1', 'thumbs_down'], emoji_code: '1f44e' },
+        { name: '+1', aliases: ['+1', 'thumbs_up'], emoji_code: '1f44d' },
+        { name: 'angry_devil', aliases: ['angry_devil', 'imp', 'devil'], emoji_code: '1f47f' },
+        { name: 'shoe', aliases: ['shoe', 'black_shoe', 'formal_shoe'], emoji_code: '1f45e' },
+        { name: 'shoe_female', aliases: ['shoe_female', 'high_heels'], emoji_code: '1f460' },
     ];
-    assert.deepEqual(th.sort_emojis(emoji_list, 'thumbs'), [
-        { emoji_name: 'thumbs_up' },
-        { emoji_name: 'thumbs_down' },
-        { emoji_name: '+1' },
-        { emoji_name: 'pig' },
-    ]);
+
+    function check_sorting(actual_list, expected_list) {
+        for (var i = 0;i < expected_list.length;i += 1) {
+            assert.equal(actual_list[i].display_name, expected_list[i]);
+        }
+    }
+
+    // Check that popular emoji comes first.
+    check_sorting(th.sort_emojis(emoji_list, 'thumbs'), ['thumbs_up', 'thumbs_down']);
+    // Check best alias is used.
+    check_sorting(th.sort_emojis(emoji_list, 'imp'), ['imp']);
+    // Check single emoji for multiple alias match.
+    check_sorting(th.sort_emojis(emoji_list, 'dev'), ['devil', '-1']);
+    // Check complete sort order.
+    check_sorting(th.sort_emojis(emoji_list, '+1'),
+                  ['+1', '-1', 'angry_devil', 'shoe', 'shoe_female']);
 });
 
 run_test('sort_recipientbox_typeahead', () => {

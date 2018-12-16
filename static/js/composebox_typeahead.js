@@ -18,20 +18,7 @@ exports.emoji_collection = [];
 exports.update_emoji_data = function () {
     exports.emoji_collection = [];
     _.each(emoji.emojis_by_name, function (emoji_dict) {
-        if (emoji_dict.is_realm_emoji === true) {
-            exports.emoji_collection.push({
-                emoji_name: emoji_dict.name,
-                emoji_url: emoji_dict.url,
-                is_realm_emoji: true,
-            });
-        } else {
-            _.each(emoji_dict.aliases, function (alias) {
-                exports.emoji_collection.push({
-                    emoji_name: alias,
-                    emoji_code: emoji_dict.emoji_code,
-                });
-            });
-        }
+        exports.emoji_collection.push(emoji_dict);
     });
 };
 
@@ -124,7 +111,10 @@ function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
     query = query.toLowerCase();
     query = query.split(" ").join("_");
-    return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+
+    return _.any(emoji.aliases, function (alias) {
+        return query_matches_string(query, alias, '_');
+    });
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -481,9 +471,9 @@ exports.content_typeahead_selected = function (item) {
         if (beginning.lastIndexOf(":") === 0 ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ";
+            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.display_name + ": ";
         } else {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
+            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.display_name + ": ";
         }
     } else if (this.completing === 'mention') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
