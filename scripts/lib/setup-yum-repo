@@ -10,8 +10,9 @@ yum groupinstall -y "Development Tools"
 
 RHVER="$(rpm -qf --queryformat="%{VERSION}" /etc/redhat-release)"
 RHARCH="$(rpm -qf --queryformat="%{ARCH}" /etc/redhat-release)"
-# PostgreSQL 10
-yum localinstall -y "https://yum.postgresql.org/10/redhat/rhel-$RHVER-$RHARCH/pgdg-centos10-10-2.noarch.rpm"
+PGVER=10
+# PostgreSQL $PGVER
+yum localinstall -y "https://yum.postgresql.org/$PGVER/redhat/rhel-$RHVER-$RHARCH/pgdg-centos$PGVER-$PGVER-2.noarch.rpm"
 
 # PGroonga
 # https://pgroonga.github.io/install/centos.html
