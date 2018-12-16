@@ -197,6 +197,74 @@ function remove_old_drafts() {
         }
     });
 }
+
+exports.format_draft = function (draft) {
+    var id = draft.id;
+    var formatted;
+    var time = new XDate(draft.updatedAt);
+    var time_stamp = timerender.render_now(time).time_str;
+    if (time_stamp === i18n.t("Today")) {
+        time_stamp = timerender.stringify_time(time);
+    }
+    if (draft.type === "stream") {
+        // In case there is no stream for the draft, we need a
+        // single space char for proper rendering of the stream label
+        var space_string = new Handlebars.SafeString("&nbsp;");
+        var stream = draft.stream.length > 0 ? draft.stream : space_string;
+        var draft_topic = util.get_draft_topic(draft);
+
+        if (draft_topic === '') {
+            draft_topic = compose.empty_topic_placeholder();
+        }
+
+        formatted = {
+            draft_id: draft.id,
+            is_stream: true,
+            stream: stream,
+            stream_color: stream_data.get_color(draft.stream),
+            topic: draft_topic,
+            raw_content: draft.content,
+            time_stamp: time_stamp,
+        };
+    } else {
+        var emails = util.extract_pm_recipients(draft.private_message_recipient);
+        var recipients = _.map(emails, function (email) {
+            email = email.trim();
+            var person = people.get_by_email(email);
+            if (person !== undefined) {
+                return person.full_name;
+            }
+            return email;
+        }).join(', ');
+
+        formatted = {
+            draft_id: draft.id,
+            is_stream: false,
+            recipients: recipients,
+            raw_content: draft.content,
+            time_stamp: time_stamp,
+        };
+    }
+
+    try {
+        markdown.apply_markdown(formatted);
+    } catch (error) {
+        // In the unlikely event that there is syntax in the
+        // draft content which our markdown processor is
+        // unable to process, we delete the draft, so that the
+        // drafts overlay can be opened without any errors.
+        // We also report the exception to the server so that
+        // the bug can be fixed.
+        draft_model.deleteDraft(id);
+        blueslip.error("Error in rendering draft.", {
+            draft_content: draft.content,
+        }, error.stack);
+        return;
+    }
+
+    return formatted;
+};
+
 // Exporting for testing purpose
 exports.remove_old_drafts = remove_old_drafts;
 
@@ -212,74 +280,7 @@ exports.launch = function () {
             return draft_a.updatedAt - draft_b.updatedAt;
         });
 
-        function format_draft(draft) {
-            var id = draft.id;
-            var formatted;
-            var time = new XDate(draft.updatedAt);
-            var time_stamp = timerender.render_now(time).time_str;
-            if (time_stamp === i18n.t("Today")) {
-                time_stamp = timerender.stringify_time(time);
-            }
-            if (draft.type === "stream") {
-                // In case there is no stream for the draft, we need a
-                // single space char for proper rendering of the stream label
-                var space_string = new Handlebars.SafeString("&nbsp;");
-                var stream = draft.stream.length > 0 ? draft.stream : space_string;
-                var draft_topic = util.get_draft_topic(draft);
-
-                if (draft_topic === '') {
-                    draft_topic = compose.empty_topic_placeholder();
-                }
-
-                formatted = {
-                    draft_id: draft.id,
-                    is_stream: true,
-                    stream: stream,
-                    stream_color: stream_data.get_color(draft.stream),
-                    topic: draft_topic,
-                    raw_content: draft.content,
-                    time_stamp: time_stamp,
-                };
-            } else {
-                var emails = util.extract_pm_recipients(draft.private_message_recipient);
-                var recipients = _.map(emails, function (email) {
-                    email = email.trim();
-                    var person = people.get_by_email(email);
-                    if (person !== undefined) {
-                        return person.full_name;
-                    }
-                    return email;
-                }).join(', ');
-
-                formatted = {
-                    draft_id: draft.id,
-                    is_stream: false,
-                    recipients: recipients,
-                    raw_content: draft.content,
-                    time_stamp: time_stamp,
-                };
-            }
-
-            try {
-                markdown.apply_markdown(formatted);
-            } catch (error) {
-                // In the unlikely event that there is syntax in the
-                // draft content which our markdown processor is
-                // unable to process, we delete the draft, so that the
-                // drafts overlay can be opened without any errors.
-                // We also report the exception to the server so that
-                // the bug can be fixed.
-                draft_model.deleteDraft(id);
-                blueslip.error("Error in rendering draft.", {
-                    draft_content: draft.content,
-                }, error.stack);
-                return;
-            }
-
-            return formatted;
-        }
-
-        var sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, format_draft));
+        var sorted_formatted_drafts = _.filter(_.map(sorted_raw_drafts, exports.format_draft));
 
         return sorted_formatted_drafts;
     }
