@@ -460,9 +460,9 @@ exports.set_initial_element = function () {
     var draft_list = drafts.draft_model.get();
     var draft_id_list = Object.getOwnPropertyNames(draft_list);
     if (draft_id_list.length > 0) {
-        var last_draft = draft_id_list[draft_id_list.length - 1];
-        var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
-        var focus_element = last_draft_element[0].children[0];
+        var curr_draft = draft_id_list[draft_id_list.length - 1];
+        var curr_draft_element = document.querySelectorAll('[data-draft-id="' + curr_draft + '"]');
+        var focus_element = curr_draft_element[0].children[0];
         activate_element(focus_element);
         $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
     }
