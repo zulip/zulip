@@ -7,7 +7,6 @@ var exports = {};
 // emojis. Emoji picker uses this data to derive data for its own use.
 exports.emojis_by_name = {};
 
-exports.emojis = [];
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
 exports.default_emoji_aliases = {};
@@ -25,8 +24,6 @@ exports.frequently_used_emojis_list = [
     '1f419',    // octopus
 ];
 
-var default_emojis = [];
-
 var zulip_emoji = {
     id: 'zulip',
     emoji_name: 'zulip',
@@ -42,26 +39,18 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.all_realm_emojis = {};
     exports.active_realm_emojis = {};
 
-    // Copy the default emoji list and add realm-specific emoji to it
-    exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data) {
         exports.all_realm_emojis[data.id] = {id: data.id,
                                              emoji_name: data.name,
                                              emoji_url: data.source_url,
                                              deactivated: data.deactivated};
         if (data.deactivated !== true) {
-            // export.emojis are used in composebox autocomplete. This condition makes sure
-            // that deactivated emojis don't appear in the autocomplete.
-            exports.emojis.push({emoji_name: data.name,
-                                 emoji_url: data.source_url,
-                                 is_realm_emoji: true});
             exports.active_realm_emojis[data.name] = {id: data.id,
                                                       emoji_name: data.name,
                                                       emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list
-    exports.emojis.push(zulip_emoji);
     exports.all_realm_emojis.zulip = zulip_emoji;
     exports.active_realm_emojis.zulip = zulip_emoji;
 
@@ -72,8 +61,6 @@ exports.initialize = function initialize() {
 
     _.each(emoji_codes.names, function (value) {
         var base_name = emoji_codes.name_to_codepoint[value];
-        default_emojis.push({emoji_name: value,
-                             emoji_code: emoji_codes.name_to_codepoint[value]});
 
         if (exports.default_emoji_aliases.hasOwnProperty(base_name)) {
             exports.default_emoji_aliases[base_name].push(value);
