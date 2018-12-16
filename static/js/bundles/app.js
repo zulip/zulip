@@ -46,6 +46,7 @@ import "js/input_pill.js";
 import "js/user_pill.js";
 import "js/compose_pm_pill.js";
 import "js/channel.js";
+import "js/csrf.js";
 import "js/setup.js";
 import "js/unread_ui.js";
 import "js/unread_ops.js";
