@@ -32,7 +32,11 @@ function get_user_id_for_mention_button(elem) {
 
     if (email) {
         // Will return undefined if there's no match
-        return people.get_by_email(email).user_id;
+        var user = people.get_by_email(email);
+        if (user) {
+            return user.user_id;
+        }
+        return;
     }
     return;
 }
