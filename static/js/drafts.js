@@ -86,6 +86,32 @@ exports.snapshot_message = function () {
     return message;
 };
 
+exports.restore_message = function (draft) {
+    // This is kinda the inverse of snapshot_message, and
+    // we are essentially making a deep copy of the draft,
+    // being explicit about which fields we send to the compose
+    // system.
+    var compose_args;
+
+    if (draft.type === "stream") {
+        compose_args = {
+            type: 'stream',
+            stream: draft.stream,
+            subject: draft.subject,
+            content: draft.content,
+        };
+
+    } else {
+        compose_args = {
+            type: draft.type,
+            private_message_recipient: draft.private_message_recipient,
+            content: draft.content,
+        };
+    }
+
+    return compose_args;
+};
+
 function draft_notify() {
     $(".alert-draft").css("display", "inline-block");
     $(".alert-draft").delay(1000).fadeOut(300);
@@ -125,21 +151,26 @@ exports.restore_draft = function (draft_id) {
         return;
     }
 
-    var draft_copy = _.extend({}, draft);
+    var compose_args = exports.restore_message(draft);
 
-    if (draft.type === "stream") {
+    if (compose_args.type === "stream") {
         if (draft.stream !== "") {
             narrow.activate(
                 [
-                    {operator: "stream", operand: draft.stream},
-                    {operator: "topic", operand: draft.subject},
+                    {operator: "stream", operand: compose_args.stream},
+                    {operator: "topic", operand: compose_args.subject},
                 ],
-                {trigger: "restore draft"});
+                {trigger: "restore draft"}
+            );
         }
     } else {
-        if (draft.private_message_recipient !== "") {
-            narrow.activate([{operator: "pm-with", operand: draft.private_message_recipient}],
-                            {trigger: "restore draft"});
+        if (compose_args.private_message_recipient !== "") {
+            narrow.activate(
+                [
+                    {operator: "pm-with", operand: compose_args.private_message_recipient},
+                ],
+                {trigger: "restore draft"}
+            );
         }
     }
 
@@ -148,9 +179,9 @@ exports.restore_draft = function (draft_id) {
     compose.clear_preview_area();
 
     if (draft.type === "stream" && draft.stream === "") {
-        draft_copy.subject = "";
+        compose_args.subject = "";
     }
-    compose_actions.start(draft_copy.type, draft_copy);
+    compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea();
     $("#compose-textarea").data("draft-id", draft_id);
 };
