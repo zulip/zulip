@@ -25,7 +25,7 @@ from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
-    from typing import Any
+    from typing import Any, List
 
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
@@ -230,21 +230,39 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
-def install_system_deps():
-    # type: () -> None
-    if vendor == 'CentOS':
-        install_yum_deps()
-    else:
-        # By doing list -> set -> list conversion we remove duplicates.
-        deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
-        # setup-apt-repo does an `apt-get update`
-        run(["sudo", "./scripts/lib/setup-apt-repo"])
-        run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+def install_system_deps(retry=False):
+    # type: (bool) -> None
 
-def install_yum_deps():
-    # type: () -> None
-    # By doing list -> set -> list conversion we remove duplicates.
+    # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
+
+    if vendor == 'CentOS':
+        install_yum_deps(deps_to_install, retry=retry)
+        return
+
+    if vendor in ["Debian", "Ubuntu"]:
+        install_apt_deps(deps_to_install, retry=retry)
+        return
+
+    raise AssertionError("Invalid vendor")
+
+def install_apt_deps(deps_to_install, retry=False):
+    # type: (List[str], bool) -> None
+    if retry:
+        print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+        # Since a common failure mode is for the caching in
+        # `setup-apt-repo` to optimize the fast code path to skip
+        # running `apt-get update` when the target apt repository
+        # is out of date, we run it explicitly here so that we
+        # recover automatically.
+        run(['sudo', 'apt-get', 'update'])
+
+    # setup-apt-repo does an `apt-get update`
+    run(["sudo", "./scripts/lib/setup-apt-repo"])
+    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+
+def install_yum_deps(deps_to_install, retry=False):
+    # type: (List[str], bool) -> None
     print(WARNING + "CentOS support is still experimental.")
     run(["sudo", "./scripts/lib/setup-yum-repo"])
     run(["sudo", "yum", "install", "-y"] + deps_to_install)
@@ -288,19 +306,8 @@ def main(options):
         try:
             install_system_deps()
         except subprocess.CalledProcessError:
-            # TODO: Make CentOS have similar retry behavior to apt here.
-            if vendor == 'CentOS':
-                traceback.print_exc()
-                exit(1)
             # Might be a failure due to network connection issues. Retrying...
-            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-            # Since a common failure mode is for the caching in
-            # `setup-apt-repo` to optimize the fast code path to skip
-            # running `apt-get update` when the target apt repository
-            # is out of date, we run it explicitly here so that we
-            # recover automatically.
-            run(['sudo', 'apt-get', 'update'])
-            install_system_deps()
+            install_system_deps(retry=True)
         with open(apt_hash_file_path, 'w') as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:
