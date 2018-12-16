@@ -37,6 +37,7 @@
         "string.prototype.codepointat",
         "./node_modules/jquery/dist/jquery.js",
         "./node_modules/underscore/underscore.js",
+        "./static/js/csrf.js",
         "./static/js/blueslip.js",
         "./static/third/bootstrap/js/bootstrap.js",
         "./static/js/common.js",
