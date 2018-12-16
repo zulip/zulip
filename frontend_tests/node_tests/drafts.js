@@ -319,6 +319,8 @@ run_test('format_drafts', () => {
         return '<draft table stub>';
     };
 
-    drafts.setup_page();
+    drafts.open_modal = noop;
+    drafts.set_initial_element = noop;
+    drafts.launch();
     timerender.render_now = stub_render_now;
 });

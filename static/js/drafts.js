@@ -200,7 +200,7 @@ function remove_old_drafts() {
 // Exporting for testing purpose
 exports.remove_old_drafts = remove_old_drafts;
 
-exports.setup_page = function (callback) {
+exports.launch = function () {
     function format_drafts(data) {
         var drafts = {};
         var data_array = [];
@@ -291,10 +291,6 @@ exports.setup_page = function (callback) {
         if ($("#drafts_table .draft-row").length > 0) {
             $('#drafts_table .no-drafts').hide();
         }
-
-        if (callback) {
-            callback();
-        }
     }
 
     function setup_event_handlers() {
@@ -321,6 +317,8 @@ exports.setup_page = function (callback) {
 
     remove_old_drafts();
     populate_and_fill();
+    exports.open_modal();
+    exports.set_initial_element();
     setup_event_handlers();
 };
 
@@ -448,26 +446,26 @@ exports.drafts_handle_events = function (e, event_key) {
     }
 };
 
-exports.launch = function () {
-    exports.setup_page(function () {
-        overlays.open_overlay({
-            name: 'drafts',
-            overlay: $('#draft_overlay'),
-            on_close: function () {
-                hashchange.exit_overlay();
-            },
-        });
-
-        var draft_list = drafts.draft_model.get();
-        var draft_id_list = Object.getOwnPropertyNames(draft_list);
-        if (draft_id_list.length > 0) {
-            var last_draft = draft_id_list[draft_id_list.length - 1];
-            var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
-            var focus_element = last_draft_element[0].children[0];
-            activate_element(focus_element);
-            $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
-        }
+exports.open_modal = function () {
+    overlays.open_overlay({
+        name: 'drafts',
+        overlay: $('#draft_overlay'),
+        on_close: function () {
+            hashchange.exit_overlay();
+        },
     });
+};
+
+exports.set_initial_element = function () {
+    var draft_list = drafts.draft_model.get();
+    var draft_id_list = Object.getOwnPropertyNames(draft_list);
+    if (draft_id_list.length > 0) {
+        var last_draft = draft_id_list[draft_id_list.length - 1];
+        var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
+        var focus_element = last_draft_element[0].children[0];
+        activate_element(focus_element);
+        $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+    }
 };
 
 exports.initialize = function () {
