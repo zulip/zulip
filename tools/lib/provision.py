@@ -230,7 +230,7 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
-def install_apt_deps():
+def install_system_deps():
     # type: () -> None
     if vendor == 'CentOS':
         install_yum_deps()
@@ -286,9 +286,9 @@ def main(options):
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
-            install_apt_deps()
+            install_system_deps()
         except subprocess.CalledProcessError:
-            # TODO: Remove this when we split install_apt_deps.
+            # TODO: Make CentOS have similar retry behavior to apt here.
             if vendor == 'CentOS':
                 traceback.print_exc()
                 exit(1)
@@ -300,7 +300,7 @@ def main(options):
             # is out of date, we run it explicitly here so that we
             # recover automatically.
             run(['sudo', 'apt-get', 'update'])
-            install_apt_deps()
+            install_system_deps()
         with open(apt_hash_file_path, 'w') as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:
