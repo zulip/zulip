@@ -291,6 +291,11 @@ exports.get_match_topic = function (obj) {
     return obj.match_subject;
 };
 
+exports.get_draft_topic = function (obj) {
+    // We will need to support subject for old drafts.
+    return obj.topic || obj.subject || '';
+};
+
 exports.set_topic = function (obj, topic) {
     obj.subject = topic;
 };
