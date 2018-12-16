@@ -232,29 +232,35 @@ def setup_shell_profile(shell_profile):
 
 def install_apt_deps():
     # type: () -> None
-    # By doing list -> set -> list conversion we remove duplicates.
-    deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
     if vendor == 'CentOS':
-        print(WARNING + "CentOS support is still experimental.")
-        run(["sudo", "./scripts/lib/setup-yum-repo"])
-        run(["sudo", "yum", "install", "-y"] + deps_to_install)
-        postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
-        for cmd in ['pg_config', 'pg_isready', 'psql']:
-            # Our tooling expects these postgres scripts to be at
-            # well-known paths.  There's an argument for eventually
-            # making our tooling auto-detect, but this is simpler.
-            overwrite_symlink("/usr/%s/bin/%s" % (postgres_dir, cmd),
-                              "/usr/bin/%s" % (cmd,))
-        # Compile tsearch-extras from scratch
-        run(["sudo", "./scripts/lib/build-tsearch-extras"])
-        run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
-        # Use vendored pg_hba.conf instead
-        pg_hba_conf = "/var/lib/pgsql/%s/data/pg_hba.conf" % (POSTGRES_VERSION,)
-        run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
+        install_yum_deps()
     else:
+        # By doing list -> set -> list conversion we remove duplicates.
+        deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
         # setup-apt-repo does an `apt-get update`
         run(["sudo", "./scripts/lib/setup-apt-repo"])
         run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+
+def install_yum_deps():
+    # type: () -> None
+    # By doing list -> set -> list conversion we remove duplicates.
+    deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
+    print(WARNING + "CentOS support is still experimental.")
+    run(["sudo", "./scripts/lib/setup-yum-repo"])
+    run(["sudo", "yum", "install", "-y"] + deps_to_install)
+    postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
+    for cmd in ['pg_config', 'pg_isready', 'psql']:
+        # Our tooling expects these postgres scripts to be at
+        # well-known paths.  There's an argument for eventually
+        # making our tooling auto-detect, but this is simpler.
+        overwrite_symlink("/usr/%s/bin/%s" % (postgres_dir, cmd),
+                          "/usr/bin/%s" % (cmd,))
+    # Compile tsearch-extras from scratch
+    run(["sudo", "./scripts/lib/build-tsearch-extras"])
+    run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
+    # Use vendored pg_hba.conf instead
+    pg_hba_conf = "/var/lib/pgsql/%s/data/pg_hba.conf" % (POSTGRES_VERSION,)
+    run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
 
 def main(options):
     # type: (Any) -> int
