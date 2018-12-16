@@ -145,6 +145,8 @@ var generate_emoji_picker_content = function (id) {
         emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
     }
     _.each(emoji.emojis_by_name, function (emoji_dict) {
+        // Ensures that canonical names are displayed in emoji catalog.
+        emoji_dict.display_name = emoji_dict.name;
         emoji_dict.has_reacted = _.any(emoji_dict.aliases, function (alias) {
             return _.contains(emojis_used, alias);
         });
@@ -215,7 +217,8 @@ function filter_emojis() {
                         return alias.indexOf(search_term) >= 0;
                     });
                     if (match) {
-                        search_results.push(_.extend({}, emoji_dict, {name: alias}));
+                        emoji_dict.display_name = alias;
+                        search_results.push(emoji_dict);
                         return true;
                     }
                 });
@@ -315,7 +318,7 @@ function update_emoji_showcase($focused_emoji) {
     var focused_emoji_dict = emoji.emojis_by_name[canonical_name];
 
     var emoji_dict = _.extend({}, focused_emoji_dict, {
-        name: focused_emoji_name.replace(/_/g, ' '),
+        display_name: focused_emoji_name.replace(/_/g, ' '),
     });
     var rendered_showcase = templates.render("emoji_showcase", {
         emoji_dict: emoji_dict,

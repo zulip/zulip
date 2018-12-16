@@ -747,7 +747,7 @@ run_test('emoji_popover_search_results', () => {
 run_test('emoji_showcase', () => {
     var args = {
         emoji_dict: {
-            name: "thumbs_up",
+            display_name: "thumbs_up",
             is_realm_emoji: false,
             emoji_code: "1f44d",
             has_reacted: false,
