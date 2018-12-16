@@ -257,27 +257,13 @@ run_test('format_drafts', () => {
 
     var expected = [
         {
-            draft_id: 'id3',
+            draft_id: 'id1',
             is_stream: true,
-            stream: 'stream 2',
+            stream: 'stream',
             stream_color: '#FFFFFF',
             topic: 'topic',
-            raw_content: 'Test Stream Message 2',
-            time_stamp: 'Jan 21',
-        },
-        {
-            draft_id: 'id4',
-            is_stream: false,
-            recipients: 'aaron',
-            raw_content: 'Test Private Message 2',
-            time_stamp: 'Jan 26',
-        },
-        {
-            draft_id: 'id5',
-            is_stream: false,
-            recipients: 'aaron',
-            raw_content: 'Test Private Message 3',
-            time_stamp: 'Jan 29',
+            raw_content: 'Test Stream Message',
+            time_stamp: '7:55 AM',
         },
         {
             draft_id: 'id2',
@@ -287,13 +273,27 @@ run_test('format_drafts', () => {
             time_stamp: 'Jan 30',
         },
         {
-            draft_id: 'id1',
+            draft_id: 'id5',
+            is_stream: false,
+            recipients: 'aaron',
+            raw_content: 'Test Private Message 3',
+            time_stamp: 'Jan 29',
+        },
+        {
+            draft_id: 'id4',
+            is_stream: false,
+            recipients: 'aaron',
+            raw_content: 'Test Private Message 2',
+            time_stamp: 'Jan 26',
+        },
+        {
+            draft_id: 'id3',
             is_stream: true,
-            stream: 'stream',
+            stream: 'stream 2',
             stream_color: '#FFFFFF',
             topic: 'topic',
-            raw_content: 'Test Stream Message',
-            time_stamp: '7:55 AM',
+            raw_content: 'Test Stream Message 2',
+            time_stamp: 'Jan 21',
         },
     ];
 
