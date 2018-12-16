@@ -81,7 +81,7 @@ exports.snapshot_message = function () {
         message.private_message_recipient = recipient;
     } else {
         message.stream = compose_state.stream_name();
-        message.subject = compose_state.topic();
+        message.topic = compose_state.topic();
     }
     return message;
 };
@@ -97,7 +97,7 @@ exports.restore_message = function (draft) {
         compose_args = {
             type: 'stream',
             stream: draft.stream,
-            subject: draft.subject,
+            subject: util.get_draft_topic(draft),
             content: draft.content,
         };
 
@@ -246,8 +246,11 @@ exports.setup_page = function (callback) {
                 // single space char for proper rendering of the stream label
                 var space_string = new Handlebars.SafeString("&nbsp;");
                 var stream = draft.stream.length > 0 ? draft.stream : space_string;
-                var draft_topic = draft.subject.length === 0 ?
-                    compose.empty_topic_placeholder() : draft.subject;
+                var draft_topic = util.get_draft_topic(draft);
+
+                if (draft_topic === '') {
+                    draft_topic = compose.empty_topic_placeholder();
+                }
 
                 formatted = {
                     draft_id: id,

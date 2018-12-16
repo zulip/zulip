@@ -59,9 +59,23 @@ function stub_timestamp(timestamp, func) {
     Date.prototype.getTime = original_func;
 }
 
+var legacy_draft = {
+    stream: "stream",
+    subject: "lunch",
+    type: "stream",
+    content: "whatever",
+};
+
+var compose_args_for_legacy_draft = {
+    stream: "stream",
+    subject: "lunch",
+    type: "stream",
+    content: "whatever",
+};
+
 var draft_1 = {
     stream: "stream",
-    subject: "topic",
+    topic: "topic",
     type: "stream",
     content: "Test Stream Message",
 };
@@ -77,6 +91,13 @@ var short_msg = {
     type: "stream",
     content: "a",
 };
+
+run_test('legacy', () => {
+    assert.deepEqual(
+        drafts.restore_message(legacy_draft),
+        compose_args_for_legacy_draft
+    );
+});
 
 run_test('draft_model', () => {
     var draft_model = drafts.draft_model;
@@ -148,7 +169,7 @@ run_test('snapshot_message', () => {
             return draft.stream;
         };
         global.compose_state.topic = function () {
-            return draft.subject;
+            return draft.topic;
         };
     }
 
