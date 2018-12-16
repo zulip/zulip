@@ -285,9 +285,8 @@ exports.launch = function () {
         return sorted_formatted_drafts;
     }
 
-    function populate_and_fill() {
+    function render_widgets(drafts) {
         $('#drafts_table').empty();
-        var drafts = format_drafts(draft_model.get());
         var rendered = templates.render('draft_table_body', {
             drafts: drafts,
             draft_lifetime: DRAFT_LIFETIME,
@@ -321,7 +320,8 @@ exports.launch = function () {
     }
 
     remove_old_drafts();
-    populate_and_fill();
+    var drafts = format_drafts(draft_model.get());
+    render_widgets(drafts);
     exports.open_modal();
     exports.set_initial_element();
     setup_event_handlers();
