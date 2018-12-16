@@ -175,6 +175,7 @@ run_test('activate another person poll', () => {
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
+    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
 
@@ -279,6 +280,7 @@ run_test('activate another person poll', () => {
     widget_elem.handle_events(add_question_event);
 
     assert(!poll_question_container.visible());
+    assert(poll_comment_container.visible());
 });
 
 run_test('activate own poll', () => {
@@ -324,6 +326,7 @@ run_test('activate own poll', () => {
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
+    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
 
@@ -368,4 +371,5 @@ run_test('activate own poll', () => {
         question_button_callback(e);
         assert.deepEqual(out_data, undefined);
     }
+    assert(poll_comment_container.visible());
 });
