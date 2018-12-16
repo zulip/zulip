@@ -245,6 +245,9 @@ def install_apt_deps():
         # Compile tsearch-extras from scratch
         run(["sudo", "./scripts/lib/build-tsearch-extras"])
         run(["sudo", "-H", "/usr/pgsql-10/bin/postgresql-10-setup", "initdb"])
+        # Use vendored pg_hba.conf instead
+        pg_hba_conf = "/var/lib/pgsql/10/data/pg_hba.conf"
+        run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     else:
         # setup-apt-repo does an `apt-get update`
         run(["sudo", "./scripts/lib/setup-apt-repo"])
