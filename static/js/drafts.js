@@ -325,6 +325,12 @@ exports.setup_page = function (callback) {
     populate_and_fill();
 };
 
+function activate_element(elem) {
+    $('.draft-info-box').removeClass('active');
+    $(elem).expectOne().addClass('active');
+    elem.focus();
+}
+
 function drafts_initialize_focus(event_name) {
     // If a draft is not focused in draft modal, then focus the last draft
     // if up_arrow is clicked or the first draft if down_arrow is clicked.
@@ -345,7 +351,8 @@ function drafts_initialize_focus(event_name) {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
     }
     var focus_element = draft_element[0].children[0];
-    focus_element.focus();
+
+    activate_element(focus_element);
 }
 
 function drafts_scroll(next_focus_draft_row) {
@@ -355,7 +362,7 @@ function drafts_scroll(next_focus_draft_row) {
     if (next_focus_draft_row[0].children[0] === undefined) {
         return;
     }
-    next_focus_draft_row[0].children[0].focus();
+    activate_element(next_focus_draft_row[0].children[0]);
 
     // If focused draft is first draft, scroll to the top.
     if ($(".draft-info-box:first")[0].parentElement === next_focus_draft_row[0]) {
@@ -422,7 +429,7 @@ exports.drafts_handle_events = function (e, event_key) {
             document.activeElement.parentElement.remove();
             var new_focus_element = document.querySelectorAll('[data-draft-id="' + delete_id + '"]');
             if (new_focus_element[0] !== undefined) {
-                new_focus_element[0].children[0].focus();
+                activate_element(new_focus_element[0].children[0]);
             }
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
@@ -458,7 +465,7 @@ exports.launch = function () {
             var last_draft = draft_id_list[draft_id_list.length - 1];
             var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
             var focus_element = last_draft_element[0].children[0];
-            focus_element.focus();
+            activate_element(focus_element);
             $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
         }
     });
@@ -470,6 +477,10 @@ exports.initialize = function () {
     });
 
     $("#compose-textarea").focusout(exports.update_draft);
+
+    $('body').on('focus', '.draft-info-box', function (e) {
+        activate_element(e.target);
+    });
 };
 
 return exports;

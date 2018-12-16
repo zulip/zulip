@@ -74,8 +74,16 @@
     padding: 5px 10px;
 }
 
-.draft-row.active {
+.draft-info-box.active {
     background-color: hsl(0, 0%, 93%);
+}
+
+.night-mode .draft-info-box.active {
+    background-color: hsl(0, 0%, 13%);
+}
+
+.draft-info-box.active .recipient_row_date {
+    color: hsl(240, 100%, 40%);
 }
 
 .draft-row > div {
