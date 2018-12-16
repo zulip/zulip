@@ -136,6 +136,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
+    
+
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login(user_profile.email)

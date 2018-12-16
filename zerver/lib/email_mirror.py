@@ -188,6 +188,13 @@ class ZulipEmailForwardError(Exception):
     pass
 
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
+    if len(topic) > MAX_TOPIC_NAME_LENGTH:
+        try:
+            Message.objects.get(subject=topic[:MAX_TOPIC_NAME_LENGTH])
+        except Message.DoesNotExist:
+            content = '{}\n{}'.format(topic, content)
+
+
     internal_send_message(
         stream.realm,
         sender,
