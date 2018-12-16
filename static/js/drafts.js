@@ -126,14 +126,6 @@ exports.restore_draft = function (draft_id) {
     }
 
     var draft_copy = _.extend({}, draft);
-    if (draft_copy.type === "stream" &&
-         draft_copy.stream.length > 0 &&
-             draft_copy.subject.length > 0 ||
-                 draft_copy.type === "private" &&
-                  draft_copy.reply_to.length > 0) {
-        draft_copy = _.extend({replying_to_message: draft_copy},
-                              draft_copy);
-    }
 
     if (draft.type === "stream") {
         if (draft.stream !== "") {
