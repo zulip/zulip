@@ -617,6 +617,9 @@ exports.notify_local_mixes = function (messages) {
             blueslip.warn('We did not expect messages sent by others to get here');
             return;
         }
+        var link_msg_id = message.id;
+        var link_class = "compose_notification_narrow_by_topic";
+        var link_text = "Narrow to " + get_message_header(message);
 
         var reason = exports.get_local_notify_mix_reason(message);
 
@@ -633,10 +636,6 @@ exports.notify_local_mixes = function (messages) {
             // This is more than normal, just continue on.
             return;
         }
-
-        var link_msg_id = message.id;
-        var link_class = "compose_notification_narrow_by_topic";
-        var link_text = "Narrow to " + get_message_header(message);
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
     });
