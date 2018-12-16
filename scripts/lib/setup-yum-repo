@@ -3,7 +3,7 @@ set -x
 set -e
 
 yum install -y epel-release
-yum update
+yum update -y
 
 # "Development Tools" is the equivalent of build-essential
 yum groupinstall -y "Development Tools"
