@@ -201,28 +201,6 @@ function remove_old_drafts() {
 exports.remove_old_drafts = remove_old_drafts;
 
 exports.setup_page = function (callback) {
-    function setup_event_handlers() {
-        $(".restore-draft").on("click", function (e) {
-            e.stopPropagation();
-
-            var draft_row = $(this).closest(".draft-row");
-            var draft_id = draft_row.data("draft-id");
-            exports.restore_draft(draft_id);
-        });
-
-        $(".draft_controls .delete-draft").on("click", function () {
-            var draft_row = $(this).closest(".draft-row");
-            var draft_id = draft_row.data("draft-id");
-
-            exports.draft_model.deleteDraft(draft_id);
-            draft_row.remove();
-
-            if ($("#drafts_table .draft-row").length === 0) {
-                $('#drafts_table .no-drafts').show();
-            }
-        });
-    }
-
     function format_drafts(data) {
         var drafts = {};
         var data_array = [];
@@ -317,12 +295,33 @@ exports.setup_page = function (callback) {
         if (callback) {
             callback();
         }
+    }
 
-        setup_event_handlers();
+    function setup_event_handlers() {
+        $(".restore-draft").on("click", function (e) {
+            e.stopPropagation();
+
+            var draft_row = $(this).closest(".draft-row");
+            var draft_id = draft_row.data("draft-id");
+            exports.restore_draft(draft_id);
+        });
+
+        $(".draft_controls .delete-draft").on("click", function () {
+            var draft_row = $(this).closest(".draft-row");
+            var draft_id = draft_row.data("draft-id");
+
+            exports.draft_model.deleteDraft(draft_id);
+            draft_row.remove();
+
+            if ($("#drafts_table .draft-row").length === 0) {
+                $('#drafts_table .no-drafts').show();
+            }
+        });
     }
 
     remove_old_drafts();
     populate_and_fill();
+    setup_event_handlers();
 };
 
 function activate_element(elem) {
