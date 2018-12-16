@@ -351,7 +351,8 @@ v1_api_and_json_patterns = [
 
     # report -> zerver.views.report
     url(r'^report/error$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_error'}),
+        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
+        {'POST': ('zerver.views.report.report_error', {'allow_anonymous_user_web'})}),
     url(r'^report/send_times$', rest_dispatch,
         {'POST': 'zerver.views.report.report_send_times'}),
     url(r'^report/narrow_times$', rest_dispatch,

@@ -1302,7 +1302,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/hotspots",
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",
-            "/api/v1/report/error",
             "/api/v1/report/send_times",
             "/api/v1/report/narrow_times",
             "/api/v1/report/unnarrow_times",

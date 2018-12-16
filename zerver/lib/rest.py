@@ -124,6 +124,11 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
                 return json_unauthorized(_("Not logged in: API authentication or user session required"))
+            # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
+            elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+                auth_kwargs = dict(allow_unauthenticated=True)
+                target_function = csrf_protect(authenticated_json_view(
+                    target_function, **auth_kwargs))
             # Session cookie expired, notify the client
             else:
                 return json_unauthorized(_("Not logged in: API authentication or user session required"),
