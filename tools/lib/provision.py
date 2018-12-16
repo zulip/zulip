@@ -184,15 +184,17 @@ SYSTEM_DEPENDENCIES = {
         "postgresql-10-tsearch-extras",
     ],
     "centos7": COMMON_YUM_DEPENDENCIES + [
-        "postgresql10-server",
-        "postgresql10",
-        "postgresql10-devel",
-        "postgresql10-pgroonga",
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql{0}-server",
+            "postgresql{0}",
+            "postgresql{0}-devel",
+            "postgresql{0}-pgroonga",
+        ]
     ]
 }
 
 if vendor == 'CentOS':
-    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-10/share/tsearch_data/"
+    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
 else:
     TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
@@ -236,17 +238,18 @@ def install_apt_deps():
         print(WARNING + "CentOS support is still experimental.")
         run(["sudo", "./scripts/lib/setup-yum-repo"])
         run(["sudo", "yum", "install", "-y"] + deps_to_install)
+        postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
         for cmd in ['pg_config', 'pg_isready', 'psql']:
             # Our tooling expects these postgres scripts to be at
             # well-known paths.  There's an argument for eventually
             # making our tooling auto-detect, but this is simpler.
-            overwrite_symlink("/usr/pgsql-10/bin/%s" % (cmd,),
+            overwrite_symlink("/usr/%s/bin/%s" % (postgres_dir, cmd),
                               "/usr/bin/%s" % (cmd,))
         # Compile tsearch-extras from scratch
         run(["sudo", "./scripts/lib/build-tsearch-extras"])
-        run(["sudo", "-H", "/usr/pgsql-10/bin/postgresql-10-setup", "initdb"])
+        run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
         # Use vendored pg_hba.conf instead
-        pg_hba_conf = "/var/lib/pgsql/10/data/pg_hba.conf"
+        pg_hba_conf = "/var/lib/pgsql/%s/data/pg_hba.conf" % (POSTGRES_VERSION,)
         run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     else:
         # setup-apt-repo does an `apt-get update`
@@ -391,7 +394,7 @@ def main(options):
         run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
     elif vendor == 'CentOS':
-        for service in ["postgresql-10", "rabbitmq server", "memcached", "redis"]:
+        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq server", "memcached", "redis"]:
             run(["sudo", "-H", "systemctl", "enable", service])
             run(["sudo", "-H", "systemctl", "start", service])
     elif options.is_docker:
