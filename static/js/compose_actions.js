@@ -328,7 +328,6 @@ exports.respond_to_message = function (opts) {
     }
     exports.start(msg_type, {stream: stream, subject: topic,
                              private_message_recipient: pm_recipient,
-                             replying_to_message: message,
                              trigger: opts.trigger});
 
 };
