@@ -1545,6 +1545,10 @@ blockquote p {
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0, 0%, 100%);
+    }
 }
 
 .home-error-bar {
