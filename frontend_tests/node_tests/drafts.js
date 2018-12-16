@@ -255,8 +255,8 @@ run_test('format_drafts', () => {
         updatedAt: new Date(1549958107000).setDate(-2),
     };
 
-    var expected = {
-        id3: {
+    var expected = [
+        {
             draft_id: 'id3',
             is_stream: true,
             stream: 'stream 2',
@@ -265,28 +265,28 @@ run_test('format_drafts', () => {
             raw_content: 'Test Stream Message 2',
             time_stamp: 'Jan 21',
         },
-        id4: {
+        {
             draft_id: 'id4',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message 2',
             time_stamp: 'Jan 26',
         },
-        id5: {
+        {
             draft_id: 'id5',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message 3',
             time_stamp: 'Jan 29',
         },
-        id2: {
+        {
             draft_id: 'id2',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message',
             time_stamp: 'Jan 30',
         },
-        id1: {
+        {
             draft_id: 'id1',
             is_stream: true,
             stream: 'stream',
@@ -295,7 +295,7 @@ run_test('format_drafts', () => {
             raw_content: 'Test Stream Message',
             time_stamp: '7:55 AM',
         },
-    };
+    ];
 
     blueslip.error = noop;
     $('#drafts_table').append = noop;
