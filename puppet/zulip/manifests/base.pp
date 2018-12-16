@@ -20,18 +20,25 @@ class zulip::base {
   ]
   package { $base_packages: ensure => 'installed' }
 
-  $release_name = $::operatingsystemrelease ? {
-    # Debian releases
-    /^7.[0-9]*/ => 'wheezy',
-    /^8.[0-9]*/ => 'jessie',
-    /^9.[0-9]*/ => 'stretch',
-    # Ubuntu releases
-    '12.04' => 'precise',
-    '14.04' => 'trusty',
-    '15.04' => 'vivid',
-    '15.10' => 'wily',
-    '16.04' => 'xenial',
-    '18.04' => 'bionic',
+  case $::osfamily {
+    'debian': {
+      $release_name = $::operatingsystemrelease ? {
+        # Debian releases
+        /^7.[0-9]*/ => 'wheezy',
+        /^8.[0-9]*/ => 'jessie',
+        /^9.[0-9]*/ => 'stretch',
+        # Ubuntu releases
+        '12.04' => 'precise',
+        '14.04' => 'trusty',
+        '15.04' => 'vivid',
+        '15.10' => 'wily',
+        '16.04' => 'xenial',
+        '18.04' => 'bionic',
+      }
+    }
+    'redhat': {
+      $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
+    }
   }
 
   $postgres_version = $release_name ? {
@@ -44,6 +51,7 @@ class zulip::base {
     'wily'    => '9.4',
     'xenial'  => '9.5',
     'bionic'  => '10',
+    'CentOS7' => '10',
   }
 
   $normal_queues = [
