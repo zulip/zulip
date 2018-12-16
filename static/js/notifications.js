@@ -552,12 +552,14 @@ function get_message_header(message) {
         return message.stream + " > " + message.subject;
     }
     if (message.display_recipient.length > 2) {
-        return "group PM with " + message.display_reply_to;
+        return i18n.t("group private messages with __recipient__",
+                      {recipient: message.display_reply_to});
     }
     if (people.is_current_user(message.reply_to)) {
-        return "PM with yourself";
+        return i18n.t("private messages with yourself");
     }
-    return "PM with " + message.display_reply_to;
+    return i18n.t("private messages with __recipient__",
+                  {recipient: message.display_reply_to});
 }
 
 exports.get_echo_not_in_view_reason = function (message) {
@@ -574,7 +576,7 @@ exports.get_echo_not_in_view_reason = function (message) {
         return;
     }
 
-    return "Sent! Scroll down to view your message.";
+    return i18n.t("Sent! Scroll down to view your message.");
 };
 
 exports.get_local_notify_mix_reason = function (message) {
@@ -586,17 +588,17 @@ exports.get_local_notify_mix_reason = function (message) {
     }
 
     if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.subject)) {
-        return "Sent! Your message was sent to a topic you have muted.";
+        return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
     if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
-        return "Sent! Your message was sent to a stream you have muted.";
+        return i18n.t("Sent! Your message was sent to a stream you have muted.");
     }
 
     // offscreen because it is outside narrow
     // we can only look for these on non-search (can_apply_locally) messages
     // see also: exports.notify_messages_outside_current_search
-    return "Sent! Your message is outside your current narrow.";
+    return i18n.t("Sent! Your message is outside your current narrow.");
 };
 
 exports.notify_local_mixes = function (messages) {
@@ -619,7 +621,8 @@ exports.notify_local_mixes = function (messages) {
         }
         var link_msg_id = message.id;
         var link_class = "compose_notification_narrow_by_topic";
-        var link_text = "Narrow to " + get_message_header(message);
+        var link_text = i18n.t("Narrow to __- message_recipient__",
+                               {message_recipient: get_message_header(message)});
 
         var reason = exports.get_local_notify_mix_reason(message);
 
@@ -648,10 +651,12 @@ exports.notify_messages_outside_current_search = function (messages) {
         if (!people.is_current_user(message.sender_email)) {
             return;
         }
-        exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
+        var link_text = i18n.t("Narrow to __- message_recipient__",
+                               {message_recipient: get_message_header(message)});
+        exports.notify_above_composebox(i18n.t("Sent! Your recent message is outside the current search."),
                                         "compose_notification_narrow_by_topic",
                                         message.id,
-                                        "Narrow to " + get_message_header(message));
+                                        link_text);
     });
 };
 
