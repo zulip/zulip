@@ -36,13 +36,13 @@
             <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
             {{/if}}
             {{#if has_been_editable}}
+            <div class="message-edit-feature-group">
+                <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
+                <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
+                <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
+            </div>
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
-                <div class="message-edit-timer-control-group">
-                    <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
-                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
-                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
-                </div>
                 <span><i id="message_edit_tooltip" class="message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-toggle="tooltip"
                     title="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>
                 </span>
