@@ -28,7 +28,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         if (msg_type === 'stream') {
             url += "+msg_type=stream";
             url += "+stream=" + encodeURIComponent(compose_state.stream_name());
-            url += "+subject=" + encodeURIComponent(compose_state.topic());
+            url += "+topic=" + encodeURIComponent(compose_state.topic());
         } else if (msg_type === 'private') {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.recipient());
@@ -131,8 +131,10 @@ exports.initialize = function () {
 
         try {
             // TODO: preserve focus
+            var topic = util.get_reload_topic(vars);
+
             compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                                  subject: vars.subject || '',
+                                                  subject: topic || '',
                                                   private_message_recipient: vars.recipient || '',
                                                   content: vars.msg || ''});
             if (send_now) {

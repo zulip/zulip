@@ -21,6 +21,11 @@ run_test('CachedValue', () => {
 
 });
 
+run_test('get_reload_topic', () => {
+    assert.equal(util.get_reload_topic({subject: 'foo'}), 'foo');
+    assert.equal(util.get_reload_topic({topic: 'bar'}), 'bar');
+});
+
 run_test('extract_pm_recipients', () => {
     assert.equal(util.extract_pm_recipients('bob@foo.com, alice@foo.com').length, 2);
     assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
