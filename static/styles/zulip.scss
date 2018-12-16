@@ -1352,6 +1352,12 @@ div.focused_table {
 .message-edit-timer-control-group {
     float: right;
     display: none;
+    margin-top: 5px;
+}
+
+.message-edit-feature-group {
+    display: inline-block;
+    margin-bottom: -5px;
 }
 
 .topic_edit {
