@@ -230,7 +230,9 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:
     if internal:
-        # When this is done using manage.py vs. the web interface
+        # TODO: This should be whether this is done using manage.py
+        # vs. the web interface.  But recent refactorings mean that
+        # the internal flag isn't passed properly to this function.
         internal_blurb = " **INTERNAL SIGNUP** "
     else:
         internal_blurb = " "
