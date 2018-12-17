@@ -28,7 +28,7 @@ parser.add_argument('--quick', action='store_true',
                     help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
                     help="check only modified files")
-parser.add_argument('-d', '--daemon', action='store_true',
+parser.add_argument('--no-daemon', action='store_true',
                     help="Start and run the mypy fine-grained incremental daemon")
 parser.add_argument('--scripts-only', action='store_true',
                     help="only check extensionless python scripts")
@@ -45,7 +45,7 @@ if not args.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
-command_name = "mypy" if not args.daemon else "dmypy"
+command_name = "mypy" if (args.no_daemon or args.version) else "dmypy"
 
 # Use zulip-py3-venv's mypy if it's available.
 VENV_DIR = "/srv/zulip-py3-venv"
@@ -80,10 +80,10 @@ if args.quick:
     extra_args.append("--quick")
 
 mypy_args = extra_args + python_files + pyi_files
-if args.daemon:
-    rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
-else:
+if args.no_daemon:
     rc = subprocess.call([mypy_command] + mypy_args)
+else:
+    rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
 
 if rc != 0:
     print("")
