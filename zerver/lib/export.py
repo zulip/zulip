@@ -122,6 +122,7 @@ ALL_ZULIP_TABLES = {
     'zerver_userprofile',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
+    'zerver_userstatus',
     'zerver_mutedtopic',
 }
 
@@ -190,6 +191,9 @@ NON_EXPORTED_TABLES = {
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',
     'zerver_submessage',
+
+    # This is low priority, since users can easily just reset themselves to away.
+    'zerver_userstatus',
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
