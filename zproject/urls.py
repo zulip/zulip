@@ -20,6 +20,7 @@ import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
 import zerver.views.archive
+import zerver.views.camo
 import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.email_mirror
@@ -584,6 +585,14 @@ urls += [
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
+
+# This url serves as a way to provide backward compatibility to messages
+# rendered at the time Zulip used camo for doing http -> https conversion for
+# such links with images previews. Now thumbor can be used for serving such
+# images.
+urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)',
+            zerver.views.camo.handle_camo_url,
+            name='zerver.views.camo.handle_camo_url'),
 
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
