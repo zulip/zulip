@@ -25,6 +25,7 @@ from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Any, List
 
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files

@@ -10,6 +10,7 @@ run out of cron.
 See puppet/zulip_ops/files/cron.d/zephyr-mirror for the crontab details.
 """
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Dict
 
 import os

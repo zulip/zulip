@@ -54,6 +54,7 @@ import sys
 import boto.utils
 import netifaces
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Optional
 
 def address_of(device_id):

@@ -26,6 +26,7 @@ django.setup()
 from zerver.models import UserActivity
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Any, Dict, Set, Optional
 
 states = {

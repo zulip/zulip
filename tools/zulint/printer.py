@@ -5,6 +5,7 @@ import sys
 import os
 from itertools import cycle
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Union, Text
 
 # Terminal Color codes for use in differentiatng linters

@@ -13,7 +13,7 @@ if 'TRAVIS' in os.environ:
     VENV_CACHE_PATH = "/home/travis/zulip-venv-cache"
 
 if False:
-    # Don't add a runtime dependency on typing
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import List, Optional, Tuple, Set
 
 VENV_DEPENDENCIES = [

@@ -4,8 +4,7 @@ import os
 import sys
 
 if False:
-    # Typing module isn't always available when this is run on older
-    # Python 3.4 (Trusty).
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
