@@ -114,19 +114,15 @@ To run mypy on Zulip's python code, you can run the command:
 
     tools/run-mypy
 
-You can also run mypy as a long-running daemon (server) process and send
-type-checking requests to the server via the command:
+This will take a while to start running, since it runs mypy as a
+long-running daemon (server) process and send type-checking requests
+to the server; this makes checking mypy about 100x faster.  But if
+you're debugging or for whatever reason don't want the daemon, you can
+use:
 
-    tools/run-mypy -d
+    tools/run-mypy --no-daemon
 
-While the mypy daemon is experimental and currently supports macOS and Linux
-only, **we strongly recommend using the daemon** if it is an option. Program
-state from previous runs will be cached in memory and will not have to be
-read from the file system on each run. For a  large codebase like Zulip's
-and a  workflow involving running mypy repeatedly after small edits, using
-the daemon can be *10 or more times faster*.
-
-Mypy will output errors in the same style as a compiler would.  For
+Mypy outputs errors in the same style as a compiler would.  For
 example, if your code has a type error like this:
 
 ```
