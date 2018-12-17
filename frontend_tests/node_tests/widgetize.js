@@ -1,5 +1,5 @@
 set_global('$', global.make_zjquery());
-set_global('voting_widget', {});
+set_global('poll_widget', {});
 set_global('tictactoe_widget', {});
 set_global('todo_widget', {});
 set_global('zform', {});
@@ -74,7 +74,7 @@ run_test('activate', () => {
     let is_widget_activated;
     let is_widget_elem_inserted;
 
-    voting_widget.activate = (data) => {
+    poll_widget.activate = (data) => {
         is_widget_activated = true;
         widget_elem = data.elem;
         assert(widget_elem.hasClass('widget-content'));

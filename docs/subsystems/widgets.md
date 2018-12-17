@@ -41,7 +41,7 @@ features:
 - `static/js/zform.js`
 - `static/js/zcommand.js`
 - `static/js/submessage.js`
-- `static/js/voting_widget.js`
+- `static/js/poll_widget.js`
 - `static/js/widgetize.js`
 - `static/js/zform.js`
 - `static/templates/widgets/`
@@ -178,7 +178,7 @@ jQuery and template.render, and the developer can create
 new templates in `static/templates/widgets/`.
 
 A good way to learn the system is to read the code
-in `static/js/voting_widget.js`.  It is worth noting that
+in `static/js/poll_widget.js`.  It is worth noting that
 writing a new widget requires only minor backend
 changes in the current architecture.  This could change
 in the future, but for now a frontend developer mostly
@@ -376,7 +376,7 @@ just has a somewhat more generic job to do.) In
 converges, with snippets like this:
 
 ~~~ js
-widgets.poll = voting_widget;
+widgets.poll = poll_widget;
 widgets.tictactoe = tictactoe_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;
