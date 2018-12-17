@@ -2,7 +2,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import subprocess
-from typing import List
+if False:
+    from typing import List
 
 from zulint.printer import print_err, colors
 

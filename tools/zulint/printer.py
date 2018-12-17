@@ -4,7 +4,8 @@ from __future__ import absolute_import
 import sys
 import os
 from itertools import cycle
-from typing import Union, Text
+if False:
+    from typing import Union, Text
 
 # Terminal Color codes for use in differentiatng linters
 BOLDRED = '\x1B[1;31m'

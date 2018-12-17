@@ -484,6 +484,7 @@ def build_custom_checkers(by_lang):
          'include_only': set([
              'scripts/',
              'puppet/',
+             'tools/zulint/',
          ]),
          'exclude': set([
              # Not important, but should fix
