@@ -40,6 +40,9 @@ SUPPORTED_PLATFORMS = {
     ],
     "CentOS": [
         "centos7",
+    ],
+    "Fedora": [
+        "fedora29",
     ]
 }
 
@@ -113,6 +116,7 @@ if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
 codename = distro_info['DISTRIB_CODENAME']
+family = 'redhat' if vendor in ['CentOS', 'Fedora'] else 'debian'
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -123,6 +127,7 @@ POSTGRES_VERSION_MAP = {
     "xenial": "9.5",
     "bionic": "10",
     "centos7": "10",
+    "fedora29": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -190,10 +195,17 @@ SYSTEM_DEPENDENCIES = {
             "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
+    ],
+    "fedora29": COMMON_YUM_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql{0}-server",
+            "postgresql{0}",
+            "postgresql{0}-devel",
+        ]
     ]
 }
 
-if vendor == 'CentOS':
+if family == 'redhat':
     TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
 else:
     TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
@@ -236,7 +248,7 @@ def install_system_deps(retry=False):
     # By doing list -> set -> list conversion, we remove duplicates.
     deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
 
-    if vendor == 'CentOS':
+    if family == 'redhat':
         install_yum_deps(deps_to_install, retry=retry)
         return
 
@@ -263,7 +275,7 @@ def install_apt_deps(deps_to_install, retry=False):
 
 def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
-    print(WARNING + "CentOS support is still experimental.")
+    print(WARNING + "RedHat support is still experimental.")
     run(["sudo", "./scripts/lib/setup-yum-repo"])
     run(["sudo", "yum", "install", "-y"] + deps_to_install)
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
@@ -273,8 +285,14 @@ def install_yum_deps(deps_to_install, retry=False):
         # making our tooling auto-detect, but this is simpler.
         run(["sudo", "ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
              "/usr/bin/%s" % (cmd,)])
-    # Compile tsearch-extras from scratch
+    # Compile tsearch-extras from scratch, since we maintain the
+    # package and haven't built an RPM package for it.
     run(["sudo", "./scripts/lib/build-tsearch-extras"])
+    if vendor == "fedora":
+        # Compile PGroonga from scratch, since pgroonga upstream
+        # doesn't provide Fedora packages.
+        print("TODO: compile PGroonga for", codename)
+        exit(1)
     run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
     # Use vendored pg_hba.conf instead
     pg_hba_conf = "/var/lib/pgsql/%s/data/pg_hba.conf" % (POSTGRES_VERSION,)
@@ -406,7 +424,7 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
-    elif vendor == 'CentOS':
+    elif family == 'redhat':
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq server", "memcached", "redis"]:
             run(["sudo", "-H", "systemctl", "enable", service])
             run(["sudo", "-H", "systemctl", "start", service])

@@ -329,7 +329,12 @@ def parse_lsb_release():
         with open('/etc/redhat-release', 'r') as fp:
             info = fp.read().strip().split(' ')
         vendor = info[0]
-        codename = 'centos' + info[3][0]
+        if os.path.exists("/etc/centos-release"):
+            # E.g. "CentOS Linux release 7.5.1804 (Core)"
+            codename = vendor.lower() + info[3][0]
+        else:
+            # E.g. "Fedora release 29 (Twenty Nine)"
+            codename = vendor.lower() + info[2]
         distro_info = dict(
             DISTRIB_CODENAME=codename,
             DISTRIB_ID=vendor
