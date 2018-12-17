@@ -198,7 +198,7 @@
         "user_pill": false,
         "user_search": false,
         "util": false,
-        "voting_widget": false,
+        "poll_widget": false,
         "widgetize": false,
         "zcommand": false,
         "zform": false,

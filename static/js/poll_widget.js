@@ -1,4 +1,4 @@
-var voting_widget = (function () {
+var poll_widget = (function () {
 
 var exports = {};
 
@@ -231,7 +231,7 @@ return exports;
 
 }());
 if (typeof module !== 'undefined') {
-    module.exports = voting_widget;
+    module.exports = poll_widget;
 }
 
-window.voting_widget = voting_widget;
+window.poll_widget = poll_widget;

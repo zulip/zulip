@@ -4,7 +4,7 @@ var exports = {};
 
 var widgets = {};
 
-widgets.poll = voting_widget;
+widgets.poll = poll_widget;
 widgets.tictactoe = tictactoe_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;

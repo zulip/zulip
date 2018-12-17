@@ -85,7 +85,7 @@ enforce_fully_covered = {
     'static/js/user_search.js',
     'static/js/util.js',
     'static/js/widgetize.js',
-    'static/js/voting_widget.js',
+    'static/js/poll_widget.js',
     'static/js/search_pill.js',
 }
 
