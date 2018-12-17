@@ -28,13 +28,12 @@ You can learn more about it at:
 * The
   [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/)
 
+* Our [blog post on being an early adopter of mypy][mypy-blog-post] from 2016.
+
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process in the `backend` build.
 
-You can learn a lot more about mypy from our blog post on being an
-early adopted of mypy back in 2016:
-
-https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
+[mypy-blog-post]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
 ## Installing mypy
 
