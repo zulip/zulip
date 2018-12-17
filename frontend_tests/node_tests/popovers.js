@@ -44,6 +44,7 @@ var alice = {
     email: 'alice@example.com',
     full_name: 'Alice Smith',
     user_id: 42,
+    is_guest: false,
 };
 
 var me = {
@@ -136,6 +137,7 @@ run_test('sender_hover', () => {
         case 'user_info_popover_title':
             assert.deepEqual(opts, {
                 user_avatar: 'avatar/alice@example.com',
+                user_is_guest: false,
             });
             return 'title-html';
 
