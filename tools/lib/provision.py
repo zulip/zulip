@@ -17,7 +17,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
-    setup_virtualenv, VENV_DEPENDENCIES, YUM_VENV_DEPENDENCIES,
+    setup_virtualenv, VENV_DEPENDENCIES, COMMON_YUM_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
@@ -169,7 +169,7 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "freetype-devel",
     "fontconfig-devel",
     "libstdc++"
-] + YUM_VENV_DEPENDENCIES + YUM_THUMBOR_VENV_DEPENDENCIES
+] + COMMON_YUM_VENV_DEPENDENCIES + YUM_THUMBOR_VENV_DEPENDENCIES
 
 if vendor in ["Ubuntu", "Debian"]:
     SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
@@ -187,6 +187,10 @@ elif vendor in ["CentOS", "RedHat"]:
             "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
+    ] + [  # venv dependencies
+        "python34-devel",
+        "python34-pip",
+        "python34-six",
     ]
 elif vendor == "Fedora":
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
@@ -195,6 +199,10 @@ elif vendor == "Fedora":
             "postgresql{0}",
             "postgresql{0}-devel",
         ]
+    ] + [  # venv dependencies
+        "python3-devel",
+        "python3-pip",
+        "python3-six",
     ]
 
 if family == 'redhat':
