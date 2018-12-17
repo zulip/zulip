@@ -1903,9 +1903,13 @@ class Bugdown(markdown.Markdown):
         return reg
 
     def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
-        for (pattern, format_string, id) in self.getConfig("realm_filters"):
+        for (pattern, format_string, id, is_stream_filter, stream_ids) in self.getConfig("realm_filters"):
+            priority = 45
+            if is is_stream_filter:
+                # stream filters are at a higher priority
+                priority = 50
             inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
-                                    'realm_filters/%s' % (pattern,), 45)
+                                    'realm_filters/%s' % (pattern,), priority)
         return inlinePatterns
 
     def build_treeprocessors(self) -> markdown.util.Registry:
@@ -1950,7 +1954,7 @@ class Bugdown(markdown.Markdown):
             self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
 md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
-realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int]]]
+realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int, bool, str]]]
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
     md_engine_key = (realm_filters_key, email_gateway)
@@ -1964,7 +1968,7 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
         email_gateway=email_gateway,
     )
 
-def build_engine(realm_filters: List[Tuple[str, str, int]],
+def build_engine(realm_filters: List[Tuple[str, str, int, bool, str]],
                  realm_filters_key: int,
                  email_gateway: bool) -> markdown.Markdown:
     engine = Bugdown(

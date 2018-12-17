@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 import django.contrib.auth
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, MinLengthValidator, \
-    RegexValidator, validate_email
+    RegexValidator, validate_comma_separated_integer_list, validate_email
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
@@ -688,41 +688,53 @@ class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     pattern = models.TextField(validators=[filter_pattern_validator])  # type: str
     url_format_string = models.TextField(validators=[URLValidator(), filter_format_validator])  # type: str
+    is_stream_filter = models.BooleanField(default=False)  # type: bool
+    stream_ids = models.TextField(validators=[validate_comma_separated_integer_list], blank=True, null=True)  # type: Optional[str]
 
     class Meta:
-        unique_together = ("realm", "pattern")
+        unique_together = ("realm", "pattern", "stream_ids")
 
     def __str__(self) -> str:
-        return "<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
+        return "<RealmFilter(%s): %s %s %s %s>" % (self.realm.string_id,
+                                                   self.pattern,
+                                                   self.url_format_string,
+                                                   self.is_stream_filter,
+                                                   self.stream_ids)
 
 def get_realm_filters_cache_key(realm_id: int) -> str:
     return u'%s:all_realm_filters:%s' % (cache.KEY_PREFIX, realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[str, str, int]]]
+per_request_realm_filters_cache = {}  # type: Dict[int, List[Tuple[str, str, int, bool, str]]]
 
 def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
     return realm_id in per_request_realm_filters_cache
 
-def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
+def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int, bool, str]]:
     if not realm_in_local_realm_filters_cache(realm_id):
         per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
     return per_request_realm_filters_cache[realm_id]
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
-def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
+def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int, bool, str]]:
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters.append((realm_filter.pattern,
+                        realm_filter.url_format_string,
+                        realm_filter.id,
+                        realm_filter.is_stream_filter,
+                        realm_filter.stream_ids))
 
     return filters
 
-def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
-    filters = defaultdict(list)  # type: DefaultDict[int, List[Tuple[str, str, int]]]
+def all_realm_filters() -> Dict[int, List[Tuple[str, str, int, bool, str]]]:
+    filters = defaultdict(list)  # type: DefaultDict[int, List[Tuple[str, str, int, bool, str]]]
     for realm_filter in RealmFilter.objects.all():
         filters[realm_filter.realm_id].append((realm_filter.pattern,
                                                realm_filter.url_format_string,
-                                               realm_filter.id))
+                                               realm_filter.id,
+                                               realm_filter.is_stream_filter,
+                                               realm_filter.stream_ids))
 
     return filters
 

@@ -864,7 +864,8 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             realm_filter.__str__(),
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
-            ' https://trac.zulip.net/ticket/%(id)s>')
+            ' https://trac.zulip.net/ticket/%(id)s'
+            ' False None>')
 
         msg = Message(sender=self.example_user('othello'))
         msg.set_topic_name("#444")
@@ -930,7 +931,9 @@ class BugdownTest(ZulipTestCase):
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
-                                   url_format_string=url_format_string)
+                                   url_format_string=url_format_string,
+                                   is_stream_filter=True,
+                                   stream_ids='1,2')
         realm_filter.save()
 
         bugdown.realm_filter_data = {}
@@ -939,7 +942,7 @@ class BugdownTest(ZulipTestCase):
         zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
+                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id, True, '1,2'))
 
     def test_flush_realm_filter(self) -> None:
         realm = get_realm('zulip')
