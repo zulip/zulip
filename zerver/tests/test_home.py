@@ -358,7 +358,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get('/', dict(stream='Denmark'))
 
             html = result.content.decode('utf-8')
-            self.assertIn('There are new Terms of Service', html)
+            self.assertIn('Accept the new Terms of Service', html)
 
     def test_terms_of_service_first_time_template(self) -> None:
         user = self.example_user('hamlet')

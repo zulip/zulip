@@ -229,6 +229,11 @@ html {
     margin-top: 0px;
 }
 
+.account-accept-terms-page .terms-of-service .input-group {
+    width: 450px;
+    margin: 0 auto 10px;
+}
+
 .register-account .terms-of-service .input-group {
     width: 330px;
     margin: 0 auto 10px;
@@ -473,7 +478,8 @@ html {
     color: hsl(0, 0%, 67%);
 }
 
-.register-account .pitch {
+.register-account .pitch,
+.account-accept-terms-page .pitch {
     margin-bottom: 5px;
     text-align: center;
 }
