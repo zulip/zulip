@@ -8,7 +8,9 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Any, Callable, Dict, List, Optional
+
+if False:
+    from typing import Any, Callable, Dict, List, Optional
 
 from zulint.printer import print_err, colors
 

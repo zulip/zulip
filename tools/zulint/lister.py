@@ -10,7 +10,8 @@ from collections import defaultdict
 import argparse
 from six.moves import filter
 
-from typing import Union, List, Dict
+if False:
+    from typing import Union, List, Dict
 
 def get_ftype(fpath, use_shebang):
     # type: (str, bool) -> str
@@ -39,9 +40,10 @@ def get_ftype(fpath, use_shebang):
     else:
         return ''
 
-def list_files(targets: List[str]=[], ftypes: List[str]=[], use_shebang: bool=True,
-               modified_only: bool=False, exclude: List[str]=[], group_by_ftype: bool=False,
-               extless_only: bool=False) -> Union[Dict[str, List[str]], List[str]]:
+def list_files(targets=[], ftypes=[], use_shebang=True,
+               modified_only=False, exclude=[], group_by_ftype=False,
+               extless_only=False):
+    # type: (List[str], List[str], bool, bool, List[str], bool, bool) -> Union[Dict[str, List[str]], List[str]]
     """
     List files tracked by git.
 
