@@ -83,6 +83,10 @@ mypy_args = extra_args + python_files + pyi_files
 if args.no_daemon:
     rc = subprocess.call([mypy_command] + mypy_args)
 else:
+    rc = subprocess.call([mypy_command, "status"], stdout=subprocess.PIPE)
+    if rc != 0:
+        print("Starting mypy daemon, this will take a minute...")
+        sys.stdout.flush()
     rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
 
 if rc != 0:
