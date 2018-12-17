@@ -6,7 +6,6 @@ import subprocess
 import logging
 import time
 import argparse
-from typing import List
 import configparser
 
 LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
