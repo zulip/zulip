@@ -51,6 +51,7 @@ from zerver.models import (
 from zerver.lib.request import JsonableError
 
 if False:
+    # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections

@@ -19,9 +19,9 @@ import os
 import hashlib
 
 if False:
-    from zerver.models import UserProfile, Realm, Message
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
+    from zerver.models import UserProfile, Realm, Message
 
 ReturnT = TypeVar('ReturnT')  # Useful for matching return types via Callable[..., ReturnT]
 
