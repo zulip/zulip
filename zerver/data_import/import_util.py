@@ -264,9 +264,15 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
                        recipient_id: int,
                        mentioned_user_ids: List[int],
-                       message_id: int) -> None:
+                       message_id: int,
+                       long_term_idle: Optional[Set[int]]=None) -> Tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
 
+    if long_term_idle is None:
+        long_term_idle = set()
+
+    user_messages_created = 0
+    user_messages_skipped = 0
     if user_ids:
         for user_id in sorted(user_ids):
             is_mentioned = user_id in mentioned_user_ids
@@ -274,6 +280,12 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
             # Slack and Gitter don't yet triage private messages.
             # It's possible we don't even get PMs from them.
             is_private = False
+
+            if not is_mentioned and not is_private and user_id in long_term_idle:
+                # these users are long-term idle
+                user_messages_skipped += 1
+                continue
+            user_messages_created += 1
 
             usermessage = build_user_message(
                 user_id=user_id,
@@ -283,6 +295,7 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
             )
 
             zerver_usermessage.append(usermessage)
+    return (user_messages_created, user_messages_skipped)
 
 def build_user_message(user_id: int,
                        message_id: int,
