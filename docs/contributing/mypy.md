@@ -36,6 +36,46 @@ early adopted of mypy back in 2016:
 
 https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
+## Installing mypy
+
+If you installed Zulip's development environment correctly, mypy
+should already be installed inside the Python 3 virtualenv at
+`zulip-py3-venv` (mypy only supports Python 3).
+
+If you'd like to install just the version of `mypy` that we're using
+(useful if e.g. you want `mypy` installed on your laptop outside the
+Vagrant guest), you can do that with `pip install -r
+requirements/mypy.txt`.
+
+## Running mypy on Zulip's code locally
+
+To run mypy on Zulip's python code, you can run the command:
+
+    tools/run-mypy
+
+This will take a while to start running, since it runs mypy as a
+long-running daemon (server) process and send type-checking requests
+to the server; this makes checking mypy about 100x faster.  But if
+you're debugging or for whatever reason don't want the daemon, you can
+use:
+
+    tools/run-mypy --no-daemon
+
+Mypy outputs errors in the same style as a compiler would.  For
+example, if your code has a type error like this:
+
+```
+foo = 1
+foo = '1'
+```
+
+you'll get an error like this:
+
+```
+test.py: note: In function "test":
+test.py:200: error: Incompatible types in assignment (expression has type "str", variable has type "int")
+```
+
 ## mypy stubs for third-party modules.
 
 For the Python standard library and some popular third-party modules,
@@ -96,46 +136,6 @@ because a list can have many elements, which would make the output too large.
 
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
-
-## Installing mypy
-
-If you installed Zulip's development environment correctly, mypy
-should already be installed inside the Python 3 virtualenv at
-`zulip-py3-venv` (mypy only supports Python 3).
-
-If you'd like to install just the version of `mypy` that we're using
-(useful if e.g. you want `mypy` installed on your laptop outside the
-Vagrant guest), you can do that with `pip install -r
-requirements/mypy.txt`.
-
-## Running mypy on Zulip's code locally
-
-To run mypy on Zulip's python code, you can run the command:
-
-    tools/run-mypy
-
-This will take a while to start running, since it runs mypy as a
-long-running daemon (server) process and send type-checking requests
-to the server; this makes checking mypy about 100x faster.  But if
-you're debugging or for whatever reason don't want the daemon, you can
-use:
-
-    tools/run-mypy --no-daemon
-
-Mypy outputs errors in the same style as a compiler would.  For
-example, if your code has a type error like this:
-
-```
-foo = 1
-foo = '1'
-```
-
-you'll get an error like this:
-
-```
-test.py: note: In function "test":
-test.py:200: error: Incompatible types in assignment (expression has type "str", variable has type "int")
-```
 
 ## Mypy is there to find bugs in Zulip before they impact users
 
