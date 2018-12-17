@@ -68,6 +68,7 @@ class EmbeddedBotHandler:
         self.full_name = user_profile.full_name
         self.email = user_profile.email
         self.storage = StateHandler(user_profile)
+        self.user_id = user_profile.id
 
     def send_message(self, message: Dict[str, Any]) -> None:
         if not self._rate_limit.is_legal():
