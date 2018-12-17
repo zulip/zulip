@@ -65,7 +65,7 @@ git workflow, or if you'd like a git refresher.
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
 [zulip-rtd-dev-overview]: ../development/overview.html
 [zulip-rtd-lint-tools]: ../contributing/code-style.html#lint-tools
-[zulip-rtd-mypy]: ../contributing/mypy.html
+[zulip-rtd-mypy]: ../testing/mypy.html
 [zulip-rtd-testing]: ../testing/testing.html
 [zulip-rtd-zulip-tools]: ../git/zulip-tools.html
 [zulip-rtd-zulipbot-usage]: ../contributing/zulipbot-usage.html
