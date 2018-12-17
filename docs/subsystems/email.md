@@ -12,7 +12,7 @@ On to the documentation. Zulip's email system is fairly straightforward,
 with only a few things you need to know to get started.
 
 * All email templates are in `templates/zerver/emails/`. Each email has three
-  template files: `<template_prefix>.subject`, `<template_prefix>.txt`, and
+  template files: `<template_prefix>.subject.txt`, `<template_prefix>.txt`, and
   `<template_prefix>.source.html`. Email templates, along with all other templates
   in the `templates/` directory, are Jinja2 templates.
 * Most of the CSS and HTML layout for emails is in `email_base.html`. Note

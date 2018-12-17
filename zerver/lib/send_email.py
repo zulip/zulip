@@ -57,7 +57,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     })
 
     def render_templates() -> Tuple[str, str, str]:
-        subject = loader.render_to_string(template_prefix + '.subject',
+        subject = loader.render_to_string(template_prefix + '.subject.txt',
                                           context=context,
                                           using='Jinja2_plaintext').strip().replace('\n', '')
         message = loader.render_to_string(template_prefix + '.txt',
