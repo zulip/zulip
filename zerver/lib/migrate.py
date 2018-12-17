@@ -40,7 +40,7 @@ def do_batch_update(cursor: CursorObj,
                     escape: bool=True) -> None:  # nocoverage
     stmt = '''
         UPDATE %s
-        SET (%s) = (%s)
+        SET (%s) = ROW(%s)
         WHERE id >= %%s AND id < %%s
     ''' % (table, ', '.join(cols), ', '.join(['%s'] * len(cols)))
 
