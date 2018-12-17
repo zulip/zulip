@@ -34,6 +34,7 @@ STORY_UPDATE_PROJECT_TEMPLATE = ("The story {name_template} was moved from"
                                  " the **{old}** project to **{new}**.")
 STORY_UPDATE_TYPE_TEMPLATE = ("The type of the story {name_template} was changed"
                               " from **{old_type}** to **{new_type}**.")
+DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -79,6 +80,10 @@ def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
 def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
     entity_type = get_action_with_primary_id(payload)["entity_type"]
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
+
+def get_delete_body(payload: Dict[str, Any]) -> str:
+    action = get_action_with_primary_id(payload)
+    return DELETE_TEMPLATE.format(**action)
 
 def get_story_create_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
@@ -402,6 +407,8 @@ def get_name_template(entity: str) -> str:
 EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_archived": get_story_update_archived_body,
     "story_create": get_story_create_body,
+    "story_delete": get_delete_body,
+    "epic_delete": get_delete_body,
     "story-task_create": partial(get_story_task_body, action="added to"),
     "story-task_delete": partial(get_story_task_body, action="removed from"),
     "story-task_update_complete": get_story_task_completed_body,
