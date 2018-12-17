@@ -42,7 +42,6 @@ run ./tools/clean-repo
 run ./tools/lint --backend $FORCEARG
 run ./tools/test-tools
 run ./tools/test-backend $FORCEARG
-run ./tools/run-mypy $FORCEARG
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/setup/optimize-svg

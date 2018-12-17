@@ -99,12 +99,9 @@ following checks:
 - Check HTML templates for matching tags and indentations.
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
-
-The remaining lint checks occur in `./tools/run-mypy`.  It is probably somewhat
-of an understatement to call "mypy" a "linter," as it performs static
-code analysis of Python type annotations throughout our Python codebase.
-
-Our [documentation on using mypy](../testing/mypy.html) covers mypy in more detail.
+- Running `mypy` to check static types in Python code.  Our
+  [documentation on using mypy](../testing/mypy.html) covers mypy in
+  more detail.
 
 The rest of this document pertains to the checks that occur in `./tools/lint`.
 

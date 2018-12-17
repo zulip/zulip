@@ -6,7 +6,7 @@ echo "Test suite is running under $(python --version)."
 set -e
 set -x
 
-./tools/lint --backend --no-gitlint  # gitlint disabled because flaky
+./tools/lint --backend --no-gitlint --no-mypy  # gitlint disabled because flaky
 ./tools/test-tools
 ./tools/test-backend --coverage
 
