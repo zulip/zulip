@@ -141,7 +141,8 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         placement: popover_placement,
         template: templates.render('user_info_popover', {class: template_class}),
         title: templates.render('user_info_popover_title',
-                                {user_avatar: "avatar/" + user.email}),
+                                {user_avatar: "avatar/" + user.email,
+                                 user_is_guest: user.is_guest}),
         trigger: "manual",
     });
     popover_element.popover("show");

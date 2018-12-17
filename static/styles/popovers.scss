@@ -150,6 +150,10 @@ ul.remind_me_popover .remind_icon {
     background-size: cover;
     background-position: center;
     position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0, 0%, 100%);
+    }
 }
 
 #user-profile-modal {
