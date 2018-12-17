@@ -198,7 +198,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'realm_filters':
         page_params.realm_filters = event.realm_filters;
         markdown.set_realm_filters(page_params.realm_filters);
-        settings_filters.populate_filters(page_params.realm_filters);
+        settings_linkifiers.populate_filters(page_params.realm_filters);
         break;
 
     case 'realm_domains':

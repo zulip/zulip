@@ -7,7 +7,7 @@ set_global('activity', {
     redraw: function () {},
 });
 
-set_global('settings_filters', {
+set_global('settings_linkifiers', {
     maybe_disable_widgets: function () {},
 });
 set_global('settings_org', {

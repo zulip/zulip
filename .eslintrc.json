@@ -141,7 +141,7 @@
         "settings_bots": false,
         "settings_display": false,
         "settings_emoji": false,
-        "settings_filters": false,
+        "settings_linkifiers": false,
         "settings_invites": false,
         "settings_muting": false,
         "settings_notifications": false,

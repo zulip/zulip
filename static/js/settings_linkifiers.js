@@ -1,4 +1,4 @@
-var settings_filters = (function () {
+var settings_linkifiers = (function () {
 
 var exports = {};
 
@@ -126,6 +126,6 @@ return exports;
 }());
 
 if (typeof module !== 'undefined') {
-    module.exports = settings_filters;
+    module.exports = settings_linkifiers;
 }
-window.settings_filters = settings_filters;
+window.settings_linkifiers = settings_linkifiers;
