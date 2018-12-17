@@ -95,6 +95,10 @@ everything in the third-party module as an `Any`, which is the right
 model (one certainly wouldn't want to need stubs for everything just
 to use `mypy`!), but means the code can't be fully type-checked.
 
+**Note**: When editing stubs, we recommend using
+`tools/run-mypy --no-daemon`, because the mypy daemon's caching
+system has some bugs around editing stubs that can be confusing.
+
 ## `type_debug.py`
 
 `zerver/lib/type_debug.py` has a useful decorator `print_types`.  It
