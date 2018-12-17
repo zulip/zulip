@@ -16,8 +16,7 @@ from zerver.models import email_to_username
 class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
 
-A user MUST have ALREADY accepted the Terms of Service before creating their
-account this way.
+Set tos_version=None, so that the user needs to do a ToS flow on login.
 
 Omit both <email> and <full name> for interactive user creation.
 """
