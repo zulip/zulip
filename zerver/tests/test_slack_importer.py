@@ -20,6 +20,8 @@ from zerver.data_import.slack import (
     do_convert_data,
     process_avatars,
     process_message_files,
+    AddedChannelsT,
+    ZerverFieldsT,
 )
 from zerver.data_import.import_util import (
     build_zerver_realm,
@@ -58,7 +60,7 @@ import shutil
 import requests
 import os
 import mock
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:
     if os.path.exists(path):
@@ -408,7 +410,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_usermessage[3]['id'], um_id + 4)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("zerver.data_import.slack.build_usermessages", return_value = 2)
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value = (2, 4))
     def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
@@ -449,7 +451,7 @@ class SlackImporter(ZulipTestCase):
             channel_message_to_zerver_message(
                 1, user_data, added_users, added_recipient,
                 all_messages, [], subscriber_map,
-                added_channels, 'domain')
+                added_channels, 'domain', set())
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -491,8 +493,13 @@ class SlackImporter(ZulipTestCase):
                                               mock_message: mock.Mock) -> None:
         os.makedirs('var/test-slack-import', exist_ok=True)
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
+
         time = float(timezone_now().timestamp())
         zerver_message = [{'id': 1, 'ts': time}, {'id': 5, 'ts': time}]
+
+        def fake_get_messages_iter(slack_data_dir: str, added_channels: AddedChannelsT) -> Iterator[ZerverFieldsT]:
+            import copy
+            return iter(copy.deepcopy(zerver_message))
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
         user_list = []  # type: List[Dict[str, Any]]
@@ -501,14 +508,15 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_get_messages_iterator.side_effect = [iter(zerver_message)]
+        mock_get_messages_iterator.side_effect = fake_get_messages_iter
         mock_message.side_effect = [[zerver_message[:1], zerver_usermessage[:2],
                                      attachments, uploads, reactions[:1]],
                                     [zerver_message[1:2], zerver_usermessage[2:5],
                                      attachments, uploads, reactions[1:1]]]
+        # Hacky: We should include a zerver_userprofile, not the empty []
         test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
             './random_path', user_list, 2, {}, {}, added_channels,
-            realm, [], 'domain', 'var/test-slack-import', chunk_size=1)
+            realm, [], [], 'domain', 'var/test-slack-import', chunk_size=1)
         messages_file_1 = os.path.join('var', 'test-slack-import', 'messages-000001.json')
         self.assertTrue(os.path.exists(messages_file_1))
         messages_file_2 = os.path.join('var', 'test-slack-import', 'messages-000002.json')

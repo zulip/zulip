@@ -439,9 +439,61 @@ def get_subscription(channel_members: List[str], zerver_subscription: List[Zerve
         subscription_id += 1
     return subscription_id
 
+def process_long_term_idle_users(slack_data_dir: str, users: List[ZerverFieldsT],
+                                 added_users: AddedUsersT, added_channels: AddedChannelsT,
+                                 zerver_userprofile: List[ZerverFieldsT]) -> Set[int]:
+    """Algorithmically, we treat users who have sent at least 10 messages
+    or have sent a message within the last 60 days as active.
+    Everyone else is treated as long-term idle, which means they will
+    have a slighly slower first page load when coming back to
+    Zulip.
+    """
+    all_messages = get_messages_iterator(slack_data_dir, added_channels)
+
+    sender_counts = defaultdict(int)  # type: Dict[str, int]
+    recent_senders = set()  # type: Set[str]
+    NOW = float(timezone_now().timestamp())
+    for message in all_messages:
+        timestamp = float(message['ts'])
+        slack_user_id = get_message_sending_user(message)
+        if not slack_user_id:
+            # Ignore messages without user names
+            continue
+
+        if slack_user_id in recent_senders:
+            continue
+
+        if NOW - timestamp < 60:
+            recent_senders.add(slack_user_id)
+
+        sender_counts[slack_user_id] += 1
+    for (slack_sender_id, count) in sender_counts.items():
+        if count > 10:
+            recent_senders.add(slack_sender_id)
+
+    long_term_idle = set()
+
+    for slack_user in users:
+        if slack_user["id"] in recent_senders:
+            continue
+        zulip_user_id = added_users[slack_user['id']]
+        long_term_idle.add(zulip_user_id)
+
+    # Record long-term idle status in zerver_userprofile
+    for user_profile_row in zerver_userprofile:
+        if user_profile_row['id'] in long_term_idle:
+            user_profile_row['long_term_idle'] = True
+            # Setting last_active_message_id to 1 means the user, if
+            # imported, will get the full message history for the
+            # streams they were on.
+            user_profile_row['last_active_message_id'] = 1
+
+    return long_term_idle
+
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
+                                     zerver_userprofile: List[ZerverFieldsT],
                                      zerver_realmemoji: List[ZerverFieldsT], domain_name: str,
                                      output_dir: str,
                                      chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> Tuple[List[ZerverFieldsT],
@@ -453,8 +505,12 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     2. uploads, which is a list of uploads to be mapped in uploads records.json
     3. attachment, which is a list of the attachments
     """
-    all_messages = get_messages_iterator(slack_data_dir, added_channels)
 
+    long_term_idle = process_long_term_idle_users(slack_data_dir, users, added_users,
+                                                  added_channels, zerver_userprofile)
+
+    # Now, we actually import the messages.
+    all_messages = get_messages_iterator(slack_data_dir, added_channels)
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
     total_reactions = []  # type: List[ZerverFieldsT]
@@ -483,7 +539,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
             channel_message_to_zerver_message(
                 realm_id, users, added_users, added_recipient, message_data,
                 zerver_realmemoji, subscriber_map, added_channels,
-                domain_name)
+                domain_name, long_term_idle)
 
         message_json = dict(
             zerver_message=zerver_message,
@@ -539,11 +595,12 @@ def channel_message_to_zerver_message(realm_id: int,
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       subscriber_map: Dict[int, Set[int]],
                                       added_channels: AddedChannelsT,
-                                      domain_name: str) -> Tuple[List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT]]:
+                                      domain_name: str,
+                                      long_term_idle: Set[int]) -> Tuple[List[ZerverFieldsT],
+                                                                         List[ZerverFieldsT],
+                                                                         List[ZerverFieldsT],
+                                                                         List[ZerverFieldsT],
+                                                                         List[ZerverFieldsT]]:
     """
     Returns:
     1. zerver_message, which is a list of the messages
@@ -562,6 +619,8 @@ def channel_message_to_zerver_message(realm_id: int,
     with open(NAME_TO_CODEPOINT_PATH) as fp:
         name_to_codepoint = ujson.load(fp)
 
+    total_user_messages = 0
+    total_skipped_user_messages = 0
     for message in all_messages:
         user = get_message_sending_user(message)
         if not user:
@@ -639,14 +698,19 @@ def channel_message_to_zerver_message(realm_id: int,
         zerver_message.append(zulip_message)
 
         # construct usermessages
-        build_usermessages(
+        (num_created, num_skipped) = build_usermessages(
             zerver_usermessage=zerver_usermessage,
             subscriber_map=subscriber_map,
             recipient_id=recipient_id,
             mentioned_user_ids=mentioned_user_ids,
             message_id=message_id,
+            long_term_idle=long_term_idle,
         )
+        total_user_messages += num_created
+        total_skipped_user_messages += num_skipped
 
+    logging.debug("Created %s UserMessages; deferred %s due to long-term idle" % (
+        total_user_messages, total_skipped_user_messages))
     return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, \
         reaction_list
 
@@ -821,7 +885,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     reactions, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
-        realm, realm['zerver_realmemoji'], domain_name, output_dir)
+        realm, realm['zerver_userprofile'], realm['zerver_realmemoji'], domain_name, output_dir)
 
     # Move zerver_reactions to realm.json file
     realm['zerver_reaction'] = reactions
