@@ -2162,6 +2162,16 @@ class UserPresence(models.Model):
 
         return status_val
 
+class UserStatus(models.Model):
+    user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE)  # type: UserProfile
+
+    timestamp = models.DateTimeField()  # type: datetime.datetime
+    client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
+
+    AWAY = 1
+
+    status = models.PositiveSmallIntegerField(default=AWAY)  # type: int
+
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     stream = models.ForeignKey(Stream, on_delete=CASCADE)  # type: Stream
