@@ -2,6 +2,7 @@
 import os
 import shutil
 import subprocess
+import sys
 from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
 
@@ -63,9 +64,8 @@ COMMON_YUM_VENV_DEPENDENCIES = [
 ]
 
 REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
-    "python34-devel",
-    "python34-pip",
-    "python34-six",
+    "python36-devel",
+    "python36-six",
     "python-virtualenv",
 ]
 
@@ -352,4 +352,15 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
         # Might be a failure due to network connection issues. Retrying...
         print(WARNING + "`pip install` failed; retrying..." + ENDC)
         install_venv_deps(requirements_file)
+
+    # The typing module has been included in stdlib since 3.5.
+    # Installing a pypi version of it has been harmless until a bug
+    # "AttributeError: type object 'Callable' has no attribute
+    # '_abc_registry'" happens in 3.7. And so just to be safe, it is
+    # disabled from now on for all >= 3.5 versions.
+    # Remove this once 3.4 is no longer supported.
+    at_least_35 = (sys.version_info.major == 3) and (sys.version_info.minor >= 5)
+    if at_least_35 and ('python2.7' not in virtualenv_args):
+        run(["pip", "uninstall", "-y", "typing"])
+
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
