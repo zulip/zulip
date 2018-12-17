@@ -167,43 +167,31 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "libstdc++"
 ] + YUM_VENV_DEPENDENCIES + YUM_THUMBOR_VENV_DEPENDENCIES
 
-SYSTEM_DEPENDENCIES = {
-    "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.6",
-        "postgresql-9.6-tsearch-extras",
-        "postgresql-9.6-pgroonga",
-    ],
-    "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.3",
-        "postgresql-9.3-tsearch-extras",
-        "postgresql-9.3-pgroonga",
-    ],
-    "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.5",
-        "postgresql-9.5-tsearch-extras",
-        "postgresql-9.5-pgroonga",
-    ],
-    "bionic": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-10",
-        "postgresql-10-pgroonga",
-        "postgresql-10-tsearch-extras",
-    ],
-    "centos7": COMMON_YUM_DEPENDENCIES + [
+if vendor in ["Ubuntu", "Debian"]:
+    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql-{0}",
+            "postgresql-{0}-tsearch-extras",
+            "postgresql-{0}-pgroonga",
+        ]
+    ]
+elif vendor == "CentOS":
+    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
             "postgresql{0}",
             "postgresql{0}-devel",
             "postgresql{0}-pgroonga",
         ]
-    ],
-    "fedora29": COMMON_YUM_DEPENDENCIES + [
+    ]
+elif vendor == "Fedora":
+    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
             "postgresql{0}",
             "postgresql{0}-devel",
         ]
     ]
-}
 
 if family == 'redhat':
     TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
@@ -246,7 +234,7 @@ def install_system_deps(retry=False):
     # type: (bool) -> None
 
     # By doing list -> set -> list conversion, we remove duplicates.
-    deps_to_install = list(set(SYSTEM_DEPENDENCIES[codename]))
+    deps_to_install = list(set(SYSTEM_DEPENDENCIES))
 
     if family == 'redhat':
         install_yum_deps(deps_to_install, retry=retry)
@@ -308,7 +296,7 @@ def main(options):
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
-    for apt_depedency in SYSTEM_DEPENDENCIES[codename]:
+    for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
     # hash the content of setup-apt-repo
     sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
