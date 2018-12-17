@@ -279,8 +279,7 @@ def install_yum_deps(deps_to_install, retry=False):
     if vendor == "fedora":
         # Compile PGroonga from scratch, since pgroonga upstream
         # doesn't provide Fedora packages.
-        print("TODO: compile PGroonga for", codename)
-        exit(1)
+        run(["sudo", "./scripts/lib/build-pgroonga"])
     run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
     # Use vendored pg_hba.conf instead
     pg_hba_conf = "/var/lib/pgsql/%s/data/pg_hba.conf" % (POSTGRES_VERSION,)
