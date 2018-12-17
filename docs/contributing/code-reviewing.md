@@ -166,7 +166,7 @@ Some points specific to the Zulip server codebase:
 
 * *mypy annotations.* New functions should be annotated using [mypy]
   and existing annotations should be updated.  Use of `Any`, `ignore`,
-  and unparameterized containser should be limited to cases where a
+  and unparameterized containers should be limited to cases where a
   more precise type cannot be specified.
 
 ## Tooling
@@ -197,6 +197,6 @@ We also strongly recommend reviewers to go through the following resources.
 [code-style]: ../contributing/code-style.html
 [commit-messages]: ../contributing/version-control.html#commit-messages
 [test-writing]: ../testing/testing.html
-[mypy]: ../contributing/mypy.html
+[mypy]: ../testing/mypy.html
 [git tool]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
 [translation]: ../translating/translating.html

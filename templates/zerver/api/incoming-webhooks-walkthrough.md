@@ -130,7 +130,7 @@ it must exist before a message can be created in it. (See
 [Step 4: Create tests](#step-4-create-tests) for how to handle this in tests.)
 
 The line that begins `# type` is a mypy type annotation. See [this
-page](https://zulip.readthedocs.io/en/latest/contributing/mypy.html) for details about
+page](https://zulip.readthedocs.io/en/latest/testing/mypy.html) for details about
 how to properly annotate your webhook functions.
 
 In the body of the function we define the body of the message as `Hello! I am

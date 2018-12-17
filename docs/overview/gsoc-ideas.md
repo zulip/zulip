@@ -448,7 +448,7 @@ Expert: Tommy Ip, Tim Abbott.
   single area).
 
   A possible specific larger project in this space is working on
-  adding [mypy](../contributing/mypy.html) stubs
+  adding [mypy](../testing/mypy.html) stubs
   for Django in mypy to make our type checking more powerful.  Read
   [our mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
   for details on how mypy works and is integrated into zulip.  This

@@ -91,6 +91,6 @@ else:
 
 if rc != 0:
     print("")
-    print("See https://github.com/zulip/zulip/blob/master/docs/contributing/mypy.md for debugging tips.")
+    print("See https://zulip.readthedocs.io/en/latest/testing/mypy.html for debugging tips.")
 
 sys.exit(rc)

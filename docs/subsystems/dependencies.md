@@ -202,7 +202,7 @@ highlighting.  The system is largely managed by the code in
   `ignore_missing_imports` for the new library.  See
   [our mypy docs][mypy-docs] for more details.
 
-[mypy-docs]: ../contributing/mypy.html
+[mypy-docs]: ../testing/mypy.html
 
 ## JavaScript and other frontend packages
 

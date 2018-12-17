@@ -7,7 +7,6 @@ Code Contribution Guide
 
    version-control
    code-style
-   mypy
    code-reviewing
    chat-zulip-org
    zulipbot-usage
