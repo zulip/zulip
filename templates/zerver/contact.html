@@ -27,12 +27,19 @@
                 <div class="new-style">
                     <form id="contact_form" name="email_form" action="/contact/" method="post" enctype='multipart/form-data'>
                         {{ csrf_input }}
-                        <div class="input-box">
-                            <input type="text" autofocus id="name" name="full_name" placeholder="{{ _('Name') }}" value="{% if form.full_name.value() %}{{ form.full_name.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
-                            <br>
-                            <input type="email" autofocus id="email" name="email" placeholder="{{ _('Email') }}" value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
-                            <br>
-                            <textarea name="content" placeholder="{{ _('How can we help?') }}" required></textarea>
+                        <div class="input-box moving-label">
+                            <input type="text" autofocus id="name" name="full_name" value="{% if form.full_name.value() %}{{ form.full_name.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
+                            <label for="name">Name</label>
+                        </div>
+                        <br>
+                        <div class="input-box moving-label">
+                            <input type="email" autofocus id="email" name="email" value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}" required {% if user_is_authenticated %}readonly="readonly"{% endif %} />
+                            <label for="email">Email</label>
+                        </div>
+                        <br>
+                        <div class="input-box moving-label">
+                            <textarea type="text" autofocus name="content" required></textarea>
+                            <label for="message">How can we help?</label>
                         </div>
                         <br>
                         <button type="submit">{{ _('Submit') }}</button>
