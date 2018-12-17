@@ -39,6 +39,13 @@ String of hexadecimal digits between 7 and 40 characters long.
 * Original text: `abdc123`
 * Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
 
+Generic GitHub `org/repo#ID format:
+
+* Regular expression: `(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
+* URL format string: `https://github.com/%(org)s/%(repo)s/issues/%(id)s`
+* Original text: `zulip/zulip#2468`
+* Automatically links to: `https://github.com/zulip/zulip/issues/2468`
+
 Linkifiers can be very useful, but also complicated to set up. If you have
 any trouble setting these up, please email support@zulipchat.com with a few
 examples of "Original text" and "Automatically links to" and we'll be happy

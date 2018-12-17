@@ -22,6 +22,23 @@
                 <code>https://github.com/zulip/zulip/commit/%(id)s</code>
             </li>
         </ul>
+        <p>
+            {{#tr this}}
+            Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:
+            {{/tr}}
+        </p>
+        <ul>
+            <li>
+                <code>(?P&lt;org&gt;[a-zA-Z0-9_-]+)/(?P&lt;repo&gt;[a-zA-Z0-9_-]+)#(?P&lt;id&gt;[0-9]+)</code>
+                {{t "and" }}
+                <code>https://github.com/%(org)s/%(repo)s/commit/%(id)s</code>
+            </li>
+        </ul>
+        <p>
+            {{#tr this}}
+            More details are available <a href="/help/add-a-custom-linkification-filter" target="_blank">in the Help Center article</a>.
+            {{/tr}}
+        </p>
 
         <table class="table table-condensed table-striped admin_filters_table">
             <tbody id="admin_filters_table">

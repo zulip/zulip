@@ -90,7 +90,7 @@ class RealmFilterTest(ZulipTestCase):
         # This is something we'd like to support, but don't currently;
         # this test is a reminder of something we should allow in the
         # future.
-        data['pattern'] = r'(?P<org>[a-z]+)/(?P<repo>[a-z]+)#(?P<id>[0-9]+)'
+        data['pattern'] = r'(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)'
         data['url_format_string'] = 'https://github.com/%(org)s/%(repo)s/issue/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
