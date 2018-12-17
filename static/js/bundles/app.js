@@ -178,7 +178,7 @@ import "js/settings_emoji.js";
 import "js/settings_org.js";
 import "js/settings_users.js";
 import "js/settings_streams.js";
-import "js/settings_filters.js";
+import "js/settings_linkifiers.js";
 import "js/settings_invites.js";
 import "js/settings_user_groups.js";
 import "js/settings_profile_fields.js";
