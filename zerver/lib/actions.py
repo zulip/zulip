@@ -5265,12 +5265,17 @@ def notify_realm_filters(realm: Realm) -> None:
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
-def do_add_realm_filter(realm: Realm, pattern: str, url_format_string: str) -> int:
+def do_add_realm_filter(realm: Realm,
+                        pattern: str,
+                        url_format_string: str,
+                        is_stream_filter: bool,
+                        stream_ids: Optional[str]) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
     realm_filter = RealmFilter(
         realm=realm, pattern=pattern,
-        url_format_string=url_format_string)
+        url_format_string=url_format_string,
+        is_stream_filter=is_stream_filter, stream_ids=stream_ids)
     realm_filter.full_clean()
     realm_filter.save()
     notify_realm_filters(realm)

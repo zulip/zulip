@@ -50,7 +50,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             if not url_format_string:
                 self.print_help("./manage.py", "realm_filters")
                 raise CommandError
-            do_add_realm_filter(realm, pattern, url_format_string)
+            do_add_realm_filter(realm, pattern, url_format_string, False, None)
             sys.exit(0)
         elif options["op"] == "remove":
             do_remove_realm_filter(realm, pattern=pattern)

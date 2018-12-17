@@ -18,12 +18,15 @@ def list_filters(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 @require_realm_admin
 @has_request_variables
 def create_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=REQ(),
-                  url_format_string: str=REQ()) -> HttpResponse:
+                  url_format_string: str=REQ(), stream_ids: str=REQ()) -> HttpResponse:
+    is_stream_filter = True if stream_ids else False
     try:
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
             pattern=pattern,
-            url_format_string=url_format_string
+            url_format_string=url_format_string,
+            is_stream_filter=is_stream_filter,
+            stream_ids=stream_ids
         )
         return json_success({'id': filter_id})
     except ValidationError as e:

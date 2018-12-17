@@ -15,7 +15,9 @@ class RealmFilterTest(ZulipTestCase):
         do_add_realm_filter(
             realm,
             "#(?P<id>[123])",
-            "https://realm.com/my_realm_filter/%(id)s")
+            "https://realm.com/my_realm_filter/%(id)s",
+            True,
+            '1,2')
         result = self.client_get("/json/realm/filters")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
@@ -24,10 +26,20 @@ class RealmFilterTest(ZulipTestCase):
     def test_create(self) -> None:
         email = self.example_email('iago')
         self.login(email)
-        data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s"}
+        data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s", "stream_ids": ""}
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'This field cannot be blank.')
 
+        data = {"pattern": "", "url_format_string": "https://realm.com/my_realm_filter/%(id)s"}
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, 'Missing \'stream_ids\' argument')
+
+        data['pattern'] = r'ZUL-(?P<id>\d+)'
+        data['stream_ids'] = '1 2'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, 'Enter only digits separated by commas.')
+
+        data['stream_ids'] = '1,2'
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
@@ -111,7 +123,9 @@ class RealmFilterTest(ZulipTestCase):
         filter_id = do_add_realm_filter(
             realm,
             "#(?P<id>[123])",
-            "https://realm.com/my_realm_filter/%(id)s")
+            "https://realm.com/my_realm_filter/%(id)s",
+            False,
+            None)
         filters_count = RealmFilter.objects.count()
         result = self.client_delete("/json/realm/filters/{0}".format(filter_id + 1))
         self.assert_json_error(result, 'Filter not found')
