@@ -45,19 +45,16 @@ VENV_DEPENDENCIES = [
     "jq",                   # Used by scripts/lib/install-node to check yarn version
 ]
 
-YUM_VENV_DEPENDENCIES = [
+COMMON_YUM_VENV_DEPENDENCIES = [
     "libffi-devel",
     "freetype-devel",
     "zlib-devel",
     "libjpeg-turbo-devel",
     "openldap-devel",
     "libmemcached-devel",
-    "python34-devel",
     "python-devel",
-    "python34-pip",
     "python2-pip",
     "python-virtualenv",
-    "python34-six",
     "python-six",
     "libxml2-devel",
     "libxslt-devel",
