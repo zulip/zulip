@@ -424,7 +424,7 @@ def main(options):
         run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
     elif family == 'redhat':
-        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq server", "memcached", "redis"]:
+        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
             run(["sudo", "-H", "systemctl", "enable", service])
             run(["sudo", "-H", "systemctl", "start", service])
     elif options.is_docker:
