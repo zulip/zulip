@@ -38,11 +38,8 @@ https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
 ## Installing mypy
 
-If you installed Zulip's development environment correctly, mypy
-should already be installed inside the Python 3 virtualenv at
-`zulip-py3-venv` (mypy only supports Python 3).
-
-If you'd like to install just the version of `mypy` that we're using
+mypy is installed by default in the Zulip development environment.  If
+you'd like to install just the version of `mypy` that we're using
 (useful if e.g. you want `mypy` installed on your laptop outside the
 Vagrant guest), you can do that with `pip install -r
 requirements/mypy.txt`.
