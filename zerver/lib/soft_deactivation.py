@@ -161,9 +161,14 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         UserMessage.objects.bulk_create(user_messages_to_insert)
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
-    user_profile.last_active_message_id = UserMessage.objects.filter(
-        user_profile=user_profile).order_by(
-        '-message__id')[0].message_id
+    try:
+        user_profile.last_active_message_id = UserMessage.objects.filter(
+            user_profile=user_profile).order_by(
+                '-message__id')[0].message_id
+    except IndexError:  # nocoverage
+        # In the unlikely event that a user somehow has never received
+        # a message, we just use the overall max message ID.
+        user_profile.last_active_message_id = Message.objects.max().id
     user_profile.long_term_idle = True
     user_profile.save(update_fields=[
         'long_term_idle',
