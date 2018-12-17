@@ -125,7 +125,7 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
     email_fields = {'template_prefix': template_prefix, 'to_user_ids': to_user_ids, 'to_emails': to_emails,
                     'from_name': from_name, 'from_address': from_address, 'context': context}
 
-    if settings.DEVELOPMENT and not settings.TEST_SUITE:
+    if settings.DEVELOPMENT_LOG_EMAILS:
         send_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails, from_name=from_name,
                    from_address=from_address, context=context)
         # For logging the email
