@@ -6,7 +6,6 @@ import subprocess
 import logging
 import time
 import configparser
-from typing import List
 
 TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -17,7 +16,7 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
     get_config_file, get_deploy_options
 
 config_file = get_config_file()  # type: configparser.RawConfigParser
-deploy_options = get_deploy_options(config_file)  # type: List[str]
+deploy_options = get_deploy_options(config_file)
 
 assert_running_as_root(strip_lib_from_paths=True)
 

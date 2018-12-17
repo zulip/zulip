@@ -10,13 +10,15 @@ import dateutil.parser
 import pytz
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List
+if False:
+    from typing import Dict, List
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-def run(args: List[str], dry_run: bool=False) -> str:
+def run(args, dry_run=False):
+    # type: (List[str], bool) -> str
     if dry_run:
         print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
