@@ -2,6 +2,8 @@
 set -x
 set -e
 
+# Has only been tested on Red Hat systems; gmake is wrong for others.
+
 cd "$(mktemp -d)"
 
 git clone https://github.com/zulip/tsearch_extras
