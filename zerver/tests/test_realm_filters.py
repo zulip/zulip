@@ -91,9 +91,9 @@ class RealmFilterTest(ZulipTestCase):
         # this test is a reminder of something we should allow in the
         # future.
         data['pattern'] = r'(?P<org>[a-z]+)/(?P<repo>[a-z]+)#(?P<id>[0-9]+)'
-        data['url_format_string'] = 'https://github.com/%(org)/%(repo)/issue/%(id)'
+        data['url_format_string'] = 'https://github.com/%(org)s/%(repo)s/issue/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'URL format string must be in the following format: `https://example.com/%(\\w+)s`')
+        self.assert_json_success(result)
         self.assertIsNotNone(re.match(data['pattern'], 'zulip/zulip#123'))
 
     def test_not_realm_admin(self) -> None:
