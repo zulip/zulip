@@ -54,7 +54,6 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "libmemcached-devel",
     "python-devel",
     "python2-pip",
-    "python-virtualenv",
     "python-six",
     "libxml2-devel",
     "libxslt-devel",

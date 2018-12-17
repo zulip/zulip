@@ -191,6 +191,7 @@ elif vendor in ["CentOS", "RedHat"]:
         "python34-devel",
         "python34-pip",
         "python34-six",
+        "python-virtualenv",
     ]
 elif vendor == "Fedora":
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
@@ -203,6 +204,7 @@ elif vendor == "Fedora":
         "python3-devel",
         "python3-pip",
         "python3-six",
+        "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
     ]
 
 if family == 'redhat':
