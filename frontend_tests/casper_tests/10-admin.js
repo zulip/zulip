@@ -270,7 +270,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
+        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern');
     });
 });
 
