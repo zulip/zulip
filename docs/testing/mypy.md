@@ -72,6 +72,30 @@ test.py: note: In function "test":
 test.py:200: error: Incompatible types in assignment (expression has type "str", variable has type "int")
 ```
 
+## Mypy is there to find bugs in Zulip before they impact users
+
+For the purposes of Zulip development, you can treat `mypy` like a
+much more powerful linter that can catch a wide range of bugs.  If,
+after running `tools/run-mypy` on your Zulip branch, you get mypy
+errors, it's important to get to the bottom of the issue, not just do
+something quick to silence the warnings, before we merge the changes.
+Possible explanations include:
+
+* A bug in any new type annotations you added.
+* A bug in the existing type annotations.
+* A bug in Zulip!
+* Some Zulip code is correct but confusingly reuses variables with
+  different types.
+* A bug in mypy (though this is increasingly rare as mypy is now
+  fairly mature as a project).
+
+Each explanation has its own solution, but in every case the result
+should be solving the mypy warning in a way that makes the Zulip
+codebase better.  If you're having trouble, silence the warning with
+an `Any` or `# type: ignore` so you're not blocked waiting for help,
+add a `# TODO: ` comment so it doesn't get forgotten in code review,
+and ask for help in chat.zulip.org.
+
 ## mypy stubs for third-party modules.
 
 For the Python standard library and some popular third-party modules,
@@ -137,30 +161,3 @@ because a list can have many elements, which would make the output too large.
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
 
-## Mypy is there to find bugs in Zulip before they impact users
-
-For the purposes of Zulip development, you can treat `mypy` like a
-much more powerful linter that can catch a wide range of bugs.  If,
-after running `tools/run-mypy` on your Zulip branch, you get mypy
-errors, it's important to get to the bottom of the issue, not just do
-something quick to silence the warnings.  Possible explanations include:
-
-* A bug in any new type annotations you added.
-* A bug in the existing type annotations.
-* A bug in Zulip!
-* Some Zulip code is correct but confusingly reuses variables with
-  different types.
-* A bug in mypy (though this is increasingly rare as mypy is now
-  fairly mature as a project).
-
-Each explanation has its own solution, but in every case the result
-should be solving the mypy warning in a way that makes the Zulip
-codebase better.  If you need help understanding an issue, please feel
-free to mention @sharmaeklavya2 or @timabbott on the relevant pull
-request or issue on GitHub.
-
-If you think you have found a bug in Zulip or mypy, inform the zulip
-developers by opening an issue on [Zulip's GitHub
-repository](https://github.com/zulip/zulip/issues) or posting on
-[zulip-devel](https://groups.google.com/d/forum/zulip-devel).  If it's
-indeed a mypy bug, we can help with reporting it upstream.
