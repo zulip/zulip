@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
 
-from zerver.lib.actions import do_create_user, notify_new_user
+from zerver.lib.actions import do_create_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import email_to_username
@@ -87,8 +87,6 @@ parameters, or specify no parameters for interactive user creation.""")
                 if user_initial_password is None:
                     raise CommandError("Password is unusable.")
                 pw = user_initial_password.encode()
-            notify_new_user(do_create_user(email, pw,
-                                           realm, full_name, email_to_username(email)),
-                            internal=True)
+            do_create_user(email, pw, realm, full_name, email_to_username(email))
         except IntegrityError:
             raise CommandError("User already exists.")
