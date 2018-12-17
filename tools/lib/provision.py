@@ -309,8 +309,14 @@ def main(options):
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
-    # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    if vendor in ["Ubuntu", "Debian"]:
+        sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    else:
+        # hash the content of setup-yum-repo and build-*
+        sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
+        build_paths = glob.glob("scripts/lib/build-")
+        for bp in build_paths:
+            sha_sum.update(open(bp, 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
