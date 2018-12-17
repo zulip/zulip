@@ -1,5 +1,11 @@
+import ujson
+
 from zerver.lib.test_classes import (
     ZulipTestCase,
+)
+from zerver.lib.test_helpers import (
+    EventInfo,
+    capture_event,
 )
 from zerver.lib.user_status import (
     get_away_user_ids,
@@ -11,6 +17,8 @@ from zerver.models import (
     get_client,
     UserStatus,
 )
+
+from typing import Any, Dict
 
 class UserStatusTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -86,3 +94,46 @@ class UserStatusTest(ZulipTestCase):
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, {cordelia.id})
+
+    def test_endpoints(self) -> None:
+        hamlet = self.example_user('hamlet')
+        realm_id = hamlet.realm_id
+
+        self.login(hamlet.email)
+
+        # Try to omit parameter--this should be an error.
+        payload = dict()  # type: Dict[str, Any]
+        result = self.client_post('/json/users/me/status', payload)
+        self.assert_json_error(result, "Missing 'away' argument")
+
+        # Set the "away" status.
+        payload = dict(away=ujson.dumps(True))
+
+        event_info = EventInfo()
+        with capture_event(event_info):
+            result = self.client_post('/json/users/me/status', payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            event_info.payload,
+            dict(type='user_status', user_id=hamlet.id, away=True),
+        )
+
+        away_user_ids = get_away_user_ids(realm_id=realm_id)
+        self.assertEqual(away_user_ids, {hamlet.id})
+
+        # Now revoke "away" status.
+        payload = dict(away=ujson.dumps(False))
+
+        event_info = EventInfo()
+        with capture_event(event_info):
+            result = self.client_post('/json/users/me/status', payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            event_info.payload,
+            dict(type='user_status', user_id=hamlet.id, away=False),
+        )
+
+        away_user_ids = get_away_user_ids(realm_id=realm_id)
+        self.assertEqual(away_user_ids, set())

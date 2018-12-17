@@ -10,7 +10,12 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import human_users_only
-from zerver.lib.actions import get_status_dict, update_user_presence
+from zerver.lib.actions import (
+    do_revoke_away_status,
+    do_set_away_status,
+    get_status_dict,
+    update_user_presence,
+)
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -44,6 +49,25 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
     for val in result['presence'].values():
         val.pop('client', None)
         val.pop('pushable', None)
+    return json_success(result)
+
+@human_users_only
+@has_request_variables
+def update_user_status_backend(request: HttpRequest,
+                               user_profile: UserProfile,
+                               away: bool=REQ(validator=check_bool),
+                               ) -> HttpResponse:
+    if away:
+        do_set_away_status(
+            user_profile=user_profile,
+            client_id=request.client.id,
+        )
+    else:
+        do_revoke_away_status(
+            user_profile=user_profile,
+        )
+
+    result = dict(ok=True)
     return json_success(result)
 
 @human_users_only

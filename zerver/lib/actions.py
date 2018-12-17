@@ -77,6 +77,10 @@ from zerver.lib.users import (
     get_api_key,
     user_ids_to_users
 )
+from zerver.lib.user_status import (
+    revoke_away_status,
+    set_away_status,
+)
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
@@ -3697,6 +3701,32 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
 
     event = dict(type='pointer', pointer=pointer)
     send_event(user_profile.realm, event, [user_profile.id])
+
+def do_set_away_status(user_profile: UserProfile,
+                       client_id: int) -> None:
+    realm = user_profile.realm
+    set_away_status(
+        user_profile_id=user_profile.id,
+        client_id=client_id,
+    )
+    event = dict(
+        type='user_status',
+        user_id=user_profile.id,
+        away=True,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
+
+def do_revoke_away_status(user_profile: UserProfile) -> None:
+    realm = user_profile.realm
+    revoke_away_status(
+        user_profile_id=user_profile.id,
+    )
+    event = dict(
+        type='user_status',
+        user_id=user_profile.id,
+        away=False,
+    )
+    send_event(realm, event, active_user_ids(realm.id))
 
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event('bankruptcy')
