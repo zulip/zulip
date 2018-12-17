@@ -1,7 +1,7 @@
 import time
 
-# Avoid requiring the typing module to be installed
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Tuple
 
 def nagios_from_file(results_file):

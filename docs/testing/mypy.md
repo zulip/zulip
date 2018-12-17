@@ -96,6 +96,36 @@ an `Any` or `# type: ignore` so you're not blocked waiting for help,
 add a `# TODO: ` comment so it doesn't get forgotten in code review,
 and ask for help in chat.zulip.org.
 
+## mypy in production scripts
+
+While in most of the Zulip codebase, we can consistently use the
+`typing` module (Part of the standard library in Python 3.5, but
+present as an installable module with older Python), in our installer
+and other production scripts that might run outside a Zulip
+virtualenv, we cannot rely on the `typing` module being present on the
+system.
+
+To solve this problem, we use the following (semi-standard in the mypy
+community) hack in those scripts:
+
+```
+if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import List
+```
+
+and then use the Python 2 style type comment syntax for annotating
+those files.  This way, the Python interpreters for Python 2.7 and 3.4
+will ignore this line, and thus not crash.  But we can still get all
+the benefits of type annotations in that codebase, since the `mypy`
+type checker ignores the `if False` and thus still is able to
+type-check the file using those imports.
+
+The exception to this rule is that any scripts which use
+`setup_path_on_import` before they import from the `typing` module are
+safe.  These, we generally declare in the relevant exclude line in
+`tools/linter_lib/custom_check.py`
+
 ## mypy stubs for third-party modules.
 
 For the Python standard library and some popular third-party modules,

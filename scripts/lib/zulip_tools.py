@@ -18,6 +18,7 @@ import uuid
 import configparser
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Sequence, Set, Any, Dict, List, Optional
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"

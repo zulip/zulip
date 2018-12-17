@@ -877,6 +877,10 @@ def build_custom_checkers(by_lang):
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
          'exclude': ['docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'],
+         'exclude_line': set([
+             ('docs/testing/mypy.md',
+              '# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts')
+         ]),
          'include_only': set(['docs/']),
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
          },

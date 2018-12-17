@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import subprocess
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import List
 
 from zulint.printer import print_err, colors

@@ -7,6 +7,7 @@ import sys
 import subprocess
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Callable, List
 
 TOOLS_DIR = os.path.dirname(__file__)
