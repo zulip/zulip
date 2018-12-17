@@ -17,8 +17,7 @@ from zerver.lib.topic import get_topic_from_message_info
 
 import configparser
 
-if False:
-    from mypy_extensions import NoReturn
+from mypy_extensions import NoReturn
 from typing import Any, Optional, List, Dict
 from types import ModuleType
 
