@@ -209,6 +209,7 @@ DEFAULT_SETTINGS = {
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
     'THUMBOR_URL': '',
+    'THUMBOR_SERVES_CAMO': False,
     'SENDFILE_BACKEND': None,
 
     # ToS/Privacy templates

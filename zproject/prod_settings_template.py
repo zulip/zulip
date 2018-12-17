@@ -519,6 +519,12 @@ CAMO_URI = '/external_content/'
 # THUMBOR_URL here.  Setting THUMBOR_URL='' will disable
 # thumbnailing in Zulip.
 #THUMBOR_URL = 'http://127.0.0.1:9995'
+# When we turn on thumbor, we can stop running camo since thumbor is also
+# capable of serving non-secure HTTP based links via HTTPS. This enables us to
+# not run camo.
+# Enable this setting only when you enable THUMBOR.
+# TODO: Write note on how to disable camo in production.
+#THUMBOR_SERVES_CAMO = True
 
 # Controls the Jitsi video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify
