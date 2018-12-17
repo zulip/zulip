@@ -479,6 +479,21 @@ def build_custom_checkers(by_lang):
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
          'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
+        {'pattern': '^from typing import',
+         'strip': '\n',
+         'include_only': set([
+             'scripts/',
+             'puppet/',
+         ]),
+         'exclude': set([
+             # Not important, but should fix
+             'scripts/lib/process-mobile-i18n',
+             # Uses setup_path_on_import before importing.
+             'puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time',
+         ]),
+         'description': 'For scripts run as part of installer, cannot rely on typing existing; use `if False` workaround.',
+         'good_lines': ['subprocess.check_call(["ls"])'],
+         'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translation',
