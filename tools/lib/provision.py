@@ -290,6 +290,10 @@ def install_yum_deps(deps_to_install, retry=False):
                 print("Unrecognized output. `subscription-manager` might not be available")
 
     run(["sudo", "yum", "install", "-y"] + yum_extra_flags + deps_to_install)
+    if vendor in ["CentOS", "RedHat"]:
+        # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
+        # for python35 and later.
+        run(["sudo", "python36", "-m", "ensurepip"])
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
