@@ -30,11 +30,11 @@ class RealmFilterTest(ZulipTestCase):
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
 
         data['pattern'] = r'ZUL-(?P<id>\d++)'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
 
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'
@@ -44,7 +44,7 @@ class RealmFilterTest(ZulipTestCase):
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = 'https://realm.com/my_realm_filter/'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'URL format string must be in the following format: `https://example.com/%(\\w+)s`')
+        self.assert_json_error(result, 'Invalid URL format string.')
 
         data['url_format_string'] = 'https://realm.com/my_realm_filter/#hashtag/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)

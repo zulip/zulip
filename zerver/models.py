@@ -565,7 +565,8 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
-    error_msg = 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)'
+    error_msg = _('Invalid filter pattern.  Valid characters are %s.' % (
+        '[ a-zA-Z_#=/:+!-]',))
 
     if not regex.match(str(value)):
         raise ValidationError(error_msg)
@@ -580,8 +581,7 @@ def filter_format_validator(value: str) -> None:
     regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=-]+%\(([a-zA-Z0-9_-]+)\)s)+[a-zA-Z0-9_-]*$')
 
     if not regex.match(value):
-        raise ValidationError('URL format string must be in the following format: '
-                              r'`https://example.com/%(\w+)s`')
+        raise ValidationError(_('Invalid URL format string.'))
 
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
