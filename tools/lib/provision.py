@@ -276,7 +276,7 @@ def install_yum_deps(deps_to_install, retry=False):
     # Compile tsearch-extras from scratch, since we maintain the
     # package and haven't built an RPM package for it.
     run(["sudo", "./scripts/lib/build-tsearch-extras"])
-    if vendor == "fedora":
+    if vendor == "Fedora":
         # Compile PGroonga from scratch, since pgroonga upstream
         # doesn't provide Fedora packages.
         run(["sudo", "./scripts/lib/build-pgroonga"])
