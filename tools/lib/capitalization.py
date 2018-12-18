@@ -54,6 +54,7 @@ IGNORED_PHRASES = [
     r"Zephyr",
     r"Zulip",
     r"Zulip Team",
+    r"Zulip Account Security",
     r"iPhone",
     r"iOS",
     r"Emoji One",
@@ -96,6 +97,7 @@ IGNORED_PHRASES = [
     r"a-z",
     r"organization administrator",
     r"user",
+    r"an unknown operating system",
 
     # SPECIAL CASES
     # Enter is usually capitalized
