@@ -93,12 +93,12 @@ html {
     justify-content: center;
 
     .input-box input[type=text],
-    .input-box input[type=email],
-    .input-box textarea {
-        width: 500px !important;
+    .input-box input[type=email] {
+        width: 200px;
     }
     .input-box textarea {
-        height: 100px !important;
+        width: 500px !important;
+        height: 150px !important;
     }
     .alert {
         margin-bottom: 100px;
