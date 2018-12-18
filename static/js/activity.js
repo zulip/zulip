@@ -387,7 +387,7 @@ exports.update_presence_info = function (email, info, server_time) {
         return;
     }
 
-    presence.set_user_status(user_id, info, server_time);
+    presence.set_info_for_user(user_id, info, server_time);
     exports.insert_user_into_list(user_id);
     exports.update_huddles();
 };
