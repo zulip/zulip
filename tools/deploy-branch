@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function error_out {
     echo -en '\e[0;31m'

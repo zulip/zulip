@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Checks for any Zulip queue workers that are leaking memory and thus have a high vsize
 datafile=$(mktemp)
 

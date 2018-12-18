@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # In short, this provisions a Zulip development environment and then
 # builds a Zulip release tarball (the same way we build them for an
 # actual release).  The actual test job will then install that.

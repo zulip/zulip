@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! [ -d ".git/hooks/" ]; then
     echo "Error: Could not find .git/hooks directory"
