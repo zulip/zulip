@@ -283,17 +283,17 @@ def install_yum_deps(deps_to_install, retry=False):
 
     # From here, we do the first-time setup/initialization for the postgres database.
     pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
+    pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
     # current user likely doesn't have permission to read the
     # pg_datadir directory.
-    if subprocess.call(["sudo", "test", "-e", pg_datadir]) == 0:
+    if subprocess.call(["sudo", "test", "-e", pg_hba_conf]) == 0:
         # Skip setup if it has been applied previously
         return
 
     run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
     # Use vendored pg_hba.conf, which enables password authentication.
-    pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
     run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure postgres is started
 
