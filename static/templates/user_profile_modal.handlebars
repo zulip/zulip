@@ -4,7 +4,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
             <span aria-hidden="true" id="exit-sign">&times;</span>
         </button>
-        <div id="avatar" style="background-image: url('{{user_avatar}}');" ></div>
+        <div id="avatar"{{#if user_is_guest}} class="guest-avatar"{{/if}} style="background-image: url('{{user_avatar}}');" ></div>
         <div id="default-section">
             <div id="name">
                 {{full_name}}
