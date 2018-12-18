@@ -102,6 +102,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_create_confidential_issue_without_assignee_event_message(self) -> None:
+        expected_subject = u"testing / Issue #1 Testing"
+        expected_message = u"Joe Bloggs created [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)\n\n~~~ quote\nTesting\n~~~"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_created_without_assignee',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_create_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic='notifications')
         expected_topic = u"notifications"
@@ -125,6 +136,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_create_confidential_issue_with_assignee_event_message(self) -> None:
+        expected_subject = u"testing / Issue #2 Testing"
+        expected_message = u"Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2)(assigned to Joe Bloggs)\n\n~~~ quote\nTesting\n~~~"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_created_with_assignee',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_create_issue_with_hidden_comment_in_description(self) -> None:
         expected_topic = u"public-repo / Issue #3 New Issue with hidden comment"
         expected_message = u"Eeshan Garg created [Issue #3](https://gitlab.com/eeshangarg/public-repo/issues/3)\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
@@ -132,6 +154,17 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'issue_created_with_hidden_comment_in_description',
             expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
+    def test_create_confidential_issue_with_hidden_comment_in_description(self) -> None:
+        expected_subject = u"testing / Issue #1 Testing"
+        expected_message = u"Joe Bloggs created [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_created_with_hidden_comment_in_description',
+            expected_subject,
             expected_message,
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
@@ -153,6 +186,17 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'issue_updated',
             expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
+    def test_update_confidential_issue_event_message(self) -> None:
+        expected_subject = u"testing / Issue #1 Testing"
+        expected_message = u"Joe Bloggs updated [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_updated',
+            expected_subject,
             expected_message,
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
@@ -180,6 +224,17 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_close_confidential_issue_event_message(self) -> None:
+        expected_subject = u"testing / Issue #1 Testing Test"
+        expected_message = u"Joe Bloggs closed [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_closed',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_reopen_issue_event_message(self) -> None:
         expected_topic = u"my-awesome-project / Issue #1 Issue title_new"
         expected_message = u"Tomasz Kolek reopened [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
@@ -187,6 +242,17 @@ class GitlabHookTests(WebhookTestCase):
         self.send_and_test_stream_message(
             'issue_reopened',
             expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
+    def test_reopen_confidential_issue_event_message(self) -> None:
+        expected_subject = u"testing / Issue #1 Testing Test"
+        expected_message = u"Joe Bloggs reopened [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_reopened',
+            expected_subject,
             expected_message,
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
@@ -234,6 +300,17 @@ class GitlabHookTests(WebhookTestCase):
             expected_topic,
             expected_message,
             HTTP_X_GITLAB_EVENT="Note Hook"
+        )
+
+    def test_note_confidential_issue_event_message(self) -> None:
+        expected_subject = u"Test / Issue #3 Test"
+        expected_message = u"Joe Bloggs [commented](https://gitlab.com/joebloggs/test/issues/3#note_101638770) on [Issue #3](https://gitlab.com/joebloggs/test/issues/3)\n\n~~~ quote\nTest\n~~~"
+
+        self.send_and_test_stream_message(
+            'confidential_issue_note',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Confidential Note Hook"
         )
 
     def test_note_issue_with_custom_topic_in_url(self) -> None:

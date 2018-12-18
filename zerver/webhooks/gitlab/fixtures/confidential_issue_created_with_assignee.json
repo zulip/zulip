@@ -1,0 +1,87 @@
+{
+    "object_kind": "issue",
+    "event_type": "confidential_issue",
+    "user": {
+      "name": "Joe Bloggs",
+      "username": "joe.bloggs",
+      "avatar_url": "https://secure.gravatar.com/avatar/ca4538511817d50e4c64a354537f1135?s=80&d=identicon"
+    },
+    "project": {
+      "id": 5,
+      "name": "testing",
+      "description": "",
+      "web_url": "https://gitlab.example.co.uk/joe.bloggs/testing",
+      "avatar_url": null,
+      "git_ssh_url": "ssh://git@gitlab.example.co.uk/joe.bloggs/testing.git",
+      "git_http_url": "https://gitlab.example.co.uk/joe.bloggs/testing.git",
+      "namespace": "joe.bloggs",
+      "visibility_level": 0,
+      "path_with_namespace": "joe.bloggs/testing",
+      "default_branch": null,
+      "ci_config_path": null,
+      "homepage": "https://gitlab.example.co.uk/joe.bloggs/testing",
+      "url": "ssh://git@gitlab.example.co.uk/joe.bloggs/testing.git",
+      "ssh_url": "ssh://git@gitlab.example.co.uk/joe.bloggs/testing.git",
+      "http_url": "https://gitlab.example.co.uk/joe.bloggs/testing.git"
+    },
+    "object_attributes": {
+      "author_id": 2,
+      "closed_at": null,
+      "confidential": true,
+      "created_at": "2018-09-15 19:33:44 UTC",
+      "description": "Testing",
+      "due_date": null,
+      "id": 2,
+      "iid": 2,
+      "last_edited_at": null,
+      "last_edited_by_id": null,
+      "milestone_id": null,
+      "moved_to_id": null,
+      "project_id": 5,
+      "relative_position": 1073742823,
+      "state": "opened",
+      "time_estimate": 0,
+      "title": "Testing",
+      "updated_at": "2018-09-15 19:33:44 UTC",
+      "updated_by_id": null,
+      "url": "https://gitlab.example.co.uk/joe.bloggs/testing/issues/2",
+      "total_time_spent": 0,
+      "human_total_time_spent": null,
+      "human_time_estimate": null,
+      "assignee_ids": [
+        2
+      ],
+      "assignee_id": 2,
+      "action": "open"
+    },
+    "labels": [],
+    "changes": {
+      "assignees": {
+        "previous": [],
+        "current": [
+          {
+            "name": "Joe Bloggs",
+            "username": "joe.bloggs",
+            "avatar_url": "https://secure.gravatar.com/avatar/ca4538511817d50e4c64a354537f1135?s=80&d=identicon"
+          }
+        ]
+      },
+      "total_time_spent": {
+        "previous": null,
+        "current": 0
+      }
+    },
+    "repository": {
+      "name": "testing",
+      "url": "ssh://git@gitlab.example.co.uk/joe.bloggs/testing.git",
+      "description": "",
+      "homepage": "https://gitlab.example.co.uk/joe.bloggs/testing"
+    },
+    "assignees": [
+      {
+        "name": "Joe Bloggs",
+        "username": "joe.bloggs",
+        "avatar_url": "https://secure.gravatar.com/avatar/ca4538511817d50e4c64a354537f1135?s=80&d=identicon"
+      }
+    ]
+  }
