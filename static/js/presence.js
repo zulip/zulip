@@ -93,7 +93,7 @@ function status_from_timestamp(baseline_time, info) {
 // For testing
 exports._status_from_timestamp = status_from_timestamp;
 
-exports.set_user_status = function (user_id, info, server_time) {
+exports.set_info_for_user = function (user_id, info, server_time) {
     var status = status_from_timestamp(server_time, info);
     exports.presence_info[user_id] = status;
 };
