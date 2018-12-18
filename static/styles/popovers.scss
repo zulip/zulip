@@ -172,6 +172,10 @@ ul.remind_me_popover .remind_icon {
         border-radius: 5px;
         margin-right: 10px;
         border: 1px solid hsla(0, 0%, 0%, 0.2);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0, 0%, 100%);
+        }
     }
 
     #default-section {
