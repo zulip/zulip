@@ -452,7 +452,7 @@ MessageListView.prototype = {
             content.addClass('rtl');
         }
 
-        if (row.hasClass('mention')) {
+        if (row.hasClass('message_row')) {
             row.find('.user-mention').each(function () {
                 var user_id = get_user_id_for_mention_button(this);
                 // We give special highlights to the mention buttons
