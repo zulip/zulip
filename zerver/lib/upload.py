@@ -505,6 +505,13 @@ def get_local_file_path(path_id: str) -> Optional[str]:
     else:
         return None
 
+def get_local_avatar_path(path_id: str) -> Optional[str]:
+    local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+    if os.path.isfile(local_path):
+        return local_path
+    else:
+        return None
+
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_file(self, uploaded_file_name: str, uploaded_file_size: int,
                             content_type: Optional[str], file_data: bytes,

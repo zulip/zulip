@@ -3,12 +3,13 @@ from typing import Callable, Union, Optional, Dict, Any, List, Tuple
 import os
 import ujson
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect, render
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from sendfile import sendfile
 
 from zerver.decorator import require_realm_admin, zulip_login_required, \
     require_non_guest_human_user
@@ -27,7 +28,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
-from zerver.lib.upload import upload_avatar_image
+from zerver.lib.upload import upload_avatar_image, get_local_avatar_path
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict, check_list
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
@@ -117,6 +118,15 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
         do_update_user_custom_profile_data(target, profile_data)
 
     return json_success()
+
+def serve_avatar_backend(request: HttpRequest, user_profile: UserProfile,
+                         path_id: str) -> HttpResponse:
+    if settings.LOCAL_UPLOADS_DIR is None:
+        raise AssertionError("This endpoint should only be enabled with LOCAL_UPLOADS_DIR")
+    local_path = get_local_avatar_path(path_id)
+    if local_path is None:
+        return HttpResponseNotFound('<p>File not found</p>')
+    return sendfile(request, local_path, attachment=True)
 
 def avatar(request: HttpRequest, user_profile: UserProfile,
            email_or_id: str, medium: bool=False) -> HttpResponse:

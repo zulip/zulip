@@ -572,6 +572,14 @@ urls += [
                  {'override_api_url_scheme'})}),
 ]
 
+if settings.LOCAL_UPLOADS_DIR:
+    urls += [
+        url(r'^user_avatars/(?P<path_id>.*)',
+            rest_dispatch,
+            {'GET': ('zerver.views.users.serve_avatar_backend',
+                     {'override_api_url_scheme'})}),
+    ]
+
 # This url serves as a way to recieve CSP violation reports from the users.
 # We use this endpoint to just log these reports.
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
