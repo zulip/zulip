@@ -69,7 +69,9 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
+    do_revoke_away_status,
     do_revoke_user_invite,
+    do_set_away_status,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_property,
@@ -1185,6 +1187,23 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(lambda: do_remove_alert_words(self.user_profile, ["alert_word"]))
         error = alert_words_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_away_events(self) -> None:
+        checker = self.check_events_dict([
+            ('type', equals('user_status')),
+            ('user_id', check_int),
+            ('away', check_bool),
+        ])
+
+        client = get_client("website")
+        events = self.do_test(lambda: do_set_away_status(user_profile=self.user_profile,
+                                                         client_id=client.id))
+        error = checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_revoke_away_status(user_profile=self.user_profile))
+        error = checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_user_group_events(self) -> None:
@@ -3093,7 +3112,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 30)
+        self.assert_length(queries, 31)
 
         expected_counts = dict(
             alert_words=0,
@@ -3119,6 +3138,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,
+            user_status=1,
             zulip_version=0,
         )
 
