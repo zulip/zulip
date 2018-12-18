@@ -452,26 +452,24 @@ MessageListView.prototype = {
             content.addClass('rtl');
         }
 
-        if (row.hasClass('mention')) {
-            row.find('.user-mention').each(function () {
-                var user_id = get_user_id_for_mention_button(this);
-                // We give special highlights to the mention buttons
-                // that refer to the current user.
-                if (user_id === "*" || people.is_my_user_id(user_id)) {
-                    // Either a wildcard mention or us, so mark it.
-                    $(this).addClass('user-mention-me');
-                    // TODO: We should probably also mark user groups
-                    // you're with the user-mention-me tag.
-                }
-                if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
-                    // If it's a mention of a specific user, edit the
-                    // mention text to show the user's current name,
-                    // assuming that you're not searching for text
-                    // inside the highlight.
-                    $(this).text("@" + people.get_person_from_user_id(user_id).full_name);
-                }
-            });
-        }
+        row.find('.user-mention').each(function () {
+            var user_id = get_user_id_for_mention_button(this);
+            // We give special highlights to the mention buttons
+            // that refer to the current user.
+            if (user_id === "*" || people.is_my_user_id(user_id)) {
+                // Either a wildcard mention or us, so mark it.
+                $(this).addClass('user-mention-me');
+                // TODO: We should probably also mark user groups
+                // you're with the user-mention-me tag.
+            }
+            if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
+                // If it's a mention of a specific user, edit the
+                // mention text to show the user's current name,
+                // assuming that you're not searching for text
+                // inside the highlight.
+                $(this).text("@" + people.get_person_from_user_id(user_id).full_name);
+            }
+        });
 
         // Display emoji (including realm emoji) as text if
         // page_params.emojiset is 'text'.
