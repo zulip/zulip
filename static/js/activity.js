@@ -380,7 +380,7 @@ exports.initialize = function () {
     ui.set_up_scrollbar($("#group-pms"));
 };
 
-exports.set_user_status = function (email, info, server_time) {
+exports.update_presence_info = function (email, info, server_time) {
     var user_id = people.get_user_id(email);
     if (!user_id) {
         blueslip.warn('unknown email: ' + email);
