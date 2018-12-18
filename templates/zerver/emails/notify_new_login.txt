@@ -6,7 +6,7 @@ Login details:
 Server: {{ realm_uri }}
 Account: {{ user_email }}
 Time: {{ login_time }}
-Device: {{ device_browser if device_browser else 'an unknown browser' }} on {{ device_os if device_os else 'an unknown operating system' }}.
+Device: {{ device_browser }} on {{ device_os }}.
 IP Address: {{ device_ip }}
 
 If you do not recognize this login activity, or think your account may have

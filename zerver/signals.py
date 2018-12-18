@@ -90,8 +90,8 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
             hhmm_string = local_time.strftime('%I:%M%p')
         context['login_time'] = local_time.strftime('%A, %B %d, %Y at {} %Z'.format(hhmm_string))
         context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
-        context['device_os'] = get_device_os(user_agent)
-        context['device_browser'] = get_device_browser(user_agent)
+        context['device_os'] = get_device_os(user_agent) or _("an unknown operating system")
+        context['device_browser'] = get_device_browser(user_agent) or _("An unknown browser")
         context['unsubscribe_link'] = one_click_unsubscribe_link(user, 'login')
 
         email_dict = {
