@@ -41,6 +41,16 @@ function get_user_id_for_mention_button(elem) {
     return;
 }
 
+function get_user_group_id_for_mention_button(elem) {
+    var user_group_id = $(elem).attr('data-user-group-id');
+
+    if (user_group_id) {
+        return user_group_id;
+    }
+
+    return;
+}
+
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
@@ -459,8 +469,6 @@ MessageListView.prototype = {
             if (user_id === "*" || people.is_my_user_id(user_id)) {
                 // Either a wildcard mention or us, so mark it.
                 $(this).addClass('user-mention-me');
-                // TODO: We should probably also mark user groups
-                // you're with the user-mention-me tag.
             }
             if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
                 // If it's a mention of a specific user, edit the
@@ -468,6 +476,15 @@ MessageListView.prototype = {
                 // assuming that you're not searching for text
                 // inside the highlight.
                 $(this).text("@" + people.get_person_from_user_id(user_id).full_name);
+            }
+        });
+
+        row.find('.user-group-mention').each(function () {
+            var user_group_id = get_user_group_id_for_mention_button(this);
+            var my_user_id = people.my_current_user_id();
+            // Mark user group you're a member of.
+            if (user_groups.is_member_of(user_group_id, my_user_id)) {
+                $(this).addClass('user-mention-me');
             }
         });
 
