@@ -43,7 +43,12 @@ exports.error = function (response, xhr, status_box, type) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        response += ": " + escape(JSON.parse(xhr.responseText).msg);
+        var server_response = escape(JSON.parse(xhr.responseText).msg);
+        if (response) {
+            response += ": " + server_response;
+        } else {
+            response = server_response;
+        }
     }
 
     exports.message(response, status_box, 'alert-error', type);
