@@ -43,6 +43,9 @@ SUPPORTED_PLATFORMS = {
     ],
     "Fedora": [
         "fedora29",
+    ],
+    "RedHat": [
+        "rhel7",
     ]
 }
 
@@ -116,7 +119,7 @@ if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
 codename = distro_info['DISTRIB_CODENAME']
-family = 'redhat' if vendor in ['CentOS', 'Fedora'] else 'debian'
+family = 'redhat' if vendor in ['CentOS', 'Fedora', 'RedHat'] else 'debian'
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -128,6 +131,7 @@ POSTGRES_VERSION_MAP = {
     "bionic": "10",
     "centos7": "10",
     "fedora29": "10",
+    "rhel7": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -175,7 +179,7 @@ if vendor in ["Ubuntu", "Debian"]:
             "postgresql-{0}-pgroonga",
         ]
     ]
-elif vendor == "CentOS":
+elif vendor in ["CentOS", "RedHat"]:
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
@@ -265,7 +269,26 @@ def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
     print(WARNING + "RedHat support is still experimental.")
     run(["sudo", "./scripts/lib/setup-yum-repo"])
-    run(["sudo", "yum", "install", "-y"] + deps_to_install)
+
+    # Hack specific to unregistered RHEL system.  The moreutils
+    # package requires a perl module package, which isn't available in
+    # the unregistered RHEL repositories.
+    #
+    # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
+    #        Requires: perl(IPC::Run)
+    yum_extra_flags = []  # type: List[str]
+    if vendor == 'RedHat':
+        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
+        if exitcode == 1:
+            # TODO this might overkill since `subscription-manager` is already
+            # called in setup-yum-repo
+            if 'Status' in subs_status:
+                # The output is well-formed
+                yum_extra_flags = ["--skip-broken"]
+            else:
+                print("Unrecognized output. `subscription-manager` might not be available")
+
+    run(["sudo", "yum", "install", "-y"] + yum_extra_flags + deps_to_install)
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
