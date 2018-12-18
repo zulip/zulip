@@ -30,7 +30,9 @@ def get_source_type(url: str) -> str:
         return THUMBOR_LOCAL_FILE_TYPE
     return THUMBOR_S3_TYPE
 
-def generate_thumbnail_url(path: str, size: str='0x0') -> str:
+def generate_thumbnail_url(path: str,
+                           size: str='0x0',
+                           is_camo_url: bool=False) -> str:
     if not (path.startswith('https://') or path.startswith('http://')):
         path = '/' + path
 
@@ -48,14 +50,18 @@ def generate_thumbnail_url(path: str, size: str='0x0') -> str:
     width, height = map(int, size.split('x'))
     crypto = CryptoURL(key=settings.THUMBOR_KEY)
 
+    smart_crop_enabled = True
     apply_filters = ['no_upscale()']
+    if is_camo_url:
+        smart_crop_enabled = False
+        apply_filters.append('quality(100)')
     if size != '0x0':
         apply_filters.append('sharpen(0.5,0.2,true)')
 
     encrypted_url = crypto.generate(
         width=width,
         height=height,
-        smart=True,
+        smart=smart_crop_enabled,
         filters=apply_filters,
         image_url=image_url
     )
