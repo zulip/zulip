@@ -1,7 +1,7 @@
 {% extends "zerver/emails/compiled/email_base_default.html" %}
 
 {% block preheader %}
-Server: {{ realm_uri }} Account: {{ user_email }} Time: {{ login_time }}
+    {% trans organization_url=realm_uri %}Server: {{ organization_url }} Account: {{ user_email }} Time: {{ login_time }}{% endtrans %}
 {% endblock %}
 
 {% block illustration %}
@@ -9,21 +9,21 @@ Server: {{ realm_uri }} Account: {{ user_email }} Time: {{ login_time }}
 {% endblock %}
 
 {% block content %}
-<p>Hi,</p>
-<p>This is a notification that a new login to your Zulip account has just occurred.</p>
-<p><b>Login details:</b></p>
+<p>{{ _("Hi,") }}</p>
+<p>{{ _("This is a notification that a new login to your Zulip account has just occurred.") }}</p>
+<p><b>{{ _("Login details:") }}</b></p>
 <blockquote>
-    <p>Server: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a></p>
-    <p>Account: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a></p>
-    <p>Time: {{ login_time }}</p>
-    <p>Device: {{ device_browser }} on {{ device_os }}.</p>
-    <p>IP Address: {{ device_ip }}</p>
+    <p>{% trans %}Server: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a>{% endtrans %}</p>
+    <p>{% trans %}Account: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a>{% endtrans %}</p>
+    <p>{% trans %}Time: {{ login_time }}{% endtrans %}</p>
+    <p>{% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}</p>
+    <p>{% trans %}IP address: {{ device_ip }}{% endtrans %}</p>
 </blockquote>
-<p>If you do not recognize this login activity, or think your account may have been compromised, please <a href="{{ realm_uri }}/accounts/password/reset/" target="_blank">reset your password</a> or contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
-<p>If you recognize this login activity, you can archive this notice.</p>
-<p>Thanks,<br />Zulip Account Security</p>
+<p>{% trans %}If you do not recognize this login activity, or think your account may have been compromised, please <a href="{{ realm_uri }}/accounts/password/reset/" target="_blank">reset your password</a> or contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.{% endtrans %}</p>
+<p>{{ _("If you recognize this login activity, you can archive this notice.") }}</p>
+<p>{{ _("Thanks,") }}<br />{{ _("Zulip Account Security") }}</p>
 {% endblock %}
 
 {% block manage_preferences %}
-<p><a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from login notifications</a></p>
+<p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from login notifications") }}</a></p>
 {% endblock %}
