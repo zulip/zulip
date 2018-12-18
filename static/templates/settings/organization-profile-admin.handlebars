@@ -4,7 +4,11 @@
 
         <div id="org-org-profile" class="org-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Organization profile" }}</h3>
+                <h3>{{t "Organization profile" }}
+                    <a href="/help/create-your-organization-profile" target="_blank">
+                        <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                    </a>
+                </h3>
                 {{ partial "settings-save-discard-widget" "section_name" "org-profile" }}
             </div>
 
@@ -22,9 +26,7 @@
             </div>
         </div>
 
-        <h3>{{t "Organization avatar" }}</h3>
-        <p>{{t "A square logo used to brand your Zulip organization." }}</p>
-
+        <div>{{t "Organization avatar" }}</div>
         <div class="realm-icon-section">
             <div class="inline-block">
                 <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
@@ -35,7 +37,7 @@
                 <div id="realm_icon_file_input_error" class="alert text-error"></div>
                 <button class="button rounded sea-green w-200 block input-size"
                   id="realm_icon_upload_button">
-                    <span id="upload_icon_button_text">{{t 'Upload new icon' }}</span>
+                    <span id="upload_icon_button_text">{{t 'Upload new avatar' }}</span>
                     <span id="upload_icon_spinner"></span>
                 </button>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
