@@ -2,7 +2,7 @@
 
 Contents:
 
-* [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-or-debian)
+* [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 * [Installing manually on Linux](#installing-manually-on-linux)
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
