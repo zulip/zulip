@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Hackish tool for attempting to find unused IDs / classes in our CSS
 
 for n in $(perl -lne 'print $1 while /[#.]([a-zA-Z0-9_-]+)/g' static/styles/zulip.css | sort -u); do

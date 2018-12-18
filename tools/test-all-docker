@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 sudo service rabbitmq-server restart
 sudo service postgresql restart

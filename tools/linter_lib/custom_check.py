@@ -179,10 +179,15 @@ def custom_check_file(fn: str,
             shebang_rules = [{'pattern': '^#!',
                               'description': "zerver library code shouldn't have a shebang line."}]
         else:
-            shebang_rules = [{'pattern': '#!/usr/bin/python',
-                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`"},
-                             {'pattern': '#!/usr/bin/env python$',
-                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}]
+            shebang_rules = [
+                # /bin/sh and /usr/bin/env are the only two binaries
+                # that NixOS provides at a fixed path (outside a
+                # buildFHSUserEnv sandbox).
+                {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
+                 'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
+                {'pattern': '^#!/usr/bin/env python$',
+                 'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
+            ]
         for rule in shebang_rules:
             if re.search(rule['pattern'], firstline):
                 print_err(identifier, color,

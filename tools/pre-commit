@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This hook runs the Zulip code linter ./tools/lint and returns true
 # regardless of linter results so that your commit may continue.

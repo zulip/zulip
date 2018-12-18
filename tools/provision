@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Use this script to provision dependencies for your Zulip installation.
 # This script is idempotent, so it can be restarted at any time, and it

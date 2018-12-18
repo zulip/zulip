@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if { [ "$ZULIP_USER_CREATION_ENABLED" == "True" ] || [ "$ZULIP_USER_CREATION_ENABLED" == "true" ]; } && \
    { [ -z "$ZULIP_USER_DOMAIN" ]   || \

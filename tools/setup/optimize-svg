@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ "$(node_modules/.bin/svgo -f static/images/integrations/logos | grep -o '\.[0-9]% = ' | wc -l)" -ge 1 ]
  then
