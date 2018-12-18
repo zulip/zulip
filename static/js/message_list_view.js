@@ -463,7 +463,7 @@ MessageListView.prototype = {
                     // TODO: We should probably also mark user groups
                     // you're with the user-mention-me tag.
                 }
-                if (user_id && user_id !== "*" && !$(this).find(".highlight")) {
+                if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
                     // If it's a mention of a specific user, edit the
                     // mention text to show the user's current name,
                     // assuming that you're not searching for text
