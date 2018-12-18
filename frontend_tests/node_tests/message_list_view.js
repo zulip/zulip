@@ -26,7 +26,7 @@ set_global('timerender', {
         }
         return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
     },
-    stringify_time : function (time) {
+    stringify_time: function (time) {
         if (page_params.twenty_four_hour_time) {
             return time.toString('HH:mm');
         }

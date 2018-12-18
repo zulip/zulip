@@ -9,7 +9,7 @@ casper.waitUntilVisible('#zhome', function () {
 
 casper.then(function () {
     casper.fill('form[action^="/json/messages"]', {
-        stream_message_recipient_stream:  'Verona',
+        stream_message_recipient_stream: 'Verona',
         stream_message_recipient_topic: 'Test mention all',
     });
 });

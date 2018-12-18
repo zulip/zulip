@@ -93,7 +93,7 @@ function do_hashchange_normal(from_reload) {
             return false;
         }
         var narrow_opts = {
-            change_hash:    false,  // already set
+            change_hash: false,  // already set
             trigger: 'hash change',
         };
         if (from_reload) {

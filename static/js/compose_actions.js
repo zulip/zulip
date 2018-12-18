@@ -170,11 +170,11 @@ exports.maybe_scroll_up_selected_message = function () {
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
-        message_type:     msg_type,
-        stream:           '',
-        topic:            '',
+        message_type: msg_type,
+        stream: '',
+        topic: '',
         private_message_recipient: '',
-        trigger:          'unknown',
+        trigger: 'unknown',
     };
 
     // Set default parameters based on the current narrowed view.

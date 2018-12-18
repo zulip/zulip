@@ -141,8 +141,8 @@ exports.load_messages = function (opts) {
     data.client_gravatar = true;
 
     channel.get({
-        url:      '/json/messages',
-        data:     data,
+        url: '/json/messages',
+        data: data,
         idempotent: true,
         success: function (data) {
             get_messages_success(data, opts);

@@ -1,12 +1,12 @@
 var Socket = (function () {
 
 var CLOSE_REASONS = {
-    none_given:   {code: 4000, msg: "No reason provided"},
+    none_given: {code: 4000, msg: "No reason provided"},
     no_heartbeat: {code: 4001, msg: "Missed too many heartbeats"},
-    auth_fail:    {code: 4002, msg: "Authentication failed"},
-    ack_timeout:  {code: 4003, msg: "ACK timeout"},
-    cant_send:    {code: 4004, msg: "User attempted to send while Socket was not ready"},
-    unsuspend:    {code: 4005, msg: "Got unsuspend event"},
+    auth_fail: {code: 4002, msg: "Authentication failed"},
+    ack_timeout: {code: 4003, msg: "ACK timeout"},
+    cant_send: {code: 4004, msg: "User attempted to send while Socket was not ready"},
+    unsuspend: {code: 4005, msg: "Got unsuspend event"},
 };
 
 function Socket(url) {

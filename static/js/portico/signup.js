@@ -31,7 +31,7 @@ $(function () {
 
     $('#registration, #password_reset').validate({
         rules: {
-            password:      'password_strength',
+            password: 'password_strength',
             new_password1: 'password_strength',
         },
         errorElement: "p",
@@ -45,7 +45,7 @@ $(function () {
                 error.insertAfter(element).addClass('help-inline alert alert-error');
             }
         },
-        highlight:   highlight('error'),
+        highlight: highlight('error'),
         unhighlight: highlight('success'),
     });
 

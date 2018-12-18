@@ -8,25 +8,25 @@ casper.then(function () {
 
 // setup environment: several messages to different topics
 common.then_send_many([
-    { stream:  'Verona', subject: 'copy-paste-subject #1',
+    { stream: 'Verona', subject: 'copy-paste-subject #1',
       content: 'copy paste test A' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #1',
+    { stream: 'Verona', subject: 'copy-paste-subject #1',
       content: 'copy paste test B' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #2',
+    { stream: 'Verona', subject: 'copy-paste-subject #2',
       content: 'copy paste test C' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #2',
+    { stream: 'Verona', subject: 'copy-paste-subject #2',
       content: 'copy paste test D' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #2',
+    { stream: 'Verona', subject: 'copy-paste-subject #2',
       content: 'copy paste test E' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #3',
+    { stream: 'Verona', subject: 'copy-paste-subject #3',
       content: 'copy paste test F' },
 
-    { stream:  'Verona', subject: 'copy-paste-subject #3',
+    { stream: 'Verona', subject: 'copy-paste-subject #3',
       content: 'copy paste test G' },
 ]);
 

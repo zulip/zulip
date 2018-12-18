@@ -20,9 +20,9 @@ function apply_color(input_string, changes) {
     input_string = input_string.slice(2);
 
     const formatter = {
-        delete : (string) => { return "\u001b[31m" + string + "\u001b[0m"; },
-        insert : (string) => { return "\u001b[32m" + string + "\u001b[0m"; },
-        replace : (string) => { return "\u001b[33m" + string + "\u001b[0m"; },
+        delete: (string) => { return "\u001b[31m" + string + "\u001b[0m"; },
+        insert: (string) => { return "\u001b[32m" + string + "\u001b[0m"; },
+        replace: (string) => { return "\u001b[33m" + string + "\u001b[0m"; },
     };
     changes.forEach((change) => {
         if (formatter.hasOwnProperty(change.tag)) {
@@ -57,16 +57,16 @@ function parse_questionmark_line(questionmark_line) {
 
     const changes_list = [];
     const aliases = {
-        "^" : "replace",
-        "+" : "insert",
-        "-" : "delete",
+        "^": "replace",
+        "+": "insert",
+        "-": "delete",
     };
     const add_change = () => {
         if (current_sequence) {
             changes_list.push({
-                tag : aliases[current_sequence],
+                tag: aliases[current_sequence],
                 beginning_index,
-                ending_index : index,
+                ending_index: index,
             });
             current_sequence = "";
         }

@@ -370,7 +370,7 @@ function integration_events() {
     $(".integrations .searchbar input[type='text']")
         .focus()
         .on('input', function (e) {
-            dispatch('UPDATE_QUERY', { query : e.target.value.toLowerCase() });
+            dispatch('UPDATE_QUERY', { query: e.target.value.toLowerCase() });
         });
 
     $(window).scroll(function () {

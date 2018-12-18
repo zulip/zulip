@@ -98,9 +98,9 @@ $(function () {
                         stripe_token: JSON.stringify(stripe_token.id),
                         csrfmiddlewaretoken: $("#autopay-form input[name='csrf']").val(),
                         signed_seat_count: get_form_input("signed_seat_count"),
-                        salt:  get_form_input("salt"),
-                        plan:  get_form_input("plan"),
-                        billing_modality:  get_form_input("billing_modality"),
+                        salt: get_form_input("salt"),
+                        plan: get_form_input("plan"),
+                        billing_modality: get_form_input("billing_modality"),
                     },
                     success: function () {
                         $("#autopay-loading").hide();
@@ -156,8 +156,8 @@ $(function () {
                     signed_seat_count: get_form_input("signed_seat_count"),
                     salt: get_form_input("salt"),
                     plan: get_form_input("plan"),
-                    billing_modality:  get_form_input("billing_modality"),
-                    invoiced_seat_count:  get_form_input("invoiced_seat_count", false),
+                    billing_modality: get_form_input("billing_modality"),
+                    invoiced_seat_count: get_form_input("invoiced_seat_count", false),
                 },
                 success: function () {
                     $("#invoice-loading").hide();

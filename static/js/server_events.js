@@ -185,10 +185,10 @@ function get_events(options) {
 
     get_events_timeout = undefined;
     get_events_xhr = channel.get({
-        url:      '/json/events',
-        data:     get_events_params,
+        url: '/json/events',
+        data: get_events_params,
         idempotent: true,
-        timeout:  page_params.poll_timeout,
+        timeout: page_params.poll_timeout,
         success: function (data) {
             exports.suspect_offline = false;
             try {
@@ -303,8 +303,8 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     // Set expired because in a reload we may be called twice.
     page_params.event_queue_expired = true;
     channel.del({
-        url:      '/json/events',
-        data:     {queue_id: page_params.queue_id},
+        url: '/json/events',
+        data: {queue_id: page_params.queue_id},
     });
 };
 

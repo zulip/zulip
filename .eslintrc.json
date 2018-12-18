@@ -245,6 +245,12 @@
             "FunctionExpression": {"parameters": "first"},
             "FunctionDeclaration": {"parameters": "first"}
         }],
+        "key-spacing": [ "error",
+            {
+                "beforeColon": false,
+                "afterColon": true
+            }
+        ],
         "keyword-spacing": [ "error",
             {
                 "before": true,

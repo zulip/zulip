@@ -9,10 +9,10 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     });
 
     channel.get({
-        url:      '/json/messages/matches_narrow',
-        data:     {msg_ids: JSON.stringify(ids),
-                   narrow:  JSON.stringify(narrow_state.public_operators())},
-        timeout:  5000,
+        url: '/json/messages/matches_narrow',
+        data: {msg_ids: JSON.stringify(ids),
+               narrow: JSON.stringify(narrow_state.public_operators())},
+        timeout: 5000,
         success: function (data) {
             if (msg_list !== current_msg_list) {
                 // We unnarrowed in the mean time

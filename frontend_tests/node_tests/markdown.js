@@ -324,7 +324,7 @@ run_test('marked', () => {
         {input: 'T\n@**Cordelia Lear**',
          expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
         {input: '@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.',
-         expected:'<p><span class="user-mention" data-user-id="104">@Mark Twin</span> and <span class="user-mention" data-user-id="105">@Mark Twin</span> are out to confuse you.</p>'},
+         expected: '<p><span class="user-mention" data-user-id="104">@Mark Twin</span> and <span class="user-mention" data-user-id="105">@Mark Twin</span> are out to confuse you.</p>'},
         {input: '@**Invalid User|1234**',
          expected: '<p>@**Invalid User|1234**</p>'},
         {input: '@**Cordelia Lear|103** has a wrong user_id.',

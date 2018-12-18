@@ -53,7 +53,7 @@ run_test('lower_bound', () => {
     assert.equal(util.lower_bound(arr, 55), 5);
     assert.equal(util.lower_bound(arr, 2, 4, 31), 3);
 
-    arr = [{x: 10}, {x: 20}, {x:30}];
+    arr = [{x: 10}, {x: 20}, {x: 30}];
 
     function compare(a, b) {
         return a.x < b;
