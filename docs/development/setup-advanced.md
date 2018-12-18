@@ -16,6 +16,7 @@ that's running one of:
 * Debian 9 Stretch
 * Centos 7 (beta)
 * Fedora 29 (beta)
+* RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.
 
@@ -38,7 +39,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
-# On CentOS, you must first install epel-release, and then python34
+# On CentOS/RHEL, you must first install epel-release, and then python34
 # On Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
