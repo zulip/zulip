@@ -4,54 +4,87 @@ A lot has happened on Zulip while you've been away! Visit
 {{ realm_uri }} to catch up.
 
 {% if unread_pms %}
-** Missed private messages **
+** {{ _("Missed private messages") }} **
 
-You have some missed private messages. Here are some of them:
+{{ _("You have some missed private messages. Here are some of them:") }}
 
 {% for recipient_block in unread_pms %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}{% if sender_block.sender %}{{ sender_block.sender }}{% endif %}
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}
 {% endfor %}{% endfor %}
-{% if remaining_unread_pms_count > 0 %}+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}{% endif %}
-Catch up on the rest of your PMs: {{ realm_uri }}/#narrow/is/private{% endif %}
+{% if remaining_unread_pms_count > 0 %}
+    {% trans count=remaining_unread_pms_count%}
+    + {{ remaining_unread_pms_count }} more new private message
+    {% pluralize count %}
+    + {{ remaining_unread_pms_count }} more new private messages
+    {% endtrans %}
+{% endif %}
+{{ _("Catch up on the rest of your PMs.") }} {{ realm_uri }}/#narrow/is/private{% endif %}
 
 {% if hot_conversations %}
-** Hot conversations **
+** {{ _("Hot conversations") }} **
 
+{% trans %}
 Here are some of the hot conversations that have happened while you've
 been gone:
+{% endtrans %}
 
 {% for convo in hot_conversations %}{% for recipient_block in convo.first_few_messages %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}{% if sender_block.sender %}{{ sender_block.sender }}
 {% endif %}
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}{% endfor %}
-{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}
+{% if convo.count > 0 %}
+    {% trans count=convo.count, participants=convo.participants|display_list(4) %}
+    + {{ count }} more message by {{ participants }}.
+    {% pluralize count %}
+    + {{ count }} more messages by {{ participants }}.
+    {% endtrans %}
+{% endif %}
 {% endfor %}{% endfor %}
-Catch up on the rest of these conversations: {{ realm_uri }}.{% endif %}
+{{ _("Catch up on the rest of these conversations:") }} {{ realm_uri }}.{% endif %}
 
 
-{% if new_users and new_streams.plain %}** Group updates **{% elif new_users %}** New users **{% elif new_streams.plain %}** New streams **{% endif %}
+{% if new_users and new_streams.plain %}** {{ _("Group updates") }} **{% elif new_users %}** {{ _("New users") }} **{% elif new_streams.plain %}** {{ _("New streams") }} **{% endif %}
 
-{% if new_streams.plain %}{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:
+{% if new_streams.plain %}
+{% if new_stream_count and new_stream_count > 1 %}
+{% trans %}
+A new stream was created:
+{% endtrans %}
+{% else %}
+{% trans %}
+Some new streams were created:
+{% endtrans %}
+{% endif %}
 
     {{ new_streams.plain|display_list(4) }}.
 
-Visit your Streams page to subscribe: {{ realm_uri }}/#streams.{% endif %}
+{{ _("Visit your streams page to subscribe:")) {{ realm_uri }}/#streams.{% endif %}
 
-{% if new_users %}{% if new_streams.plain or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!{% endif %}
+{% if new_users %}
+{% if new_streams.html or unread_pms or hot_conversations %}
+    {% trans users=new_users|display_list(4) %}
+    And finally, please welcome {{ users }} to Zulip!
+    {% endtrans %}
+{% else %}
+    {% trans users=new_users|display_list(4) %}
+    Please welcome {{ users }} to Zulip!
+    {% endtrans %}
+{% endif %}
+{% endif %}
 
-Click here to log in to Zulip and catch up: {{ realm_uri }}.
+{% trans organization_url=realm_uri %}Click here to log in to Zulip and catch up: {{ organization_url }}.{% endtrans %}
 
-Cheers,
-The Zulip Team
+{{ _("Cheers") }},
+{{ _("The Zulip Team") }}
 
 --
-Manage email preferences:
+{{ _("Manage email preferences:") }}
 
 {{ realm_uri }}/#settings/notifications
 
-Unsubscribe from digest emails:
+{{ _("Unsubscribe from digest emails:") }}
 
 {{ unsubscribe_link }}

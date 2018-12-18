@@ -1,13 +1,15 @@
 {% extends "zerver/emails/email_base_messages.html" %}
 
 {% block content %}
+    {% trans %}
     Hello {{ name }},
+    {% endtrans %}
 
-    <p>A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.</p>
+    <p>{% trans %}A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.{% endtrans %}</p>
 
     {% if unread_pms %}
-    <h2>Missed private messages</h2>
-    <p>You have some missed private messages. Here are some of them:</p>
+    <h2>{{ _("Missed private messages") }}</h2>
+    <p>{{ _("You have some missed private messages. Here are some of them:") }}</p>
     <div id='private-messages'>
         {% for recipient_block in unread_pms %}
         <div class='recipient_block'>
@@ -25,17 +27,28 @@
         </div>
         {% endfor %}
 
-        {% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
-        <p><a href="{{ realm_uri }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
+        {% if remaining_unread_pms_count > 0 %}
+        <p>
+            {% trans count=remaining_unread_pms_count%}
+            + {{ remaining_unread_pms_count }} more new private message
+            {% pluralize count %}
+            + {{ remaining_unread_pms_count }} more new private messages
+            {% endtrans %}
+        </p>
+        {% endif %}
+        <p><a href="{{ realm_uri }}/#narrow/is/private">{{ _("Catch up on the rest of your PMs.") }}</a></p>
     </div>
     {% endif %}
 
 
     {% if hot_conversations %}
         <br />
-        <h2>Hot conversations</h2>
+        <h2>{{ _("Hot conversations") }}</h2>
         <p>
-            Here are some of the hot conversations that have happened while you've been gone:
+            {% trans %}
+            Here are some of the hot conversations that have happened while you've
+            been gone:
+            {% endtrans %}
         </p>
 
         {% for convo in hot_conversations %}
@@ -54,48 +67,86 @@
                         {% endfor %}
                     </div>
                 </div>
-                {% if convo.count > 0 %}<p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
+                {% if convo.count > 0 %}
+                <p>
+                    {% trans count=convo.count, participants=convo.participants|display_list(4) %}
+                    + {{ count }} more message by {{ participants }}.
+                    {% pluralize count %}
+                    + {{ count }} more messages by {{ participants }}.
+                    {% endtrans %}
+                </p>
+                {% endif %}
             {% endfor %}
         </div>
         {% endfor %}
-        <p><a href="{{ realm_uri }}">Catch up on the rest of these conversations.</a></p>
+        <p><a href="{{ realm_uri }}">{{ _("Catch up on the rest of these conversations.") }}</a></p>
 
     {% endif %}
 
     {% if new_users and new_streams.html %}
     <br />
-    <h2>Group updates</h2>
+    <h2>{{ _("Group updates") }}</h2>
     {% elif new_users %}
     <br />
-    <h2>New users</h2>
+    <h2>{{ _("New users") }}</h2>
     {% elif new_streams.html %}
     <br />
-    <h2>New streams</h2>
+    <h2>{{ _("New streams") }}</h2>
     {% endif %}
 
     {% if new_streams.html %}
-    <p>{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
+    <p>
+        {% if new_stream_count and new_stream_count > 1 %}
+            {% trans %}
+            A new stream was created:
+            {% endtrans %}
+        {% else %}
+            {% trans %}
+            Some new streams were created:
+            {% endtrans %}
+        {% endif %}
+    </p>
 
     <p>{{ new_streams.html|display_list(4)|safe }}.</p>
 
-    <p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.</p>
+    <p>
+        {% if new_stream_count and new_stream_count > 1 %}
+            {% trans %}
+            Click on a name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.
+            {% endtrans %}
+        {% else %}
+            {% trans %}
+            Click on the name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.
+            {% endtrans %}
+        {% endif %}
+    </p>
     {% endif %}
 
     {% if new_users %}
-    <p>{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!</p>
+    <p>
+        {% if new_streams.html or unread_pms or hot_conversations %}
+            {% trans users=new_users|display_list(4) %}
+            And finally, please welcome {{ users }} to Zulip!
+            {% endtrans %}
+        {% else %}
+            {% trans users=new_users|display_list(4) %}
+            Please welcome {{ users }} to Zulip!
+            {% endtrans %}
+        {% endif %}
+    </p>
     {% endif %}
 
     <br />
 
-    <p><a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a></p>
+    <p><a href="{{ realm_uri }}">{{ _("Click here to log in to Zulip and catch up.") }}</a></p>
 
-    <p>Cheers,<br />
-    The Zulip Team</p>
+    <p>{{ _("Cheers,") }}<br />
+    {{ _("The Zulip Team") }}</p>
 {% endblock %}
 
 {% block manage_preferences %}
 <p>
-    <a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> |
-    <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
+    <a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> |
+    <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from digest emails") }}</a>
 </p>
 {% endblock %}
