@@ -1080,6 +1080,7 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
+    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     # TODO: last_updated should be renamed date_created, since it is
     # no longer maintained as a last_updated value.
@@ -1094,7 +1095,6 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
-    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     class Meta:
         unique_together = ("user", "kind", "token")

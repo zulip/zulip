@@ -27,7 +27,6 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
     # The user id on the remote server for this device device this is
     user_id = models.BigIntegerField(db_index=True)  # type: int
-    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     class Meta:
         unique_together = ("server", "user_id", "kind", "token")
