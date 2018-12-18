@@ -14,7 +14,7 @@ var admin_settings_label = {
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
-    realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
+    realm_email_changes_disabled: i18n.t("Prevent users from changing their email address"),
 };
 
 exports.build_page = function () {

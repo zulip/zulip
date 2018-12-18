@@ -206,9 +206,9 @@ exports.set_up = function () {
 
     // Populate users and bots tables
     channel.get({
-        url:      '/json/users',
+        url: '/json/users',
         idempotent: true,
-        timeout:  10 * 1000,
+        timeout: 10 * 1000,
         success: exports.on_load_success,
         error: failed_listing_users,
     });

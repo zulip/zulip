@@ -36,12 +36,12 @@ exports.send_read = (function () {
         // call finishes, they will be handled in the success callback.
 
         channel.post({
-            url:      '/json/messages/flags',
+            url: '/json/messages/flags',
             idempotent: true,
-            data:     {messages: JSON.stringify(real_msg_ids),
-                       op:       'add',
-                       flag:     'read'},
-            success:  on_success,
+            data: {messages: JSON.stringify(real_msg_ids),
+                   op: 'add',
+                   flag: 'read'},
+            success: on_success,
         });
     }
 

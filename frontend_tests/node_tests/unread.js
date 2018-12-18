@@ -446,7 +446,7 @@ run_test('mentions', () => {
         stream_id: 999,
         subject: 'lunch',
         mentioned: true,
-        unread:true,
+        unread: true,
     };
 
     unread.process_loaded_messages([message]);

@@ -11,35 +11,35 @@ casper.then(function () {
 });
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message A' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message B' },
 
-    { stream:  'Verona', subject: 'other subject',
+    { stream: 'Verona', subject: 'other subject',
       content: 'test message C' },
 
-    { stream:  'Denmark', subject: 'frontend test',
+    { stream: 'Denmark', subject: 'frontend test',
       content: 'other message' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal A' },
+      content: 'personal A' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal B' },
+      content: 'personal B' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal C' },
+      content: 'personal C' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal D' },
+      content: 'personal D' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal E' },
+      content: 'personal E' },
 ]);
 
 

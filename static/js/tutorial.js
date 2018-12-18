@@ -4,9 +4,9 @@ var exports = {};
 
 function set_tutorial_status(status, callback) {
     return channel.post({
-        url:      '/json/users/me/tutorial_status',
-        data:     {status: JSON.stringify(status)},
-        success:  callback,
+        url: '/json/users/me/tutorial_status',
+        data: {status: JSON.stringify(status)},
+        success: callback,
     });
 }
 

@@ -562,8 +562,8 @@ exports.initialize = function () {
             }
 
             channel.post({
-                url:      "/accounts/webathena_kerberos_login/",
-                data:     {cred: JSON.stringify(r.session)},
+                url: "/accounts/webathena_kerberos_login/",
+                data: {cred: JSON.stringify(r.session)},
                 success: function () {
                     $("#zephyr-mirror-error").removeClass("show");
                 },

@@ -422,9 +422,9 @@ exports.toggle_actions_popover = function (element, id) {
         elt.popover({
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
-            title:     "",
-            content:   templates.render('actions_popover_content', args),
-            trigger:   "manual",
+            title: "",
+            content: templates.render('actions_popover_content', args),
+            trigger: "manual",
         });
         elt.popover("show");
         current_actions_popover_elem = elt;
@@ -445,9 +445,9 @@ exports.render_actions_remind_popover = function (element, id) {
         elt.popover({
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
-            title:     "",
-            content:   templates.render('remind_me_popover_content', args),
-            trigger:   "manual",
+            title: "",
+            content: templates.render('remind_me_popover_content', args),
+            trigger: "manual",
         });
         elt.popover("show");
         current_flatpickr_instance = $('.remind.custom[data-message-id="' + message.id + '"]').flatpickr({

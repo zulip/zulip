@@ -15,7 +15,7 @@ exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
     active: 'is active',
-    idle:   'is not active',
+    idle: 'is not active',
 };
 
 var fade_config = {

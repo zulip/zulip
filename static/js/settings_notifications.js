@@ -3,10 +3,10 @@ var settings_notifications = (function () {
 var exports = {};
 
 var stream_notification_settings = [
-    {setting: "enable_stream_desktop_notifications", notifications:"desktop_notifications"},
-    {setting: "enable_stream_push_notifications", notifications:"push_notifications"},
-    {setting: "enable_stream_sounds", notifications:"audible_notifications"},
-    {setting: "enable_stream_email_notifications", notifications:"email_notifications"},
+    {setting: "enable_stream_desktop_notifications", notifications: "desktop_notifications"},
+    {setting: "enable_stream_push_notifications", notifications: "push_notifications"},
+    {setting: "enable_stream_sounds", notifications: "audible_notifications"},
+    {setting: "enable_stream_email_notifications", notifications: "email_notifications"},
 ];
 
 var pm_mention_notification_settings = [

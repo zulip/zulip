@@ -1084,7 +1084,7 @@ exports.build_page = function () {
             overlays.close_modal('deactivate-realm-modal');
         }
         channel.post({
-            url:'/json/realm/deactivate',
+            url: '/json/realm/deactivate',
             error: function (xhr) {
                 ui_report.error(
                     i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()
