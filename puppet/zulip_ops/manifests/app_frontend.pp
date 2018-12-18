@@ -27,11 +27,7 @@ class zulip_ops::app_frontend {
   }
 
   file { '/etc/cron.d/log2zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/cron.d/log2zulip',
+    ensure => absent,
   }
 
   file { '/etc/cron.d/check_send_receive_time':
