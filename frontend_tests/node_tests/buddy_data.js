@@ -78,7 +78,7 @@ activate_people();
 run_test('simple search', () => {
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids('sel');
 
-    assert.deepEqual(user_ids, [me.user_id, selma.user_id]);
+    assert.deepEqual(user_ids, [selma.user_id]);
 });
 
 run_test('bulk_data_hacks', () => {
@@ -98,9 +98,9 @@ run_test('bulk_data_hacks', () => {
     assert.equal(user_ids.length, 0);
 
     // We match on "h" for the first name, and the result limit
-    // is relaxed for searches.
+    // is relaxed for searches.  (We exclude "me", though.)
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('h');
-    assert.equal(user_ids.length, 1000);
+    assert.equal(user_ids.length, 999);
 
     // We match on "p" for the email.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('p');
