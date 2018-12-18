@@ -340,9 +340,9 @@ run_test('presence_list_full_update', () => {
     });
 
     assert.deepEqual(user_ids, [
+        me.user_id,
         fred.user_id,
         jill.user_id,
-        me.user_id,
         norbert.user_id,
         zoe.user_id,
         alice.user_id,
@@ -426,18 +426,21 @@ run_test('group_update_dom_counts', () => {
 run_test('handlers', () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
+    let me_li;
     let alice_li;
     let fred_li;
 
     function init() {
         reset_setup();
         buddy_list.populate({
-            keys: [alice.user_id, fred.user_id],
+            keys: [me.user_id, alice.user_id, fred.user_id],
         });
 
+        me_li = $.create('me stub');
         alice_li = $.create('alice stub');
         fred_li = $.create('fred stub');
 
+        buddy_list_add(me.user_id, me_li);
         buddy_list_add(alice.user_id, alice_li);
         buddy_list_add(fred.user_id, fred_li);
     }
