@@ -462,7 +462,7 @@ MessageListView.prototype = {
             content.addClass('rtl');
         }
 
-        row.find('.user-mention').each(function () {
+        content.find('.user-mention').each(function () {
             var user_id = get_user_id_for_mention_button(this);
             // We give special highlights to the mention buttons
             // that refer to the current user.
@@ -479,7 +479,7 @@ MessageListView.prototype = {
             }
         });
 
-        row.find('.user-group-mention').each(function () {
+        content.find('.user-group-mention').each(function () {
             var user_group_id = get_user_group_id_for_mention_button(this);
             var my_user_id = people.my_current_user_id();
             // Mark user group you're a member of.
@@ -494,7 +494,7 @@ MessageListView.prototype = {
             }
         });
 
-        row.find('a.stream').each(function () {
+        content.find('a.stream').each(function () {
             var stream_id = $(this).attr('data-stream-id');
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
@@ -506,7 +506,7 @@ MessageListView.prototype = {
         // Display emoji (including realm emoji) as text if
         // page_params.emojiset is 'text'.
         if (page_params.emojiset === 'text') {
-            row.find(".emoji").replaceWith(function () {
+            content.find(".emoji").replaceWith(function () {
                 var text = $(this).attr("title");
                 return ":" + text + ":";
             });
