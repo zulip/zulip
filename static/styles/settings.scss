@@ -80,6 +80,21 @@ label {
     width: 214px;
 }
 
+.subsection-header > h3 a {
+    color: inherit;
+}
+
+.subsection-header > h3 .fa-question-circle-o {
+    opacity: 0.4;
+    position: relative;
+    top: 1px;
+    left: 5px;
+}
+
+.subsection-header > h3 .fa-question-circle-o:hover {
+    opacity: 1;
+}
+
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
@@ -108,7 +123,7 @@ label {
 .user-avatar-section .inline-block,
 .realm-logo-section .inline-block,
 .realm-icon-section .inline-block {
-    margin: 0px 20px 0px 0px;
+    margin: 5px 20px 0px 0px;
     vertical-align: top;
 
     border-radius: 4px;
