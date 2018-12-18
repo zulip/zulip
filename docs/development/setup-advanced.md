@@ -38,6 +38,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
+# On CentOS, you must first install epel-release, and then python34
+# On Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
