@@ -762,7 +762,7 @@ with_overrides(function (override) {
     var event = event_fixtures.presence;
 
     global.with_stub(function (stub) {
-        override('activity.set_user_status', stub.f);
+        override('activity.update_presence_info', stub.f);
         dispatch(event);
         var args = stub.get_args('email', 'presence', 'server_time');
         assert_same(args.email, 'alice@example.com');

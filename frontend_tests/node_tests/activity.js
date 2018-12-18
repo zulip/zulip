@@ -774,7 +774,7 @@ run_test('update_huddles_and_redraw', () => {
 
 reset_setup();
 
-run_test('set_user_status', () => {
+run_test('update_presence_info', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -794,21 +794,21 @@ run_test('set_user_status', () => {
     };
 
     presence.presence_info[me.user_id] = undefined;
-    activity.set_user_status(me.email, info, server_time);
+    activity.update_presence_info(me.email, info, server_time);
     assert(inserted);
     assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
 
     presence.presence_info[alice.user_id] = undefined;
-    activity.set_user_status(alice.email, info, server_time);
+    activity.update_presence_info(alice.email, info, server_time);
     assert(inserted);
 
     const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 
-    activity.set_user_status(alice.email, info, server_time);
+    activity.update_presence_info(alice.email, info, server_time);
     blueslip.set_test_data('warn', 'unknown email: foo@bar.com');
     blueslip.set_test_data('error', 'Unknown email for get_user_id: foo@bar.com');
-    activity.set_user_status('foo@bar.com', info, server_time);
+    activity.update_presence_info('foo@bar.com', info, server_time);
     assert(blueslip.get_test_logs('warn').length, 1);
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
