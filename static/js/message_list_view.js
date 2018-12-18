@@ -486,6 +486,21 @@ MessageListView.prototype = {
             if (user_groups.is_member_of(user_group_id, my_user_id)) {
                 $(this).addClass('user-mention-me');
             }
+
+            if (user_group_id && !$(this).find(".highlight").length) {
+                // Edit the mention to show the current name for the
+                // user group, if its not in search.
+                $(this).text("@" + user_groups.get_user_group_from_id(user_group_id).name);
+            }
+        });
+
+        row.find('a.stream').each(function () {
+            var stream_id = $(this).attr('data-stream-id');
+            if (stream_id && !$(this).find(".highlight").length) {
+                // Display the current name for stream if it is not
+                // being displayed in search highlight.
+                $(this).text("#" + stream_data.maybe_get_stream_name(stream_id));
+            }
         });
 
         // Display emoji (including realm emoji) as text if
