@@ -319,18 +319,19 @@ to debug.
 
 ## Adding more authentication backends
 
-Adding an integration with another authentication provider (e.g.,
+Adding an integration with any of the more than 100 authentication
+providers supported by [python-social-auth][python-social-auth] (e.g.,
 Facebook, Twitter, etc.) is easy to do if you're willing to write a
 bit of code, and pull requests to add new backends are welcome.
 
-To write such an integration, look in `zproject/backends.py` at the
-implementation of `GitHubAuthBackend`, which is a small wrapper around
-the popular [python-social-auth] library.  You can write a similar
-class, and add a few settings to control it.  To test your backend
-(which we'd require for a pull request to the main Zulip codebase,)
-see the framework in `test_auth_backends.py`.  See also our
-[developer documentation on testing auth backends](../subsystems/auth.html).
+For example, the
+[Azure Active Directory integration](https://github.com/zulip/zulip/commit/49dbd85a8985b12666087f9ea36acb6f7da0aa4f)
+was about 30 lines of code, plus some documentation and an
+[automatically generated migration][schema-migrations].  We also have
+helpful developer documentation on
+[testing auth backends](../subsystems/auth.html).
 
+[schema-migrations]: ../subsystems/schema-migrations.html
 [python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
 
 ## Development only
