@@ -91,6 +91,10 @@
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18', GradientType=0 ); /* IE6-9; filters only work with hex colors */
 }
 
+// We show "away" users identically to long-gone
+// users, but this may change.
+.user_away_me .user-status-indicator,
+.user_away_them .user-status-indicator,
 .user-status-indicator {
     background-color: none;
     border-color: hsl(0, 0%, 50%);

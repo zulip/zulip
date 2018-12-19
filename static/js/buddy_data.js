@@ -14,6 +14,8 @@ var exports = {};
 exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
+    away_me: 'is away',
+    away_them: 'is away',
     active: 'is active',
     idle: 'is not active',
 };
@@ -36,16 +38,31 @@ exports.level = function (user_id) {
         return 0;
     }
 
-    var status = presence.get_status(user_id);
+    var status = exports.buddy_status(user_id);
 
     switch (status) {
     case 'active':
         return 1;
     case 'idle':
         return 2;
+    case 'away_them':
+        return 3;
     default:
         return 3;
     }
+};
+
+exports.buddy_status = function (user_id) {
+    if (user_status.is_away(user_id)) {
+        if (people.is_my_user_id(user_id)) {
+            return 'away_me';
+        }
+
+        return 'away_them';
+    }
+
+    // get active/idle/etc.
+    return presence.get_status(user_id);
 };
 
 exports.compare_function = function (a, b) {
@@ -106,7 +123,7 @@ function get_num_unread(user_id) {
 }
 
 exports.info_for = function (user_id) {
-    var status = presence.get_status(user_id);
+    var buddy_status = exports.buddy_status(user_id);
     var person = people.get_person_from_user_id(user_id);
 
     return {
@@ -115,8 +132,8 @@ exports.info_for = function (user_id) {
         user_id: user_id,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        type: status,
-        type_desc: presence_descriptions[status],
+        type: buddy_status,
+        type_desc: presence_descriptions[buddy_status],
     };
 };
 
