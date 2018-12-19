@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from zerver.models import get_realm, get_user_by_delivery_email
 from zerver.lib.notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
+from zerver.lib.actions import do_change_user_delivery_email
 from zproject.email_backends import (
     get_forward_address,
     set_forward_address,
@@ -99,8 +100,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert result.status_code == 200
 
     # Reset the email value so we can run this again
-    user_profile.email = registered_email
-    user_profile.save(update_fields=['email'])
+    do_change_user_delivery_email(user_profile, registered_email)
 
     # Follow up day1 day2 emails for normal user
     enqueue_welcome_emails(user_profile)
