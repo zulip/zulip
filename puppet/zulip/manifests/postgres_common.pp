@@ -1,20 +1,47 @@
 class zulip::postgres_common {
-  $postgres_packages = [# The database itself
-                        "postgresql-${zulip::base::postgres_version}",
-                        # tools for database monitoring
-                        'ptop',
-                        # Python modules used in our monitoring/worker threads
-                        'python3-tz', # TODO: use a virtualenv instead
-                        'python-tz', # TODO: use a virtualenv instead
-                        'python3-dateutil', # TODO: use a virtualenv instead
-                        'python-dateutil', # TODO: use a virtualenv instead
-                        # Needed just to support adding postgres user to 'zulip' group
-                        'ssl-cert',
-                        # our dictionary
-                        'hunspell-en-us',
-                        # Postgres Nagios check plugin
-                        'check-postgres',
-                        ]
+  case $::osfamily {
+    'debian': {
+      $postgres_packages = [
+        # The database itself
+        "postgresql-${zulip::base::postgres_version}",
+        # tools for database monitoring
+        'ptop',
+        # Needed just to support adding postgres user to 'zulip' group
+        'ssl-cert',
+        # our dictionary
+        'hunspell-en-us',
+        # Postgres Nagios check plugin
+        'check-postgres',
+        # Python modules used in our monitoring/worker threads
+        'python3-tz', # TODO: use a virtualenv instead
+        'python-tz', # TODO: use a virtualenv instead
+        'python3-dateutil', # TODO: use a virtualenv instead
+        'python-dateutil', # TODO: use a virtualenv instead
+      ]
+    }
+    'redhat': {
+      $postgres_packages = [
+        # The database itself
+        "postgresql-${zulip::base::postgres_version}",
+        # tools for database monitoring
+        'ptop',
+        # Needed just to support adding postgres user to 'zulip' group
+        'ssl-cert',
+        # our dictionary
+        'hunspell-en-us',
+        # Postgres Nagios check plugin
+        'check-postgres',
+      ]
+      exec {'pip2_deps':
+        # Python modules used in our monitoring/worker threads
+        command => '/usr/bin/pip2 install pytz python-dateutil'
+      }
+
+      exec {'pip3_deps':
+        command => 'python3 -m pip install pytz python-dateutil'
+      }
+    }
+  }
   zulip::safepackage { $postgres_packages: ensure => 'installed' }
 
   exec { 'disable_logrotate':
