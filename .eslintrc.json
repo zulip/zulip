@@ -197,6 +197,7 @@
         "user_groups": false,
         "user_pill": false,
         "user_search": false,
+        "user_status": false,
         "util": false,
         "poll_widget": false,
         "widgetize": false,
