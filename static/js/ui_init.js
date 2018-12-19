@@ -297,6 +297,7 @@ $(function () {
     }
     server_events.initialize();
     people.initialize();
+    user_status.initialize();
     compose_pm_pill.initialize();
     search_pill_widget.initialize();
     reload.initialize();

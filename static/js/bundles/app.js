@@ -152,6 +152,7 @@ import "js/server_events_dispatch.js";
 import "js/zulip.js";
 import "js/presence.js";
 import "js/user_search.js";
+import "js/user_status.js";
 import "js/buddy_data.js";
 import "js/padded_widget.js";
 import "js/buddy_list.js";
