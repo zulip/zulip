@@ -45,7 +45,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
         check_translation("Felicidades", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
         check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.email})
-        check_translation("Viele Grüße", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com", "stream": ["Denmark"]})
+        check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com", "stream": ["Denmark"]})
 
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
