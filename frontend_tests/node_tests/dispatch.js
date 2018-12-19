@@ -634,6 +634,16 @@ var event_fixtures = {
             description: 'All Frontend people',
         },
     },
+    user_status__revoke_away: {
+        type: 'user_status',
+        user_id: 63,
+        away: false,
+    },
+    user_status__set_away: {
+        type: 'user_status',
+        user_id: 55,
+        away: true,
+    },
 };
 
 function assert_same(actual, expected) {
@@ -1372,5 +1382,24 @@ with_overrides(function (override) {
         var args = stub.get_args('opts');
         assert_same(args.opts.stream_id, 99);
         assert_same(args.opts.topic_name, 'topic1');
+    });
+});
+
+with_overrides(function (override) {
+    // attachements
+    var event = event_fixtures.user_status__set_away;
+    global.with_stub(function (stub) {
+        override('activity.on_set_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 55);
+    });
+
+    event = event_fixtures.user_status__revoke_away;
+    global.with_stub(function (stub) {
+        override('activity.on_revoke_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 63);
     });
 });

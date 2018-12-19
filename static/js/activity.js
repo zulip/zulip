@@ -392,6 +392,16 @@ exports.update_presence_info = function (email, info, server_time) {
     exports.update_huddles();
 };
 
+exports.on_set_away = function (user_id) {
+    user_status.set_away(user_id);
+    exports.insert_user_into_list(user_id);
+};
+
+exports.on_revoke_away = function (user_id) {
+    user_status.revoke_away(user_id);
+    exports.insert_user_into_list(user_id);
+};
+
 exports.redraw = function () {
     exports.build_user_sidebar();
     exports.user_cursor.redraw();

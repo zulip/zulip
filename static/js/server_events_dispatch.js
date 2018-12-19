@@ -455,7 +455,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_user_groups.reload();
         break;
+
+    case 'user_status':
+        if (event.away) {
+            activity.on_set_away(event.user_id);
+        } else {
+            activity.on_revoke_away(event.user_id);
+        }
+        break;
     }
+
 };
 
 return exports;
