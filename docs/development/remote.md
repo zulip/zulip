@@ -214,7 +214,7 @@ Next, read the following to learn more about developing for Zulip:
 * [Using the Development Environment][rtd-using-dev-env]
 * [Testing][rtd-testing]
 
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-or-debian
+[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-generic]: ../development/setup-advanced.html#installing-manually-on-linux
 [install-vagrant]: ../development/setup-vagrant.html
 [rtd-git-guide]: ../git/index.html
