@@ -85,6 +85,7 @@ zrequire('people');
 zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('user_search');
+zrequire('user_status');
 zrequire('list_cursor');
 zrequire('activity');
 
@@ -863,4 +864,12 @@ run_test('initialize', () => {
     };
 
     activity.initialize();
+});
+
+run_test('away_status', () => {
+    assert(!user_status.is_away(alice.user_id));
+    activity.on_set_away(alice.user_id);
+    assert(user_status.is_away(alice.user_id));
+    activity.on_revoke_away(alice.user_id);
+    assert(!user_status.is_away(alice.user_id));
 });
