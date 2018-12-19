@@ -29,6 +29,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
         'external_host': settings.EXTERNAL_HOST,
+        'user_name': user.full_name,
     }
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
