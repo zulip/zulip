@@ -67,12 +67,6 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
-def azuread_auth_enabled(realm: Optional[Realm]=None) -> bool:
-    return auth_enabled_helper(['AzureAD'], realm)
-
-def remote_auth_enabled(realm: Optional[Realm]=None) -> bool:
-    return auth_enabled_helper(['RemoteUser'], realm)
-
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
