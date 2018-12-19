@@ -26,6 +26,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     """
     return {
         'realm_uri': user.realm.uri,
+        'realm_name': user.realm.name,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
         'external_host': settings.EXTERNAL_HOST,
