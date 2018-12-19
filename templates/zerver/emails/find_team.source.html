@@ -5,8 +5,11 @@
 {% endblock %}
 
 {% block content %}
-<p>{% trans %}Hi {{ full_name }},{% endtrans %}</p>
-
+<p>
+    {% trans %}
+    Hi {{ user_name }},
+    {% endtrans %}
+</p>
 
 <p>{% trans %}You can log in to your Zulip organization, {{ realm_name }},
 at the following link:{% endtrans %}</p>
