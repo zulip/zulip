@@ -49,7 +49,7 @@ been gone:
 {% if new_users and new_streams.plain %}** {{ _("Group updates") }} **{% elif new_users %}** {{ _("New users") }} **{% elif new_streams.plain %}** {{ _("New streams") }} **{% endif %}
 
 {% if new_streams.plain %}
-{% if new_stream_count and new_stream_count > 1 %}
+{% if new_streams_count and new_streams_count > 1 %}
 {% trans %}
 A new stream was created:
 {% endtrans %}

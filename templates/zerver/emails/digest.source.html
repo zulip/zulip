@@ -96,7 +96,7 @@
 
     {% if new_streams.html %}
     <p>
-        {% if new_stream_count and new_stream_count > 1 %}
+        {% if new_streams_count and new_streams_count > 1 %}
             {% trans %}
             A new stream was created:
             {% endtrans %}
@@ -110,7 +110,7 @@
     <p>{{ new_streams.html|display_list(4)|safe }}.</p>
 
     <p>
-        {% if new_stream_count and new_stream_count > 1 %}
+        {% if new_streams_count and new_streams_count > 1 %}
             {% trans %}
             Click on a name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.
             {% endtrans %}
