@@ -4,6 +4,7 @@ set_global('page_params', _page_params);
 zrequire('people');
 zrequire('presence');
 zrequire('util');
+zrequire('user_status');
 zrequire('buddy_data');
 zrequire('user_status');
 
@@ -76,6 +77,20 @@ function activate_people() {
 make_people();
 activate_people();
 
+run_test('buddy_status', () => {
+    assert.equal(buddy_data.buddy_status(selma.user_id), 'active');
+    user_status.set_away(selma.user_id);
+    assert.equal(buddy_data.buddy_status(selma.user_id), 'away_them');
+    user_status.revoke_away(selma.user_id);
+    assert.equal(buddy_data.buddy_status(selma.user_id), 'active');
+
+    assert.equal(buddy_data.buddy_status(me.user_id), 'active');
+    user_status.set_away(me.user_id);
+    assert.equal(buddy_data.buddy_status(me.user_id), 'away_me');
+    user_status.revoke_away(me.user_id);
+    assert.equal(buddy_data.buddy_status(me.user_id), 'active');
+});
+
 run_test('simple search', () => {
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids('sel');
 
@@ -137,7 +152,8 @@ run_test('level', () => {
     user_status.set_away(me.user_id);
     user_status.set_away(selma.user_id);
 
-    // This will change soon for Selma.
+    // Selma gets demoted to level 3, but "me"
+    // stays in level 0.
     assert.equal(buddy_data.level(me.user_id), 0);
-    assert.equal(buddy_data.level(selma.user_id), 1);
+    assert.equal(buddy_data.level(selma.user_id), 3);
 });
