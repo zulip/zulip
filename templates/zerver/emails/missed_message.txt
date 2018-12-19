@@ -1,6 +1,48 @@
+{% trans %}
 Hello {{ name }},
+{% endtrans %}
 
-While you were away you received {{ message_count }} new{% if group_pm %} group private{% elif private_message %} private{% endif %} message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+{% if mention %}
+    {% if group_pm %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new group private message in which you were mentioned!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new group private messages in which you were mentioned!
+        {% endtrans %}
+    {% elif private_message %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new private message in which you were mentioned!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new private messages in which you were mentioned!
+        {% endtrans %}
+    {% else %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new message in which you were mentioned!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new messages in which you were mentioned!
+        {% endtrans %}
+    {% endif %}
+{% else %}
+    {% if group_pm %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new group private message!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new group private messages!
+        {% endtrans %}
+    {% elif private_message %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new private message!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new private messages!
+        {% endtrans %}
+    {% else %}
+        {% trans count=message_count%}
+        While you were away you received {{ message_count }} new message!
+        {% pluralize count %}
+        While you were away you received {{ message_count }} new messages!
+        {% endtrans %}
+    {% endif %}
+{% endif %}
 
 {% if show_message_content %}
 {% for recipient_block in messages %}
@@ -13,24 +55,24 @@ While you were away you received {{ message_count }} new{% if group_pm %} group 
 {% endfor %}
 {% endif %}
 
-Click here to log in to Zulip and view your new messages:
+{{ _("Click here to log in to Zulip and view your new messages:") }}
 
 {{ realm_uri }}
 
 {% if reply_to_zulip  %}
-Or just reply to this email.
+{{ _("Or just reply to this email.") }}
 {% endif %}
 {% if reply_warning %}
-Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.
+{{ _("Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.") }}
 {% endif %}
 
-Cheers,
-The Zulip Team
+{{ _("Cheers,") }}
+{{ _("The Zulip Team") }}
 
-Manage email preferences:
+{{ _("Manage email preferences:") }}
 
 {{ realm_uri }}/#settings/notifications
 
-Unsubscribe from missed message emails:
+{{ _("Unsubscribe from missed message emails:") }}
 
 {{ unsubscribe_link }}
