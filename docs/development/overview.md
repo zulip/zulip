@@ -83,7 +83,7 @@ machine, take a look at our tips for
 [developing remotely][dev-remote].
 
 [dev-remote]: remote.html
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-or-debian
+[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-docker]: ../development/setup-advanced.html#using-docker-experimental
 [install-generic]: ../development/setup-advanced.html#installing-manually-on-linux
 [install-vagrant]: ../development/setup-vagrant.html
