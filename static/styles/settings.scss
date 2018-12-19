@@ -192,6 +192,13 @@ label {
     word-break: break-all;
 }
 
+#filter-settings {
+    #filter_pattern,
+    #filter_format_string {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
 td .button {
     margin: 2px 0px;
     box-shadow: none;
