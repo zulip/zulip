@@ -62,6 +62,20 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "jq",
 ]
 
+REDHAT_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+    "python34-devel",
+    "python34-pip",
+    "python34-six",
+    "python-virtualenv",
+]
+
+FEDORA_VENV_DEPENDENCIES = COMMON_YUM_VENV_DEPENDENCIES + [
+    "python3-devel",
+    "python3-pip",
+    "python3-six",
+    "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
+]
+
 codename = parse_lsb_release()["DISTRIB_CODENAME"]
 
 if codename != "trusty":
