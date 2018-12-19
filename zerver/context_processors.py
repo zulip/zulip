@@ -6,14 +6,10 @@ from django.conf import settings
 from zerver.models import UserProfile, get_realm, Realm
 from zproject.backends import (
     any_oauth_backend_enabled,
-    dev_auth_enabled,
-    github_auth_enabled,
-    google_auth_enabled,
     password_auth_enabled,
-    email_auth_enabled,
     require_email_format_usernames,
     auth_enabled_helper,
-    AUTH_BACKEND_NAME_MAP
+    AUTH_BACKEND_NAME_MAP,
 )
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.send_email import FromAddress
@@ -104,7 +100,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     else:
         platform = "ZulipWeb"
 
-    return {
+    context = {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
         'register_link_disabled': register_link_disabled,
@@ -126,10 +122,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'password_auth_enabled': password_auth_enabled(realm),
-        'dev_auth_enabled': dev_auth_enabled(realm),
-        'google_auth_enabled': google_auth_enabled(realm),
-        'github_auth_enabled': github_auth_enabled(realm),
-        'email_auth_enabled': email_auth_enabled(realm),
         'require_email_format_usernames': require_email_format_usernames(realm),
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
@@ -151,3 +143,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'platform': platform,
         'allow_search_engine_indexing': allow_search_engine_indexing,
     }
+
+    # Add the keys for our standard authentication backends.
+    for auth_backend_name in AUTH_BACKEND_NAME_MAP:
+        name_lower = auth_backend_name.lower()
+        key = "%s_auth_enabled" % (name_lower,)
+        context[key] = auth_enabled_helper([auth_backend_name], realm)
+    return context
