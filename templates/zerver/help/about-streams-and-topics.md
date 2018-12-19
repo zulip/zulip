@@ -9,14 +9,12 @@ message is about.
 | Email | Mailing list | Subject line
 | Slack/IRC | Channel | -
 
-One big difference is that Zulip organizations typically have more streams
-than they would email lists, and Zulip topics are much shorter than email
-subject lines. Here is what it looks like in Zulip.
+Messages with the same stream and topic are shown together as a
+conversational thread. Here is what it looks like in Zulip.
 
 ![](/static/images/help/streams-and-topics.png)
 
-Streams and topics are the hardest part of Zulip to grasp, but also the most
-rewarding part of using Zulip.
+Streams and topics are one of the most rewarding parts of using Zulip.
 
 If you ever find yourself stuck on writing a topic, just pretend you're
 sending an email, with the topic as the subject line. After a few days
