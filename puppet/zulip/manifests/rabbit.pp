@@ -1,6 +1,10 @@
 class zulip::rabbit {
+  $erlang = $::osfamily ? {
+    'debian' => 'erlang-base',
+    'redhat' => 'erlang',
+  }
   $rabbit_packages = [# Needed to run rabbitmq
-                      'erlang-base',
+                      $erlang,
                       'rabbitmq-server',
                       ]
   package { $rabbit_packages: ensure => 'installed' }
