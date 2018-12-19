@@ -6,24 +6,17 @@
 
 {% block content %}
 <p>
-    {{ _('Hello there.') }}
-</p>
-<p>
     {{ _('You recently signed up for Zulip. Awesome!') }}
 </p>
 <p>
-    {{ _('To complete signup, please click here:') }}
+    {{ _('Click the button below to complete registration.') }}
     <a class="button" href="{{ activate_url }}">{{ _('Complete registration') }}</a>
 </p>
 <p>
     {% trans %}
-    Feel free to give us a shout at
-    <a href="mailto:{{ support_email }}">{{ support_email }}</a>,
-    if you have any questions.
+    Contact us any time at
+    <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+    if you run into trouble, have any feedback, or just want to chat!
     {% endtrans %}
-</p>
-<p>
-    {{ _("Cheers,") }}<br />
-    {{ _("Team Zulip") }}
 </p>
 {% endblock %}
