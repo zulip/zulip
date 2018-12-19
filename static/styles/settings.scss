@@ -1058,6 +1058,15 @@ input[type=checkbox].inline-block {
     height: 200px;
 
     transition: all 0.3s ease;
+
+    #user-avatar-block {
+        background-size: 100%;
+        height: 100%;
+    }
+
+    .guest-avatar::after {
+        outline: 9px solid hsl(0, 0%, 100%);
+    }
 }
 
 #user-settings-avatar:hover #user-avatar-block {
