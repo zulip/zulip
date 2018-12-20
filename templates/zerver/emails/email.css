@@ -82,6 +82,7 @@ table td {
     margin-top: 0px;
 }
 
+
 h1,
 h2,
 h3,
@@ -126,8 +127,13 @@ a:hover {
     color: hsl(164, 51%, 55%);
 }
 
-.important {
-    border-bottom: 3px solid hsl(195, 31%, 87%);
+.alert {
+    border:1px solid #fbeed5; 
+    margin-bottom: 25px; 
+    padding: 10px 20px 10px 20px;
+    background-color: hsl(50, 81%, 94%); 
+    border-radius: 5px; 
+    color: hsl(25, 46%, 40%)    
 }
 
 .button {

@@ -1,26 +1,21 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
+<html lang='{{LANGUAGE_CODE}}'>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>Zulip</title>
+        {% block title %}
+            {% if user_profile and user_profile.realm.name %}
+            <title>{{user_profile.realm.name}} - Zulip</title>
+            {% else %}
+            <title>Zulip</title>
+            {% endif %}
+        {% endblock %}
+        <link href="/static/favicon.ico?v=2" rel="shortcut icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">{{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce)) }}       
     </head>
-    <body>
-        <span style="display:none !important;
-          visibility:hidden;
-          color:transparent;
-          mso-hide:all;
-          font-size:1px;
-          color:hsl(0, 0%, 100%);
-          line-height:1px;
-          max-height:0px;
-          height:0px;
-          max-width:0px;
-          width:0px;
-          opacity:0;
-          overflow:hidden;">
-            {% block preheader %}{% endblock %}
-        </span>
-        {% block content %}{% endblock %}
-        {% block manage_preferences %}{% endblock %}
+    <body style="-ms-text-size-adjust:100%; -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; background-color:hsl(165, 25%, 97%); font-family:sans-serif; font-size:14px; font-weight:normal; line-height:1.4; margin:0; padding:0" bgcolor="hsl(165, 25%, 97%)">
+        <div class='container' style="text-align: center; padding: 0px; max-width: none">
+            {% block content %}{% endblock %}
+            {% block manage_preferences %}{% endblock %}
+        </div>
     </body>
 </html>
