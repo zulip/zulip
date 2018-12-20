@@ -1648,6 +1648,10 @@ nav ul li.active::after {
     font-size: 1.2rem;
 }
 
+.portico-landing.hello .testimonials .carousel {
+    min-height: 250px;
+}
+
 .portico-landing.hello .testimonials .carousel-quotes {
     width: 60%;
     margin: auto;
@@ -1716,7 +1720,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .testimonials .company-container {
     width: 60%;
-    margin: 20px auto;
+    margin: 30px auto;
     text-align: left;
 }
 
