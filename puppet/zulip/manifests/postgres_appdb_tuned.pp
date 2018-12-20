@@ -3,12 +3,13 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
+$postgres_conf = "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
   package { $postgres_appdb_tuned_packages: ensure => 'installed' }
 
-  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
+  file { "${postgres_conf}.template":
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
     owner   => 'postgres',
@@ -44,11 +45,9 @@ vm.dirty_background_ratio = 5
   exec { 'pgtune':
     require     => Package['pgtune'],
     # Let Postgres use half the memory on the machine
-    # lint:ignore:140chars
-    command     => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
-    # lint:endignore
+    command     => "pgtune -T Web -M ${half_memory} -i ${postgres_conf}.template -o ${postgres_conf}",
     refreshonly => true,
-    subscribe   => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
+    subscribe   => File["${postgres_conf}.template"]
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
@@ -74,7 +73,7 @@ vm.dirty_background_ratio = 5
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
-  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
+  file { $postgres_conf:
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
     owner   => 'postgres',
@@ -86,7 +85,7 @@ vm.dirty_background_ratio = 5
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
     require     => Package["postgresql-${zulip::base::postgres_version}"],
     refreshonly => true,
-    subscribe   => [ File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"] ]
+    subscribe   => [ File[$postgres_conf] ]
   }
 }
 
