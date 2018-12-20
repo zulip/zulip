@@ -1,21 +1,20 @@
-{% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}
+{% trans %}
+Dear former administrators of {{ realm_name }},
+{% endtrans %}
 
 {% trans %}
-One of your administrators requested reactivation of the previously
-deactivated Zulip organization hosted at
-    {{ realm_uri }}.
-If you'd like to do confirm that request and reactivate the
-organization, please click here:
+One of your administrators requested reactivation of the previously deactivated
+Zulip organization hosted at {{ realm_uri }}.
 {% endtrans %}
-{{ _('To reactivate organization, please click here:') }}
+
+{{ _('Click the link below to reactivate your organization.') }}
     <{{ confirmation_url }}>
 
 {% trans %}
-If the request was in error, you can take no action and this link
-will expire in 24 hours.
+If the request was in error, you can take no action and this link will expire in 24 hours.
 {% endtrans %}
 
-{% trans %}Feel free to give us a shout at {{ support_email }},if you have any questions.{% endtrans %}
-
-{{ _("Cheers,") }}<br />
-{{ _("Team Zulip") }}
+{% trans %}
+Contact us any time at {{ support_email }} if you run into trouble,
+have any feedback, or just want to chat!
+{% endtrans %}
