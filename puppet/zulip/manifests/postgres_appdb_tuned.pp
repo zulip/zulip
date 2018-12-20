@@ -3,7 +3,10 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-$postgres_conf = "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"
+$postgres_conf = $::osfamily ? {
+  'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
+  'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
+}
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
