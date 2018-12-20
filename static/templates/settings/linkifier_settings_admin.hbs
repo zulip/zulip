@@ -56,6 +56,16 @@
                         <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
                         <div class="alert" id="admin-filter-format-status"></div>
                     </div>
+                    <!-- <div class="control-group">
+                        <label for="filter_is_stream_filter" class="control-label">{{t "Limited to specific streams?" }}</label>
+                        <input type="checkbox" id="filter_is_stream_filter" name="is_stream_filter" value="1" />
+                        <div class="alert" id="admin-filter-format-status"></div>
+                    </div> -->
+                    <div class="control-group">
+                        <label for="filter_stream_ids" class="control-label">{{t "Stream IDs" }}</label>
+                        <input type="text" id="filter_stream_ids" name="stream_ids" placeholder="1,2,3" />
+                        <div class="alert" id="admin-filter-format-status"></div>
+                    </div>
                     <button type="submit" class="button rounded sea-green">
                         {{t 'Add linkifier' }}
                     </button>
