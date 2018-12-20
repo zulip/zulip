@@ -12,7 +12,7 @@ mypy_extensions==0.4.1
 Jinja2==2.10
 
 # Needed for markdown processing
-Markdown==2.6.11
+Markdown==3.0.1
 MarkupSafe==1.1.0
 Pygments==2.3.1
 
