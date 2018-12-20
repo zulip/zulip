@@ -242,6 +242,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         context = {
             'email': email,
             'realm_uri': realm.uri,
+            'realm_name': realm.name,
         }
 
         if user is not None and not user.is_active:

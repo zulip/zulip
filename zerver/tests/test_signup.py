@@ -185,11 +185,11 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("Zulip Account Security", from_email)
         tokenized_no_reply_email = parseaddr(from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn("Psst. Word on the street is that you", outbox[0].body)
+        self.assertIn("reset your password", outbox[0].body)
 
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(
-            email, url_pattern=settings.EXTERNAL_HOST + r"(\S+)")
+            email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 200)
 
@@ -230,10 +230,11 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("Zulip Account Security", from_email)
         tokenized_no_reply_email = parseaddr(from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn('Someone (possibly you) requested a password',
-                      outbox[0].body)
-        self.assertNotIn('does have an active account in the zulip.testserver',
-                         outbox[0].body)
+        self.assertIn('Somebody (possibly you) requested a new password', outbox[0].body)
+        self.assertIn('You do not have an account', outbox[0].body)
+        self.assertIn('safely ignore', outbox[0].body)
+        self.assertNotIn('reset your password', outbox[0].body)
+        self.assertNotIn('deactivated', outbox[0].body)
 
     def test_password_reset_for_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -257,12 +258,11 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("Zulip Account Security", from_email)
         tokenized_no_reply_email = parseaddr(from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn('Someone (possibly you) requested a password',
-                      outbox[0].body)
-        self.assertNotIn('does have an active account in the zulip.testserver',
-                         outbox[0].body)
-        self.assertIn('but your account has been deactivated',
-                      outbox[0].body)
+        self.assertIn('Somebody (possibly you) requested a new password', outbox[0].body)
+        self.assertIn('has been deactivated', outbox[0].body)
+        self.assertIn('safely ignore', outbox[0].body)
+        self.assertNotIn('reset your password', outbox[0].body)
+        self.assertNotIn('not have an account', outbox[0].body)
 
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -304,15 +304,15 @@ class PasswordResetTest(ZulipTestCase):
 
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
-        message = outbox.pop()
-        tokenized_no_reply_email = parseaddr(message.from_email)[1]
+        tokenized_no_reply_email = parseaddr(outbox[0].from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn('Someone (possibly you) requested a password reset email for',
-                      message.body)
-        self.assertIn("but you do not have an account in that organization",
-                      message.body)
-        self.assertIn("You do have active accounts in the following organization(s).\nhttp://zulip.testserver",
-                      message.body)
+        self.assertIn('Somebody (possibly you) requested a new password', outbox[0].body)
+        self.assertIn('You do not have an account', outbox[0].body)
+        self.assertIn("active accounts in the following organization(s).\nhttp://zulip.testserver",
+                      outbox[0].body)
+        self.assertIn('safely ignore', outbox[0].body)
+        self.assertNotIn('reset your password', outbox[0].body)
+        self.assertNotIn('deactivated', outbox[0].body)
 
     def test_invalid_subdomain(self) -> None:
         email = self.example_email("hamlet")
@@ -379,7 +379,7 @@ class PasswordResetTest(ZulipTestCase):
         message = outbox.pop()
         tokenized_no_reply_email = parseaddr(message.from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn('Psst. Word on the street is that you need a new password',
+        self.assertIn('reset your password',
                       message.body)
 
     def test_redirect_endpoints(self) -> None:
