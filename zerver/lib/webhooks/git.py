@@ -124,6 +124,7 @@ def get_remove_branch_event_message(user_name: str, branch_name: str) -> str:
 def get_pull_request_event_message(user_name: str, action: str, url: str, number: Optional[int]=None,
                                    target_branch: Optional[str]=None, base_branch: Optional[str]=None,
                                    message: Optional[str]=None, assignee: Optional[str]=None,
+                                   assignees: Optional[List[Dict[str, Any]]]=None,
                                    type: Optional[str]='PR', title: Optional[str]=None) -> str:
     kwargs = {
         'user_name': user_name,
@@ -139,7 +140,20 @@ def get_pull_request_event_message(user_name: str, action: str, url: str, number
     else:
         main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
 
-    if assignee:
+    if assignees:
+        assignees_string = ""
+        if len(assignees) == 1:
+            assignees_string = "{username}".format(**assignees[0])
+        else:
+            usernames = []
+            for a in assignees:
+                usernames.append(a['username'])
+
+            assignees_string = ", ".join(usernames[:-1]) + " and " + usernames[-1]
+
+        main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignees_string)
+
+    elif assignee:
         main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
 
     if target_branch and base_branch:
@@ -163,6 +177,7 @@ def get_issue_event_message(user_name: str,
                             number: Optional[int]=None,
                             message: Optional[str]=None,
                             assignee: Optional[str]=None,
+                            assignees: Optional[List[Dict[str, Any]]]=None,
                             title: Optional[str]=None) -> str:
     return get_pull_request_event_message(
         user_name,
@@ -171,6 +186,7 @@ def get_issue_event_message(user_name: str,
         number,
         message=message,
         assignee=assignee,
+        assignees=assignees,
         type='Issue',
         title=title,
     )

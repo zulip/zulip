@@ -136,9 +136,31 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_create_issue_with_two_assignees_event_message(self) -> None:
+        expected_subject = u"Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
+        expected_message = u"Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2)(assigned to adambirds and eeshangarg)\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+
+        self.send_and_test_stream_message(
+            'issue_created_with_two_assignees',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
+    def test_create_issue_with_three_assignees_event_message(self) -> None:
+        expected_subject = u"Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
+        expected_message = u"Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2)(assigned to adambirds, eeshangarg and timabbott)\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+
+        self.send_and_test_stream_message(
+            'issue_created_with_three_assignees',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_create_confidential_issue_with_assignee_event_message(self) -> None:
         expected_subject = u"testing / Issue #2 Testing"
-        expected_message = u"Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2)(assigned to Joe Bloggs)\n\n~~~ quote\nTesting\n~~~"
+        expected_message = u"Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2)(assigned to joe.bloggs)\n\n~~~ quote\nTesting\n~~~"
 
         self.send_and_test_stream_message(
             'confidential_issue_created_with_assignee',
