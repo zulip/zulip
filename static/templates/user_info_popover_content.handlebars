@@ -78,4 +78,18 @@
             <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
+    {{#if can_set_away}}
+    <li>
+        <a href="#" class="set_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Set status to away{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_revoke_away}}
+    <li>
+        <a href="#" class="revoke_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Clear away status{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 </ul>
