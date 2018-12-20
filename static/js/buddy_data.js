@@ -30,7 +30,7 @@ var fade_config = {
     },
 };
 
-function level(user_id) {
+exports.level = function (user_id) {
     if (people.is_my_user_id(user_id)) {
         // Always put current user at the top.
         return 0;
@@ -46,11 +46,11 @@ function level(user_id) {
     default:
         return 3;
     }
-}
+};
 
 exports.compare_function = function (a, b) {
-    var level_a = level(a);
-    var level_b = level(b);
+    var level_a = exports.level(a);
+    var level_b = exports.level(b);
     var diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
@@ -128,7 +128,7 @@ exports.get_item = function (user_id) {
 
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange cirle
-    return level(user_id) <= 2;
+    return exports.level(user_id) <= 2;
 }
 
 function maybe_shrink_list(user_ids, filter_text) {
