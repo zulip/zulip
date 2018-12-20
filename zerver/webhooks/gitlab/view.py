@@ -75,6 +75,7 @@ def get_issue_created_event_body(payload: Dict[str, Any],
         payload['object_attributes'].get('iid'),
         description,
         get_objects_assignee(payload),
+        payload.get('assignees'),
         title=payload['object_attributes'].get('title') if include_title else None
     )
 
