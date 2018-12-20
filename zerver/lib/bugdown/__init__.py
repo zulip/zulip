@@ -1549,13 +1549,35 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
 
     def __init__(self, source_pattern: str,
                  format_string: str,
+                 stream_ids: Optional[str],
                  markdown_instance: Optional[markdown.Markdown]=None) -> None:
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
+        self.stream_ids = stream_ids
+
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+
+    def should_apply_filter(self) -> bool:
+        if not self.stream_ids:
+            return True
+
+        msg = self.markdown.zulip_message
+        if not msg.is_stream_message():
+            return False
+
+        stream_id = msg.recipient.type_id
+        stream_id_set = set(int(i) for i in self.stream_ids.split(','))
+        if stream_id in stream_id_set:
+            return True
+
+        return False
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.markdown.zulip_db_data
+
+        if not self.should_apply_filter():
+            return None
+
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
                         m.group(OUTER_CAPTURE_GROUP))
@@ -1919,6 +1941,7 @@ class Bugdown(markdown.Markdown):
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), 'inline', 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), 'prettify', 20)
         treeprocessors.register(InlineInterestingLinkProcessor(self), 'inline_interesting_links', 15)
+
         if settings.CAMO_URI:
             treeprocessors.register(InlineHttpsProcessor(self), 'rewrite_to_https', 10)
         return treeprocessors
@@ -2205,7 +2228,6 @@ def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, Full
         for row in rows
     }
     return dct
-
 
 def do_convert(content: str,
                realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
