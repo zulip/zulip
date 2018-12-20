@@ -27,17 +27,17 @@ exports.notify_with_undo_option = (function () {
     var meta = {
         hide_me_time: null,
         alert_hover_state: false,
-        $mute: null,
+        $container: null,
     };
     var animate = {
         fadeOut: function () {
-            if (meta.$mute) {
-                meta.$mute.fadeOut(500).removeClass("show");
+            if (meta.$container) {
+                meta.$container.fadeOut(500).removeClass("show");
             }
         },
         fadeIn: function () {
-            if (meta.$mute) {
-                meta.$mute.fadeIn(500).addClass("show");
+            if (meta.$container) {
+                meta.$container.fadeIn(500).addClass("show");
             }
         },
     };
@@ -58,14 +58,14 @@ exports.notify_with_undo_option = (function () {
             exports.unmute(stream_id, topic);
         };
 
-        if (!meta.$mute) {
-            meta.$mute = $("#unmute_muted_topic_notification");
+        if (!meta.$container) {
+            meta.$container = $("#unmute_muted_topic_notification");
 
             $exit.click(function () {
                 animate.fadeOut();
             });
 
-            meta.$mute.find("#unmute").click(function () {
+            meta.$container.find("#unmute").click(function () {
                 // it should reference the meta variable and not get stuck with
                 // a pass-by-value of stream, topic.
                 meta.undo();
@@ -76,18 +76,18 @@ exports.notify_with_undo_option = (function () {
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
 
-        meta.$mute.find(".stream").text(stream_name);
-        meta.$mute.find(".topic").text(topic);
+        meta.$container.find(".stream").text(stream_name);
+        meta.$container.find(".topic").text(topic);
 
         animate.fadeIn();
 
         // if the user mouses over the notification, don't hide it.
-        meta.$mute.mouseenter(function () {
+        meta.$container.mouseenter(function () {
             meta.alert_hover_state = true;
         });
 
         // once the user's mouse leaves the notification, restart the countdown.
-        meta.$mute.mouseleave(function () {
+        meta.$container.mouseleave(function () {
             meta.alert_hover_state = false;
             // add at least 2000ms but if more than that exists just keep the
             // current amount.
@@ -97,9 +97,9 @@ exports.notify_with_undo_option = (function () {
 }());
 
 exports.dismiss_mute_confirmation = function () {
-    var $mute = $("#unmute_muted_topic_notification");
-    if ($mute) {
-        $mute.fadeOut(500).removeClass("show");
+    var $container = $("#unmute_muted_topic_notification");
+    if ($container) {
+        $container.fadeOut(500).removeClass("show");
     }
 };
 
