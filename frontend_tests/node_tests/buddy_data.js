@@ -5,6 +5,7 @@ zrequire('people');
 zrequire('presence');
 zrequire('util');
 zrequire('buddy_data');
+zrequire('user_status');
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -113,4 +114,30 @@ run_test('bulk_data_hacks', () => {
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
     assert.equal(user_ids.length, 700);
+});
+
+run_test('level', () => {
+    presence.presence_info = {};
+    assert.equal(buddy_data.level(me.user_id), 0);
+    assert.equal(buddy_data.level(selma.user_id), 3);
+
+    const server_time = 9999;
+    const info = {
+        website: {
+            status: "active",
+            timestamp: server_time,
+        },
+    };
+    presence.set_info_for_user(me.user_id, info, server_time);
+    presence.set_info_for_user(selma.user_id, info, server_time);
+
+    assert.equal(buddy_data.level(me.user_id), 0);
+    assert.equal(buddy_data.level(selma.user_id), 1);
+
+    user_status.set_away(me.user_id);
+    user_status.set_away(selma.user_id);
+
+    // This will change soon for Selma.
+    assert.equal(buddy_data.level(me.user_id), 0);
+    assert.equal(buddy_data.level(selma.user_id), 1);
 });
