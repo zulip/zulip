@@ -8,7 +8,7 @@ from django.template import loader
 from django.utils.timezone import \
     get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.queue import queue_json_publish
