@@ -1436,6 +1436,25 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         fixup_link(el, target_blank=(href[:1] != '#'))
         return el
 
+
+# We need the following since upgrade from py-markdown 2.6.11 to 3.0.1
+# modifies the link handling significantly. The following is taken from
+# py-markdown 2.6.11 markdown/inlinepatterns.py.
+def get_link_re() -> str:
+    NOBRACKET = r'[^\]\[]*'
+    BRK = (
+        r'\[(' +
+        (NOBRACKET + r'(\[')*6 +
+        (NOBRACKET + r'\])*')*6 +
+        NOBRACKET + r')\]'
+    )
+    NOIMG = r'(?<!\!)'
+
+    # [text](url) or [text](<url>) or [text](url "title")
+    LINK_RE = NOIMG + BRK + \
+        r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
+    return LINK_RE
+
 def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
@@ -1595,6 +1614,15 @@ class AtomicLinkPattern(LinkPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
+    # Registry is a new class added by py-markdown to replace Ordered List.
+    # Since Registry doesn't support .keys(), it is easier to make a new
+    # object instead of removing keys from the existing object.
+    new_r = markdown.util.Registry()
+    for k in keys:
+        new_r.register(r[k], k, r.get_index_for_name(k))
+    return new_r
+
 # These are used as keys ("realm_filters_keys") to md_engines and the respective
 # realm filter caches
 DEFAULT_BUGDOWN_KEY = -1
@@ -1622,8 +1650,10 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'linebreak', 'strong', 'backtick'):
-            del md.inlinePatterns[k]
+                  'linebreak', 'strong', 'backtick', 'em_strong',
+                  'strong2'):
+            md.inlinePatterns.deregister(k)
+
         try:
             # linebreak2 was removed upstream in version 3.2.1, so
             # don't throw an error if it is not there
@@ -1719,7 +1749,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
 
     def extend_misc(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
+        md.inlinePatterns.add('link', AtomicLinkPattern(get_link_re(), md), '>avatar')
 
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
@@ -1745,18 +1775,17 @@ class Bugdown(markdown.Extension):
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
             # not removed
-            for k in list(md.inlinePatterns.keys()):
-                if k not in ["autolink"]:
-                    del md.inlinePatterns[k]
-            for k in list(md.treeprocessors.keys()):
-                if k not in ["inline_interesting_links", "inline", "rewrite_to_https"]:
-                    del md.treeprocessors[k]
-            for k in list(md.preprocessors.keys()):
-                if k not in ["custom_text_notifications"]:
-                    del md.preprocessors[k]
-            for k in list(md.parser.blockprocessors.keys()):
-                if k not in ["paragraph"]:
-                    del md.parser.blockprocessors[k]
+            md.inlinePatterns = get_sub_registry(md.inlinePatterns, ['autolink'])
+            md.treeprocessors = get_sub_registry(md.treeprocessors,
+                                                 ['inline_interesting_links',
+                                                  'rewrite_to_https'])
+            # insert new 'inline' processor because we have changed md.inlinePatterns
+            # but InlineProcessor copies md as self.md in __init__.
+            md.treeprocessors.add('inline',
+                                  markdown.treeprocessors.InlineProcessor(md),
+                                  '>inline_interesting_links')
+            md.preprocessors = get_sub_registry(md.preprocessors, ['custom_text_notifications'])
+            md.parser.blockprocessors = get_sub_registry(md.parser.blockprocessors, ['paragraph'])
 
 md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
 realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int]]]

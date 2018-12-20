@@ -158,4 +158,4 @@ class APICodeExamplesPreprocessor(Preprocessor):
         return fixture
 
 def makeExtension(*args: Any, **kwargs: str) -> APICodeExamplesGenerator:
-    return APICodeExamplesGenerator(kwargs)
+    return APICodeExamplesGenerator(**kwargs)
