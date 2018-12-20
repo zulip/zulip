@@ -77,7 +77,7 @@ exports.build_feedback_widget = function () {
 
         meta.$container.find('.feedback_title').text(opts.title_text);
         meta.$container.find('.feedback_undo').text(opts.undo_button_text);
-        opts.populate(meta.$container);
+        opts.populate(meta.$container.find('.feedback_content'));
 
         animate.fadeIn();
 
@@ -201,6 +201,8 @@ exports.mute = function (stream_id, topic) {
     exports.persist_mute(stream_id, topic);
     exports.notify_widget.show({
         populate: function (container) {
+            var rendered_html = templates.render('topic_muted');
+            container.html(rendered_html);
             container.find(".stream").text(stream_name);
             container.find(".topic").text(topic);
         },
