@@ -286,7 +286,7 @@ class TestPasswordRestEmail(ZulipTestCase):
         self.assertIn("Zulip Account Security", from_email)
         tokenized_no_reply_email = parseaddr(from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn("Psst. Word on the street is that you", outbox[0].body)
+        self.assertIn("reset your password", outbox[0].body)
 
 class TestRealmReactivationEmail(ZulipTestCase):
     COMMAND_NAME = "send_realm_reactivation_email"
