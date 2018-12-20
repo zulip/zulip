@@ -114,10 +114,25 @@ function calculate_info_popover_placement(size, elt) {
 
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
+    var is_me = people.is_my_user_id(user.user_id);
+
+    var can_set_away = false;
+    var can_revoke_away = false;
+
+    if (is_me) {
+        if (user_status.is_away(user.user_id)) {
+            can_revoke_away = true;
+        } else {
+            can_set_away = true;
+        }
+    }
+
     var args = {
+        can_revoke_away: can_revoke_away,
+        can_set_away: can_set_away,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
-        is_me: people.is_current_user(user.email),
+        is_me: is_me,
         is_sender_popover: is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
         presence_status: presence.get_status(user.user_id),
@@ -737,6 +752,20 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.compose_mobile_button', function (e) {
         show_mobile_message_buttons_popover(this);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.set_away_status', function (e) {
+        popovers.hide_all();
+        user_status.server_set_away();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.revoke_away_status', function (e) {
+        popovers.hide_all();
+        user_status.server_revoke_away();
         e.stopPropagation();
         e.preventDefault();
     });

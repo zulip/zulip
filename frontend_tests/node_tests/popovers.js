@@ -141,6 +141,8 @@ run_test('sender_hover', () => {
 
         case 'user_info_popover_content':
             assert.deepEqual(opts, {
+                can_set_away: false,
+                can_revoke_away: false,
                 user_full_name: 'Alice Smith',
                 user_email: 'alice@example.com',
                 user_id: 42,
