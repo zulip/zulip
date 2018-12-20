@@ -1,22 +1,20 @@
-{{ _("Hi,") }}"
+{{ _("We noticed a recent login for the following Zulip account.") }}
 
-{{ _("This is a notification that a new login to your Zulip account has just occurred.") }}
-
-{{ _("Login details:") }}
-{% trans organization_url=realm_uri %}Server: {{ organization_url }}{% endtrans %}
-{% trans %}Account: {{ user_email }}{% endtrans %}
+{% trans organization_url=realm_uri %}Organization: {{ organization_url }}{% endtrans %}
+{% trans %}Email: {{ user_email }}{% endtrans %}
 {% trans %}Time: {{ login_time }}{% endtrans %}
 {% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}
 {% trans %}IP address: {{ device_ip }}{% endtrans %}
 
+{{ _("If this was you, great! There's nothing else you need to do.") }}
+
 {% trans %}
-If you do not recognize this login activity, or think your account may have
+If you do not recognize this login, or think your account may have
 been compromised, please reset your password at
 {{ realm_uri }}/accounts/password/reset/
 or contact us immediately at {{ support_email }}.
 {% endtrans %}
 
-{{ _("If you recognize this login activity, you can archive this notice.") }}
 
 {{ _("Thanks,") }}
-{{ _("Zulip Account Security") }}
+{{ _("Zulip Security") }}

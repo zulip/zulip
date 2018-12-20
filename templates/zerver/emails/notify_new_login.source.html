@@ -1,7 +1,7 @@
 {% extends "zerver/emails/compiled/email_base_default.html" %}
 
 {% block preheader %}
-    {% trans organization_url=realm_uri %}Server: {{ organization_url }} Account: {{ user_email }} Time: {{ login_time }}{% endtrans %}
+    {% trans organization_url=realm_uri %}Organization: {{ organization_url }} Time: {{ login_time }} Email: {{ user_email }} {% endtrans %}
 {% endblock %}
 
 {% block illustration %}
@@ -9,19 +9,46 @@
 {% endblock %}
 
 {% block content %}
-<p>{{ _("Hi,") }}</p>
-<p>{{ _("This is a notification that a new login to your Zulip account has just occurred.") }}</p>
-<p><b>{{ _("Login details:") }}</b></p>
-<blockquote>
-    <p>{% trans %}Server: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a>{% endtrans %}</p>
-    <p>{% trans %}Account: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a>{% endtrans %}</p>
-    <p>{% trans %}Time: {{ login_time }}{% endtrans %}</p>
-    <p>{% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}</p>
-    <p>{% trans %}IP address: {{ device_ip }}{% endtrans %}</p>
-</blockquote>
-<p>{% trans %}If you do not recognize this login activity, or think your account may have been compromised, please <a href="{{ realm_uri }}/accounts/password/reset/" target="_blank">reset your password</a> or contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.{% endtrans %}</p>
-<p>{{ _("If you recognize this login activity, you can archive this notice.") }}</p>
-<p>{{ _("Thanks,") }}<br />{{ _("Zulip Account Security") }}</p>
+<p>{{ _("We noticed a recent login for the following Zulip account.") }}</p>
+<p>
+    <ul>
+        <li>{% trans %}
+            Organization: <a href="{{ realm_uri }}" target="_blank">{{ realm_uri }}</a>
+            {% endtrans %}
+        </li>
+        <li>{% trans %}
+            Email: <a href="mailto:{{ user_email }}" target="_blank">{{ user_email }}</a>
+            {% endtrans %}
+        </li>
+        <li>{% trans %}
+            Time: {{ login_time }}
+            {% endtrans %}
+        </li>
+        <li>{% trans %}
+            Device: {{ device_browser }} on {{ device_os }}.
+            {% endtrans %}
+        </li>
+        <li>{% trans %}
+            IP address: {{ device_ip }}
+            {% endtrans %}
+        </li>
+    </ul>
+</p>
+
+<p>{{ _("If this was you, great! There's nothing else you need to do.") }}</p>
+
+<p>
+    {% trans %}
+    If you do not recognize this login, or think your account may have been compromised, please
+    <a href="{{ realm_uri }}/accounts/password/reset/" target="_blank">reset your password</a>
+    or contact us immediately at <a href="mailto:{{ support_email }}">{{ support_email }}</a>.
+    {% endtrans %}
+</p>
+
+<p>
+    {{ _("Thanks,") }}<br />
+    {{ _("Zulip Security") }}
+</p>
 {% endblock %}
 
 {% block manage_preferences %}
