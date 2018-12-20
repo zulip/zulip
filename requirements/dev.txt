@@ -92,7 +92,7 @@ jsondiff==1.1.1           # via moto
 jsonpickle==1.0           # via aws-xray-sdk, python-digitalocean
 lxml==4.3.0
 markdown-include==0.5.1
-markdown==2.6.11
+markdown==3.0.1
 markupsafe==1.1.0
 matrix-client==0.3.2
 mock==2.0.0

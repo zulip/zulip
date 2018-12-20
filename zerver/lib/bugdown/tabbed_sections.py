@@ -127,4 +127,4 @@ class TabbedSectionsPreprocessor(Preprocessor):
         return block
 
 def makeExtension(*args: Any, **kwargs: str) -> TabbedSectionsGenerator:
-    return TabbedSectionsGenerator(kwargs)
+    return TabbedSectionsGenerator(**kwargs)
