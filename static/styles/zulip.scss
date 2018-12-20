@@ -120,7 +120,7 @@ p.n-margin {
     stroke: hsl(0, 0%, 100%);
 }
 
-#unmute_muted_topic_notification {
+#feedback_container {
     display: none;
     position: absolute;
     width: 400px;
@@ -141,11 +141,11 @@ p.n-margin {
     transition-duration: 0.5s;
 }
 
-#unmute_muted_topic_notification.show {
+#feedback_container.show {
     top: 50px;
 }
 
-#unmute_muted_topic_notification h3 {
+#feedback_container h3 {
     font-size: 16pt;
     margin-top: 2px;
 }
@@ -176,7 +176,7 @@ p.n-margin {
     animation-iteration-count: 1;
 }
 
-#unmute_muted_topic_notification .exit-me {
+#feedback_container .exit-me {
     font-size: 30pt;
     font-weight: 200;
     margin: 5px 0px 0px 10px;

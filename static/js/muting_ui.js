@@ -58,13 +58,13 @@ exports.build_feedback_widget = function () {
         meta.undo = opts.on_undo;
 
         if (!meta.$container) {
-            meta.$container = $("#unmute_muted_topic_notification");
+            meta.$container = $("#feedback_container");
 
             meta.$container.find('.exit-me').click(function () {
                 animate.fadeOut();
             });
 
-            meta.$container.find("#unmute").click(function () {
+            meta.$container.find(".feedback_undo").click(function () {
                 if (meta.undo) {
                     meta.undo();
                 }
@@ -75,6 +75,8 @@ exports.build_feedback_widget = function () {
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
 
+        meta.$container.find('.feedback_title').text(opts.title_text);
+        meta.$container.find('.feedback_undo').text(opts.undo_button_text);
         opts.populate(meta.$container);
 
         animate.fadeIn();
@@ -94,7 +96,7 @@ exports.build_feedback_widget = function () {
     };
 
     self.dismiss = function () {
-        var $container = $("#unmute_muted_topic_notification");
+        var $container = $("#feedback_container");
         if ($container) {
             $container.fadeOut(500).removeClass("show");
         }
@@ -205,6 +207,8 @@ exports.mute = function (stream_id, topic) {
         on_undo: function () {
             exports.unmute(stream_id, topic);
         },
+        title_text: i18n.t("Topic muted"),
+        undo_button_text: i18n.t("Unmute"),
     });
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
