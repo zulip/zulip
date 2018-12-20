@@ -23,7 +23,9 @@ exports.rerender = function () {
     }
 };
 
-exports.notify_with_undo_option = (function () {
+exports.build_feedback_widget = function () {
+    var self = {};
+
     var meta = {
         hide_me_time: null,
         alert_hover_state: false,
@@ -47,28 +49,25 @@ exports.notify_with_undo_option = (function () {
         }
     }, 100);
 
-    return function (stream_id, topic) {
-        var stream_name = stream_data.maybe_get_stream_name(stream_id);
+    self.show = function (opts) {
+        if (!opts.populate) {
+            blueslip.error('programmer needs to supply populate callback.');
+            return;
+        }
 
-        var $exit = $("#unmute_muted_topic_notification .exit-me");
-
-        meta.undo = function () {
-            // it should reference the meta variable and not get stuck with
-            // a pass-by-value of stream, topic.
-            exports.unmute(stream_id, topic);
-        };
+        meta.undo = opts.on_undo;
 
         if (!meta.$container) {
             meta.$container = $("#unmute_muted_topic_notification");
 
-            $exit.click(function () {
+            meta.$container.find('.exit-me').click(function () {
                 animate.fadeOut();
             });
 
             meta.$container.find("#unmute").click(function () {
-                // it should reference the meta variable and not get stuck with
-                // a pass-by-value of stream, topic.
-                meta.undo();
+                if (meta.undo) {
+                    meta.undo();
+                }
                 animate.fadeOut();
             });
         }
@@ -76,8 +75,7 @@ exports.notify_with_undo_option = (function () {
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
 
-        meta.$container.find(".stream").text(stream_name);
-        meta.$container.find(".topic").text(topic);
+        opts.populate(meta.$container);
 
         animate.fadeIn();
 
@@ -94,14 +92,18 @@ exports.notify_with_undo_option = (function () {
             meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
         });
     };
-}());
 
-exports.dismiss_mute_confirmation = function () {
-    var $container = $("#unmute_muted_topic_notification");
-    if ($container) {
-        $container.fadeOut(500).removeClass("show");
-    }
+    self.dismiss = function () {
+        var $container = $("#unmute_muted_topic_notification");
+        if ($container) {
+            $container.fadeOut(500).removeClass("show");
+        }
+    };
+
+    return self;
 };
+
+exports.notify_widget = exports.build_feedback_widget();
 
 exports.persist_mute = function (stream_id, topic_name) {
     var stream_name = stream_data.maybe_get_stream_name(stream_id);
@@ -188,12 +190,22 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
 };
 
 exports.mute = function (stream_id, topic) {
+    var stream_name = stream_data.maybe_get_stream_name(stream_id);
+
     stream_popover.hide_topic_popover();
     muting.add_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_mute(stream_id, topic);
-    exports.notify_with_undo_option(stream_id, topic);
+    exports.notify_widget.show({
+        populate: function (container) {
+            container.find(".stream").text(stream_name);
+            container.find(".topic").text(topic);
+        },
+        on_undo: function () {
+            exports.unmute(stream_id, topic);
+        },
+    });
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
@@ -207,7 +219,7 @@ exports.unmute = function (stream_id, topic) {
     exports.rerender();
     exports.persist_unmute(stream_id, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
-    exports.dismiss_mute_confirmation();
+    exports.notify_widget.dismiss();
 };
 
 exports.toggle_mute = function (msg) {
