@@ -322,7 +322,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return "\n\n".join(tex_paragraphs)
 
     def placeholder(self, code: str) -> str:
-        return self.markdown.htmlStash.store(code, safe=True)
+        return self.markdown.htmlStash.store(code)
 
     def _escape(self, txt: str) -> str:
         """ basic html escaping """
