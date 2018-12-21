@@ -84,7 +84,11 @@ $(function () {
             locale: 'auto',
             token: function (stripe_token) {
                 function get_form_input(name) {
-                    return JSON.stringify($("#autopay-form input[name='" + name + "']").val());
+                    var input = $("#autopay-form input[name='" + name + "']");
+                    if (input.attr('type') === "radio") {
+                        return JSON.stringify($("#autopay-form input[name='" + name + "']:checked").val());
+                    }
+                    return JSON.stringify(input.val());
                 }
 
                 loading.make_indicator($('#autopay_loading_indicator'),
