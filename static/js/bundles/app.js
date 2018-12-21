@@ -40,6 +40,7 @@ import "js/rtl.js";
 import "js/dict.js";
 import "js/scroll_util.js";
 import "js/components.js";
+import "js/feedback_widget.js";
 import "js/localstorage.js";
 import "js/drafts.js";
 import "js/input_pill.js";
