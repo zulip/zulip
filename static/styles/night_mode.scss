@@ -59,20 +59,10 @@ body.night-mode {
         color: inherit !important;
     }
 
-<<<<<<< HEAD
     /* this one makes the border of the reactions highlighted on hovering. */
     .message_reaction:hover,
     .reaction_button:hover {
         border-color: white !important;
-=======
-    .message_reaction:hover,
-    .reaction_button:hover {
-<<<<<<< HEAD
-        border-color: white !important;
-=======
-      border-color: white !important;
->>>>>>> 68508adbfb93ed37fe280567cb194b5a9f17034e
->>>>>>> 800e091872fbd00ad42b69e4570e372d60b12755
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
@@ -150,12 +140,11 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
-<<<<<<< HEAD
     /* this one makes the reacted reactions appear differently for the logged in user. */
-=======
->>>>>>> 800e091872fbd00ad42b69e4570e372d60b12755
     .message_reactions .message_reaction.reacted {
         background-color: hsl(200, 100%, 25%);
+        color: white;
+        font-weight: 500;
     }
 
     .message_reactions .message_reaction {
