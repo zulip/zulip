@@ -68,7 +68,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_button', function () {
-        casper.fill('#get_api_key_form', {password:test_credentials.default_user.password});
+        casper.fill('#get_api_key_form', {password: test_credentials.default_user.password});
         casper.click('#get_api_key_button');
     });
 });

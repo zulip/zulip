@@ -1,4 +1,6 @@
-{% trans %}Hi {{ full_name }},{% endtrans %}
+{% trans %}
+Hi {{ user_name }},
+{% endtrans %}
 
 {% trans %}You can log in to your Zulip organization, {{ realm_name }},
 at the following link:{% endtrans %}

@@ -43,6 +43,9 @@ SUPPORTED_PLATFORMS = {
     ],
     "Fedora": [
         "fedora29",
+    ],
+    "RedHat": [
+        "rhel7",
     ]
 }
 
@@ -116,7 +119,7 @@ if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
 codename = distro_info['DISTRIB_CODENAME']
-family = 'redhat' if vendor in ['CentOS', 'Fedora'] else 'debian'
+family = 'redhat' if vendor in ['CentOS', 'Fedora', 'RedHat'] else 'debian'
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -128,6 +131,7 @@ POSTGRES_VERSION_MAP = {
     "bionic": "10",
     "centos7": "10",
     "fedora29": "10",
+    "rhel7": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -175,7 +179,7 @@ if vendor in ["Ubuntu", "Debian"]:
             "postgresql-{0}-pgroonga",
         ]
     ]
-elif vendor == "CentOS":
+elif vendor in ["CentOS", "RedHat"]:
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
             "postgresql{0}-server",
@@ -265,7 +269,26 @@ def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
     print(WARNING + "RedHat support is still experimental.")
     run(["sudo", "./scripts/lib/setup-yum-repo"])
-    run(["sudo", "yum", "install", "-y"] + deps_to_install)
+
+    # Hack specific to unregistered RHEL system.  The moreutils
+    # package requires a perl module package, which isn't available in
+    # the unregistered RHEL repositories.
+    #
+    # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
+    #        Requires: perl(IPC::Run)
+    yum_extra_flags = []  # type: List[str]
+    if vendor == 'RedHat':
+        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
+        if exitcode == 1:
+            # TODO this might overkill since `subscription-manager` is already
+            # called in setup-yum-repo
+            if 'Status' in subs_status:
+                # The output is well-formed
+                yum_extra_flags = ["--skip-broken"]
+            else:
+                print("Unrecognized output. `subscription-manager` might not be available")
+
+    run(["sudo", "yum", "install", "-y"] + yum_extra_flags + deps_to_install)
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
@@ -276,24 +299,24 @@ def install_yum_deps(deps_to_install, retry=False):
     # Compile tsearch-extras from scratch, since we maintain the
     # package and haven't built an RPM package for it.
     run(["sudo", "./scripts/lib/build-tsearch-extras"])
-    if vendor == "fedora":
+    if vendor == "Fedora":
         # Compile PGroonga from scratch, since pgroonga upstream
         # doesn't provide Fedora packages.
         run(["sudo", "./scripts/lib/build-pgroonga"])
 
     # From here, we do the first-time setup/initialization for the postgres database.
     pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
+    pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
 
     # We can't just check if the file exists with os.path, since the
     # current user likely doesn't have permission to read the
     # pg_datadir directory.
-    if subprocess.call(["sudo", "test", "-e", pg_datadir]) == 0:
+    if subprocess.call(["sudo", "test", "-e", pg_hba_conf]) == 0:
         # Skip setup if it has been applied previously
         return
 
     run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
     # Use vendored pg_hba.conf, which enables password authentication.
-    pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
     run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure postgres is started
 
@@ -309,8 +332,14 @@ def main(options):
 
     for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
-    # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    if vendor in ["Ubuntu", "Debian"]:
+        sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    else:
+        # hash the content of setup-yum-repo and build-*
+        sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
+        build_paths = glob.glob("scripts/lib/build-")
+        for bp in build_paths:
+            sha_sum.update(open(bp, 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None

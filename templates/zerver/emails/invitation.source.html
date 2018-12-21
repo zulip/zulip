@@ -9,20 +9,19 @@
 </p>
 <p>
     {% trans %}
-    {{ referrer_full_name }} ({{ referrer_email }}) wants you to join
-    them on Zulip &mdash; the team communication tool designed for
-    productivity.
+    {{ referrer_full_name }} (<a href="mailto:{{ referrer_email }}">{{ referrer_email }}</a>)
+    wants you to join them on Zulip &mdash; the team communication tool designed for productivity.
     {% endtrans %}
 </p>
 <p>
-    {{ _("To get started, please click here:") }}
+    {{ _("To get started, click the button below.") }}
     <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
 </p>
 <p>
-    {% trans %}Feel free to give us a shout at <a href="mailto:{{ support_email }}">{{ support_email }}</a>, if you have any questions.{% endtrans %}
-</p>
-<p>
-    {{ _("Cheers,") }}<br />
-    {{ _("The Zulip Team") }}
+    {% trans %}
+    Contact us any time at
+    <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+    if you run into trouble, have any feedback, or just want to chat!
+    {% endtrans %}
 </p>
 {% endblock %}

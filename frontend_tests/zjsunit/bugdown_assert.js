@@ -118,8 +118,8 @@ class MarkdownComparer {
         are_equivalent = this._haveEqualContents(element_actual, element_expected);
         if (!are_equivalent) {
             html = {
-                actual : this._reorderAttributes(element_actual).innerHTML,
-                expected : this._reorderAttributes(element_expected).innerHTML,
+                actual: this._reorderAttributes(element_actual).innerHTML,
+                expected: this._reorderAttributes(element_expected).innerHTML,
             };
         }
 
@@ -137,7 +137,7 @@ class MarkdownComparer {
 
         if (comparison_results.are_equivalent === false) {
             throw new assert.AssertionError({
-                message : message + this._output_formatter(
+                message: message + this._output_formatter(
                     comparison_results.html.actual,
                     comparison_results.html.expected
                 ),
@@ -153,7 +153,7 @@ class MarkdownComparer {
 
         if (comparison_results.are_equivalent) {
             throw new assert.AssertionError({
-                message : message + [
+                message: message + [
                     "actual and expected output produce semantially identical HTML",
                     actual,
                     "==",

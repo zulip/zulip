@@ -1,3 +1,4 @@
+import json
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -14,12 +15,22 @@ class ClubhouseWebhookTest(WebhookTestCase):
             expected_message
         )
 
+    def test_story_delete(self) -> None:
+        expected_message = u"The story **New random story** was deleted."
+        self.send_and_test_stream_message("story_delete", "New random story",
+                                          expected_message)
+
     def test_epic_story_create(self) -> None:
         expected_message = u"New story [An epic story!](https://app.clubhouse.io/zulip/story/23) was created and added to the epic **New Cool Epic!**."
         self.send_and_test_stream_message(
             'epic_create_story', "An epic story!",
             expected_message
         )
+
+    def test_epic_delete(self) -> None:
+        expected_message = u"The epic **Clubhouse Fork** was deleted."
+        self.send_and_test_stream_message("epic_delete", "Clubhouse Fork",
+                                          expected_message)
 
     def test_story_archive(self) -> None:
         expected_message = u"The story [Story 2](https://app.clubhouse.io/zulip/story/9) was archived."
@@ -183,3 +194,10 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = u"The type of the story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) was changed from **feature** to **bug**."
         self.send_and_test_stream_message('story_update_change_type', "Add cool feature!",
                                           expected_message)
+
+    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    def test_empty_post_request_body_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = json.dumps(None)
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)

@@ -19,9 +19,9 @@ function update_pointer() {
     if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
         return channel.post({
-            url:      '/json/users/me/pointer',
+            url: '/json/users/me/pointer',
             idempotent: true,
-            data:     {pointer: pointer.furthest_read},
+            data: {pointer: pointer.furthest_read},
             success: function () {
                 pointer.server_furthest_read = pointer.furthest_read;
                 pointer_update_in_flight = false;

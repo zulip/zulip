@@ -179,7 +179,7 @@ exports.get_server_history = function (stream_id, on_success) {
     channel.get({
         url: url,
         data: {},
-        success:  function (data) {
+        success: function (data) {
             var server_history = data.topics;
             exports.add_history(stream_id, server_history);
             on_success();

@@ -53,11 +53,14 @@ IGNORED_PHRASES = [
     r"XML",
     r"Zephyr",
     r"Zulip",
+    r"Zulip Account Security",
+    r"Zulip Security",
     r"Zulip Team",
     r"iPhone",
     r"iOS",
     r"Emoji One",
     r"mailinator.com",
+    r"HQ",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",
@@ -96,6 +99,7 @@ IGNORED_PHRASES = [
     r"a-z",
     r"organization administrator",
     r"user",
+    r"an unknown operating system",
 
     # SPECIAL CASES
     # Enter is usually capitalized

@@ -15,7 +15,7 @@ exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
     active: 'is active',
-    idle:   'is not active',
+    idle: 'is not active',
 };
 
 var fade_config = {
@@ -31,6 +31,11 @@ var fade_config = {
 };
 
 function level(user_id) {
+    if (people.is_my_user_id(user_id)) {
+        // Always put current user at the top.
+        return 0;
+    }
+
     var status = presence.get_status(user_id);
 
     switch (status) {
@@ -71,6 +76,8 @@ function filter_user_ids(filter_text, user_ids) {
     if (filter_text === '') {
         return user_ids;
     }
+
+    user_ids = _.reject(user_ids, people.is_my_user_id);
 
     var search_terms = filter_text.toLowerCase().split(",");
     search_terms = _.map(search_terms, function (s) {

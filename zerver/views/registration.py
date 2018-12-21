@@ -475,6 +475,7 @@ def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)
 
 def find_account(request: HttpRequest) -> HttpResponse:
+    from zerver.context_processors import common_context
     url = reverse('zerver.views.registration.find_account')
 
     emails = []  # type: List[str]
@@ -482,15 +483,13 @@ def find_account(request: HttpRequest) -> HttpResponse:
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
-            for user_profile in UserProfile.objects.filter(
+            for user in UserProfile.objects.filter(
                     email__in=emails, is_active=True, is_bot=False, realm__deactivated=False):
-                ctx = {
-                    'full_name': user_profile.full_name,
-                    'email': user_profile.email,
-                    'realm_uri': user_profile.realm.uri,
-                    'realm_name': user_profile.realm.name,
-                }
-                send_email('zerver/emails/find_team', to_user_ids=[user_profile.id], context=ctx)
+                context = common_context(user)
+                context.update({
+                    'email': user.email,
+                })
+                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses

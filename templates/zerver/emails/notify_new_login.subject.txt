@@ -1,1 +1,1 @@
-New login from {{ device_browser if device_browser else 'an unknown browser' }} on {{ device_os if device_os else 'an unknown operating system' }}
+{% trans %}New login from {{ device_browser }} on {{ device_os }}{% endtrans %}

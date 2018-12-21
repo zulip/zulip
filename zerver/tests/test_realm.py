@@ -218,7 +218,7 @@ class RealmTest(ZulipTestCase):
         self.assertIn("Zulip Account Security", from_email)
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn('Reactivate your Zulip organization', outbox[0].subject)
-        self.assertIn('To reactivate organization, please click here:', outbox[0].body)
+        self.assertIn('Dear former administrators', outbox[0].body)
         admins = realm.get_admin_users()
         confirmation_url = self.get_confirmation_url_from_outbox(admins[0].email)
         response = self.client_get(confirmation_url)

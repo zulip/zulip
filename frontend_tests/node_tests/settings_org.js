@@ -55,6 +55,10 @@ const _ui_report = {
     },
 };
 
+const _realm_logo = {
+    build_realm_logo_widget: noop,
+};
+
 set_global('channel', _channel);
 set_global('csrf_token', 'token-stub');
 set_global('FormData', _FormData);
@@ -63,6 +67,7 @@ set_global('loading', _loading);
 set_global('overlays', _overlays);
 set_global('page_params', _page_params);
 set_global('realm_icon', _realm_icon);
+set_global('realm_logo', _realm_logo);
 set_global('templates', _templates);
 set_global('ui_report', _ui_report);
 

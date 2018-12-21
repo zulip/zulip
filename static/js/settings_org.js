@@ -1054,8 +1054,11 @@ exports.build_page = function () {
             form_data.append('file-' + i, file);
         });
 
+        var error_field = $("#realm_icon_file_input_error");
+        error_field.hide();
         var spinner = $("#upload_icon_spinner").expectOne();
         loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
+        $("#upload_icon_button_text").expectOne().hide();
 
         channel.post({
             url: '/json/realm/icon',
@@ -1065,11 +1068,51 @@ exports.build_page = function () {
             contentType: false,
             success: function () {
                 loading.destroy_indicator($("#upload_icon_spinner"));
+                $("#upload_icon_button_text").expectOne().show();
+            },
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+                ui_report.error("", xhr, error_field);
             },
         });
 
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
+
+    function upload_realm_logo(file_input) {
+        var form_data = new FormData();
+
+        form_data.append('csrfmiddlewaretoken', csrf_token);
+        jQuery.each(file_input[0].files, function (i, file) {
+            form_data.append('file-' + i, file);
+        });
+
+        var error_field = $("#realm_logo_file_input_error");
+        error_field.hide();
+        var spinner = $("#upload_logo_spinner").expectOne();
+        loading.make_indicator(spinner, {text: i18n.t("Uploading logo.")});
+        $("#upload_logo_button_text").expectOne().hide();
+
+        channel.post({
+            url: '/json/realm/logo',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function () {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+            },
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+                ui_report.error("", xhr, error_field);
+            },
+        });
+
+    }
+    realm_logo.build_realm_logo_widget(upload_realm_logo);
 
     $('#deactivate_realm_button').on('click', function (e) {
         if (!overlays.is_modal_open()) {
@@ -1084,7 +1127,7 @@ exports.build_page = function () {
             overlays.close_modal('deactivate-realm-modal');
         }
         channel.post({
-            url:'/json/realm/deactivate',
+            url: '/json/realm/deactivate',
             error: function (xhr) {
                 ui_report.error(
                     i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()

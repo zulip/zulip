@@ -79,7 +79,7 @@ exports.show = function (target) {
 
     if (!overlay.hasClass("show")) {
         overlays.open_overlay({
-            name:  'informationalOverlays',
+            name: 'informationalOverlays',
             overlay: overlay,
             on_close: function () {
                 hashchange.changehash("");

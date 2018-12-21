@@ -19,7 +19,7 @@ casper.then(function () {
 });
 
 common.then_send_message('stream', {
-    stream:  'Verona',
+    stream: 'Verona',
     subject: 'stars',
     content: 'test star',
 });

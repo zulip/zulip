@@ -333,9 +333,11 @@ def build_custom_checkers(by_lang):
                         'by i18n.t()'},
         {'pattern': r'ui.report_error\(',
          'description': 'Deprecated function, use ui_report.error.'},
-        {'pattern': r'''report.error\(["']''',
-         'description': 'Argument to report_error should be a literal string enclosed '
-                        'by i18n.t()'},
+        {'pattern': r'''report.error\(["'][^'"]''',
+         'description': 'Argument to ui_report.error should be a literal string enclosed '
+                        'by i18n.t()',
+         'good_lines': ['ui_report.error("")', 'ui_report.error(_("text"))'],
+         'bad_lines': ['ui_report.error("test")']},
         {'pattern': r'\$\(document\)\.ready\(',
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],

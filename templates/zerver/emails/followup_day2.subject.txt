@@ -1,1 +1,1 @@
-One last thing: using topics like a pro
+{{ _("One last thing: using topics like a pro") }}

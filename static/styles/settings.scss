@@ -81,8 +81,13 @@ label {
 }
 
 .user-avatar-section,
+.realm-logo-section,
 .realm-icon-section {
     position: relative;
+}
+
+.realm-logo-block {
+    margin-bottom: 10px;
 }
 
 .user-avatar-section {
@@ -101,8 +106,9 @@ label {
 }
 
 .user-avatar-section .inline-block,
+.realm-logo-section .inline-block,
 .realm-icon-section .inline-block {
-    margin: 10px 20px 0px 0px;
+    margin: 0px 20px 0px 0px;
     vertical-align: top;
 
     border-radius: 4px;
@@ -184,6 +190,13 @@ label {
 .upload-file-name {
     width: 30%;
     word-break: break-all;
+}
+
+#filter-settings {
+    #filter_pattern,
+    #filter_format_string {
+        width: calc(100% - 10em - 6em);
+    }
 }
 
 td .button {
@@ -456,6 +469,11 @@ input[type=checkbox] + .inline-block {
 
 .org-settings-form .organization-submission {
     margin-top: 0px;
+}
+
+.realm-logo-section {
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .realm-icon-section {
@@ -937,6 +955,7 @@ input[type=checkbox].inline-block {
 }
 
 #upload_avatar_spinner,
+#upload_logo_spinner,
 #upload_icon_spinner {
     font-size: 14px;
     margin: auto;
@@ -1069,6 +1088,15 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 100px;
     height: 100px;
+}
+
+#realm-settings-logo {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.2);
+    /* We allow actual images up to 800x100 in the main display, but the
+       settings UI looks bad beyond ~730px, so we limit the width here */
+    height: 100px;
+    max-width: 720px;
 }
 
 .invite-user-link i {
@@ -1636,6 +1664,13 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
+@media (max-width: 1023px) {
+    #realm-settings-logo {
+        max-width: 600px;
+        height: 75px;
+    }
+}
+
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1654,6 +1689,11 @@ input[type=text]#settings_search {
 
     .subsection-failed-status p {
         margin: 5px 0 0 0;
+    }
+
+    #realm-settings-logo {
+        max-width: 400px;
+        height: 50px;
     }
 }
 

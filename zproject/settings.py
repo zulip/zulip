@@ -159,6 +159,7 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
+    'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
@@ -178,6 +179,7 @@ DEFAULT_SETTINGS = {
 
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+    'DEFAULT_LOGO_URI': '/static/images/logo/zulip-org-logo.png',
     'S3_AVATAR_BUCKET': '',
     'S3_AUTH_UPLOADS_BUCKET': '',
     'S3_REGION': '',
@@ -349,6 +351,7 @@ DEFAULT_SETTINGS.update({
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
     'MAX_AVATAR_FILE_SIZE': 5,
     'MAX_ICON_FILE_SIZE': 5,
+    'MAX_LOGO_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
     # Limits to help prevent spam, in particular by sending invitations.
@@ -540,6 +543,8 @@ MIDDLEWARE = (
     # Make sure 2FA middlewares come after authentication middleware.
     'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
+    # Needs to be after CommonMiddleware, which sets Content-Length
+    'zerver.middleware.FinalizeOpenGraphDescription',
 )
 
 ANONYMOUS_USER_ID = None

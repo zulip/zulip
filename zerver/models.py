@@ -145,7 +145,7 @@ class Realm(models.Model):
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
     VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
-    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
+    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser', u'AzureAD']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
     # User-visible display name and description used on e.g. the organization homepage
@@ -291,6 +291,7 @@ class Realm(models.Model):
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
+    # Icon is the square mobile icon.
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'
     ICON_SOURCES = (
@@ -300,6 +301,17 @@ class Realm(models.Model):
     icon_source = models.CharField(default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES,
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
+
+    # Logo is the horizonal logo we show in top-left of webapp navbar UI.
+    LOGO_DEFAULT = u'D'
+    LOGO_UPLOADED = u'U'
+    LOGO_SOURCES = (
+        (LOGO_DEFAULT, 'Default to Zulip'),
+        (LOGO_UPLOADED, 'Uploaded by administrator'),
+    )
+    logo_source = models.CharField(default=LOGO_DEFAULT, choices=LOGO_SOURCES,
+                                   max_length=1)  # type: str
+    logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
     BOT_CREATION_POLICY_TYPES = [
         BOT_CREATION_EVERYONE,
@@ -1068,6 +1080,7 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
+    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     # TODO: last_updated should be renamed date_created, since it is
     # no longer maintained as a last_updated value.
@@ -1082,7 +1095,6 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
-    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     class Meta:
         unique_together = ("user", "kind", "token")
@@ -2299,6 +2311,7 @@ class RealmAuditLog(models.Model):
     REALM_REACTIVATED = 'realm_reactivated'
     REALM_SCRUBBED = 'realm_scrubbed'
     REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
+    REALM_LOGO_CHANGED = 'realm_logo_changed'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'

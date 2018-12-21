@@ -1842,8 +1842,8 @@ nav .column-left .nav-logo {
     display: inline-block;
     vertical-align: top;
     margin-top: 8px;
-    width: 25px;
     height: 25px;
+    max-width: 200px;
 }
 
 nav .column-left .company-name {
@@ -2153,6 +2153,27 @@ div.floating_recipient {
     width: 30%;
     height: 30px;
     margin-top: 7px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-section .realm-icon-section .loading_indicator_text,
+.settings-section .realm-logo-section .loading_indicator_text {
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+    margin-top: 0px;
+    margin-left: -12px;
+}
+
+.settings-section .realm-logo-section .loading_indicator_spinner,
+.settings-section .realm-icon-section .loading_indicator_spinner {
+    width: 10%;
+    height: 16px;
+    margin-top: 2px;
     vertical-align: middle;
     display: inline-block;
 }

@@ -380,14 +380,14 @@ exports.initialize = function () {
     ui.set_up_scrollbar($("#group-pms"));
 };
 
-exports.set_user_status = function (email, info, server_time) {
+exports.update_presence_info = function (email, info, server_time) {
     var user_id = people.get_user_id(email);
     if (!user_id) {
         blueslip.warn('unknown email: ' + email);
         return;
     }
 
-    presence.set_user_status(user_id, info, server_time);
+    presence.set_info_for_user(user_id, info, server_time);
     exports.insert_user_into_list(user_id);
     exports.update_huddles();
 };

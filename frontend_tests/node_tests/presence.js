@@ -221,7 +221,7 @@ run_test('last_active_date', () => {
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
 });
 
-run_test('set_user_status', () => {
+run_test('set_info_for_user', () => {
     var server_time = 500;
     var info = {
         website: {
@@ -231,7 +231,7 @@ run_test('set_user_status', () => {
     };
 
     presence.presence_info[alice.user_id] = undefined;
-    presence.set_user_status(alice.user_id, info, server_time);
+    presence.set_info_for_user(alice.user_id, info, server_time);
 
     var expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);

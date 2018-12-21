@@ -1,8 +1,13 @@
-# Import from Slack (beta)
+# Import from Slack
 
 Starting with Zulip 1.8, Zulip supports importing data from Slack,
 including users, channels, messages, attachments, avatars, custom
 emoji, and emoji reactions.
+
+This tool has been used to import Slack workspaces with 10,000 members
+and millions of messages. If you're planning on doing an import much
+larger than that, or run into performance issues when importing, email
+us at support@zulipchat.com for help.
 
 **Note:** You can only import a Slack workspace as a new Zulip
 organization. In particular, you cannot use this tool to import from Slack

@@ -169,7 +169,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
                 currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
-        }, {field_selector:field_selector, str: str, item: item});
+        }, {field_selector: field_selector, str: str, item: item});
     });
 };
 

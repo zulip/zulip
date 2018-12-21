@@ -2,8 +2,8 @@ set_global("page_params", {
     realm_uri: "https://chat.example.com",
     realm_embedded_bots: [
         {name: "converter", config: {}},
-        {name:"giphy", config: {key: "12345678"}},
-        {name:"foobot", config: {bar: "baz", qux: "quux"}},
+        {name: "giphy", config: {key: "12345678"}},
+        {name: "foobot", config: {bar: "baz", qux: "quux"}},
     ],
     realm_bots: [{api_key: 'QadL788EkiottHmukyhHgePUFHREiu8b',
                   email: 'error-bot@zulip.org',

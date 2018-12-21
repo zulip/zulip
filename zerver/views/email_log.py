@@ -4,9 +4,11 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
-from zerver.models import get_realm, get_user_by_delivery_email
+from zerver.models import get_realm, get_user_by_delivery_email, Realm
 from zerver.lib.notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
+from zerver.lib.actions import do_change_user_delivery_email, \
+    do_send_realm_reactivation_email
 from zproject.email_backends import (
     get_forward_address,
     set_forward_address,
@@ -61,10 +63,27 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
     realm = get_realm("zulip")
+    other_realm = Realm.objects.exclude(string_id='zulip').first()
+    user = get_user_by_delivery_email(registered_email, realm)
     host_kwargs = {'HTTP_HOST': realm.host}
 
-    # Password reset email
+    # Password reset emails
+    # active account in realm
     result = client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    assert result.status_code == 302
+    # deactivated user
+    user.is_active = False
+    user.save(update_fields=['is_active'])
+    result = client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    assert result.status_code == 302
+    user.is_active = True
+    user.save(update_fields=['is_active'])
+    # account on different realm
+    result = client.post('/accounts/password/reset/', {'email': registered_email},
+                         HTTP_HOST=other_realm.host)
+    assert result.status_code == 302
+    # no account anywhere
+    result = client.post('/accounts/password/reset/', {'email': unregistered_email_1}, **host_kwargs)
     assert result.status_code == 302
 
     # Confirm account email
@@ -99,13 +118,15 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert result.status_code == 200
 
     # Reset the email value so we can run this again
-    user_profile.email = registered_email
-    user_profile.save(update_fields=['email'])
+    do_change_user_delivery_email(user_profile, registered_email)
 
     # Follow up day1 day2 emails for normal user
     enqueue_welcome_emails(user_profile)
 
     # Follow up day1 day2 emails for admin user
     enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
+
+    # Realm reactivation email
+    do_send_realm_reactivation_email(realm)
 
     return redirect(email_page)

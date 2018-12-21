@@ -57,7 +57,7 @@ exports.set_up = function () {
     channel.get({
         url: '/json/invites',
         idempotent: true,
-        timeout:  10 * 1000,
+        timeout: 10 * 1000,
         success: exports.on_load_success,
         error: failed_listing_invites,
     });

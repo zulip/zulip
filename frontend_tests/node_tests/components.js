@@ -5,8 +5,8 @@ zrequire('components');
 
 var noop = function () {};
 
-var LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation:noop };
-var RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation:noop };
+var LEFT_KEY = { which: 37, preventDefault: noop, stopPropagation: noop };
+var RIGHT_KEY = { which: 39, preventDefault: noop, stopPropagation: noop };
 
 run_test('basics', () => {
     var keydown_f;
