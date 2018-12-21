@@ -21,7 +21,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, upcoming_invoice_total, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
-    MIN_INVOICED_SEAT_COUNT, DEFAULT_INVOICE_DAYS_UNTIL_DUE
+    MIN_INVOICED_SEAT_COUNT, DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_LICENSE_COUNT
 from corporate.models import Customer, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
@@ -69,10 +69,12 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
             plan: str=REQ(validator=check_string),
+            license_type: str=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string),
             billing_modality: str=REQ(validator=check_string),
             invoiced_seat_count: int=REQ(validator=check_int, default=-1),
+            license_count: int=REQ(validator=check_int, default=-1),
             stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
     try:
         plan, seat_count = unsign_and_check_upgrade_parameters(user, plan, signed_seat_count,
@@ -120,6 +122,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'signed_seat_count': signed_seat_count,
         'salt': salt,
         'min_seat_count_for_invoice': max(seat_count, MIN_INVOICED_SEAT_COUNT),
+        'min_license_count': max(seat_count, MIN_LICENSE_COUNT),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
         'nickname_monthly': Plan.CLOUD_MONTHLY,

@@ -102,6 +102,9 @@ $(function () {
                 $("#autopay-input-section").hide();
                 $('#autopay-error').hide();
                 $("#autopay-loading").show();
+
+                var license_type = get_form_input("autopay", "license_type", false);
+                var license_count = $("#" + license_type + "_license_count").val();
                 $.post({
                     url: "/json/billing/upgrade",
                     data: {
@@ -110,6 +113,8 @@ $(function () {
                         signed_seat_count: get_form_input("autopay", "signed_seat_count"),
                         salt: get_form_input("autopay", "salt"),
                         plan: get_form_input("autopay", "plan"),
+                        license_type: JSON.stringify(license_type),
+                        license_count: license_count,
                         billing_modality: get_form_input("autopay", "billing_modality"),
                     },
                     success: function () {
@@ -128,6 +133,10 @@ $(function () {
         });
 
         $('#add-card-button').on('click', function (e) {
+            var license_type = get_form_input("autopay", "license_type", false);
+            if ($("#" + license_type + "_license_count")[0].checkValidity() === false) {
+                return;
+            }
             add_card_handler.open({
                 name: 'Zulip',
                 zipCode: true,
@@ -187,6 +196,19 @@ $(function () {
             );
         }
 
+        function show_license_section(license) {
+            $("#license-automatic-section").hide();
+            $("#license-manual-section").hide();
+            $("#license-mix-section").hide();
+
+            var section_id = "#license-" + license + "-section";
+            $(section_id).show();
+        }
+
+        $('input[type=radio][name=license_type]').change(function () {
+            show_license_section($(this).val());
+        });
+
         $('input[type=radio][name=plan]').change(function () {
             update_charged_amount($(this).val());
         });
@@ -196,6 +218,8 @@ $(function () {
         $("#autopay_monthly_price").text(format_money(prices[page_params.nickname_monthly]));
         $("#invoice_annual_price").text(format_money(prices[page_params.nickname_annual]));
         $("#invoice_annual_price_per_month").text(format_money(prices[page_params.nickname_annual] / 12));
+
+        show_license_section($('input[type=radio][name=license_type]:checked').val());
         update_charged_amount($('input[type=radio][name=plan]:checked').val());
     }
 });

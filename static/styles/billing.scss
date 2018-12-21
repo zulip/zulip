@@ -105,6 +105,45 @@
         }
     }
 
+    .license-management {
+        label {
+            display: inline-block;
+        }
+        input[type="radio"] {
+            display: none;
+            &:checked {
+                + .box {
+                    background-color: hsl(153, 32%, 55%);
+                    color: hsl(0, 0%, 100%);
+                    border-color: hsl(152, 33%, 39%);
+                }
+            }
+        }
+        .box {
+            width: 65px;
+            height: 25px;
+            background-color: hsl(0, 0%, 94%);
+            transition: all .2s ease;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid hsl(0, 0%, 91%);
+            border-radius: 8px;
+            margin: 0 10px 5px 0;
+            padding: 30px 20px;
+            vertical-align: top;
+            &:hover {
+                background-color: hsl(0, 0%, 91%);
+                border-color: hsl(0, 0%, 80%);
+            }
+            .license-type {
+                font-size: 1.2em;
+                margin-top: 4px;
+            }
+        }
+    }
+
     .stripe-button-el {
         padding: 11px 25px 11px 25px;
         font-weight: 400;
@@ -157,6 +196,8 @@
         font-weight: 700 !important;
     }
 
+    #mix_license_count,
+    #manual_license_count,
     #invoiced_seat_count {
         width: 50px;
     }
@@ -242,5 +283,11 @@
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
         margin-left: -115px;
+    }
+
+    #license-automatic-section,
+    #license-manual-section,
+    #license-mix-section {
+        display: none;
     }
 }

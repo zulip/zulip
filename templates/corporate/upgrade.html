@@ -51,6 +51,7 @@
                                 <input type="hidden" name="billing_modality" value="charge_automatically">
                                 <input type="hidden" name="csrf" value="{{ csrf_token }}">
                                 <div class="payment-schedule">
+                                    <div id="autopay-error" class="alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
                                     <label>
                                         <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
@@ -72,12 +73,59 @@
                                         </div>
                                     </label>
                                 </div>
-                                <p>
-                                    You&rsquo;ll initially be charged
-                                    <b>$<span id="charged_amount"></span></b>
-                                    for <b>{{ seat_count }}</b> users. We’ll automatically charge you
-                                    when new users are added, and give you credit when users are deactivated.
-                                </p>
+
+                                <div class="license-management">
+                                    <h3>{{ _("License management") }}</h3>
+                                    <label>
+                                        <input type="radio" name="license_type" value="automatic" checked />
+                                        <div class="box">
+                                            <div class="license-type">{{ _("Automatic") }}</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="license_type" value="manual" />
+                                        <div class="box">
+                                            <div class="license-type">{{ _("Manual") }}</div>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="license_type" value="mix" />
+                                        <div class="box">
+                                            <div class="license-type">{{ _("Mix") }}</div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div id="license-automatic-section">
+                                    <p>
+                                        You&rsquo;ll initially be charged
+                                        <b>$<span id="charged_amount"></span></b>
+                                        for <b>{{ seat_count }}</b> users. We’ll automatically charge you
+                                        when new users are added, and give you credit when users are deactivated.
+                                    </p>
+                                    <input type="hidden" id="automatic_license_count" value="-1">
+                                </div>
+
+                                <div id="license-manual-section">
+                                    <p>
+                                        Enter the number of users you would like to pay for. You can manually add
+                                        licenses to add or invite additional users.
+                                    </p>
+
+                                    <h4>Number of licenses (minimum {{ min_license_count }})</h4>
+                                    <input pattern="\d*" oninvalid="this.setCustomValidity('Invalid input')" oninput="this.setCustomValidity('')"  type="text" autocomplete="off" id="manual_license_count" required/><br>
+                                </div>
+
+                                <div id="license-mix-section">
+                                    <p>
+                                        Enter the number of users you would like to initially pay for. We'll
+                                        automatically charge you for additional licenses as users are added, and
+                                        remove licenses not in use at the end of each billing period.
+                                    </p>
+                                    <h4>Number of licenses (minimum {{ min_license_count }})</h4>
+                                    <input pattern="\d*" oninvalid="this.setCustomValidity('Invalid input')" oninput="this.setCustomValidity('')"  type="text" autocomplete="off" id="mix_license_count" required/><br>
+                                </div>
+
                                 <button id="add-card-button" class="stripe-button-el">
                                     <span id="add-card-button-span">Add card</span>
                                 </button>
@@ -97,7 +145,6 @@
                         <div id="autopay-success" class="alert alert-success">
                             Upgrade complete! The page will now reload.
                         </div>
-                        <div id="autopay-error" class="alert alert-danger"></div>
                     </div>
 
                     <div class="tab-pane" id="invoice">
