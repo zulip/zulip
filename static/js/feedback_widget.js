@@ -105,6 +105,10 @@ function set_up_handlers() {
     });
 }
 
+exports.is_open = function () {
+    return meta.opened;
+};
+
 exports.dismiss = function () {
     animate.fadeOut();
 };
