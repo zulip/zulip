@@ -66,13 +66,16 @@
     </li>
     {{/unless}}
     <hr />
-    {{#unless is_me}}
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
-            <i class="fa fa-lock" aria-hidden="true"></i> {{#tr this}}View private messages{{/tr}}
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            {{#if is_me}}
+                {{#tr this}}View private messages to myself{{/tr}}
+            {{else}}
+                {{#tr this}}View private messages{{/tr}}
+            {{/if}}
         </a>
     </li>
-    {{/unless}}
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
             <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
