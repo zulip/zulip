@@ -60,6 +60,7 @@
         "emoji_picker": false,
         "favicon": false,
         "feature_flags": false,
+        "feedback_widget": false,
         "fenced_code": false,
         "flatpickr": false,
         "floating_recipient_bar": false,

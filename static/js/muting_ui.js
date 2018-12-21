@@ -23,125 +23,6 @@ exports.rerender = function () {
     }
 };
 
-exports.build_feedback_widget = function () {
-    var self = {};
-
-    var meta = {
-        hide_me_time: null,
-        alert_hover_state: false,
-        $container: null,
-        opened: false,
-    };
-
-    var animate = {
-        maybe_close: function () {
-            if (!meta.opened) {
-                return;
-            }
-
-            if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
-                animate.fadeOut();
-                return;
-            }
-
-            setTimeout(animate.maybe_close, 100);
-        },
-        fadeOut: function () {
-            if (!meta.opened) {
-                return;
-            }
-
-            if (meta.$container) {
-                meta.$container.fadeOut(500).removeClass("show");
-                meta.opened = false;
-                meta.alert_hover_state = false;
-            }
-        },
-        fadeIn: function () {
-            if (meta.opened) {
-                return;
-            }
-
-            if (meta.$container) {
-                meta.$container.fadeIn(500).addClass("show");
-                meta.opened = true;
-                setTimeout(animate.maybe_close, 100);
-            }
-        },
-    };
-
-    function set_up_handlers() {
-        if (meta.handlers_set) {
-            return;
-        }
-
-        meta.handlers_set = true;
-
-        // if the user mouses over the notification, don't hide it.
-        meta.$container.mouseenter(function () {
-            if (!meta.opened) {
-                return;
-            }
-
-            meta.alert_hover_state = true;
-        });
-
-        // once the user's mouse leaves the notification, restart the countdown.
-        meta.$container.mouseleave(function () {
-            if (!meta.opened) {
-                return;
-            }
-
-            meta.alert_hover_state = false;
-            // add at least 2000ms but if more than that exists just keep the
-            // current amount.
-            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
-        });
-
-        meta.$container.find('.exit-me').click(function () {
-            animate.fadeOut();
-        });
-
-        meta.$container.find(".feedback_undo").click(function () {
-            if (meta.undo) {
-                meta.undo();
-            }
-            animate.fadeOut();
-        });
-    }
-
-    self.dismiss = function () {
-        animate.fadeOut();
-    };
-
-    self.show = function (opts) {
-        if (!opts.populate) {
-            blueslip.error('programmer needs to supply populate callback.');
-            return;
-        }
-
-        meta.$container = $('#feedback_container');
-
-        set_up_handlers();
-
-        meta.undo = opts.on_undo;
-
-        // add a four second delay before closing up.
-        meta.hide_me_time = new Date().getTime() + 4000;
-
-        meta.$container.find('.feedback_title').text(opts.title_text);
-        meta.$container.find('.feedback_undo').text(opts.undo_button_text);
-        opts.populate(meta.$container.find('.feedback_content'));
-
-        animate.fadeIn();
-
-    };
-
-    return self;
-};
-
-exports.notify_widget = exports.build_feedback_widget();
-
 exports.persist_mute = function (stream_id, topic_name) {
     var stream_name = stream_data.maybe_get_stream_name(stream_id);
 
@@ -234,7 +115,7 @@ exports.mute = function (stream_id, topic) {
     unread_ui.update_unread_counts();
     exports.rerender();
     exports.persist_mute(stream_id, topic);
-    exports.notify_widget.show({
+    feedback_widget.show({
         populate: function (container) {
             var rendered_html = templates.render('topic_muted');
             container.html(rendered_html);
@@ -260,7 +141,7 @@ exports.unmute = function (stream_id, topic) {
     exports.rerender();
     exports.persist_unmute(stream_id, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
-    exports.notify_widget.dismiss();
+    feedback_widget.dismiss();
 };
 
 exports.toggle_mute = function (msg) {
