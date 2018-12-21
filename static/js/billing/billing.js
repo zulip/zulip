@@ -77,20 +77,26 @@ $(function () {
         return (cents / 100).toFixed(precision);
     }
 
+    function get_form_input(form_name, input_name, stringify = true) {
+        var input = $("#" + form_name + "-form input[name='" + input_name + "']");
+        var val;
+        if (input.attr('type') === "radio") {
+            val =  $("#" + form_name + "-form input[name='" + input_name + "']:checked").val();
+        } else {
+            val = input.val();
+        }
+        if (stringify) {
+            return JSON.stringify(val);
+        }
+        return val;
+    }
+
     if (window.location.pathname === '/upgrade/') {
         var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
             key: $("#autopay-form").data("key"),
             image: '/static/images/logo/zulip-icon-128x128.png',
             locale: 'auto',
             token: function (stripe_token) {
-                function get_form_input(name) {
-                    var input = $("#autopay-form input[name='" + name + "']");
-                    if (input.attr('type') === "radio") {
-                        return JSON.stringify($("#autopay-form input[name='" + name + "']:checked").val());
-                    }
-                    return JSON.stringify(input.val());
-                }
-
                 loading.make_indicator($('#autopay_loading_indicator'),
                                        {text: 'Processing ...', abs_positioned: true});
                 $("#autopay-input-section").hide();
@@ -101,10 +107,10 @@ $(function () {
                     data: {
                         stripe_token: JSON.stringify(stripe_token.id),
                         csrfmiddlewaretoken: $("#autopay-form input[name='csrf']").val(),
-                        signed_seat_count: get_form_input("signed_seat_count"),
-                        salt: get_form_input("salt"),
-                        plan: get_form_input("plan"),
-                        billing_modality: get_form_input("billing_modality"),
+                        signed_seat_count: get_form_input("autopay", "signed_seat_count"),
+                        salt: get_form_input("autopay", "salt"),
+                        plan: get_form_input("autopay", "plan"),
+                        billing_modality: get_form_input("autopay", "billing_modality"),
                     },
                     success: function () {
                         $("#autopay-loading").hide();
@@ -140,14 +146,6 @@ $(function () {
                 return;
             }
             e.preventDefault();
-
-            function get_form_input(name, stringify = true) {
-                var value = $("#invoice-form input[name='" + name + "']").val();
-                if (stringify) {
-                    value = JSON.stringify(value);
-                }
-                return value;
-            }
             loading.make_indicator($('#invoice_loading_indicator'),
                                    {text: 'Processing ...', abs_positioned: true});
             $("#invoice-input-section").hide();
@@ -156,12 +154,12 @@ $(function () {
             $.post({
                 url: "/json/billing/upgrade",
                 data: {
-                    csrfmiddlewaretoken: get_form_input("csrfmiddlewaretoken", false),
-                    signed_seat_count: get_form_input("signed_seat_count"),
-                    salt: get_form_input("salt"),
-                    plan: get_form_input("plan"),
-                    billing_modality: get_form_input("billing_modality"),
-                    invoiced_seat_count: get_form_input("invoiced_seat_count", false),
+                    csrfmiddlewaretoken: get_form_input("invoice", "csrfmiddlewaretoken", false),
+                    signed_seat_count: get_form_input("invoice", "signed_seat_count"),
+                    salt: get_form_input("invoice", "salt"),
+                    plan: get_form_input("invoice", "plan"),
+                    billing_modality: get_form_input("invoice", "billing_modality"),
+                    invoiced_seat_count: get_form_input("invoice", "invoiced_seat_count", false),
                 },
                 success: function () {
                     $("#invoice-loading").hide();
