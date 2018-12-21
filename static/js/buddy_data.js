@@ -122,14 +122,28 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id);
 }
 
+exports.my_user_status = function (user_id) {
+    if (!people.is_my_user_id(user_id)) {
+        return;
+    }
+
+    if (user_status.is_away(user_id)) {
+        return i18n.t('(away)');
+    }
+
+    return i18n.t('(you)');
+};
+
 exports.info_for = function (user_id) {
     var buddy_status = exports.buddy_status(user_id);
     var person = people.get_person_from_user_id(user_id);
+    var my_user_status = exports.my_user_status(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id: user_id,
+        my_user_status: my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         type: buddy_status,
