@@ -49,6 +49,10 @@ exports.build_feedback_widget = function () {
         }
     }, 100);
 
+    self.dismiss = function () {
+        animate.fadeOut();
+    };
+
     self.show = function (opts) {
         if (!opts.populate) {
             blueslip.error('programmer needs to supply populate callback.');
@@ -93,13 +97,6 @@ exports.build_feedback_widget = function () {
             // current amount.
             meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
         });
-    };
-
-    self.dismiss = function () {
-        var $container = $("#feedback_container");
-        if ($container) {
-            $container.fadeOut(500).removeClass("show");
-        }
     };
 
     return self;
