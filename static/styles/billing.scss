@@ -57,6 +57,7 @@
         }
     }
 
+    .license-management,
     .payment-schedule {
         label {
             display: inline-block;
@@ -101,6 +102,11 @@
             }
             .schedule-amount-2 {
                 font-size: 0.9em;
+            }
+            .management-type {
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-top: 20px;
             }
         }
     }
@@ -157,6 +163,8 @@
         font-weight: 700 !important;
     }
 
+    #mix_license_count,
+    #manual_license_count,
     #invoiced_seat_count {
         width: 50px;
     }
@@ -242,5 +250,11 @@
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
         margin-left: -115px;
+    }
+
+    #license-automatic-section,
+    #license-manual-section,
+    #license-mix-section {
+        display: none;
     }
 }
