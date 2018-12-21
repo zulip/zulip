@@ -31,7 +31,9 @@ exports.send = function (opts) {
         url: '/json/zcommand',
         data: data,
         success: function (data) {
-            on_success(data);
+            if (on_success) {
+                on_success(data);
+            }
         },
         error: function () {
             exports.tell_user('server did not respond');
@@ -48,14 +50,47 @@ exports.tell_user = function (msg) {
     $('#compose-error-msg').text(msg);
 };
 
-function update_setting(command) {
+exports.enter_day_mode = function () {
     exports.send({
-        command: command,
+        command: "/day",
         on_success: function (data) {
-            exports.tell_user(data.msg);
+            night_mode.disable();
+            feedback_widget.show({
+                populate: function (container) {
+                    container.text(data.msg);
+                },
+                on_undo: function () {
+                    exports.send({
+                        command: "/night",
+                    });
+                },
+                title_text: i18n.t("Day mode"),
+                undo_button_text: i18n.t("Night"),
+            });
         },
     });
-}
+};
+
+exports.enter_night_mode = function () {
+    exports.send({
+        command: "/night",
+        on_success: function (data) {
+            night_mode.enable();
+            feedback_widget.show({
+                populate: function (container) {
+                    container.text(data.msg);
+                },
+                on_undo: function () {
+                    exports.send({
+                        command: "/day",
+                    });
+                },
+                title_text: i18n.t("Night mode"),
+                undo_button_text: i18n.t("Day"),
+            });
+        },
+    });
+};
 
 exports.process = function (message_content) {
 
@@ -77,9 +112,15 @@ exports.process = function (message_content) {
         return true;
     }
 
-    var mode_commands = ['/day', '/night', '/light', '/dark'];
-    if (mode_commands.indexOf(content) >= 0) {
-        update_setting(content);
+    var day_commands = ['/day', '/light'];
+    if (day_commands.indexOf(content) >= 0) {
+        exports.enter_day_mode();
+        return true;
+    }
+
+    var night_commands = ['/night', '/dark'];
+    if (night_commands.indexOf(content) >= 0) {
+        exports.enter_night_mode();
         return true;
     }
 
