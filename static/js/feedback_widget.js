@@ -93,11 +93,11 @@ function set_up_handlers() {
         meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
     });
 
-    meta.$container.find('.exit-me').click(function () {
+    meta.$container.on('click', '.exit-me', function () {
         animate.fadeOut();
     });
 
-    meta.$container.find(".feedback_undo").click(function () {
+    meta.$container.on('click', '.feedback_undo', function () {
         if (meta.undo) {
             meta.undo();
         }
@@ -120,6 +120,9 @@ exports.show = function (opts) {
     }
 
     meta.$container = $('#feedback_container');
+
+    var html = templates.render('feedback_container');
+    meta.$container.html(html);
 
     set_up_handlers();
 
