@@ -55,7 +55,7 @@ var object_to_css = function (object) {
     return css.trim();
 };
 
-(function () {
+exports.initialize = function () {
     // the object to be converted to CSS.
     // this should ONLY be used if there is no obvious way to perform this action
     // by prefixing the selector with `body.night-mode`.
@@ -90,7 +90,11 @@ var object_to_css = function (object) {
         stylesheet.disabled = true;
         $("body").removeClass("night-mode");
     };
-}());
+
+    if (page_params.night_mode) {
+        exports.enable();
+    }
+};
 
 return exports;
 }());
