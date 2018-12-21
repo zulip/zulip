@@ -30,24 +30,85 @@ exports.build_feedback_widget = function () {
         hide_me_time: null,
         alert_hover_state: false,
         $container: null,
+        opened: false,
     };
+
     var animate = {
+        maybe_close: function () {
+            if (!meta.opened) {
+                return;
+            }
+
+            if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
+                animate.fadeOut();
+                return;
+            }
+
+            setTimeout(animate.maybe_close, 100);
+        },
         fadeOut: function () {
+            if (!meta.opened) {
+                return;
+            }
+
             if (meta.$container) {
                 meta.$container.fadeOut(500).removeClass("show");
+                meta.opened = false;
+                meta.alert_hover_state = false;
             }
         },
         fadeIn: function () {
+            if (meta.opened) {
+                return;
+            }
+
             if (meta.$container) {
                 meta.$container.fadeIn(500).addClass("show");
+                meta.opened = true;
+                setTimeout(animate.maybe_close, 100);
             }
         },
     };
-    setInterval(function () {
-        if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
-            animate.fadeOut();
+
+    function set_up_handlers() {
+        if (meta.handlers_set) {
+            return;
         }
-    }, 100);
+
+        meta.handlers_set = true;
+
+        // if the user mouses over the notification, don't hide it.
+        meta.$container.mouseenter(function () {
+            if (!meta.opened) {
+                return;
+            }
+
+            meta.alert_hover_state = true;
+        });
+
+        // once the user's mouse leaves the notification, restart the countdown.
+        meta.$container.mouseleave(function () {
+            if (!meta.opened) {
+                return;
+            }
+
+            meta.alert_hover_state = false;
+            // add at least 2000ms but if more than that exists just keep the
+            // current amount.
+            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
+        });
+
+        meta.$container.find('.exit-me').click(function () {
+            animate.fadeOut();
+        });
+
+        meta.$container.find(".feedback_undo").click(function () {
+            if (meta.undo) {
+                meta.undo();
+            }
+            animate.fadeOut();
+        });
+    }
 
     self.dismiss = function () {
         animate.fadeOut();
@@ -59,22 +120,11 @@ exports.build_feedback_widget = function () {
             return;
         }
 
+        meta.$container = $('#feedback_container');
+
+        set_up_handlers();
+
         meta.undo = opts.on_undo;
-
-        if (!meta.$container) {
-            meta.$container = $("#feedback_container");
-
-            meta.$container.find('.exit-me').click(function () {
-                animate.fadeOut();
-            });
-
-            meta.$container.find(".feedback_undo").click(function () {
-                if (meta.undo) {
-                    meta.undo();
-                }
-                animate.fadeOut();
-            });
-        }
 
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
@@ -85,18 +135,6 @@ exports.build_feedback_widget = function () {
 
         animate.fadeIn();
 
-        // if the user mouses over the notification, don't hide it.
-        meta.$container.mouseenter(function () {
-            meta.alert_hover_state = true;
-        });
-
-        // once the user's mouse leaves the notification, restart the countdown.
-        meta.$container.mouseleave(function () {
-            meta.alert_hover_state = false;
-            // add at least 2000ms but if more than that exists just keep the
-            // current amount.
-            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
-        });
     };
 
     return self;
