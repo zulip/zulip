@@ -1,12 +1,12 @@
 const _page_params = {};
 
 set_global('page_params', _page_params);
+set_global('i18n', global.stub_i18n);
 zrequire('people');
 zrequire('presence');
 zrequire('util');
 zrequire('user_status');
 zrequire('buddy_data');
-zrequire('user_status');
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -129,6 +129,14 @@ run_test('bulk_data_hacks', () => {
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
     assert.equal(user_ids.length, 700);
+});
+
+run_test('level', () => {
+    assert.equal(buddy_data.my_user_status(me.user_id), 'translated: (you)');
+    user_status.set_away(me.user_id);
+    assert.equal(buddy_data.my_user_status(me.user_id), 'translated: (away)');
+    user_status.revoke_away(me.user_id);
+    assert.equal(buddy_data.my_user_status(me.user_id), 'translated: (you)');
 });
 
 run_test('level', () => {
