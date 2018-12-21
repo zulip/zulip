@@ -1,3 +1,8 @@
+/* stylelint-disable color-no-hex  */
+/* hex color codes are used instead of our standard of hsl colors,
+because hex color codes are rendered by all email clients
+consistently.  Whereas HSL colors don't work with Hotmail. */
+
 img {
     border: none;
     -ms-interpolation-mode: bicubic;
@@ -6,7 +11,7 @@ img {
 }
 
 body {
-    background-color: hsl(165, 25%, 97%);
+    background-color: #f5f9f8;
     font-family: sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
@@ -31,7 +36,7 @@ table td {
 }
 
 .body {
-    background-color: hsl(165, 25%, 97%);
+    background-color: #f5f9f8;
     width: 100%;
 }
 
@@ -51,7 +56,7 @@ table td {
 }
 
 .main {
-    background-color: hsl(0, 0%, 100%);
+    background-color: #ffffff;
     border-radius: 3px;
     width: 100%;
 }
@@ -73,7 +78,7 @@ table td {
 .footer p,
 .footer span,
 .footer a {
-    color: hsl(0, 0%, 60%);
+    color: #999999;
     font-size: 12px;
     text-align: center;
 }
@@ -86,7 +91,7 @@ h1,
 h2,
 h3,
 h4 {
-    color: hsl(0, 0%, 0%);
+    color: #000000;
     font-family: sans-serif;
     font-weight: 400;
     line-height: 1.4;
@@ -118,16 +123,16 @@ ol li {
 }
 
 a {
-    color: hsl(164, 42%, 47%);
+    color: #46aa8f;
     text-decoration: underline;
 }
 
 a:hover {
-    color: hsl(164, 51%, 55%);
+    color: #52c7a8;
 }
 
 .important {
-    border-bottom: 3px solid hsl(195, 31%, 87%);
+    border-bottom: 3px solid #d4e3e8;
 }
 
 .button {
@@ -135,12 +140,12 @@ a:hover {
     padding: 10px 0px;
     margin: 20px auto;
     width: 200px;
-    border: 1px solid hsl(163, 47%, 66%);
-    background-color: hsl(163, 47%, 66%);
+    border: 1px solid #80d1ba;
+    background-color: #80d1ba;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
-    color: hsl(0, 0%, 100%);
+    color: #ffffff;
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
@@ -148,7 +153,7 @@ a:hover {
 }
 
 a.button:hover {
-    color: hsl(163, 73%, 88%);
+    color: #caf7ea;
     text-decoration: none;
 }
 
@@ -179,21 +184,21 @@ a.button:hover {
 }
 
 .recipient_block {
-    background-color: hsl(192, 20%, 95%);
+    background-color: #f0f4f5;
     border: 1px solid black;
     margin-bottom: 4px;
 }
 
 .recipient_header {
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(0, 0%, 27%);
+    color: #e0dada;
+    background-color: #444444;
     border-bottom: 1px solid black;
     font-weight: bold;
     padding: 2px;
 }
 
 .message_content {
-    background-color: hsl(192, 20%, 95%);
+    background-color: #eff3f4;
     margin-left: 1px;
     margin-right: 2px;
 }
@@ -221,7 +226,7 @@ a.button:hover {
 }
 
 .hot_convo_recipient_header {
-    background-color: hsl(213, 100%, 81%);
+    background-color: #9ec9ff;
     border-bottom: 1px solid black;
     font-weight: bold;
     padding: 2px;
