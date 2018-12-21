@@ -69,10 +69,11 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
             plan: str=REQ(validator=check_string),
+            license_management: str=REQ(validator=check_string, default=None),
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string),
             billing_modality: str=REQ(validator=check_string),
-            invoiced_seat_count: int=REQ(validator=check_int, default=-1),
+            invoiced_seat_count: int=REQ(validator=check_int, default=None),
             stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
     try:
         plan, seat_count = unsign_and_check_upgrade_parameters(user, plan, signed_seat_count,
