@@ -189,6 +189,11 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
+    if (feedback_widget.is_open()) {
+        feedback_widget.dismiss();
+        return true;
+    }
+
     if (overlays.is_modal_open()) {
         overlays.close_active_modal();
         return true;
