@@ -290,6 +290,8 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
     content = content.text();
 
+    var topic = util.get_message_topic(message);
+
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
     }
@@ -307,7 +309,7 @@ function process_notification(notification) {
         notification_source = 'pm';
     } else {
         key = message.sender_full_name + " to " +
-              message.stream + " > " + message.subject;
+              message.stream + " > " + topic;
         if (message.mentioned) {
             notification_source = 'mention';
         } else if (message.alerted) {
@@ -355,10 +357,10 @@ function process_notification(notification) {
     }
 
     if (message.type === "stream") {
-        title += " (to " + message.stream + " > " + message.subject + ")";
+        title += " (to " + message.stream + " > " + topic + ")";
         raw_operators = [
             {operator: "stream", operand: message.stream},
-            {operator: "topic", operand: message.subject},
+            {operator: "topic", operand: topic},
         ];
     }
 
@@ -446,7 +448,7 @@ exports.message_is_notifiable = function (message) {
     }
 
     if (message.type === "stream" &&
-        muting.is_topic_muted(message.stream_id, message.subject)) {
+        muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
         return false;
     }
 
@@ -549,7 +551,7 @@ exports.received_messages = function (messages) {
 
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + message.subject;
+        return message.stream + " > " + util.get_message_topic(message);
     }
     if (message.display_recipient.length > 2) {
         return i18n.t("group private messages with __recipient__",
@@ -579,7 +581,7 @@ exports.get_local_notify_mix_reason = function (message) {
         return;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.subject)) {
+    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
         return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
