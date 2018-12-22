@@ -105,3 +105,35 @@ button.poll-question:hover {
     color: hsl(1, 45%, 50%);
     font-size: 12px;
 }
+
+.d-none {
+    display: none;
+}
+
+.poll-question-check,
+.poll-question-remove {
+    width: 28px !important;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid hsl(0, 0%, 80%);
+    background-color: hsl(0, 0%, 100%);
+}
+
+.poll-question-check:hover,
+.poll-question-remove:hover {
+    border-color: hsl(0, 0%, 60%);
+}
+
+.poll-edit-question {
+    opacity: 0.4;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.poll-edit-question:hover {
+    opacity: 1.0;
+}
+
+.poll-question-header {
+    display: inline-block;
+}
