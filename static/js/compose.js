@@ -154,7 +154,7 @@ function create_message_object() {
         queue_id: page_params.queue_id,
         stream: '',
     };
-    util.set_topic(message, '');
+    util.set_message_topic(message, '');
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -172,7 +172,7 @@ function create_message_object() {
         if (sub) {
             message.stream_id = sub.stream_id;
         }
-        util.set_topic(message, topic);
+        util.set_message_topic(message, topic);
     }
     return message;
 }
