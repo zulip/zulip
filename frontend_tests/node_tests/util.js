@@ -113,6 +113,11 @@ run_test('robust_uri_decode', () => {
     }
 });
 
+run_test('get_message_topic', () => {
+    assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
+    assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
+});
+
 run_test('dumb_strcmp', () => {
     Intl.Collator = undefined;
     var strcmp = util.make_strcmp();
