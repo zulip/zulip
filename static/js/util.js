@@ -322,6 +322,10 @@ exports.get_message_topic = function (obj) {
     return obj.topic;
 };
 
+exports.get_edit_event_topic = function (obj) {
+    return obj.subject;
+};
+
 exports.get_edit_event_orig_topic = function (obj) {
     return obj.orig_subject;
 };
