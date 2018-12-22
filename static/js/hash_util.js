@@ -84,9 +84,9 @@ exports.by_stream_uri = function (stream_id) {
     return "#narrow/stream/" + exports.encode_stream_id(stream_id);
 };
 
-exports.by_stream_topic_uri = function (stream_id, subject) {
+exports.by_stream_topic_uri = function (stream_id, topic) {
     return "#narrow/stream/" + exports.encode_stream_id(stream_id) +
-           "/subject/" + exports.encodeHashComponent(subject);
+           "/topic/" + exports.encodeHashComponent(topic);
 };
 
 // Encodes an operator list into the
@@ -140,7 +140,7 @@ exports.by_conversation_and_time_uri = function (message) {
 
     if (message.type === "stream") {
         return absolute_url +
-            exports.by_stream_topic_uri(message.stream_id, message.subject) +
+            exports.by_stream_topic_uri(message.stream_id, util.get_message_topic(message)) +
             suffix;
     }
 
