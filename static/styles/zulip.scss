@@ -2526,7 +2526,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: none;
 }
 
-#invite-user #invite-user-label {
+#invite-user-label,
+#invite-method-choice {
     font-size: 1em;
     font-weight: 700;
     text-align: center;
