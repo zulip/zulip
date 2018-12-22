@@ -53,13 +53,6 @@ run_test('handlebars_bug', () => {
 
 run_test('actions_popover_content', () => {
     var args = {
-        message: {
-            is_stream: true,
-            id: "99",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
         should_display_quote_and_reply: true,
         can_edit_message: true,
         can_mute_topic: true,
@@ -73,13 +66,6 @@ run_test('actions_popover_content', () => {
     assert.equal(link.text().trim(), 'translated: Quote and reply');
 
     var deletedArgs = {
-        message: {
-            is_stream: true,
-            id: "100",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
         should_display_edit_and_view_source: false,
         should_display_quote_and_reply: false,
         narrowed: true,
