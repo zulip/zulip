@@ -7,6 +7,7 @@ zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 zrequire('search_pill');
+zrequire('util');
 
 set_global('blueslip', {});
 set_global('channel', {});
@@ -27,7 +28,6 @@ set_global('tab_bar', {});
 set_global('top_left_corner', {});
 set_global('typing_events', {});
 set_global('ui_util', {});
-set_global('util', {});
 set_global('unread_ops', {});
 set_global('search_pill_widget', {
     widget: {
