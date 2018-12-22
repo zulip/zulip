@@ -49,7 +49,7 @@ run_test('topic_list_build_widget', () => {
             unread: 3,
             is_zero: false,
             is_muted: false,
-            url: '#narrow/stream/555-devel/subject/coding',
+            url: '#narrow/stream/555-devel/topic/coding',
         };
         assert.deepEqual(info, expected);
         rendered = true;
