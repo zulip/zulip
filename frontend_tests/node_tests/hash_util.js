@@ -1,6 +1,7 @@
 zrequire('hash_util');
 zrequire('stream_data');
 zrequire('people');
+zrequire('util');
 
 var _window = {
     location: {
@@ -137,7 +138,7 @@ run_test('test_by_conversation_and_time_uri', () => {
     };
 
     assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/stream/99-frontend/subject/testing/near/42');
+                 'https://example.com/#narrow/stream/99-frontend/topic/testing/near/42');
 
     message = {
         type: 'private',
