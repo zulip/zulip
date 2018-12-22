@@ -723,6 +723,12 @@ def build_custom_checkers(by_lang):
          'description': "Use Botserver instead of botserver or bot server."},
     ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
+        {'pattern': 'subject|SUBJECT',
+         'exclude': set(['templates/zerver/email.html']),
+         'exclude_pattern': 'email subject',
+         'description': 'avoid subject in templates',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
         {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),

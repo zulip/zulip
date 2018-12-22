@@ -404,7 +404,10 @@ exports.toggle_actions_popover = function (element, id) {
 
         var should_display_delete_option = message_edit.get_deletability(message);
         var args = {
-            message: message,
+            message_id: message.id,
+            historical: message.historical,
+            stream_id: message.stream_id,
+            topic: util.get_message_topic(message),
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
