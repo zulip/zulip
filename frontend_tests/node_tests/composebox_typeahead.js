@@ -828,7 +828,7 @@ run_test('initialize', () => {
     var event = {
         keyCode: 13,
         target: {
-            id: 'stream',
+            id: 'stream_message_recipient_stream',
         },
         preventDefault: noop,
     };
@@ -872,7 +872,7 @@ run_test('initialize', () => {
     $('#compose-textarea').caret = noop;
 
     event.keyCode = 13;
-    event.target.id = 'subject';
+    event.target.id = 'stream_message_recipient_topic';
     $('form#send_message_form').keydown(event);
     event.target.id = 'compose-textarea';
     page_params.enter_sends = false;
@@ -909,7 +909,7 @@ run_test('initialize', () => {
     event = {
         keyCode: 13,
         target: {
-            id: 'stream',
+            id: 'stream_message_recipient_stream',
         },
         preventDefault: noop,
     };
