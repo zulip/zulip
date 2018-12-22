@@ -4,7 +4,9 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
-from zerver.models import get_realm, get_user_by_delivery_email, Realm
+from zerver.models import (
+    get_realm, get_user_by_delivery_email, get_realm_stream, Realm,
+)
 from zerver.lib.notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
 from zerver.lib.actions import do_change_user_delivery_email, \
@@ -20,6 +22,8 @@ import os
 from typing import List, Dict, Any, Optional
 import datetime
 import subprocess
+import ujson
+
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
 
 def email_page(request: HttpRequest) -> HttpResponse:
@@ -99,8 +103,10 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert logged_in
 
     # New user invite and reminder emails
+    stream = get_realm_stream("Denmark", get_realm("zulip"))
     result = client.post("/json/invites",
-                         {"invitee_emails": unregistered_email_2, "stream": ["Denmark"]},
+                         {"invitee_emails": unregistered_email_2,
+                          "stream_ids": ujson.dumps([stream.id])},
                          **host_kwargs)
     assert result.status_code == 200
 
