@@ -196,11 +196,14 @@ exports.unmute = function (stream_id, topic) {
     exports.dismiss_mute_confirmation();
 };
 
-exports.toggle_mute = function (msg) {
-    if (muting.is_topic_muted(msg.stream_id, msg.subject)) {
-        exports.unmute(msg.stream_id, msg.subject);
-    } else if (msg.type === 'stream') {
-        exports.mute(msg.stream_id, msg.subject);
+exports.toggle_mute = function (message) {
+    var stream_id = message.stream_id;
+    var topic = util.get_message_topic(message);
+
+    if (muting.is_topic_muted(stream_id, topic)) {
+        exports.unmute(stream_id, topic);
+    } else if (message.type === 'stream') {
+        exports.mute(stream_id, topic);
     }
 };
 
