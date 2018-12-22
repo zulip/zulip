@@ -7,7 +7,6 @@ import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.extra
 import markdown.extensions.toc
-import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
 from django.utils.safestring import mark_safe
@@ -21,6 +20,7 @@ import zerver.lib.bugdown.tabbed_sections
 import zerver.lib.bugdown.help_settings_links
 import zerver.lib.bugdown.help_relative_links
 import zerver.lib.bugdown.help_emoticon_translations_table
+import zerver.lib.bugdown.include
 from zerver.context_processors import zulip_default_context
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
@@ -115,7 +115,7 @@ def render_markdown_path(markdown_file_path: str,
             zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),
         ]
     if md_macro_extension is None:
-        md_macro_extension = markdown_include.include.makeExtension(
+        md_macro_extension = zerver.lib.bugdown.include.makeExtension(
             base_path='templates/zerver/help/include/')
 
     if any(doc in markdown_file_path for doc in docs_without_macros):
