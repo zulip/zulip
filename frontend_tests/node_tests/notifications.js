@@ -15,8 +15,9 @@ set_global('page_params', {
 
 zrequire('muting');
 zrequire('stream_data');
-zrequire('ui');
 zrequire('people');
+zrequire('ui');
+zrequire('util');
 
 zrequire('notifications');
 
