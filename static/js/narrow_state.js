@@ -81,7 +81,7 @@ exports.set_compose_defaults = function () {
     var opts = {};
     var single = collect_single(exports.operators());
 
-    // Set the stream, subject, and/or PM recipient if they are
+    // Set the stream, topic, and/or PM recipient if they are
     // uniquely specified in the narrow view.
 
     if (single.has('stream')) {
