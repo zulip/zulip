@@ -56,10 +56,17 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
+function lower_same(a, b) {
+    return a.toLowerCase() === b.toLowerCase();
+}
+
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
-            a.subject.toLowerCase() === b.subject.toLowerCase();
+            lower_same(
+                exports.get_message_topic(a),
+                exports.get_message_topic(b)
+            );
 };
 
 exports.is_pm_recipient = function (email, message) {
@@ -308,7 +315,11 @@ exports.set_message_topic = function (obj, topic) {
 };
 
 exports.get_message_topic = function (obj) {
-    return obj.subject;
+    if (obj.topic === undefined) {
+        return obj.subject;
+    }
+
+    return obj.topic;
 };
 
 exports.is_topic_synonym = function (operator) {
