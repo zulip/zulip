@@ -11,6 +11,7 @@ from django.template import Template, Context
 from django.template.loader import get_template
 from django.test.client import RequestFactory
 
+from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -310,6 +311,25 @@ footer
                     '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
                     '<divclass="codehilite"><pre><span></span>'
                     'non-indentedcodeblockwithmultiplelines</pre></div>footer')
+        self.assertEqual(content_sans_whitespace, expected)
+
+    def test_custom_markdown_include_extension(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md"
+        }
+
+        with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
+            template.render(context)
+
+    def test_custom_markdown_include_extension_empty_macro(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension_empty.md"
+        }
+        content = template.render(context)
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        expected = 'headerfooter'
         self.assertEqual(content_sans_whitespace, expected)
 
     def test_custom_tos_template(self) -> None:
