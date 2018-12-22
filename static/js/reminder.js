@@ -136,8 +136,9 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
         content: reminder_msg_content,
         sender_id: page_params.user_id,
         stream: '',
-        subject: '',
     };
+    util.set_message_topic(reminder_message, '');
+
     var recipient = page_params.email;
     var emails = util.extract_pm_recipients(recipient);
     reminder_message.to = emails;

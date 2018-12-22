@@ -201,21 +201,21 @@ exports.update_messages = function update_messages(events) {
                 }
 
                 // Remove the recent topics entry for the old topics;
-                // must be called before we update msg.subject
+                // must be called before we call set_message_topic.
                 topic_data.remove_message({
                     stream_id: msg.stream_id,
                     topic_name: util.get_message_topic(msg),
                 });
 
                 // Update the unread counts; again, this must be called
-                // before we update msg.subject
+                // before we call set_message_topic.
                 unread.update_unread_topics(msg, event);
 
-                msg.subject = new_topic;
+                util.set_message_topic(msg, new_topic);
                 util.set_topic_links(msg, util.get_topic_links(event));
 
                 // Add the recent topics entry for the new topics; must
-                // be called after we update msg.subject
+                // be called after we call set_message_topic.
                 topic_data.add_message({
                     stream_id: msg.stream_id,
                     topic_name: util.get_message_topic(msg),

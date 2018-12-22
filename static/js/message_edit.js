@@ -156,7 +156,7 @@ exports.save = function (row, from_topic_edited_only) {
 
     var request = {message_id: message.id};
     if (topic_changed) {
-        request.subject = new_topic;
+        util.set_message_topic(request, new_topic);
         if (feature_flags.propagate_topic_edits) {
             var selected_topic_propagation = row.find("select.message_edit_topic_propagate").val() || "change_later";
             request.propagate_mode = selected_topic_propagation;
