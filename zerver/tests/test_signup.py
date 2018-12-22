@@ -32,7 +32,7 @@ from zerver.views.registration import send_confirm_registration_email
 from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
-    get_realm, get_user, get_stream_recipient,
+    get_realm, get_user, get_stream_recipient, get_realm_stream,
     PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
@@ -604,7 +604,18 @@ class InviteUserBase(ZulipTestCase):
         tokenized_no_reply_email = parseaddr(outbox[0].from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
-    def invite(self, users: str, streams: List[str], body: str='',
+    INVALID_STREAM_ID = 9999
+
+    def get_stream_id(self, name: str, realm: Optional[Realm]=None) -> int:
+        if not realm:
+            realm = get_realm('zulip')
+        try:
+            stream = get_realm_stream(name, realm.id)
+        except Stream.DoesNotExist:
+            return self.INVALID_STREAM_ID
+        return stream.id
+
+    def invite(self, invitee_emails: str, stream_names: List[str], body: str='',
                invite_as: int=1) -> HttpResponse:
         """
         Invites the specified users to Zulip with the specified streams.
@@ -614,10 +625,12 @@ class InviteUserBase(ZulipTestCase):
 
         streams should be a list of strings.
         """
-
+        stream_ids = []
+        for stream_name in stream_names:
+            stream_ids.append(self.get_stream_id(stream_name))
         return self.client_post("/json/invites",
-                                {"invitee_emails": users,
-                                 "stream": streams,
+                                {"invitee_emails": invitee_emails,
+                                 "stream_ids": ujson.dumps(stream_ids),
                                  "invite_as": invite_as})
 
 class InviteUserTest(InviteUserBase):
@@ -923,28 +936,22 @@ earl-test@zulip.com""", ["Denmark"]))
         # Only a light test of this pathway; e.g. doesn't test that
         # the limit gets reset after 24 hours
         self.login(self.example_email("iago"))
-        self.client_post("/json/invites",
-                         {"invitee_emails": "1@zulip.com, 2@zulip.com",
-                          "stream": ["Denmark"]}),
-
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": ", ".join(
-                                 [str(i) for i in range(get_realm("zulip").max_invites - 1)]),
-                              "stream": ["Denmark"]}),
-            "You do not have enough remaining invites. "
-            "Please contact zulip-admin@example.com to have your limit raised. "
-            "No invitations were sent.")
+        invitee_emails = "1@zulip.com, 2@zulip.com"
+        self.invite(invitee_emails, ["Denmark"])
+        invitee_emails = ", ".join([str(i) for i in range(get_realm("zulip").max_invites - 1)])
+        self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
+                               "You do not have enough remaining invites. "
+                               "Please contact zulip-admin@example.com to have your limit raised. "
+                               "No invitations were sent.")
 
     def test_missing_or_invalid_params(self) -> None:
         """
         Tests inviting with various missing or invalid parameters.
         """
         self.login(self.example_email("hamlet"))
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": "foo@zulip.com"}),
-            "You must specify at least one stream for invitees to join.")
+        invitee_emails = "foo@zulip.com"
+        self.assert_json_error(self.invite(invitee_emails, []),
+                               "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
             self.assert_json_error(
@@ -973,7 +980,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login(self.example_email("hamlet"))
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                               "Stream does not exist: NotARealStream. No invites were sent.")
+                               "Stream does not exist with id: {}. No invites were sent.".format(self.INVALID_STREAM_ID))
         self.check_sent_emails([])
 
     def test_invite_existing_user(self) -> None:
@@ -981,11 +988,8 @@ earl-test@zulip.com""", ["Denmark"]))
         If you invite an address already using Zulip, no invitation is sent.
         """
         self.login(self.example_email("hamlet"))
-        self.assert_json_error(
-            self.client_post("/json/invites",
-                             {"invitee_emails": self.example_email("hamlet"),
-                              "stream": ["Denmark"]}),
-            "We weren't able to invite anyone.")
+        self.assert_json_error(self.invite(self.example_email("hamlet"), ["Denmark"]),
+                               "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
                               email=self.example_email("hamlet")))
@@ -999,11 +1003,8 @@ earl-test@zulip.com""", ["Denmark"]))
         self.login(self.example_email("hamlet"))
         existing = [self.example_email("hamlet"), u"othello@zulip.com"]
         new = [u"foo-test@zulip.com", u"bar-test@zulip.com"]
-
-        result = self.client_post("/json/invites",
-                                  {"invitee_emails": "\n".join(existing + new),
-                                   "stream": ["Denmark"]})
-        self.assert_json_error(result,
+        invitee_emails = "\n".join(existing + new)
+        self.assert_json_error(self.invite(invitee_emails, ["Denmark"]),
                                "Some of those addresses are already using Zulip, \
 so we didn't send them an invitation. We did send invitations to everyone else!")
 
@@ -1858,7 +1859,7 @@ class RealmCreationTest(ZulipTestCase):
         with self.assertRaises(ValidationError):
             check_subdomain_available('-ba_d-', from_management_command=True)
 
-class UserSignUpTest(ZulipTestCase):
+class UserSignUpTest(InviteUserBase):
 
     def _assert_redirected_to(self, result: HttpResponse, url: str) -> None:
         self.assertEqual(result.status_code, 302)
@@ -2795,10 +2796,9 @@ class UserSignUpTest(ZulipTestCase):
 
         # Invite user.
         self.login(self.example_email('iago'))
-        response = self.client_post("/json/invites",
-                                    {"invitee_emails": [self.nonreg_email('newuser')],
-                                     "stream": streams,
-                                     "invite_as": invite_as})
+        response = self.invite(invitee_emails=self.nonreg_email('newuser'),
+                               stream_names=streams,
+                               invite_as=invite_as)
         self.assert_json_success(response)
         self.logout()
 

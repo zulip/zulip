@@ -24,6 +24,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          invitee_emails_raw: str=REQ("invitee_emails"),
                          invite_as: Optional[int]=REQ(
                              validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
+                         stream_ids: List[int]=REQ(validator=check_list(check_int)),
                          ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
@@ -34,25 +35,24 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Must be an organization administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
+    if not stream_ids:
+        return json_error(_("You must specify at least one stream for invitees to join."))
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
-
-    stream_names = request.POST.getlist('stream')
-    if not stream_names:
-        return json_error(_("You must specify at least one stream for invitees to join."))
 
     # We unconditionally sub you to the notifications stream if it
     # exists and is public.
     notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
     if notifications_stream and not notifications_stream.invite_only:
-        stream_names.append(notifications_stream.name)
+        stream_ids.append(notifications_stream.id)
 
     streams = []  # type: List[Stream]
-    for stream_name in stream_names:
+    for stream_id in stream_ids:
         try:
-            (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+            (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
-            return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
+            return json_error(
+                _("Stream does not exist with id: {}. No invites were sent.".format(stream_id)))
         streams.append(stream)
 
     do_invite_users(user_profile, invitee_emails, streams, invite_as)
