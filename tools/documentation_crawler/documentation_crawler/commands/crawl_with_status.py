@@ -11,9 +11,12 @@ class StatusCommand(Command):
             raise UsageError(
                 "running 'scrapy crawl' with more than one spider is no longer supported")
         spname = args[0]
-
+        if len(vars(opts)['spargs']) > 0:
+            skip_external = vars(opts)['spargs']['skip_external']
+        else:
+            skip_external = None
         crawler = self.crawler_process.create_crawler(spname)
-        self.crawler_process.crawl(crawler)
+        self.crawler_process.crawl(crawler, skip_external=skip_external)
         self.crawler_process.start()
         # Get exceptions quantity from crawler stat data
 

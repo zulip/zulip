@@ -21,7 +21,7 @@ set -x
 ./tools/setup/optimize-svg
 # In CI, we only test links we control in test-documentation to avoid flakes
 ./tools/test-documentation --skip-external-links
-./tools/test-help-documentation
+./tools/test-help-documentation --skip-external-links
 ./tools/test-api
 ./tools/test-locked-requirements
 ./tools/test-run-dev
