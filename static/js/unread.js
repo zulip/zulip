@@ -446,7 +446,9 @@ exports.get_unread_messages = function (messages) {
 };
 
 exports.update_unread_topics = function (msg, event) {
-    if (event.subject === undefined) {
+    var new_topic = util.get_edit_event_topic(event);
+
+    if (new_topic === undefined) {
         return;
     }
 
@@ -460,7 +462,7 @@ exports.update_unread_topics = function (msg, event) {
 
     exports.unread_topic_counter.add(
         msg.stream_id,
-        event.subject,
+        new_topic,
         msg.id
     );
 };
