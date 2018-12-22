@@ -161,6 +161,7 @@ run_test('canonicalizations', () => {
     assert.equal(Filter.canonicalize_operator('Is'), 'is');
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
+    assert.equal(Filter.canonicalize_operator('FROM'), 'sender');
 
     var term;
     term = Filter.canonicalize_term({operator: 'Stream', operand: 'Denmark'});
