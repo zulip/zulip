@@ -126,6 +126,10 @@ run_test('dumb_strcmp', () => {
     assert.equal(strcmp('z', 'y'), 1);
 });
 
+run_test('get_edit_event_orig_topic', () => {
+    assert.equal(util.get_edit_event_orig_topic({orig_subject: 'lunch'}), 'lunch');
+});
+
 run_test('is_mobile', () => {
     global.window.navigator = { userAgent: "Android" };
     assert(util.is_mobile());
