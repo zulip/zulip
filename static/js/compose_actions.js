@@ -307,7 +307,7 @@ exports.respond_to_message = function (opts) {
     var topic = '';
     if (message.type === "stream") {
         stream = message.stream;
-        topic = util.get_topic(message);
+        topic = util.get_message_topic(message);
     }
 
     var pm_recipient = message.reply_to;
