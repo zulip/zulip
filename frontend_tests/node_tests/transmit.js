@@ -20,6 +20,7 @@ set_global('sent_messages', {
 set_global('blueslip', global.make_zblueslip());
 
 zrequire('people');
+zrequire('util');
 zrequire('transmit');
 
 function test_with_mock_socket(test_params) {
