@@ -16,14 +16,15 @@ function reset_error_messages() {
 
 function get_common_invitation_data() {
     var invite_as = parseInt($('#invite_as').val(), 10);
-    var streams = [];
+    var stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
-        streams.push($(this).val());
+        var stream_id = parseInt($(this).val(), 10);
+        stream_ids.push(stream_id);
     });
     var data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
         invite_as: invite_as,
-        stream : streams,
+        stream_ids: JSON.stringify(stream_ids),
     };
     return data;
 }
@@ -38,7 +39,6 @@ function submit_invitation_form() {
     channel.post({
         url: "/json/invites",
         data: data,
-        traditional: true,
         beforeSubmit: function () {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
@@ -143,6 +143,7 @@ exports.initialize = function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
+
     $("#submit-invitation").on("click", submit_invitation_form);
 };
 

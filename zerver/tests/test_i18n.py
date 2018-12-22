@@ -4,6 +4,7 @@ from typing import Any
 
 import django
 import mock
+import ujson
 from django.test import TestCase
 from django.utils import translation
 from django.conf import settings
@@ -11,6 +12,7 @@ from django.http import HttpResponse
 from django.core import mail
 from http.cookies import SimpleCookie
 
+from zerver.models import get_realm_stream
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -39,7 +41,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         realm = hamlet.realm
         realm.default_language = "de"
         realm.save()
-
+        stream = get_realm_stream("Denmark", realm.id)
         self.login(hamlet.email)
 
         # TODO: Uncomment and replace with translation once we have German translations for the strings
@@ -48,7 +50,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         # check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
         check_translation("Incrível!", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
         check_translation("Danke, dass Du", "post", '/accounts/find/', {'emails': hamlet.email})
-        check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com", "stream": ["Denmark"]})
+        check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com", "stream_ids": ujson.dumps([stream.id])})
 
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
