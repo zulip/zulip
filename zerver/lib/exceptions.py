@@ -41,6 +41,7 @@ class ErrorCode(AbstractEnum):
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
     INVALID_ZULIP_SERVER = ()
+    INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
     REQUEST_CONFUSING_VAR = ()
 
 class JsonableError(Exception):
@@ -151,6 +152,17 @@ class CannotDeactivateLastUserError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Cannot deactivate the only {entity}.")
+
+class InvalidMarkdownIncludeStatement(JsonableError):
+    code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
+    data_fields = ['include_statement']
+
+    def __init__(self, include_statement: str) -> None:
+        self.include_statement = include_statement
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid markdown include statement: {include_statement}")
 
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
