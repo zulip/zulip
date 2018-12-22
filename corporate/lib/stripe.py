@@ -56,7 +56,7 @@ class BillingError(Exception):
     TRY_RELOADING = _("Something went wrong. Please reload the page.")
 
     # description is used only for tests
-    def __init__(self, description: str, message: str) -> None:
+    def __init__(self, description: str, message: str=CONTACT_SUPPORT) -> None:
         self.description = description
         self.message = message
 
