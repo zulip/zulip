@@ -107,7 +107,7 @@ function set_topic_edit_properties(group, message) {
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
-    if (message.subject === compose.empty_topic_placeholder()) {
+    if (util.get_message_topic(message) === compose.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
     } else if (message_edit.is_topic_editable(message)) {
         group.on_hover_topic_edit = true;
@@ -122,7 +122,7 @@ function populate_group_from_message_container(group, message_container) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
-        group.topic = message_container.msg.subject;
+        group.topic = util.get_message_topic(message_container.msg);
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
@@ -258,7 +258,7 @@ MessageListView.prototype = {
                     message_container.topic_url =
                         hash_util.by_stream_topic_uri(
                             message_container.msg.stream_id,
-                            message_container.msg.subject);
+                            util.get_message_topic(message_container.msg));
                 } else {
                     message_container.pm_with_url =
                         message_container.msg.pm_with_url;
