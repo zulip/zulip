@@ -186,9 +186,10 @@ exports.activate = function (opts) {
         var widget_data = poll_data.get_widget_data();
         var html = templates.render('poll-widget-results', widget_data);
         elem.find('ul.poll-widget').html(html);
-
         elem.find('.poll-question-header').text(widget_data.question);
         if (!is_my_poll) {
+            // We hide the edit pencil button for non-senders
+            elem.find('.poll-edit-question').hide();
             if (widget_data.question !== '') {
                 // For the non-senders, we hide the question input bar
                 // when we have a question assigned to the poll
@@ -199,14 +200,78 @@ exports.activate = function (opts) {
                 elem.find('button.poll-question').attr('disabled', true);
                 elem.find('input.poll-question').attr('disabled', true);
             }
+        } else {
+            // Hide the edit pencil icon if the question is still not
+            // assigned for the senders
+            if (widget_data.question === '') {
+                elem.find('.poll-edit-question').hide();
+            } else {
+                elem.find('.poll-edit-question').show();
+            }
         }
         if (widget_data.question !== '') {
-            elem.find('button.poll-question').text(i18n.t('Edit question'));
+            // As soon as a poll-question is assigined
+            // we change the "Add Question" button to a check button
+            elem.find('button.poll-question').empty().addClass('fa fa-check poll-question-check');
+            // The d-none class keeps the cancel editing question button hidden
+            // as long as "Add Question" button is displayed
+            elem.find('button.poll-question-remove').removeClass('d-none');
+            // We hide the whole question bar if question is assigned
+            elem.find('.poll-question-bar').hide();
             elem.find('.poll-comment-bar').show();
         } else {
             elem.find('.poll-comment-bar').hide();
+            elem.find('.poll-edit-question').hide();
         }
+        if (is_my_poll) {
+            // We disable the check button if the input field is empty
+            // and enable it as soon as something is entered in input field
+            elem.find('input.poll-question').on('keyup', function () {
+                if (elem.find('input.poll-question').val().length > 0) {
+                    elem.find('button.poll-question').removeAttr('disabled');
+                } else {
+                    elem.find('button.poll-question').attr('disabled', true);
 
+                }
+            });
+            // However doing above leaves the check button disabled
+            // for the next time when someone is trying to enter a question if
+            // someone empties the input field and clicks on cancel edit button.
+            // We fix this by checking if there is text in input field if
+            // edit question pencil icon is clicked and enable the button if
+            // there is text in input field.
+            elem.find('.poll-edit-question').on('click', function () {
+                if (elem.find('input.poll-question').val().length > 0) {
+                    elem.find('button.poll-question').removeAttr('disabled');
+                }
+            });
+        }
+        elem.find(".poll-edit-question").on('click', function () {
+            // As soon as edit question button is clicked
+            // we hide the Question and the edit question pencil button
+            // and display the input box for editing the question
+            elem.find('.poll-question-header').hide();
+            elem.find('.poll-question-bar').show();
+            elem.find('.poll-edit-question').hide();
+            elem.find('input.poll-question').empty().val(widget_data.question).select();
+        });
+
+        elem.find("button.poll-question").on('click', function () {
+            if (widget_data.question !== '') {
+                // we display the question and hide the input box for editing
+                elem.find(".poll-question-bar").hide();
+                elem.find('.poll-question-header').show();
+            }
+        });
+
+        elem.find("button.poll-question-remove").on('click', function () {
+            // On clicking the cross i.e. cancel editing button
+            // we display the previos question as it is
+            // and hide the input box and buttons for editing
+            elem.find('.poll-question-bar').hide();
+            elem.find('.poll-edit-question').show();
+            elem.find('.poll-question-header').show();
+        });
         elem.find("button.poll-vote").on('click', function (e) {
             e.stopPropagation();
             var key = $(e.target).attr('data-key');
