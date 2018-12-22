@@ -303,7 +303,7 @@ exports.get_reload_topic = function (obj) {
     return obj.topic || obj.subject || '';
 };
 
-exports.set_topic = function (obj, topic) {
+exports.set_message_topic = function (obj, topic) {
     obj.subject = topic;
 };
 
