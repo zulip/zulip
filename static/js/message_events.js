@@ -149,7 +149,9 @@ exports.update_messages = function update_messages(events) {
             message_edit.end(row);
         }
 
-        if (event.subject !== undefined) {
+        var new_topic = util.get_edit_event_topic(event);
+
+        if (new_topic !== undefined) {
             // A topic edit may affect multiple messages, listed in
             // event.message_ids. event.message_id is still the first message
             // where the user initiated the edit.
@@ -165,7 +167,7 @@ exports.update_messages = function update_messages(events) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (orig_topic === compose_state.topic()) {
                         changed_compose = true;
-                        compose_state.topic(event.subject);
+                        compose_state.topic(new_topic);
                         compose_fade.set_focused_recipient("stream");
                     }
                 }
@@ -179,7 +181,7 @@ exports.update_messages = function update_messages(events) {
                     var current_filter = narrow_state.filter();
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
-                            var new_filter = current_filter.filter_with_new_topic(event.subject);
+                            var new_filter = current_filter.filter_with_new_topic(new_topic);
                             var operators = new_filter.operators();
                             var opts = {
                                 trigger: 'topic change',
@@ -209,7 +211,7 @@ exports.update_messages = function update_messages(events) {
                 // before we update msg.subject
                 unread.update_unread_topics(msg, event);
 
-                msg.subject = event.subject;
+                msg.subject = new_topic;
                 util.set_topic_links(msg, util.get_topic_links(event));
 
                 // Add the recent topics entry for the new topics; must
