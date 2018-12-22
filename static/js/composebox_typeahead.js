@@ -115,31 +115,42 @@ function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
     if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
-        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
+        var target_sel;
+
+        if (e.target.id) {
+            target_sel = '#' + e.target.id;
+        }
+
+        var on_stream = target_sel === "#stream_message_recipient_stream";
+        var on_topic = target_sel  === "#stream_message_recipient_topic";
+        var on_pm = target_sel === "#private_message_recipient";
+        var on_compose = target_sel === '#compose-textarea';
+
+        if (on_stream || on_topic || on_pm) {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();
         }
 
         // In the compose_textarea box, preventDefault() for tab but not for enter
-        if (e.target.id === 'compose-textarea' && code !== 13) {
+        if (on_compose && code !== 13) {
             e.preventDefault();
         }
 
-        if (e.target.id === "stream") {
-            nextFocus = "subject";
-        } else if (e.target.id === "subject") {
+        if (on_stream) {
+            nextFocus = "#stream_message_recipient_topic";
+        } else if (on_topic) {
             if (code === 13) {
                 e.preventDefault();
             }
-            nextFocus = 'compose-textarea';
-        } else if (e.target.id === "private_message_recipient") {
-            nextFocus = 'compose-textarea';
-        } else if (e.target.id === 'compose-textarea') {
+            nextFocus = '#compose-textarea';
+        } else if (on_pm) {
+            nextFocus = '#compose-textarea';
+        } else if (on_compose) {
             if (code === 13) {
                 nextFocus = false;
             } else {
-                nextFocus = "compose-send-button";
+                nextFocus = "#compose-send-button";
             }
         } else {
             nextFocus = false;
@@ -159,11 +170,11 @@ function handle_keydown(e) {
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
             if (nextFocus) {
-                ui_util.focus_on(nextFocus);
+                $(nextFocus).focus();
                 nextFocus = false;
             }
 
-            if (e.target.id === 'compose-textarea' && code === 13) {
+            if (on_compose && code === 13) {
                 var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
                 var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
                 var this_enter_sends;
@@ -230,7 +241,7 @@ function handle_keyup(e) {
     var code = e.keyCode || e.which;
     if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
         if (nextFocus) {
-            ui_util.focus_on(nextFocus);
+            $(nextFocus).focus();
             nextFocus = false;
         }
     }
