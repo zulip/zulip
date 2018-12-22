@@ -28,7 +28,7 @@ from corporate.lib.stripe import catch_stripe_errors, \
     do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_SEAT_COUNT, do_create_customer
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_customer
 from corporate.models import Customer, CustomerPlan, Plan, Coupon
 from corporate.views import payment_method_string
 import corporate.urls
@@ -250,7 +250,7 @@ class StripeTest(ZulipTestCase):
             'schedule': 'annual'}  # type: Dict[str, Any]
         if invoice:  # send_invoice
             params.update({
-                'invoiced_seat_count': 123,
+                'licenses': 123,
                 'billing_modality': 'send_invoice'})
         else:  # charge_automatically
             stripe_token = None
@@ -482,19 +482,19 @@ class StripeTest(ZulipTestCase):
 
     def test_upgrade_with_insufficient_invoiced_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
-        # Test invoicing for less than MIN_INVOICED_SEAT_COUNT
+        # Test invoicing for less than MIN_INVOICED_LICENSES
         response = self.upgrade(invoice=True, talk_to_stripe=False,
-                                invoiced_seat_count=MIN_INVOICED_SEAT_COUNT - 1)
-        self.assert_json_error_contains(response, "at least {} users.".format(MIN_INVOICED_SEAT_COUNT))
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'lowball seat count')
+                                licenses=MIN_INVOICED_LICENSES - 1)
+        self.assert_json_error_contains(response, "at least {} users.".format(MIN_INVOICED_LICENSES))
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'not enough licenses')
         # Test invoicing for less than your user count
-        with patch("corporate.views.MIN_INVOICED_SEAT_COUNT", 3):
-            response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=4)
+        with patch("corporate.views.MIN_INVOICED_LICENSES", 3):
+            response = self.upgrade(invoice=True, talk_to_stripe=False, licenses=4)
         self.assert_json_error_contains(response, "at least {} users.".format(self.seat_count))
-        self.assertEqual(ujson.loads(response.content)['error_description'], 'lowball seat count')
-        # Test not setting invoiced_seat_count
-        response = self.upgrade(invoice=True, talk_to_stripe=False, invoiced_seat_count=None)
-        self.assert_json_error_contains(response, "invoiced_seat_count is not an integer")
+        self.assertEqual(ujson.loads(response.content)['error_description'], 'not enough licenses')
+        # Test not setting licenses
+        response = self.upgrade(invoice=True, talk_to_stripe=False, licenses=None)
+        self.assert_json_error_contains(response, "licenses is not an integer")
 
     @patch("corporate.lib.stripe.billing_logger.error")
     def test_upgrade_with_uncaught_exception(self, mock_: Mock) -> None:
