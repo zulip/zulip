@@ -108,7 +108,7 @@ exports.update_booleans = function (message, flags) {
 exports.add_message_metadata = function (message) {
     var cached_msg = stored_messages[message.id];
     if (cached_msg !== undefined) {
-        // Copy the match subject and content over if they exist on
+        // Copy the match topic and content over if they exist on
         // the new message
         if (util.get_match_topic(message) !== undefined) {
             util.set_match_data(cached_msg, message);
