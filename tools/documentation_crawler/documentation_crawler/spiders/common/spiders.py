@@ -87,7 +87,7 @@ class BaseDocumentationSpider(scrapy.Spider):
             elif '#' in link.url:
                 dont_filter = True
                 callback = self.check_permalink
-            if (self.skip_external is not None):   # checks if flag is set to skip external link check.
+            if self.skip_external:
                 if (self._is_external_link(link.url)):
                     continue
             yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
