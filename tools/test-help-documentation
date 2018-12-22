@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 import subprocess
+from typing import List
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -14,6 +15,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--force', default=False,
                     action="store_true",
                     help='Run tests despite possible problems.')
+parser.add_argument('--skip-external-links', default=False,
+                    dest="skip_external_link_check",
+                    action="store_true",
+                    help='Skip checking of external links.')
 options = parser.parse_args()
 
 os.chdir(ZULIP_PATH)
@@ -25,13 +30,21 @@ os.makedirs('var/help-documentation', exist_ok=True)
 LOG_FILE = 'var/help-documentation/server.log'
 external_host = "localhost:9981"
 
+extra_args = []  # type: List[str]
+
+if options.skip_external_link_check:
+    extra_args = ['-a', 'skip_external=set']
+
 with test_server_running(options.force, external_host, log_file=LOG_FILE,
                          dots=True, use_db=True):
-    ret_help_doc = subprocess.call(('scrapy', 'crawl_with_status', 'help_documentation_crawler'),
+    ret_help_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
+                                   ['help_documentation_crawler'],
                                    cwd='tools/documentation_crawler')
-    ret_api_doc = subprocess.call(('scrapy', 'crawl_with_status', 'api_documentation_crawler'),
+    ret_api_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
+                                  ['api_documentation_crawler'],
                                   cwd='tools/documentation_crawler')
-    ret_portico_doc = subprocess.call(('scrapy', 'crawl_with_status', 'portico_documentation_crawler'),
+    ret_portico_doc = subprocess.call(['scrapy', 'crawl_with_status'] + extra_args +
+                                      ['portico_documentation_crawler'],
                                       cwd='tools/documentation_crawler')
 
 if ret_help_doc != 0 or ret_api_doc != 0 or ret_portico_doc != 0:
