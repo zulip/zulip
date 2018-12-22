@@ -454,7 +454,7 @@ exports.stream_topic = function () {
     if (msg) {
         return {
             stream: msg.stream || undefined,
-            topic: msg.subject || undefined,
+            topic: util.get_message_topic(msg) || undefined,
         };
     }
 
@@ -576,7 +576,7 @@ exports.by_topic = function (target_id, opts) {
     unread_ops.notify_server_message_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.subject},
+        {operator: 'topic', operand: util.get_message_topic(original)},
     ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate(search_terms, opts);
