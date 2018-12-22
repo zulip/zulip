@@ -146,11 +146,7 @@ the industry:
 These security practices matter!  Slack, the most popular SaaS team chat
 provider, has needed to award
 [hundreds of bounties](https://hackerone.com/slack) for security bugs found
-by security researchers outside the company. This incredible number of
-discovered vulnerabilities likely results from Slack not following secure
-development practices (e.g. Slack uses a
-[famously insecure](https://www.quora.com/Why-is-PHP-hated-by-so-many-developers/answer/Anders-Kaseorg)
-programming language as the core language for their product).
+by security researchers outside the company.
 
 ## Further reading
 
