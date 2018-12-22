@@ -540,8 +540,8 @@ exports.num_unread_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_stream_count(stream_id);
 };
 
-exports.num_unread_for_topic = function (stream_id, subject) {
-    return exports.unread_topic_counter.get(stream_id, subject);
+exports.num_unread_for_topic = function (stream_id, topic_name) {
+    return exports.unread_topic_counter.get(stream_id, topic_name);
 };
 
 exports.topic_has_any_unread = function (stream_id, topic) {
@@ -556,8 +556,8 @@ exports.get_msg_ids_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_msg_ids_for_stream(stream_id);
 };
 
-exports.get_msg_ids_for_topic = function (stream_id, subject) {
-    return exports.unread_topic_counter.get_msg_ids_for_topic(stream_id, subject);
+exports.get_msg_ids_for_topic = function (stream_id, topic_name) {
+    return exports.unread_topic_counter.get_msg_ids_for_topic(stream_id, topic_name);
 };
 
 exports.get_msg_ids_for_person = function (user_ids_string) {
