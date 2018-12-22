@@ -159,10 +159,11 @@ exports.update_messages = function update_messages(events) {
 
             var stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             var compose_stream_name = compose_state.stream_name();
+            var orig_topic = util.get_edit_event_orig_topic(event);
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
-                    if (event.orig_subject === compose_state.topic()) {
+                    if (orig_topic === compose_state.topic()) {
                         changed_compose = true;
                         compose_state.topic(event.subject);
                         compose_fade.set_focused_recipient("stream");
@@ -177,7 +178,7 @@ exports.update_messages = function update_messages(events) {
                 if (selection_changed_topic) {
                     var current_filter = narrow_state.filter();
                     if (current_filter && stream_name) {
-                        if (current_filter.has_topic(stream_name, event.orig_subject)) {
+                        if (current_filter.has_topic(stream_name, orig_topic)) {
                             var new_filter = current_filter.filter_with_new_topic(event.subject);
                             var operators = new_filter.operators();
                             var opts = {
