@@ -154,12 +154,15 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {from: "sender", subject: "topic"};
-
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
-    if (canonical_operators.hasOwnProperty(operator)) {
-        return canonical_operators[operator];
+
+    if (operator === 'from') {
+        return 'sender';
+    }
+
+    if (util.is_topic_synonym(operator)) {
+        return 'topic';
     }
     return operator;
 };
@@ -298,7 +301,7 @@ Filter.parse = function (str) {
 /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
-       ['subject', 'my amazing subject']
+       ['topic', 'my amazing topic']
 
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
@@ -575,6 +578,8 @@ Filter.sorted_term_types = function (term_types) {
 Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 
+    operator = Filter.canonicalize_operator(operator);
+
     if (operator === 'search') {
         return negated ? 'exclude' : 'search for';
     }
@@ -595,11 +600,9 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'id':
         return verb + 'message ID';
 
-    case 'subject':
     case 'topic':
         return verb + 'topic';
 
-    case 'from':
     case 'sender':
         return verb + 'sent by';
 

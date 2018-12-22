@@ -311,6 +311,10 @@ exports.get_topic = function (obj) {
     return obj.subject;
 };
 
+exports.is_topic_synonym = function (operator) {
+    return operator === 'subject';
+};
+
 return exports;
 
 }());
