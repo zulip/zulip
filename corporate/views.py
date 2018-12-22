@@ -26,25 +26,32 @@ from corporate.models import Customer, CustomerPlan, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
-def unsign_and_check_upgrade_parameters(user: UserProfile, schedule: str,
-                                        signed_seat_count: str, salt: str,
-                                        billing_modality: str) -> Tuple[int, int]:
-    provided_schedules = {
-        'charge_automatically': ['annual', 'monthly'],
-        'send_invoice': ['annual'],
-    }
-    if schedule not in provided_schedules[billing_modality]:
-        billing_logger.warning("Tampered schedule during realm upgrade. user: %s, realm: %s (%s)."
-                               % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError('tampered schedule', BillingError.CONTACT_SUPPORT)
-    billing_schedule = {'annual': CustomerPlan.ANNUAL, 'monthly': CustomerPlan.MONTHLY}[schedule]
+def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
     try:
-        seat_count = int(unsign_string(signed_seat_count, salt))
+        return int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
-        billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
-                               % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
-    return seat_count, billing_schedule
+        raise BillingError('tampered seat count')
+
+def check_upgrade_parameters(
+        billing_modality: str, schedule: str, license_management: str, licenses: int,
+        has_stripe_token: bool, seat_count: int) -> None:
+    if billing_modality not in ['send_invoice', 'charge_automatically']:
+        raise BillingError('unknown billing_modality')
+    if schedule not in ['annual', 'monthly']:
+        raise BillingError('unknown schedule')
+    if license_management not in ['automatic', 'manual', 'mix']:
+        raise BillingError('unknown license_management')
+
+    if billing_modality == 'charge_automatically':
+        if not has_stripe_token:
+            raise BillingError('autopay with no card')
+
+    min_licenses = seat_count
+    if billing_modality == 'send_invoice':
+        min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+    if licenses is None or licenses < min_licenses:
+        raise BillingError('not enough licenses',
+                           _("You must invoice for at least {} users.".format(min_licenses)))
 
 def payment_method_string(stripe_customer: stripe.Customer) -> str:
     subscription = extract_current_subscription(stripe_customer)
@@ -67,26 +74,29 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 
 @has_request_variables
 def upgrade(request: HttpRequest, user: UserProfile,
+            billing_modality: str=REQ(validator=check_string),
             schedule: str=REQ(validator=check_string),
             license_management: str=REQ(validator=check_string, default=None),
-            signed_seat_count: str=REQ(validator=check_string),
-            salt: str=REQ(validator=check_string),
-            billing_modality: str=REQ(validator=check_string),
             licenses: int=REQ(validator=check_int, default=None),
-            stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
+            stripe_token: str=REQ(validator=check_string, default=None),
+            signed_seat_count: str=REQ(validator=check_string),
+            salt: str=REQ(validator=check_string)) -> HttpResponse:
     try:
-        seat_count, billing_schedule = unsign_and_check_upgrade_parameters(
-            user, schedule, signed_seat_count, salt, billing_modality)
-        if billing_modality == 'send_invoice':
-            min_required_licenses = max(seat_count, MIN_INVOICED_LICENSES)
-            if licenses < min_required_licenses:
-                raise BillingError(
-                    'not enough licenses',
-                    "You must invoice for at least %d users." % (min_required_licenses,))
-        else:
+        seat_count = unsign_seat_count(signed_seat_count, salt)
+        if billing_modality == 'charge_automatically' and license_management == 'automatic':
             licenses = seat_count
+        if billing_modality == 'send_invoice':
+            schedule = 'annual'
+            license_management = 'manual'
+        check_upgrade_parameters(
+            billing_modality, schedule, license_management, licenses,
+            stripe_token is not None, seat_count)
+
+        billing_schedule = {'annual': CustomerPlan.ANNUAL,
+                            'monthly': CustomerPlan.MONTHLY}[schedule]
         process_initial_upgrade(user, licenses, billing_schedule, stripe_token)
     except BillingError as e:
+        # TODO add a billing_logger.warning with all the upgrade parameters
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
         billing_logger.exception("Uncaught exception in billing: %s" % (e,))
