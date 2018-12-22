@@ -113,7 +113,7 @@ $(function () {
                         salt: get_form_input("autopay", "salt"),
                         schedule: get_form_input("autopay", "schedule"),
                         license_management: JSON.stringify(license_management),
-                        invoiced_seat_count: $("#" + license_management + "_license_count").val(),
+                        licenses: $("#" + license_management + "_license_count").val(),
                         billing_modality: get_form_input("autopay", "billing_modality"),
                     },
                     success: function () {
@@ -150,7 +150,7 @@ $(function () {
         });
 
         $("#invoice-button").on("click", function (e) {
-            if ($("#invoiced_seat_count")[0].checkValidity() === false) {
+            if ($("#invoiced_licenses")[0].checkValidity() === false) {
                 return;
             }
             e.preventDefault();
@@ -167,7 +167,7 @@ $(function () {
                     salt: get_form_input("invoice", "salt"),
                     schedule: get_form_input("invoice", "schedule"),
                     billing_modality: get_form_input("invoice", "billing_modality"),
-                    invoiced_seat_count: get_form_input("invoice", "invoiced_seat_count", false),
+                    licenses: get_form_input("invoice", "invoiced_licenses", false),
                 },
                 success: function () {
                     $("#invoice-loading").hide();

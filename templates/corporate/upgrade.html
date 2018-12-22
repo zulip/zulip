@@ -179,7 +179,7 @@
                                     Enter the number of users you would like to pay for. We'll email you an
                                     invoice in 1-2 hours. Invoices can be paid by ACH transfer or credit card.
                                 </p>
-                                <h4>Number of users (minimum {{ min_seat_count_for_invoice }})</h4>
+                                <h4>Number of users (minimum {{ min_invoiced_licenses }})</h4>
                                 <input pattern="\d*" oninvalid="this.setCustomValidity('Invalid input')"
                                   oninput="this.setCustomValidity('')" type="text" autocomplete="off"
                                 id="invoiced_seat_count" name="invoiced_seat_count" required/><br>

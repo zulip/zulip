@@ -21,7 +21,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, upcoming_invoice_total, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
-    MIN_INVOICED_SEAT_COUNT, DEFAULT_INVOICE_DAYS_UNTIL_DUE
+    MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE
 from corporate.models import Customer, CustomerPlan, Plan
 
 billing_logger = logging.getLogger('corporate.stripe')
@@ -72,19 +72,20 @@ def upgrade(request: HttpRequest, user: UserProfile,
             signed_seat_count: str=REQ(validator=check_string),
             salt: str=REQ(validator=check_string),
             billing_modality: str=REQ(validator=check_string),
-            invoiced_seat_count: int=REQ(validator=check_int, default=None),
+            licenses: int=REQ(validator=check_int, default=None),
             stripe_token: str=REQ(validator=check_string, default=None)) -> HttpResponse:
     try:
         seat_count, billing_schedule = unsign_and_check_upgrade_parameters(
             user, schedule, signed_seat_count, salt, billing_modality)
         if billing_modality == 'send_invoice':
-            min_required_seat_count = max(seat_count, MIN_INVOICED_SEAT_COUNT)
-            if invoiced_seat_count < min_required_seat_count:
+            min_required_licenses = max(seat_count, MIN_INVOICED_LICENSES)
+            if licenses < min_required_licenses:
                 raise BillingError(
-                    'lowball seat count',
-                    "You must invoice for at least %d users." % (min_required_seat_count,))
-            seat_count = invoiced_seat_count
-        process_initial_upgrade(user, seat_count, billing_schedule, stripe_token)
+                    'not enough licenses',
+                    "You must invoice for at least %d users." % (min_required_licenses,))
+        else:
+            licenses = seat_count
+        process_initial_upgrade(user, licenses, billing_schedule, stripe_token)
     except BillingError as e:
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
@@ -117,7 +118,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'seat_count': seat_count,
         'signed_seat_count': signed_seat_count,
         'salt': salt,
-        'min_seat_count_for_invoice': max(seat_count, MIN_INVOICED_SEAT_COUNT),
+        'min_invoiced_licenses': max(seat_count, MIN_INVOICED_LICENSES),
         'default_invoice_days_until_due': DEFAULT_INVOICE_DAYS_UNTIL_DUE,
         'plan': "Zulip Standard",
         'page_params': JSONEncoderForHTML().encode({
@@ -159,7 +160,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     subscription = extract_current_subscription(stripe_customer)
     if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
-        seat_count = subscription.quantity
+        licenses = subscription.quantity
         # Need user's timezone to do this properly
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
@@ -170,13 +171,13 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
         plan_name = "Zulip Free"
-        seat_count = 0
+        licenses = 0
         renewal_date = ''
         renewal_amount = 0
 
     context.update({
         'plan_name': plan_name,
-        'seat_count': seat_count,
+        'licenses': licenses,
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_amount / 100.),
         'payment_method': payment_method_string(stripe_customer),
