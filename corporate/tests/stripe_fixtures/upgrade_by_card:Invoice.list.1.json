@@ -20,9 +20,9 @@
       "due_date": 1000000000,
       "ending_balance": 0,
       "finalized_at": 1000000000,
-      "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_sh6wGq3YCdgkwFxDfHonbxi1JB",
+      "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000001",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/invst_sh6wGq3YCdgkwFxDfHonbxi1JB/pdf",
+      "invoice_pdf": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000001/pdf",
       "lines": {
         "data": [
           {

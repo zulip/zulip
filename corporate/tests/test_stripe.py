@@ -118,7 +118,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
         ('txn', 24), ('ch', 24), ('in', 24), ('ii', 24), ('test', 12), ('src_client_secret', 24),
-        ('src', 24)]
+        ('src', 24), ('invst', 26)]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations = {
         "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
@@ -399,12 +399,15 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
 
-        # TODO: Check /billing has the correct information
-        # response = self.client_get("/billing/")
-        # self.assert_not_in_success_response(['Pay annually'], response)
-        # for substring in ['Your plan will renew on', '$%s.00' % (80 * self.seat_count,),
-        #                   'Card ending in 4242', 'Update card']:
-        #     self.assert_in_response(substring, response)
+        # Check /billing has the correct information
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['Pay annually'], response)
+        for substring in [
+                'Zulip Standard', str(self.seat_count),
+                'Your plan will renew on', 'January 2, 2013', '$%s.00' % (80 * self.seat_count,),
+                'Visa ending in 4242',
+                'Update card']:
+            self.assert_in_response(substring, response)
 
     @mock_stripe(tested_timestamp_fields=["created"])
     def test_upgrade_by_invoice(self, *mocks: Mock) -> None:
@@ -477,12 +480,14 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
 
-        # TODO: Check /billing has the correct information
-        # response = self.client_get("/billing/")
-        # self.assert_not_in_success_response(['Pay annually'], response)
-        # for substring in ['Your plan will renew on', '$%s.00' % (80 * self.seat_count,),
-        #                   'Card ending in 4242', 'Update card']:
-        #     self.assert_in_response(substring, response)
+        # Check /billing has the correct information
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
+        for substring in [
+                'Zulip Standard', str(123),
+                'Your plan will renew on', 'January 2, 2013', '$9,840.00',  # 9840 = 80 * 123
+                'Billed by invoice']:
+            self.assert_in_response(substring, response)
 
     @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
@@ -725,10 +730,6 @@ class StripeTest(ZulipTestCase):
 
         # If you signup with a card and then downgrade, we still have your
         # card on file, and should show it
-        # TODO
-
-        # If you signup via invoice, and then downgrade immediately, the
-        # default_source is in a weird intermediate state.
         # TODO
 
     @mock_stripe()
