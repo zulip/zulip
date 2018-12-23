@@ -836,7 +836,6 @@ run_test('single_message', () => {
         msg: {
             include_recipient: true,
             display_recipient: 'devel',
-            subject: 'testing',
             is_stream: true,
             content: 'This is message one.',
             last_edit_timestr: '11:00',
@@ -902,7 +901,6 @@ run_test('message_group', () => {
             message_containers: messages,
             show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
             show_date_separator: true,
-            subject: 'two messages',
             match_topic: '<span class="highlight">two</span> messages',
         },
     ];
@@ -916,8 +914,8 @@ run_test('message_group', () => {
     var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
-    var highlighted_subject_word = $(html).find('a.narrows_by_topic .highlight').text();
-    assert.equal(highlighted_subject_word, 'two');
+    var highlighted_topic_word = $(html).find('a.narrows_by_topic .highlight').text();
+    assert.equal(highlighted_topic_word, 'two');
 });
 
 run_test('message_edit_history', () => {
@@ -1040,7 +1038,6 @@ run_test('reminder_popover_content', () => {
             is_stream: true,
             id: "420",
             stream: "devel",
-            subject: "testing",
             sender_full_name: "Iago",
         },
         can_edit_message: true,
@@ -1601,7 +1598,6 @@ run_test('archive_message_group', () => {
             message_containers: messages,
             show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
             show_date_separator: true,
-            subject: 'two messages',
         },
     ];
 
