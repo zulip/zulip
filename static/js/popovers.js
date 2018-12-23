@@ -382,14 +382,15 @@ exports.toggle_actions_popover = function (element, id) {
             use_edit_icon = false;
             editability_menu_item = i18n.t("View source");
         }
+        var topic = util.get_message_topic(message);
         var can_mute_topic =
                 message.stream &&
-                message.subject &&
-                !muting.is_topic_muted(message.stream_id, message.subject);
+                topic &&
+                !muting.is_topic_muted(message.stream_id, topic);
         var can_unmute_topic =
                 message.stream &&
-                message.subject &&
-                muting.is_topic_muted(message.stream_id, message.subject);
+                topic &&
+                muting.is_topic_muted(message.stream_id, topic);
 
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;
@@ -409,7 +410,7 @@ exports.toggle_actions_popover = function (element, id) {
             message_id: message.id,
             historical: message.historical,
             stream_id: message.stream_id,
-            topic: util.get_message_topic(message),
+            topic: topic,
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,

@@ -1,3 +1,4 @@
+zrequire('util');
 var rs = zrequire('recent_senders');
 
 run_test('process_message_for_senders', () => {

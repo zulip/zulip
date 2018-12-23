@@ -166,7 +166,7 @@ MessageListData.prototype = {
 
     unmuted_messages: function (messages) {
         return _.reject(messages, function (message) {
-            return muting.is_topic_muted(message.stream_id, message.subject) &&
+            return muting.is_topic_muted(message.stream_id, util.get_message_topic(message)) &&
                    !message.mentioned;
         });
     },

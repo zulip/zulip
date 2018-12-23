@@ -135,13 +135,15 @@ exports.save = function (row, from_topic_edited_only) {
     var new_content = row.find(".message_edit_content").val();
     var topic_changed = false;
     var new_topic;
+    var old_topic = util.get_message_topic(message);
+
     if (message.type === "stream") {
         if (from_topic_edited_only) {
             new_topic = row.find(".inline_topic_edit").val();
         } else {
             new_topic = row.find(".message_edit_topic").val();
         }
-        topic_changed = new_topic !== message.subject && new_topic.trim() !== "";
+        topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
@@ -264,7 +266,7 @@ function edit_message(row, raw_content) {
          message_id: message.id,
          is_editable: is_editable,
          has_been_editable: editability !== editability_types.NO,
-         topic: message.subject,
+         topic: util.get_message_topic(message),
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
@@ -370,7 +372,7 @@ function edit_message(row, raw_content) {
 
     if (!is_editable) {
         row.find(".message_edit_close").focus();
-    } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
+    } else if (message.type === 'stream' && util.get_message_topic(message) === compose.empty_topic_placeholder()) {
         message_edit_topic.val('');
         message_edit_topic.focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
@@ -390,7 +392,7 @@ function edit_message(row, raw_content) {
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && !message.locally_echoed) {
-        var original_topic = message.subject;
+        var original_topic = util.get_message_topic(message);
         message_edit_topic.keyup(function () {
             var new_topic = message_edit_topic.val();
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
@@ -452,7 +454,7 @@ exports.start_topic_edit = function (recipient_row) {
     form.keydown(_.partial(handle_edit_keydown, true));
     var msg_id = rows.id_for_recipient_row(recipient_row);
     var message = current_msg_list.get(msg_id);
-    var topic = message.subject;
+    var topic = util.get_message_topic(message);
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
