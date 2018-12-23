@@ -165,6 +165,18 @@
                             </div>
                             {% endif %}
 
+                            
+                            {% if facebook_auth_enabled %}
+                            <div class="login-social">
+                                <form id='social_login_form' class="form-inline facebook-wrapper" action="{{ url('login-social', args=('facebook',)) }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
+                                    <button class="login-social-button">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="Facebook") }}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+
                             <div class="actions">
                                 {% if email_auth_enabled %}
                                 <a class="forgot-password" href="/accounts/password/reset/">{{ _('Forgot your password?') }}</a>

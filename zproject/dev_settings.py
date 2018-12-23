@@ -40,6 +40,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleMobileOauth2Backend',
     # 'zproject.backends.AzureADAuthBackend',
+    # 'zproject.backends.FacebookAuthBackend',
 )
 
 EXTERNAL_URI_SCHEME = "http://"

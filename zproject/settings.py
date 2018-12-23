@@ -40,6 +40,7 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
+
 def get_secret(key: str, default_value: Optional[Any]=None,
                development_only: bool=False) -> Optional[Any]:
     if development_only and PRODUCTION:
@@ -47,6 +48,7 @@ def get_secret(key: str, default_value: Optional[Any]=None,
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return default_value
+
 
 def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Optional[Any]:
     if config_file.has_option(section, key):
@@ -160,6 +162,8 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
+    'SOCIAL_AUTH_FACEBOOK_SECRET': get_secret('facebook_secret'),
+
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
@@ -517,6 +521,8 @@ ALLOWED_HOSTS += [EXTERNAL_HOST.split(":")[0],
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
 from django.template.loaders import app_directories
+
+
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self):
         dirs = super().get_dirs()
@@ -1206,7 +1212,7 @@ LOGGING = {
             'propagate': False,
         },
 
-        ## Uncomment the following to get all database queries logged to the console
+        # Uncomment the following to get all database queries logged to the console
         # 'django.db': {
         #     'level': 'DEBUG',
         #     'handlers': ['console'],
@@ -1359,7 +1365,9 @@ SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
 SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.user.get_username',
     'zproject.backends.social_auth_associate_user',
+    'social_core.pipeline.social_auth.associate_by_email',
     'zproject.backends.social_auth_finish',
 ]
 
@@ -1413,3 +1421,12 @@ CROSS_REALM_BOT_EMAILS = {
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
 
 THUMBOR_KEY = get_secret('thumbor_key')
+
+####
+# Facebook OAuth Settings, for developers
+# who would like specific API version/define scope
+####
+SOCIAL_AUTH_FACEBOOK_API_VERSION = '3.2'
+SOCIAL_AUTH_FACEBOOK_APP_NAMESPACE = ''
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'fields': 'id,name,email', }

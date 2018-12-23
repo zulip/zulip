@@ -115,6 +115,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
+    # 'zproject.backends.FacebookAuthBackend',  # Facebook auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
@@ -196,6 +197,24 @@ AUTHENTICATION_BACKENDS = (
 # (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
 # (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
 #SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
+
+
+# Facebook Active Directory OAuth.
+#
+# To set up Facebook, you'll need to do the following:
+#
+# (1) Register an OAuth2 application with Facebook at:
+# https://developers.facebook.com/
+# Generate a new key under Application Secrets
+# For the login application, supply authentic information about firm.
+# For Redirect URL, enter:
+#   https://zulip.example.com/complete/facebook/
+# (2) Publish Application.
+# (3) Enter the application ID for the app as SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY here
+# (4) Put the application password in zulip-secrets.conf as 'facebook_secret'.
+# Uncomment from here if you wish to enable facebook auth:
+#SOCIAL_AUTH_FACEBOOK_OAUTH2_KEY = ''
+
 
 ########
 # SSO via REMOTE_USER.
