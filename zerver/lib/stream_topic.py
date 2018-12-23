@@ -13,8 +13,8 @@ class StreamTopicTarget:
     '''
     This class is designed to help us move to a
     StreamTopic table or something similar.  It isolates
-    places where we are are still using `subject` or
-    `topic_name` as a key into tables.
+    places where we are are still using `topic_name` as
+    a key into tables.
     '''
     def __init__(self, stream_id: int, topic_name: str) -> None:
         self.stream_id = stream_id
