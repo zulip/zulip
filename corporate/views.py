@@ -95,7 +95,12 @@ def upgrade(request: HttpRequest, user: UserProfile,
                             'monthly': CustomerPlan.MONTHLY}[schedule]
         process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
     except BillingError as e:
-        # TODO add a billing_logger.warning with all the upgrade parameters
+        if not settings.TEST_SUITE:  # nocoverage
+            billing_logger.info(
+                ("BillingError during upgrade: %s. user=%s, billing_modality=%s, schedule=%s, "
+                 "license_management=%s, licenses=%s, has stripe_token: %s")
+                % (e.description, user.id, billing_modality, schedule, license_management, licenses,
+                   stripe_token is not None))
         return json_error(e.message, data={'error_description': e.description})
     except Exception as e:
         billing_logger.exception("Uncaught exception in billing: %s" % (e,))
