@@ -178,7 +178,7 @@ run_test('reply_message_stream', () => {
     const stream_message = {
         type: 'stream',
         stream: 'social',
-        subject: 'lunch',
+        topic: 'lunch',
         sender_full_name: 'Alice',
         sender_id: 123,
     };
@@ -207,7 +207,7 @@ run_test('reply_message_stream', () => {
         type: 'stream',
         to: 'social',
         content: '@**Alice** hello',
-        subject: 'lunch',
+        topic: 'lunch',
     });
 });
 

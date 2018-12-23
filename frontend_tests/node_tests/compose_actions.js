@@ -197,7 +197,7 @@ run_test('respond_to_message', () => {
     msg = {
         type: 'stream',
         stream: 'devel',
-        subject: 'python',
+        topic: 'python',
         reply_to: 'bob', // compose.start needs this for dubious reasons
     };
     stub_selected_message(msg);
@@ -213,7 +213,7 @@ run_test('reply_with_mention', () => {
     var msg = {
         type: 'stream',
         stream: 'devel',
-        subject: 'python',
+        topic: 'python',
         reply_to: 'bob', // compose.start needs this for dubious reasons
         sender_full_name: 'Bob Roberts',
         sender_id: 40,
@@ -257,7 +257,7 @@ run_test('quote_and_reply', () => {
     var msg = {
         type: 'stream',
         stream: 'devel',
-        subject: 'python',
+        topic: 'python',
         reply_to: 'bob',
         sender_full_name: 'Bob Roberts',
         sender_id: 40,
@@ -288,7 +288,7 @@ run_test('quote_and_reply', () => {
         return {
             type: 'stream',
             stream: 'devel',
-            subject: 'test',
+            topic: 'test',
             reply_to: 'bob',
             sender_full_name: 'Bob',
             sender_id: 40,

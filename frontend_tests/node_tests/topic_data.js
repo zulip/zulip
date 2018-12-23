@@ -147,10 +147,10 @@ run_test('test_unread_logic', () => {
     assert.deepEqual(history, ['toPic1', 'topic2']);
 
     const msgs = [
-        { id: 150, subject: 'TOPIC2' }, // will be ignored
-        { id: 61, subject: 'unread1' },
-        { id: 60, subject: 'unread1' },
-        { id: 20, subject: 'UNREAD2' },
+        { id: 150, topic: 'TOPIC2' }, // will be ignored
+        { id: 61, topic: 'unread1' },
+        { id: 60, topic: 'unread1' },
+        { id: 20, topic: 'UNREAD2' },
     ];
 
     _.each(msgs, (msg) => {

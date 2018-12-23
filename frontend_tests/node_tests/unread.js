@@ -49,8 +49,8 @@ run_test('empty_counts_while_home', () => {
     assert.deepEqual(counts, zero_counts);
 });
 
-run_test('changing_subjects', () => {
-    // Summary: change the subject of a message from 'lunch'
+run_test('changing_topics', () => {
+    // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     var count = unread.num_unread_for_topic('social', 'lunch');
     assert.equal(count, 0);
@@ -62,7 +62,7 @@ run_test('changing_subjects', () => {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'luNch',
+        topic: 'luNch',
         unread: true,
     };
 
@@ -70,7 +70,7 @@ run_test('changing_subjects', () => {
         id: 16,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunCH',
+        topic: 'lunCH',
         unread: true,
     };
 
@@ -144,7 +144,7 @@ run_test('changing_subjects', () => {
         id: 17,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'sticky',
+        topic: 'sticky',
         unread: true,
     };
 
@@ -198,7 +198,7 @@ run_test('muting', () => {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'test_muting',
+        topic: 'test_muting',
         unread: true,
     };
 
@@ -241,7 +241,7 @@ run_test('num_unread_for_topic', () => {
     var message = {
         type: 'stream',
         stream_id: stream_id,
-        subject: 'LuncH',
+        topic: 'LuncH',
         unread: true,
     };
 
@@ -319,7 +319,7 @@ run_test('home_messages', () => {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunch',
+        topic: 'lunch',
         unread: true,
     };
 
@@ -353,7 +353,7 @@ run_test('phantom_messages', () => {
         id: 999,
         type: 'stream',
         stream_id: 555,
-        subject: 'phantom',
+        topic: 'phantom',
     };
 
     stream_data.get_sub_by_id = function () { return; };
@@ -448,7 +448,7 @@ run_test('mentions', () => {
         id: 15,
         type: 'stream',
         stream_id: 999,
-        subject: 'lunch',
+        topic: 'lunch',
         mentioned: true,
         unread: true,
     };
@@ -475,7 +475,7 @@ run_test('declare_bankruptcy', () => {
         id: 16,
         type: 'whatever',
         stream_id: 1999,
-        subject: 'whatever',
+        topic: 'whatever',
         mentioned: true,
     };
 

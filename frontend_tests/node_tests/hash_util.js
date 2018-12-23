@@ -133,7 +133,7 @@ run_test('test_by_conversation_and_time_uri', () => {
     var message = {
         type: 'stream',
         stream_id: frontend.stream_id,
-        subject: 'testing',
+        topic: 'testing',
         id: 42,
     };
 

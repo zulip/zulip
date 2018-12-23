@@ -65,7 +65,7 @@ run_test('merge_message_groups', () => {
             status_message: false,
             type: 'stream',
             stream: 'Test Stream 1',
-            subject: 'Test Subject 1',
+            topic: 'Test Subject 1',
             sender_email: 'test@example.com',
             timestamp: _.uniqueId(),
         });
@@ -162,7 +162,7 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test subject 2'});
+        var message2 = build_message_context({topic: 'Test subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
@@ -293,7 +293,7 @@ run_test('merge_message_groups', () => {
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test Subject 2'});
+        var message2 = build_message_context({topic: 'Test Subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
