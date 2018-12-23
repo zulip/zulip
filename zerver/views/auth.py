@@ -319,6 +319,10 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
+
+    if (backend == "facebook") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
+                                      settings.SOCIAL_AUTH_GITHUB_SECRET):
+        return redirect_to_config_error("facebook")
     # TODO: Add a similar block of AzureAD.
 
     return oauth_redirect_to_root(request, backend_url, 'social')

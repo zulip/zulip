@@ -12,6 +12,7 @@ from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
+from social_core.backends.facebook import FacebookOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
 from social_core.utils import handle_http_errors
@@ -645,6 +646,10 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     auth_backend_name = "AzureAD"
+
+class FacebookAuthBackend(SocialAuthMixin, FacebookOAuth2):
+    auth_backend_name = "Facebook"
+    REDIRECT_STATE = False
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,

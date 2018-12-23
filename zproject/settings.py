@@ -160,6 +160,15 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
+    'SOCIAL_AUTH_FACEBOOK_SECRET': get_secret('facebook_secret'),
+
+    #Facebook OAuth Settings, for developers who would like specific API version/define scope
+    SOCIAL_AUTH_FACEBOOK_API_VERSION = '3.2'
+    SOCIAL_AUTH_FACEBOOK_APP_NAMESPACE = ''
+    SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+    SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id,name,email', 
+    }
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
