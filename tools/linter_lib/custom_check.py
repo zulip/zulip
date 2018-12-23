@@ -37,11 +37,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # These are tied more to our API than our DB model.
     'zerver/lib/api_test_helpers.py',
 
-    # TRY TO FIX THESE! If you can't fix them, try to
-    # add comments here and/or in the file itself about
-    # why sweeping subject is tricky.
-    'zerver/lib/stream_topic.py',
-
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".
     'zerver/tests/test_narrow.py',
