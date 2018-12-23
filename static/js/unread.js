@@ -482,7 +482,7 @@ exports.process_loaded_messages = function (messages) {
         if (message.type === 'stream') {
             exports.unread_topic_counter.add(
                 message.stream_id,
-                message.subject,
+                util.get_message_topic(message),
                 message.id
             );
         }
