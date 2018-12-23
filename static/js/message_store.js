@@ -127,6 +127,10 @@ exports.add_message_metadata = function (message) {
         message.sender_email = sender.email;
     }
 
+    // Convert topic even for PMs, as legacy code
+    // wants the empty field.
+    util.convert_message_topic(message);
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;

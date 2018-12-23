@@ -56,7 +56,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
-        subject: 'whatever',
+        topic: 'whatever',
     }), false);
 
     // Case 2: If the user has already been sent a notificaton about this message,
@@ -73,7 +73,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
-        subject: 'whatever',
+        topic: 'whatever',
     }), false);
 
     // Case 3: If a message mentions the user directly,
@@ -88,7 +88,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'muted',
         stream_id: muted.stream_id,
-        subject: 'topic_three',
+        topic: 'topic_three',
     }), true);
 
     // Case 4:
@@ -102,7 +102,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
-        subject: 'vanilla',
+        topic: 'vanilla',
     }), true);
 
     // Case 5: If a message is in a muted stream
@@ -117,7 +117,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'muted',
         stream_id: muted.stream_id,
-        subject: 'whatever',
+        topic: 'whatever',
     }), false);
 
     // Case 6: If a message is in a muted topic
@@ -132,7 +132,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
-        subject: 'muted topic',
+        topic: 'muted topic',
     }), false);
 
     // Case 7
@@ -149,7 +149,7 @@ run_test('message_is_notifiable', () => {
         type: 'stream',
         stream: 'general',
         stream_id: general.stream_id,
-        subject: 'whatever',
+        topic: 'whatever',
     }), true);
 });
 
@@ -190,7 +190,7 @@ run_test('basic_notifications', () => {
         type: 'stream',
         stream: 'general',
         stream_id: muted.stream_id,
-        subject: 'whatever',
+        topic: 'whatever',
     };
 
     var message_2 = {
@@ -204,7 +204,7 @@ run_test('basic_notifications', () => {
         type: 'stream',
         stream: 'general',
         stream_id: muted.stream_id,
-        subject: 'lunch',
+        topic: 'lunch',
     };
 
     // Send notification.

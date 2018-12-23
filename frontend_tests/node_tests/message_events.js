@@ -110,6 +110,7 @@ run_test('update_messages', () => {
             sender_full_name: 'Alice Patel',
             sender_id: 32,
             sent_by_me: false,
+            topic: undefined,
         },
     ]);
 

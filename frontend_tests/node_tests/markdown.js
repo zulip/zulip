@@ -390,33 +390,33 @@ run_test('marked', () => {
 });
 
 run_test('topic_links', () => {
-    var message = {type: 'stream', subject: "No links here"};
+    var message = {type: 'stream', topic: "No links here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, []);
 
-    message = {type: 'stream', subject: "One #123 link here"};
+    message = {type: 'stream', topic: "One #123 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 1);
     assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
 
-    message = {type: 'stream', subject: "Two #123 #456 link here"};
+    message = {type: 'stream', topic: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 2);
     assert.equal(util.get_topic_links(message)[0], "https://trac.zulip.net/ticket/123");
     assert.equal(util.get_topic_links(message)[1], "https://trac.zulip.net/ticket/456");
 
-    message = {type: 'stream', subject: "New ZBUG_123 link here"};
+    message = {type: 'stream', topic: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 1);
     assert.equal(util.get_topic_links(message)[0], "https://trac2.zulip.net/ticket/123");
 
-    message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
+    message = {type: 'stream', topic: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 2);
     assert(util.get_topic_links(message).indexOf("https://trac2.zulip.net/ticket/123") !== -1);
     assert(util.get_topic_links(message).indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
-    message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
+    message = {type: 'stream', topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
     assert.equal(util.get_topic_links(message).length, 1);
     assert.equal(util.get_topic_links(message)[0], "https://zone_45.zulip.net/ticket/123");
@@ -428,20 +428,20 @@ run_test('topic_links', () => {
 
 run_test('message_flags', () => {
     var input = "/me is testing this";
-    var message = {subject: "No links here", raw_content: input};
+    var message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, true);
     assert(!message.unread);
 
     input = "/me is testing\nthis";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, true);
 
     input = "testing this @**all** @**Cordelia Lear**";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, false);
@@ -449,51 +449,51 @@ run_test('message_flags', () => {
     assert.equal(message.mentioned_me_directly, true);
 
     input = "test @**everyone**";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, false);
 
     input = "test @**stream**";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, false);
 
     input = "test @all";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 
     input = "test @everyone";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 
     input = "test @any";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 
     input = "test @alleycat.com";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 
     input = "test @*hamletcharacters*";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, true);
 
     input = "test @*backend*";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 
     input = "test @**invalid_user**";
-    message = {subject: "No links here", raw_content: input};
+    message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
 });

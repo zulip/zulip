@@ -404,11 +404,13 @@ run_test('unmuted_messages', () => {
             id: 50,
             stream_id: muted_stream_id,
             mentioned: true, // overrides mute
+            topic: 'whatever',
         },
         {
             id: 60,
             stream_id: 42,
             mentioned: false,
+            topic: 'whatever',
         },
     ];
     var muted = [
@@ -416,6 +418,7 @@ run_test('unmuted_messages', () => {
             id: 70,
             stream_id: muted_stream_id,
             mentioned: false,
+            topic: 'whatever',
         },
     ];
 

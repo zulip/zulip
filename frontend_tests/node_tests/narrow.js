@@ -52,7 +52,7 @@ run_test('stream_topic', () => {
     global.current_msg_list.selected_message = function () {
         return {
             stream: 'Stream1',
-            subject: 'Topic1',
+            topic: 'Topic1',
         };
     };
 

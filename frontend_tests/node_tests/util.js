@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('blueslip', global.make_zblueslip({}));
 set_global('document', {});
 
 zrequire('util');
@@ -67,12 +68,12 @@ run_test('lower_bound', () => {
 
 run_test('same_recipient', () => {
     assert(util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 101, subject: 'bar'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 102, subject: 'whatever'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 102, topic: 'whatever'}));
 
     assert(util.same_recipient(
         {type: 'private', to_user_ids: '101,102'},
@@ -83,7 +84,7 @@ run_test('same_recipient', () => {
         {type: 'private', to_user_ids: '103'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
         {type: 'private'}));
 
     assert(!util.same_recipient(
@@ -114,7 +115,9 @@ run_test('robust_uri_decode', () => {
 });
 
 run_test('get_message_topic', () => {
+    blueslip.set_test_data('warn', 'programming error: message has no topic');
     assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
+    blueslip.clear_test_data();
     assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
 });
 
