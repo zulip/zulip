@@ -30,7 +30,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # probably always be exempt:
     'zerver/lib/email_mirror.py',
     'zerver/lib/feedback.py',
-    'zerver/lib/send_email.py',
     'zerver/tests/test_new_users.py',
 
     # These are tied more to our API than our DB model.

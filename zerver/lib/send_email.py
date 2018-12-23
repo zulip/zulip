@@ -57,9 +57,9 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     })
 
     def render_templates() -> Tuple[str, str, str]:
-        subject = loader.render_to_string(template_prefix + '.subject.txt',
-                                          context=context,
-                                          using='Jinja2_plaintext').strip().replace('\n', '')
+        email_subject = loader.render_to_string(template_prefix + '.subject.txt',
+                                                context=context,
+                                                using='Jinja2_plaintext').strip().replace('\n', '')
         message = loader.render_to_string(template_prefix + '.txt',
                                           context=context, using='Jinja2_plaintext')
 
@@ -70,16 +70,16 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
             template = os.path.basename(template_prefix)
             compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
             html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
-        return (html_message, message, subject)
+        return (html_message, message, email_subject)
 
     if not language and to_user_ids is not None:
         language = to_users[0].default_language
     if language:
         with override_language(language):
             # Make sure that we render the email using the target's native language
-            (html_message, message, subject) = render_templates()
+            (html_message, message, email_subject) = render_templates()
     else:
-        (html_message, message, subject) = render_templates()
+        (html_message, message, email_subject) = render_templates()
         logger.warning("Missing language for email template '{}'".format(template_prefix))
 
     if from_name is None:
@@ -96,7 +96,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     elif from_address == FromAddress.NOREPLY:
         reply_to = [FromAddress.NOREPLY]
 
-    mail = EmailMultiAlternatives(subject, message, from_email, to_emails, reply_to=reply_to)
+    mail = EmailMultiAlternatives(email_subject, message, from_email, to_emails, reply_to=reply_to)
     if html_message is not None:
         mail.attach_alternative(html_message, 'text/html')
     return mail
