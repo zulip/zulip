@@ -1,4 +1,5 @@
 zrequire('unread');
+zrequire('util');
 zrequire('topic_data');
 
 set_global('channel', {});

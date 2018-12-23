@@ -128,14 +128,14 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     if (new_topic !== undefined) {
         topic_data.remove_message({
             stream_id: message.stream_id,
-            topic_name: message.subject,
+            topic_name: util.get_message_topic(message),
         });
 
         util.set_message_topic(message, new_topic);
 
         topic_data.add_message({
             stream_id: message.stream_id,
-            topic_name: message.subject,
+            topic_name: util.get_message_topic(message),
             message_id: message.id,
         });
     }

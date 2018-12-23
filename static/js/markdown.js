@@ -111,7 +111,7 @@ exports.add_topic_links = function (message) {
         util.set_topic_links(message, []);
         return;
     }
-    var topic = message.subject;
+    var topic = util.get_message_topic(message);
     var links = [];
     _.each(realm_filter_list, function (realm_filter) {
         var pattern = realm_filter[0];
