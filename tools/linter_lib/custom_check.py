@@ -261,6 +261,13 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['###some heading', '#another heading']},
     ]  # type: RuleList
     js_rules = cast(RuleList, [
+        {'pattern': 'subject|SUBJECT',
+         'exclude': set(['static/js/util.js',
+                         'frontend_tests/']),
+         'exclude_pattern': 'emails',
+         'description': 'avoid subject in JS code',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
         {'pattern': r'[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
         {'pattern': r'.*blueslip.warning\(.*',
