@@ -29,16 +29,15 @@
 
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
-                        <p>Your current plan is <strong>{{ plan_name }}</strong></p>
+                        <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
                         <p>You are paying for <strong>{{ licenses }} users</strong>.</p>
-                        <p>Your plan will renew on <strong>{{ renewal_date }}</strong> for <strong>${{ renewal_amount }}</strong>.</p>
-                        {% if account_charges %}
-                        <p>You have <strong>${{ account_charges }}</strong> in charges that will be added to your next bill.</p>
-                        {% elif account_credits %}
-                        <p>You have <strong>${{ account_credits }}</strong> in credits that will be automatically applied to your next bill.</p>
-                        {% endif %}
+                        <p>
+                            Your plan will renew on <strong>{{ renewal_date }}</strong> for
+                            <strong>${{ renewal_amount }}</strong>.
+                        </p>
                     </div>
-                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
+                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}"
+                      data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
                         <div id="payment-section">
                             <p>Current payment method: <strong>{{ payment_method }}</strong></p>
                             {% if charge_automatically %}
@@ -67,13 +66,15 @@
                 </div>
 
                 <div class="support-link">
-                    <p>Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> for billing history or to make changes to your subscription.</p>
+                    <p>
+                        Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a>
+                        for billing history or to make changes to your subscription.
+                    </p>
                 </div>
 
                 {% else %}
                 <p>
-                    You must be an organization administrator or a
-                    billing administrator to view this page.
+                    You must be an organization administrator or a billing administrator to view this page.
                 </p>
                 {% endif %}
             </div>
