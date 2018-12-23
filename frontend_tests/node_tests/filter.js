@@ -234,16 +234,16 @@ run_test('predicate_basics', () => {
     make_sub('Foo', stream_id);
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'Bar']]);
 
-    assert(predicate({type: 'stream', stream_id: stream_id, subject: 'bar'}));
-    assert(!predicate({type: 'stream', stream_id: stream_id, subject: 'whatever'}));
+    assert(predicate({type: 'stream', stream_id: stream_id, topic: 'bar'}));
+    assert(!predicate({type: 'stream', stream_id: stream_id, topic: 'whatever'}));
     assert(!predicate({type: 'stream', stream_id: 9999999}));
     assert(!predicate({type: 'private'}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
     predicate = get_predicate([['stream', 'old-Stream'], ['topic', 'Bar']]);
-    assert(predicate({type: 'stream', stream: 'Old-stream', subject: 'bar'}));
-    assert(!predicate({type: 'stream', stream: 'no-match', subject: 'whatever'}));
+    assert(predicate({type: 'stream', stream: 'Old-stream', topic: 'bar'}));
+    assert(!predicate({type: 'stream', stream: 'no-match', topic: 'whatever'}));
 
     predicate = get_predicate([['search', 'emoji']]);
     assert(predicate({}));
@@ -290,8 +290,8 @@ run_test('predicate_basics', () => {
     assert(!predicate({id: 6}));
 
     predicate = get_predicate([['id', 5], ['topic', 'lunch']]);
-    assert(predicate({type: 'stream', id: 5, subject: 'lunch'}));
-    assert(!predicate({type: 'stream', id: 5, subject: 'dinner'}));
+    assert(predicate({type: 'stream', id: 5, topic: 'lunch'}));
+    assert(!predicate({type: 'stream', id: 5, topic: 'dinner'}));
 
     predicate = get_predicate([['sender', 'Joe@example.com']]);
     assert(predicate({sender_id: joe.user_id}));
@@ -372,15 +372,15 @@ run_test('mit_exceptions', () => {
     global.page_params.realm_is_zephyr_mirror_realm = true;
 
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
-    assert(predicate({type: 'stream', stream: 'foo', subject: 'personal'}));
-    assert(predicate({type: 'stream', stream: 'foo.d', subject: 'personal'}));
-    assert(predicate({type: 'stream', stream: 'foo.d', subject: ''}));
+    assert(predicate({type: 'stream', stream: 'foo', topic: 'personal'}));
+    assert(predicate({type: 'stream', stream: 'foo.d', topic: 'personal'}));
+    assert(predicate({type: 'stream', stream: 'foo.d', topic: ''}));
     assert(!predicate({type: 'stream', stream: 'wrong'}));
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
+    assert(!predicate({type: 'stream', stream: 'foo', topic: 'whatever'}));
     assert(!predicate({type: 'private'}));
 
     predicate = get_predicate([['stream', 'Foo'], ['topic', 'bar']]);
-    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar.d'}));
+    assert(predicate({type: 'stream', stream: 'foo', topic: 'bar.d'}));
 
     // Try to get the MIT regex to explode for an empty stream.
     var terms = [
@@ -388,7 +388,7 @@ run_test('mit_exceptions', () => {
         {operator: 'topic', operand: 'bar'},
     ];
     predicate = new Filter(terms).predicate();
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
+    assert(!predicate({type: 'stream', stream: 'foo', topic: 'bar'}));
 
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
@@ -396,7 +396,7 @@ run_test('mit_exceptions', () => {
         {operator: 'topic', operand: ''},
     ];
     predicate = new Filter(terms).predicate();
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
+    assert(!predicate({type: 'stream', stream: 'foo', topic: 'bar'}));
 });
 
 run_test('predicate_edge_cases', () => {
@@ -426,7 +426,7 @@ run_test('predicate_edge_cases', () => {
     var filter = new Filter(terms);
     filter.predicate();
     predicate = filter.predicate(); // get cached version
-    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
+    assert(predicate({type: 'stream', stream: 'foo', topic: 'bar'}));
 
 });
 

@@ -606,7 +606,7 @@ run_test('send_message', () => {
                 sender_id: 101,
                 queue_id: undefined,
                 stream: '',
-                subject: '',
+                topic: '',
                 to: '["alice@example.com"]',
                 reply_to: 'alice@example.com',
                 private_message_recipient: 'alice@example.com',
@@ -1620,7 +1620,7 @@ run_test('create_message_object', () => {
 
     var message = compose.create_message_object();
     assert.equal(message.to, 'social');
-    assert.equal(message.subject, 'lunch');
+    assert.equal(message.topic, 'lunch');
     assert.equal(message.content, 'burrito');
 
     global.compose_state.get_message_type = function () {

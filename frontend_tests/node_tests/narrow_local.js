@@ -81,9 +81,9 @@ run_test('near after unreads', () => {
         },
         has_found_newest: false,
         all_messages: [
-            {id: 37},
-            {id: 42},
-            {id: 44},
+            {id: 37, topic: 'whatever'},
+            {id: 42, topic: 'whatever'},
+            {id: 44, topic: 'whatever'},
         ],
         expected_id_info: {
             target_id: 42,
@@ -108,8 +108,8 @@ run_test('near not in message list', () => {
         },
         has_found_newest: false,
         all_messages: [
-            {id: 45},
-            {id: 46},
+            {id: 45, topic: 'whatever'},
+            {id: 46, topic: 'whatever'},
         ],
         expected_id_info: {
             target_id: 42,
@@ -134,9 +134,9 @@ run_test('near before unreads', () => {
         },
         has_found_newest: false,
         all_messages: [
-            {id: 42},
-            {id: 43},
-            {id: 44},
+            {id: 42, topic: 'whatever'},
+            {id: 43, topic: 'whatever'},
+            {id: 44, topic: 'whatever'},
         ],
         expected_id_info: {
             target_id: 42,
@@ -301,8 +301,8 @@ run_test('is:alerted with no unreads and one match', () => {
         },
         has_found_newest: true,
         all_messages: [
-            {id: 55, alerted: true},
-            {id: 57, alerted: false},
+            {id: 55, topic: 'whatever', alerted: true},
+            {id: 57, topic: 'whatever', alerted: false},
         ],
         expected_id_info: {
             target_id: undefined,
@@ -433,9 +433,9 @@ run_test('final corner case', () => {
         has_found_newest: true,
         empty: false,
         all_messages: [
-            {id: 400},
-            {id: 425, starred: true},
-            {id: 500},
+            {id: 400, topic: 'whatever'},
+            {id: 425, topic: 'whatever', starred: true},
+            {id: 500, topic: 'whatever'},
         ],
         expected_id_info: {
             target_id: 450,
