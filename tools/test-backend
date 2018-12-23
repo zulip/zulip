@@ -11,6 +11,8 @@ import ujson
 import httplib2
 import httpretty
 import requests
+import redis
+import time
 
 # check for the venv
 from lib import sanity_check
@@ -184,8 +186,33 @@ def block_internet():
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
     httplib2.Http.request = internet_guard_httplib2
 
+def check_redis_status():
+    # type: () -> None
+    # This is to start redis up if it ever crashes during CircleCI tests.
+    attempts = 0
+    redis_server = redis.Redis()  # during testing redis runs on localhost:6379
+    try:
+        running_status = redis_server.ping()
+    except redis.exceptions.ConnectionError:
+        running_status = False
+    while not running_status:
+        try:
+            attempts += 1
+            running_status = redis_server.ping()
+        except redis.exceptions.ConnectionError:
+            if attempts < 10:
+                print("Unable to connect to the redis server. Trying to restart...")
+                os.system(os.path.join(os.path.dirname(os.path.abspath(__file__)), "restart-redis"))
+                time.sleep(1)
+            else:
+                print("Unable to connect to the redis server. Please check the /var/log/redis directory for some hints.")
+                sys.exit(1)
+    print("Redis server running.")
+
 if __name__ == "__main__":
     block_internet()
+    check_redis_status()
+
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
