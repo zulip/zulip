@@ -17,6 +17,7 @@ function make_msg(msg_id) {
     return {
         id: msg_id,
         unread: true,
+        topic: 'whatever',
     };
 }
 
@@ -138,10 +139,10 @@ run_test('more muting', () => {
     });
 
     const orig_messages = [
-        {id: 3, subject: 'muted'},
-        {id: 4},
-        {id: 7, subject: 'muted'},
-        {id: 8},
+        {id: 3, topic: 'muted'},
+        {id: 4, topic: 'whatever'},
+        {id: 7, topic: 'muted'},
+        {id: 8, topic: 'whatever'},
     ];
 
     const orig_info = mld.add_messages(orig_messages);
@@ -150,8 +151,8 @@ run_test('more muting', () => {
         top_messages: [],
         interior_messages: [],
         bottom_messages: [
-            {id: 4},
-            {id: 8},
+            {id: 4, topic: 'whatever'},
+            {id: 8, topic: 'whatever'},
         ],
     });
 
@@ -166,13 +167,13 @@ run_test('more muting', () => {
     );
 
     const more_messages = [
-        {id: 1, subject: 'muted'},
-        {id: 2},
-        {id: 3, subject: 'muted'}, // dup
-        {id: 5, subject: 'muted'},
-        {id: 6},
-        {id: 9, subject: 'muted'},
-        {id: 10},
+        {id: 1, topic: 'muted'},
+        {id: 2, topic: 'whatever'},
+        {id: 3, topic: 'muted'}, // dup
+        {id: 5, topic: 'muted'},
+        {id: 6, topic: 'whatever'},
+        {id: 9, topic: 'muted'},
+        {id: 10, topic: 'whatever'},
     ];
 
     const more_info = mld.add_messages(more_messages);
@@ -189,13 +190,13 @@ run_test('more muting', () => {
 
     assert.deepEqual(more_info, {
         top_messages: [
-            {id: 2},
+            {id: 2, topic: 'whatever'},
         ],
         interior_messages: [
-            {id: 6},
+            {id: 6, topic: 'whatever'},
         ],
         bottom_messages: [
-            {id: 10},
+            {id: 10, topic: 'whatever'},
         ],
     });
 

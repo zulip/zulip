@@ -142,6 +142,7 @@ run_test('basics', () => {
         id: selected_id,
         type: 'stream',
         stream_id: denmark.stream_id,
+        topic: 'whatever',
     };
 
     var messages = [selected_message];

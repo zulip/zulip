@@ -18,13 +18,13 @@ run_test('process_message_for_senders', () => {
     var message1 = {
         stream_id: stream1,
         id: _.uniqueId(),
-        subject: topic1,
+        topic: topic1,
         sender_id: sender1,
     };
     var message2 = {
         stream_id: stream2,
         id: _.uniqueId(),
-        subject: topic1,
+        topic: topic1,
         sender_id: sender2,
     };
     rs.process_message_for_senders(message1);
@@ -47,7 +47,7 @@ run_test('process_message_for_senders', () => {
     var message3 = {
         stream_id: stream1,
         id: _.uniqueId(),
-        subject: topic2,
+        topic: topic2,
         sender_id: sender3,
     };
     rs.process_message_for_senders(message3);
@@ -59,7 +59,7 @@ run_test('process_message_for_senders', () => {
     var message4 = {
         stream_id: stream1,
         id: _.uniqueId(),
-        subject: topic1,
+        topic: topic1,
         sender_id: sender2,
     };
     rs.process_message_for_senders(message4);
@@ -71,7 +71,7 @@ run_test('process_message_for_senders', () => {
     var message5 = {
         stream_id: stream1,
         id: _.uniqueId(),
-        subject: topic1,
+        topic: topic1,
         sender_id: sender1,
     };
     rs.process_message_for_senders(message5);
@@ -83,19 +83,19 @@ run_test('process_message_for_senders', () => {
     var message6 = {
         stream_id: stream3,
         id: _.uniqueId(),
-        subject: topic1,
+        topic: topic1,
         sender_id: sender1,
     };
     var message7 = {
         stream_id: stream3,
         id: _.uniqueId(),
-        subject: topic2,
+        topic: topic2,
         sender_id: sender2,
     };
     var message8 = {
         stream_id: stream3,
         id: _.uniqueId(),
-        subject: topic3,
+        topic: topic3,
         sender_id: sender3,
     };
 

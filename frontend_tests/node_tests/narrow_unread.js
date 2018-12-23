@@ -51,7 +51,7 @@ run_test('get_unread_ids', () => {
         id: 101,
         type: 'stream',
         stream_id: sub.stream_id,
-        subject: 'my topic',
+        topic: 'my topic',
         unread: true,
         mentioned: true,
     };

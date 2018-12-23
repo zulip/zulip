@@ -311,11 +311,12 @@ exports.get_reload_topic = function (obj) {
 };
 
 exports.set_message_topic = function (obj, topic) {
-    obj.subject = topic;
+    obj.topic = topic;
 };
 
 exports.get_message_topic = function (obj) {
     if (obj.topic === undefined) {
+        blueslip.warn('programming error: message has no topic');
         return obj.subject;
     }
 
@@ -338,6 +339,12 @@ exports.get_edit_event_orig_topic = function (obj) {
 
 exports.is_topic_synonym = function (operator) {
     return operator === 'subject';
+};
+
+exports.convert_message_topic = function (message) {
+    if (message.topic === undefined) {
+        message.topic = message.subject;
+    }
 };
 
 return exports;

@@ -76,7 +76,7 @@ const messages = {
         stream_id: denmark_stream.stream_id,
         type: 'stream',
         flags: ['has_alert_word'],
-        subject: 'copenhagen',
+        topic: 'copenhagen',
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },
@@ -171,13 +171,13 @@ run_test('filter', () => {
     assert.equal(predicate({
         type: 'stream',
         stream_id: denmark_stream.stream_id,
-        subject: 'does not match filter',
+        topic: 'does not match filter',
     }), false);
 
     assert.equal(predicate({
         type: 'stream',
         stream_id: denmark_stream.stream_id,
-        subject: 'copenhagen',
+        topic: 'copenhagen',
     }), true);
 });
 
@@ -508,7 +508,7 @@ run_test('unread_ops', () => {
                 id: 50,
                 type: 'stream',
                 stream_id: denmark_stream.stream_id,
-                subject: 'copenhagen',
+                topic: 'copenhagen',
                 unread: true,
             },
         ];
