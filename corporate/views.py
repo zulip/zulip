@@ -54,24 +54,20 @@ def check_upgrade_parameters(
         raise BillingError('not enough licenses',
                            _("You must invoice for at least {} users.".format(min_licenses)))
 
-# TODO
-def payment_method_string(stripe_customer: stripe.Customer) -> str:  # nocoverage: TODO
-    subscription = None  # extract_current_subscription(stripe_customer)
-    if subscription is not None and subscription.billing == "send_invoice":
-        return _("Billed by invoice")
+# Should only be called if the customer is being charged automatically
+def payment_method_string(stripe_customer: stripe.Customer) -> str:
     stripe_source = stripe_customer.default_source
     # In case of e.g. an expired card
     if stripe_source is None:  # nocoverage
         return _("No payment method on file")
     if stripe_source.object == "card":
-        return _("Card ending in %(last4)s" % {'last4': cast(stripe.Card, stripe_source).last4})
-    # You can get here if e.g. you sign up to pay by invoice, and then
-    # immediately downgrade. In that case, stripe_source.object == 'source',
-    # and stripe_source.type = 'ach_credit_transfer'.
-    # Using a catch-all error message here since there might be one-off stuff we
-    # do for a particular customer that would land them here. E.g. by default we
-    # don't support ACH for automatic payments, but in theory we could add it for
-    # a customer via the Stripe dashboard.
+        return _("%(brand)s ending in %(last4)s" % {
+            'brand': cast(stripe.Card, stripe_source).brand,
+            'last4': cast(stripe.Card, stripe_source).last4})
+    # There might be one-off stuff we do for a particular customer that
+    # would land them here. E.g. by default we don't support ACH for
+    # automatic payments, but in theory we could add it for a customer via
+    # the Stripe dashboard.
     return _("Unknown payment method. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))  # nocoverage
 
 @has_request_variables
@@ -163,7 +159,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         return render(request, 'corporate/billing.html', context=context)
     context = {'admin_access': True}
 
-    charge_automatically = False
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     plan = get_active_plan(customer)
     if plan is not None:
         plan_name = {
@@ -171,16 +167,14 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             CustomerPlan.PLUS: 'Zulip Plus',
         }[plan.tier]
         licenses = plan.licenses
-        # Need user's timezone to do this properly
+        # Should do this in javascript, using the user's timezone
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan))
         renewal_cents = renewal_amount(plan)
         charge_automatically = plan.charge_automatically
-        if charge_automatically:  # nocoverage: TODO
-            # TODO get last4
-            payment_method = 'Card on file'
-        else:  # nocoverage: TODO
+        if charge_automatically:
+            payment_method = payment_method_string(stripe_customer)
+        else:
             payment_method = 'Billed by invoice'
-        billed_by_invoice = not plan.charge_automatically
     # Can only get here by subscribing and then downgrading. We don't support downgrading
     # yet, but keeping this code here since we will soon.
     else:  # nocoverage
@@ -189,6 +183,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         renewal_date = ''
         renewal_cents = 0
         payment_method = ''
+        charge_automatically = False
 
     context.update({
         'plan_name': plan_name,
@@ -196,13 +191,10 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
         'payment_method': payment_method,
-        # TODO: Rename to charge_automatically
-        'billed_by_invoice': billed_by_invoice,
+        'charge_automatically': charge_automatically,
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
-        # TODO: get actual stripe email?
-        'stripe_email': user.email,
+        'stripe_email': stripe_customer.email,
     })
-
     return render(request, 'corporate/billing.html', context=context)
 
 @require_billing_access

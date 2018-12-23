@@ -116,6 +116,7 @@ class Source:
 
 class Card:
     id: str
+    brand: str
     last4: str
     object: str
 
