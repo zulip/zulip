@@ -323,7 +323,13 @@ exports.get_message_topic = function (obj) {
 };
 
 exports.get_edit_event_topic = function (obj) {
-    return obj.subject;
+    if (obj.topic === undefined) {
+        return obj.subject;
+    }
+
+    // This code won't be reachable till we fix the
+    // server, but we use it now in tests.
+    return obj.topic;
 };
 
 exports.get_edit_event_orig_topic = function (obj) {

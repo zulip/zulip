@@ -105,7 +105,7 @@ run_test('changing_subjects', () => {
     assert.deepEqual(msg_ids, []);
 
     var event = {
-        subject: 'dinner',
+        topic: 'dinner',
     };
 
     unread.update_unread_topics(message, event);
@@ -117,7 +117,7 @@ run_test('changing_subjects', () => {
     assert.equal(count, 1);
 
     event = {
-        subject: 'snack',
+        topic: 'snack',
     };
 
     unread.update_unread_topics(other_message, event);
@@ -135,7 +135,7 @@ run_test('changing_subjects', () => {
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
     event = {
-        subject: 'brunch',
+        topic: 'brunch',
     };
     unread.update_unread_topics(other_message, event);
 
@@ -167,7 +167,11 @@ run_test('changing_subjects', () => {
     assert.equal(count, 0);
     assert(!sticky_message.unread);
 
-    unread.update_unread_topics(sticky_message, {subject: 'sticky'});
+    event = {
+        topic: 'sticky',
+    };
+
+    unread.update_unread_topics(sticky_message, event);
     count = unread.num_unread_for_topic(stream_id, 'sticky');
     assert.equal(count, 0);
 
