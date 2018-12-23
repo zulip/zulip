@@ -29,7 +29,6 @@ FILES_WITH_LEGACY_SUBJECT = {
     # These use subject in the email sense, and will
     # probably always be exempt:
     'zerver/lib/email_mirror.py',
-    'zerver/lib/error_notify.py',
     'zerver/lib/feedback.py',
     'zerver/lib/send_email.py',
     'zerver/tests/test_new_users.py',
