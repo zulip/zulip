@@ -104,15 +104,8 @@ exports.dismiss_mute_confirmation = function () {
 };
 
 exports.persist_mute = function (stream_id, topic_name) {
-    var stream_name = stream_data.maybe_get_stream_name(stream_id);
-
-    if (!stream_name) {
-        blueslip.error('Trying to mute bogus stream id: ' + stream_id);
-        return;
-    }
-
     var data = {
-        stream: stream_name,
+        stream_id: stream_id,
         topic: topic_name,
         op: 'add',
     };
@@ -125,15 +118,8 @@ exports.persist_mute = function (stream_id, topic_name) {
 };
 
 exports.persist_unmute = function (stream_id, topic_name) {
-    var stream_name = stream_data.maybe_get_stream_name(stream_id);
-
-    if (!stream_name) {
-        blueslip.error('Trying to unmute bogus stream id: ' + stream_id);
-        return;
-    }
-
     var data = {
-        stream: stream_name,
+        stream_id: stream_id,
         topic: topic_name,
         op: 'remove',
     };
