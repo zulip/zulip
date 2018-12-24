@@ -36,11 +36,11 @@
                             <strong>${{ renewal_amount }}</strong>.
                         </p>
                     </div>
-                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}"
-                      data-csrf="{{csrf_token}}" data-key="{{publishable_key}}">
+                    <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-key="{{publishable_key}}">
                         <div id="payment-section">
                             <p>Current payment method: <strong>{{ payment_method }}</strong></p>
                             {% if charge_automatically %}
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                             <button id="update-card-button" class="stripe-button-el">
                                 <span id="update-card-button-span">Update card</span>
                             </button>
