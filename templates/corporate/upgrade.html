@@ -41,6 +41,7 @@
                     <li><a data-toggle="tab" href="#invoice">Pay by invoice</a></li>
                 </ul>
 
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div class="tab-content">
                     <div class="tab-pane active" id="autopay">
                         <div id="autopay-input-section">
@@ -49,7 +50,6 @@
                                 <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
                                 <input type="hidden" name="salt" value="{{ salt }}">
                                 <input type="hidden" name="billing_modality" value="charge_automatically">
-                                <input type="hidden" name="csrf" value="{{ csrf_token }}">
                                 <div class="payment-schedule">
                                     <div id="autopay-error" class="alert alert-danger"></div>
                                     <h3>{{ _("Payment schedule") }}</h3>
@@ -155,7 +155,6 @@
                         <div id="invoice-error" class="alert alert-danger"></div>
                         <div id="invoice-input-section">
                             <form id="invoice-form" method="post">
-                                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                 <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
                                 <input type="hidden" name="salt" value="{{ salt }}">
                                 <input type="hidden" name="billing_modality" value="send_invoice">
