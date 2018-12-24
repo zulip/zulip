@@ -10,6 +10,13 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
+def check_for_exactly_one_stream_arg(stream_id: Optional[int], stream: Optional[str]) -> None:
+    if stream_id is None and stream is None:
+        raise JsonableError(_("Please supply 'stream'."))
+
+    if stream_id is not None and stream is not None:
+        raise JsonableError(_("Please choose one: 'stream' or 'stream_id'."))
+
 def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
 
     # We should only ever use this for realm admins, who are allowed
@@ -114,7 +121,9 @@ def access_stream_by_name(user_profile: UserProfile,
                                             allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
-def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: str, error: str) -> Stream:
+def access_stream_for_unmute_topic_by_name(user_profile: UserProfile,
+                                           stream_name: str,
+                                           error: str) -> Stream:
     """
     It may seem a little silly to have this helper function for unmuting
     topics, but it gets around a linter warning, and it helps to be able
@@ -130,6 +139,15 @@ def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: str, 
     """
     try:
         stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+    return stream
+
+def access_stream_for_unmute_topic_by_id(user_profile: UserProfile,
+                                         stream_id: int,
+                                         error: str) -> Stream:
+    try:
+        stream = Stream.objects.get(id=stream_id, realm_id=user_profile.realm_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
     return stream
