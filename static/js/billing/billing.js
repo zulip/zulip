@@ -6,7 +6,6 @@ $(function () {
             image: '/static/images/logo/zulip-icon-128x128.png',
             locale: 'auto',
             token: function (stripe_token) {
-                var csrf_token = $("#payment-method").data("csrf");
                 loading.make_indicator($('#updating_card_indicator'),
                                        {text: 'Updating card. Please wait ...', abs_positioned: true});
                 $("#payment-section").hide();
@@ -15,7 +14,6 @@ $(function () {
                     url: "/json/billing/sources/change",
                     data: {
                         stripe_token: JSON.stringify(stripe_token.id),
-                        csrfmiddlewaretoken: csrf_token,
                     },
                     success: function () {
                         $("#loading-section").hide();
@@ -108,7 +106,6 @@ $(function () {
                     url: "/json/billing/upgrade",
                     data: {
                         stripe_token: JSON.stringify(stripe_token.id),
-                        csrfmiddlewaretoken: $("#autopay-form input[name='csrf']").val(),
                         signed_seat_count: get_form_input("autopay", "signed_seat_count"),
                         salt: get_form_input("autopay", "salt"),
                         schedule: get_form_input("autopay", "schedule"),
@@ -162,7 +159,6 @@ $(function () {
             $.post({
                 url: "/json/billing/upgrade",
                 data: {
-                    csrfmiddlewaretoken: get_form_input("invoice", "csrfmiddlewaretoken", false),
                     signed_seat_count: get_form_input("invoice", "signed_seat_count"),
                     salt: get_form_input("invoice", "salt"),
                     schedule: get_form_input("invoice", "schedule"),
