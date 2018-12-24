@@ -6,11 +6,11 @@
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
+                <div class="removed-drafts">
+                    {{#tr this}} Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed. {{/tr}}
+                </div>
             </div>
             <div class="drafts-list">
-                <div class="removed-drafts">
-                    {{#tr this}} Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed {{/tr}}
-                </div>
                 <div class="no-drafts">
                     {{t 'No drafts.'}}
                 </div>
