@@ -19,8 +19,7 @@ from django.utils.timezone import utc as timezone_utc
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, activity_change_requires_seat_update, \
-    do_create_realm
+    do_activate_user, do_reactivate_user, do_create_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
@@ -783,40 +782,6 @@ class StripeTest(ZulipTestCase):
             number_of_sources += 1
         self.assertEqual(number_of_sources, 1)
         self.assertFalse(RealmAuditLog.objects.filter(event_type=RealmAuditLog.STRIPE_CARD_CHANGED).exists())
-
-class RequiresBillingUpdateTest(ZulipTestCase):
-    def test_activity_change_requires_seat_update(self) -> None:
-        # Realm doesn't have a seat based plan
-        self.assertFalse(activity_change_requires_seat_update(self.example_user("hamlet")))
-        realm = get_realm("zulip")
-        realm.has_seat_based_plan = True
-        realm.save(update_fields=['has_seat_based_plan'])
-        # seat based plan + user not a bot
-        user = self.example_user("hamlet")
-        self.assertTrue(activity_change_requires_seat_update(user))
-        user.is_bot = True
-        user.save(update_fields=['is_bot'])
-        # seat based plan but user is a bot
-        self.assertFalse(activity_change_requires_seat_update(user))
-
-    def test_requires_billing_update_for_is_active_changes(self) -> None:
-        count = RealmAuditLog.objects.count()
-        realm = get_realm("zulip")
-        user1 = do_create_user('user1@zulip.com', 'password', realm, 'full name', 'short name')
-        do_deactivate_user(user1)
-        do_reactivate_user(user1)
-        # Not a proper use of do_activate_user, but it's fine to call it like this for this test
-        do_activate_user(user1)
-        self.assertEqual(count + 4,
-                         RealmAuditLog.objects.filter(requires_billing_update=False).count())
-
-        realm.has_seat_based_plan = True
-        realm.save(update_fields=['has_seat_based_plan'])
-        user2 = do_create_user('user2@zulip.com', 'password', realm, 'full name', 'short name')
-        do_deactivate_user(user2)
-        do_reactivate_user(user2)
-        do_activate_user(user2)
-        self.assertEqual(4, RealmAuditLog.objects.filter(requires_billing_update=True).count())
 
 class RequiresBillingAccessTest(ZulipTestCase):
     def setUp(self) -> None:
