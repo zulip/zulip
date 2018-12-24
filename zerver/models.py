@@ -319,6 +319,7 @@ class Realm(models.Model):
         BOT_CREATION_ADMINS_ONLY,
     ]
 
+    # Both of these fields are legacy, and will be removed after a manual migration.
     has_seat_based_plan = models.BooleanField(default=False)  # type: bool
     seat_limit = models.PositiveIntegerField(null=True)  # type: Optional[int]
 

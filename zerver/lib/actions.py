@@ -224,9 +224,6 @@ def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
 def realm_user_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
-def activity_change_requires_seat_update(user: UserProfile) -> bool:
-    return user.realm.has_seat_based_plan and not user.is_bot
-
 def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:
@@ -482,8 +479,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
 
     event_time = user_profile.date_joined
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_CREATED, event_time=event_time,
-                                 requires_billing_update=activity_change_requires_seat_update(user_profile))
+                                 event_type=RealmAuditLog.USER_CREATED, event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
 
@@ -508,8 +504,7 @@ def do_activate_user(user_profile: UserProfile) -> None:
 
     event_time = user_profile.date_joined
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time,
-                                 requires_billing_update=activity_change_requires_seat_update(user_profile))
+                                 event_type=RealmAuditLog.USER_ACTIVATED, event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
 
@@ -524,8 +519,7 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
-                                 acting_user=acting_user,
-                                 requires_billing_update=activity_change_requires_seat_update(user_profile))
+                                 acting_user=acting_user)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
 
@@ -701,8 +695,7 @@ def do_deactivate_user(user_profile: UserProfile,
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  acting_user=acting_user,
-                                 event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time,
-                                 requires_billing_update=activity_change_requires_seat_update(user_profile))
+                                 event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
 
