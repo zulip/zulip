@@ -185,8 +185,8 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
 def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
     profiles = UserProfile.objects.select_related('realm').filter(delivery_email__iexact=email.strip(),
                                                                   is_active=True,
-                                                                  is_bot=False,
-                                                                  realm__deactivated=False)
+                                                                  realm__deactivated=False,
+                                                                  is_bot=False).order_by('date_joined')
     return [{"realm_name": profile.realm.name,
              "string_id": profile.realm.string_id,
              "full_name": profile.full_name,

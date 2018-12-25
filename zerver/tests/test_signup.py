@@ -2221,6 +2221,17 @@ class UserSignUpTest(ZulipTestCase):
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url, subdomain=subdomain)
         self.assertEqual(result.status_code, 200)
+
+        result = self.client_post(
+            '/accounts/register/',
+            {'password': password,
+             'key': find_key_by_email(email),
+             'from_confirmation': '1'},
+            subdomain=subdomain)
+        self.assert_in_success_response(["Import settings from existing Zulip account",
+                                         "selected >\n                            Zulip Dev",
+                                         "We just need you to do one last thing."], result)
+
         result = self.submit_reg_form_for_user(email, password, source_realm="zulip",
                                                HTTP_HOST=subdomain + ".testserver")
 
