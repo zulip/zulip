@@ -360,7 +360,23 @@ MessageListView.prototype = {
         if (where === 'top') {
             first_group = _.last(new_message_groups);
             second_group = _.first(this._message_groups);
-            if (this.join_message_groups(first_group, second_group)) {
+        } else {
+            first_group = _.last(this._message_groups);
+            second_group = _.first(new_message_groups);
+        }
+
+        if (first_group) {
+            prev_msg_container = _.last(first_group.message_containers);
+        }
+
+        if (second_group) {
+            curr_msg_container = _.first(second_group.message_containers);
+        }
+
+        var was_joined = this.join_message_groups(first_group, second_group);
+
+        if (where === 'top') {
+            if (was_joined) {
                 // join_message_groups moved the old message to the end of the
                 // new group. We need to replace the old rendered message
                 // group. So we will reuse its ID.
@@ -375,9 +391,6 @@ MessageListView.prototype = {
                 new_message_groups = _.initial(new_message_groups);
             } else if (!same_day(second_group.message_containers[0],
                                  first_group.message_containers[0])) {
-                prev_msg_container = _.last(first_group.message_containers);
-                curr_msg_container = _.first(second_group.message_containers);
-
                 // The groups did not merge, so we need up update the date row for the old group
                 update_group_time_display(second_group, curr_msg_container, prev_msg_container);
                 update_timestr(curr_msg_container);
@@ -387,21 +400,12 @@ MessageListView.prototype = {
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = new_message_groups.concat(this._message_groups);
         } else {
-            first_group = _.last(this._message_groups);
-            second_group = _.first(new_message_groups);
-            if (this.join_message_groups(first_group, second_group)) {
+            if (was_joined) {
                 // rerender the last message
-                message_actions.rerender_messages.push(
-                    first_group.message_containers[
-                        first_group.message_containers.length
-                        - second_group.message_containers.length - 1]
-                );
+                message_actions.rerender_messages.push(prev_msg_container);
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
-                prev_msg_container = _.last(first_group.message_containers);
-                curr_msg_container = _.first(second_group.message_containers);
-
                 if (same_day(prev_msg_container, curr_msg_container)) {
                     // Clear the date if it is the same as the last group
                     second_group.show_date = false;
