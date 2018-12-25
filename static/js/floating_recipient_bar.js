@@ -5,6 +5,42 @@ var exports = {};
 
 var is_floating_recipient_bar_showing = false;
 
+exports.frb_bottom = function () {
+    var bar = $("#floating_recipient_bar");
+    var bar_top = bar.offset().top;
+    var bar_bottom = bar_top + bar.safeOuterHeight();
+
+    return bar_bottom;
+};
+
+exports.obscured_recipient_bar = function () {
+    // Find the recipient bar that is closed to being onscreen
+    // but above the "top".
+
+    // Start with the pointer's current location.
+    var selected_row = current_msg_list.selected_row();
+
+    if (selected_row === undefined || selected_row.length === 0) {
+        return;
+    }
+
+    var candidate = rows.get_message_recipient_row(selected_row);
+    if (candidate === undefined) {
+        return;
+    }
+
+    var floating_recipient_bar_bottom = exports.frb_bottom();
+
+    while (candidate.length) {
+        if (candidate.is(".recipient_row")) {
+            if (candidate.offset().top < floating_recipient_bar_bottom) {
+                return candidate;
+            }
+        }
+        candidate = candidate.prev();
+    }
+};
+
 function show_floating_recipient_bar() {
     if (!is_floating_recipient_bar_showing) {
         $("#floating_recipient_bar").css('visibility', 'visible');
@@ -52,38 +88,14 @@ exports.update = function () {
     // re-apply it if we continue to detect overlap
     $('.temp-show-date').removeClass('temp-show-date');
 
-    var floating_recipient_bar = $("#floating_recipient_bar");
-    var floating_recipient_bar_top = floating_recipient_bar.offset().top;
-    var floating_recipient_bar_bottom =
-        floating_recipient_bar_top + floating_recipient_bar.safeOuterHeight();
+    var floating_recipient_bar_bottom = exports.frb_bottom();
 
-    // Find the last message where the top of the recipient
-    // row is at least partially occluded by our box.
-    // Start with the pointer's current location.
-    var selected_row = current_msg_list.selected_row();
+    var current_label = exports.obscured_recipient_bar();
 
-    if (selected_row === undefined || selected_row.length === 0) {
+    if (!current_label) {
+        exports.hide();
         return;
     }
-
-    var candidate = rows.get_message_recipient_row(selected_row);
-    if (candidate === undefined) {
-        return;
-    }
-    while (true) {
-        if (candidate.length === 0) {
-            // We're at the top of the page and no labels are above us.
-            exports.hide();
-            return;
-        }
-        if (candidate.is(".recipient_row")) {
-            if (candidate.offset().top < floating_recipient_bar_bottom) {
-                break;
-            }
-        }
-        candidate = candidate.prev();
-    }
-    var current_label = candidate;
 
     // We now know what the floating stream/topic bar should say.
     // Do we show it?
