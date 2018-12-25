@@ -125,3 +125,9 @@ sudo -s  # If not already root
 ```
 where HOSTNAME is the domain name (or IP address) to use on the
 generated certificate.
+
+If you replace the certificates, you need to restart nginx. In order
+to do that, run the following command:
+```
+service nginx restart
+```
