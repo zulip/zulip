@@ -1,4 +1,57 @@
 $(function () {
+    function get_form_input(form_name, input_name, stringify = true) {
+        var input = $("#" + form_name + "-form input[name='" + input_name + "']");
+        var val;
+        if (input.attr('type') === "radio") {
+            val =  $("#" + form_name + "-form input[name='" + input_name + "']:checked").val();
+        } else {
+            val = input.val();
+        }
+        if (stringify) {
+            return JSON.stringify(val);
+        }
+        return val;
+    }
+
+    function create_ajax_request(url, form_name, stripe_token = null) {
+        var form_loading_indicator = "#" + form_name + "_loading_indicator";
+        var form_input_section = "#" + form_name + "-input-section";
+        var form_success = "#" + form_name + "-success";
+        var form_error = "#" + form_name + "-error";
+        var form_loading = "#" + form_name + "-loading";
+
+        loading.make_indicator($(form_loading_indicator),
+                               {text: 'Processing ...', abs_positioned: true});
+        $(form_input_section).hide();
+        $(form_error).hide();
+        $(form_loading).show();
+
+        var license_management = get_form_input(form_name, "license_management", false);
+        $.post({
+            url: url,
+            data: {
+                stripe_token: JSON.stringify(stripe_token.id),
+                signed_seat_count: get_form_input(form_name, "signed_seat_count"),
+                salt: get_form_input(form_name, "salt"),
+                schedule: get_form_input(form_name, "schedule"),
+                license_management: JSON.stringify(license_management),
+                licenses: $("#" + license_management + "_license_count").val(),
+                billing_modality: get_form_input(form_name, "billing_modality"),
+            },
+            success: function () {
+                $(form_loading).hide();
+                $(form_error).hide();
+                $(form_success).show();
+                location.reload();
+            },
+            error: function (xhr) {
+                $(form_loading).hide();
+                $(form_error).show().text(JSON.parse(xhr.responseText).msg);
+                $(form_input_section).show();
+            },
+        });
+    }
+
     if (window.location.pathname === '/billing/') {
         var stripe_key = $("#payment-method").data("key");
         var card_change_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
@@ -75,56 +128,13 @@ $(function () {
         return (cents / 100).toFixed(precision);
     }
 
-    function get_form_input(form_name, input_name, stringify = true) {
-        var input = $("#" + form_name + "-form input[name='" + input_name + "']");
-        var val;
-        if (input.attr('type') === "radio") {
-            val =  $("#" + form_name + "-form input[name='" + input_name + "']:checked").val();
-        } else {
-            val = input.val();
-        }
-        if (stringify) {
-            return JSON.stringify(val);
-        }
-        return val;
-    }
-
     if (window.location.pathname === '/upgrade/') {
         var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
             key: $("#autopay-form").data("key"),
             image: '/static/images/logo/zulip-icon-128x128.png',
             locale: 'auto',
             token: function (stripe_token) {
-                loading.make_indicator($('#autopay_loading_indicator'),
-                                       {text: 'Processing ...', abs_positioned: true});
-                $("#autopay-input-section").hide();
-                $('#autopay-error').hide();
-                $("#autopay-loading").show();
-
-                var license_management = get_form_input("autopay", "license_management", false);
-                $.post({
-                    url: "/json/billing/upgrade",
-                    data: {
-                        stripe_token: JSON.stringify(stripe_token.id),
-                        signed_seat_count: get_form_input("autopay", "signed_seat_count"),
-                        salt: get_form_input("autopay", "salt"),
-                        schedule: get_form_input("autopay", "schedule"),
-                        license_management: JSON.stringify(license_management),
-                        licenses: $("#" + license_management + "_license_count").val(),
-                        billing_modality: get_form_input("autopay", "billing_modality"),
-                    },
-                    success: function () {
-                        $("#autopay-loading").hide();
-                        $('#autopay-error').hide();
-                        $("#autopay-success").show();
-                        location.reload();
-                    },
-                    error: function (xhr) {
-                        $("#autopay-loading").hide();
-                        $('#autopay-error').show().text(JSON.parse(xhr.responseText).msg);
-                        $("#autopay-input-section").show();
-                    },
-                });
+                create_ajax_request("/json/billing/upgrade", "autopay", stripe_token = stripe_token);
             },
         });
 
