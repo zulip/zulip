@@ -48,28 +48,28 @@ function show_floating_recipient_bar() {
     }
 }
 
-var old_label;
-function replace_floating_recipient_bar(desired_label) {
+var old_source;
+function replace_floating_recipient_bar(source_recipient_bar) {
     var new_label;
     var other_label;
     var header;
-    if (desired_label !== old_label) {
-        if (desired_label.children(".message_header_stream").length !== 0) {
+    if (source_recipient_bar !== old_source) {
+        if (source_recipient_bar.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");
             other_label = $("#current_label_private_message");
-            header = desired_label.children(".message_header_stream");
+            header = source_recipient_bar.children(".message_header_stream");
         } else {
             new_label = $("#current_label_private_message");
             other_label = $("#current_label_stream");
-            header = desired_label.children(".message_header_private_message");
+            header = source_recipient_bar.children(".message_header_private_message");
         }
         new_label.find(".message_header").replaceWith(header.clone());
         other_label.css('display', 'none');
         new_label.css('display', 'block');
-        new_label.attr("zid", rows.id(rows.first_message_in_group(desired_label)));
+        new_label.attr("zid", rows.id(rows.first_message_in_group(source_recipient_bar)));
 
-        new_label.toggleClass('message-fade', desired_label.hasClass('message-fade'));
-        old_label = desired_label;
+        new_label.toggleClass('message-fade', source_recipient_bar.hasClass('message-fade'));
+        old_source = source_recipient_bar;
     }
     show_floating_recipient_bar();
 }
@@ -90,9 +90,9 @@ exports.update = function () {
 
     var floating_recipient_bar_bottom = exports.frb_bottom();
 
-    var current_label = exports.obscured_recipient_bar();
+    var source_recipient_bar = exports.obscured_recipient_bar();
 
-    if (!current_label) {
+    if (!source_recipient_bar) {
         exports.hide();
         return;
     }
@@ -101,19 +101,19 @@ exports.update = function () {
     // Do we show it?
 
     // Hide if the bottom of our floating stream/topic label is not
-    // lower than the bottom of current_label (since that means we're
+    // lower than the bottom of source_recipient_bar (since that means we're
     // covering up a label that already exists).
-    var header_height = $(current_label).find('.message_header').safeOuterHeight();
+    var header_height = $(source_recipient_bar).find('.message_header').safeOuterHeight();
     if (floating_recipient_bar_bottom <=
-        current_label.offset().top + header_height) {
+        source_recipient_bar.offset().top + header_height) {
         // hide floating_recipient_bar and use .temp-show-date to force display
         // of the recipient_row_date belonging to the current recipient_bar
-        $('.recipient_row_date', current_label).addClass('temp-show-date');
+        $('.recipient_row_date', source_recipient_bar).addClass('temp-show-date');
         exports.hide();
         return;
     }
 
-    replace_floating_recipient_bar(current_label);
+    replace_floating_recipient_bar(source_recipient_bar);
 };
 
 
