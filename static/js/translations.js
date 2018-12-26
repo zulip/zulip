@@ -1,10 +1,6 @@
-// commonjs code goes here
-import i18next from 'i18next';
-import localstorage from './localstorage';
-
 window.i18n = i18next;
 
-i18next.init({
+i18n.init({
     lng: 'lang',
     resources: {
         lang: {

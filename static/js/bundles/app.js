@@ -10,6 +10,7 @@ import "third/jquery-autosize/jquery.autosize.js";
 import "third/spectrum/spectrum.js";
 import "third/sockjs/sockjs-0.3.4.js";
 import "third/marked/lib/marked.js";
+import "node_modules/i18next/i18next.js";
 import "node_modules/xdate/src/xdate.js";
 import "node_modules/jquery-validation/dist/jquery.validate.js";
 import "node_modules/blueimp-md5/js/md5.js";

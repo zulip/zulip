@@ -69,6 +69,7 @@
         "home_msg_list": false,
         "hotspots": false,
         "i18n": false,
+        "i18next": false,
         "info_overlay": false,
         "input_pill": false,
         "invite": false,
