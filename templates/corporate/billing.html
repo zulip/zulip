@@ -27,6 +27,7 @@
                     <li><a data-toggle="tab" href="#payment-method">Payment Method</a></li>
                 </ul>
 
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
                         <p>Your current plan is <strong>{{ plan_name }}</strong>.</p>
@@ -37,16 +38,18 @@
                         </p>
                     </div>
                     <div class="tab-pane" id="payment-method" data-email="{{stripe_email}}" data-key="{{publishable_key}}">
-                        <div id="payment-section">
-                            <p>Current payment method: <strong>{{ payment_method }}</strong></p>
-                            {% if charge_automatically %}
-                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                            <button id="update-card-button" class="stripe-button-el">
-                                <span id="update-card-button-span">Update card</span>
-                            </button>
-                            {% endif %}
+                        <div id="cardchange-error" class="alert alert-danger"></div>
+                        <div id="cardchange-input-section">
+                            <form id="cardchange-form">
+                                <p>Current payment method: <strong>{{ payment_method }}</strong></p>
+                                {% if charge_automatically %}
+                                <button id="update-card-button" class="stripe-button-el">
+                                    <span id="update-card-button-span">Update card</span>
+                                </button>
+                                {% endif %}
+                            </form>
                         </div>
-                        <div id="loading-section">
+                        <div id="cardchange-loading">
                             <div class="zulip-loading-logo">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 40 40" version="1.1">
                                     <g transform="translate(-297.14285,-466.64792)">
@@ -55,9 +58,9 @@
                                     </g>
                                 </svg>
                             </div>
-                            <div id="updating_card_indicator"></div>
+                            <div id="cardchange_loading_indicator"></div>
                         </div>
-                        <div id="card-updated-message" class="alert alert-success">
+                        <div id="cardchange-success" class="alert alert-success">
                             Card updated. The page will now reload.
                         </div>
                     </div>

@@ -70,25 +70,7 @@ $(function () {
             image: '/static/images/logo/zulip-icon-128x128.png',
             locale: 'auto',
             token: function (stripe_token) {
-                loading.make_indicator($('#updating_card_indicator'),
-                                       {text: 'Updating card. Please wait ...', abs_positioned: true});
-                $("#payment-section").hide();
-                $("#loading-section").show();
-                $.post({
-                    url: "/json/billing/sources/change",
-                    data: {
-                        stripe_token: JSON.stringify(stripe_token.id),
-                    },
-                    success: function () {
-                        $("#loading-section").hide();
-                        $("#card-updated-message").show();
-                        location.reload();
-                    },
-                    error: function (xhr) {
-                        $("#loading-section").hide();
-                        $('#error-message-box').show().text(JSON.parse(xhr.responseText).msg);
-                    },
-                });
+                create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token = stripe_token);
             },
         });
 
