@@ -276,6 +276,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
 exports.initialize_everything = function () {
     // initialize other stuff
+    translations.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
     exports.initialize_kitchen_sink_stuff();

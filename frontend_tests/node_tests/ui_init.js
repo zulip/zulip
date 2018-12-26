@@ -18,6 +18,7 @@
     some things can happen later in a `launch` method.
 
 */
+set_global('i18next', 'whatever');
 set_global('i18n', global.stub_i18n);
 set_global('document', {
     location: {
@@ -73,6 +74,7 @@ zrequire('util');
 
 util.is_mobile = () => false;
 templates.render = () => 'some-html';
+i18n.init = () => {};
 
 zrequire('echo');
 zrequire('colorspace');
@@ -113,6 +115,8 @@ zrequire('stream_list');
 zrequire('topic_list');
 zrequire('topic_zoom');
 zrequire('sent_messages');
+zrequire('localstorage');
+zrequire('translations');
 zrequire('typing');
 zrequire('top_left_corner');
 zrequire('starred_messages');
@@ -155,7 +159,6 @@ const value_stub = $.create('value');
 const count_stub = $.create('count');
 count_stub.set_find_results('.value', value_stub);
 $("#global_filters li[data-name='starred']").set_find_results('.count', count_stub);
-
 
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();
