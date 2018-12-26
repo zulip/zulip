@@ -48,7 +48,7 @@ function message_hover(message_row) {
     }
 }
 
-function initialize_kitchen_sink_stuff() {
+exports.initialize_kitchen_sink_stuff = function () {
     // TODO:
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
@@ -272,13 +272,13 @@ function initialize_kitchen_sink_stuff() {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }
-}
+};
 
-$(function () {
+exports.initialize_everything = function () {
     // initialize other stuff
     scroll_bar.initialize();
     message_viewport.initialize();
-    initialize_kitchen_sink_stuff();
+    exports.initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
@@ -333,6 +333,10 @@ $(function () {
     panels.initialize();
     typing.initialize();
     starred_messages.initialize();
+};
+
+$(function () {
+    exports.initialize_everything();
 });
 
 
