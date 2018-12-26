@@ -13,12 +13,19 @@ $(function () {
         return val;
     }
 
+    function is_in_array(value, array) {
+        return array.indexOf(value) > -1;
+    }
+
     function create_ajax_request(url, form_name, stripe_token = null) {
+        var form = $("#" + form_name + "-form");
         var form_loading_indicator = "#" + form_name + "_loading_indicator";
         var form_input_section = "#" + form_name + "-input-section";
         var form_success = "#" + form_name + "-success";
         var form_error = "#" + form_name + "-error";
         var form_loading = "#" + form_name + "-loading";
+
+        var numeric_inputs = ["licenses"];
 
         loading.make_indicator($(form_loading_indicator),
                                {text: 'Processing ...', abs_positioned: true});
@@ -26,18 +33,22 @@ $(function () {
         $(form_error).hide();
         $(form_loading).show();
 
-        var license_management = get_form_input(form_name, "license_management", false);
+        var data = {};
+        if (stripe_token) {
+            data.stripe_token = JSON.stringify(stripe_token.id);
+        }
+
+        form.serializeArray().forEach(function (item) {
+            if (is_in_array(item.name, numeric_inputs)) {
+                data[item.name] = item.value;
+            } else {
+                data[item.name] = JSON.stringify(item.value);
+            }
+        });
+
         $.post({
             url: url,
-            data: {
-                stripe_token: JSON.stringify(stripe_token.id),
-                signed_seat_count: get_form_input(form_name, "signed_seat_count"),
-                salt: get_form_input(form_name, "salt"),
-                schedule: get_form_input(form_name, "schedule"),
-                license_management: JSON.stringify(license_management),
-                licenses: $("#" + license_management + "_license_count").val(),
-                billing_modality: get_form_input(form_name, "billing_modality"),
-            },
+            data: data,
             success: function () {
                 $(form_loading).hide();
                 $(form_error).hide();
@@ -204,8 +215,14 @@ $(function () {
             $("#license-manual-section").hide();
             $("#license-mix-section").hide();
 
+            $("#automatic_license_count").prop('disabled', true);
+            $("#manual_license_count").prop('disabled', true);
+            $("#mix_license_count").prop('disabled', true);
+
             var section_id = "#license-" + license + "-section";
             $(section_id).show();
+            var input_id = "#" + license + "_license_count";
+            $(input_id).prop("disabled", false);
         }
 
         $('input[type=radio][name=license_management]').change(function () {
