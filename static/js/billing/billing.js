@@ -172,32 +172,7 @@ $(function () {
                 return;
             }
             e.preventDefault();
-            loading.make_indicator($('#invoice_loading_indicator'),
-                                   {text: 'Processing ...', abs_positioned: true});
-            $("#invoice-input-section").hide();
-            $('#invoice-error').hide();
-            $("#invoice-loading").show();
-            $.post({
-                url: "/json/billing/upgrade",
-                data: {
-                    signed_seat_count: get_form_input("invoice", "signed_seat_count"),
-                    salt: get_form_input("invoice", "salt"),
-                    schedule: get_form_input("invoice", "schedule"),
-                    billing_modality: get_form_input("invoice", "billing_modality"),
-                    licenses: get_form_input("invoice", "invoiced_licenses", false),
-                },
-                success: function () {
-                    $("#invoice-loading").hide();
-                    $('#invoice-error').hide();
-                    $("#invoice-success").show();
-                    location.reload();
-                },
-                error: function (xhr) {
-                    $("#invoice-loading").hide();
-                    $('#invoice-error').show().text(JSON.parse(xhr.responseText).msg);
-                    $("#invoice-input-section").show();
-                },
-            });
+            create_ajax_request("/json/billing/upgrade", "invoice");
         });
 
         var prices = {};
