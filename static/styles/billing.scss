@@ -175,7 +175,7 @@
         display: none;
     }
 
-    #loading-section,
+    #cardchange-loading,
     #invoice-loading,
     #autopay-loading {
         display: none;
@@ -184,13 +184,14 @@
     }
 
 
-    #card-updated-message,
+    #cardchange-success,
     #invoice-success,
     #autopay-success {
         text-align: center;
         display: none;
     }
 
+    #cardchange-error,
     #invoice-error,
     #autopay-error {
         text-align: center;
@@ -218,24 +219,20 @@
         stroke: hsl(0, 0%, 100%);
     }
 
-    #updating_card_indicator,
+    #cardchange_loading_indicator,
     #invoice_loading_indicator,
     #autopay_loading_indicator {
         margin: 10px auto;
     }
 
-    #updating_card_indicator .loading_indicator_text {
-        margin-left: -75px;
-    }
-
-    #updating_card_indicator_box_container,
+    #cardchange_loading_indicator_box_container,
     #invoice_loading_indicator_box_container,
     #autopay_loading_indicator_box_container {
         position: absolute;
         left: 50%;
     }
 
-    #updating_card_indicator_box,
+    #cardchange_loading_indicator_box,
     #invoice_loading_indicator_box,
     #autopay_loading_indicator_box {
         position: relative;
@@ -247,6 +244,7 @@
         border-radius: 6px;
     }
 
+    #cardchange_loading_indicator .loading_indicator_text,
     #invoice_loading_indicator .loading_indicator_text,
     #autopay_loading_indicator .loading_indicator_text {
         margin-left: -115px;
