@@ -105,7 +105,7 @@
                                         are added, and remove licenses not in use at the end of each billing
                                         period.
                                     </p>
-                                    <input type="hidden" id="automatic_license_count" value="{{ seat_count }}">
+                                    <input type="hidden" name="licenses" id="automatic_license_count" value="{{ seat_count }}">
                                 </div>
 
                                 <div id="license-manual-section">
@@ -116,7 +116,7 @@
                                     </p>
 
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
-                                    <input type="number" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br>
+                                    <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br>
                                 </div>
 
                                 <div id="license-mix-section">
@@ -127,7 +127,7 @@
                                         period.
                                     </p>
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
-                                    <input type="number" min="{{ seat_count }}"autocomplete="off" id="mix_license_count" required/><br>
+                                    <input type="number" name="licenses" min="{{ seat_count }}"autocomplete="off" id="mix_license_count" required/><br>
                                 </div>
 
                                 <button id="add-card-button" class="stripe-button-el">
