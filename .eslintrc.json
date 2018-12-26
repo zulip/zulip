@@ -186,6 +186,7 @@
         "typing_events": false,
         "typing_status": false,
         "ui": false,
+        "ui_init": false,
         "ui_report": false,
         "ui_util": false,
         "unread": false,
