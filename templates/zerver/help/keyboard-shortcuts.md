@@ -39,6 +39,8 @@ below, and add more to your repertoire as needed.
 
 * **All private messages**: `P`
 
+* **Mentions**: `Ctrl + m`
+
 * **Search messages**: `/`
 
 * **Toggle keyboard shortcuts view**: `?`

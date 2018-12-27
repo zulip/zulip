@@ -102,6 +102,7 @@ run_test('mappings', () => {
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
     assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
     assert.equal(map_down(190, false, true).name, 'narrow_to_compose_target'); // ctrl + .
+    assert.equal(map_down(77, false, true).name, 'narrow_mentioned'); // ctrl + m
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -119,7 +120,6 @@ run_test('mappings', () => {
     assert.equal(map_down(72, false, true), undefined); // ctrl + h
     assert.equal(map_down(88, false, true), undefined); // ctrl + x
     assert.equal(map_down(78, false, true), undefined); // ctrl + n
-    assert.equal(map_down(77, false, true), undefined); // ctrl + m
     assert.equal(map_down(75, false, false, true), undefined); // cmd + k
     assert.equal(map_down(83, false, false, true), undefined); // cmd + s
     assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
@@ -136,6 +136,8 @@ run_test('mappings', () => {
     assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
     assert.equal(map_down(190, false, false, true).name, 'narrow_to_compose_target'); // cmd + .
     assert.equal(map_down(190, false, true, false), undefined); // ctrl + .
+    assert.equal(map_down(77, false, false, true).name, 'narrow_mentioned'); // cmd + m
+    assert.equal(map_down(77, false, true, false), undefined); // ctrl + m
     // Reset userAgent
     global.navigator.userAgent = '';
 });

@@ -54,6 +54,7 @@ var keydown_ctrl_mappings = {
 
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
+    77: {name: 'narrow_mentioned', message_view_only: true}, // 'm'
     83: {name: 'star_message', message_view_only: true}, // 's'
     190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
 };
@@ -637,6 +638,10 @@ exports.process_hotkey = function (e, hotkey) {
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {
             narrow.by('is', 'private', opts);
+        });
+    case 'narrow_mentioned':
+        return do_narrow_action(function (target, opts) {
+            narrow.by('is', 'mentioned', opts);
         });
     case 'query_streams':
         stream_list.initiate_search();
