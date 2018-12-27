@@ -1,136 +1,101 @@
 {% extends "zerver/emails/email_base_messages.html" %}
 
 {% block content %}
-   <div class='alert'>
-    Hello {{ name }}! <br>
-    A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.
-    </div>
+    Hello {{ name }},
+
+    <p>A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.</p>
 
     {% if unread_pms %}
-    <div class='container' style="border:1px solid; border-radius: 5px; margin-bottom: 20px; padding:0px; max-width: none;">
-        <h2 style="margin-bottom: 10px">Missed private messages</h2>
-        <h4>You have some missed private messages. Here are some of them:</h4>
-
-        <div style="padding: 0px 20px 0px 20px">
-            <div id='private-messages' style="width: auto">
-                {% for recipient_block in unread_pms %}
-                <div class='recipient_block'>
-                    <div class='recipient_header'>
-                        {{ recipient_block.header.html|safe }}
+    <h2>Missed private messages</h2>
+    <p>You have some missed private messages. Here are some of them:</p>
+    <div id='private-messages'>
+        {% for recipient_block in unread_pms %}
+        <div class='recipient_block'>
+            <div class='recipient_header'>{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content'>
+                {% for sender_block in recipient_block.senders %}
+                    {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
+                    {% for message_block in sender_block.content %}
+                    <div class='message_content_block'>
+                        {{ message_block.html|safe }}
                     </div>
-                    <div class='message_content' style="text-align: left">
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
+        <p><a href="{{ realm_uri }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
+    </div>
+    {% endif %}
+
+
+    {% if hot_conversations %}
+        <br />
+        <h2>Hot conversations</h2>
+        <p>
+            Here are some of the hot conversations that have happened while you've been gone:
+        </p>
+
+        {% for convo in hot_conversations %}
+        <div id='messages'>
+            {% for recipient_block in convo.first_few_messages %}
+                <div class='hot_convo_recipient_block'>
+                    <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
+                    <div class='hot_convo_message_content'>
                         {% for sender_block in recipient_block.senders %}
-                            {% if sender_block.sender %} 
-                            <div class="message_sender" style="padding:1px 6px 1px 6px">
-                                {{ sender_block.sender }}
-                            </div>
-                            {% endif %}
+                            {% if sender_block.sender %} <div class="hot_convo_message_sender">{{ sender_block.sender }}</div>{% endif %}
                             {% for message_block in sender_block.content %}
-                            <div class='message_content_block'>
+                            <div class='hot_convo_message_content_block'>
                                 {{ message_block.html|safe }}
                             </div>
                             {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-                {% if remaining_unread_pms_count > 0 %}
-                <p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>
-                {% endif %}
-                <p>
-                    <a href="{{ realm_uri }}/#narrow/is/private">Catch up on the rest of your PMs.</a>
-                </p>
-        </div>        
-    </div>
-    {% endif %}
-
-
-    {% if hot_conversations %}
-    <div class='container' style="border:1px solid; border-radius: 5px; margin-bottom: 20px; padding:0px; max-width: none;">   
-        <h2 style="margin-bottom: 10px">Hot conversations</h2>
-        <h4>Here are some of the hot conversations that have happened while you've been gone:</h4>
-
-        <div style="padding: 0px 20px 0px 20px">
-            {% for convo in hot_conversations %}
-            <div id='messages' style="width:auto;">
-                {% for recipient_block in convo.first_few_messages %}
-                    <div class='hot_convo_recipient_block'>
-                        <div class='hot_convo_recipient_header'>
-                            {{ recipient_block.header.html|safe }}
-                        </div>
-                        <div class='hot_convo_message_content' style="text-align: left;">
-                            {% for sender_block in recipient_block.senders %}
-                                {% if sender_block.sender %} 
-                                    <div class="hot_convo_message_sender" style="padding:1px 6px 1px 6px">
-                                        {{ sender_block.sender }}
-                                    </div>
-                                {% endif %}
-                                {% for message_block in sender_block.content %}
-                                <div class='hot_convo_message_content_block'>
-                                    {{ message_block.html|safe }}
-                                </div>
-                                {% endfor %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% if convo.count > 0 %}
-                    <p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>
-                    {% endif %}
-                {% endfor %}
-            </div>
+                {% if convo.count > 0 %}<p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
             {% endfor %}
-            <p><a href="{{ realm_uri }}">Catch up on the rest of these conversations.</a></p>
         </div>
-    </div>
+        {% endfor %}
+        <p><a href="{{ realm_uri }}">Catch up on the rest of these conversations.</a></p>
+
     {% endif %}
 
-    {% if new_users or new_streams.html %}
-    <div class="container" style="width:70%; border:1px solid; border-radius: 5px; margin-bottom: 20px; margin-top: 40px; padding: 0px; max-width: none;">
-
-        {% if new_users and new_streams.html %}
-              <h2>Group updates</h2>
-        {% elif new_users %}
-              <h2>New users</h2>
-        {% elif new_streams.html %}
-              <h2>New streams</h2>
-        {% endif %}
-
-        <div style="text-align: left; margin: 0px 15px 0px 15px;">
-            {% if new_streams.html %}
-            <p>
-                {% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:
-                {{ new_streams.html|display_list(4)|safe }}.
-            </p>
-
-            <p>
-                Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.
-            </p>
-            {% endif %}
-
-            {% if new_users %}
-            <p>
-                {% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!
-            </p>
-            {% endif %}
-
-            <br />
-
-            <p style="margin-top: 30px">
-                <a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a>
-            </p>
-
-            <p>Cheers,<br />
-            The Zulip Team
-            </p>
-        </div>
-    </div>
+    {% if new_users and new_streams.html %}
+    <br />
+    <h2>Group updates</h2>
+    {% elif new_users %}
+    <br />
+    <h2>New users</h2>
+    {% elif new_streams.html %}
+    <br />
+    <h2>New streams</h2>
     {% endif %}
+
+    {% if new_streams.html %}
+    <p>{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
+
+    <p>{{ new_streams.html|display_list(4)|safe }}.</p>
+
+    <p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.</p>
+    {% endif %}
+
+    {% if new_users %}
+    <p>{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!</p>
+    {% endif %}
+
+    <br />
+
+    <p><a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a></p>
+
+    <p>Cheers,<br />
+    The Zulip Team</p>
 {% endblock %}
 
 {% block manage_preferences %}
-<div class='alert' style="margin-bottom: 0px">
+<p>
     <a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> |
     <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
-</div>
+</p>
 {% endblock %}
