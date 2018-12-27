@@ -29,7 +29,7 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_customer, \
     add_months, next_month, next_renewal_date, renewal_amount, \
     compute_plan_parameters, update_or_create_stripe_customer
-from corporate.models import Customer, CustomerPlan, Plan, Coupon
+from corporate.models import Customer, CustomerPlan
 from corporate.views import payment_method_string
 import corporate.urls
 
