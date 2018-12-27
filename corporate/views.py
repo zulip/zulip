@@ -23,7 +23,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     next_renewal_date, renewal_amount
-from corporate.models import Customer, CustomerPlan, Plan, get_active_plan
+from corporate.models import Customer, CustomerPlan, get_active_plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -144,11 +144,6 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     return response
-
-PLAN_NAMES = {
-    Plan.CLOUD_ANNUAL: "Zulip Standard (billed annually)",
-    Plan.CLOUD_MONTHLY: "Zulip Standard (billed monthly)",
-}
 
 @zulip_login_required
 def billing_home(request: HttpRequest) -> HttpResponse:
