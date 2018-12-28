@@ -34,8 +34,8 @@ with these details in mind:
   discipline][zulip-rtd-commit-discipline]** for details).
 
 - We provide **many tools to help you submit quality code.** These include
-  [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
-  integration with [Travis CI][travis-ci], and [mypy][zulip-rtd-mypy].
+  [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], [continuous
+  integration][continuous-integration] and [mypy][zulip-rtd-mypy].
 
 - We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
   pull requests to create a better GitHub workflow for contributors.
@@ -58,7 +58,7 @@ git workflow, or if you'd like a git refresher.
 [github-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[travis-ci]: https://travis-ci.org/
+[continuous-integration]: ../testing/continuous-integration.html
 [zulip-git-guide-fork-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
 [zulip-rtd-code-style]: ../contributing/code-style.html
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
