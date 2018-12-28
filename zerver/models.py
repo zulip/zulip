@@ -144,7 +144,7 @@ class Realm(models.Model):
     MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
+    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts", u"Zoom"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser', u'AzureAD']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
@@ -262,6 +262,9 @@ class Realm(models.Model):
 
     video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
     google_hangouts_domain = models.TextField(default="")
+    zoom_user_id = models.TextField(default="")
+    zoom_api_key = models.TextField(default="")
+    zoom_api_secret = models.TextField(default="")
 
     # Define the types of the various automatically managed properties
     property_types = dict(
@@ -277,6 +280,9 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         google_hangouts_domain=str,
+        zoom_user_id=str,
+        zoom_api_key=str,
+        zoom_api_secret=str,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
