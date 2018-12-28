@@ -52,6 +52,7 @@ IGNORED_PHRASES = [
     r"WordPress",
     r"XML",
     r"Zephyr",
+    r"Zoom",
     r"Zulip",
     r"Zulip Account Security",
     r"Zulip Security",

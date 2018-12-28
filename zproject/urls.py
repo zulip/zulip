@@ -368,6 +368,10 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.report.report_narrow_times'}),
     url(r'^report/unnarrow_times$', rest_dispatch,
         {'POST': 'zerver.views.report.report_unnarrow_times'}),
+
+    # Used to generate a Zoom video call URL
+    url(r'^calls/create$', rest_dispatch,
+        {'GET': 'zerver.views.video_calls.get_zoom_url'})
 ]
 
 # These views serve pages (HTML). As such, their internationalization

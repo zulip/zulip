@@ -1463,6 +1463,9 @@ class EventsRegisterTest(ZulipTestCase):
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
             video_chat_provider=[u'Google Hangouts', u'Jitsi'],
             google_hangouts_domain=[u"zulip.com", u"zulip.org"],
+            zoom_api_secret=[u"abc", u"xyz"],
+            zoom_api_key=[u"abc", u"xyz"],
+            zoom_user_id=[u"example@example.com", u"example@example.org"]
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
