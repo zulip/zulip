@@ -18,6 +18,7 @@ EXCLUDED_URLS = [
     'https://www.git-tower.com/blog/command-line-cheat-sheet/',
     # Requires authentication
     'https://circleci.com/gh/zulip/zulip',
+    'https://circleci.com/gh/zulip/zulip/16617',
 ]
 
 
