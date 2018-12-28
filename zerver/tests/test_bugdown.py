@@ -53,6 +53,7 @@ import ujson
 import urllib
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
+
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
@@ -166,8 +167,10 @@ class FencedBlockPreprocessorTest(TestCase):
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
 
+
 def bugdown_convert(text: str) -> str:
     return bugdown.convert(text, message_realm=get_realm('zulip'))
+
 
 class BugdownMiscTest(ZulipTestCase):
     def test_diffs_work_as_expected(self) -> None:
@@ -242,6 +245,7 @@ class BugdownMiscTest(ZulipTestCase):
                 render_tex("random text")
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
+
 class BugdownTest(ZulipTestCase):
     def setUp(self) -> None:
         bugdown.clear_state_for_testing()
@@ -267,9 +271,10 @@ class BugdownTest(ZulipTestCase):
         # We do not want any ignored tests to be committed and merged.
         format_tests, linkify_tests = self.load_bugdown_tests()
         for name, test in format_tests.items():
-            message = 'Test "%s" shouldn\'t be ignored.' % (name,)
+            # message = 'Test "%s" shouldn\'t be ignored.' % (name,)
             is_ignored = test.get('ignore', False)
-            self.assertFalse(is_ignored, message)
+            with self.subTest(is_ignored=name):
+                self.assertFalse(is_ignored)
 
     @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self) -> None:
@@ -281,7 +286,9 @@ class BugdownTest(ZulipTestCase):
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
-            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+            unexpected_keys = len(set(test.keys()) - valid_keys)
+            with self.subTest(unexpected_keys=name):
+                self.assertEqual(unexpected_keys, 0)
 
             # Ignore tests if specified
             if test.get('ignore', False):
@@ -318,7 +325,8 @@ class BugdownTest(ZulipTestCase):
                 except TypeError:
                     match = reference
                 converted = bugdown_convert(inline_url)
-                self.assertEqual(match, converted)
+                with self.subTest("Running Bugdown Linkify tests"):
+                    self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
         msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
@@ -332,67 +340,40 @@ class BugdownTest(ZulipTestCase):
             converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
-    def test_inline_bitcoin(self) -> None:
-        msg = 'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" target="_blank" title="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>')
+    def test_inline(self) -> None:
+        msgs = {
+            'To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin': '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" target="_blank" title="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
+            'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE': '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>',
+            'http://www.youtube.com/watch?v=hx1mjT73xYE': '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>',
+            'Check out the debate: https://vimeo.com/246979354': '<p>Check out the debate: <a href="https://vimeo.com/246979354" target="_blank" title="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
+            'https://vimeo.com/246979354': '<p><a href="https://vimeo.com/246979354" target="_blank" title="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>'
+        }
 
-    def test_inline_youtube(self) -> None:
-        msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
-
-        msg = 'http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
-
-    def test_inline_vimeo(self) -> None:
-        msg = 'Check out the debate: https://vimeo.com/246979354'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Check out the debate: <a href="https://vimeo.com/246979354" target="_blank" title="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>')
-
-        msg = 'https://vimeo.com/246979354'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p><a href="https://vimeo.com/246979354" target="_blank" title="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>')
+        for msg, value in msgs.items():
+            converted = bugdown_convert(msg)
+            with self.subTest(msg=msg):
+                self.assertEqual(converted, value)
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_thumbnail_url(self):
         # type: () -> None
-        msg = '[foobar](/user_uploads/2/50/w2G6ok9kr8AMCQCTNAUOFMln/IMG_0677.JPG)'
-        thumbnail_img = '<img data-src-fullsize="/thumbnail?url=user_uploads%2F2%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=full" src="/thumbnail?url=user_uploads%2F2%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=thumbnail"><'
-        converted = bugdown_convert(msg)
-        self.assertIn(thumbnail_img, converted)
+        msgs = {
+            '[foobar](/user_uploads/2/50/w2G6ok9kr8AMCQCTNAUOFMln/IMG_0677.JPG)': '<img data-src-fullsize="/thumbnail?url=user_uploads%2F2%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=full" src="/thumbnail?url=user_uploads%2F2%2F50%2Fw2G6ok9kr8AMCQCTNAUOFMln%2FIMG_0677.JPG&amp;size=thumbnail"><',
+            'https://www.google.com/images/srpr/logo4w.png': '<img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">',
+            'www.google.com/images/srpr/logo4w.png': '<img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">',
+            '[foobar](/static/images/cute/turtle.png)': '<div class="message_inline_image"><a href="/static/images/cute/turtle.png" target="_blank" title="foobar"><img src="/static/images/cute/turtle.png"></a></div>',
+            '[foobar](/user_avatars/2/emoji/images/50.png)': '<div class="message_inline_image"><a href="/user_avatars/2/emoji/images/50.png" target="_blank" title="foobar"><img src="/user_avatars/2/emoji/images/50.png"></a></div>'
+        }
 
-        msg = 'https://www.google.com/images/srpr/logo4w.png'
-        thumbnail_img = '<img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">'
-        converted = bugdown_convert(msg)
-        self.assertIn(thumbnail_img, converted)
-
-        msg = 'www.google.com/images/srpr/logo4w.png'
-        thumbnail_img = '<img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fwww.google.com%2Fimages%2Fsrpr%2Flogo4w.png&amp;size=thumbnail">'
-        converted = bugdown_convert(msg)
-        self.assertIn(thumbnail_img, converted)
+        for msg, thumbnail_img in msgs.items():
+            converted = bugdown_convert(msg)
+            with self.subTest(msg=msg):
+                self.assertIn(thumbnail_img, converted)
 
         msg = 'https://www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>'
         with self.settings(THUMBOR_URL=''):
             converted = bugdown_convert(msg)
-        self.assertIn(thumbnail_img, converted)
-
-        # Any url which is not an external link and doesn't start with
-        # /user_uploads/ is not thumbnailed
-        msg = '[foobar](/static/images/cute/turtle.png)'
-        thumbnail_img = '<div class="message_inline_image"><a href="/static/images/cute/turtle.png" target="_blank" title="foobar"><img src="/static/images/cute/turtle.png"></a></div>'
-        converted = bugdown_convert(msg)
-        self.assertIn(thumbnail_img, converted)
-
-        msg = '[foobar](/user_avatars/2/emoji/images/50.png)'
-        thumbnail_img = '<div class="message_inline_image"><a href="/user_avatars/2/emoji/images/50.png" target="_blank" title="foobar"><img src="/user_avatars/2/emoji/images/50.png"></a></div>'
-        converted = bugdown_convert(msg)
         self.assertIn(thumbnail_img, converted)
 
     @override_settings(INLINE_IMAGE_PREVIEW=True)
@@ -513,24 +494,30 @@ class BugdownTest(ZulipTestCase):
 
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
-        msg = 'Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png'
-        converted = bugdown_convert(msg)
+        msgs = {
+            'Test: https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png': '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>',
+            'Test: https://developer.github.com/assets/images/hero-circuit-bg.png': '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>'
+        }
 
-        self.assertEqual(converted, '<p>Test: <a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fraw.githubusercontent.com%2Fzulip%2Fzulip%2Fmaster%2Fstatic%2Fimages%2Flogo%2Fzulip-icon-128x128.png&amp;size=thumbnail"></a></div>')
-
-        msg = 'Test: https://developer.github.com/assets/images/hero-circuit-bg.png'
-        converted = bugdown_convert(msg)
-
-        self.assertEqual(converted, '<p>Test: <a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fdeveloper.github.com%2Fassets%2Fimages%2Fhero-circuit-bg.png&amp;size=thumbnail"></a></div>')
+        for msg, value in msgs.items():
+            converted = bugdown_convert(msg)
+            with self.subTest(msg=msg):
+                self.assertEqual(converted, value)
 
     def test_twitter_id_extraction(self) -> None:
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858'), '1017581858')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/wdaher/status/1017581858/'), '1017581858')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/photo/1'), '410766290349879296')
-        self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
+        tweet_ids = {
+            'http://twitter.com/#!/VizzQuotes/status/409030735191097344': '409030735191097344',
+            'http://twitter.com/VizzQuotes/status/409030735191097344': '409030735191097344',
+            'http://twitter.com/VizzQuotes/statuses/409030735191097344': '409030735191097344',
+            'https://twitter.com/wdaher/status/1017581858': '1017581858',
+            'https://twitter.com/wdaher/status/1017581858/': '1017581858',
+            'https://twitter.com/windyoona/status/410766290349879296/photo/1': '410766290349879296',
+            'https://twitter.com/windyoona/status/410766290349879296/': '410766290349879296'
+        }
+
+        for tweet, ids in tweet_ids.items():
+            with self.subTest(tweet=tweet):
+                self.assertEqual(bugdown.get_tweet_id(tweet), ids)
 
     def test_inline_interesting_links(self) -> None:
         def make_link(url: str) -> str:
@@ -554,7 +541,7 @@ class BugdownTest(ZulipTestCase):
         emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="100">:100:</span>% open-source!"""
 
         def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str='') -> str:
-            ## As of right now, all previews are mocked to be the exact same tweet
+            # As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
                     '<div class="twitter-tweet">'
                     '<a href="%s" target="_blank">'
@@ -569,45 +556,31 @@ class BugdownTest(ZulipTestCase):
                     '</div>'
                     '</div>') % (url, tweet_html, image_html)
 
-        msg = 'http://www.twitter.com'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com'))
+        msgs = {
+            'http://www.twitter.com': '<p>%s</p>' % make_link('http://www.twitter.com'),
+            'http://www.twitter.com/wdaher/': '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'),
+            'http://www.twitter.com/wdaher/status/3': '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'),
+            'http://www.twitter.com/wdaher/status/2879779692873154569': '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'),
+            'http://www.twitter.com/wdaher/status/999999999999999999': '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'),
+            'http://www.twitter.com/wdaher/status/287977969287315456': '<p>%s</p>\n%s' % (
+                                                                        make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
+                                                                        make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)),
+            'https://www.twitter.com/wdaher/status/287977969287315456': '<p>%s</p>\n%s' % (
+                                                                        make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
+                                                                        make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)),
+            'http://twitter.com/wdaher/status/287977969287315456': '<p>%s</p>\n%s' % (
+                make_link('http://twitter.com/wdaher/status/287977969287315456'),
+                make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)),
+            'http://twitter.com/wdaher/status/287977969287315458': '<p>%s</p>\n%s' % (
+                make_link('http://twitter.com/wdaher/status/287977969287315458'),
+                make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html))
 
-        msg = 'http://www.twitter.com/wdaher/'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'))
+        }
 
-        msg = 'http://www.twitter.com/wdaher/status/3'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'))
-
-        # id too long
-        msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
-
-        # id too large (i.e. tweet doesn't exist)
-        msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'))
-
-        msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
-            make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
-
-        msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
-            make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
-
-        msg = 'http://twitter.com/wdaher/status/287977969287315456'
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315456'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+        for msg, value in msgs.items():
+            converted = bugdown_convert(msg)
+            with self.subTest(msg=msg):
+                self.assertEqual(converted, value)
 
         # A max of 3 will be converted
         msg = ('http://twitter.com/wdaher/status/287977969287315456 '
@@ -623,14 +596,6 @@ class BugdownTest(ZulipTestCase):
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
-
-        # Tweet has a mention in a URL, only the URL is linked
-        msg = 'http://twitter.com/wdaher/status/287977969287315458'
-
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (
-            make_link('http://twitter.com/wdaher/status/287977969287315458'),
-            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
         # Tweet with an image
         msg = 'http://twitter.com/wdaher/status/287977969287315459'
@@ -657,14 +622,15 @@ class BugdownTest(ZulipTestCase):
             self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
 
     def test_content_has_emoji(self) -> None:
-        self.assertFalse(bugdown.content_has_emoji_syntax('boring'))
-        self.assertFalse(bugdown.content_has_emoji_syntax('hello: world'))
-        self.assertFalse(bugdown.content_has_emoji_syntax(':foobar'))
-        self.assertFalse(bugdown.content_has_emoji_syntax('::: hello :::'))
+        emoji_syntax1 = ['boring', 'hello_word', ':foobar', '::: hello :::']
+        for emoji in emoji_syntax1:
+            with self.subTest(msg=emoji):
+                self.assertFalse(bugdown.content_has_emoji_syntax(emoji))
 
-        self.assertTrue(bugdown.content_has_emoji_syntax('foo :whatever:'))
-        self.assertTrue(bugdown.content_has_emoji_syntax('\n:whatever:'))
-        self.assertTrue(bugdown.content_has_emoji_syntax(':smile: ::::::'))
+        emoji_syntax2 = ['foo :whatever:', '\n:whatever:', ':smile: ::::::']
+        for emoji in emoji_syntax2:
+            with self.subTest(msg=emoji):
+                self.assertTrue(bugdown.content_has_emoji_syntax(emoji))
 
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
@@ -696,13 +662,13 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, '<p>:green_tick:</p>')
 
     def test_unicode_emoji(self) -> None:
-        msg = u'\u2615'  # ☕
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
-
-        msg = u'\u2615\u2615'  # ☕☕
-        converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+        msgs = {u'\u2615': u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>',  # ☕
+                u'\u2615\u2615': u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>'  # ☕☕
+                }
+        for msg, value in msgs.items():
+            converted = bugdown_convert(msg)
+            with self.subTest(msg=msg):
+                self.assertEqual(converted, value)
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user('othello')
@@ -1304,6 +1270,7 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'
@@ -1329,6 +1296,7 @@ class BugdownApiTests(ZulipTestCase):
         stream_id = get_stream('Denmark', get_realm('zulip')).id
         self.assertEqual(result.json()['rendered'],
                          u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/%s-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="%s">@King Hamlet</span>.</p>' % (stream_id, stream_id, user_id))
+
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:
