@@ -19,7 +19,8 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
-from corporate.models import Customer, CustomerPlan, get_active_plan
+from corporate.models import Customer, CustomerPlan, LicenseLedger, \
+    get_active_plan
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -91,15 +92,15 @@ def next_renewal_date(plan: CustomerPlan) -> datetime:
         periods += 1
     return dt
 
-def renewal_amount(plan: CustomerPlan) -> int:  # nocoverage: TODO
+def renewal_amount(plan: CustomerPlan) -> Optional[int]:  # nocoverage: TODO
     if plan.fixed_price is not None:
         basis = plan.fixed_price
-    elif plan.automanage_licenses:
-        assert(plan.price_per_license is not None)
-        basis = plan.price_per_license * get_seat_count(plan.customer.realm)
     else:
-        assert(plan.price_per_license is not None)
-        basis = plan.price_per_license * plan.licenses
+        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
+        if last_ledger_entry.licenses_at_next_renewal is None:
+            return None
+        assert(plan.price_per_license is not None)  # for mypy
+        basis = plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
     if plan.discount is None:
         return basis
     # TODO: figure out right thing to do with Decimal
@@ -191,6 +192,21 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
         event_time=timezone_now())
     return updated_stripe_customer
 
+# event_time should roughly be timezone_now(). Not designed to handle
+# event_times in the past or future
+# TODO handle downgrade
+def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time: datetime) -> LicenseLedger:
+    last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-event_time').first()
+    plan_renewal_date = next_renewal_date(plan)
+    if plan_renewal_date < event_time:
+        if not LicenseLedger.objects.filter(
+                plan=plan, event_time=plan_renewal_date, is_renewal=True).exists():
+            return LicenseLedger.objects.create(
+                plan=plan, is_renewal=True, event_time=plan_renewal_date,
+                licenses=last_ledger_entry.licenses_at_next_renewal,
+                licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal)
+    return last_ledger_entry
+
 # Returns Customer instead of stripe_customer so that we don't make a Stripe
 # API call if there's nothing to update
 def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
@@ -273,7 +289,6 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         # this function (process_initial_upgrade) and now
         billed_licenses = max(get_seat_count(realm), licenses)
         plan_params = {
-            'licenses': billed_licenses,
             'automanage_licenses': automanage_licenses,
             'charge_automatically': charge_automatically,
             'price_per_license': price_per_license,
@@ -281,17 +296,22 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             'billing_cycle_anchor': billing_cycle_anchor,
             'billing_schedule': billing_schedule,
             'tier': CustomerPlan.STANDARD}
-        CustomerPlan.objects.create(
+        plan = CustomerPlan.objects.create(
             customer=customer,
+            # Deprecated, remove
+            licenses=-1,
             billed_through=billing_cycle_anchor,
             next_billing_date=next_billing_date,
             **plan_params)
+        LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=billing_cycle_anchor,
+            licenses=billed_licenses,
+            licenses_at_next_renewal=billed_licenses)
         RealmAuditLog.objects.create(
             realm=realm, acting_user=user, event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
-            # TODO: add tests for licenses
-            # Only 'licenses' is guaranteed to be useful to automated tools. The other extra_data
-            # fields can change in the future and are only meant to assist manual debugging.
             extra_data=ujson.dumps(plan_params))
     description = 'Zulip Standard'
     if customer.default_discount is not None:  # nocoverage: TODO
@@ -336,7 +356,9 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
     annual_revenue = {}
     for plan in CustomerPlan.objects.filter(
             status=CustomerPlan.ACTIVE).select_related('customer__realm'):
-        renewal_cents = renewal_amount(plan)
+        # TODO: figure out what to do for plans that don't automatically
+        # renew, but which probably will renew
+        renewal_cents = renewal_amount(plan) or 0
         if plan.billing_schedule == CustomerPlan.MONTHLY:
             renewal_cents *= 12
         # TODO: Decimal stuff
