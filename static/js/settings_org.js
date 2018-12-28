@@ -46,6 +46,15 @@ var org_settings = {
         google_hangouts_domain: {
             type: 'text',
         },
+        zoom_user_id: {
+            type: 'text',
+        },
+        zoom_api_key: {
+            type: 'text',
+        },
+        zoom_api_secret: {
+            type: 'text',
+        },
     },
     user_defaults: {
         default_language: {
@@ -243,9 +252,17 @@ function set_video_chat_provider_dropdown() {
     $("#id_realm_video_chat_provider").val(chat_provider);
     if (chat_provider === "Google Hangouts") {
         $("#google_hangouts_domain").show();
+        $(".zoom_credentials").hide();
         $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
+    } else if (chat_provider === "Zoom") {
+        $("#google_hangouts_domain").hide();
+        $(".zoom_credentials").show();
+        $("#id_realm_zoom_user_id").val(page_params.realm_zoom_user_id);
+        $("#id_realm_zoom_api_key").val(page_params.realm_zoom_api_key);
+        $("#id_realm_zoom_api_secret").val(page_params.realm_zoom_api_secret);
     } else {
         $("#google_hangouts_domain").hide();
+        $(".zoom_credentials").hide();
     }
 }
 
@@ -450,7 +467,8 @@ function update_dependent_subsettings(property_name) {
     if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
         set_create_stream_permission_dropdown();
     } else if (property_name === 'realm_video_chat_provider' ||
-               property_name === 'realm_google_hangouts_domain') {
+               property_name === 'realm_google_hangouts_domain' ||
+               property_name.startsWith('realm_zoom')) {
         set_video_chat_provider_dropdown();
     } else if (property_name === 'realm_msg_edit_limit_setting' ||
                property_name === 'realm_message_content_edit_limit_minutes') {
@@ -831,11 +849,15 @@ exports.build_page = function () {
 
     $("#id_realm_video_chat_provider").change(function (e) {
         var video_chat_provider = e.target.value;
-        var node = $("#google_hangouts_domain");
         if (video_chat_provider === "Google Hangouts") {
-            node.show();
+            $("#google_hangouts_domain").show();
+            $(".zoom_credentials").hide();
+        } else if (video_chat_provider === "Zoom") {
+            $("#google_hangouts_domain").hide();
+            $(".zoom_credentials").show();
         } else {
-            node.hide();
+            $("#google_hangouts_domain").hide();
+            $(".zoom_credentials").hide();
         }
     });
 

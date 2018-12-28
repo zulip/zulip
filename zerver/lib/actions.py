@@ -144,6 +144,7 @@ from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingExce
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image
+from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.tornado.event_queue import request_event_queue, send_event
 from zerver.lib.types import ProfileFieldData
 
@@ -5287,3 +5288,15 @@ def do_send_realm_reactivation_email(realm: Realm) -> None:
         'zerver/emails/realm_reactivation', realm,
         from_address=FromAddress.tokenized_no_reply_address(),
         from_name="Zulip Account Security", context=context)
+
+def get_zoom_video_call_url(realm: Realm) -> str:
+    response = request_zoom_video_call_url(
+        realm.zoom_user_id,
+        realm.zoom_api_key,
+        realm.zoom_api_secret
+    )
+
+    if response is None:
+        return ''
+
+    return response['join_url']

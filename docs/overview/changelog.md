@@ -18,6 +18,7 @@ from LDAP/active directory.
 
 **Full feature changelog:**
 - Added API documentation for user groups and custom emoji.
+- Added support for using Zoom as the video chat provider.
 - Added display of a user's role (administrator, guest, etc.) in
   various relevant places.
 - Added support for sending "topic" rather than the legacy "subject"
