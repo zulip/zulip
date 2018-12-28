@@ -1427,6 +1427,22 @@ run_test('on_events', () => {
         video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
+        page_params.realm_video_chat_provider = 'Zoom';
+        page_params.realm_zoom_user_id = 'example@example.com';
+        page_params.realm_zoom_api_key = 'abc';
+        page_params.realm_zoom_api_secret = 'abc';
+
+        channel.get = function (options) {
+            console.log(options.url);
+            assert(options.url === '/json/calls/create');
+            options.success({ zoom_url: 'example.zoom.com' });
+        };
+
+        handler(event);
+        console.log(syntax_to_insert);
+        video_link_regex = /\[Click to join video call\]\(example\.zoom\.com\)/;
+        assert(video_link_regex.test(syntax_to_insert));
+
         page_params.jitsi_server_url = null;
         called = false;
 
