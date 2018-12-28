@@ -1,4 +1,4 @@
-# See https://zulip.readthedocs.io/en/latest/testing/travis.html for
+# See https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html for
 # high-level documentation on our Travis CI setup.
 dist: trusty
 group: deprecated-2017Q4
