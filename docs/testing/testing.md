@@ -9,7 +9,7 @@ important components are documented in depth in their own sections:
 - [Casper](../testing/testing-with-casper.html): end-to-end UI tests
 - [Node](../testing/testing-with-node.html): unit tests for JS front end code
 - [Linters](../testing/linters.html): Our parallel linter suite
-- [CI details](travis.html): How all of these run in CI
+- [CI details](continuous-integration.html): How all of these run in CI
 - [Other test suites](#other-test-suites): Our various smaller test suites.
 
 This document covers more general testing issues, such as how to run the
