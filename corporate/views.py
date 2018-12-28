@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Tuple, cast
 
 from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _, ugettext as err_
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -22,8 +22,10 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     process_initial_upgrade, sign_string, \
     unsign_string, BillingError, process_downgrade, do_replace_payment_source, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
-    next_renewal_date, renewal_amount
-from corporate.models import Customer, CustomerPlan, get_active_plan
+    next_renewal_date, renewal_amount, \
+    add_plan_renewal_to_license_ledger_if_needed
+from corporate.models import Customer, CustomerPlan, LicenseLedger, \
+    get_active_plan
 
 billing_logger = logging.getLogger('corporate.stripe')
 
@@ -166,10 +168,15 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             CustomerPlan.STANDARD: 'Zulip Standard',
             CustomerPlan.PLUS: 'Zulip Plus',
         }[plan.tier]
-        licenses = plan.licenses
+        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
+        # TODO: this is not really correct; need to give the situation as of the "fillstate"
+        licenses = last_ledger_entry.licenses
         # Should do this in javascript, using the user's timezone
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan))
         renewal_cents = renewal_amount(plan)
+        # TODO: this is the case where the plan doesn't automatically renew
+        if renewal_cents is None:  # nocoverage
+            renewal_cents = 0
         charge_automatically = plan.charge_automatically
         if charge_automatically:
             payment_method = payment_method_string(stripe_customer)
