@@ -69,10 +69,12 @@ def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
         body = body_function(payload)
 
     if type != 'push':
-        check_send_webhook_message(request, user_profile, subject, body)
+        check_send_webhook_message(request, user_profile, subject,
+                                   body, unquote_url_parameters=True)
     else:
         for b, s in zip(body, subject):
-            check_send_webhook_message(request, user_profile, s, b)
+            check_send_webhook_message(request, user_profile, s, b,
+                                       unquote_url_parameters=True)
 
     return json_success()
 
