@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/testing/continuous-integration.html for
+#   high-level documentation on our CircleCI setup.
 # See CircleCI upstream's docs on this config format:
 #   https://circleci.com/docs/2.0/language-python/
 #
