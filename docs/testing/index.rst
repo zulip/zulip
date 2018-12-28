@@ -11,5 +11,5 @@ Code Testing
    testing-with-node
    testing-with-casper
    mypy
-   travis
+   continuous-integration
    manual-testing
