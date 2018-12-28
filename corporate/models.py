@@ -19,6 +19,7 @@ class Customer(models.Model):
 
 class CustomerPlan(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
+    # Deprecated .. delete once everyone is migrated to new billing system
     licenses = models.IntegerField()  # type: int
     automanage_licenses = models.BooleanField(default=False)  # type: bool
     charge_automatically = models.BooleanField(default=False)  # type: bool
@@ -56,6 +57,17 @@ class CustomerPlan(models.Model):
 
 def get_active_plan(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).first()
+
+class LicenseLedger(models.Model):
+    plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)  # type: CustomerPlan
+    # Also True for the initial upgrade.
+    is_renewal = models.BooleanField(default=False)  # type: bool
+    event_time = models.DateTimeField()  # type: datetime.datetime
+    licenses = models.IntegerField()  # type: int
+    # None means the plan does not automatically renew.
+    # 0 means the plan has been explicitly downgraded.
+    # This cannot be None if plan.automanage_licenses.
+    licenses_at_next_renewal = models.IntegerField(null=True)  # type: Optional[int]
 
 # Everything below here is legacy
 
