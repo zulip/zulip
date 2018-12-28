@@ -119,6 +119,7 @@ if not CASPER_TESTS:
     set_loglevel('zerver.lib.digest', 'ERROR')
     set_loglevel('zerver.lib.email_mirror', 'ERROR')
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
+    set_loglevel('stripe', 'WARNING')
 
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
