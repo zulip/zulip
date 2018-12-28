@@ -411,6 +411,45 @@ class RealmTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
 
+        req = {"video_chat_provider": ujson.dumps("Zoom")}
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid user ID: user ID cannot be empty")
+
+        req = {
+            "video_chat_provider": ujson.dumps("Zoom"),
+            "zoom_user_id": ujson.dumps("example@example.com")
+        }
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid API key: API key cannot be empty")
+
+        req = {
+            "video_chat_provider": ujson.dumps("Zoom"),
+            "zoom_user_id": ujson.dumps("example@example.com"),
+            "zoom_api_key": ujson.dumps("abc")
+        }
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid API secret: API secret cannot be empty")
+
+        with mock.patch("zerver.views.realm.request_zoom_video_call_url", return_value=None):
+            req = {
+                "video_chat_provider": ujson.dumps("Zoom"),
+                "zoom_user_id": ujson.dumps("example@example.com"),
+                "zoom_api_key": ujson.dumps("abc"),
+                "zoom_api_secret": ujson.dumps("abc"),
+            }
+            result = self.client_patch('/json/realm', req)
+            self.assert_json_error(result, "Invalid credentials for the Zoom API.")
+
+        with mock.patch("zerver.views.realm.request_zoom_video_call_url", return_value={'join_url': 'example.com'}):
+            req = {
+                "video_chat_provider": ujson.dumps("Zoom"),
+                "zoom_user_id": ujson.dumps("example@example.com"),
+                "zoom_api_key": ujson.dumps("abc"),
+                "zoom_api_secret": ujson.dumps("abc"),
+            }
+            result = self.client_patch('/json/realm', req)
+            self.assert_json_success(result)
+
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):
             self.assertEqual(do_create_realm('hosted', 'hosted').plan_type, Realm.LIMITED)
@@ -481,6 +520,9 @@ class RealmAPITest(ZulipTestCase):
                                       Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             video_chat_provider=[u'Jitsi', u'Hangouts'],
             google_hangouts_domain=[u'zulip.com', u'zulip.org'],
+            zoom_api_secret=[u"abc", u"xyz"],
+            zoom_api_key=[u"abc", u"xyz"],
+            zoom_user_id=[u"example@example.com", u"example@example.org"]
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:
