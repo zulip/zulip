@@ -1,4 +1,5 @@
 set_global('i18n', global.stub_i18n);
+set_global('page_params', {});
 
 zrequire('keydown_util');
 zrequire('components');

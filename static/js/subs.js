@@ -458,8 +458,7 @@ exports.filter_table = function (query) {
         if (hidden_ids[stream_id]) {
             $(row).addClass('notdisplayed');
         } else {
-            if(!page_params.is_guest)
-                $(row).removeClass('notdisplayed');
+            $(row).removeClass('notdisplayed');
         }
 
         widgets[stream_id] = $(row).detach();

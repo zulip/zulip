@@ -22,6 +22,11 @@ exports.toggle = function (opts) {
             // by text value which can be inconsistent.
             var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
 
+            // disable 'all streams' tab for guest user
+            if (page_params.is_guest && value.label === "All streams") {
+                tab.addClass("disabled");
+            }
+
             // add proper classes for styling in CSS.
             if (i === 0) {
                 // this should be default selected unless otherwise specified.
