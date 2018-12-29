@@ -13,9 +13,9 @@ click [here](./bitbucket).
 1. On your repository's web page, click on **Settings**. Select
    **Webhooks**, and click **Add webhook**.
 
-1. Set **URL** to the URL constructed above. Set **Title** to a
-   title of your choice, such as `Zulip`. Check the **Active** checkbox,
-   and click **Save**.
+1. Set **Title** to a title of your choice, such as `Zulip`. Set **URL**
+   to the URL constructed above, and check the **Active** checkbox. Select
+   the **Triggers** you'd like to be notified about, and click **Save**.
 
 {!congrats.md!}
 
