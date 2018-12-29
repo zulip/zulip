@@ -1,0 +1,14 @@
+{% extends "zerver/base.html" %}
+{% block content %}
+<body style="background-color:hsl(165, 25%, 97%);">
+    <div class="container" >
+        <div class="alert" style="text-align: center;">
+                Catch up on the all the conversations and updates since you last visited us
+        </div>        
+
+        <div class="container email-html" style="padding-top:100px;">
+            {% include "zerver/emails/compiled/digest.html" %}
+        </div>    
+    </div>
+</body>
+{% endblock %}

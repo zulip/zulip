@@ -11,4 +11,4 @@ def digest_page(request: HttpRequest) -> HttpResponse:
     user_profile_id = request.user.id
     cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
     context = handle_digest_email(user_profile_id, cutoff, render_to_web=True)
-    return render(request, 'zerver/emails/compiled/digest.html', context=context)
+    return render(request, 'zerver/digest_base.html', context=context)
