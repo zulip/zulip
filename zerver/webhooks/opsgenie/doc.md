@@ -1,4 +1,4 @@
-### Get Zulip notifications for your OpsGenie events!
+Get Zulip notifications for your Opsgenie events!
 
 1. {!create-stream.md!}
 
