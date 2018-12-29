@@ -412,7 +412,7 @@ INTEGRATIONS = {
         'jira-plugin',
         'jira-plugin',
         ['project-management'],
-        logo='static/images/integrations/logos/jira.svg',
+        logo='static/images/integrations/logos/jira.png',
         secondary_line_text='(locally installed)',
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.md',
