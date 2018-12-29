@@ -915,7 +915,7 @@ exports.initialize = function () {
         var rendered_preview_html;
         if (content !== undefined && markdown.is_status_message(content, rendered_content)) {
             // Handle previews of /me messages
-            rendered_preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
+            rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
         } else {
             rendered_preview_html = rendered_content;
         }

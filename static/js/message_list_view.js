@@ -1106,8 +1106,13 @@ MessageListView.prototype = {
 
     _maybe_format_me_message: function (message_container) {
         if (message_container.msg.is_me_message) {
-            // Slice the '<p>/me ' off the front, and '</p>' off the end
-            message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+            // Slice the '<p>/me ' off the front, and '</p>' off the first line
+            // 'p' tag is sliced off to get sender in the same line as the
+            // first line of the message
+            var msg_content = message_container.msg.content;
+            var p_index = msg_content.indexOf('</p>');
+            message_container.status_message = msg_content.slice('<p>/me '.length, p_index) +
+                                                msg_content.slice(p_index + '</p>'.length);
             message_container.include_sender = true;
         } else {
             message_container.status_message = false;
