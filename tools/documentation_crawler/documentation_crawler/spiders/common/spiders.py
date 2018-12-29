@@ -19,6 +19,8 @@ EXCLUDED_URLS = [
     # Requires authentication
     'https://circleci.com/gh/zulip/zulip',
     'https://circleci.com/gh/zulip/zulip/16617',
+    # 500s because the site is semi-down
+    'http://citizencodeofconduct.org/',
 ]
 
 
