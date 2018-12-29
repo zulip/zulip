@@ -338,7 +338,8 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='opbeat',
         function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
     ),
-    WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'], display_name='OpsGenie'),
+    WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'],
+                       logo='static/images/integrations/logos/opsgenie.png'),
     WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
