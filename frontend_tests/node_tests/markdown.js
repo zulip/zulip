@@ -438,7 +438,7 @@ run_test('message_flags', () => {
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
-    assert.equal(message.is_me_message, false);
+    assert.equal(message.is_me_message, true);
 
     input = "testing this @**all** @**Cordelia Lear**";
     message = {subject: "No links here", raw_content: input};
