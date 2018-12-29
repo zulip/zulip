@@ -51,6 +51,9 @@ Note that upgrading an existing Zulip production server from Ubuntu
 will require significant manual intervention on your part to migrate
 the data in the database from Postgres 9.3 to Postgres 9.5.
 Contributions on testing and documenting this process are welcome!
+See
+https://chat.zulip.org/#narrow/stream/31-production-help/subject/Ubuntu.20release-upgrade.20on.20existing.20installation/near/676627
+for a prior successful attempt.
 
 ### Preserving local changes to configuration files
 
