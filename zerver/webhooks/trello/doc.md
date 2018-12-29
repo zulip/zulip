@@ -1,8 +1,8 @@
-Get Zulip notifications from your Trello boards!
-
 !!! tip ""
     Note that [Zapier][1] is usually a simpler way to
     integrate Trello with Zulip.
+
+Get Zulip notifications from your Trello boards!
 
 [1]: ./zapier
 
@@ -59,11 +59,3 @@ Get Zulip notifications from your Trello boards!
 {!congrats.md!}
 
 ![](/static/images/integrations/trello/001.png)
-
-**Advanced**
-
-You can learn more about Trello's webhooks via their
-[webhook API documentation](https://developers.trello.com/page/webhooks).
-
-Trello does not provide a web interface for their outgoing notifications, so
-any webhook configuration must be done through their API.
