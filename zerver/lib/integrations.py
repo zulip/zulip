@@ -453,7 +453,7 @@ INTEGRATIONS = {
         'trello-plugin',
         'trello-plugin',
         ['project-management'],
-        logo='static/images/integrations/logos/trello.svg',
+        logo='static/images/integrations/logos/trello.png',
         secondary_line_text='(legacy)',
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.md',
