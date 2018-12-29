@@ -136,9 +136,8 @@ exports.add_topic_links = function (message) {
 
 exports.is_status_message = function (raw_content, content) {
     return raw_content.indexOf('/me ') === 0 &&
-            raw_content.indexOf('\n') === -1 &&
             content.indexOf('<p>') === 0 &&
-            content.lastIndexOf('</p>') === content.length - 4;
+            content.indexOf('</p>') !== -1;
 };
 
 function handleUnicodeEmoji(unicode_emoji) {
