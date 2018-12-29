@@ -1549,7 +1549,14 @@ def do_add_reaction_legacy(user_profile: UserProfile, message: Message, emoji_na
     reaction = Reaction(user_profile=user_profile, message=message,
                         emoji_name=emoji_name, emoji_code=emoji_code,
                         reaction_type=reaction_type)
-    reaction.save()
+    try:
+        reaction.save()
+    except django.db.utils.IntegrityError:  # nocoverage
+        # This can happen when a race results in the check in views
+        # code not catching an attempt to double-add a reaction, or
+        # perhaps if the emoji_name/emoji_code mapping is busted.
+        raise JsonableError(_("Reaction already exists."))
+
     notify_reaction_update(user_profile, message, reaction, "add")
 
 def do_remove_reaction_legacy(user_profile: UserProfile, message: Message, emoji_name: str) -> None:
@@ -1564,7 +1571,14 @@ def do_add_reaction(user_profile: UserProfile, message: Message,
     reaction = Reaction(user_profile=user_profile, message=message,
                         emoji_name=emoji_name, emoji_code=emoji_code,
                         reaction_type=reaction_type)
-    reaction.save()
+    try:
+        reaction.save()
+    except django.db.utils.IntegrityError:  # nocoverage
+        # This can happen when a race results in the check in views
+        # code not catching an attempt to double-add a reaction, or
+        # perhaps if the emoji_name/emoji_code mapping is busted.
+        raise JsonableError(_("Reaction already exists."))
+
     notify_reaction_update(user_profile, message, reaction, "add")
 
 def do_remove_reaction(user_profile: UserProfile, message: Message,
