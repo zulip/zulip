@@ -293,13 +293,13 @@ exports.MessageList.prototype = {
 
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
-        row.find(".message_content, .status-message").hide();
+        row.find(".message_content, .status-message, .message_controls").hide();
         row.find(".message_edit").css("display", "block");
         row.find(".message_edit_content").autosize();
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
-        row.find(".message_content, .status-message").show();
+        row.find(".message_content, .status-message, .message_controls").show();
         row.find(".message_edit").hide();
         row.trigger("mouseleave");
     },
