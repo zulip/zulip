@@ -313,6 +313,11 @@ def write_emoticon_data(realm_id: int,
 
     fn = 'emoticons.json'
     data_file = os.path.join(data_dir, fn)
+    if not os.path.exists(data_file):
+        logging.warning("HipChat export does not contain emoticons.json.")
+        logging.warning("As a result, custom emoji cannot be imported.")
+        return []
+
     with open(data_file) as f:
         data = ujson.load(f)
 
