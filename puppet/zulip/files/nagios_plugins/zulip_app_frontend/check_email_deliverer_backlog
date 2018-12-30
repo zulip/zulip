@@ -6,9 +6,7 @@ set -eu
 #"CRITICAL": 2
 #"UNKNOWN": 3
 
-cd /home/zulip/deployments/current
-
-BACKLOG=$(./manage.py print_email_delivery_backlog)
+BACKLOG=$(su zulip -c '/home/zulip/deployments/current/manage.py print_email_delivery_backlog)
 
 if [ "$BACKLOG" -gt 0 ] && [ "$BACKLOG" -lt 10 ]
 then
