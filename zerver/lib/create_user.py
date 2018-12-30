@@ -74,7 +74,9 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
-                is_realm_admin: bool = False, bot_type: Optional[int] = None,
+                is_realm_admin: bool = False,
+                is_guest: bool = False,
+                bot_type: Optional[int] = None,
                 bot_owner: Optional[UserProfile] = None,
                 tos_version: Optional[str] = None, timezone: str = "",
                 avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
@@ -87,6 +89,7 @@ def create_user(email: str, password: Optional[str], realm: Realm,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
     user_profile.is_realm_admin = is_realm_admin
+    user_profile.is_guest = is_guest
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream

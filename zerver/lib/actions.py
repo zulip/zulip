@@ -455,7 +455,8 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: i
     bulk_create_users(realm, user_set, bot_type)
 
 def do_create_user(email: str, password: Optional[str], realm: Realm, full_name: str,
-                   short_name: str, is_realm_admin: bool=False, bot_type: Optional[int]=None,
+                   short_name: str, bot_type: Optional[int]=None,
+                   is_realm_admin: bool=False, is_guest: bool=False,
                    bot_owner: Optional[UserProfile]=None, tos_version: Optional[str]=None,
                    timezone: str="", avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream: Optional[Stream]=None,
@@ -469,7 +470,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
-                               is_realm_admin=is_realm_admin,
+                               is_realm_admin=is_realm_admin, is_guest=is_guest,
                                bot_type=bot_type, bot_owner=bot_owner,
                                tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
