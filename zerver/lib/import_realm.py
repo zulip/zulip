@@ -601,6 +601,12 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
             content_type = record.get("content_type")
             if content_type is None:
                 content_type = guess_type(record['s3_path'])[0]
+                if content_type is None:
+                    # This is the default for unknown data.  Note that
+                    # for `.original` files, this is the value we'll
+                    # set; that is OK, because those are never served
+                    # directly anyway.
+                    content_type = 'application/octet-stream'
             headers = {'Content-Type': content_type}  # type: Dict[str, Any]
 
             key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
