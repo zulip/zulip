@@ -594,7 +594,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
                 key.set_metadata("user_profile_id", str(user_profile.id))
 
             if 'last_modified' in record:
-                key.set_metadata("orig_last_modified", record['last_modified'])
+                key.set_metadata("orig_last_modified", str(record['last_modified']))
             key.set_metadata("realm_id", str(record['realm_id']))
 
             # Zulip exports will always have a content-type, but third-party exports might not.
