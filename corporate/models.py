@@ -3,11 +3,12 @@ from decimal import Decimal
 from typing import Optional
 
 from django.db import models
+from django.db.models import CASCADE
 
 from zerver.models import Realm, RealmAuditLog
 
 class Customer(models.Model):
-    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)  # type: Realm
+    realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
     # Deprecated .. delete once everyone is migrated to new billing system
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
@@ -17,7 +18,7 @@ class Customer(models.Model):
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 
 class CustomerPlan(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # type: Customer
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
     licenses = models.IntegerField()  # type: int
     automanage_licenses = models.BooleanField(default=False)  # type: bool
     charge_automatically = models.BooleanField(default=False)  # type: bool
@@ -74,9 +75,9 @@ class Coupon(models.Model):
         return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
 
 class BillingProcessor(models.Model):
-    log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
+    log_row = models.ForeignKey(RealmAuditLog, on_delete=CASCADE)  # RealmAuditLog
     # Exactly one processor, the global processor, has realm=None.
-    realm = models.OneToOneField(Realm, null=True, on_delete=models.CASCADE)  # type: Realm
+    realm = models.OneToOneField(Realm, null=True, on_delete=CASCADE)  # type: Realm
 
     DONE = 'done'
     STARTED = 'started'
