@@ -64,7 +64,7 @@ Usage examples:
                 else:
                     print(inner_format % (key, realm_dict[key]))
 
-            for key, value in sorted(realm_dict.iteritems()):
+            for key, value in sorted(realm_dict.items()):
                 if key not in identifier_attributes:
                     if realm.deactivated:
                         print(self.style.ERROR(inner_format % (key, value)))
