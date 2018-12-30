@@ -1054,8 +1054,6 @@ class PreregistrationUser(models.Model):
     )
     invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
-    invited_as_admin = models.BooleanField(default=False)  # type: bool
-
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager

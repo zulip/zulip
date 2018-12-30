@@ -603,7 +603,7 @@ class InviteUserBase(ZulipTestCase):
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
     def invite(self, users: str, streams: List[str], body: str='',
-               invite_as_admin: str="false") -> HttpResponse:
+               invite_as: int=1) -> HttpResponse:
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -616,7 +616,7 @@ class InviteUserBase(ZulipTestCase):
         return self.client_post("/json/invites",
                                 {"invitee_emails": users,
                                  "stream": streams,
-                                 "invite_as_admin": invite_as_admin})
+                                 "invite_as": invite_as})
 
 class InviteUserTest(InviteUserBase):
     def test_successful_invite_user(self) -> None:
@@ -719,7 +719,7 @@ class InviteUserTest(InviteUserBase):
         """
         self.login(self.example_email('iago'))
         invitee = self.nonreg_email('alice')
-        self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as_admin="true"))
+        self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as=2))
         self.assertTrue(find_key_by_email(invitee))
 
         self.submit_reg_form_for_user(invitee, "password")
@@ -733,8 +733,18 @@ class InviteUserTest(InviteUserBase):
         """
         self.login(self.example_email('hamlet'))
         invitee = self.nonreg_email('alice')
-        response = self.invite(invitee, ["Denmark"], invite_as_admin="true")
+        response = self.invite(invitee, ["Denmark"], invite_as=2)
         self.assert_json_error(response, "Must be an organization administrator")
+
+    def test_invite_user_as_invalid_type(self) -> None:
+        """
+        Test inviting a user as invalid type of user i.e. type of invite_as
+        is not in PreregistrationUser.INVITE_AS
+        """
+        self.login(self.example_email('iago'))
+        invitee = self.nonreg_email('alice')
+        response = self.invite(invitee, ["Denmark"], invite_as=100)
+        self.assert_json_error(response, "Must be invited as an valid type of user")
 
     def test_successful_invite_user_with_name(self) -> None:
         """

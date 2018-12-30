@@ -19,8 +19,8 @@
                     <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
                     <div class="controls">
                         <select id="invite_as">
-                            <option name="invite_as" value="normal">{{ _('Members') }}</option>
-                            <option name="invite_as" value="admin">{{ _('Organization administrators') }}</option>
+                            <option name="invite_as" value="{{ invite_as.MEMBER }}">{{ _('Members') }}</option>
+                            <option name="invite_as" value="{{ invite_as.REALM_ADMIN }}">{{ _('Organization administrators') }}</option>
                         </select>
                     </div>
                 </div>
