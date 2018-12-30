@@ -171,7 +171,7 @@ class Command(BaseCommand):
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=True,
+                string_id="zulipinternal", name="Zulip Dev", emails_restricted_to_domains=True,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
