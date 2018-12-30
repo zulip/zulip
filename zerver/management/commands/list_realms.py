@@ -33,15 +33,16 @@ Usage examples:
             print(outer_format % ("--", "---------", "----", "------"))
 
             for realm in realms:
+                display_string_id = realm.string_id if realm.string_id != '' else "''"
                 if realm.deactivated:
                     print(self.style.ERROR(outer_format % (
                         realm.id,
-                        realm.string_id,
+                        display_string_id,
                         realm.name,
                         realm.uri)))
                     deactivated = True
                 else:
-                    print(outer_format % (realm.id, realm.string_id, realm.name, realm.uri))
+                    print(outer_format % (realm.id, display_string_id, realm.name, realm.uri))
             if deactivated:
                 print(self.style.WARNING("\nRed rows represent deactivated realms."))
             sys.exit(0)
