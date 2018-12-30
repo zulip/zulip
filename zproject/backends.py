@@ -306,6 +306,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             from io import BytesIO
 
             avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
+            if avatar_attr_name not in ldap_user.attrs:  # nocoverage
+                # If this specific user doesn't have e.g. a
+                # thumbnailPhoto set in LDAP, just skip that user.
+                return
             upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
             do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
 
