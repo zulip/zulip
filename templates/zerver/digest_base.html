@@ -1,26 +1,33 @@
 {% extends "zerver/base.html" %}
+
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
 {% block content %}
 <body style="background-color:hsl(165, 25%, 97%);"> 
-    <div class="header" style="background-color: hsl(0,0%,100%); text-align: center; position: fixed; width:100%; margin-bottom: 20px">
-        <div class="alert" style="margin-left: 40px; margin-right: 45px">
+    <div class="digest-header" style="background-color: hsl(0,0%,100%); text-align: center; position: fixed; width:100%; margin-bottom: 20px; border: solid 1px; border-top:none; box-shadow: 0px 0px 4px">
+        <div class="alert" style="margin-left: 40px; margin-right: 45px; margin-bottom: 10px">
                     Catch up on all the conversations and updates since you last visited us.
                     Click <a href={{ realm_uri }}>here</a> to skip these and go directly to your chats.
+        </div>
+        <div class="portico-header float-left">  
+            <h3 style="margin-top:0px; margin-bottom: 5px; text-align: left; padding-left: 40px">ZULIP Digest</h3>
+        </div>
+        <div class="portico-header float-right top-links" style="padding-top:5px; padding-right:45px;"> 
+            {% include 'zerver/portico-header-dropdown.html' %}
         </div>        
-        <h3 style="margin-top:10px; margin-bottom: 5px">
-            <a class="brand logo" href="{{ realm_uri }}/">
-                {% if custom_logo_url %}
-                <img draggable="false" src="{{ custom_logo_url }}" style="height:1.5em;" alt class="nav-logo no-drag"/>
-                {% else %}
-                <img id="realm-logo" src="/static/images/zulip-logo.svg?version=0" style="height:1.5em;" alt class="nav-logo no-drag"/>
-                {% endif %}
-            </a>
-            ZULIP missed messages
-        </h3>
     </div>
-    <div class="container" style="padding-top:150px; ">
-        <div class="email-html" style="padding:20px; background-color: hsl(0,0%,100%); border-radius:5px; display: block; margin: 0 auto !important; max-width:750px">
-            {% include "zerver/emails/compiled/digest.html" %}
-        </div>    
-    </div>
+    
+    <div class="container" style="padding-top:150px;">
+        <div class="email-container" style="display:block; margin: 0 auto !important; max-width:500px;">
+            <img id="digest-logo" src="/static/images/emails/digest.png" style="-ms-interpolation-mode:bicubic; border:none;" />
+            <div class="email-html" style="padding:20px; background-color: hsl(0,0%,100%); border-radius:5px; display: block;">
+                    {% include 'zerver/emails/compiled/digest.html' %}
+                    <img id="digest-logo" src="/static/images/emails/footer.png" style="padding-top: 20px; -ms-interpolation-mode:bicubic; border:none;" />
+            </div> 
+            <div class="apple-link" style="margin-top:10px; color:#999; font-size:12px; text-align:center"> {{physical_address}}</div>           
+        </div>           
+    </div>    
 </body> 
 {% endblock %}
