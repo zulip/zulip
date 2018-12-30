@@ -44,7 +44,7 @@ about that data structure:
   since the user was last online, the client can at any time
   accurately compute whether that user is offline (even if the last
   data from the server was 45 seconds ago, and the user was last
-  online 4:30 before the client received that server data).
+  online 43 seconds before the client received that server data).
 * The `status_from_timestamp` function in `static/js/presence.js` is
   useful sample code; the `OFFLINE_THRESHOLD_SECS` check is critical
   to correct output.
