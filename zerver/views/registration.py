@@ -81,6 +81,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
     is_realm_admin = prereg_user.invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation
+    is_guest = prereg_user.invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
 
     try:
         validators.validate_email(email)
@@ -280,7 +281,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # make it respect invited_as_admin / is_realm_admin.
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
-                                          prereg_user=prereg_user, is_realm_admin=is_realm_admin,
+                                          prereg_user=prereg_user,
+                                          is_realm_admin=is_realm_admin,
+                                          is_guest=is_guest,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
