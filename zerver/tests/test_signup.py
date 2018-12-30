@@ -725,6 +725,7 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         invitee_profile = self.nonreg_user('alice')
         self.assertTrue(invitee_profile.is_realm_admin)
+        self.assertFalse(invitee_profile.is_guest)
 
     def test_invite_user_as_admin_from_normal_account(self) -> None:
         """
@@ -745,6 +746,28 @@ class InviteUserTest(InviteUserBase):
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"], invite_as=100)
         self.assert_json_error(response, "Must be invited as an valid type of user")
+
+    def test_successful_invite_user_as_guest_from_normal_account(self) -> None:
+        self.login(self.example_email('hamlet'))
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as=3))
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user('alice')
+        self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertTrue(invitee_profile.is_guest)
+
+    def test_successful_invite_user_as_guest_from_admin_account(self) -> None:
+        self.login(self.example_email('iago'))
+        invitee = self.nonreg_email('alice')
+        self.assert_json_success(self.invite(invitee, ["Denmark"], invite_as=3))
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user('alice')
+        self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertTrue(invitee_profile.is_guest)
 
     def test_successful_invite_user_with_name(self) -> None:
         """
