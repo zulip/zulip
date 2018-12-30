@@ -4,8 +4,10 @@ from typing import Any, Dict
 
 from django.conf import settings
 
-LDAP_USER_ACCOUNT_CONTROL_NORMAL = 512
-LDAP_USER_ACCOUNT_CONTROL_DISABLED = 514
+# See https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/
+# for docs on what these values mean.
+LDAP_USER_ACCOUNT_CONTROL_NORMAL = '512'
+LDAP_USER_ACCOUNT_CONTROL_DISABLED = '514'
 
 def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Any]]:
     mode = mode.lower()

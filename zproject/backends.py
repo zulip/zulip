@@ -315,7 +315,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:  # nocoverage
         account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
-        ldap_disabled = bool(account_control_value & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
+        ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
     def get_or_build_user(self, username: str,
