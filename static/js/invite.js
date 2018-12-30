@@ -18,10 +18,10 @@ function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
-    var invite_as = $('#invite_as').val();
+    var invite_as = parseInt($('#invite_as').val(), 10);
     var data = {
         invitee_emails: $("#invitee_emails").val(),
-        invite_as_admin: invite_as === 'admin',
+        invite_as: invite_as,
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
     };
     var streams = [];

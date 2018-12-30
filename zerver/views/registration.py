@@ -15,7 +15,8 @@ from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
+    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
+    PreregistrationUser
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -79,7 +80,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
-    is_realm_admin = prereg_user.invited_as_admin or realm_creation
+    is_realm_admin = prereg_user.invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation
 
     try:
         validators.validate_email(email)
