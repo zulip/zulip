@@ -291,6 +291,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_webathena': user_profile.realm.webathena_enabled,
                                'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,
+                               'invite_as': PreregistrationUser.INVITE_AS,
                                },)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response

@@ -4627,7 +4627,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 def do_invite_users(user_profile: UserProfile,
                     invitee_emails: SizedTextIterable,
                     streams: Iterable[Stream],
-                    invite_as_admin: Optional[bool]=False) -> None:
+                    invite_as: Optional[int]=PreregistrationUser.INVITE_AS['MEMBER']) -> None:
 
     check_invite_limit(user_profile.realm, len(invitee_emails))
 
@@ -4677,7 +4677,7 @@ def do_invite_users(user_profile: UserProfile,
     for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile,
-                                          invited_as_admin=invite_as_admin,
+                                          invited_as=invite_as,
                                           realm=user_profile.realm)
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
@@ -4709,7 +4709,7 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             ref=invitee.referred_by.email,
                             invited=datetime_to_timestamp(invitee.invited_at),
                             id=invitee.id,
-                            invited_as_admin=invitee.invited_as_admin))
+                            invited_as=invitee.invited_as))
 
     return invites
 
