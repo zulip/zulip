@@ -244,7 +244,7 @@ run_test('set_custom_profile_field_data', () => {
     people.set_custom_profile_field_data(person.user_id, {});
     assert.deepEqual(person.profile_data, {});
     people.set_custom_profile_field_data(person.user_id, field);
-    assert.equal(person.profile_data[field.id], 'Field value');
+    assert.equal(person.profile_data[field.id].value, 'Field value');
 });
 
 run_test('get_rest_of_realm', () => {
