@@ -983,6 +983,7 @@ exports.set_custom_profile_field_data = function (user_id, field) {
     }
     people_by_user_id_dict.get(user_id).profile_data[field.id] = {
         value: field.value,
+        rendered_value: field.rendered_value,
     };
 };
 

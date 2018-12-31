@@ -164,6 +164,7 @@ exports.intialize_custom_user_type_fields = function (element_id, user_id, is_ed
                     });
                 }
             }
+
             if (is_editable) {
                 var input = pill_container.children('.input');
                 if (set_handler_on_update) {
