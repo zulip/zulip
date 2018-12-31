@@ -591,7 +591,7 @@ run_test('compose_private_stream_alert', () => {
 
 run_test('custom_user_profile_field', () => {
     var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
-    var args = {field: field, field_value: {value: "@GitHub"}, field_type: "text"};
+    var args = {field: field, field_value: {value: "@GitHub", rendered_value: "<p>@GitHub</p>"}, field_type: "text"};
     var html = render('custom-user-profile-field', args);
     assert.equal($(html).attr('data-field-id'), 2);
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");

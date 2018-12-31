@@ -255,9 +255,13 @@ exports.show_user_profile = function (user) {
             var field_choice_dict = JSON.parse(field.field_data);
             profile_field.value = field_choice_dict[field_value.value].text;
             break;
+        case field_types.SHORT_TEXT.id:
+        case field_types.LONG_TEXT.id:
+            profile_field.value = field_value.value;
+            profile_field.rendered_value = field_value.rendered_value;
+            break;
         default:
             profile_field.value = field_value.value;
-            break;
         }
         profile_data.push(profile_field);
     });

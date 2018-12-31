@@ -99,7 +99,6 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         } else if (field_type === field_types.URL.id) {
             type = "url";
         } else if (is_user_field) {
-
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
@@ -165,6 +164,7 @@ exports.intialize_custom_user_type_fields = function (element_id, user_id, is_ed
                     });
                 }
             }
+
             if (is_editable) {
                 var input = pill_container.children('.input');
                 if (set_handler_on_update) {
