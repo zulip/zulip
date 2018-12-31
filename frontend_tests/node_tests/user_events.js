@@ -157,9 +157,10 @@ run_test('updates', () => {
     blueslip.clear_test_data();
 
     me.profile_data = {};
-    user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value'}});
+    user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value', rendered_value: '<p>Value</p>'}});
     person = people.get_by_email(me.email);
     assert.equal(person.profile_data[3].value, 'Value');
+    assert.equal(person.profile_data[3].rendered_value, '<p>Value</p>');
 
     var updated = false;
     settings_account.update_email = (email) => {

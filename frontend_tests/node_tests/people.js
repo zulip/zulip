@@ -240,11 +240,12 @@ initialize();
 run_test('set_custom_profile_field_data', () => {
     var person = people.get_by_email(me.email);
     me.profile_data = {};
-    var field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value'};
+    var field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value', rendered_value: '<p>Field value</p>'};
     people.set_custom_profile_field_data(person.user_id, {});
     assert.deepEqual(person.profile_data, {});
     people.set_custom_profile_field_data(person.user_id, field);
     assert.equal(person.profile_data[field.id].value, 'Field value');
+    assert.equal(person.profile_data[field.id].rendered_value, '<p>Field value</p>');
 });
 
 run_test('get_rest_of_realm', () => {

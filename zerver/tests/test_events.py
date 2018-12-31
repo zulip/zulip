@@ -1067,7 +1067,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
     def test_custom_profile_field_data_events(self) -> None:
-        schema_checker = self.check_events_dict([
+        schema_checker_basic = self.check_events_dict([
             ('type', equals('realm_user')),
             ('op', equals('update')),
             ('person', check_dict_only([
@@ -1079,6 +1079,19 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
+        schema_checker_with_rendered_value = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('user_id', check_int),
+                ('custom_profile_field', check_dict([
+                    ('id', check_int),
+                    ('value', check_none_or(check_string)),
+                    ('rendered_value', check_none_or(check_string)),
+                ], _allow_only_listed_keys=False)),
+            ])),
+        ])
+
         realm = get_realm("zulip")
         field_id = realm.customprofilefield_set.get(realm=realm, name='Biography').id
         field = {
@@ -1086,7 +1099,7 @@ class EventsRegisterTest(ZulipTestCase):
             "value": "New value",
         }
         events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
-        error = schema_checker('events[0]', events[0])
+        error = schema_checker_with_rendered_value('events[0]', events[0])
         self.assert_on_error(error)
 
         # Test we pass correct stringify value in custom-user-field data event
@@ -1096,7 +1109,7 @@ class EventsRegisterTest(ZulipTestCase):
             "value": [self.example_user("ZOE").id],
         }
         events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
-        error = schema_checker('events[0]', events[0])
+        error = schema_checker_basic('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_presence_events(self) -> None:

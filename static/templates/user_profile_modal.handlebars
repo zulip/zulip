@@ -44,13 +44,17 @@
             <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
                 <div class="name">{{this.name}}</div>
                 {{#if this.is_user_field}}
-                <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                    <div class="input" contenteditable="false" style="display: none;"></div>
-                </div>
-                {{else if this.is_link}}
-                <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
+                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                        <div class="input" contenteditable="false" style="display: none;"></div>
+                    </div>
+                    {{else if this.is_link}}
+                    <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
                 {{else}}
-                <div class="value">{{this.value}}</div>
+                    {{#if this.rendered_value}}
+                    <div class="value">{{{this.rendered_value}}}</div>
+                    {{else}}
+                    <div class="value">{{this.value}}</div>
+                    {{/if}}
                 {{/if}}
             </div>
             {{/each}}
