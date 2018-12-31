@@ -981,7 +981,9 @@ exports.set_custom_profile_field_data = function (user_id, field) {
         blueslip.error("Unknown field id " + field.id);
         return;
     }
-    people_by_user_id_dict.get(user_id).profile_data[field.id] = field.value;
+    people_by_user_id_dict.get(user_id).profile_data[field.id] = {
+        value: field.value,
+    };
 };
 
 exports.is_current_user = function (email) {
