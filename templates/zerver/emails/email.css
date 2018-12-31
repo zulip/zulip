@@ -243,20 +243,20 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    background-color: hsl(192, 20%, 95%);
+    background-color: #eff3f4;
     border: 1px solid black;
     margin-bottom: 4px;
 }
 
 .recipient_header_with_messages {
-    background-color: hsl(213, 100%, 81%);
+    background-color: #9ec9ff;
     border-bottom: 1px solid black;
     font-weight: bold;
     padding: 2px;
 }
 
 .message_content_with_messages {
-    background-color: hsl(192, 20%, 95%);
+    background-color: #eff3f4;
     margin-left: 1px;
     margin-right: 2px;
 }
@@ -267,8 +267,8 @@ a.button:hover {
 }
 
 .recipient_header_without_messages {
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(0, 0%, 27%);
+    color: #ffffff;
+    background-color: #444444;
     border-bottom: 1px solid black;
     font-weight: bold;
     padding: 2px;
