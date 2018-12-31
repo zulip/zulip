@@ -70,7 +70,10 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
     all_custom_fields.forEach(function (field) {
         var field_type = field.type;
         var type;
-        var value = people.get_custom_profile_data(user_id, field.id);
+        var values = people.get_custom_profile_data(user_id, field.id);
+        if (values === undefined || values === null) {
+            values = {value: "", rendered_value: ""};
+        }
         var is_long_text = field_type === field_types.LONG_TEXT.id;
         var is_choice_field = field_type === field_types.CHOICE.id;
         var is_user_field = field_type === field_types.USER.id;
@@ -87,7 +90,7 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
                     field_choices[field_choice_dict[choice].order] = {
                         value: choice,
                         text: field_choice_dict[choice].text,
-                        selected: choice === value,
+                        selected: choice === values.value,
                     };
                 }
             }
@@ -96,23 +99,16 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         } else if (field_type === field_types.URL.id) {
             type = "url";
         } else if (is_user_field) {
-            if (value) {
-                value = JSON.parse(value);
-            }
+
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
         }
 
-        if (value === undefined || value === null) {
-            // If user has not set value for field.
-            value = "";
-        }
-
         var html = templates.render("custom-user-profile-field", {
             field: field,
             field_type: type,
-            field_value: value,
+            field_value: values,
             is_long_text_field: is_long_text,
             is_choice_field: is_choice_field,
             is_user_field: is_user_field,
@@ -136,6 +132,10 @@ exports.intialize_custom_user_type_fields = function (element_id, user_id, is_ed
 
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value_raw = people.get_custom_profile_data(user_id, field.id);
+
+        if (field_value_raw) {
+            field_value_raw = field_value_raw.value;
+        }
 
         // If field is not editable and field value is null, we don't expect
         // pill container for that field and proceed further

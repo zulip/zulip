@@ -235,21 +235,28 @@ exports.show_user_profile = function (user) {
         profile_field.is_user_field = false;
         profile_field.is_link = field_type === field_types.URL.id;
         profile_field.type = field_type;
+
+        if (!field_value) {
+            return;
+        }
+        if (!field_value.value) {
+            return;
+        }
         switch (field_type) {
         case field_types.DATE.id:
-            profile_field.value = moment(field_value).format(localFormat);
+            profile_field.value = moment(field_value.value).format(localFormat);
             break;
         case field_types.USER.id:
             profile_field.id = field.id;
             profile_field.is_user_field = true;
-            profile_field.value = field_value;
+            profile_field.value = field_value.value;
             break;
         case field_types.CHOICE.id:
             var field_choice_dict = JSON.parse(field.field_data);
-            profile_field.value = field_choice_dict[field_value].text;
+            profile_field.value = field_choice_dict[field_value.value].text;
             break;
         default:
-            profile_field.value = field_value;
+            profile_field.value = field_value.value;
             break;
         }
         profile_data.push(profile_field);
