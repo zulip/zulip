@@ -39,7 +39,7 @@
         </p>
 
         {% for convo in hot_conversations %}
-        <div id='messages'>
+        <div class='messages'>
             {% for recipient_block in convo.first_few_messages %}
                 <div class='hot_convo_recipient_block'>
                     <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
