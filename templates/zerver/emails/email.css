@@ -213,11 +213,11 @@ a.button:hover {
     font-weight: normal;
 }
 
-#messages {
+.messages {
     width: 600px;
     font-size: 12px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .hot_convo_recipient_block {
@@ -240,6 +240,43 @@ a.button:hover {
 .hot_convo_message_sender {
     font-weight: bold;
     padding-top: 1px;
+}
+
+.recipient_block_with_messages {
+    background-color: hsl(192, 20%, 95%);
+    border: 1px solid black;
+    margin-bottom: 4px;
+}
+
+.recipient_header_with_messages {
+    background-color: hsl(213, 100%, 81%);
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content_with_messages {
+    background-color: hsl(192, 20%, 95%);
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.recipient_block_without_messages {
+    border: 1px solid black;
+    margin-bottom: 4px;
+}
+
+.recipient_header_without_messages {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 27%);
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content_without_messages {
+    margin-left: 1px;
+    margin-right: 2px;
 }
 
 .hot_convo_message_content_block {
