@@ -58,11 +58,14 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     user_dicts = get_realm_user_dicts(realm_id)
 
     # TODO: Consider optimizing this query away with caching.
-    custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile__realm_id=realm_id)
+    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
+        "field").filter(user_profile__realm_id=realm_id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
-        profiles_by_user_id[user_id][profile_field.field_id] = profile_field.value
+        profiles_by_user_id[user_id][profile_field.field_id] = {
+            "value": profile_field.value
+        }
 
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
@@ -404,7 +407,9 @@ def apply_event(state: Dict[str, Any],
                     if 'custom_profile_field' in person:
                         custom_field_id = person['custom_profile_field']['id']
                         custom_field_new_value = person['custom_profile_field']['value']
-                        p['profile_data'][custom_field_id] = custom_field_new_value
+                        p['profile_data'][custom_field_id] = {
+                            'value': custom_field_new_value
+                        }
 
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
