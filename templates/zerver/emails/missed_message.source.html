@@ -18,21 +18,21 @@
     </p>
 
     {% if show_message_content %}
-    <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: auto;">
+    <div class='messages'>
         {% for recipient_block in messages %}
         {% if not recipient_block.header.stream_message %}
-        <div class='recipient_block' style="background-color: hsl(192, 20%, 95%);border: 1px solid black;margin-bottom: 4px;">
-            <div class='recipient_header' style="background-color: hsl(213, 100%, 81%);border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
-            <div class='message_content' style="background-color: hsl(192, 20%, 95%);margin-left: 1px;margin-right: 2px;">
+        <div class='recipient_block_with_messages'>
+            <div class='recipient_header_with_messages'>{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content_with_messages'>
         {% else %}
-        <div class='recipient_block' style="border: 1px solid black;margin-bottom: 4px;">
-            <div class='recipient_header' style="color: hsl(0, 0%, 100%);background-color: hsl(0, 0%, 27%);border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
-            <div class='message_content' style="margin-left: 1px;margin-right: 2px;">
+        <div class='recipient_block_without_messages'>
+            <div class='recipient_header_without_messages'>{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content_without_messages'>
         {% endif %}
                 {% for sender_block in recipient_block.senders %}
-                    {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
+                    {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
                     {% for message_block in sender_block.content %}
-                    <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+                    <div class='message_content_block'>
                         {{ message_block.html|safe }}
                     </div>
                     {% endfor %}
