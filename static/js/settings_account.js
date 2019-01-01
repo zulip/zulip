@@ -73,6 +73,8 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         var values = people.get_custom_profile_data(user_id, field.id);
         if (values === undefined || values === null) {
             values = {value: "", rendered_value: ""};
+        } else {  // obtain a copy of the values, and not an object reference
+            values =  Object.create(values);
         }
         var is_long_text = field_type === field_types.LONG_TEXT.id;
         var is_choice_field = field_type === field_types.CHOICE.id;
@@ -99,6 +101,9 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         } else if (field_type === field_types.URL.id) {
             type = "url";
         } else if (is_user_field) {
+            if (values.value) {
+                values.value = JSON.parse(values.value);
+            }
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
