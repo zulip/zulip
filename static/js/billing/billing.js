@@ -1,18 +1,4 @@
 $(function () {
-    function get_form_input(form_name, input_name, stringify = true) {
-        var input = $("#" + form_name + "-form input[name='" + input_name + "']");
-        var val;
-        if (input.attr('type') === "radio") {
-            val =  $("#" + form_name + "-form input[name='" + input_name + "']:checked").val();
-        } else {
-            val = input.val();
-        }
-        if (stringify) {
-            return JSON.stringify(val);
-        }
-        return val;
-    }
-
     function is_in_array(value, array) {
         return array.indexOf(value) > -1;
     }
@@ -132,7 +118,7 @@ $(function () {
         });
 
         $('#add-card-button').on('click', function (e) {
-            var license_management = get_form_input("autopay", "license_management", false);
+            var license_management = $('input[type=radio][name=license_management]:checked').val();
             if ($("#" + license_management + "_license_count")[0].checkValidity() === false) {
                 return;
             }
