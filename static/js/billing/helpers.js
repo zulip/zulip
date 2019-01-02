@@ -73,11 +73,9 @@ exports.update_charged_amount = function (prices, schedule) {
 exports.show_license_section = function (license) {
     $("#license-automatic-section").hide();
     $("#license-manual-section").hide();
-    $("#license-mix-section").hide();
 
     $("#automatic_license_count").prop('disabled', true);
     $("#manual_license_count").prop('disabled', true);
-    $("#mix_license_count").prop('disabled', true);
 
     var section_id = "#license-" + license + "-section";
     $(section_id).show();
