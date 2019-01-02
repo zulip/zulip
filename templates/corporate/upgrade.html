@@ -88,12 +88,6 @@
                                             <div class="management-type">{{ _("Manual") }}</div>
                                         </div>
                                     </label>
-                                    <label>
-                                        <input type="radio" name="license_management" value="mix" />
-                                        <div class="box">
-                                            <div class="management-type">{{ _("Mix") }}</div>
-                                        </div>
-                                    </label>
                                 </div>
 
                                 <div id="license-automatic-section">
@@ -117,17 +111,6 @@
 
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
                                     <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br>
-                                </div>
-
-                                <div id="license-mix-section">
-                                    <p>
-                                        Enter the number of users you would like to pay for.<br>
-                                        We'll automatically charge you for additional licenses as users are
-                                        added, and remove licenses not in use at the end of each billing
-                                        period.
-                                    </p>
-                                    <h4>Number of licenses (minimum {{ seat_count }})</h4>
-                                    <input type="number" name="licenses" min="{{ seat_count }}"autocomplete="off" id="mix_license_count" required/><br>
                                 </div>
 
                                 <button id="add-card-button" class="stripe-button-el">
