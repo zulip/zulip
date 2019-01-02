@@ -137,12 +137,12 @@ jobs:
 
       - *create_cache_directories
 
-      - run:
-          name: do Bionic hack
-          command: |
-              # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-              # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-              redis-server --daemonize yes
+      # - run:
+      #     name: do Bionic hack
+      #     command: |
+      #         # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
+      #         # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
+      #         redis-server --daemonize yes
 
       - *restore_cache_package_json
       - *restore_cache_requirements
@@ -156,6 +156,6 @@ workflows:
   version: 2
   build:
     jobs:
-      - "trusty-python-3.4"
-      - "xenial-python-3.5"
+      #- "trusty-python-3.4"
+      #- "xenial-python-3.5"
       - "bionic-python-3.6"

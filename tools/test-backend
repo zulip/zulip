@@ -211,7 +211,7 @@ def check_redis_status():
 
 if __name__ == "__main__":
     block_internet()
-    check_redis_status()
+    # check_redis_status()
 
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
