@@ -99,6 +99,14 @@ exports.set_tab = function (page) {
     });
 };
 
+exports.set_plan_prices = function (prices) {
+    $("#autopay_annual_price").text(helpers.format_money(prices.annual));
+    $("#autopay_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
+    $("#autopay_monthly_price").text(helpers.format_money(prices.monthly));
+    $("#invoice_annual_price").text(helpers.format_money(prices.annual));
+    $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
+};
+
 return exports;
 }());
 

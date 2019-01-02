@@ -51,12 +51,7 @@ exports.initialize = () => {
         helpers.update_charged_amount(prices, $(this).val());
     });
 
-    $("#autopay_annual_price").text(helpers.format_money(prices.annual));
-    $("#autopay_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
-    $("#autopay_monthly_price").text(helpers.format_money(prices.monthly));
-    $("#invoice_annual_price").text(helpers.format_money(prices.annual));
-    $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
-
+    helpers.set_plan_prices(prices);
     helpers.show_license_section($('input[type=radio][name=license_management]:checked').val());
     helpers.update_charged_amount(prices, $('input[type=radio][name=schedule]:checked').val());
 };
