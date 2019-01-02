@@ -85,6 +85,20 @@ exports.show_license_section = function (license) {
     $(input_id).prop("disabled", false);
 };
 
+exports.set_tab = function (page) {
+    var hash = window.location.hash;
+    if (hash) {
+        $('#' + page + '-tabs.nav a[href="' + hash + '"]').tab('show');
+        $('html').scrollTop(0);
+    }
+
+    $('#' + page + '-tabs.nav-tabs a').click(function () {
+        $(this).tab('show');
+        window.location.hash = this.hash;
+        $('html').scrollTop(0);
+    });
+};
+
 return exports;
 }());
 
