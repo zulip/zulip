@@ -4,7 +4,8 @@ from typing import Any, Dict, Iterable, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
@@ -74,6 +75,8 @@ def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
             event = "{}_{}".format(event, "project")
         elif changes.get("story_type") is not None:
             event = "{}_{}".format(event, "type")
+        else:
+            raise UnexpectedWebhookEventType("Clubhouse", event)
 
     return EVENT_BODY_FUNCTION_MAPPER.get(event)
 
@@ -453,6 +456,8 @@ def api_clubhouse_webhook(
 
     body_func = get_body_function_based_on_type(payload)
     topic_func = get_topic_function_based_on_type(payload)
+    if body_func is None or topic_func is None:
+        raise UnexpectedWebhookEventType('Clubhouse', 'unknown')
     topic = topic_func(payload)
     body = body_func(payload)
 
