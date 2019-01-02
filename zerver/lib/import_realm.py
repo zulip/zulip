@@ -3,6 +3,8 @@ import logging
 import os
 import ujson
 import shutil
+import traceback
+import time
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -11,7 +13,7 @@ from django.db import connection
 from django.db.models import Max
 from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable, cast
+    Iterable, cast, TypeVar, Callable
 
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
     do_change_plan_type
@@ -33,6 +35,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
     UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
     BotStorageData, BotConfigData
+from zerver.lib.parallel import run_parallel
 
 # Code from here is the realm import code path
 
@@ -517,8 +520,29 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
+def resize_parallel_wrapper(g: Callable[[Dict[str, Any]], None], all_records: List[Dict[str, Any]],
+                            threads: int=6) -> Iterable[Tuple[int, List[Dict[str, Any]]]]:
+    logging.info("Distributing %s records across %s threads" % (len(all_records), threads))
+    print('entered wrapper for resizing')
+
+    def wrapping_function(records: List[Dict[str, Any]]) -> int:
+        count = 0
+        for record in records:
+            if record['s3_path'].endswith('.original'):
+                try:
+                    g(record)
+                except Exception:
+                    logging.info("Error processing record: %s" % (record,))
+                    traceback.print_exc()
+                count += 1
+                if count % 1000 == 0:
+                    logging.info("A thread finished resizing %s records" % (count,))
+        return 0
+    record_lists = [all_records[i::threads] for i in range(threads)]  # type: List[List[Dict[str, Any]]]
+    return run_parallel(wrapping_function, record_lists, threads=1)
+
 def import_uploads(import_dir: Path, processing_avatars: bool=False,
-                   processing_emojis: bool=False) -> None:
+                   processing_emojis: bool=False, threads: int = 6) -> None:
     if processing_avatars and processing_emojis:
         raise AssertionError("Cannot import avatars and emojis at the same time!")
     if processing_avatars:
@@ -625,22 +649,34 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-        for record in records:
-            if record['s3_path'].endswith('.original'):
-                user_profile = get_user_profile_by_id(record['user_profile_id'])
-                if settings.LOCAL_UPLOADS_DIR is not None:
-                    avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
-                    medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
-                                                    avatar_path) + '-medium.png'
-                    if os.path.exists(medium_file_path):
-                        # We remove the image here primarily to deal with
-                        # issues when running the import script multiple
-                        # times in development (where one might reuse the
-                        # same realm ID from a previous iteration).
-                        os.remove(medium_file_path)
-                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
-                if record.get("importer_should_thumbnail"):
-                    upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+        print('entered processing avatar block')
+
+        def run_resize_avatar(record: Dict[str, Any]) -> None:
+            print('Resizing images started')
+            print(record)
+            user_profile = get_user_profile_by_id(record['user_profile_id'])
+            if settings.LOCAL_UPLOADS_DIR is not None:
+                avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
+                medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                                avatar_path) + '-medium.png'
+                if os.path.exists(medium_file_path):
+                    # We remove the image here primarily to deal with
+                    # issues when running the import script multiple
+                    # times in development (where one might reuse the
+                    # same realm ID from a previous iteration).
+                    os.remove(medium_file_path)
+            print('just before function call ')
+            upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+            if record.get("importer_should_thumbnail"):
+                upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+            print('Resizing images done!')
+
+        # Run downloads parallely
+        output = []
+        for (status, job) in resize_parallel_wrapper(run_resize_avatar, records, threads=threads):
+            output.append(job)
+        print(output)
+
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
@@ -879,7 +915,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
+    import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True, threads=6)
     import_uploads(os.path.join(import_dir, "uploads"))
 
     # We need to have this check as the emoji files are only present in the data
