@@ -96,9 +96,6 @@ exports.append_custom_profile_fields = function (element_id, user_id) {
         } else if (field_type === field_types.URL.id) {
             type = "url";
         } else if (is_user_field) {
-            if (value) {
-                value = JSON.parse(value);
-            }
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
