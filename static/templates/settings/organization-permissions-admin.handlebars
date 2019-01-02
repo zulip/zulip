@@ -85,8 +85,7 @@
                     </select>
                 </div>
 
-                {{#if development}}
-                <div class="input-group">
+                <div class="input-group" {{#if development}}{{else}}style="display: none"{{/if}}>
                     <label for="realm_email_address_visibility">{{t "Who can see users email addresses" }}</label>
                     <select name="realm_email_address_visibility" id="id_realm_email_address_visibility">
                         {{#each email_address_visibility_values}}
@@ -94,7 +93,6 @@
                         {{/each}}
                     </select>
                 </div>
-                {{/if}}
 
                 <div class="inline-block">
                     <label for="realm_add_emoji_by_admins_only" class="dropdown-title">{{t "Who can add custom emoji" }}</label>
