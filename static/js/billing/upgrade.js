@@ -2,17 +2,7 @@ var upgrade = (function () {
 var exports = {};
 
 exports.initialize = () => {
-    var hash = window.location.hash;
-    if (hash) {
-        $('#upgrade-tabs.nav a[href="' + hash + '"]').tab('show');
-        $('html,body').scrollTop(0);
-    }
-
-    $('#upgrade-tabs.nav-tabs a').click(function () {
-        $(this).tab('show');
-        window.location.hash = this.hash;
-        $('html,body').scrollTop(0);
-    });
+    helpers.set_tab("upgrade");
 
     var add_card_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
         key: $("#autopay-form").data("key"),
