@@ -2,17 +2,7 @@ var billing = (function () {
 var exports = {};
 
 exports.initialize = function () {
-    var hash = window.location.hash;
-    if (hash) {
-        $('#billing-tabs.nav a[href="' + hash + '"]').tab('show');
-        $('html,body').scrollTop(0);
-    }
-
-    $('#billing-tabs.nav-tabs a').click(function () {
-        $(this).tab('show');
-        window.location.hash = this.hash;
-        $('html,body').scrollTop(0);
-    });
+    helpers.set_tab("billing");
 
     var stripe_key = $("#payment-method").data("key");
     var card_change_handler = StripeCheckout.configure({ // eslint-disable-line no-undef
