@@ -355,7 +355,7 @@ Application server and queue worker monitoring:
 * `check_worker_memory` (monitors for memory leaks in queue workers)
 
 * `check_email_deliverer_backlog` and `check_email_deliverer_process`
-  (monitors for whether outgoing emails are being sent)
+  (monitors for whether scheduled outgoing emails are being sent)
 
 Database monitoring:
 
@@ -374,6 +374,11 @@ Standard server monitoring:
 * `check_website_response.sh` (standard HTTP check)
 
 * `check_debian_packages` (checks apt repository is up to date)
+
+**Note**: While most commands require no special permissions,
+  `check_email_deliverer_backlog`, requires the `nagios` user to be in
+  the `zulip` group, in order to access `SECRET_KEY` and thus run
+  Zulip management commands.
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
