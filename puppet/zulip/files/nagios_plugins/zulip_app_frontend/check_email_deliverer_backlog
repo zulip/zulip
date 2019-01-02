@@ -6,7 +6,13 @@ set -eu
 #"CRITICAL": 2
 #"UNKNOWN": 3
 
-BACKLOG=$(su zulip -c '/home/zulip/deployments/current/manage.py print_email_delivery_backlog)
+#checks if the user is zulip
+if [ "$(whoami)" != "zulip" ]; then
+        BACKLOG=$(su zulip -c "/home/zulip/deployments/current/manage.py print_email_delivery_backlog")
+else
+    cd /home/zulip/deployments/current
+	BACKLOG=$(./manage.py print_email_delivery_backlog)
+fi
 
 if [ "$BACKLOG" -gt 0 ] && [ "$BACKLOG" -lt 10 ]
 then
