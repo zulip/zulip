@@ -449,18 +449,19 @@ class S3UploadBackend(ZulipUploadBackend):
     def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:  # nocoverage
         # TODO: Refactor this to share code with ensure_medium_avatar_image
         file_path = user_avatar_path(user_profile)
+        # Also TODO: Migrate to user_avatar_path(user_profile) + ".png".
         s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, bucket_name)
-        key = bucket.get_key(file_path)
+        key = bucket.get_key(file_path + ".original")
         image_data = key.get_contents_as_string()
 
         resized_avatar = resize_avatar(image_data)  # type: ignore # image_data is `bytes`, boto subs are wrong
         upload_image_to_s3(
             bucket_name,
-            s3_file_name + ".png",
+            s3_file_name,
             "image/png",
             user_profile,
             resized_avatar
