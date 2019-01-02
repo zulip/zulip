@@ -224,7 +224,14 @@ def fix_message_rendered_content(realm: Realm,
     """
     for message in messages:
         if message['rendered_content'] is not None:
-            # For Zulip->Zulip imports, we use the original rendered markdown.
+            # For Zulip->Zulip imports, we use the original rendered
+            # markdown; this avoids issues where e.g. a mention can no
+            # longer render properly because a user has changed their
+            # name.  However, some syntax ends up being broken, e.g.:
+            # data-user-id for mentions.
+            #
+            # TODO: Add logic to parse the markdown and edit those
+            # data-user-id values.
             continue
 
         message_object = FakeMessage()

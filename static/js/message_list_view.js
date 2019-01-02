@@ -475,7 +475,12 @@ MessageListView.prototype = {
                 // mention text to show the user's current name,
                 // assuming that you're not searching for text
                 // inside the highlight.
-                $(this).text("@" + people.get_person_from_user_id(user_id).full_name);
+                var person = people.get_person_from_user_id(user_id);
+                if (person !== undefined) {
+                    // Note that person might be undefined in some
+                    // unpleasant corner cases involving data import.
+                    $(this).text("@" + person.full_name);
+                }
             }
         });
 
