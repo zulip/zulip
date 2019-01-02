@@ -1,6 +1,10 @@
 var helpers = (function () {
 var exports = {};
 
+exports.prices = {};
+exports.prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
+exports.prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
+
 exports.is_in_array = function (value, array) {
     return array.indexOf(value) > -1;
 };
@@ -64,9 +68,9 @@ exports.format_money = function (cents) {
     return (cents / 100).toFixed(precision);
 };
 
-exports.update_charged_amount = function (prices, schedule) {
+exports.update_charged_amount = function (schedule) {
     $("#charged_amount").text(
-        exports.format_money(page_params.seat_count * prices[schedule])
+        exports.format_money(page_params.seat_count * exports.prices[schedule])
     );
 };
 
@@ -99,12 +103,12 @@ exports.set_tab = function (page) {
     });
 };
 
-exports.set_plan_prices = function (prices) {
-    $("#autopay_annual_price").text(helpers.format_money(prices.annual));
-    $("#autopay_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
-    $("#autopay_monthly_price").text(helpers.format_money(prices.monthly));
-    $("#invoice_annual_price").text(helpers.format_money(prices.annual));
-    $("#invoice_annual_price_per_month").text(helpers.format_money(prices.annual / 12));
+exports.set_plan_prices = function () {
+    $("#autopay_annual_price").text(helpers.format_money(exports.prices.annual));
+    $("#autopay_annual_price_per_month").text(helpers.format_money(exports.prices.annual / 12));
+    $("#autopay_monthly_price").text(helpers.format_money(exports.prices.monthly));
+    $("#invoice_annual_price").text(helpers.format_money(exports.prices.annual));
+    $("#invoice_annual_price_per_month").text(helpers.format_money(exports.prices.annual / 12));
 };
 
 return exports;

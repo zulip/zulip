@@ -39,21 +39,17 @@ exports.initialize = () => {
         helpers.create_ajax_request("/json/billing/upgrade", "invoice");
     });
 
-    var prices = {};
-    prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
-    prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
-
     $('input[type=radio][name=license_management]').change(function () {
         helpers.show_license_section($(this).val());
     });
 
     $('input[type=radio][name=schedule]').change(function () {
-        helpers.update_charged_amount(prices, $(this).val());
+        helpers.update_charged_amount($(this).val());
     });
 
-    helpers.set_plan_prices(prices);
+    helpers.set_plan_prices();
     helpers.show_license_section($('input[type=radio][name=license_management]:checked').val());
-    helpers.update_charged_amount(prices, $('input[type=radio][name=schedule]:checked').val());
+    helpers.update_charged_amount($('input[type=radio][name=schedule]:checked').val());
 };
 
 return exports;
