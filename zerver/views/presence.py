@@ -67,8 +67,7 @@ def update_user_status_backend(request: HttpRequest,
             user_profile=user_profile,
         )
 
-    result = dict()
-    return json_success(result)
+    return json_success()
 
 @human_users_only
 @has_request_variables
