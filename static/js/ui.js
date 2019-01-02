@@ -24,10 +24,11 @@ exports.set_up_scrollbar = function (element) {
     element[0].perfectScrollbar = perfectScrollbar;
 };
 
-exports.update_scrollbar = function (element) {
+exports.update_scrollbar = function (element_selector) {
+    var element = element_selector[0];
     element.scrollTop = 0;
-    if (element[0].perfectScrollbar !== undefined) {
-        element[0].perfectScrollbar.update();
+    if (element.perfectScrollbar !== undefined) {
+        element.perfectScrollbar.update();
     }
 };
 
