@@ -49,6 +49,10 @@ people.add_in_realm(zoe);
 people.add_in_realm(bot);
 people.initialize_current_user(me.user_id);
 
+run_test('my user', () => {
+    assert.equal(presence.get_status(me.user_id), 'active');
+});
+
 run_test('on_mobile_property', () => {
     // TODO: move this test to a new test module directly testing presence.js
     var status_from_timestamp = presence._status_from_timestamp;
