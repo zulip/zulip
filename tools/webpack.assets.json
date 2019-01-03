@@ -69,9 +69,9 @@
         "./static/styles/landing-page.scss"
     ],
     "signup": [
-               "./static/js/portico/signup.js",
-               "./node_modules/jquery-validation/dist/jquery.validate.min.js"
-              ],
+        "./node_modules/jquery-validation/dist/jquery.validate.min.js",
+        "./static/js/portico/signup.js"
+    ],
     "stats": [
         "./static/styles/stats.scss",
         "./static/js/stats/stats.js",
