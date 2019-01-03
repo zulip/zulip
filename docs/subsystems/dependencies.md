@@ -202,7 +202,38 @@ highlighting.  The system is largely managed by the code in
   `ignore_missing_imports` for the new library.  See
   [our mypy docs][mypy-docs] for more details.
 
+### Upgrading packages
+
+See the [README][requirements-readme] file in `requirements/` directory
+to learn how to upgrade a single Python package.
+
+For batches upgrades of many or all Python dependencies, we have the
+script `./tools/upgrade-python-dependencies`. This script will update
+the outdated packages one at a time, create a commit for each package
+if the backend tests pass and pushes the working branch to your GitHub
+fork. Make sure to enable [caching][caching] your GitHub credentials
+so that Git won't keep asking you for it during each push.  When a
+package cannot be upgraded due to test failures or other issues the
+error message would be stored in the file
+`var/log/python_dependency_upgrade/<package_name>`. We also maintain a
+list of packages that cannot be upgraded in
+`requirements/unupgradable.json`. The script won't attempt to upgrade
+the packages in this list.  Most of these packages requires changes in
+upstream for us to upgrade them. The remaining ones are usually
+packages that involves significant changes in our codebase.  The
+packages that are easier to upgrade by making some minor changes in
+our codebase won't make it to this list. Only issues are created for
+them in GitHub with the label `area: dependencies`. Keep in mind that
+this script would take a significant amount of time to complete.  Our
+recommended way of running this script is in a cloud VM which has
+super fast internet. You can use tmux or screen to make sure that the
+[script keeps running even if you get disconnected][stack-overflow]
+from the SSH session.
+
 [mypy-docs]: ../testing/mypy.html
+[requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md
+[stack-overflow]: https://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
+[caching]: https://help.github.com/articles/caching-your-github-password-in-git/
 
 ## JavaScript and other frontend packages
 
