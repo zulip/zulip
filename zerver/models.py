@@ -1579,6 +1579,9 @@ class Reaction(models.Model):
                   'user_profile__email', 'user_profile__id', 'user_profile__full_name']
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
+    def __str__(self) -> str:
+        return "%s / %s / %s" % (self.user_profile.email, self.message.id, self.emoji_name)
+
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
 # table indicating that that user received that message.  This table
