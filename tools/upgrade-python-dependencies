@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+import subprocess
+import errno
+
+from typing import List, Dict, Any
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ZULIP_PATH)
+
+log_dir = "var/log/python_dependency_upgrade"
+try:
+    os.makedirs(log_dir)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
+
+outdated_packages = []  # type: List[Dict[str, str]]
+packages_json = subprocess.check_output(["pip", "list", "--outdated", "--format=json"])
+outdated_packages = json.loads(packages_json.decode("utf-8"))
+
+unupgradable_packages = {}  # type: Dict[str, Any]
+with open("requirements/unupgradable.json") as f:
+    unupgradable_packages = json.load(f)
+
+def delete_locked_requirements(locked_requirement_files: List[str]) -> None:
+    for lock_file in locked_requirement_files:
+        try:
+            os.remove("requirements/{}".format(lock_file))
+        except OSError:
+            pass
+
+def do_upgrade(requirement_files: List[str], locked_requirement_files: List[str]) -> None:
+    for package in outdated_packages:
+        pkg_name = package["name"]
+        version = package["version"]
+        latest_version = package["latest_version"]
+
+        if pkg_name in unupgradable_packages:
+            continue
+
+        sed_string_template = "s/{name}=={version}/{name}=={latest_version}/g"
+        sed_string = sed_string_template.format(name=pkg_name, version=version,
+                                                latest_version=latest_version)
+
+        files_updated = False
+        subprocess.check_call(["git", "stash"])
+
+        for requirement_file in requirement_files:
+            file_path = "requirements/{}".format(requirement_file)
+            subprocess.check_call(["sed", "-i", sed_string, file_path])
+
+            diff = subprocess.check_output(["git", "diff", file_path])
+            if diff:
+                files_updated = True
+
+        if files_updated:
+            try:
+                print("Trying to upgrade {}".format(pkg_name))
+                delete_locked_requirements(locked_requirement_files)
+                subprocess.check_output(["./tools/update-locked-requirements"], stderr=subprocess.STDOUT)
+                subprocess.check_output(["./tools/provision"], stderr=subprocess.STDOUT)
+                subprocess.check_output(["./tools/test-backend"], stderr=subprocess.STDOUT)
+                subprocess.check_call(["git", "add", "requirements"])
+                commit_msg = "requirements: Upgrade {} from {} to {}.".format(pkg_name, version,
+                                                                              latest_version)
+                subprocess.check_call(["git", "commit", "-m", commit_msg])
+                subprocess.check_call(["git", "push", "origin", "HEAD", "--force"])
+            except subprocess.CalledProcessError as e:
+                print("{} upgrade failed".format(pkg_name))
+                log_file = "{}/{}".format(log_dir, pkg_name)
+                with open(log_file, "w") as f:
+                    f.write(e.output.decode("utf-8"))
+
+do_upgrade(["common.in", "dev.in", "docs.in", "prod.in"], ["dev.txt", "docs.txt", "prod.txt"])
+do_upgrade(["thumbor.in"], ["thumbor.txt"])
+do_upgrade(["pip.txt"], [])
