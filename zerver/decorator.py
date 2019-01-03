@@ -5,6 +5,7 @@ from django_otp import user_has_device, _user_is_authenticated
 from django_otp.conf import settings as otp_settings
 
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
+from django.contrib.auth.models import AnonymousUser
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
@@ -841,10 +842,14 @@ def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
                               func.__name__)
                 return func(request, *args, **kwargs)
 
+            if isinstance(user, AnonymousUser):  # nocoverage
+                # We can only rate-limit logged-in users for now.
+                # We also only support rate-limiting authenticated
+                # views right now.
+                # TODO: implement per-IP non-authed rate limiting
+                return func(request, *args, **kwargs)
+
             # Rate-limiting data is stored in redis
-            # We also only support rate-limiting authenticated
-            # views right now.
-            # TODO(leo) - implement per-IP non-authed rate limiting
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
