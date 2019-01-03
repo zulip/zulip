@@ -1048,11 +1048,11 @@ class PreregistrationUser(models.Model):
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
     INVITE_AS = dict(
-        NORMAL_USER = 1,
+        MEMBER = 1,
         REALM_ADMIN = 2,
         GUEST_USER = 3,
     )
-    invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['NORMAL_USER'])  # type: int
+    invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
     invited_as_admin = models.BooleanField(default=False)  # type: bool
 
