@@ -33,7 +33,7 @@ exports.is_active = function (user_id) {
 };
 
 exports.get_status = function (user_id) {
-    if (user_id === page_params.user_id) {
+    if (people.is_my_user_id(user_id)) {
         return "active";
     }
     if (user_id in exports.presence_info) {
