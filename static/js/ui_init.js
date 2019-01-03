@@ -276,6 +276,7 @@ exports.initialize_kitchen_sink_stuff = function () {
 
 exports.initialize_everything = function () {
     // initialize other stuff
+    people.initialize();
     scroll_bar.initialize();
     message_viewport.initialize();
     exports.initialize_kitchen_sink_stuff();
@@ -296,7 +297,6 @@ exports.initialize_everything = function () {
         tab_bar.initialize();
     }
     server_events.initialize();
-    people.initialize();
     user_status.initialize();
     compose_pm_pill.initialize();
     search_pill_widget.initialize();
