@@ -4,6 +4,7 @@ import logging
 import re
 
 from email.header import decode_header, Header
+from email.utils import getaddresses
 import email.message as message
 
 from django.conf import settings
@@ -287,19 +288,19 @@ def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
-    recipient_headers = ["X-Gm-Original-To", "Delivered-To", "To"]
-    recipients = []  # type: List[Union[str, Header]]
-    for recipient_header in recipient_headers:
-        r = message.get_all(recipient_header, None)
-        if r:
-            recipients = r
-            break
+    recipient_headers = ["X-Gm-Original-To", "Delivered-To",
+                         "Resent-To", "Resent-CC", "To", "CC"]
 
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     match_email_re = re.compile(".*?".join(pattern_parts))
-    for recipient_email in [str(recipient) for recipient in recipients]:
-        if match_email_re.match(recipient_email):
-            return recipient_email
+
+    header_addresses = [str(addr)
+                        for recipient_header in recipient_headers
+                        for addr in message.get_all(recipient_header, [])]
+
+    for addr_tuple in getaddresses(header_addresses):
+        if match_email_re.match(addr_tuple[1]):
+            return addr_tuple[1]
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
