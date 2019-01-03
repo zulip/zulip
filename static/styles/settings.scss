@@ -944,7 +944,6 @@ input[type=checkbox].inline-block {
 
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
-#get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
 .admin-profile-field-form .control-label,
@@ -1882,4 +1881,8 @@ thead .actions {
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+#get_api_key_button {
+    display: block;
 }
