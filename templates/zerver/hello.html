@@ -531,17 +531,17 @@
         {% if root_domain_landing_page %}
         <a href="{{ url('plans') }}">
             <button href="" class="download-button" type="button"
-              name="button">{{ _('See plans and pricing!') }}</button>
+              name="button">{{ _('See plans and pricing') }}</button>
         </a>
         {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
         <a href="{{ url('login-sso') }}">
-            <button href="" type="button" name="button">{{ _('Log in now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Log in now') }}</button>
         </a>
         {% else %}
         <a href="{{ url('register') }}">
-            <button href="" type="button" name="button">{{ _('Sign up now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Sign up now') }}</button>
         </a>
         {% endif %}
         <div class="zulip-octopus"></div>
