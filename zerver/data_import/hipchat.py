@@ -780,7 +780,7 @@ def do_convert_data(input_tar_file: str,
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
 
-    slim_mode = True
+    slim_mode = False
 
     # users.json -> UserProfile
     raw_user_data = read_user_data(data_dir=input_data_dir)
