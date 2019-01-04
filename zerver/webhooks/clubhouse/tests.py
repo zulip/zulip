@@ -105,6 +105,11 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('story_update_change_title', "Add super cool feature!",
                                           expected_message)
 
+    def test_story_update_add_owner(self) -> None:
+        expected_message = u"New owner added to the story [A new story by Shakespeare!](https://app.clubhouse.io/zulip/story/26)."
+        self.send_and_test_stream_message('story_update_add_owner', 'A new story by Shakespeare!',
+                                          expected_message)
+
     def test_story_task_created(self) -> None:
         expected_message = u"Task **Added a new task** was added to the story [Add cool feature!](https://app.clubhouse.io/zulip/story/11)."
         self.send_and_test_stream_message('story_task_create', "Add cool feature!",
