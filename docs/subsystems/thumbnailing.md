@@ -28,7 +28,7 @@ Thumbor is responsible for a few things in Zulip:
 Thumbor handles a lot of details for us, varying from signing of
 thumbnailing URLs, to caching for DoS prevention.
 
-It is configured via the `THUMBOR_URL` setting in
+It is configured via the `THUMBOR_URL` and `THUMBNAIL_IMAGES` settings in
 `/etc/zulip/settings.py`; you can host Thumbor on the same machine as
 the Zulip server, or a remote server (which is better for isolation,
 since security bugs in image-processing libraries have in the past
