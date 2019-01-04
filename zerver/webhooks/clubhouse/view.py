@@ -36,6 +36,7 @@ STORY_UPDATE_PROJECT_TEMPLATE = ("The story {name_template} was moved from"
 STORY_UPDATE_TYPE_TEMPLATE = ("The type of the story {name_template} was changed"
                               " from **{old_type}** to **{new_type}**.")
 DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
+STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -75,6 +76,8 @@ def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
             event = "{}_{}".format(event, "project")
         elif changes.get("story_type") is not None:
             event = "{}_{}".format(event, "type")
+        elif changes.get("owner_ids") is not None:
+            event = "{}_{}".format(event, "owner")
         else:
             raise UnexpectedWebhookEventType("Clubhouse", event)
 
@@ -387,6 +390,17 @@ def get_story_update_type_body(payload: Dict[str, Any]) -> str:
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
+def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
+    action = get_action_with_primary_id(payload)
+    kwargs = {
+        "name_template": STORY_NAME_TEMPLATE.format(
+            name=action["name"],
+            app_url=action["app_url"]
+        )
+    }
+
+    return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
+
 def get_entity_name(payload: Dict[str, Any], entity: Optional[str]=None) -> Optional[str]:
     name = get_action_with_primary_id(payload).get("name")
 
@@ -419,6 +433,7 @@ EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_estimate": get_story_update_estimate_body,
     "story_update_attachment": get_story_update_attachment_body,
     "story_update_label": get_story_label_body,
+    "story_update_owner": get_story_update_owner_body,
     "story_update_project": get_story_update_project_body,
     "story_update_type": get_story_update_type_body,
     "epic_create": get_epic_create_body,
