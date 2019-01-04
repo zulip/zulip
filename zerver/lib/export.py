@@ -55,12 +55,6 @@ MessageOutput = Dict[str, Union[List[Record], List[int], int]]
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
 
-realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
-                ("zerver_realmemoji", RealmEmoji, "realmemoji"),
-                ("zerver_realmdomain", RealmDomain, "realmdomain"),
-                ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
-
-
 ALL_ZULIP_TABLES = {
     'analytics_anomaly',
     'analytics_fillstate',
