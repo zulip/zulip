@@ -2250,9 +2250,12 @@ class AbstractScheduledJob(models.Model):
         abstract = True
 
 class ScheduledEmail(AbstractScheduledJob):
-    # Exactly one of user or address should be set. These are used to
-    # filter the set of ScheduledEmails.
-    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
+    # Exactly one of users or address should be set. These are
+    # duplicate values, used to efficiently filter the set of
+    # ScheduledEmails for use in clear_scheduled_emails; the
+    # recipients used for actually sending messages are stored in the
+    # data field of AbstractScheduledJob.
+    users = models.ManyToManyField(UserProfile)  # type: Manager
     # Just the address part of a full "name <address>" email address
     address = models.EmailField(null=True, db_index=True)  # type: Optional[str]
 
@@ -2263,7 +2266,8 @@ class ScheduledEmail(AbstractScheduledJob):
     type = models.PositiveSmallIntegerField()  # type: int
 
     def __str__(self) -> str:
-        return "<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
+        return "<ScheduledEmail: %s %s %s>" % (self.type,
+                                               self.address or list(self.users.all()),
                                                self.scheduled_timestamp)
 
 class ScheduledMessage(models.Model):

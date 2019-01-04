@@ -4,7 +4,7 @@ from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.template.exceptions import TemplateDoesNotExist
-from zerver.models import UserProfile, ScheduledEmail, get_user_profile_by_id, \
+from zerver.models import ScheduledEmail, get_user_profile_by_id, \
     EMAIL_TYPES, Realm
 
 import datetime
@@ -127,16 +127,6 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
                       to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                       from_address: Optional[str]=None, language: Optional[str]=None,
                       context: Dict[str, Any]={}, delay: datetime.timedelta=datetime.timedelta(0)) -> None:
-    # WARNING: Be careful when using this with multiple recipients;
-    # because the current ScheduledEmail model (used primarily for
-    # cancelling planned emails) does not support multiple recipients,
-    # this is only valid to use for such emails where we don't expect
-    # the cancellation feature to be relevant.
-    #
-    # For that reason, we currently assert that the list of
-    # to_user_ids/to_emails is 1 below, but in theory that could be
-    # changed as long as the callers are in a situation where the
-    # above problem is not relevant.
     template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'to_user_ids': to_user_ids, 'to_emails': to_emails,
                     'from_name': from_name, 'from_address': from_address, 'language': language,
@@ -148,23 +138,26 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         # For logging the email
 
     assert (to_user_ids is None) ^ (to_emails is None)
-    if to_user_ids is not None:
-        # The realm is redundant if we have a to_user_id; this assert just
-        # expresses that fact
-        assert(len(to_user_ids) == 1)
-        assert(UserProfile.objects.filter(id__in=to_user_ids, realm=realm).exists())
-        to_field = {'user_id': to_user_ids[0]}  # type: Dict[str, Any]
-    else:
-        assert to_emails is not None
-        assert(len(to_emails) == 1)
-        to_field = {'address': parseaddr(to_emails[0])[1]}
-
-    ScheduledEmail.objects.create(
+    email = ScheduledEmail.objects.create(
         type=EMAIL_TYPES[template_name],
         scheduled_timestamp=timezone_now() + delay,
         realm=realm,
-        data=ujson.dumps(email_fields),
-        **to_field)
+        data=ujson.dumps(email_fields))
+
+    # In order to ensure the efficiency of clear_scheduled_emails, we
+    # need to duplicate the recipient data in the ScheduledEmail model
+    # itself.
+    try:
+        if to_user_ids is not None:
+            email.users.add(*to_user_ids)
+        else:
+            assert to_emails is not None
+            assert(len(to_emails) == 1)
+            email.address = parseaddr(to_emails[0])[1]
+        email.save()
+    except Exception as e:
+        email.delete()
+        raise e
 
 def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional[str]=None,
                          from_address: Optional[str]=None, context: Dict[str, Any]={}) -> None:

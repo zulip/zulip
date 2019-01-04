@@ -27,7 +27,7 @@ def do_missedmessage_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_offline_email_notifications', False)
 
 def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
-    clear_scheduled_emails(user_profile.id, ScheduledEmail.WELCOME)
+    clear_scheduled_emails([user_profile.id], ScheduledEmail.WELCOME)
 
 def do_digest_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_digest_emails', False)

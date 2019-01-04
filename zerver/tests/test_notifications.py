@@ -28,7 +28,7 @@ class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
         enqueue_welcome_emails(hamlet)
-        scheduled_emails = ScheduledEmail.objects.filter(user=hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
         email_data = ujson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
@@ -39,7 +39,7 @@ class TestFollowupEmails(ZulipTestCase):
 
         iago = self.example_user("iago")
         enqueue_welcome_emails(iago)
-        scheduled_emails = ScheduledEmail.objects.filter(user=iago)
+        scheduled_emails = ScheduledEmail.objects.filter(users=iago)
         email_data = ujson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
@@ -74,7 +74,7 @@ class TestFollowupEmails(ZulipTestCase):
                 AUTH_LDAP_USER_SEARCH=ldap_search):
             self.login_with_return("newuser@zulip.com", "testing")
             user = UserProfile.objects.get(email="newuser@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
             email_data = ujson.loads(scheduled_emails[0].data)
@@ -107,7 +107,7 @@ class TestFollowupEmails(ZulipTestCase):
             self.login_with_return("newuser@zulip.com", "testing")
 
             user = UserProfile.objects.get(email="newuser@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
             email_data = ujson.loads(scheduled_emails[0].data)
@@ -139,7 +139,7 @@ class TestFollowupEmails(ZulipTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             self.login_with_return("newuser", "testing")
             user = UserProfile.objects.get(email="newuser_email@zulip.com")
-            scheduled_emails = ScheduledEmail.objects.filter(user=user)
+            scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
             email_data = ujson.loads(scheduled_emails[0].data)
@@ -152,15 +152,15 @@ class TestFollowupEmails(ZulipTestCase):
 
         enqueue_welcome_emails(self.example_user("hamlet"))
         # Hamlet has account only in Zulip realm so both day1 and day2 emails should be sent
-        scheduled_emails = ScheduledEmail.objects.filter(user=hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
         self.assertEqual(2, len(scheduled_emails))
-        self.assertEqual(ujson.loads(scheduled_emails[0].data)["template_prefix"], 'zerver/emails/followup_day2')
-        self.assertEqual(ujson.loads(scheduled_emails[1].data)["template_prefix"], 'zerver/emails/followup_day1')
+        self.assertEqual(ujson.loads(scheduled_emails[1].data)["template_prefix"], 'zerver/emails/followup_day2')
+        self.assertEqual(ujson.loads(scheduled_emails[0].data)["template_prefix"], 'zerver/emails/followup_day1')
 
         ScheduledEmail.objects.all().delete()
 
         enqueue_welcome_emails(cordelia)
-        scheduled_emails = ScheduledEmail.objects.filter(user=cordelia)
+        scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         # Cordelia has account in more than 1 realm so day2 email should not be sent
         self.assertEqual(len(scheduled_emails), 1)
         email_data = ujson.loads(scheduled_emails[0].data)
