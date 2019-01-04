@@ -212,9 +212,14 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
 
-    if ($(e.target).hasClass("message_edit_content") && code === 13 &&
-        (e.metaKey || e.ctrlKey)) {
-        row = $(".message_edit_content").filter(":focus").closest(".message_row");
+    if ($(e.target).hasClass("message_edit_content") && code === 13) {
+        // Pressing enter to save edits is coupled with enter to send
+        if (composebox_typeahead.should_enter_send(e)) {
+            row = $(".message_edit_content").filter(":focus").closest(".message_row");
+        } else {
+            composebox_typeahead.handle_enter($(e.target), e);
+            return;
+        }
     } else if (e.target.id === "message_edit_topic" && code === 13) {
         row = $(e.target).closest(".message_row");
     } else if (e.target.id === "inline_topic_edit" && code === 13) {
