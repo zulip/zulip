@@ -304,6 +304,13 @@ def find_emailgateway_recipient(message: message.Message) -> str:
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
 
+def strip_from_subject(subject: str) -> str:
+    # strips RE and FWD from the subject
+    # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
+    reg = r"([\[\(] *)?\b(RE|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
+    stripped = re.sub(reg, "", subject, flags = re.IGNORECASE | re.MULTILINE)
+    return stripped.strip()
+
 def process_stream_message(to: str, subject: str, message: message.Message,
                            debug_info: Dict[str, Any]) -> None:
     stream = extract_and_validate(to)
@@ -319,7 +326,7 @@ def process_missed_message(to: str, message: message.Message, pre_checked: bool)
     send_to_missed_message_address(to, message)
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
-    subject_header = str(message.get("Subject", "")).strip()
+    subject_header = strip_from_subject(str(message.get("Subject", "")))
     if subject_header == "":
         subject_header = "(no topic)"
     encoded_subject, encoding = decode_header(subject_header)[0]
