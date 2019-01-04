@@ -329,7 +329,7 @@ def parse_lsb_release():
         with open('/etc/redhat-release', 'r') as fp:
             info = fp.read().strip().split(' ')
         vendor = info[0]
-        if vendor == 'Centos':
+        if vendor == 'CentOS':
             # E.g. "CentOS Linux release 7.5.1804 (Core)"
             codename = vendor.lower() + info[3][0]
         elif vendor == 'Fedora':
