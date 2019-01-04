@@ -33,6 +33,7 @@ class zulip::base {
         # Needed for the cron jobs installed by puppet
         'cron',
       ]
+      $nagios_plugins = 'nagios-plugins-basic'
     }
     'redhat': {
       $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
@@ -46,6 +47,7 @@ class zulip::base {
         'nagios-plugins',  # there is no dummy package on CentOS 7
         'cronie'
       ]
+      $nagios_plugins = 'nagios-plugins'
     }
     default: {
       fail('osfamily not supported')
@@ -156,7 +158,7 @@ class zulip::base {
   }
 
   file { '/usr/lib/nagios/plugins/zulip_base':
-    require => Package[nagios-plugins-basic],
+    require => Package[$nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
