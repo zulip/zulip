@@ -294,6 +294,8 @@ def install_yum_deps(deps_to_install, retry=False):
         # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
         # for python35 and later.
         run(["sudo", "python36", "-m", "ensurepip"])
+        # `python36` is not aliased to `python3` by default
+        run(["sudo", "ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at

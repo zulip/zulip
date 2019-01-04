@@ -39,7 +39,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
-# On CentOS/RHEL, you must first install epel-release, and then python36
+# On CentOS/RHEL, you must first install epel-release, and then python36,
+# and finally you must run `sudo ln -sf /usr/bin/python36 /usr/bin/python3`
 # On Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
