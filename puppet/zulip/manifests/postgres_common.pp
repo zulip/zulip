@@ -20,6 +20,10 @@ class zulip::postgres_common {
         'python3-dateutil', # TODO: use a virtualenv instead
         'python-dateutil', # TODO: use a virtualenv instead
       ]
+      $postgres_user_reqs = [
+        Package[$postgresql],
+        Package['ssl-cert'],
+      ]
     }
     'redhat': {
       $postgresql = "postgresql${zulip::base::postgres_version}"
@@ -28,7 +32,6 @@ class zulip::postgres_common {
         "${postgresql}-server",
         "${postgresql}-devel",
         'pg_top',
-        'ssl-cert',  #?? TODO no equivalent on CentOS 7
         'hunspell-en-US',
         # exists on CentOS 6 and Fedora 29 but not CentOS 7
         # see https://pkgs.org/download/check_postgres
@@ -43,6 +46,20 @@ class zulip::postgres_common {
       exec {'pip3_deps':
         command => 'python3 -m pip install pytz python-dateutil'
       }
+      group { 'ssl-cert':
+        ensure => present,
+      }
+      # allows ssl-cert group to read /etc/pki/tls/private
+      file { '/etc/pki/tls/private':
+        ensure => 'directory',
+        mode   => '0640',
+        owner  => 'root',
+        group  => 'ssl-cert',
+      }
+      $postgres_user_reqs = [
+        Package[$postgresql],
+        Group['ssl-cert'],
+      ]
     }
     default: {
       fail('osfamily not supported')
@@ -92,10 +109,7 @@ class zulip::postgres_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
-    require    => [
-      Package[$postgresql],
-      Package['ssl-cert']
-    ],
+    require    => $postgres_user_reqs,
   }
   User <| title == postgres |> { groups +> 'zulip' }
 }
