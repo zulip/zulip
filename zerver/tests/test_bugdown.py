@@ -379,7 +379,7 @@ class BugdownTest(ZulipTestCase):
 
         msg = 'https://www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>'
-        with self.settings(THUMBOR_URL=''):
+        with self.settings(THUMBNAIL_IMAGES=False):
             converted = bugdown_convert(msg)
         self.assertIn(thumbnail_img, converted)
 
