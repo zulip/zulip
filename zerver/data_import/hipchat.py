@@ -97,12 +97,6 @@ def convert_user_data(user_handler: UserHandler,
         for d in raw_data
     ]
 
-    if slim_mode:
-        flat_data = [
-            d for d in flat_data
-            if not d['is_deleted']
-        ]
-
     def process(in_dict: ZerverFieldsT) -> ZerverFieldsT:
         delivery_email = in_dict['email']
         email = in_dict['email']
