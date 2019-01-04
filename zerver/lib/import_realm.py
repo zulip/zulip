@@ -18,7 +18,7 @@ from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.export import DATE_FIELDS, realm_tables, \
+from zerver.lib.export import DATE_FIELDS, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.message import do_render_markdown, RealmAlertWords
 from zerver.lib.bugdown import version as bugdown_version
@@ -32,9 +32,13 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
     UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
-    BotStorageData, BotConfigData
+    BotStorageData, BotConfigData, DefaultStream, RealmFilter
 
-# Code from here is the realm import code path
+realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
+                ("zerver_realmemoji", RealmEmoji, "realmemoji"),
+                ("zerver_realmdomain", RealmDomain, "realmdomain"),
+                ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
+
 
 # ID_MAP is a dictionary that maps table names to dictionaries
 # that map old ids to new ids.  We use this in
