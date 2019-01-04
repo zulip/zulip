@@ -10,6 +10,11 @@ class zulip::app_frontend_base {
   ]
   zulip::safepackage { $web_packages: ensure => 'installed' }
 
+  $nagios_plugins = $::osfamily ? {
+    'debian' => 'nagios-plugins-basic',
+    'redhat' => 'nagios-plugins',
+  }
+
   file { '/etc/nginx/zulip-include/app':
     require => Package['nginx-full'],
     owner   => 'root',
@@ -136,7 +141,7 @@ class zulip::app_frontend_base {
     ensure => absent,
   }
   file { '/usr/lib/nagios/plugins/zulip_app_frontend':
-    require => Package[nagios-plugins-basic],
+    require => Package[$nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
