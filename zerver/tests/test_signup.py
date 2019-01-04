@@ -459,7 +459,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 74)
+        self.assert_length(queries, 78)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1354,14 +1354,14 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify that the scheduled email exists.
         scheduledemail_filter = ScheduledEmail.objects.filter(
-            address=invitee, type=ScheduledEmail.INVITATION_REMINDER)
+            address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(scheduledemail_filter.count(), 1)
         original_timestamp = scheduledemail_filter.values_list('scheduled_timestamp', flat=True)
 
         # Resend invite
         result = self.client_post('/json/invites/' + str(prereg_user.id) + '/resend')
         self.assertEqual(ScheduledEmail.objects.filter(
-            address=invitee, type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
+            address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER).count(), 1)
 
         # Check that we have exactly one scheduled email, and that it is different
         self.assertEqual(scheduledemail_filter.count(), 1)
@@ -1596,7 +1596,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
         enqueue_welcome_emails(user_profile)
-        self.assertEqual(2, ScheduledEmail.objects.filter(user=user_profile).count())
+        self.assertEqual(2, ScheduledEmail.objects.filter(users=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -1604,7 +1604,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
+        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
     def test_digest_unsubscribe(self) -> None:
         """
@@ -1623,7 +1623,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         send_future_email('zerver/emails/digest', user_profile.realm,
                           to_user_ids=[user_profile.id], context=context)
 
-        self.assertEqual(1, ScheduledEmail.objects.filter(user=user_profile).count())
+        self.assertEqual(1, ScheduledEmail.objects.filter(users=user_profile).count())
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
@@ -1635,7 +1635,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
 
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_digest_emails)
-        self.assertEqual(0, ScheduledEmail.objects.filter(user=user_profile).count())
+        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
     def test_login_unsubscribe(self) -> None:
         """

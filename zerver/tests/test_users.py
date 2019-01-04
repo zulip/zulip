@@ -22,6 +22,7 @@ from zerver.models import UserProfile, Recipient, \
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import send_future_email
+from zerver.lib.notifications import clear_scheduled_emails
 from zerver.lib.actions import (
     get_emails_from_user_ids,
     get_recipient_info,
@@ -867,6 +868,36 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+
+    def test_send_future_email_with_multiple_recipients(self) -> None:
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
+        send_future_email('zerver/emails/followup_day1', iago.realm,
+                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1)
+        email = ScheduledEmail.objects.all().first()
+        self.assertEqual(email.users.count(), 2)
+
+    def test_clear_scheduled_emails_with_multiple_user_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
+        send_future_email('zerver/emails/followup_day1', iago.realm,
+                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        clear_scheduled_emails([hamlet.id, iago.id])
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
+
+    def test_clear_schedule_emails_with_one_user_id(self) -> None:
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
+        send_future_email('zerver/emails/followup_day1', iago.realm,
+                          to_user_ids=[hamlet.id, iago.id], delay=datetime.timedelta(hours=1))
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        clear_scheduled_emails([hamlet.id])
+        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        self.assertEqual(ScheduledEmail.objects.filter(users=hamlet).count(), 0)
+        self.assertEqual(ScheduledEmail.objects.filter(users=iago).count(), 1)
+
 
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:

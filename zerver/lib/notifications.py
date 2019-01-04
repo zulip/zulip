@@ -464,11 +464,15 @@ def clear_scheduled_invitation_emails(email: str) -> None:
                                           type=ScheduledEmail.INVITATION_REMINDER)
     items.delete()
 
-def clear_scheduled_emails(user_id: int, email_type: Optional[int]=None) -> None:
-    items = ScheduledEmail.objects.filter(user_id=user_id)
+def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) -> None:
+    items = ScheduledEmail.objects.filter(users__in=user_ids).distinct()
     if email_type is not None:
         items = items.filter(type=email_type)
-    items.delete()
+    for item in items:
+        if len(user_ids) == item.users.all().count():
+            item.delete()
+        else:
+            item.users.remove(*user_ids)
 
 def log_digest_event(msg: str) -> None:
     import logging
