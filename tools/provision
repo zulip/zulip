@@ -14,8 +14,7 @@ FAIL='\033[91m'
 WARNING='\033[93m'
 ENDC='\033[0m'
 
-#Make the script independent of the location from where it is
-#executed
+# Make the script independent of the location from where it is executed
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log

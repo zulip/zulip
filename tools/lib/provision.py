@@ -211,8 +211,6 @@ REPO_STOPWORDS_PATH = os.path.join(
     "zulip_english.stop",
 )
 
-LOUD = dict(_out=sys.stdout, _err=sys.stderr)
-
 user_id = os.getuid()
 
 def setup_shell_profile(shell_profile):
@@ -408,13 +406,13 @@ def main(options):
     os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
     # create test upload directory `var/test_upload`
     os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
-    # create coverage directory`var/coverage`
+    # create coverage directory `var/coverage`
     os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
-    # create linecoverage directory`var/node-coverage`
+    # create linecoverage directory `var/node-coverage`
     os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
 
-    # `build_emoji` script requires `emoji-datasource` package which we install
-    # via npm and hence it should be executed after we are done installing npm
+    # The `build_emoji` script requires `emoji-datasource` package
+    # which we install via npm; thus this step is after installing npm
     # packages.
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
