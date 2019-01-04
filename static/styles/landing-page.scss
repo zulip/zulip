@@ -1933,7 +1933,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 125px 100px 0px 100px;
+    padding: 100px 100px 0px 100px;
     margin-top: 0px;
 }
 
@@ -1959,6 +1959,12 @@ nav ul li.active::after {
 .portico-landing.hello .call-to-action-bottom h1 {
     text-align: center;
     margin-top: 20px;
+}
+
+.portico-landing.hello .call-to-action-bottom .atlassian-migration {
+    margin-top: 60px;
+    text-align: center;
+    font-size: 1.3rem;
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
