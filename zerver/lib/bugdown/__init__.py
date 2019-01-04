@@ -35,7 +35,7 @@ from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
 from zerver.lib.url_encoding import encode_stream
-from zerver.lib.thumbnail import is_thumbor_enabled, user_uploads_or_external
+from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
@@ -309,7 +309,7 @@ def add_a(
     if data_id is not None:
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
-    if is_thumbor_enabled() and (not already_thumbnailed) and user_uploads_or_external(url):
+    if settings.THUMBNAIL_IMAGES and (not already_thumbnailed) and user_uploads_or_external(url):
         # See docs/thumbnailing.md for some high-level documentation.
         #
         # We strip leading '/' from relative URLs here to ensure

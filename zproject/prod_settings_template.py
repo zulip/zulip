@@ -516,9 +516,14 @@ CAMO_URI = '/external_content/'
 # By default, Zulip connects to the thumbor (the thumbnailing software
 # we use) service running locally on the machine.  If you're running
 # thumbor on a different server, you can configure that by setting
-# THUMBOR_URL here.  Setting THUMBOR_URL='' will disable
-# thumbnailing in Zulip.
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+# thumbor is not running or configured.
 #THUMBOR_URL = 'http://127.0.0.1:9995'
+# We can tweek the below setting to turn thumbnailing on/off in Zulip. This
+# setting is different from THUMBOR_URL in what it controls. Using this setting
+# you control whether image links being rendered into messages are going to hit
+# image source or the Zulip's thumbnail servicing endpoint.
+#THUMBNAIL_IMAGES = True
 # When we turn on thumbor, we can stop running camo since thumbor is also
 # capable of serving non-secure HTTP based links via HTTPS. This enables us to
 # not run camo.
