@@ -111,6 +111,62 @@ function query_matches_emoji(query, emoji) {
 // has reliable information about whether it was a tab or a shift+tab.
 var nextFocus = false;
 
+exports.should_enter_send = function (e) {
+    var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
+    var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
+    var this_enter_sends;
+    if (page_params.enter_sends) {
+        // With the enter_sends setting, we should send
+        // the message unless the user was holding a
+        // modifier key.
+        this_enter_sends = !has_modifier_key;
+    } else {
+        // If enter_sends is not enabled, just hitting
+        // enter should add a newline, but with a
+        // non-shift modifier key held down, we should
+        // send.  With shift, we shouldn't, because
+        // shift+enter to get a newline is a common
+        // keyboard habit for folks for dealing with other
+        // chat products where enter-always-sends.
+        this_enter_sends = has_non_shift_modifier_key;
+    }
+    return this_enter_sends;
+};
+
+exports.handle_enter = function (textarea, e) {
+    // Used only if enter doesn't send.
+
+    // Since this enter doesn't send, we just want to do
+    // the browser's default behavior for the "enter" key.
+    // Letting the browser handle it works great if the
+    // key actually pressed was enter or shift-enter.
+
+    // But the default browser behavior for ctrl/alt/meta
+    // + enter is to do nothing, so we need to emulate
+    // the browser behavior for "enter" in those cases.
+    //
+    // We do this using caret and range from jquery-caret.
+    var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
+    if (has_non_shift_modifier_key) {
+
+        // To properly emulate browser "enter", if the
+        // user had selected something in the textarea,
+        // we need those characters to be cleared.
+        var range = textarea.range();
+        if (range.length > 0) {
+            textarea.range(range.start, range.end).range('');
+        }
+
+        // Now add the newline, remembering to resize the
+        // textarea if needed.
+        textarea.caret("\n");
+        textarea.trigger("autosize.resize");
+        e.preventDefault();
+        return;
+    }
+    // Fall through to native browser behavior, otherwise.
+};
+
 function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
@@ -175,25 +231,7 @@ function handle_keydown(e) {
             }
 
             if (on_compose && code === 13) {
-                var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-                var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
-                var this_enter_sends;
-                if (page_params.enter_sends) {
-                    // With the enter_sends setting, we should send
-                    // the message unless the user was holding a
-                    // modifier key.
-                    this_enter_sends = !has_modifier_key;
-                } else {
-                    // If enter_sends is not enabled, just hitting
-                    // enter should add a newline, but with a
-                    // non-shift modifier key held down, we should
-                    // send.  With shift, we shouldn't, because
-                    // shift+enter to get a newline is a common
-                    // keyboard habit for folks for dealing with other
-                    // chat products where enter-always-sends.
-                    this_enter_sends = has_non_shift_modifier_key;
-                }
-                if (this_enter_sends) {
+                if (exports.should_enter_send(e)) {
                     e.preventDefault();
                     if ($("#compose-send-button").attr('disabled') !== "disabled") {
                         $("#compose-send-button").attr('disabled', 'disabled');
@@ -201,37 +239,7 @@ function handle_keydown(e) {
                     }
                     return;
                 }
-
-                // Since this enter doesn't send, we just want to do
-                // the browser's default behavior for the "enter" key.
-                // Letting the browser handle it works great if the
-                // key actually pressed was enter or shift-enter.
-
-                // But the default browser behavior for ctrl/alt/meta
-                // + enter is to do nothing, so we need to emulate
-                // the browser behavior for "enter" in those cases.
-                //
-                // We do this using caret and range from jquery-caret.
-                if (has_non_shift_modifier_key) {
-                    var textarea = $("#compose-textarea");
-
-                    // To properly emulate browser "enter", if the
-                    // user had selected something in the compose box,
-                    // we need those characters to be cleared.
-                    var range = textarea.range();
-                    if (range.length > 0) {
-                        textarea.range(range.start, range.end).range('');
-                    }
-
-                    // Now add the newline, remembering to resize the
-                    // compose box if needed.
-                    textarea.caret("\n");
-                    compose_ui.autosize_textarea();
-                    e.preventDefault();
-                    return;
-                }
-
-                // Fall through to native browser behavior, otherwise.
+                exports.handle_enter($("#compose-textarea"), e);
             }
         }
     }
