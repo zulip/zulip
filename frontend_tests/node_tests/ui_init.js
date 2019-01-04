@@ -48,6 +48,7 @@ const ignore_modules = [
     'hotspots',
     'message_scroll',
     'message_viewport',
+    'night_mode',
     'panels',
     'popovers',
     'reload',
