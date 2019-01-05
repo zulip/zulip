@@ -804,9 +804,6 @@ MessageListView.prototype = {
             return;
         }
 
-        var info = message_viewport.message_viewport_info();
-        var scroll_limit = this._scroll_limit(selected_row, info);
-
         if (new_messages_height <= 0) {
             return;
         }
@@ -826,6 +823,9 @@ MessageListView.prototype = {
         if (popovers.any_active()) {
             return;
         }
+
+        var info = message_viewport.message_viewport_info();
+        var scroll_limit = this._scroll_limit(selected_row, info);
 
         // This next decision is fairly debatable.  For a big message that
         // would push the pointer off the screen, we do a partial autoscroll,
