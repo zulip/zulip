@@ -43,6 +43,7 @@ class ErrorCode(AbstractEnum):
     INVALID_ZULIP_SERVER = ()
     INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
     REQUEST_CONFUSING_VAR = ()
+    INVALID_API_KEY = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -177,3 +178,14 @@ class InvalidJSONError(JsonableError):
 
 class BugdownRenderingException(Exception):
     pass
+
+class InvalidAPIKeyError(JsonableError):
+    code = ErrorCode.INVALID_API_KEY
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid API key")
