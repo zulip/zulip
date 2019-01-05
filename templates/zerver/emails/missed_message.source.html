@@ -20,7 +20,7 @@
     {% if show_message_content %}
     <div class='messages'>
         {% for recipient_block in messages %}
-        {% if not recipient_block.header.stream_message %}
+        {% if recipient_block.header.stream_message %}
         <div class='recipient_block_with_messages'>
             <div class='recipient_header_with_messages'>{{ recipient_block.header.html|safe }}</div>
             <div class='message_content_with_messages'>
