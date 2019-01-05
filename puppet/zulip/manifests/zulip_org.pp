@@ -4,7 +4,7 @@ class zulip::zulip_org {
 
   file { '/etc/nginx/sites-available/zulip-org':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => Package[$zulip::nginx::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -14,7 +14,7 @@ class zulip::zulip_org {
 
   file { '/etc/nginx/sites-enabled/zulip-org':
     ensure  => 'link',
-    require => Package['nginx-full'],
+    require => Package[$zulip::nginx::nginx],
     target  => '/etc/nginx/sites-available/zulip-org',
     notify  => Service['nginx'],
   }

@@ -15,8 +15,13 @@ class zulip::app_frontend_base {
     'redhat' => 'nagios-plugins',
   }
 
+  $nginx = $::osfamily ? {
+    'debian' => 'nginx-full',
+    'redhat' => 'nginx',
+  }
+
   file { '/etc/nginx/zulip-include/app':
-    require => Package['nginx-full'],
+    require => Package[$nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -24,7 +29,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/upstreams':
-    require => Package['nginx-full'],
+    require => Package[$nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -32,7 +37,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/uploads.types':
-    require => Package['nginx-full'],
+    require => Package[$nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

@@ -14,7 +14,7 @@ class zulip::thumbor {
 
   file { '/etc/nginx/zulip-include/app.d/thumbor.conf':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => Package[$zulip::nginx::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
