@@ -7,6 +7,10 @@ $postgres_conf = $::osfamily ? {
   'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
   'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
 }
+$postgres_restart = $::osfamily ? {
+  'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
+  'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
+}
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
@@ -85,7 +89,7 @@ vm.dirty_background_ratio = 5
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
-  exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
+  exec { $postgres_restart:
     require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
     subscribe   => [ File[$postgres_conf] ]
