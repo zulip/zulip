@@ -3,6 +3,12 @@ class zulip::supervisor {
                           'supervisor',
                           ]
   package { $supervisor_packages: ensure => 'installed' }
+
+  $supervisord_conf = $::osfamily ? {
+    'debian' => '/etc/supervisor/supervisord.conf',
+    'redhat' => '/etc/supervisord.conf',
+  }
+
   # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
@@ -50,7 +56,7 @@ class zulip::supervisor {
     }
   }
 
-  file { '/etc/supervisor/supervisord.conf':
+  file { $supervisord_conf:
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
