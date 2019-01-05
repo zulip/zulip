@@ -6,6 +6,10 @@ class zulip::app_frontend {
 
   $nginx_http_only = zulipconf('application_server', 'http_only', undef)
   $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', undef)
+  $ssl_dir = $::osfamily ? {
+    'debian' => '/etc/ssl',
+    'redhat' => '/etc/pki/tls',
+  }
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,
     require => Package[$zulip::common::nginx],
