@@ -773,6 +773,24 @@ MessageListView.prototype = {
         return new_messages_height;
     },
 
+    _scroll_limit: function (selected_row, viewport_info) {
+        // This scroll limit is driven by the TOP of the feed, and
+        // it's the max amount that we can scroll down (or "skooch
+        // up" the messages) before knocking the selected message
+        // out of the feed.
+        var selected_row_top = selected_row.offset().top;
+        var scroll_limit = selected_row_top - viewport_info.visible_top;
+
+        if (scroll_limit < 0) {
+            // This shouldn't happen, but if we're off by a pixel or
+            // something, we can deal with it, and just warn.
+            blueslip.warn('Selected row appears too high on screen.');
+            scroll_limit = 0;
+        }
+
+        return scroll_limit;
+    },
+
     _maybe_autoscroll: function (new_messages_height) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
@@ -786,14 +804,8 @@ MessageListView.prototype = {
             return;
         }
 
-        var selected_row_offset = selected_row.offset().top;
         var info = message_viewport.message_viewport_info();
-        var available_space_for_scroll = selected_row_offset - info.visible_top;
-
-        // Don't scroll if we can't move the pointer up.
-        if (available_space_for_scroll <= 0) {
-            return;
-        }
+        var scroll_limit = this._scroll_limit(selected_row, info);
 
         if (new_messages_height <= 0) {
             return;
@@ -825,8 +837,8 @@ MessageListView.prototype = {
         //       to stay on the screen
         var scroll_amount = new_messages_height;
 
-        if (scroll_amount > available_space_for_scroll) {
-            scroll_amount = available_space_for_scroll;
+        if (scroll_amount > scroll_limit) {
+            scroll_amount = scroll_limit;
         }
 
         // Let's work our way back to whether the user was already dealing
