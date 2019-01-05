@@ -1,16 +1,13 @@
 class zulip::nginx {
-  $nginx = $::osfamily ? {
-    'debian' => 'nginx-full',
-    'redhat' => 'nginx',
-  }
+  include zulip::common
   $web_packages = [
     # Needed to run nginx with the modules we use
-    $nginx,
+    $zulip::common::nginx,
   ]
   package { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/':
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     recurse => true,
     owner   => 'root',
     group   => 'root',
@@ -34,7 +31,7 @@ class zulip::nginx {
 
   file { '/etc/nginx/zulip-include/uploads.route':
     ensure  => file,
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -44,7 +41,7 @@ class zulip::nginx {
 
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -54,7 +51,7 @@ class zulip::nginx {
 
   file { '/etc/nginx/uwsgi_params':
     ensure  => file,
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

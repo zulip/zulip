@@ -12,6 +12,9 @@ class zulip::process_fts_updates {
         command => 'python3 -m pip install psycopg2',
       }
     }
+    default: {
+      fail('osfamily not supported')
+    }
   }
 
   file { '/usr/local/bin/process_fts_updates':

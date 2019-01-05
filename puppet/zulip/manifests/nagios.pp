@@ -3,18 +3,9 @@
 #
 # Depends on zulip::base to have installed `nagios-plugins-basic`.
 class zulip::nagios {
-  case $::osfamily {
-    'debian': {
-      $nagios_plugins = 'nagios-plugins-basic'
-      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
-    }
-    'redhat': {
-      $nagios_plugins = 'nagios-plugins'
-      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
-    }
-  }
-  file { "${nagios_plugins_dir}/zulip_nagios_server":
-    require => Package[$nagios_plugins],
+  include zulip::common
+  file { "${zulip::common::nagios_plugins_dir}/zulip_nagios_server":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',

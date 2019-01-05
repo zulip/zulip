@@ -1,4 +1,5 @@
 class zulip::base {
+  include zulip::common
   case $::osfamily {
     'debian': {
       $release_name = $::operatingsystemrelease ? {
@@ -26,15 +27,13 @@ class zulip::base {
         'moreutils',
         # Used in scripts
         'netcat',
-        # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
+        # Nagios plugins; needed to ensure $zulip::common::nagios_plugins exists
         'nagios-plugins-basic',
         # Required for using HTTPS in apt repositories.
         'apt-transport-https',
         # Needed for the cron jobs installed by puppet
         'cron',
       ]
-      $nagios_plugins = 'nagios-plugins-basic'
-      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
     }
     'redhat': {
       $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
@@ -48,8 +47,6 @@ class zulip::base {
         'nagios-plugins',  # there is no dummy package on CentOS 7
         'cronie'
       ]
-      $nagios_plugins = 'nagios-plugins'
-      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
     }
     default: {
       fail('osfamily not supported')
@@ -159,8 +156,8 @@ class zulip::base {
     mode   => '0640',
   }
 
-  file { "${nagios_plugins_dir}/zulip_base":
-    require => Package[$nagios_plugins],
+  file { "${zulip::common::nagios_plugins_dir}/zulip_base":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
