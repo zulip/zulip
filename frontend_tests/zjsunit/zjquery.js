@@ -210,7 +210,7 @@ exports.make_new_elem = function (selector, opts) {
         },
         focusout: function () {
             focused = false;
-            return ;
+            return self;
         },
         get: function (idx) {
             // We have some legacy code that does $('foo').get(0).
