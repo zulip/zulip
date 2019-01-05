@@ -17,6 +17,8 @@ class zulip::supervisor {
     }
   }
 
+  $supervisor_service = $zulip::common::supervisor_service
+
   # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
@@ -24,7 +26,7 @@ class zulip::supervisor {
   # This logic is definitely a hack, but it's less bad than the old hack :(
   $puppet_classes = zulipconf('machine', 'puppet_classes', undef)
   if $puppet_classes == 'zulip::dockervoyager' {
-    service { 'supervisor':
+    service { $supervisor_service:
       ensure     => running,
       require    => [
         File['/var/log/zulip'],
@@ -36,7 +38,7 @@ class zulip::supervisor {
       restart    => '/bin/true'
     }
   } else {
-    service { 'supervisor':
+    service { $supervisor_service:
       ensure     => running,
       require    => [
         File['/var/log/zulip'],
@@ -71,13 +73,13 @@ class zulip::supervisor {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
-    notify  => Service['supervisor'],
+    notify  => Service[$supervisor_service],
   }
 
   if $zulip::base::release_name == 'xenial' {
     exec {'enable supervisor':
-      unless  => 'systemctl is-enabled supervisor',
-      command => 'systemctl enable supervisor',
+      unless  => "systemctl is-enabled ${supervisor_service}",
+      command => "systemctl enable ${supervisor_service}",
       require => Package['supervisor'],
     }
   }

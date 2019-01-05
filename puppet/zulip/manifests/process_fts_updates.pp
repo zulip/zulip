@@ -32,6 +32,6 @@ class zulip::process_fts_updates {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf',
-    notify  => Service[supervisor],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 }
