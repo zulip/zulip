@@ -13,6 +13,7 @@ from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable, cast
 
+from analytics.models import RealmCount, StreamCount, UserCount
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
     do_change_plan_type
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -79,6 +80,9 @@ ID_MAP = {
     'usergroupmembership': {},
     'botstoragedata': {},
     'botconfigdata': {},
+    'analytics_realmcount': {},
+    'analytics_streamcount': {},
+    'analytics_usercount': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -869,6 +873,24 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
     update_model_ids(UserPresence, data, 'user_presence')
     bulk_import_model(data, UserPresence)
+
+    if 'analytics_realmcount' in data:
+        fix_datetime_fields(data, 'analytics_realmcount')
+        re_map_foreign_keys(data, 'analytics_realmcount', 'realm', related_table="realm")
+        update_model_ids(RealmCount, data, 'analytics_realmcount')
+        bulk_import_model(data, RealmCount)
+
+        fix_datetime_fields(data, 'analytics_usercount')
+        re_map_foreign_keys(data, 'analytics_usercount', 'realm', related_table="realm")
+        re_map_foreign_keys(data, 'analytics_usercount', 'user', related_table="user_profile")
+        update_model_ids(UserCount, data, 'analytics_usercount')
+        bulk_import_model(data, UserCount)
+
+        fix_datetime_fields(data, 'analytics_streamcount')
+        re_map_foreign_keys(data, 'analytics_streamcount', 'realm', related_table="realm")
+        re_map_foreign_keys(data, 'analytics_streamcount', 'stream', related_table="stream")
+        update_model_ids(StreamCount, data, 'analytics_streamcount')
+        bulk_import_model(data, StreamCount)
 
     fix_datetime_fields(data, 'zerver_useractivity')
     re_map_foreign_keys(data, 'zerver_useractivity', 'user_profile', related_table="user_profile")
