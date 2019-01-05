@@ -186,7 +186,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(message.content, "TestStreamEmailMessages Body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
-        self.assertEqual(message.topic_name(), "(no topic)")
+        self.assertEqual(message.topic_name(), "(no topic 1)")
 
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -695,7 +695,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         incoming_valid_message['Subject'] = "Re: Fwd: Re: "
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
-        self.assertEqual("(no topic)", message.topic_name())
+        self.assertEqual("(no topic 1)", message.topic_name())
 
     def test_strip_from_subject(self) -> None:
         subject_list = ujson.loads(self.fixture_data('subjects.json', type='email'))
