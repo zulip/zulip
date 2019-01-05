@@ -70,7 +70,7 @@ class zulip::rabbit {
   exec { 'epmd':
     command => 'epmd -daemon',
     unless  => 'pgrep -f epmd >/dev/null',
-    require => Package[erlang-base],
+    require => Package[$erlang],
     path    => '/usr/bin/:/bin/',
   }
 
