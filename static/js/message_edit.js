@@ -392,7 +392,8 @@ function edit_message(row, raw_content) {
 
     // Scroll to keep the message content in the same place
     var edit_top = message_edit_content[0].getBoundingClientRect().top;
-    var scroll_by = edit_top - content_top + 5 /* border and padding */;
+    /* adjust for border and padding */
+    var scroll_by = edit_top - content_top + 5;
     edit_obj.scrolled_by = scroll_by;
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
