@@ -924,11 +924,12 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         # Longer-term, the plan is to eliminate pointer as a concept.
         first_unread_message = UserMessage.objects.filter(user_profile=user_profile).extra(
             where=[UserMessage.where_unread()]
-        ).first()
+        ).order_by("message_id").first()
         if first_unread_message is not None:
             user_profile.pointer = first_unread_message.message_id
         else:
-            last_message = UserMessage.objects.filter(user_profile=user_profile).last()
+            last_message = UserMessage.objects.filter(
+                user_profile=user_profile).order_by("message_id").last()
             if last_message is not None:
                 user_profile.pointer = last_message.message_id
             else:
