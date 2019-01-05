@@ -31,6 +31,7 @@ from zerver.lib.cache import (
     bot_dict_fields,
     delete_user_profile_caches,
     to_dict_cache_key_id,
+    user_profile_by_api_key_cache_key,
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
@@ -3026,8 +3027,15 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
                                  event_time=event_time)
 
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> None:
+    old_api_key = user_profile.api_key
     user_profile.api_key = generate_api_key()
     user_profile.save(update_fields=["api_key"])
+
+    # We need to explicitly delete the old API key from our caches,
+    # because the on-save handler for flushing the UserProfile object
+    # in zerver/lib/cache.py only has access to the new API key.
+    cache_delete(user_profile_by_api_key_cache_key(old_api_key))
+
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_API_KEY_CHANGED,
