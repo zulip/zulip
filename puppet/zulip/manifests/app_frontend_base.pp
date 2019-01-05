@@ -5,11 +5,14 @@ class zulip::app_frontend_base {
   include zulip::nginx
   include zulip::supervisor
 
-  $web_packages = [
-    # Needed to access our database
-    "postgresql-client-${zulip::base::postgres_version}",
-  ]
-  zulip::safepackage { $web_packages: ensure => 'installed' }
+  if $::osfamily == 'debian' {
+    # This is not necessary on CentOS because $postgresql package already includes the client
+    $web_packages = [
+      # Needed to access our database
+      "postgresql-client-${zulip::base::postgres_version}",
+    ]
+    zulip::safepackage { $web_packages: ensure => 'installed' }
+  }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package[$zulip::common::nginx],
