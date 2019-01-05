@@ -15,8 +15,8 @@ server {
     listen 443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/zulip.key;
+    ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
+    ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
 <% end -%>
 
 <% if @no_serve_uploads == '' -%>
