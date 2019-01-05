@@ -24,7 +24,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
-    InvalidJSONError
+    InvalidJSONError, InvalidAPIKeyError
 from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
@@ -266,12 +266,12 @@ def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[s
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
-        raise JsonableError(_("Invalid API key"))
+        raise InvalidAPIKeyError()
     if email is not None and email.lower() != user_profile.delivery_email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
-        raise JsonableError(_("Invalid API key"))
+        raise InvalidAPIKeyError()
 
     validate_account_and_subdomain(request, user_profile)
 
