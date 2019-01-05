@@ -742,15 +742,12 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
-            self._maybe_autoscroll(new_dom_elements);
+            var new_messages_height = self._new_messages_height(new_dom_elements);
+            self._maybe_autoscroll(new_messages_height);
         }
     },
 
-
-    _maybe_autoscroll: function (rendered_elems) {
-        // If we are near the bottom of our feed (the bottom is visible) and can
-        // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
+    _new_messages_height: function (rendered_elems) {
         var new_messages_height = 0;
         var id_of_last_message_sent_by_us = -1;
 
@@ -772,6 +769,14 @@ MessageListView.prototype = {
                 }
             }
         }, this);
+
+        return new_messages_height;
+    },
+
+    _maybe_autoscroll: function (new_messages_height) {
+        // If we are near the bottom of our feed (the bottom is visible) and can
+        // scroll up without moving the pointer out of the viewport, do so, by
+        // up to the amount taken up by the new message.
 
         var selected_row = this.selected_row();
         var last_visible = rows.last_visible();
