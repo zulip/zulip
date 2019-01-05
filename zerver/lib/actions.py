@@ -3256,7 +3256,10 @@ def do_change_stream_announcement_only(stream: Stream, is_announcement_only: boo
     stream.is_announcement_only = is_announcement_only
     stream.save(update_fields=['is_announcement_only'])
 
-def do_rename_stream(stream: Stream, new_name: str, log: bool=True) -> Dict[str, str]:
+def do_rename_stream(stream: Stream,
+                     new_name: str,
+                     user_profile: UserProfile,
+                     log: bool=True) -> Dict[str, str]:
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])
@@ -3307,7 +3310,14 @@ def do_rename_stream(stream: Stream, new_name: str, log: bool=True) -> Dict[str,
             name=old_name,
         )
         send_event(stream.realm, event, can_access_stream_user_ids(stream))
-
+    sender = get_system_bot(settings.NOTIFICATION_BOT)
+    internal_send_stream_message(
+        stream.realm,
+        sender,
+        new_name,
+        "welcome",
+        "@**%s** renamed stream **%s** to **%s**" % (user_profile.full_name, old_name, new_name)
+    )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
     return {"email_address": new_email}

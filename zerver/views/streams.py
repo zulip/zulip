@@ -167,7 +167,7 @@ def update_stream_backend(
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
-        do_rename_stream(stream, new_name)
+        do_rename_stream(stream, new_name, user_profile)
     if is_announcement_only is not None:
         do_change_stream_announcement_only(stream, is_announcement_only)
 
