@@ -86,7 +86,7 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/supervisor/zulip.conf.template.erb'),
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
@@ -97,7 +97,7 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/uwsgi.ini.template.erb'),
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   file { '/home/zulip/tornado':
