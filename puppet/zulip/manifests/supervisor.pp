@@ -8,6 +8,11 @@ class zulip::supervisor {
     'debian' => '/etc/supervisor/supervisord.conf',
     'redhat' => '/etc/supervisord.conf',
   }
+  # Command to start supervisor
+  $supervisor_start = $::osfamily ? {
+    'debian' => '/etc/init.d/supervisor start',
+    'redhat' => 'systemctl start supervisord',
+  }
 
   if $::osfamily == 'redhat' {
     file { $zulip::common::supervisor_conf_dir:
@@ -61,7 +66,7 @@ class zulip::supervisor {
       # We use supervisor[d] as the pattern so the bash/grep commands don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => 'bash -c "if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi"'
+      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${supervisor_start}; fi'"
       # lint:endignore
     }
   }
