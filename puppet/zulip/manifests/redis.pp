@@ -1,7 +1,16 @@
 class zulip::redis {
-  $redis = $::osfamily ? {
-    'debian' => 'redis-server',
-    'redhat' => 'redis',
+  case $::osfamily {
+    'debian': {
+      $redis = 'redis-server'
+      $redis_dir = '/etc/redis'
+    }
+    'redhat': {
+      $redis = 'redis'
+      $redis_dir = '/etc'
+    }
+    default: {
+      fail('osfamily not supported')
+    }
   }
   $redis_packages = [ # The server itself
                       $redis,
@@ -9,24 +18,25 @@ class zulip::redis {
 
   package { $redis_packages: ensure => 'installed' }
 
-  $file = '/etc/redis/redis.conf'
-  $line = 'include /etc/redis/zulip-redis.conf'
+  $file = "${redis_dir}/redis.conf"
+  $zulip_redisconf = "${redis_dir}/zuli-redis.conf"
+  $line = "include ${zulip_redisconf}"
   exec { 'redis':
     unless  => "/bin/grep -Fxqe '${line}' '${file}'",
     path    => '/bin',
     command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '${line}') >> '${file}'\"",
     require => [Package[$redis],
-                File['/etc/redis/zulip-redis.conf'],
+                File[$zulip_redisconf],
                 Exec['rediscleanup']],
   }
 
   exec { 'rediscleanup':
-    onlyif  => 'echo "80a4cee76bac751576c3db8916fc50a6ea319428 /etc/redis/redis.conf" | sha1sum -c',
-    command => 'head -n-3 /etc/redis/redis.conf | sponge /etc/redis/redis.conf',
+    onlyif  => "echo '80a4cee76bac751576c3db8916fc50a6ea319428 ${file}' | sha1sum -c",
+    command => "head -n-3 ${file} | sponge ${file}",
   }
 
   $redis_password = zulipsecret('secrets', 'redis_password', '')
-  file { '/etc/redis/zulip-redis.conf':
+  file { $zulip_redisconf:
     ensure  => file,
     require => Package[$redis],
     owner   => 'redis',
@@ -37,7 +47,7 @@ class zulip::redis {
 
   service { $redis:
     ensure    => running,
-    subscribe => [File['/etc/redis/zulip-redis.conf'],
+    subscribe => [File[$zulip_redisconf],
                   Exec['redis']],
   }
 }
