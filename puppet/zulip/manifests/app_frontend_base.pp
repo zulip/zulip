@@ -79,7 +79,7 @@ class zulip::app_frontend_base {
   }
   $message_sender_processes = zulipconf('application_server', 'message_sender_processes',
                                         $message_sender_default_processes)
-  file { '/etc/supervisor/conf.d/zulip.conf':
+  file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',

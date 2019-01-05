@@ -11,7 +11,7 @@ class zulip::dockervoyager {
   include zulip::process_fts_updates
   include zulip::thumbor
 
-  file { '/etc/supervisor/conf.d/cron.conf':
+  file { "${zulip::common::supervisor_conf_dir}/cron.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
@@ -19,7 +19,7 @@ class zulip::dockervoyager {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/conf.d/cron.conf',
   }
-  file { '/etc/supervisor/conf.d/nginx.conf':
+  file { "${zulip::common::supervisor_conf_dir}/nginx.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
