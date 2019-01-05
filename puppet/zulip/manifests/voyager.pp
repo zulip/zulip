@@ -11,7 +11,17 @@
 class zulip::voyager {
   include zulip::base
   # zulip::apt_repository must come after zulip::base
-  include zulip::apt_repository
+  case $::osfamily {
+    'debian': {
+      include zulip::apt_repository
+    }
+    'redhat': {
+      include zulip::yum_repository
+    }
+    default: {
+      fail('osfamily not supported')
+    }
+  }
   include zulip::app_frontend
   include zulip::postgres_appdb_tuned
   include zulip::memcached
