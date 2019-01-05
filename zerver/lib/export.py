@@ -17,6 +17,7 @@ import tempfile
 import shutil
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from analytics.models import RealmCount, UserCount, StreamCount
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
@@ -171,10 +172,6 @@ NON_EXPORTED_TABLES = {
     # recompute it after a fillstate import.
     'analytics_installationcount',
 
-    # These analytics tables, however, should ideally be in the export.
-    'analytics_realmcount',
-    'analytics_streamcount',
-    'analytics_usercount',
     # Fillstate will require some cleverness to do the right partial export.
     'analytics_fillstate',
     # This table isn't yet used for anything.
@@ -220,6 +217,9 @@ DATE_FIELDS = {
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
     'zerver_userhotspot': ['timestamp'],
+    'analytics_realmcount': ['end_time'],
+    'analytics_usercount': ['end_time'],
+    'analytics_streamcount': ['end_time'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
@@ -728,6 +728,28 @@ def get_realm_config() -> Config:
             '_stream_subscription',
             '_huddle_subscription',
         ]
+    )
+
+    # Analytics tables
+    Config(
+        table='analytics_realmcount',
+        model=RealmCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_usercount',
+        model=UserCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_streamcount',
+        model=StreamCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
     )
 
     return realm_config
