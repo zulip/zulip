@@ -6,6 +6,19 @@ class zulip::nginx {
   ]
   package { $web_packages: ensure => 'installed' }
 
+  if $::osfamily == 'redhat' {
+    file { '/etc/nginx/sites-available':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+    }
+    file { '/etc/nginx/sites-enabled':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+    }
+  }
+
   file { '/etc/nginx/zulip-include/':
     require => Package[$zulip::common::nginx],
     recurse => true,
