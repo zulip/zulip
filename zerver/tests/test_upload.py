@@ -116,7 +116,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
 
         response = self.client_get(uri + "?api_key=" + "invalid")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
         response = self.client_get(uri + "?api_key=" + get_api_key(user_profile))
         self.assertEqual(response.status_code, 200)
