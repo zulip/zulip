@@ -46,18 +46,18 @@ class zulip::postgres_appdb_base {
 
   file { "${tsearch_datadir}/en_us.dict":
     ensure  => 'link',
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$postgresql],
     target  => '/var/cache/postgresql/dicts/en_us.dict',  # TODO check cache dir on CentOS
   }
   file { "${tsearch_datadir}/en_us.affix":
     ensure  => 'link',
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$postgresql],
     target  => '/var/cache/postgresql/dicts/en_us.affix',  # TODO check cache dir on CentOS
 
   }
   file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$postgresql],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

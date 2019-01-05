@@ -14,7 +14,7 @@ if $zulip::base::release_name == 'trusty' {
 
   file { "${postgres_conf}.template":
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
@@ -78,7 +78,7 @@ vm.dirty_background_ratio = 5
 
   file { $postgres_conf:
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
@@ -86,7 +86,7 @@ vm.dirty_background_ratio = 5
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
-    require     => Package["postgresql-${zulip::base::postgres_version}"],
+    require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
     subscribe   => [ File[$postgres_conf] ]
   }
