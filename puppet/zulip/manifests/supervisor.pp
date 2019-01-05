@@ -9,6 +9,14 @@ class zulip::supervisor {
     'redhat' => '/etc/supervisord.conf',
   }
 
+  if $::osfamily == 'redhat' {
+    file { $zulip::common::supervisor_conf_dir:
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+    }
+  }
+
   # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
