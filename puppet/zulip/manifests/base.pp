@@ -34,6 +34,7 @@ class zulip::base {
         'cron',
       ]
       $nagios_plugins = 'nagios-plugins-basic'
+      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
     }
     'redhat': {
       $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
@@ -48,6 +49,7 @@ class zulip::base {
         'cronie'
       ]
       $nagios_plugins = 'nagios-plugins'
+      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
     }
     default: {
       fail('osfamily not supported')
@@ -157,7 +159,7 @@ class zulip::base {
     mode   => '0640',
   }
 
-  file { '/usr/lib/nagios/plugins/zulip_base':
+  file { "${nagios_plugins_dir}/zulip_base":
     require => Package[$nagios_plugins],
     recurse => true,
     purge   => true,

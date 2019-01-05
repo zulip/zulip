@@ -10,14 +10,17 @@ class zulip::app_frontend_base {
   ]
   zulip::safepackage { $web_packages: ensure => 'installed' }
 
-  $nagios_plugins = $::osfamily ? {
-    'debian' => 'nagios-plugins-basic',
-    'redhat' => 'nagios-plugins',
-  }
-
-  $nginx = $::osfamily ? {
-    'debian' => 'nginx-full',
-    'redhat' => 'nginx',
+  case $::osfamily {
+    'debian': {
+      $nagios_plugins = 'nagios-plugins-basic'
+      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
+      $nginx = 'nginx-full'
+    }
+    'redhat': {
+      $nagios_plugins = 'nagios-plugins'
+      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
+      $nginx = 'nginx'
+    }
   }
 
   file { '/etc/nginx/zulip-include/app':
@@ -145,7 +148,7 @@ class zulip::app_frontend_base {
   file { '/etc/cron.d/email-mirror':
     ensure => absent,
   }
-  file { '/usr/lib/nagios/plugins/zulip_app_frontend':
+  file { "${nagios_plugins_dir}/zulip_app_frontend":
     require => Package[$nagios_plugins],
     recurse => true,
     purge   => true,

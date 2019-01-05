@@ -2,6 +2,7 @@ class zulip::postgres_common {
   case $::osfamily {
     'debian': {
       $nagios_plugins = 'nagios-plugins-basic'
+      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
       $postgresql = "postgresql-${zulip::base::postgres_version}"
       $postgres_packages = [
         # The database itself
@@ -23,6 +24,7 @@ class zulip::postgres_common {
     }
     'redhat': {
       $nagios_plugins = 'nagios-plugins'
+      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
       $postgresql = "postgresql${zulip::base::postgres_version}"
       $postgres_packages = [
         $postgresql,
@@ -61,7 +63,7 @@ class zulip::postgres_common {
       creates => '/etc/logrotate.d/postgresql-common.disabled',
     }
   }
-  file { '/usr/lib/nagios/plugins/zulip_postgres_common':
+  file { "${nagios_plugins_dir}/zulip_postgres_common":
     require => Package[$nagios_plugins],
     recurse => true,
     purge   => true,
