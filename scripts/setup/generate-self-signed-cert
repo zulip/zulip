@@ -30,8 +30,15 @@ fi
 
 set -x
 
-KEYFILE=/etc/ssl/private/zulip.key
-CERTFILE=/etc/ssl/certs/zulip.combined-chain.crt
+is_redhat=false
+if [ -e /etc/redhat-release ]; then
+    is_redhat=true
+    SSLDIR=/etc/pki/tls
+else
+    SSLDIR=/etc/ssl
+fi
+KEYFILE=$SSLDIR/private/zulip.key
+CERTFILE=$SSLDIR/certs/zulip.combined-chain.crt
 
 if [ -n "$EXISTS_OK" ] && [ -e "$KEYFILE" ] && [ -e "$CERTFILE" ]; then
     exit 0
@@ -68,7 +75,11 @@ basicConstraints    = CA:FALSE
 subjectAltName      = DNS:$EXTERNAL_HOST
 EOF
 
-apt-get install -y openssl
+if [ "$is_redhat" = true ]; then
+    yum install -y openssl
+else
+    apt-get install -y openssl
+fi
 
 # Based on /usr/sbin/make-ssl-cert from Debian's `ssl-cert` package.
 openssl req -new -x509 \
