@@ -3,7 +3,7 @@ class zulip::thumbor {
   include zulip::nginx
   include zulip::supervisor
 
-  file { '/etc/supervisor/conf.d/thumbor.conf':
+  file { "${zulip::common::supervisor_conf_dir}/thumbor.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',

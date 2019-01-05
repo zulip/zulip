@@ -25,7 +25,7 @@ class zulip::process_fts_updates {
     source => 'puppet:///modules/zulip/postgresql/process_fts_updates',
   }
 
-  file { '/etc/supervisor/conf.d/zulip_db.conf':
+  file { "${zulip::common::supervisor_conf_dir}/zulip_db.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
