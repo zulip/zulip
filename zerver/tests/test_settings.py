@@ -318,8 +318,14 @@ class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
+
         self.login(email)
         old_api_keys = get_all_api_keys(user)
+        # Ensure the old API keys are in the authentication cache, so
+        # that the below logic can test whether we have a cache-flushing bug.
+        for api_key in old_api_keys:
+            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = result.json()['api_key']
