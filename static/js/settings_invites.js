@@ -31,7 +31,7 @@ exports.invited_as_values = {
 };
 
 function add_invited_as_text(invites) {
-    invites.forEach(data => {
+    invites.forEach(function (data) {
         var invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
             return elem.value === data.invited_as;
         });
