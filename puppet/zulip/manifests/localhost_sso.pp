@@ -1,12 +1,9 @@
 class zulip::localhost_sso {
-  $nginx = $::osfamily ? {
-    'debian' => 'nginx-full',
-    'redhat' => 'nginx',
-  }
+  include zulip::common
 
   file { '/etc/nginx/zulip-include/app.d/external-sso.conf':
     ensure  => file,
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
