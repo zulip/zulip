@@ -11,7 +11,8 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP
 from zerver.lib.users import get_all_api_keys
-from zerver.models import get_realm, get_user, UserProfile
+from zerver.models import get_realm, get_user, UserProfile, \
+    get_user_profile_by_api_key
 
 class ChangeSettingsTest(ZulipTestCase):
 
@@ -326,3 +327,10 @@ class UserChangesTest(ZulipTestCase):
         user = self.example_user('hamlet')
         current_api_keys = get_all_api_keys(user)
         self.assertIn(new_api_key, current_api_keys)
+
+        for api_key in old_api_keys:
+            with self.assertRaises(UserProfile.DoesNotExist):
+                get_user_profile_by_api_key(api_key)
+
+        for api_key in current_api_keys:
+            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
