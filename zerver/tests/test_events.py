@@ -2094,10 +2094,9 @@ class EventsRegisterTest(ZulipTestCase):
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe(self.user_profile, stream.name)
-
-        action = lambda: do_rename_stream(stream, new_name)
-        events = self.do_test(action, num_events=2)
-
+        notification = '<p><span class="user-mention" data-user-id="4">@King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong></p>'
+        action = lambda: do_rename_stream(stream, new_name, self.user_profile)
+        events = self.do_test(action, num_events=3)
         schema_checker = self.check_events_dict([
             ('type', equals('stream')),
             ('op', equals('update')),
@@ -2117,6 +2116,39 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
         ])
         error = schema_checker('events[1]', events[1])
+        self.assert_on_error(error)
+        schema_checker = check_dict([
+            ('stream_email_notify', equals(False)),
+            ('flags', check_list(check_string)),
+            ('email_notified', equals(True)),
+            ('type', equals('message')),
+            ('message', check_dict([
+                ('timestamp', check_int),
+                ('content', equals(notification)),
+                ('content_type', equals('text/html')),
+                ('sender_email', equals('notification-bot@zulip.com')),
+                ('sender_id', check_int),
+                ('sender_short_name', equals('notification-bot')),
+                ('display_recipient', equals(new_name)),
+                ('id', check_int),
+                ('stream_id', check_int),
+                ('sender_realm_str', check_string),
+                ('sender_full_name', equals('Notification Bot')),
+                ('is_me_message', equals(False)),
+                ('type', equals('stream')),
+                ('submessages', check_list(check_string)),
+                (TOPIC_LINKS, check_list(check_url)),
+                ('avatar_url', check_url),
+                ('reactions', check_list(None)),
+                ('client', equals('Internal')),
+                (TOPIC_NAME, equals('welcome')),
+                ('recipient_id', check_int)
+            ])),
+            ('id', check_int),
+            ('push_notified', equals(True)),
+            ('stream_push_notify', equals(False)),
+        ])
+        error = schema_checker('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_deactivate_stream_neversubscribed(self) -> None:
