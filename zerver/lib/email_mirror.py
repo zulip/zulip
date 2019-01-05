@@ -187,6 +187,9 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
 class ZulipEmailForwardError(Exception):
     pass
 
+class ZulipEmailForwardUserError(ZulipEmailForwardError):
+    pass
+
 def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
     internal_send_message(
         stream.realm,
@@ -234,7 +237,8 @@ def extract_body(message: message.Message) -> str:
     if html_content:
         return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
 
-    raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")
+    logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()]))
+    raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
@@ -343,9 +347,11 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
         else:
             process_stream_message(to, subject, message, debug_info)
     except ZulipEmailForwardError as e:
-        # TODO: notify sender of error, retry if appropriate.
-        log_and_report(message, str(e), debug_info)
-
+        if isinstance(e, ZulipEmailForwardUserError):
+            # TODO: notify sender of error, retry if appropriate.
+            logging.warning(str(e))
+        else:
+            log_and_report(message, str(e), debug_info)
 
 def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
     rcpt_to = data['recipient']
