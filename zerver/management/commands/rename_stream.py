@@ -24,4 +24,4 @@ class Command(ZulipBaseCommand):
         new_name = options['new_name']
 
         stream = get_stream(old_name, realm)
-        do_rename_stream(stream, new_name)
+        do_rename_stream(stream, new_name, self.user_profile)
