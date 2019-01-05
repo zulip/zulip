@@ -10,7 +10,7 @@ class zulip::thumbor {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/conf.d/thumbor.conf',
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   file { '/etc/nginx/zulip-include/app.d/thumbor.conf':
