@@ -7,7 +7,7 @@ class zulip::app_frontend {
   $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', undef)
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => Package[$zulip::app_frontend_base::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -23,7 +23,7 @@ class zulip::app_frontend {
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
     ensure  => 'link',
-    require => Package['nginx-full'],
+    require => Package[$zulip::app_frontend_base::nginx],
     target  => '/etc/nginx/sites-available/zulip-enterprise',
     notify  => Service['nginx'],
   }
