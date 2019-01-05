@@ -243,20 +243,20 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    background-color: #eff3f4;
+    background-color: #f0f4f5;
     border: 1px solid black;
     margin-bottom: 4px;
 }
 
 .recipient_header_with_messages {
-    background-color: #9ec9ff;
+    background-color: #9ecaff;
     border-bottom: 1px solid black;
     font-weight: bold;
     padding: 2px;
 }
 
 .message_content_with_messages {
-    background-color: #eff3f4;
+    background-color: #f0f4f5;
     margin-left: 1px;
     margin-right: 2px;
 }
