@@ -384,6 +384,7 @@
         "quotes": [ 0, "single" ],
         "radix": 2,
         "semi": 2,
+        "semi-spacing": [2, {"before": false, "after": true}],
         "space-before-blocks": 2,
         "space-before-function-paren": [ "error",
             {
