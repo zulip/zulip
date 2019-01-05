@@ -1,5 +1,6 @@
 # Default configuration for a Zulip app frontend
 class zulip::app_frontend {
+  include zulip::common
   include zulip::app_frontend_base
   include zulip::app_frontend_once
 
@@ -7,7 +8,7 @@ class zulip::app_frontend {
   $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', undef)
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,
-    require => Package[$zulip::app_frontend_base::nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -23,7 +24,7 @@ class zulip::app_frontend {
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
     ensure  => 'link',
-    require => Package[$zulip::app_frontend_base::nginx],
+    require => Package[$zulip::common::nginx],
     target  => '/etc/nginx/sites-available/zulip-enterprise',
     notify  => Service['nginx'],
   }

@@ -1,6 +1,7 @@
 # Minimal configuration to run a Zulip application server.
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
+  include zulip::common
   include zulip::nginx
   include zulip::supervisor
 
@@ -10,21 +11,8 @@ class zulip::app_frontend_base {
   ]
   zulip::safepackage { $web_packages: ensure => 'installed' }
 
-  case $::osfamily {
-    'debian': {
-      $nagios_plugins = 'nagios-plugins-basic'
-      $nagios_plugins_dir = '/usr/lib/nagios/plugins'
-      $nginx = 'nginx-full'
-    }
-    'redhat': {
-      $nagios_plugins = 'nagios-plugins'
-      $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
-      $nginx = 'nginx'
-    }
-  }
-
   file { '/etc/nginx/zulip-include/app':
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -32,7 +20,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/upstreams':
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -40,7 +28,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/uploads.types':
-    require => Package[$nginx],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -148,8 +136,8 @@ class zulip::app_frontend_base {
   file { '/etc/cron.d/email-mirror':
     ensure => absent,
   }
-  file { "${nagios_plugins_dir}/zulip_app_frontend":
-    require => Package[$nagios_plugins],
+  file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
