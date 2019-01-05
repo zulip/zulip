@@ -243,7 +243,6 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    background-color: #f0f4f5;
     border: 1px solid black;
     margin-bottom: 4px;
 }
@@ -256,12 +255,12 @@ a.button:hover {
 }
 
 .message_content_with_messages {
-    background-color: #f0f4f5;
     margin-left: 1px;
     margin-right: 2px;
 }
 
 .recipient_block_without_messages {
+    background-color: #f0f4f5;
     border: 1px solid black;
     margin-bottom: 4px;
 }
@@ -275,6 +274,7 @@ a.button:hover {
 }
 
 .message_content_without_messages {
+    background-color: #f0f4f5;
     margin-left: 1px;
     margin-right: 2px;
 }
