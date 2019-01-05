@@ -1151,6 +1151,7 @@ class Stream(models.Model):
     deactivated = models.BooleanField(default=False)  # type: bool
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: str
     rendered_description = models.TextField(default=u'')  # type: str
+    no_topic_counter = models.PositiveIntegerField(default=1)  # type: int
 
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
     history_public_to_subscribers = models.BooleanField(default=False)  # type: bool
