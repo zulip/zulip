@@ -80,9 +80,8 @@ First
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
-Because the import tool is very new, you will need to
-upgrade your Zulip server to the latest `master` branch,
-using [upgrade-zulip-from-git][upgrade-zulip-from-git].
+Use [upgrade-zulip-from-git][upgrade-zulip-from-git] to
+upgrade your Zulip server to the latest `master` branch.
 
 Log in to a shell on your Zulip server as the `zulip` user. To import with
 the most common configuration, run the following commands, replacing
