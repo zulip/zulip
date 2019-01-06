@@ -1,7 +1,11 @@
 <div id="user-info-form-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="user-info-form-modal-label" aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        {{#if is_bot}}
+        <h3 id="user-info-form-modal-label">{{t "Change bot info and owner" }}</h3>
+        {{else}}
         <h3 id="user-info-form-modal-label">{{t "Change user info and roles" }}</h3>
+        {{/if}}
     </div>
     <div class="modal-body">
         <div id="user-name-form" data-user-id="{{user_id}}">

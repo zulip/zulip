@@ -78,7 +78,7 @@ exports.update_user_data = function (user_id, new_data) {
 
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
-    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#organization-status"));
+    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#user-field-status"));
 }
 
 function populate_users(realm_people_data) {
@@ -252,7 +252,7 @@ exports.on_load_success = function (realm_people_data) {
         channel.del({
             url: '/json/users/' + encodeURIComponent(user_id),
             error: function (xhr) {
-                var status = $("#organization-status").expectOne();
+                var status = $("#user-field-status").expectOne();
                 ui_report.error(i18n.t("Failed"), xhr, status);
                 var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
                 button.text(i18n.t("Deactivate"));
@@ -345,7 +345,7 @@ exports.on_load_success = function (realm_people_data) {
 
         var url;
         var data;
-        var admin_status = $('#organization-status').expectOne();
+        var admin_status;
         var full_name = user_info_form_modal.find("input[name='full_name']");
 
         user_info_form_modal.find('.submit_user_info_change').on("click", function (e) {
@@ -356,6 +356,7 @@ exports.on_load_success = function (realm_people_data) {
 
             if (person.is_bot) {
                 url = "/json/bots/" + encodeURIComponent(user_id);
+                admin_status = $('#bot-field-status').expectOne();
                 data = {
                     full_name: full_name.val(),
                 };
@@ -364,6 +365,7 @@ exports.on_load_success = function (realm_people_data) {
                     data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
+                admin_status = $('#user-field-status').expectOne();
                 url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
@@ -372,18 +374,9 @@ exports.on_load_success = function (realm_people_data) {
                 };
             }
 
-            channel.patch({
-                url: url,
-                data: data,
-                success: function () {
-                    ui_report.success(i18n.t('Updated successfully!'), admin_status);
-                    overlays.close_modal('user-info-form-modal');
-                },
-                error: function (xhr) {
-                    ui_report.error(i18n.t('Failed'), xhr, admin_status);
-                    overlays.close_modal('user-info-form-modal');
-                },
-            });
+            settings_ui.do_settings_change(channel.patch, url,
+                                           data, admin_status);
+            overlays.close_modal('user-info-form-modal');
         });
     });
 
