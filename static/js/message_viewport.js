@@ -65,6 +65,30 @@ exports.is_below_visible_bottom = function (offset) {
     return offset > exports.scrollTop() + exports.height() - $("#compose").height();
 };
 
+exports.is_scrolled_up = function () {
+    // Let's determine whether the user was already dealing
+    // with messages off the screen, which can guide auto
+    // scrolling decisions.
+    var last_row = rows.last_visible();
+    if (last_row.length === 0) {
+        return false;
+    }
+
+    var offset = exports.offset_from_bottom(last_row);
+
+    return offset > 0;
+};
+
+exports.offset_from_bottom = function (last_row) {
+    // A positive return value here means the last row is
+    // below the bottom of the feed (i.e. obscured by the compose
+    // box or even further below the bottom).
+    var message_bottom = last_row.offset().top + last_row.height();
+    var info = exports.message_viewport_info();
+
+    return message_bottom - info.visible_bottom;
+};
+
 exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
     // message_top = offset of the top of a message that you are positioning
     // message_height = height of the message that you are positioning
