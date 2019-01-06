@@ -7,6 +7,13 @@ body {
     position: fixed;
 }
 
+.digest-address-link {
+    margin-top: 10px;
+    color: rgb(153, 153, 153);
+    font-size: 12px;
+    text-align: center;
+}
+
 .container-fluid {
     padding: 0px;
     min-height: 100%;
@@ -116,6 +123,23 @@ body {
 
 .code-section .blocks > .active {
     display: block;
+}
+
+.digest-container {
+    padding-top: 100px;
+}
+
+.digest-email-container {
+    display: block;
+    margin: 0 auto !important;
+    max-width: 500px;
+    padding-bottom: 30px;
+}
+
+.digest-email-html {
+    padding: 20px;
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 5px;
 }
 
 .help .app-main {
@@ -369,6 +393,10 @@ li div.codehilite {
     font-weight: bold;
     margin-top: 50px;
     margin-bottom: 60px;
+}
+
+#digest-page-title {
+    text-align: center;
 }
 
 .lead {
