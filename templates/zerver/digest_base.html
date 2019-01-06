@@ -1,0 +1,26 @@
+{% extends "zerver/base.html" %}
+
+{% block porticocustomhead %}
+{{ render_bundle('portico') }}
+{% endblock %}
+
+{% block content %}
+<body>
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+    </div>
+    <div class="digest-container">
+        <div class="digest-email-container">
+            <div class="portico-page" id="digest-page-title">
+                <h1> Zulip Digest </h1>
+            </div>
+            <div class="digest-email-html">
+                {% include 'zerver/emails/compiled/digest.html' %}
+                <img id="digest-footer" src="/static/images/emails/footer.png"/>
+            </div>
+            <div class="digest-address-link"> {{physical_address}}</div>
+        </div>
+        {% include 'zerver/footer.html' %}
+    </div>
+</body>
+{% endblock %}
