@@ -120,7 +120,7 @@ if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
 codename = distro_info['DISTRIB_CODENAME']
-family = 'redhat' if vendor in ['CentOS', 'Fedora', 'RedHat'] else 'debian'
+family = distro_info['DISTRIB_FAMILY']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
