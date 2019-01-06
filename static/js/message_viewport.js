@@ -26,15 +26,14 @@ exports.message_viewport_info = function () {
     var res = {};
 
     var element_just_above_us = $(".floating_recipient");
+    var element_just_below_us = $("#compose");
 
     res.visible_top = element_just_above_us.offset().top
         + element_just_above_us.safeOuterHeight();
 
-    var element_just_below_us = $("#compose");
+    res.visible_bottom = element_just_below_us.position().top;
 
-    res.visible_height =
-        element_just_below_us.position().top
-        - res.visible_top;
+    res.visible_height = res.visible_bottom - res.visible_top;
 
     return res;
 };
@@ -288,7 +287,7 @@ exports.recenter_view = function (message, opts) {
     var viewport_info = exports.message_viewport_info();
     var top_threshold = viewport_info.visible_top;
 
-    var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
+    var bottom_threshold = viewport_info.visible_bottom;
 
     var message_top = message.offset().top;
     var message_height = message.safeOuterHeight(true);
