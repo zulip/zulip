@@ -194,6 +194,13 @@ exports.process_from_server = function process_from_server(messages) {
 
         exports.reify_message_id(message.local_id, message.id);
 
+        var topic_name = util.get_message_topic(message);
+
+        if (client_message.topic !== topic_name) {
+            client_message.topic = topic_name;
+            sent_messages.mark_disparity(message.local_id);
+        }
+
         if (client_message.content !== message.content) {
             client_message.content = message.content;
             sent_messages.mark_disparity(message.local_id);
