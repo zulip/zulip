@@ -341,7 +341,8 @@ def parse_lsb_release():
             codename = 'rhel' + info[6][0]  # 7
         distro_info = dict(
             DISTRIB_CODENAME=codename,
-            DISTRIB_ID=vendor
+            DISTRIB_ID=vendor,
+            DISTRIB_FAMILY='redhat',
         )
         return distro_info
     try:
@@ -356,6 +357,7 @@ def parse_lsb_release():
                 # from lsb_release in the exception code path.
                 continue
             distro_info[k] = v
+        distro_info['DISTRIB_FAMILY'] = 'debian'
     except FileNotFoundError:
         # Unfortunately, Debian stretch doesn't yet have an
         # /etc/lsb-release, so we instead fetch the pieces of data
@@ -364,7 +366,8 @@ def parse_lsb_release():
         codename = subprocess_text_output(["lsb_release", "-cs"])
         distro_info = dict(
             DISTRIB_CODENAME=codename,
-            DISTRIB_ID=vendor
+            DISTRIB_ID=vendor,
+            DISTRIB_FAMILY='debian',
         )
     return distro_info
 
