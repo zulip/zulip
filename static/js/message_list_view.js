@@ -555,6 +555,12 @@ MessageListView.prototype = {
 
         var self = this;
 
+        // If we start with the message feed scrolled up (i.e.
+        // the bottom message is not visible), then we will respect
+        // the user's current position after rendering, rather
+        // than auto-scrolling.
+        var started_scrolled_up = message_viewport.is_scrolled_up();
+
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
         // each others data we will make a new message object to add data to
@@ -742,6 +748,9 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
+            if (started_scrolled_up) {
+                return;
+            }
             var new_messages_height = self._new_messages_height(new_dom_elements);
             self._maybe_autoscroll(new_messages_height);
         }
@@ -839,17 +848,6 @@ MessageListView.prototype = {
 
         if (scroll_amount > scroll_limit) {
             scroll_amount = scroll_limit;
-        }
-
-        // Let's work our way back to whether the user was already dealing
-        // with messages off the screen, in which case we shouldn't autoscroll.
-        var bottom_last_visible = last_visible.offset().top + last_visible.height();
-        var bottom_old_last_visible = bottom_last_visible - new_messages_height;
-        var bottom_viewport = info.visible_top + info.visible_height;
-
-        // Exit if the user was already past the bottom.
-        if (bottom_old_last_visible > bottom_viewport) {
-            return;
         }
 
         // Ok, we are finally ready to actually scroll.
