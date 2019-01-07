@@ -96,7 +96,7 @@ pylibmc==1.6.0
 pyoembed==0.1.2
 pyopenssl==18.0.0         # via ndg-httpsclient, requests
 pysocks==1.6.8            # via twilio
-python-dateutil==2.6.1
+python-dateutil==2.7.5
 python-gcm==0.4
 python-ldap==3.1.0        # via django-auth-ldap
 python-twitter==3.5
