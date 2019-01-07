@@ -20,7 +20,7 @@ markupsafe==1.1.0         # via jinja2
 packaging==18.0           # via sphinx
 pygments==2.3.1           # via sphinx
 pyparsing==2.3.0          # via packaging
-pytz==2018.7              # via babel
+pytz==2018.9              # via babel
 recommonmark==0.4.0
 requests==2.21.0          # via sphinx
 six==1.12.0               # via packaging, sphinx
