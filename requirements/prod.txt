@@ -86,7 +86,7 @@ prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.6.1
 ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
-pyasn1-modules==0.2.2
+pyasn1-modules==0.2.3
 pyasn1==0.4.5
 pycparser==2.19           # via cffi
 pycrypto==2.6.1
