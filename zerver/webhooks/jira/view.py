@@ -18,7 +18,6 @@ from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead
-    'comment_updated',  # we handle issue_update event instead
     'comment_deleted',  # we handle issue_update event instead
 ]
 
@@ -176,7 +175,13 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
             verb = 'edited comment on'
         else:
             verb = 'deleted comment from'
-        content = u"{} **{}** {}{}".format(get_issue_author(payload), verb, issue, assignee_blurb)
+
+        if payload.get('webhookEvent') == 'comment_created':
+            author = payload['comment']['author']['displayName']
+        else:
+            author = get_issue_author(payload)
+
+        content = u"{} **{}** {}{}".format(author, verb, issue, assignee_blurb)
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
@@ -234,6 +239,9 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = get_issue_subject(payload)
         content = handle_deleted_issue_event(payload)
     elif event == 'jira:issue_updated':
+        subject = get_issue_subject(payload)
+        content = handle_updated_issue_event(payload, user_profile)
+    elif event == 'comment_created':
         subject = get_issue_subject(payload)
         content = handle_updated_issue_event(payload, user_profile)
     elif event in IGNORED_EVENTS:
