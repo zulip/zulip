@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+DATABASE_NAME="zulip"
+files_path="/home/zulip/uploads"
+settings_path="/etc/zulip"
+POSTGRES_USER="postgres"
+
+backup_path="$1"
+
+temp_dir=$(mktemp -d)
+tar -C "$temp_dir" --strip-components=1 -zxf "$backup_path"
+
+mkdir -p "$files_path" "$settings_path"
+tar -C "$files_path" -zxf "$temp_dir/files.tar.gz"
+tar -C "$settings_path" -zxf "$temp_dir/settings.tar.gz"
+
+sudo chown -R "$POSTGRES_USER" "$temp_dir"
+
+./scripts/setup/terminate-psql-sessions zulip zulip zulip_base
+sudo -u "$POSTGRES_USER" /usr/bin/env bash -x <<EOF
+dropdb "$DATABASE_NAME"
+createdb -T template0 "$DATABASE_NAME"
+pg_restore -d "$DATABASE_NAME" "$temp_dir/database"
+EOF
+
+# Apply server-level configuration settings to /etc/.
+/home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+
+# Restart the server, and clear caches.
+supervisorctl restart all
+./scripts/setup/flush-memcached

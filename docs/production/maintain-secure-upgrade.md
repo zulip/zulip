@@ -239,6 +239,58 @@ dependencies are installed by default.
 
 ## Backups
 
+Starting with Zulip 2.0, Zulip has a built-in backup tool:
+
+```
+# As the zulip user
+/home/zulip/deployments/current/manage.py backup
+# Or as root
+su zulip -c '/home/zulip/deployments/current/manage.py backup'
+```
+
+This will generate a `.tar.gz` archive containing all the data stored
+on your Zulip server that would be needed to restore your Zulip
+server's state on another machine perfectly.
+
+**Caveats**.  The following data present on a Zulip server is not
+included in these backup archives:
+
+* Certain highly transient state that Zulip doesn't store in a
+  database, such as typing status, API rate-limiting counters,
+  etc. that would have no value 1 minute after the backup is
+  completed.
+
+* The server access/error logs from `/var/log/zulip`, because a Zulip
+  server only appends to those log files (i.e. they aren't necessarily
+  to precisely restore your Zulip data), and they can be very large
+  compared to the rest of the data for a Zulip server.
+
+* Files uploaded with the Zulip
+  [S3 file upload backend](../production/upload-backends.html).  We
+  don't include these for two reasons. First, the uploaded file data
+  in S3 can easily be many times larger than the rest of the backup,
+  and downloading it all to a server doing a backup could easily
+  exceed its disk capacity.  Additionally, S3 is a reliable persistent
+  storage system with its own high-quality tools for doing backups.
+  Contributions of (documentation on) ready-to-use scripting for S3
+  backups are welcome.
+
+* SSL certificates.  Since these are either trivially replaced (if
+  generated via Certbot) or provided by the system administrator, we
+  do not include them in these backups.
+
+### Backup restoration
+
+Backups generated using the above backup tool can be restored as
+follows:
+
+```
+# First, install a Zulip server through Step 3.  Then, run:
+/home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
+```
+
+### Backup details
+
 There are several pieces of data that you might want to back up:
 
 * The postgres database.  That you can back up like any postgres
