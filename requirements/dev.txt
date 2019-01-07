@@ -191,5 +191,5 @@ websocket-client==0.54.0  # via docker
 werkzeug==0.14.1          # via moto
 wrapt==1.10.11            # via aws-xray-sdk
 xmltodict==0.11.0         # via moto
-yamole==2.1.5
+yamole==2.1.6
 zope.interface==4.6.0     # via twisted

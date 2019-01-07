@@ -198,7 +198,7 @@ django-sendfile==0.3.11
 disposable-email-domains==0.0.39
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole==2.1.5
+yamole==2.1.6
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.  Using a fork to eliminate a really slow pkgresources import.
