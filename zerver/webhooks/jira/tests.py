@@ -99,6 +99,14 @@ Adding a comment. Oh, what a comment it is!"""
         self.send_and_test_stream_message('commented_v1', expected_topic, expected_message)
         self.send_and_test_stream_message('commented_v2', expected_topic, expected_message)
 
+    def test_comment_created_event_type(self) -> None:
+        expected_topic = "ZUL-1: A minor issue"
+        expected_message = """Eeshan Garg **added comment to** [ZUL-1](https://zulipintegrations.atlassian.net/browse/ZUL-1):
+
+
+Leaving a comment here! :)"""
+        self.send_and_test_stream_message('comment_created', expected_topic, expected_message)
+
     def test_comment_edited(self) -> None:
             expected_topic = "BUG-15: New bug with hook"
             expected_message = """Leo Franchi **edited comment on** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):

@@ -1,0 +1,93 @@
+{
+    "timestamp":1546892751184,
+    "webhookEvent":"comment_created",
+    "comment":{
+        "self":"https://zulipintegrations.atlassian.net/rest/api/2/issue/10000/comment/10000",
+        "id":"10000",
+        "author":{
+            "self":"https://zulipintegrations.atlassian.net/rest/api/2/user?accountId=5a1b0e47748e770ed11f338c",
+            "name":"admin",
+            "key":"admin",
+            "accountId":"5a1b0e47748e770ed11f338c",
+            "avatarUrls":{
+                "48x48":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=48&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D48%26noRedirect%3Dtrue",
+                "24x24":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=24&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D24%26noRedirect%3Dtrue",
+                "16x16":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=16&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D16%26noRedirect%3Dtrue",
+                "32x32":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=32&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D32%26noRedirect%3Dtrue"
+            },
+            "displayName":"Eeshan Garg",
+            "active":true,
+            "timeZone":"America/St_Johns"
+        },
+        "body":"Leaving a comment here! :)",
+        "updateAuthor":{
+            "self":"https://zulipintegrations.atlassian.net/rest/api/2/user?accountId=5a1b0e47748e770ed11f338c",
+            "name":"admin",
+            "key":"admin",
+            "accountId":"5a1b0e47748e770ed11f338c",
+            "avatarUrls":{
+                "48x48":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=48&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D48%26noRedirect%3Dtrue",
+                "24x24":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=24&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D24%26noRedirect%3Dtrue",
+                "16x16":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=16&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D16%26noRedirect%3Dtrue",
+                "32x32":"https://avatar-cdn.atlassian.com/cd181af88d928dab53c55600c9f7551d?s=32&d=https%3A%2F%2Fsecure.gravatar.com%2Favatar%2Fcd181af88d928dab53c55600c9f7551d%3Fd%3Dmm%26s%3D32%26noRedirect%3Dtrue"
+            },
+            "displayName":"Eeshan Garg",
+            "active":true,
+            "timeZone":"America/St_Johns"
+        },
+        "created":"2019-01-07T16:55:51.184-0330",
+        "updated":"2019-01-07T16:55:51.184-0330",
+        "jsdPublic":true
+    },
+    "issue":{
+        "id":"10000",
+        "self":"https://zulipintegrations.atlassian.net/rest/api/2/issue/10000",
+        "key":"ZUL-1",
+        "fields":{
+            "summary":"A minor issue",
+            "issuetype":{
+                "self":"https://zulipintegrations.atlassian.net/rest/api/2/issuetype/10001",
+                "id":"10001",
+                "description":"Stories track functionality or features expressed as user goals.",
+                "iconUrl":"https://zulipintegrations.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10315&avatarType=issuetype",
+                "name":"Story",
+                "subtask":false,
+                "avatarId":10315
+            },
+            "project":{
+                "self":"https://zulipintegrations.atlassian.net/rest/api/2/project/10000",
+                "id":"10000",
+                "key":"ZUL",
+                "name":"zulipintegrations",
+                "projectTypeKey":"software",
+                "avatarUrls":{
+                    "48x48":"https://zulipintegrations.atlassian.net/secure/projectavatar?avatarId=10324",
+                    "24x24":"https://zulipintegrations.atlassian.net/secure/projectavatar?size=small&avatarId=10324",
+                    "16x16":"https://zulipintegrations.atlassian.net/secure/projectavatar?size=xsmall&avatarId=10324",
+                    "32x32":"https://zulipintegrations.atlassian.net/secure/projectavatar?size=medium&avatarId=10324"
+                }
+            },
+            "assignee":null,
+            "priority":{
+                "self":"https://zulipintegrations.atlassian.net/rest/api/2/priority/3",
+                "iconUrl":"https://zulipintegrations.atlassian.net/images/icons/priorities/medium.svg",
+                "name":"Medium",
+                "id":"3"
+            },
+            "status":{
+                "self":"https://zulipintegrations.atlassian.net/rest/api/2/status/10001",
+                "description":"",
+                "iconUrl":"https://zulipintegrations.atlassian.net/",
+                "name":"Backlog",
+                "id":"10001",
+                "statusCategory":{
+                    "self":"https://zulipintegrations.atlassian.net/rest/api/2/statuscategory/2",
+                    "id":2,
+                    "key":"new",
+                    "colorName":"blue-gray",
+                    "name":"To Do"
+                }
+            }
+        }
+    }
+}
