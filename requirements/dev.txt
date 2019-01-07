@@ -126,7 +126,7 @@ pycrypto==2.6.1
 pycryptodome==3.7.2       # via python-jose
 pydispatcher==2.0.5       # via scrapy
 pyflakes==2.0.0
-pygments==2.2.0
+pygments==2.3.1
 pyhamcrest==1.9.0         # via twisted
 pyjwt==1.6.4
 pyldap==3.0.0.post1       # via fakeldap

@@ -90,7 +90,7 @@ pyasn1-modules==0.2.3
 pyasn1==0.4.5
 pycparser==2.19           # via cffi
 pycrypto==2.6.1
-pygments==2.2.0
+pygments==2.3.1
 pyjwt==1.6.4
 pylibmc==1.6.0
 pyoembed==0.1.2
