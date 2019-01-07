@@ -41,7 +41,7 @@ commonmark==0.5.4
 constantly==15.1.0        # via twisted
 cookies==2.2.1            # via moto
 coverage==4.5.2
-cryptography==2.4.1
+cryptography==2.4.2
 cssselect==1.0.3          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.3.0          # via ipython, traitlets
