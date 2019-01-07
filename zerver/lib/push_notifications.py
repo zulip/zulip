@@ -4,7 +4,7 @@ import base64
 import binascii
 from functools import partial
 import logging
-import lxml.html as LH
+import lxml.html
 import os
 import re
 import time
@@ -464,7 +464,7 @@ def get_gcm_alert(message: Message) -> str:
         return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
 
 def get_mobile_push_content(rendered_content: str) -> str:
-    def get_text(elem: LH.HtmlElement) -> str:
+    def get_text(elem: lxml.html.HtmlElement) -> str:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
@@ -488,7 +488,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         quote_text += '\n'
         return quote_text
 
-    def process(elem: LH.HtmlElement) -> str:
+    def process(elem: lxml.html.HtmlElement) -> str:
         plain_text = get_text(elem)
         sub_text = ''
         for child in elem:
@@ -502,7 +502,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return "***REDACTED***"
 
-    elem = LH.fromstring(rendered_content)
+    elem = lxml.html.fromstring(rendered_content)
     plain_text = process(elem)
     return plain_text
 
