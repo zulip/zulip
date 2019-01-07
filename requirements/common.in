@@ -165,7 +165,7 @@ virtualenv-clone==0.4.0
 ijson==2.3
 
 # Needed for link preview
-beautifulsoup4==4.6.3
+beautifulsoup4==4.7.1
 pyoembed==0.1.2
 
 # The Zulip API bindings, from its own repository.  We integrate with
