@@ -64,16 +64,24 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
 
     unread.process_loaded_messages(messages);
 
-    message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
+    // message_list.all is a data-only list that we use to populate
+    // other lists, so we always update this
     message_util.add_messages(messages, message_list.all, {messages_are_new: true});
 
     if (narrow_state.active()) {
+        // We do this NOW even though the home view is not active,
+        // because we want the home view to load fast later.
+        message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
+
         if (narrow_state.filter().can_apply_locally()) {
             message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
             maybe_add_narrowed_messages(messages, message_list.narrowed, true);
         }
+    } else {
+        // we're in the home view, so update its list
+        message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
     }
 
 
