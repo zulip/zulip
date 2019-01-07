@@ -16,8 +16,8 @@ This endpoint allows you to receive new events from
 import sys
 import zulip
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
+# Pass the path to your zuliprc file here.
+client = zulip.Client(config_file="~/zuliprc")
 
 # If you already have a queue registered and thus, have a queue_id
 # on hand, you may use client.get_events() and pass in the above
@@ -37,9 +37,9 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 ```js
 const zulip = require('zulip-js');
 
-// Download zuliprc-dev from your dev server
+// Pass the path to your zuliprc file here.
 const config = {
-    zuliprc: 'zuliprc-dev',
+    zuliprc: 'zuliprc',
 };
 
 zulip(config).then((client) => {
