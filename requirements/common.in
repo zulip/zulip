@@ -112,7 +112,7 @@ pylibmc==1.6.0
 django-pylibmc==0.6.1
 
 # Needed for zerver/tests/test_timestamp.py
-python-dateutil==2.6.1
+python-dateutil==2.7.5
 
 # Needed for timezone work
 pytz==2018.5
