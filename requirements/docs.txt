@@ -9,21 +9,21 @@
 #
 alabaster==0.7.12
 babel==2.5.3
-certifi==2018.10.15       # via requests
+certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
 commonmark==0.5.4
 docutils==0.14
-idna==2.7                 # via requests
+idna==2.8                 # via requests
 imagesize==1.1.0
 jinja2==2.10              # via sphinx
 markupsafe==1.1.0         # via jinja2
 packaging==18.0           # via sphinx
-pygments==2.2.0           # via sphinx
+pygments==2.3.1           # via sphinx
 pyparsing==2.3.0          # via packaging
 pytz==2018.7              # via babel
 recommonmark==0.4.0
-requests==2.20.1          # via sphinx
-six==1.11.0               # via packaging, sphinx
+requests==2.21.0          # via sphinx
+six==1.12.0               # via packaging, sphinx
 snowballstemmer==1.2.1
 sphinx-rtd-theme==0.4.2
 sphinx==1.8.2
