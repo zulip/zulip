@@ -158,7 +158,7 @@ scrapy==1.5.1
 service-identity==18.1.0  # via scrapy
 sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
-six==1.11.0
+six==1.12.0
 smmap==0.9.0
 snakeviz==1.0.0
 snowballstemmer==1.2.1
