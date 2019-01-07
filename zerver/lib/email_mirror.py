@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 import logging
 import re
 
-from email.header import decode_header, Header
+from email.header import decode_header, make_header
 from email.utils import getaddresses
 import email.message as message
 
@@ -326,17 +326,8 @@ def process_missed_message(to: str, message: message.Message, pre_checked: bool)
     send_to_missed_message_address(to, message)
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
-    subject_header = strip_from_subject(str(message.get("Subject", "")))
-    if subject_header == "":
-        subject_header = "(no topic)"
-    encoded_subject, encoding = decode_header(subject_header)[0]
-    if encoding is None:
-        subject = cast(str, encoded_subject)  # encoded_subject has type str when encoding is None
-    else:
-        try:
-            subject = encoded_subject.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
-            subject = "(unreadable subject)"
+    subject_header = make_header(decode_header(message.get("Subject", "")))
+    subject = strip_from_subject(str(subject_header)) or "(no topic)"
 
     debug_info = {}
 
