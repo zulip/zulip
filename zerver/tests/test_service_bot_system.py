@@ -11,7 +11,8 @@ from zerver.lib.actions import (
     do_create_user,
     get_service_bot_events,
 )
-from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler
+from zerver.lib.bot_lib import StateHandler, EmbeddedBotHandler, \
+    EmbeddedBotEmptyRecipientsList
 from zerver.lib.bot_storage import StateError
 from zerver.lib.bot_config import set_bot_config, ConfigError, load_bot_config_template
 from zerver.lib.test_classes import ZulipTestCase
@@ -398,6 +399,10 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         bot_config = load_bot_config_template('converter')
         self.assertTrue(isinstance(bot_config, dict))
         self.assertEqual(len(bot_config), 0)
+
+    def test_bot_send_pm_with_empty_recipients_list(self) -> None:
+        with self.assertRaisesRegex(EmbeddedBotEmptyRecipientsList, 'Message must have recipients!'):
+            self.bot_handler.send_message(message={'type': 'private', 'to': []})
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):
