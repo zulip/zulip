@@ -37,7 +37,7 @@ backports.ssl-match-hostname==3.5.0.1
 # Needed for S3 file uploads
 boto==2.49.0
 
-certifi==2018.10.15
+certifi==2018.11.29
 
 # Used for scrapy as well as argon2
 cffi==1.11.5
