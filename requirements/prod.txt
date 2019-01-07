@@ -91,7 +91,7 @@ pyasn1==0.4.5
 pycparser==2.19           # via cffi
 pycrypto==2.6.1
 pygments==2.3.1
-pyjwt==1.6.4
+pyjwt==1.7.1
 pylibmc==1.6.0
 pyoembed==0.1.2
 pyopenssl==18.0.0         # via ndg-httpsclient, requests
