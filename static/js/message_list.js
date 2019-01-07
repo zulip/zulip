@@ -45,6 +45,12 @@ exports.MessageList.prototype = {
         var bottom_messages = info.bottom_messages;
         var interior_messages = info.interior_messages;
 
+        // Currently we only need data back from rendering to
+        // tell us whether users needs to scroll, which only
+        // applies for `append_to_view`, but this may change over
+        // time.
+        var render_info;
+
         if (interior_messages.length > 0) {
             self.view.rerender_the_whole_thing();
             return true;
@@ -54,7 +60,7 @@ exports.MessageList.prototype = {
         }
 
         if (bottom_messages.length > 0) {
-            self.append_to_view(bottom_messages, opts);
+            render_info = self.append_to_view(bottom_messages, opts);
         }
 
         if (self === exports.narrowed && !self.empty()) {
@@ -69,6 +75,8 @@ exports.MessageList.prototype = {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
+
+        return render_info;
     },
 
     get: function (id) {
@@ -283,7 +291,8 @@ exports.MessageList.prototype = {
         opts = _.extend({messages_are_new: false}, opts);
 
         this.num_appends += 1;
-        this.view.append(messages, opts.messages_are_new);
+        var render_info = this.view.append(messages, opts.messages_are_new);
+        return render_info;
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {

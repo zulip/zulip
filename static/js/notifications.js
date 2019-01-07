@@ -564,15 +564,6 @@ function get_message_header(message) {
                   {recipient: message.display_reply_to});
 }
 
-exports.get_echo_not_in_view_reason = function () {
-    if (message_viewport.bottom_message_visible()) {
-        // If the message is visible, we do not want to notify user
-        return;
-    }
-
-    return i18n.t("Sent! Scroll down to view your message.");
-};
-
 exports.get_local_notify_mix_reason = function (message) {
     var row = current_msg_list.get_row(message.id);
     if (row.length > 0) {
@@ -595,7 +586,7 @@ exports.get_local_notify_mix_reason = function (message) {
     return i18n.t("Sent! Your message is outside your current narrow.");
 };
 
-exports.notify_local_mixes = function (messages) {
+exports.notify_local_mixes = function (messages, need_user_to_scroll) {
     /*
         This code should only be called when we are locally echoing
         messages.  It notifies users that their messages aren't
@@ -617,16 +608,16 @@ exports.notify_local_mixes = function (messages) {
         var reason = exports.get_local_notify_mix_reason(message);
 
         if (!reason) {
-            // Check if local_echo is not in view
-            reason = exports.get_echo_not_in_view_reason();
-            if (reason) {
+            if (need_user_to_scroll) {
+                reason = i18n.t("Sent! Scroll down to view your message.");
                 exports.notify_above_composebox(reason, "", null, "");
                 setTimeout(function () {
                     $('#out-of-view-notification').hide();
                 }, 3000);
             }
 
-            // This is more than normal, just continue on.
+            // This is the HAPPY PATH--for most messages we do nothing
+            // other than maybe sending the above message.
             return;
         }
 
