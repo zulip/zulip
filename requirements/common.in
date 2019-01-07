@@ -124,7 +124,7 @@ requests_oauthlib==1.0.0
 rsa==4.0
 
 # Needed for Python 2+3 compatibility
-six==1.11.0
+six==1.12.0
 smmap==0.9.0
 
 # Needed for Tornado websockets support
