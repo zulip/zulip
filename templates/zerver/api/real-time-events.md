@@ -36,8 +36,8 @@ instead use the raw [register](/api/register-queue) and
 import sys
 import zulip
 
-# Download ~/zuliprc-dev from your dev server
-client = zulip.Client(config_file="~/zuliprc-dev")
+# Pass the path to your zuliprc file here.
+client = zulip.Client(config_file="~/zuliprc")
 
 # Print every message the current user would receive
 # This is a blocking call that will run forever
