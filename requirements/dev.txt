@@ -168,7 +168,7 @@ sockjs-tornado==1.0.6
 soupsieve==1.6.2          # via beautifulsoup4
 sourcemap==0.2.1
 sphinx-rtd-theme==0.4.2
-sphinx==1.8.2
+sphinx==1.8.3
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy==1.2.15
 statsd==3.3.0             # via django-statsd-mozilla

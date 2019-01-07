@@ -26,7 +26,7 @@ requests==2.21.0          # via sphinx
 six==1.12.0               # via packaging, sphinx
 snowballstemmer==1.2.1
 sphinx-rtd-theme==0.4.2
-sphinx==1.8.2
+sphinx==1.8.3
 sphinxcontrib-websupport==1.1.0  # via sphinx
 typing==3.6.6
 urllib3==1.24.1           # via requests
