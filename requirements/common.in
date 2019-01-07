@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.16
+Django==1.11.18
 
 # needed for mypy TypedDict
 mypy_extensions==0.4.1

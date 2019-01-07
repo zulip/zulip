@@ -45,7 +45,7 @@ django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.8.0
 django-webpack-loader==0.6.0
-django==1.11.16
+django==1.11.18
 docopt==0.6.2
 gitdb==0.6.4
 google-api-python-client==1.7.4
