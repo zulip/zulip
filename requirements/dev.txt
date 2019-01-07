@@ -27,10 +27,10 @@ babel==2.5.3
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-beautifulsoup4==4.6.3
-boto3==1.9.43             # via moto
+beautifulsoup4==4.7.1
+boto3==1.9.74             # via moto
 boto==2.49.0
-botocore==1.12.43         # via boto3, moto, s3transfer
+botocore==1.12.74         # via boto3, moto, s3transfer
 cachetools==3.0.0         # via google-auth
 cchardet==2.1.4
 certifi==2018.10.15
@@ -58,8 +58,8 @@ django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.8.0
 django-webpack-loader==0.6.0
 django==1.11.16
-docker-pycreds==0.3.0     # via docker
-docker==3.5.1             # via moto
+docker-pycreds==0.4.0     # via docker
+docker==3.6.0             # via moto
 docopt==0.6.2
 docutils==0.14
 fakeldap==0.6.1
@@ -68,7 +68,7 @@ gitdb==0.6.4
 gitlint==0.10.0
 google-api-python-client==1.7.4
 google-auth-httplib2==0.0.3  # via google-api-python-client
-google-auth==1.6.1        # via google-api-python-client, google-auth-httplib2
+google-auth==1.6.2        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
@@ -77,14 +77,14 @@ httpretty==0.9.6
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==18.0.0         # via twisted
-idna==2.7                 # via cryptography, hyperlink, requests
+idna==2.8                 # via cryptography, hyperlink, requests
 ijson==2.3
 imagesize==1.1.0
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
 isort==4.3.4
-jedi==0.13.1              # via ipython
+jedi==0.13.2              # via ipython
 jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 jsondiff==1.1.1           # via moto
@@ -106,7 +106,7 @@ parsel==1.5.1             # via scrapy
 parso==0.3.1              # via jedi
 pbr==5.1.1                # via mock
 pexpect==4.6.0            # via ipython
-phonenumberslite==8.9.16  # via django-phonenumber-field
+phonenumberslite==8.10.2  # via django-phonenumber-field
 pickleshare==0.7.5        # via ipython
 pika==0.11.0
 pillow==5.3.0
@@ -117,7 +117,7 @@ prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.6.1
 ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
-pyaml==17.12.1            # via moto
+pyaml==18.11.0            # via moto
 pyasn1-modules==0.2.2
 pyasn1==0.4.4
 pycodestyle==2.4.0
@@ -131,7 +131,7 @@ pyjwt==1.6.4
 pyldap==3.0.0.post1       # via fakeldap
 pylibmc==1.6.0
 pyoembed==0.1.2
-pyopenssl==18.0.0         # via ndg-httpsclient, requests, scrapy, service-identity
+pyopenssl==18.0.0         # via ndg-httpsclient, requests, scrapy
 pyparsing==2.3.0          # via packaging
 pysocks==1.6.8            # via twilio
 python-dateutil==2.6.1
@@ -146,14 +146,14 @@ qrcode==6.0               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
 recommonmark==0.4.0
 redis==2.10.6
-regex==2018.11.7
+regex==2018.11.22
 requests-oauthlib==1.0.0
-requests[security]==2.20.1  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
-responses==0.10.3         # via moto
+requests[security]==2.21.0  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+responses==0.10.5         # via moto
 rsa==4.0
 s3transfer==0.1.13        # via boto3
 scrapy==1.5.1
-service-identity==17.0.0  # via scrapy
+service-identity==18.1.0  # via scrapy
 sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -163,6 +163,7 @@ snowballstemmer==1.2.1
 social-auth-app-django==3.1.0
 social-auth-core==2.0.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
+soupsieve==1.6.2          # via beautifulsoup4
 sourcemap==0.2.1
 sphinx-rtd-theme==0.4.2
 sphinx==1.8.2
@@ -176,7 +177,7 @@ traitlets==4.3.2          # via ipython
 transifex-client==0.12.5
 twilio==6.19.2
 twisted==18.9.0
-typed-ast==1.1.0          # via mypy
+typed-ast==1.1.1          # via mypy
 typing==3.6.6
 typing_extensions==3.6.6
 uritemplate==3.0.0
