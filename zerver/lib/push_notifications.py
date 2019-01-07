@@ -501,10 +501,10 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return "***REDACTED***"
-    else:
-        elem = LH.fromstring(rendered_content)
-        plain_text = process(elem)
-        return plain_text
+
+    elem = LH.fromstring(rendered_content)
+    plain_text = process(elem)
+    return plain_text
 
 def truncate_content(content: str) -> Tuple[str, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
