@@ -853,7 +853,9 @@ MessageListView.prototype = {
         }
 
         // Ok, we are finally ready to actually scroll.
-        message_viewport.system_initiated_animate_scroll(scroll_amount);
+        if (scroll_amount > 0) {
+            message_viewport.system_initiated_animate_scroll(scroll_amount);
+        }
     },
 
 
