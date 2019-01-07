@@ -22,7 +22,7 @@ babel==2.6.0              # via django-phonenumber-field
 backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-beautifulsoup4==4.6.3
+beautifulsoup4==4.7.1
 boto==2.49.0
 cachetools==3.0.0         # via google-auth
 cchardet==2.1.4
@@ -50,18 +50,18 @@ docopt==0.6.2
 gitdb==0.6.4
 google-api-python-client==1.7.4
 google-auth-httplib2==0.0.3  # via google-api-python-client
-google-auth==1.6.1        # via google-api-python-client, google-auth-httplib2
+google-auth==1.6.2        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
 httplib2==0.11.3
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
-idna==2.7                 # via cryptography, requests
+idna==2.8                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
-jedi==0.13.1              # via ipython
+jedi==0.13.2              # via ipython
 jinja2==2.10
 lxml==4.2.5
 markdown-include==0.5.1
@@ -76,7 +76,7 @@ oauthlib==2.1.0
 parso==0.3.1              # via jedi
 pbr==5.1.1                # via mock
 pexpect==4.6.0            # via ipython
-phonenumberslite==8.9.16  # via django-phonenumber-field
+phonenumberslite==8.10.2  # via django-phonenumber-field
 pickleshare==0.7.5        # via ipython
 pika==0.11.0
 pillow==5.3.0
@@ -105,9 +105,9 @@ pytz==2018.5
 pyyaml==3.13              # via yamole
 qrcode==6.0               # via django-two-factor-auth
 redis==2.10.6
-regex==2018.11.7
+regex==2018.11.22
 requests-oauthlib==1.0.0
-requests[security]==2.20.1  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
+requests[security]==2.21.0  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==4.0
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -115,6 +115,7 @@ smmap==0.9.0
 social-auth-app-django==3.1.0
 social-auth-core==2.0.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
+soupsieve==1.6.2          # via beautifulsoup4
 sourcemap==0.2.1
 sqlalchemy==1.2.14
 statsd==3.3.0             # via django-statsd-mozilla
