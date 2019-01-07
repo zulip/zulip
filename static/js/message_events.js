@@ -64,25 +64,28 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     // other lists, so we always update this
     message_util.add_new_messages(messages, message_list.all);
 
+    var render_info;
+
     if (narrow_state.active()) {
         // We do this NOW even though the home view is not active,
         // because we want the home view to load fast later.
         message_util.add_new_messages(messages, home_msg_list);
 
         if (narrow_state.filter().can_apply_locally()) {
-            message_util.add_new_messages(messages, message_list.narrowed);
+            render_info = message_util.add_new_messages(messages, message_list.narrowed);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
             maybe_add_narrowed_messages(messages, message_list.narrowed);
         }
     } else {
         // we're in the home view, so update its list
-        message_util.add_new_messages(messages, home_msg_list);
+        render_info = message_util.add_new_messages(messages, home_msg_list);
     }
 
 
     if (locally_echoed) {
-        notifications.notify_local_mixes(messages);
+        var need_user_to_scroll = render_info && render_info.need_user_to_scroll;
+        notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
     activity.process_loaded_messages(messages);
