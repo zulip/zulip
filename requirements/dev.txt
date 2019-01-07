@@ -142,7 +142,7 @@ python-jose==2.0.2        # via moto
 python-ldap==3.1.0        # via django-auth-ldap, pyldap
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
-pytz==2018.5
+pytz==2018.9
 pyyaml==3.13              # via pyaml, yamole
 qrcode==6.0               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy

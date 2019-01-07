@@ -101,7 +101,7 @@ python-gcm==0.4
 python-ldap==3.1.0        # via django-auth-ldap
 python-twitter==3.5
 python3-openid==3.1.0     # via social-auth-core
-pytz==2018.5
+pytz==2018.9
 pyyaml==3.13              # via yamole
 qrcode==6.0               # via django-two-factor-auth
 redis==2.10.6

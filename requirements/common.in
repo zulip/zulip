@@ -115,7 +115,7 @@ django-pylibmc==0.6.1
 python-dateutil==2.7.5
 
 # Needed for timezone work
-pytz==2018.5
+pytz==2018.9
 
 # Needed for redis
 redis==2.10.6
