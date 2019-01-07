@@ -78,7 +78,7 @@ pbr==5.1.1                # via mock
 pexpect==4.6.0            # via ipython
 phonenumberslite==8.10.2  # via django-phonenumber-field
 pickleshare==0.7.5        # via ipython
-pika==0.11.0
+pika==0.12.0
 pillow==5.3.0
 polib==1.1.0
 premailer==3.2.0
