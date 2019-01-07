@@ -46,7 +46,7 @@ chardet==3.0.4
 
 # Pinned version because older versions don't compile on newer Linux.
 # Not actually a direct dependency.
-cryptography==2.4.1
+cryptography==2.4.2
 
 # Needed for integrations
 defusedxml==0.5.0
