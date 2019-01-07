@@ -72,7 +72,7 @@ google-api-python-client==1.7.4
 
 # Needed for the email mirror
 html2text==2018.1.9
-httplib2==0.11.3
+httplib2==0.12.0
 -e git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 
 # Needed for inlining the CSS in emails
