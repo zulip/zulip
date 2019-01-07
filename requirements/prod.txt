@@ -117,7 +117,7 @@ social-auth-core==2.0.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
 soupsieve==1.6.2          # via beautifulsoup4
 sourcemap==0.2.1
-sqlalchemy==1.2.14
+sqlalchemy==1.2.15
 statsd==3.3.0             # via django-statsd-mozilla
 stripe==2.16.0
 tornado==4.5.3
