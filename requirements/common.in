@@ -182,7 +182,7 @@ py3dns==3.2.0
 social-auth-app-django==3.1.0
 
 # Needed for messages' rendered content parsing in push notifications.
-lxml==4.2.5
+lxml==4.3.0
 
 # Needed for 2-factor authentication
 django-two-factor-auth==1.8.0
