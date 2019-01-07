@@ -42,9 +42,9 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 ```js
 const zulip = require('zulip-js');
 
-// Download zuliprc-dev from your dev server
+// Pass the path to your zuliprc file here.
 const config = {
-    zuliprc: 'zuliprc-dev',
+    zuliprc: 'zuliprc',
 };
 
 zulip(config).then((client) => {

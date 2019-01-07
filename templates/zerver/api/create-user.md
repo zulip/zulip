@@ -19,7 +19,7 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 ```js
 const zulip = require('zulip-js');
 
-// You need a zuliprc-admin with administrator credentials
+// The user for this zuliprc file must be an organization administrator.
 const config = {
     zuliprc: 'zuliprc-admin',
 };
