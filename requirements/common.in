@@ -79,7 +79,7 @@ httplib2==0.12.0
 premailer==3.2.0
 
 # Needed for JWT-based auth
-PyJWT==1.6.4
+PyJWT==1.7.1
 
 # Needed for including other markdown files for user docs
 markdown-include==0.5.1
