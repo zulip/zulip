@@ -749,10 +749,18 @@ MessageListView.prototype = {
 
         if (list === current_msg_list && messages_are_new) {
             if (started_scrolled_up) {
-                return;
+                return {
+                    need_user_to_scroll: true,
+                };
             }
             var new_messages_height = self._new_messages_height(new_dom_elements);
-            self._maybe_autoscroll(new_messages_height);
+            var need_user_to_scroll = self._maybe_autoscroll(new_messages_height);
+
+            if (need_user_to_scroll) {
+                return {
+                    need_user_to_scroll: true,
+                };
+            }
         }
     },
 
@@ -804,17 +812,19 @@ MessageListView.prototype = {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
+        //
+        // returns `true` if we need the user to scroll
 
         var selected_row = this.selected_row();
         var last_visible = rows.last_visible();
 
         // Make sure we have a selected row and last visible row. (defensive)
         if (!(selected_row && selected_row.length > 0 && last_visible)) {
-            return;
+            return false;
         }
 
         if (new_messages_height <= 0) {
-            return;
+            return false;
         }
 
         if (!activity.has_focus) {
@@ -825,12 +835,15 @@ MessageListView.prototype = {
             // throttled by modern Chrome's aggressive power-saving
             // features.
             blueslip.log("Suppressing scrolldown due to inactivity");
-            return;
+            return false;
         }
 
         // do not scroll if there are any active popovers.
         if (popovers.any_active()) {
-            return;
+            // If a popover is active, then we are pretty sure the
+            // incoming message is not from the user themselves, so
+            // we don't need to tell users to scroll down.
+            return false;
         }
 
         var info = message_viewport.message_viewport_info();
@@ -844,16 +857,31 @@ MessageListView.prototype = {
         //    c) scroll amount isn't really tied to size of new messages (bad)
         //    d) all the bad things about scrolling for users who want messages
         //       to stay on the screen
-        var scroll_amount = new_messages_height;
+        var scroll_amount;
+        var need_user_to_scroll;
 
-        if (scroll_amount > scroll_limit) {
+        if (new_messages_height <= scroll_limit) {
+            // This is the happy path where we can just scroll
+            // automatically, and the user will see the new message.
+            scroll_amount = new_messages_height;
+            need_user_to_scroll = false;
+        } else {
+            // Sometimes we don't want to scroll the entire height of
+            // the message, but our callers can give appropriate
+            // warnings if the message is gonna be offscreen.
+            // (Even if we are somewhat constrained here, the message may
+            // still end up being visible, so we do some arithmetic.)
             scroll_amount = scroll_limit;
+            var offset = message_viewport.offset_from_bottom(last_visible);
+            need_user_to_scroll = offset > scroll_amount;
         }
 
         // Ok, we are finally ready to actually scroll.
         if (scroll_amount > 0) {
             message_viewport.system_initiated_animate_scroll(scroll_amount);
         }
+
+        return need_user_to_scroll;
     },
 
 
@@ -1030,9 +1058,11 @@ MessageListView.prototype = {
 
     append: function (messages, messages_are_new) {
         var cur_window_size = this._render_win_end - this._render_win_start;
+        var render_info;
+
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
-            this.render(slice_to_render, 'bottom', messages_are_new);
+            render_info = this.render(slice_to_render, 'bottom', messages_are_new);
             this._render_win_end += slice_to_render.length;
         }
 
@@ -1041,7 +1071,13 @@ MessageListView.prototype = {
         // newly received message should trigger a rerender so that
         // the new message, which will appear in the viewable area,
         // is rendered.
-        this.maybe_rerender();
+        var needed_rerender = this.maybe_rerender();
+
+        if (needed_rerender) {
+            render_info = {need_user_to_scroll: true};
+        }
+
+        return render_info;
     },
 
     prepend: function (messages) {
