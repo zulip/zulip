@@ -26,7 +26,7 @@ beautifulsoup4==4.7.1
 boto==2.49.0
 cachetools==3.0.0         # via google-auth
 cchardet==2.1.4
-certifi==2018.10.15
+certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
 cryptography==2.4.1
