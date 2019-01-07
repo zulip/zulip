@@ -96,7 +96,7 @@ ndg-httpsclient==0.5.1
 
 # Needed to access rabbitmq
 # See #8466 for why we're not using the latest version.
-pika==0.11.0
+pika==0.12.0
 
 # Needed to access our database
 psycopg2==2.7.6.1 --no-binary psycopg2
