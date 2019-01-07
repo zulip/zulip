@@ -365,6 +365,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             realm.plan_type,
             coalesce(user_counts.dau_count, 0) dau_count,
             coalesce(wau_counts.wau_count, 0) wau_count,
+            coalesce(adiw_counts.adiw_count, 0) adiw_count,
             (
                 SELECT
                     count(*)
@@ -438,6 +439,29 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
                 GROUP BY realm_id
             ) wau_counts
             ON wau_counts.realm_id = realm.id
+        LEFT OUTER JOIN
+            (
+                SELECT
+                    realm_id,
+                    COUNT(*) as adiw_count
+                FROM (
+                    SELECT
+                        realm_id,
+                        DATE(arc.end_time)
+                    FROM analytics_realmcount arc
+                    WHERE (
+                        SELECT sum(a.value) FROM analytics_realmcount a
+                            WHERE property in (
+                                'active_users_log:is_bot:day'
+                            )
+                            AND DATE (a.end_time) = DATE (arc.end_time)
+                            AND a.realm_id = arc.realm_id) >= 5
+                    AND DATE(arc.end_time) >= CURRENT_DATE - INTERVAL '7 day'
+                    GROUP by arc.realm_id, DATE(arc.end_time)
+                ) adiw
+                GROUP BY realm_id
+            ) adiw_counts
+            ON adiw_counts.realm_id = realm.id
         WHERE EXISTS (
                 SELECT *
                 FROM zerver_useractivity ua
@@ -486,6 +510,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # get messages sent per day
     counts = get_realm_day_counts()
+
     for row in rows:
         try:
             row['history'] = counts[row['string_id']]['cnts']
@@ -522,20 +547,22 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # Count active sites
     def meets_goal(row: Dict[str, int]) -> bool:
-        return row['dau_count'] >= 5
+        return row['adiw_count'] >= 4
 
     num_active_sites = len(list(filter(meets_goal, rows)))
 
-    # create totals
     total_dau_count = 0
     total_user_profile_count = 0
     total_bot_count = 0
     total_wau_count = 0
+    total_adiw_count = 0
+
     for row in rows:
         total_dau_count += int(row['dau_count'])
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
         total_wau_count += int(row['wau_count'])
+        total_adiw_count += int(row['adiw_count'])
 
     total_row = dict(
         string_id='Total',
@@ -549,6 +576,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         bot_count=total_bot_count,
         hours=int(total_hours),
         wau_count=total_wau_count,
+        adiw_count=total_adiw_count,
     )
 
     rows.insert(0, total_row)

@@ -1,4 +1,4 @@
-<h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
+<h2 style="text-align: center;">{{ num_active_sites }} active sites </h2>
 
 <p id="utctime" style="text-align: center;"></p>
 <p id="localtime" style="text-align: center;"></p>
@@ -20,7 +20,7 @@
 </script>
 
 <ul>
-    <li><strong>active (site)</strong> - has ≥5 DAUs</li>
+    <li><strong>active (site)</strong> - has ≥4 ADiWs</li>
     <li>sites are listed if ≥1 users active in last 2 weeks</li>
     <li><strong>user</strong> - registered user, not deactivated, not a bot</li>
     <li><strong>active (user)</strong> - sent a message, or advanced the pointer (reading messages doesn't count unless advances the pointer)</li>
@@ -28,6 +28,7 @@
     <li><strong><th><i class="fa fa-envelope"></i></th></strong> - copies realm admin emails to clipboard</li>
     <li><strong>DAU</strong> (Daily Active Users) - users active in last 24hr</li>
     <li><strong>WAU</strong> (Weekly Active Users) - users active in last 7 * 24hr</li>
+    <li><strong>ADiW</strong> (Active Days in a Week) - number of days having ≥5 DAUs in last 7 UTC days</li>
     <li><strong>DAT</strong> (Daily Active Time) - total user-activity time in last 24hr</li>
     <li><strong>Human message</strong> - message sent by non-bot user, and not with known-bot client</li>
     <li><a href="/stats/installation">Server total /stats style graphs</a></li>
@@ -44,6 +45,7 @@
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
+            <th>ADiW</th>
             <th>Total users</th>
             <th>Bots</th>
             <th>DAT/DAU (hr)</th>
@@ -92,6 +94,10 @@
 
             <td class="number">
                 {{ row.wau_count }}
+            </td>
+
+            <td class="number">
+                {{ row.adiw_count }}
             </td>
 
             <td class="number">
