@@ -1,10 +1,6 @@
 var helpers = (function () {
 var exports = {};
 
-exports.is_in_array = function (value, array) {
-    return array.indexOf(value) > -1;
-};
-
 exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     var form = $("#" + form_name + "-form");
     var form_loading_indicator = "#" + form_name + "_loading_indicator";
@@ -27,7 +23,7 @@ exports.create_ajax_request = function (url, form_name, stripe_token = null) {
     }
 
     form.serializeArray().forEach(function (item) {
-        if (exports.is_in_array(item.name, numeric_inputs)) {
+        if (_.contains(numeric_inputs, item.name)) {
             data[item.name] = item.value;
         } else {
             data[item.name] = JSON.stringify(item.value);
