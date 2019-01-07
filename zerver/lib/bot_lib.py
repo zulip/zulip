@@ -15,6 +15,8 @@ from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
 
+from django.utils.translation import ugettext as _
+
 import configparser
 
 from mypy_extensions import NoReturn
@@ -60,6 +62,9 @@ class StateHandler:
 class EmbeddedBotQuitException(Exception):
     pass
 
+class EmbeddedBotEmptyRecipientsList(Exception):
+    pass
+
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
@@ -84,7 +89,9 @@ class EmbeddedBotHandler:
         # usual 'to' field could be either a List[str] or a str.
         recipients = ','.join(message['to']).split(',')
 
-        if len(message['to']) == 1:
+        if len(message['to']) == 0:
+            raise EmbeddedBotEmptyRecipientsList(_('Message must have recipients!'))
+        elif len(message['to']) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
             internal_send_private_message(self.user_profile.realm, self.user_profile,
                                           recipient_user, message['content'])
