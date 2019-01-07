@@ -2,15 +2,18 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import CommandError
 
 from zerver.lib.export import do_export_realm, \
     do_write_stats_file_for_realm_export
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.utils import generate_random_token
 
 class Command(ZulipBaseCommand):
     help = """Exports all data from a Zulip realm
@@ -97,6 +100,9 @@ class Command(ZulipBaseCommand):
                             action="store",
                             default=6,
                             help='Threads to use in exporting UserMessage objects in parallel')
+        parser.add_argument('--upload-to-s3',
+                            action="store_true",
+                            help="Whether to upload resulting tarball to s3")
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -125,3 +131,29 @@ class Command(ZulipBaseCommand):
         os.chdir(os.path.dirname(output_dir))
         subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
         print("Tarball written to %s" % (tarball_path,))
+
+        if not options["upload_to_s3"]:
+            return
+
+        def percent_callback(complete: Any, total: Any) -> None:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+
+        if settings.LOCAL_UPLOADS_DIR is not None:
+            raise CommandError("S3 backend must be configured to upload to S3")
+
+        print("Uploading export tarball to S3")
+
+        from zerver.lib.upload import S3Connection, get_bucket, Key
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        # We use the avatar bucket, because it's world-readable.
+        bucket = get_bucket(conn, settings.S3_AVATAR_BUCKET)
+        key = Key(bucket)
+        key.key = os.path.join("exports", generate_random_token(32), os.path.basename(tarball_path))
+        key.set_contents_from_filename(tarball_path, cb=percent_callback, num_cb=40)
+
+        public_url = 'https://{bucket}.{host}/{key}'.format(
+            host=conn.server_name(),
+            bucket=bucket.name,
+            key=key.key)
+        print("Uploaded to %s" % (public_url,))
