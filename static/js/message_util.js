@@ -8,17 +8,22 @@ exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     resize.resize_page_components();
 };
 
-exports.add_messages = function add_messages(messages, msg_list, opts) {
+function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return;
     }
-
-    opts = _.extend({messages_are_new: false}, opts);
 
     loading.destroy_indicator($('#page_loading_indicator'));
     $('#first_run_message').remove();
 
     msg_list.add_messages(messages, opts);
+}
+
+exports.add_old_messages = function (messages, msg_list) {
+    add_messages(messages, msg_list, {messages_are_new: false});
+};
+exports.add_new_messages = function (messages, msg_list) {
+    add_messages(messages, msg_list, {messages_are_new: true});
 };
 
 
