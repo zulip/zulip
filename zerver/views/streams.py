@@ -378,7 +378,7 @@ def add_subscriptions_backend(
                 stream_msg = "the following streams: %s" % (stream_strs,)
             else:
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
-            msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
+            msg = ("_@**%s|%d** just created %s" % (user_profile.full_name, user_profile.id, stream_msg))
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
             stream_name = notifications_stream.name
