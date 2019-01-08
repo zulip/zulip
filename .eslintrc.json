@@ -168,6 +168,7 @@
         "stream_muting": false,
         "stream_popover": false,
         "stream_sort": false,
+        "StripeCheckout": false,
         "submessage": false,
         "subs": false,
         "tab_bar": false,
