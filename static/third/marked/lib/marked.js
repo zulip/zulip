@@ -988,6 +988,7 @@ Renderer.prototype.code = function(code, lang, escaped) {
 };
 
 Renderer.prototype.blockquote = function(quote) {
+  quote = this.options.silencedMentionHandler(quote);
   return '<blockquote>\n' + quote + '</blockquote>\n';
 };
 
