@@ -302,6 +302,8 @@ run_test('marked', () => {
          expected: '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>'},
         {input: '\u{1f6b2}',
          expected: '<p>\u{1f6b2}</p>' },
+        {input: 'Silent mention: _@**Cordelia Lear**',
+         expected: '<p>Silent mention: <span class="user-mention silent" data-user-id="101">@Cordelia Lear</span></p>'},
         // Test only those realm filters which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
