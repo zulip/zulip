@@ -3114,8 +3114,7 @@ def do_change_logo_source(realm: Realm, logo_source: str) -> None:
 
     RealmAuditLog.objects.create(event_type=RealmAuditLog.REALM_LOGO_CHANGED,
                                  realm=realm, event_time=timezone_now())
-
-    send_event(realm,
+	send_event(realm,
                dict(type='realm',
                     op='update_dict',
                     property="logo",
@@ -3991,8 +3990,7 @@ def do_update_embedded_data(user_profile: UserProfile,
     changed_messages = [message]
 
     ums = UserMessage.objects.filter(message=message.id)
-
-    if content is not None:
+	if content is not None:
         update_user_message_flags(message, ums)
         message.content = content
         message.rendered_content = rendered_content
