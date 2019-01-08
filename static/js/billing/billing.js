@@ -37,7 +37,3 @@ if (typeof module !== 'undefined') {
 }
 
 window.billing = billing;
-
-$(function () {
-    billing.initialize();
-});
