@@ -1481,7 +1481,8 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        match = m.group(2)
+        match = m.group('match')
+        silent = m.group('silent') == '_'
 
         db_data = self.markdown.zulip_db_data
         if self.markdown.zulip_message and db_data is not None:
@@ -1503,7 +1504,8 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 self.markdown.zulip_message.mentions_wildcard = True
                 user_id = "*"
             elif user:
-                self.markdown.zulip_message.mentions_user_ids.add(user['id'])
+                if not silent:
+                    self.markdown.zulip_message.mentions_user_ids.add(user['id'])
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -1511,8 +1513,11 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 return None
 
             el = markdown.util.etree.Element("span")
-            el.set('class', 'user-mention')
             el.set('data-user-id', user_id)
+            if silent:
+                el.set('class', 'user-mention silent')
+            else:
+                el.set('class', 'user-mention')
             el.text = "@%s" % (name,)
             return el
         return None

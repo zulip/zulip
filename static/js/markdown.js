@@ -59,7 +59,7 @@ exports.apply_markdown = function (message) {
 
     // Our python-markdown processor appends two \n\n to input
     var options = {
-        userMentionHandler: function (name) {
+        userMentionHandler: function (name, silently) {
             var person = people.get_by_name(name);
 
             var id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
@@ -74,13 +74,17 @@ exports.apply_markdown = function (message) {
             }
 
             if (person !== undefined) {
-                if (people.is_my_user_id(person.user_id)) {
+                if (people.is_my_user_id(person.user_id) && !silently) {
                     message.mentioned = true;
                     message.mentioned_me_directly = true;
                 }
-                return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
-                       '@' + escape(person.full_name, true) +
-                       '</span>';
+                var str = '';
+                if (silently) {
+                    str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
+                } else {
+                    str += '<span class="user-mention" data-user-id="' + person.user_id + '">';
+                }
+                return str + '@' + escape(person.full_name, true) + '</span>';
             } else if (name === 'all' || name === 'everyone' || name === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +

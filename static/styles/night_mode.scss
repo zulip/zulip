@@ -369,7 +369,7 @@ on a dark background, and don't change the dark labels dark either. */
         box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
     }
 
-    .user-mention-me {
+    .user-mention-me :not(.silent) {
         background-color: hsla(355, 37%, 31%, 1);
         box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
     }
