@@ -142,15 +142,17 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
-        mail_subject = 'x'*70  # 70 character long string
         incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
-        incoming_valid_message['Subject'] = mail_subject
+        incoming_valid_message['Subject'] = 'x'*70
         incoming_valid_message['From'] = self.example_email('hamlet')
         incoming_valid_message['To'] = stream_to_address
         incoming_valid_message['Reply-to'] = self.example_email('othello')
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
-        self.assertEqual(message.content.split('\n')[0], mail_subject)
+        self.assertEqual(message.content.split('\n')[0], "")
+        self.assertEqual(message.content.split('\n')[1], "")
+        self.assertEqual(message.content.split('\n')[2], "Subject:"+str(incoming_valid_message['Subject']))
+        self.assertEqual(message.content.split('\n')[3], "TestStreamEmailMessages Body")
 
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
         user_profile = self.example_user('hamlet')
