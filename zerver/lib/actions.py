@@ -252,8 +252,8 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
             "stream",
             signup_notifications_stream.name,
             "signups",
-            "%s (%s) just signed up for Zulip. (total: %i)" % (
-                user_profile.full_name, user_profile.email, user_count
+            "_@**%s|%s** just signed up for Zulip. (total: %i)" % (
+                user_profile.full_name, user_profile.id, user_count
             )
         )
 
@@ -3356,7 +3356,9 @@ def do_rename_stream(stream: Stream,
         sender,
         new_name,
         "welcome",
-        "@**%s** renamed stream **%s** to **%s**" % (user_profile.full_name, old_name, new_name)
+        "_@**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
+                                                         user_profile.id,
+                                                         old_name, new_name)
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
