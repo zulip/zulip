@@ -43,7 +43,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 EXTERNAL_URI_SCHEME = "http://"
-EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
+EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 # SLOW_QUERY_LOGS_STREAM = "errors"
