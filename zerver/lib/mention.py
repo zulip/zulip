@@ -1,11 +1,11 @@
 
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 
 import re
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-find_mentions = r'(?<![^\s\'\"\(,:<])@(\*\*[^\*]+\*\*|all|everyone|stream)'
+find_mentions = r'(?<![^\s\'\"\(,:<])(?P<silent>_?)@(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)'
 user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
 
 wildcards = ['all', 'everyone', 'stream']
@@ -13,7 +13,10 @@ wildcards = ['all', 'everyone', 'stream']
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
 
-def extract_mention_text(s: str) -> Optional[str]:
+def extract_mention_text(m: Tuple[str, str]) -> Optional[str]:
+    # re.findall provides tuples of match elements; we want the second
+    # to get the main mention content.
+    s = m[1]
     if s.startswith("**") and s.endswith("**"):
         text = s[2:-2]
         if text in wildcards:

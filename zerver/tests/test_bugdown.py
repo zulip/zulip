@@ -952,6 +952,19 @@ class BugdownTest(ZulipTestCase):
                          '@King Hamlet</span></p>' % (user_id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
+    def test_mention_silent(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "_@**King Hamlet**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention silent" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span></p>' % (user_id))
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_mentions(content), names)
