@@ -101,9 +101,9 @@ function config_process_results(messages) {
         assert.deepEqual(arg, messages);
     };
 
-    message_util.add_messages = function (new_messages, msg_list, opts) {
+    message_util.add_old_messages = function (new_messages, msg_list) {
         assert.deepEqual(new_messages, messages);
-        msg_list.add_messages(new_messages, opts);
+        msg_list.add_messages(new_messages);
     };
 
     activity.process_loaded_messages = function (arg) {

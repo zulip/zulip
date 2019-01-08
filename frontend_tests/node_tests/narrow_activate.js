@@ -87,12 +87,6 @@ function test_helper() {
 
     blueslip.debug = noop;
 
-    message_util.add_messages = (messages, target_list, opts) => {
-        // The real function here doesn't do any more than this
-        // that we care about here.
-        target_list.add_messages(messages, opts);
-    };
-
     return {
         clear: () => {
             events = [];

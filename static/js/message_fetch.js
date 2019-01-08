@@ -43,11 +43,11 @@ function process_result(data, opts) {
     // the message_list.all as well, as the home_msg_list is reconstructed
     // from message_list.all.
     if (opts.msg_list === home_msg_list) {
-        message_util.add_messages(messages, message_list.all, {messages_are_new: false});
+        message_util.add_old_messages(messages, message_list.all);
     }
 
     if (messages.length !== 0) {
-        message_util.add_messages(messages, opts.msg_list, {messages_are_new: false});
+        message_util.add_old_messages(messages, opts.msg_list);
     }
 
     activity.process_loaded_messages(messages);
