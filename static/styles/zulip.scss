@@ -2768,7 +2768,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-bottom: 1px;
 }
 
-.user-mention-me {
+.user-mention-me :not(.silent) {
     background-color: hsl(112, 88%, 87%);
 }
 
