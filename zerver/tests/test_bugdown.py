@@ -996,6 +996,37 @@ class BugdownTest(ZulipTestCase):
                          'check this out</p>' % (hamlet.id, cordelia.id))
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
 
+    def test_mention_in_quotes(self) -> None:
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        msg = Message(sender=othello, sending_client=get_client("test"))
+
+        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<blockquote>\n<p>'
+                         '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                         ' and '
+                         '<span class="user-mention silent" data-user-id="%s">@Othello, the Moor of Venice</span>'
+                         '</p>\n</blockquote>\n'
+                         '<p>'
+                         '<span class="user-mention" data-user-id="%s">@King Hamlet</span>'
+                         ' and '
+                         '<span class="user-mention" data-user-id="%s">@Cordelia Lear</span>'
+                         '</p>' % (hamlet.id, othello.id, hamlet.id, cordelia.id))
+        self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+
+        # Both fenced quote and > quote should be identical
+        expected = ('<blockquote>\n<p>'
+                    '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                    '</p>\n</blockquote>' % (hamlet.id))
+        content = "```quote\n@**King Hamlet**\n```"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "> @**King Hamlet**"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_mention_duplicate_full_name(self) -> None:
         realm = get_realm('zulip')
 

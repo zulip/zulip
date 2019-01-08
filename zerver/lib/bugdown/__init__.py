@@ -1320,6 +1320,24 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         super().__init__(parser)
         parser.markdown.tab_length = 4
 
+class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
+    """ Process BlockQuotes.
+
+        Based on markdown.blockprocessors.BlockQuoteProcessor, but with 2-space indent
+    """
+
+    # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
+    RE = re.compile(r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
+                    r'[ ]{0,3}>[ ]?(.*)')
+    mention_re = re.compile(mention.find_mentions)
+
+    def clean(self, line: str) -> str:
+        # Silence all the mentions inside blockquotes
+        line = re.sub(self.mention_re, lambda m: "_@{}".format(m.group('match')), line)
+
+        # And then run the upstream processor's code for removing the '>'
+        return super().clean(line)
+
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
         paragraph to be rendered as an unordered list
@@ -1715,16 +1733,12 @@ class Bugdown(markdown.Extension):
             '>strong')
 
     def extend_block_formatting(self, md: markdown.Markdown) -> None:
-        for k in ('hashheader', 'setextheader', 'olist', 'ulist', 'indent'):
+        for k in ('hashheader', 'setextheader', 'olist', 'ulist', 'indent', 'quote'):
             del md.parser.blockprocessors[k]
 
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
         md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
-
-        # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
-        md.parser.blockprocessors['quote'].RE = re.compile(
-            r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
-            r'[ ]{0,3}>[ ]?(.*)')
+        md.parser.blockprocessors.add('quote', BlockQuoteProcessor(md.parser), '<ulist')
 
     def extend_avatars(self, md: markdown.Markdown) -> None:
         # Note that !gravatar syntax should be deprecated long term.
