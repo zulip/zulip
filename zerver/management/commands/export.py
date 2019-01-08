@@ -100,6 +100,9 @@ class Command(ZulipBaseCommand):
                             action="store",
                             default=6,
                             help='Threads to use in exporting UserMessage objects in parallel')
+        parser.add_argument('--public-only',
+                            action="store_true",
+                            help='Export only public stream messages and associated attachments')
         parser.add_argument('--upload-to-s3',
                             action="store_true",
                             help="Whether to upload resulting tarball to s3")
@@ -122,7 +125,7 @@ class Command(ZulipBaseCommand):
         if num_threads < 1:
             raise CommandError('You must have at least one thread.')
 
-        do_export_realm(realm, output_dir, threads=num_threads)
+        do_export_realm(realm, output_dir, threads=num_threads, public_only=options["public_only"])
         print("Finished exporting to %s; tarring" % (output_dir,))
 
         do_write_stats_file_for_realm_export(output_dir)

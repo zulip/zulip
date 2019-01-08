@@ -935,7 +935,8 @@ def write_message_export(message_filename: Path, output: MessageOutput) -> None:
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
                                  chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE,
-                                 output_dir: Optional[Path]=None) -> Set[int]:
+                                 output_dir: Optional[Path]=None,
+                                 public_only: bool=False) -> Set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -959,18 +960,18 @@ def export_partial_message_files(realm: Realm,
     user_ids_for_us = get_ids(
         response['zerver_userprofile']
     )
-    recipient_ids_for_us = get_ids(response['zerver_recipient'])
-
     ids_of_our_possible_senders = get_ids(
         response['zerver_userprofile'] +
         response['zerver_userprofile_mirrordummy'] +
         response['zerver_userprofile_crossrealm'])
-    ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - user_ids_for_us
 
-    recipients_for_them = Recipient.objects.filter(
-        type=Recipient.PERSONAL,
-        type_id__in=ids_of_non_exported_possible_recipients).values("id")
-    recipient_ids_for_them = get_ids(recipients_for_them)
+    if public_only:
+        recipient_streams = Stream.objects.filter(realm=realm, invite_only=False)
+        recipient_ids = Recipient.objects.filter(
+            type=Recipient.STREAM, type_id__in=recipient_streams).values_list("id", flat=True)
+        recipient_ids_for_us = get_ids(response['zerver_recipient']) & set(recipient_ids)
+    else:
+        recipient_ids_for_us = get_ids(response['zerver_recipient'])
 
     # We capture most messages here, since the
     # recipients we subscribe to are also the
@@ -980,18 +981,31 @@ def export_partial_message_files(realm: Realm,
         recipient__in=recipient_ids_for_us,
     ).order_by('id')
 
-    # This should pick up stragglers; messages we sent
-    # where we the recipient wasn't subscribed to by any of
-    # us (such as PMs to "them").
-    messages_we_sent_to_them = Message.objects.filter(
-        sender__in=user_ids_for_us,
-        recipient__in=recipient_ids_for_them,
-    ).order_by('id')
+    if public_only:
+        # For the public stream export, we only need the messages those streams received.
+        message_queries = [
+            messages_we_received,
+        ]
+    else:
+        # This should pick up stragglers; messages we sent
+        # where we the recipient wasn't subscribed to by any of
+        # us (such as PMs to "them").
+        ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - user_ids_for_us
 
-    message_queries = [
-        messages_we_received,
-        messages_we_sent_to_them
-    ]
+        recipients_for_them = Recipient.objects.filter(
+            type=Recipient.PERSONAL,
+            type_id__in=ids_of_non_exported_possible_recipients).values("id")
+        recipient_ids_for_them = get_ids(recipients_for_them)
+
+        messages_we_sent_to_them = Message.objects.filter(
+            sender__in=user_ids_for_us,
+            recipient__in=recipient_ids_for_them,
+        ).order_by('id')
+
+        message_queries = [
+            messages_we_received,
+            messages_we_sent_to_them,
+        ]
 
     all_message_ids = set()  # type: Set[int]
     dump_file_id = 1
@@ -1325,7 +1339,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write('\n')
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
-                    exportable_user_ids: Optional[Set[int]]=None) -> None:
+                    exportable_user_ids: Optional[Set[int]]=None,
+                    public_only: bool=False) -> None:
     response = {}  # type: TableData
 
     # We need at least one thread running to export
@@ -1358,7 +1373,8 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     # This is for performance reasons, of course.  Some installations
     # have millions of messages.
     logging.info("Exporting .partial files messages")
-    message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
+    message_ids = export_partial_message_files(realm, response, output_dir=output_dir,
+                                               public_only=public_only)
     logging.info('%d messages were exported' % (len(message_ids)))
 
     # zerver_reaction
