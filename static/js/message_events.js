@@ -38,11 +38,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             // message.  Arguably, it's counterproductive complexity.
             new_messages = _.map(new_messages, message_store.add_message_metadata);
 
-            message_util.add_messages(
-                new_messages,
-                msg_list,
-                {messages_are_new: true}
-            );
+            message_util.add_new_messages(new_messages, msg_list);
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -66,22 +62,22 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
 
     // message_list.all is a data-only list that we use to populate
     // other lists, so we always update this
-    message_util.add_messages(messages, message_list.all, {messages_are_new: true});
+    message_util.add_new_messages(messages, message_list.all);
 
     if (narrow_state.active()) {
         // We do this NOW even though the home view is not active,
         // because we want the home view to load fast later.
-        message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
+        message_util.add_new_messages(messages, home_msg_list);
 
         if (narrow_state.filter().can_apply_locally()) {
-            message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
+            message_util.add_new_messages(messages, message_list.narrowed);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
             maybe_add_narrowed_messages(messages, message_list.narrowed);
         }
     } else {
         // we're in the home view, so update its list
-        message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
+        message_util.add_new_messages(messages, home_msg_list);
     }
 
 
