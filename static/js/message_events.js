@@ -2,7 +2,7 @@ var message_events = (function () {
 
 var exports = {};
 
-function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
+function maybe_add_narrowed_messages(messages, msg_list) {
     var ids = [];
     _.each(messages, function (elem) {
         ids.push(elem.id);
@@ -41,7 +41,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             message_util.add_messages(
                 new_messages,
                 msg_list,
-                {messages_are_new: messages_are_new}
+                {messages_are_new: true}
             );
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
@@ -52,7 +52,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
+                    maybe_add_narrowed_messages(messages, msg_list);
                 }
             }, 5000);
         }});
@@ -77,7 +77,7 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
             message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed, true);
+            maybe_add_narrowed_messages(messages, message_list.narrowed);
         }
     } else {
         // we're in the home view, so update its list
