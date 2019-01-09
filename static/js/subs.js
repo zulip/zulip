@@ -466,7 +466,7 @@ exports.filter_table = function (query) {
 
     exports.add_tooltips_to_left_panel();
 
-    ui.update_scrollbar($("#subscription_overlay .streams-list"));
+    ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     var all_stream_ids = [].concat(
         buckets.name,
