@@ -26,6 +26,13 @@ exports.set_up_scrollbar = function (element) {
 
 exports.update_scrollbar = function (element_selector) {
     var element = element_selector[0];
+    if (element.perfectScrollbar !== undefined) {
+        element.perfectScrollbar.update();
+    }
+};
+
+exports.reset_scrollbar = function (element_selector) {
+    var element = element_selector[0];
     element.scrollTop = 0;
     if (element.perfectScrollbar !== undefined) {
         element.perfectScrollbar.update();
