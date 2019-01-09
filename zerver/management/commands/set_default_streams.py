@@ -1,6 +1,6 @@
 
 import sys
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser
 from typing import Any, Dict
 
 from zerver.lib.actions import set_default_streams
@@ -20,12 +20,6 @@ For example:
 ./manage.py set_default_streams --realm=foo --streams="foo,bar,baz with space"
 ./manage.py set_default_streams --realm=foo --streams=
 """
-
-    # Fix support for multi-line usage
-    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
-        parser = super().create_parser(*args, **kwargs)
-        parser.formatter_class = RawTextHelpFormatter
-        return parser
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('-s', '--streams',

@@ -3,7 +3,8 @@
 import sys
 import time
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
+
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
@@ -35,6 +36,13 @@ def sleep_forever() -> None:
         time.sleep(10**9)
 
 class ZulipBaseCommand(BaseCommand):
+
+    # Fix support for multi-line usage
+    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
+        parser = super().create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
+
     def add_realm_args(self, parser: ArgumentParser, required: bool=False,
                        help: Optional[str]=None) -> None:
         if help is None:

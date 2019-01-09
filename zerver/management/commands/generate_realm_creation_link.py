@@ -1,15 +1,14 @@
 
 import sys
-from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
-from django.core.management.base import BaseCommand
 from django.db import ProgrammingError
 
 from confirmation.models import generate_realm_creation_url
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Realm
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
     help = """
     Outputs a randomly generated, 1-time-use link for Organization creation.
     Whoever visits the link can create a new organization on this server, regardless of whether
@@ -17,12 +16,6 @@ class Command(BaseCommand):
     settings.REALM_CREATION_LINK_VALIDITY_DAYS.
 
     Usage: ./manage.py generate_realm_creation_link """
-
-    # Fix support for multi-line usage
-    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
-        parser = super().create_parser(*args, **kwargs)
-        parser.formatter_class = RawTextHelpFormatter
-        return parser
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:
