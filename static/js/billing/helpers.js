@@ -94,8 +94,11 @@ exports.set_tab = function (page) {
     }
 
     $('#' + page + '-tabs.nav-tabs a').click(function () {
-        $(this).tab('show');
         window.location.hash = this.hash;
+    });
+
+    $(window).on('hashchange', function () {
+        $('#' + page + '-tabs.nav a[href="' + window.location.hash + '"]').tab('show');
         $('html').scrollTop(0);
     });
 };
