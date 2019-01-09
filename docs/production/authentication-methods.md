@@ -101,6 +101,20 @@ from the root of your Zulip installation.  If your configuration is
 working, that will output the full name for your user (and that user's
 email address, if it isn't the same as the "Zulip username").
 
+**Active Directory**: For Active Directory, one typically sets
+  `AUTH_LDAP_USER_SEARCH` to one of:
+
+* To access by Active Directory username:
+    ```
+    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                       ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+    ```
+* To access by Active Directory email address:
+    ```
+    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                       ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
+    ```
+
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing
