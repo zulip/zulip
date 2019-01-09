@@ -125,8 +125,8 @@ def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
 
 def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[List[int]]=None,
                       to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
-                      from_address: Optional[str]=None, context: Dict[str, Any]={},
-                      delay: datetime.timedelta=datetime.timedelta(0)) -> None:
+                      from_address: Optional[str]=None, language: Optional[str]=None,
+                      context: Dict[str, Any]={}, delay: datetime.timedelta=datetime.timedelta(0)) -> None:
     # WARNING: Be careful when using this with multiple recipients;
     # because the current ScheduledEmail model (used primarily for
     # cancelling planned emails) does not support multiple recipients,
@@ -139,11 +139,12 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
     # above problem is not relevant.
     template_name = template_prefix.split('/')[-1]
     email_fields = {'template_prefix': template_prefix, 'to_user_ids': to_user_ids, 'to_emails': to_emails,
-                    'from_name': from_name, 'from_address': from_address, 'context': context}
+                    'from_name': from_name, 'from_address': from_address, 'language': language,
+                    'context': context}
 
     if settings.DEVELOPMENT_LOG_EMAILS:
         send_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails, from_name=from_name,
-                   from_address=from_address, context=context)
+                   from_address=from_address, language=language, context=context)
         # For logging the email
 
     assert (to_user_ids is None) ^ (to_emails is None)
