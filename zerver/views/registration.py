@@ -39,7 +39,7 @@ from zerver.views.auth import create_preregistration_user, redirect_and_log_into
     redirect_to_deactivation_notice, get_safe_redirect_to
 
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend, \
-    ZulipLDAPException, email_auth_enabled
+    ZulipLDAPExceptionOutsideDomain, email_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -143,7 +143,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
-                    except ZulipLDAPException:
+                    except ZulipLDAPExceptionOutsideDomain:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
