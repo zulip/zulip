@@ -116,6 +116,12 @@ $(function () {
             // by the server.
             $("#login_form .alert.alert-error").remove();
         },
+        showErrors: function (error_map) {
+            if (error_map.password) {
+                $("#login_form .alert.alert-error").remove();
+            }
+            this.defaultShowErrors();
+        },
     });
 
     function check_subdomain_avilable(subdomain) {
