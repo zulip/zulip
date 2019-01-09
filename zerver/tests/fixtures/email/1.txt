@@ -1,0 +1,9 @@
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Normal subject
+From: hamlet@zulip.com
+To: foo@zulipdev.com
+Reply-to: othello@zulip.com
+
+Email fixture 1.txt body
