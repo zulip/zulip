@@ -39,7 +39,7 @@ exports.build_default_stream_table = function (streams_data) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
-                ui.update_scrollbar(table);
+                ui.reset_scrollbar(table);
             },
         },
     }).init();

@@ -102,9 +102,9 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    var update_scrollbar = function ($sel) {
+    var reset_scrollbar = function ($sel) {
         return function () {
-            ui.update_scrollbar($sel);
+            ui.reset_scrollbar($sel);
         };
     };
 
@@ -122,7 +122,7 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
-            onupdate: update_scrollbar($bots_table),
+            onupdate: reset_scrollbar($bots_table),
         },
     }).init();
 
@@ -162,7 +162,7 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
-            onupdate: update_scrollbar($users_table),
+            onupdate: reset_scrollbar($users_table),
         },
     }).init();
 
@@ -180,7 +180,7 @@ function populate_users(realm_people_data) {
                     item.email.toLowerCase().indexOf(value) >= 0
                 );
             },
-            onupdate: update_scrollbar($deactivated_users_table),
+            onupdate: reset_scrollbar($deactivated_users_table),
         },
     }).init();
 
