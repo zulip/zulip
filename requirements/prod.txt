@@ -55,6 +55,7 @@ h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
 httplib2==0.12.0
+hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 idna==2.8                 # via cryptography, requests
@@ -107,7 +108,7 @@ qrcode==6.0               # via django-two-factor-auth
 redis==2.10.6
 regex==2018.11.22
 requests-oauthlib==1.0.0
-requests[security]==2.21.0  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
+requests[security]==2.21.0  # via hypchat, matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==4.0
 simplegeneric==0.8.1      # via ipython
 six==1.12.0
