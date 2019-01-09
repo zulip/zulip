@@ -20,6 +20,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
 
+from version import ZULIP_VERSION
+
 class ResponseMock:
     def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
         self.status_code = status_code
@@ -95,6 +97,19 @@ The webhook got a response with status code *500*.''')
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+
+    def test_headers(self) -> None:
+        with mock.patch('requests.request') as mock_request:
+            do_rest_call('', 'payload-stub', self.mock_event, service_handler)
+            kwargs = mock_request.call_args[1]
+            self.assertEqual(kwargs['data'], 'payload-stub')
+
+            user_agent = 'ZulipOutgoingWebhook/' + ZULIP_VERSION
+            headers = {
+                'content-type': 'application/json',
+                'User-Agent': user_agent,
+            }
+            self.assertEqual(kwargs['headers'], headers)
 
     def test_error_handling(self) -> None:
         def helper(side_effect: Any, error_text: str) -> None:
