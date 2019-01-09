@@ -159,6 +159,9 @@ run_test('activate another person poll', () => {
         message: {
             sender_id: 100,
         },
+        extra_data: {
+            question: 'What do you want?',
+        },
     };
 
     const set_widget_find_result = (selector) => {
@@ -171,22 +174,21 @@ run_test('activate another person poll', () => {
     const poll_comment_input = set_widget_find_result('input.poll-comment');
     const widget_comment_container = set_widget_find_result('ul.poll-widget');
 
-    const poll_question = set_widget_find_result('button.poll-question');
-    const poll_question_input = set_widget_find_result('input.poll-question');
+    const poll_question_submit = set_widget_find_result('button.poll-question-check');
+    const poll_edit_question = set_widget_find_result('.poll-edit-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
     const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
+    const poll_please_wait = set_widget_find_result('.poll-please-wait');
+    const poll_author_help = set_widget_find_result('.poll-author-help');
 
-    let question_button_callback;
+    set_widget_find_result('button.poll-question-remove');
+    set_widget_find_result('input.poll-question');
+
     let comment_button_callback;
     let vote_button_callback;
-
-    poll_question.on = (event, func) => {
-        assert.equal(event, 'click');
-        question_button_callback = func;
-    };
 
     poll_comment.on = (event, func) => {
         assert.equal(event, 'click');
@@ -198,23 +200,44 @@ run_test('activate another person poll', () => {
         vote_button_callback = func;
     };
 
+    poll_question_header.toggle = (show) => {
+        assert(show);
+    };
+
+    poll_edit_question.toggle = (show) => {
+        assert(!show);
+    };
+
+    var show_submit = false;
+    poll_question_submit.toggle = (show) => {
+        assert.equal(show, show_submit);
+    };
+
+    poll_question_container.toggle = (show) => {
+        assert(!show);
+    };
+
+    poll_comment_container.toggle = (show) => {
+        assert.equal(show, true);
+    };
+
+    poll_please_wait.toggle = (show) => {
+        assert.equal(show, false);
+    };
+
+    poll_author_help.toggle = (show) => {
+        assert(!show);
+    };
+
     poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
     assert.equal(widget_comment_container.html(), 'poll-widget-results');
-    assert.equal(poll_question_header.text(), '');
+    assert.equal(poll_question_header.text(), 'What do you want?');
 
     const e = {
         stopPropagation: noop,
     };
-
-    {
-        /* Testing no data sent to server on clicking add question button */
-        poll_question_input.val('Is it new?');
-        out_data = undefined;
-        question_button_callback(e);
-        assert.deepEqual(out_data, undefined);
-    }
 
     {
         /* Testing data sent to server on adding comment */
@@ -250,9 +273,6 @@ run_test('activate another person poll', () => {
 
     widget_elem.handle_events(vote_events);
 
-    assert(poll_question.attr('disabled'));
-    assert(poll_question_input.attr('disabled'));
-
     {
         /* Testing data sent to server on voting */
         poll_vote_button.attr('data-key', '100,1');
@@ -275,12 +295,7 @@ run_test('activate another person poll', () => {
         },
     ];
 
-    poll_question_container.show();
-
     widget_elem.handle_events(add_question_event);
-
-    assert(!poll_question_container.visible());
-    assert(poll_comment_container.visible());
 });
 
 run_test('activate own poll', () => {
@@ -322,17 +337,22 @@ run_test('activate own poll', () => {
     const poll_comment_input = set_widget_find_result('input.poll-comment');
     const widget_comment_container = set_widget_find_result('ul.poll-widget');
 
-    const poll_question = set_widget_find_result('button.poll-question');
+    const poll_question_submit = set_widget_find_result('button.poll-question-check');
+    const poll_edit_question = set_widget_find_result('.poll-edit-question');
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
     const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
+    const poll_please_wait = set_widget_find_result('.poll-please-wait');
+    const poll_author_help = set_widget_find_result('.poll-author-help');
+
+    set_widget_find_result('button.poll-question-remove');
 
     let question_button_callback;
 
-    poll_question.on = (event, func) => {
+    poll_question_submit.on = (event, func) => {
         assert.equal(event, 'click');
         question_button_callback = func;
     };
@@ -342,18 +362,40 @@ run_test('activate own poll', () => {
     poll_comment.on = noop;
     poll_vote_button.on = noop;
 
-    poll_question.attr('disabled', false);
-    poll_question_input.attr('disabled', false);
-    // Setting visiblity to true as default is false
-    poll_question_container.show();
+    poll_question_header.toggle = (show) => {
+        assert(show);
+    };
+
+    poll_edit_question.toggle = (show) => {
+        assert(show);
+    };
+
+    var show_submit = false;
+    poll_question_submit.toggle = (show) => {
+        assert.equal(show, show_submit);
+    };
+
+    poll_question_container.toggle = (show) => {
+        assert(!show);
+    };
+
+    poll_comment_container.toggle = (show) => {
+        assert(show);
+    };
+
+    poll_please_wait.toggle = (show) => {
+        assert(!show);
+    };
+
+    poll_author_help.toggle = (show) => {
+        assert(!show);
+    };
 
     poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
     assert.equal(widget_comment_container.html(), 'poll-widget-results');
     assert.equal(poll_question_header.text(), 'Where to go?');
-    assert(poll_question.attr('disabled', false));
-    assert(poll_question_input.attr('disabled', false));
 
     {
         /* Testing data sent to server on editing question */
@@ -363,6 +405,7 @@ run_test('activate own poll', () => {
 
         poll_question_input.val('Is it new?');
         out_data = undefined;
+        show_submit = true;
         question_button_callback(e);
         assert.deepEqual(out_data,  { type: 'question', question: 'Is it new?' });
 
@@ -371,5 +414,4 @@ run_test('activate own poll', () => {
         question_button_callback(e);
         assert.deepEqual(out_data, undefined);
     }
-    assert(poll_comment_container.visible());
 });
