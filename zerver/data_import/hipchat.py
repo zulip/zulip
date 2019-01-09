@@ -1,6 +1,7 @@
 import base64
 import dateutil
 import glob
+import hypchat
 import logging
 import os
 import re
@@ -207,7 +208,8 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
                       subscriber_handler: SubscriberHandler,
                       stream_id_mapper: IdMapper,
                       user_id_mapper: IdMapper,
-                      realm_id: int) -> List[ZerverFieldsT]:
+                      realm_id: int,
+                      api_token: Optional[str]=None) -> List[ZerverFieldsT]:
     flat_data = [
         d['Room']
         for d in raw_data
@@ -249,10 +251,18 @@ def convert_room_data(raw_data: List[ZerverFieldsT],
             if user_id_mapper.has(in_dict['owner']):
                 owner = user_id_mapper.get(in_dict['owner'])
                 users.add(owner)
+        else:
+            users = set()
+            if api_token is not None:
+                hc = hypchat.HypChat(api_token)
+                room_data = hc.fromurl('{0}/v2/room/{1}/member'.format(hc.endpoint, in_dict['id']))
 
-            if not users:
-                continue
+                for item in room_data['items']:
+                    hipchat_user_id = item['id']
+                    zulip_user_id = user_id_mapper.get(hipchat_user_id)
+                    users.add(zulip_user_id)
 
+        if users:
             subscriber_handler.set_info(
                 stream_id=stream_id,
                 users=users,
@@ -768,7 +778,9 @@ def make_user_messages(zerver_message: List[ZerverFieldsT],
 
 def do_convert_data(input_tar_file: str,
                     output_dir: str,
-                    masking_content: bool) -> None:
+                    masking_content: bool,
+                    api_token: Optional[str]=None,
+                    slim_mode: bool=False) -> None:
     input_data_dir = untar_input_file(input_tar_file)
 
     attachment_handler = AttachmentHandler()
@@ -779,8 +791,6 @@ def do_convert_data(input_tar_file: str,
 
     realm_id = 0
     realm = make_realm(realm_id=realm_id)
-
-    slim_mode = False
 
     # users.json -> UserProfile
     raw_user_data = read_user_data(data_dir=input_data_dir)
@@ -803,6 +813,7 @@ def do_convert_data(input_tar_file: str,
         stream_id_mapper=stream_id_mapper,
         user_id_mapper=user_id_mapper,
         realm_id=realm_id,
+        api_token=api_token,
     )
     realm['zerver_stream'] = zerver_stream
 
@@ -812,7 +823,7 @@ def do_convert_data(input_tar_file: str,
     )
     realm['zerver_recipient'] = zerver_recipient
 
-    if True:
+    if api_token is None:
         if slim_mode:
             public_stream_subscriptions = []  # type: List[ZerverFieldsT]
         else:
@@ -829,6 +840,12 @@ def do_convert_data(input_tar_file: str,
                            if stream_dict['invite_only']],
         )
         stream_subscriptions = public_stream_subscriptions + private_stream_subscriptions
+    else:
+        stream_subscriptions = build_stream_subscriptions(
+            get_users=subscriber_handler.get_users,
+            zerver_recipient=zerver_recipient,
+            zerver_stream=zerver_stream,
+        )
 
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
