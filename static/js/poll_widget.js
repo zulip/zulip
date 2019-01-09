@@ -14,6 +14,33 @@ exports.poll_data_holder = function (is_my_poll, question) {
     var key_to_comment = {};
     var my_idx = 1;
 
+    var input_mode = is_my_poll; // for now
+
+    self.set_question = function (new_question) {
+        input_mode = false;
+        poll_question = new_question;
+    };
+
+    self.get_question = function () {
+        return poll_question;
+    };
+
+    self.set_input_mode = function () {
+        input_mode = true;
+    };
+
+    self.clear_input_mode = function () {
+        input_mode = false;
+    };
+
+    self.get_input_mode = function () {
+        return input_mode;
+    };
+
+    if (question) {
+        self.set_question(question);
+    }
+
     self.get_widget_data = function () {
         var comments = [];
 
@@ -83,7 +110,7 @@ exports.poll_data_holder = function (is_my_poll, question) {
             },
 
             inbound: function (sender_id, data) {
-                poll_question = data.question;
+                self.set_question(data.question);
             },
         },
 
@@ -139,145 +166,140 @@ exports.poll_data_holder = function (is_my_poll, question) {
 exports.activate = function (opts) {
     var elem = opts.elem;
     var callback = opts.callback;
+
     var question = '';
     if (opts.extra_data) {
-        question = opts.extra_data.question;
+        question = opts.extra_data.question || '';
     }
 
     var is_my_poll = people.is_my_user_id(opts.message.sender_id);
     var poll_data = exports.poll_data_holder(is_my_poll, question);
 
-    function render() {
+    function update_edit_controls() {
+        var has_question = elem.find('input.poll-question').val().trim() !== '';
+        elem.find('button.poll-question-check').toggle(has_question);
+    }
+
+    function render_question() {
+        var question = poll_data.get_question();
+        var input_mode = poll_data.get_input_mode();
+        var can_edit = is_my_poll && !input_mode;
+        var has_question = question.trim() !== '';
+        var can_vote = has_question;
+        var waiting = !is_my_poll && !has_question;
+        var author_help = is_my_poll && !has_question;
+
+        elem.find('.poll-question-header').toggle(!input_mode);
+        elem.find('.poll-question-header').text(question);
+        elem.find('.poll-edit-question').toggle(can_edit);
+        update_edit_controls();
+
+        elem.find('.poll-question-bar').toggle(input_mode);
+        elem.find('.poll-comment-bar').toggle(can_vote);
+
+        elem.find('.poll-please-wait').toggle(waiting);
+
+        elem.find('.poll-author-help').toggle(author_help);
+    }
+
+    function start_editing() {
+        poll_data.set_input_mode();
+
+        var question = poll_data.get_question();
+        elem.find('input.poll-question').val(question);
+        render_question();
+        elem.find('input.poll-question').focus();
+    }
+
+    function abort_edit() {
+        poll_data.clear_input_mode();
+        render_question();
+    }
+
+    function submit_question() {
+        var poll_question_input = elem.find("input.poll-question");
+        var new_question = poll_question_input.val().trim();
+        var old_question = poll_data.get_question();
+
+        // We should disable the button for blank questions,
+        // so this is just defensive code.
+        if (new_question.trim() === '') {
+            new_question = old_question;
+        }
+
+        // Optimistically set the question locally.
+        poll_data.set_question(new_question);
+        render_question();
+
+        // If there were no actual edits, we can exit now.
+        if (new_question === old_question) {
+            return;
+        }
+
+        // Broadcast the new question to our peers.
+        var data = poll_data.handle.question.outbound(new_question);
+        callback(data);
+    }
+
+    function submit_option() {
+        var poll_comment_input = elem.find("input.poll-comment");
+        var comment = poll_comment_input.val().trim();
+
+        if (comment === '') {
+            return;
+        }
+
+        poll_comment_input.val('').focus();
+
+        var data = poll_data.handle.new_comment.outbound(comment);
+        callback(data);
+    }
+
+    function submit_vote(key) {
+        var data = poll_data.handle.vote.outbound(key);
+        callback(data);
+    }
+
+    function build_widget() {
         var html = templates.render('poll-widget');
         elem.html(html);
 
-        elem.find("button.poll-comment").on('click', function (e) {
+        elem.find('input.poll-question').on('keyup', function (e) {
             e.stopPropagation();
-            var poll_comment_input = elem.find("input.poll-comment");
-            var comment = poll_comment_input.val().trim();
-
-            if (comment === '') {
-                return;
-            }
-
-            poll_comment_input.val('').focus();
-
-            var data = poll_data.handle.new_comment.outbound(comment);
-            callback(data);
+            update_edit_controls();
         });
 
-        elem.find("button.poll-question").on('click', function (e) {
+        elem.find('.poll-edit-question').on('click', function (e) {
             e.stopPropagation();
-            var poll_question_input = elem.find("input.poll-question");
-            var question = poll_question_input.val().trim();
+            start_editing();
+        });
 
-            if (question === '') {
-                return;
-            }
+        elem.find("button.poll-question-check").on('click', function (e) {
+            e.stopPropagation();
+            submit_question();
+        });
 
-            poll_question_input.val('').focus();
+        elem.find("button.poll-question-remove").on('click', function (e) {
+            e.stopPropagation();
+            abort_edit();
+        });
 
-            var data = poll_data.handle.question.outbound(question);
-            callback(data);
+        elem.find("button.poll-comment").on('click', function (e) {
+            e.stopPropagation();
+            submit_option();
         });
     }
 
     function render_results() {
         var widget_data = poll_data.get_widget_data();
+
         var html = templates.render('poll-widget-results', widget_data);
         elem.find('ul.poll-widget').html(html);
-        elem.find('.poll-question-header').text(widget_data.question);
-        if (!is_my_poll) {
-            // We hide the edit pencil button for non-senders
-            elem.find('.poll-edit-question').hide();
-            if (widget_data.question !== '') {
-                // For the non-senders, we hide the question input bar
-                // when we have a question assigned to the poll
-                elem.find('.poll-question-bar').hide();
-            } else {
-                // For the non-senders we disable the question input bar
-                // when we have no question assigned to the poll
-                elem.find('button.poll-question').attr('disabled', true);
-                elem.find('input.poll-question').attr('disabled', true);
-            }
-        } else {
-            // Hide the edit pencil icon if the question is still not
-            // assigned for the senders
-            if (widget_data.question === '') {
-                elem.find('.poll-edit-question').hide();
-            } else {
-                elem.find('.poll-edit-question').show();
-            }
-        }
-        if (widget_data.question !== '') {
-            // As soon as a poll-question is assigined
-            // we change the "Add Question" button to a check button
-            elem.find('button.poll-question').empty().addClass('fa fa-check poll-question-check');
-            // The d-none class keeps the cancel editing question button hidden
-            // as long as "Add Question" button is displayed
-            elem.find('button.poll-question-remove').removeClass('d-none');
-            // We hide the whole question bar if question is assigned
-            elem.find('.poll-question-bar').hide();
-            elem.find('.poll-comment-bar').show();
-        } else {
-            elem.find('.poll-comment-bar').hide();
-            elem.find('.poll-edit-question').hide();
-        }
-        if (is_my_poll) {
-            // We disable the check button if the input field is empty
-            // and enable it as soon as something is entered in input field
-            elem.find('input.poll-question').on('keyup', function () {
-                if (elem.find('input.poll-question').val().length > 0) {
-                    elem.find('button.poll-question').removeAttr('disabled');
-                } else {
-                    elem.find('button.poll-question').attr('disabled', true);
 
-                }
-            });
-            // However doing above leaves the check button disabled
-            // for the next time when someone is trying to enter a question if
-            // someone empties the input field and clicks on cancel edit button.
-            // We fix this by checking if there is text in input field if
-            // edit question pencil icon is clicked and enable the button if
-            // there is text in input field.
-            elem.find('.poll-edit-question').on('click', function () {
-                if (elem.find('input.poll-question').val().length > 0) {
-                    elem.find('button.poll-question').removeAttr('disabled');
-                }
-            });
-        }
-        elem.find(".poll-edit-question").on('click', function () {
-            // As soon as edit question button is clicked
-            // we hide the Question and the edit question pencil button
-            // and display the input box for editing the question
-            elem.find('.poll-question-header').hide();
-            elem.find('.poll-question-bar').show();
-            elem.find('.poll-edit-question').hide();
-            elem.find('input.poll-question').empty().val(widget_data.question).select();
-        });
-
-        elem.find("button.poll-question").on('click', function () {
-            if (widget_data.question !== '') {
-                // we display the question and hide the input box for editing
-                elem.find(".poll-question-bar").hide();
-                elem.find('.poll-question-header').show();
-            }
-        });
-
-        elem.find("button.poll-question-remove").on('click', function () {
-            // On clicking the cross i.e. cancel editing button
-            // we display the previos question as it is
-            // and hide the input box and buttons for editing
-            elem.find('.poll-question-bar').hide();
-            elem.find('.poll-edit-question').show();
-            elem.find('.poll-question-header').show();
-        });
-        elem.find("button.poll-vote").on('click', function (e) {
+        elem.find("button.poll-vote").off('click').on('click', function (e) {
             e.stopPropagation();
             var key = $(e.target).attr('data-key');
-
-            var data = poll_data.handle.vote.outbound(key);
-            callback(data);
+            submit_vote(key);
         });
     }
 
@@ -285,10 +307,12 @@ exports.activate = function (opts) {
         _.each(events, function (event) {
             poll_data.handle_event(event.sender_id, event.data);
         });
+        render_question();
         render_results();
     };
 
-    render();
+    build_widget();
+    render_question();
     render_results();
 };
 
