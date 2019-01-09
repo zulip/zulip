@@ -220,6 +220,13 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
         return common_get_active_user(email, realm, return_data=return_data)
 
+def is_valid_email(email: str) -> bool:
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False
+    return True
+
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     if not ldap_auth_enabled(realm):
         return False
@@ -287,10 +294,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
-            if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
-                    username, settings.LDAP_APPEND_DOMAIN))
-            return email_to_username(username)
+            if is_valid_email(username):
+                if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
+                    raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
+                        username, settings.LDAP_APPEND_DOMAIN))
+                return email_to_username(username)
         return username
 
     def ldap_to_django_username(self, username: str) -> str:
