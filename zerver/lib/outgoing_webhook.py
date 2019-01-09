@@ -21,6 +21,8 @@ from zerver.lib.url_encoding import near_message_url
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
+from version import ZULIP_VERSION
+
 class OutgoingWebhookServiceInterface:
 
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
@@ -41,7 +43,11 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def send_data_to_server(self,
                             base_url: str,
                             request_data: Any) -> Response:
-        headers = {'content-type': 'application/json'}
+        user_agent = 'ZulipOutgoingWebhook/' + ZULIP_VERSION
+        headers = {
+            'content-type': 'application/json',
+            'User-Agent': user_agent,
+        }
         response = requests.request('POST', base_url, data=request_data, headers=headers)
         return response
 
