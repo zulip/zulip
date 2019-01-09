@@ -28,13 +28,14 @@ and tell us what's up!
 
 You might be interested in:
 
-* **Contributing code**. Check out our
+#### **Contributing code**. 
+  Check out our
   [guide for new contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
   to get started. Zulip prides itself on maintaining a clean and
   well-tested codebase, and a stock of hundreds of
   [beginner-friendly issues][beginner-friendly].
 
-* **Contributing non-code**.
+#### **Contributing non-code**.
   [Report an issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issue),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html) Zulip
   into your language,
@@ -43,12 +44,14 @@ You might be interested in:
   [give us feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback). We
   would love to hear from you, even if you're just trying the product out.
 
-* **Supporting Zulip**. Advocate for your organization to use Zulip, write a
+#### **Supporting Zulip**.
+  Advocate for your organization to use Zulip, write a
   review in the mobile app stores, or
   [upvote Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach) on
   product comparison sites.
 
-* **Checking Zulip out**. The best way to see Zulip in action is to drop by
+#### **Checking Zulip out**.
+  The best way to see Zulip in action is to drop by
   the
   [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html). We
   also recommend reading Zulip for
@@ -56,17 +59,20 @@ You might be interested in:
   [companies](https://zulipchat.com/for/companies/), or Zulip for
   [working groups and part time communities](https://zulipchat.com/for/working-groups-and-communities/).
 
-* **Running a Zulip server**. Setting up a server takes just a couple
+#### **Running a Zulip server**. 
+  Setting up a server takes just a couple
   of minutes. Zulip runs on Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial,
   Ubuntu 14.04 Trusty, and Debian 9 Stretch. The installation process is
   [documented here](https://zulip.readthedocs.io/en/stable/production/install.html).
   Commercial support is available; see <https://zulipchat.com/plans>
   for details.
 
-* **Using Zulip without setting up a server**. <https://zulipchat.com> offers
+#### **Using Zulip without setting up a server**.
+   <https://zulipchat.com> offers
   free and commercial hosting.
 
-* **Applying for a Zulip internship**. Zulip runs internship programs with
+#### **Applying for a Zulip internship**. 
+  Zulip runs internship programs with
   [Outreachy](https://www.outreachy.org/),
   [Google Summer of Code](https://developers.google.com/open-source/gsoc/),
   and the
@@ -82,3 +88,4 @@ Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/master/LICENSE) license.
 
 [beginner-friendly]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
+
