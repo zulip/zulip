@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser
 from typing import Any
 
 from django.conf import settings
@@ -82,12 +82,6 @@ class Command(ZulipBaseCommand):
     machine with 8 CPUs).  Importing that same data set took about 30
     minutes.  But this will vary a lot depending on the average number
     of recipients of messages in the realm, hardware, etc."""
-
-    # Fix support for multi-line usage
-    def create_parser(self, *args: Any, **kwargs: Any) -> ArgumentParser:
-        parser = super().create_parser(*args, **kwargs)
-        parser.formatter_class = RawTextHelpFormatter
-        return parser
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--output',
