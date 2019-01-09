@@ -44,6 +44,14 @@ class Command(BaseCommand):
                             action="store_true",
                             help='Mask the content for privacy during QA.')
 
+        parser.add_argument('--slim-mode', dest='slim_mode',
+                            action="store_true",
+                            help='Mask the content for privacy during QA.')
+
+        parser.add_argument('--token', dest='api_token',
+                            action="store",
+                            help='API token for the HipChat API for fetching subscribers.')
+
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -75,4 +83,6 @@ class Command(BaseCommand):
                 input_tar_file=path,
                 output_dir=output_dir,
                 masking_content=options.get('masking_content', False),
+                slim_mode=options['slim_mode'],
+                api_token=options.get("api_token"),
             )

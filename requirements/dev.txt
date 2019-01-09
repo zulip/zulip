@@ -74,6 +74,7 @@ hpack==3.0.0              # via h2
 html2text==2018.1.9
 httplib2==0.12.0
 httpretty==0.9.6
+hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==18.0.0         # via twisted
@@ -150,7 +151,7 @@ recommonmark==0.4.0
 redis==2.10.6
 regex==2018.11.22
 requests-oauthlib==1.0.0
-requests[security]==2.21.0  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+requests[security]==2.21.0  # via aws-xray-sdk, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.5         # via moto
 rsa==4.0
 s3transfer==0.1.13        # via boto3
