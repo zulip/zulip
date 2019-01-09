@@ -234,6 +234,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             referrer.realm,
             to_emails=[invitee.email],
             from_address=FromAddress.tokenized_no_reply_address(),
+            language=referrer.realm.default_language,
             context=context,
             delay=datetime.timedelta(days=2))
 
