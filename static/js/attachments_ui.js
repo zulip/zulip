@@ -50,7 +50,7 @@ function render_attachments_ui() {
                 return item.name.toLocaleLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
-                ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+                ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
         parent_container: $('#attachments-settings').expectOne(),
@@ -74,7 +74,7 @@ function render_attachments_ui() {
         return -1;
     });
 
-    ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+    ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
 function format_attachment_data(new_attachments) {

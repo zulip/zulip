@@ -421,7 +421,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
-                ui.update_scrollbar(dropdown_list_body);
+                ui.reset_scrollbar(dropdown_list_body);
             },
         },
     }).init();
