@@ -4,6 +4,7 @@ import mock
 
 from zerver.lib.test_classes import WebhookTestCase
 
+
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
@@ -116,4 +117,47 @@ Billing method: send invoice"""
         expected_topic = u"cus_00000000000000"
         expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
         self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def get_body(self, fixture_name: str) -> str:
+        return self.webhook_fixture_data("stripe", fixture_name, file_type="json")
+
+    def test_payout_canceled(self) -> None:
+        expected_topic = u"Transfer tr_00000000000000"
+        expected_message = u"The payout with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/payout/tr_00000000000000)** for amount **11.00usd** has been canceled."
+
+        # use fixture named stripe_transfer_paid
+        self.send_and_test_stream_message('payout_canceled', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_created(self) -> None:
+        expected_topic = u"Transfer tr_00000000000000"
+        expected_message = u"The payout with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/payout/tr_00000000000000)** for amount **11.00usd** has been created."
+
+        # use fixture named stripe_transfer_paid
+        self.send_and_test_stream_message('payout_created', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_failed(self) -> None:
+        expected_topic = u"Transfer tr_00000000000000"
+        expected_message = u"The payout with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/payout/tr_00000000000000)** for amount **11.00usd** has failed."
+
+        # use fixture named stripe_transfer_paid
+        self.send_and_test_stream_message('payout_failed', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_paid(self) -> None:
+        expected_topic = u"Transfer tr_00000000000000"
+        expected_message = u"The payout with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/payout/tr_00000000000000)** for amount **11.00usd** has been paid."
+
+        # use fixture named stripe_transfer_paid
+        self.send_and_test_stream_message('payout_paid', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_updated(self) -> None:
+        expected_topic = u"Transfer tr_00000000000000"
+        expected_message = u"The payout with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/payout/tr_00000000000000)** for amount **11.00usd** has been updated."
+
+        # use fixture named stripe_transfer_paid
+        self.send_and_test_stream_message('payout_updated', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
