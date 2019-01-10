@@ -907,7 +907,7 @@ JS_SPECS = {
     # in the pipeline itself
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
-        'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
+        'source_filenames': ['node_modules/sockjs/dist/sockjs.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
     # Even though we've moved the main KaTeX copy into Webpack, we

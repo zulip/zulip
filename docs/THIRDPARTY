@@ -143,11 +143,6 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/third/sockjs/sockjs-0.3.4.js
-Copyright: 2011-2012 VMware, Inc.
- 2012 Douglas Crockford
-License: Expat and public-domain
-
 Files: static/third/sourcesans/*
 Copyright: 2010, 2012, 2014 Adobe Systems Incorporated
 License: SIL-OFL-1.1

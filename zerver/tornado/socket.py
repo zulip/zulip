@@ -274,7 +274,7 @@ def respond_send_message(data: Mapping[str, Any]) -> None:
 # We disable the eventsource and htmlfile transports because they cannot
 # securely send us the zulip.com cookie, which we use as part of our
 # authentication scheme.
-sockjs_url = '%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.ROOT_DOMAIN_URI,)
+sockjs_url = '%s/static/webpack-bundles/sockjs/sockjs.js' % (settings.ROOT_DOMAIN_URI,)
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': sockjs_url,
                                              'disabled_transports': ['eventsource', 'htmlfile']})
