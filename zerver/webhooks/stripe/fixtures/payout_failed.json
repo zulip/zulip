@@ -1,0 +1,34 @@
+{
+    "created": 1326853478,
+    "livemode": false,
+    "id": "payout.failed_00000000000000",
+    "type": "payout.failed",
+    "object": "event",
+    "request": null,
+    "pending_webhooks": 1,
+    "api_version": "2018-11-08",
+    "data": {
+        "object": {
+            "id": "po_00000000000000",
+            "object": "payout",
+            "amount": 1100,
+            "arrival_date": 1547035978,
+            "automatic": true,
+            "balance_transaction": "txn_00000000000000",
+            "created": 1547035978,
+            "currency": "usd",
+            "description": "STRIPE PAYOUT",
+            "destination": "ba_1DqfvaHOC2HiLzOVYVjkm3D2",
+            "failure_balance_transaction": null,
+            "failure_code": null,
+            "failure_message": null,
+            "livemode": false,
+            "metadata": {},
+            "method": "standard",
+            "source_type": "card",
+            "statement_descriptor": null,
+            "status": "in_transit",
+            "type": "bank_account"
+        }
+    }
+}
