@@ -2343,6 +2343,17 @@ class TestLDAP(ZulipTestCase):
                 backend.get_or_build_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_build_user_when_ldap_has_no_full_name_mapping(self) -> None:
+        class _LDAPUser:
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={}):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, "Missing required mapping for user's full name"):
+                backend.get_or_build_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_when_domain_does_not_match(self) -> None:
         backend = self.backend
         email = self.example_email("hamlet")
@@ -2448,6 +2459,27 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
             result = self.client_get(avatar_url(user_profile))
             self.assertEqual(result.status_code, 200)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_when_user_does_not_exist_with_split_full_name_mapping(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+                'fn': ['Non', ],
+                'ln': ['Existing', ],
+                'userPassword': 'testing',
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='acme.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com',
+                AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn', 'last_name': 'ln'}):
+            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+                                                     realm=get_realm('zulip'))
+            assert(user_profile is not None)
+            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.full_name, 'Non Existing')
+            self.assertEqual(user_profile.realm.string_id, 'zulip')
 
 class TestZulipLDAPUserPopulator(ZulipTestCase):
     def test_authenticate(self) -> None:
