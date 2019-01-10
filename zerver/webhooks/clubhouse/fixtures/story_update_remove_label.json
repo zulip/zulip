@@ -1,17 +1,17 @@
 {
-    "id":"5b295cc0-242a-4ecf-b75c-e2467c25513c",
-    "changed_at":"2018-06-19T19:42:56.825Z",
-    "primary_id":11,
+    "id":"5c37d3f8-4a7e-4cdd-a066-7ced3ace1bd7",
+    "changed_at":"2019-01-10T23:23:36.331Z",
+    "primary_id":23,
     "version":"v1",
     "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
     "actions":[
         {
-            "id":11,
+            "id":23,
             "entity_type":"story",
             "action":"update",
-            "name":"Add cool feature!",
-            "story_type":"bug",
-            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "name":"An epic story!",
+            "story_type":"feature",
+            "app_url":"https://app.clubhouse.io/zulip/story/23",
             "changes":{
                 "label_ids":{
                     "removes":[
