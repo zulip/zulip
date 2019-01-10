@@ -88,35 +88,16 @@ function submit_invitation_form() {
     });
 }
 
-// `get_invite_streams` is further modification of stream_data.invite_streams(), it is
-// defined here to keep stream_data.invite_stream() generic.
 exports.get_invite_streams = function () {
-    var streams = [];
-
-    _.each(stream_data.invite_streams(), function (value) {
-        var is_invite_only = stream_data.get_invite_only(value);
-        var is_notifications_stream = value === page_params.notifications_stream;
-
+    var streams = _.filter(stream_data.get_invite_stream_data(), function (stream) {
+        var is_notifications_stream = stream.name === page_params.notifications_stream;
         // You can't actually elect to invite someone to the
         // notifications stream. We won't even show it as a choice unless
         // it's the only stream you have, or if you've made it private.
-        if (stream_data.subscribed_streams().length === 1 ||
+        return stream_data.subscribed_streams().length === 1 ||
             !is_notifications_stream ||
-            is_notifications_stream && is_invite_only) {
-
-            streams.push({
-                name: value,
-                invite_only: is_invite_only,
-                default_stream: stream_data.get_default_status(value),
-            });
-
-            // Sort by default status.
-            streams.sort(function (a, b) {
-                return b.default_stream - a.default_stream;
-            });
-        }
+            is_notifications_stream && stream.is_invite_only;
     });
-
     return streams;
 };
 
