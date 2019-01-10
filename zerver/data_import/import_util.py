@@ -141,18 +141,14 @@ def build_public_stream_subscriptions(
 
     return subscriptions
 
-def build_private_stream_subscriptions(
+def build_stream_subscriptions(
         get_users: Callable[..., Set[int]],
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
     subscriptions = []  # type: List[ZerverFieldsT]
 
-    stream_ids = {
-        stream['id']
-        for stream in zerver_stream
-        if stream['invite_only']
-    }
+    stream_ids = {stream['id'] for stream in zerver_stream}
 
     recipient_map = {
         recipient['id']: recipient['type_id']  # recipient_id -> stream_id
