@@ -670,6 +670,9 @@ def process_raw_message_batch(realm_id: int,
 
     zerver_message = []
 
+    import html2text
+    h = html2text.HTML2Text()
+
     for raw_message in raw_messages:
         # One side effect here:
 
@@ -685,6 +688,7 @@ def process_raw_message_batch(realm_id: int,
             content=raw_message['content'],
             mention_user_ids=mention_user_ids,
         )
+        content = h.handle(content)
 
         if len(content) > 10000:
             logging.info('skipping too-long message of length %s' % (len(content),))
