@@ -40,7 +40,7 @@ python_version = sys.version_info[0]
 # relative path in requirements/common.in works.
 os.chdir(ZULIP_PATH)
 
-venv_name = "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"
+venv_name = "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),
     os.path.join(ZULIP_PATH, "requirements", "prod.txt"),
