@@ -26,6 +26,9 @@ class zulip::postgres_appdb_tuned {
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
+  # Only used in CentOS for now
+  $pg_datadir = "/var/lib/pgsql/${zulip::base::postgres_version}/data"
+
   file { $postgres_conf:
     ensure  => file,
     require => Package[$zulip::postgres_appdb_base::postgresql],
