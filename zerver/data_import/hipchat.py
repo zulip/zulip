@@ -32,7 +32,7 @@ from zerver.data_import.import_util import (
     build_stream,
     build_personal_subscriptions,
     build_public_stream_subscriptions,
-    build_private_stream_subscriptions,
+    build_stream_subscriptions,
     build_user_message,
     build_user_profile,
     build_zerver_realm,
@@ -812,29 +812,28 @@ def do_convert_data(input_tar_file: str,
     )
     realm['zerver_recipient'] = zerver_recipient
 
-    if slim_mode:
-        public_stream_subscriptions = []  # type: List[ZerverFieldsT]
-    else:
-        public_stream_subscriptions = build_public_stream_subscriptions(
-            zerver_userprofile=normal_users,
-            zerver_recipient=zerver_recipient,
-            zerver_stream=zerver_stream,
-        )
+    if True:
+        if slim_mode:
+            public_stream_subscriptions = []  # type: List[ZerverFieldsT]
+        else:
+            public_stream_subscriptions = build_public_stream_subscriptions(
+                zerver_userprofile=normal_users,
+                zerver_recipient=zerver_recipient,
+                zerver_stream=zerver_stream,
+            )
 
-    private_stream_subscriptions = build_private_stream_subscriptions(
-        get_users=subscriber_handler.get_users,
-        zerver_recipient=zerver_recipient,
-        zerver_stream=zerver_stream,
-    )
+        private_stream_subscriptions = build_stream_subscriptions(
+            get_users=subscriber_handler.get_users,
+            zerver_recipient=zerver_recipient,
+            zerver_stream=[stream_dict for stream_dict in zerver_stream
+                           if stream_dict['invite_only']],
+        )
+        stream_subscriptions = public_stream_subscriptions + private_stream_subscriptions
 
     personal_subscriptions = build_personal_subscriptions(
         zerver_recipient=zerver_recipient,
     )
-
-    zerver_subscription = \
-        public_stream_subscriptions + \
-        personal_subscriptions + \
-        private_stream_subscriptions
+    zerver_subscription = personal_subscriptions + stream_subscriptions
 
     realm['zerver_subscription'] = zerver_subscription
 
