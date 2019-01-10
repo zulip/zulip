@@ -745,3 +745,44 @@ run_test('edge_cases', () => {
     // just make sure we don't explode
     stream_data.sort_for_stream_settings(bad_stream_ids);
 });
+
+run_test('get_invite_stream_data', () => {
+    // add default stream
+    var orie = {
+        name: 'Orie',
+        stream_id: 320,
+        invite_only: false,
+        subscribed: true,
+    };
+
+    // clear all the data form stream_data, and people
+    stream_data.clear_subscriptions();
+    people.init();
+
+    stream_data.add_sub('Orie', orie);
+    stream_data.set_realm_default_streams([orie]);
+
+    var expected_list = [{
+        name: 'Orie',
+        stream_id: 320,
+        invite_only: false,
+        default_stream: true,
+    }];
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+
+    var inviter = {
+        name: 'Inviter',
+        stream_id: 25,
+        invite_only: true,
+        subscribed: true,
+    };
+    stream_data.add_sub('Inviter', inviter);
+
+    expected_list.push({
+        name: 'Inviter',
+        stream_id: 25,
+        invite_only: true,
+        default_stream: false,
+    });
+    assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+});

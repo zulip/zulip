@@ -187,6 +187,30 @@ exports.subscribed_streams = function () {
     return _.pluck(exports.subscribed_subs(), 'name');
 };
 
+exports.get_invite_stream_data = function () {
+    var filter_stream_data = function (sub) {
+        return {
+            name: sub.name,
+            stream_id: sub.stream_id,
+            invite_only: sub.invite_only,
+            default_stream: stream_data.get_default_status(sub.name),
+        };
+    };
+    var invite_stream_data = _.map(stream_data.subscribed_subs(), filter_stream_data);
+    var default_stream_data = _.map(page_params.realm_default_streams, filter_stream_data);
+
+    // Since, union doesn't work on array of objects we are using filter
+    var is_included = {};
+    var streams = _.filter(default_stream_data.concat(invite_stream_data), function (sub) {
+        if (is_included[sub.name]) {
+            return false;
+        }
+        is_included[sub.name] = true;
+        return true;
+    });
+    return streams;
+};
+
 exports.invite_streams = function () {
     var invite_list = exports.subscribed_streams();
     var default_list = _.pluck(page_params.realm_default_streams, 'name');
