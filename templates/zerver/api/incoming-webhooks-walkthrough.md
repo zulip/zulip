@@ -191,7 +191,7 @@ Now you can test using Zulip itself, or curl on the command line.
 Using `manage.py` from within the Zulip development environment:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
     '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
@@ -303,7 +303,7 @@ Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
 
@@ -352,7 +352,7 @@ stream name:
 To trigger a notification using this webhook, use
 `send_webhook_fixture_message` from the Zulip command line:
 
-    (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+    (zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
     ./manage.py send_webhook_fixture_message \
         --fixture=zerver/tests/fixtures/helloworld/hello.json \
         '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
