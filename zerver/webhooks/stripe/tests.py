@@ -117,3 +117,38 @@ Billing method: send invoice"""
         expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
         self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
+
+    def test_payout_canceled(self) -> None:
+        expected_topic = u"Payout po_00000000000000"
+        expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been canceled."
+
+        self.send_and_test_stream_message('payout_canceled', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_created(self) -> None:
+        expected_topic = u"Payout po_00000000000000"
+        expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been created."
+
+        self.send_and_test_stream_message('payout_created', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_failed(self) -> None:
+        expected_topic = u"Payout po_00000000000000"
+        expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has failed."
+
+        self.send_and_test_stream_message('payout_failed', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_paid(self) -> None:
+        expected_topic = u"Payout po_00000000000000"
+        expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been paid."
+
+        self.send_and_test_stream_message('payout_paid', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_payout_updated(self) -> None:
+        expected_topic = u"Payout po_00000000000000"
+        expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been updated."
+
+        self.send_and_test_stream_message('payout_updated', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")

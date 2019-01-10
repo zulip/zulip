@@ -112,7 +112,8 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             # Running into the 60 character topic limit.
             # topic = '[{}](https://dashboard.stripe.com/customers/{})' % (object_['id'], object_['id'])
             topic = object_['id']
-            body = default_body(update_blacklist=['delinquent', 'currency', 'default_source'])
+            body = default_body(
+                update_blacklist=['delinquent', 'currency', 'default_source'])
             if event == 'created':
                 if object_['email']:
                     body += '\nEmail: {}'.format(object_['email'])
@@ -141,7 +142,8 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 if object_['quantity']:
                     body += '\nQuantity: {}'.format(object_['quantity'])
                 if 'billing' in object_:  # nocoverage
-                    body += '\nBilling method: {}'.format(object_['billing'].replace('_', ' '))
+                    body += '\nBilling method: {}'.format(
+                        object_['billing'].replace('_', ' '))
     if category == 'file':  # nocoverage
         topic = 'files'
         body = default_body() + ' ({purpose}). \nTitle: {title}'.format(
@@ -168,7 +170,35 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
     if category.startswith('order'):  # nocoverage
         # Not implemented
         raise NotImplementedEventType()
-    if category in ['payment_intent', 'payout', 'plan', 'product', 'recipient',
+
+    if category.startswith('payout'):
+        object_id = object_['id']
+        link = "https://dashboard.stripe.com/payout/{}".format(object_id)
+        amount = amount_string(object_["amount"], object_["currency"])
+        body_t = "**[Payout]({link})** for amount **{amount}** has {end}."
+
+        if event == "canceled":
+            end = "been canceled"
+            topic = "Payout {}".format(object_id)
+        if event == "created":
+            end = "been created"
+            topic = "Payout {}".format(object_id)
+        if event == "failed":
+            end = "failed"
+            topic = "Payout {}".format(object_id)
+        if event == "paid":
+            end = "been paid"
+            topic = "Payout {}".format(object_id)
+        if event == "updated":
+            end = "been updated"
+            topic = "Payout {}".format(object_id)
+
+        body = body_t.format(
+            link=link,
+            amount=amount,
+            end=end
+        )
+    if category in ['payment_intent', 'plan', 'product', 'recipient',
                     'reporting', 'review', 'sigma', 'sku', 'source', 'subscription_schedule',
                     'topup', 'transfer']:  # nocoverage
         # Not implemented. In theory doing something like
