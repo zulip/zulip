@@ -1623,6 +1623,24 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(email, realm)
         self.assertTrue('my_test_stream_1' not in streams)
 
+    def test_add_with_color(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+
+        # add with color proposition
+        request = {
+            'add': ujson.dumps([{'name': 'my_test_stream_2', 'color': '#afafaf'}])
+        }
+        result = self.api_patch(email, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        # incorrect color format
+        request = {
+            'subscriptions': ujson.dumps([{'name': 'my_test_stream_3', 'color': '#0g0g0g'}])
+        }
+        result = self.api_post(email, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
+
     def test_api_valid_property(self) -> None:
         """
         Trying to set valid json returns success message.

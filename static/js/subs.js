@@ -739,13 +739,13 @@ exports.view_stream = function () {
     }
 };
 
-function ajaxSubscribe(stream) {
+function ajaxSubscribe(stream, color) {
     // Subscribe yourself to a single stream.
     var true_stream_name;
 
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream}]) },
+        data: {subscriptions: JSON.stringify([{name: stream, color: color}]) },
         success: function (resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -809,7 +809,7 @@ exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
         ajaxUnsubscribe(sub);
     } else {
-        ajaxSubscribe(sub.name);
+        ajaxSubscribe(sub.name, sub.color);
     }
 };
 
