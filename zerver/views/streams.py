@@ -279,7 +279,8 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Mapping[str, str]]=REQ(
-            "subscriptions", validator=check_list(check_dict([('name', check_string)]))),
+            "subscriptions", validator=check_list(check_dict(
+                [('name', check_string)], optional_keys=[('color', check_color)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
         is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -288,7 +289,13 @@ def add_subscriptions_backend(
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
     stream_dicts = []
+    color_map = {}
     for stream_dict in streams_raw:
+        # 'color' field is optional
+        # check for its presence in the streams_raw first
+        if 'color' in stream_dict:
+            color_map[stream_dict['name']] = stream_dict['color']
+
         stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
@@ -321,7 +328,7 @@ def add_subscriptions_backend(
         subscribers = set([user_profile])
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
-                                                              acting_user=user_profile)
+                                                              acting_user=user_profile, color_map=color_map)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
