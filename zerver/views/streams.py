@@ -36,6 +36,7 @@ from zerver.models import UserProfile, Stream, Realm, Subscription, \
 
 from collections import defaultdict
 import ujson
+import re
 
 class PrincipalError(JsonableError):
     code = ErrorCode.UNAUTHORIZED_PRINCIPAL
@@ -279,7 +280,8 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Mapping[str, str]]=REQ(
-            "subscriptions", validator=check_list(check_dict([('name', check_string)]))),
+            "subscriptions", validator=check_list(check_dict(
+                [('name', check_string)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
         is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -288,7 +290,18 @@ def add_subscriptions_backend(
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
 ) -> HttpResponse:
     stream_dicts = []
+    color_map = {}
     for stream_dict in streams_raw:
+        # 'color' field is optional
+        # check for its presence in the streams_raw first
+        if 'color' in stream_dict:
+            # check if the provided color has the correct hex code format
+            check_color_format = re.search("^#([0-9a-fA-F]{3,6})$", stream_dict['color'])
+            if (check_color_format):
+                color_map[stream_dict['name']] = stream_dict['color']
+            else:
+                return json_error(_("Incorrect color hex code."))
+
         stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
             stream_dict_copy[field] = stream_dict[field]
@@ -321,7 +334,7 @@ def add_subscriptions_backend(
         subscribers = set([user_profile])
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers,
-                                                              acting_user=user_profile)
+                                                              acting_user=user_profile, color_map=color_map)
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.
