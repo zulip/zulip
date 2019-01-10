@@ -352,9 +352,9 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
         return None
 
     label_id = label_ids_added[0]
-    for action in payload["actions"]:
-        if action["id"] == label_id:
-            kwargs.update({"label_name": action["name"]})
+    for reference in payload["references"]:
+        if reference["id"] == label_id:
+            kwargs.update({"label_name": reference["name"]})
 
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
