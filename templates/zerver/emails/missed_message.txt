@@ -13,12 +13,17 @@ While you were away you received {{ message_count }} new{% if group_pm %} group 
 {% endfor %}
 {% endif %}
 
-Click here to log in to Zulip and view your new messages:
+{% if reply_to_zulip  %}
+Reply to this email directly, or view it in Zulip:
 
 {{ realm_uri }}
 
-{% if reply_to_zulip  %}
-Or just reply to this email.
+{% else %}
+
+Reply in Zulip:
+
+{{ realm_uri }}
+
 {% endif %}
 {% if reply_warning %}
 Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.
