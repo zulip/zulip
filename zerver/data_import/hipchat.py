@@ -521,7 +521,7 @@ def process_message_file(realm_id: int,
             )
 
             if is_pm_data:
-                if sender_id != fn_id:
+                if int(sender_id) != int(fn_id):
                     # PMs are in multiple places in the Hipchat export,
                     # and we only use the copy from the sender
                     return None
