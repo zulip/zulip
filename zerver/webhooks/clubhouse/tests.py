@@ -178,8 +178,8 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_story_label_added(self) -> None:
-        expected_message = u"The label **mockup** was added to the story [Add cool feature!](https://app.clubhouse.io/zulip/story/11)."
-        self.send_and_test_stream_message('story_update_add_label', "Add cool feature!",
+        expected_message = u"The label **mockup** was added to the story [An epic story!](https://app.clubhouse.io/zulip/story/23)."
+        self.send_and_test_stream_message('story_update_add_label', "An epic story!",
                                           expected_message)
 
     @patch('zerver.lib.webhooks.common.check_send_webhook_message')
