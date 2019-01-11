@@ -5,7 +5,7 @@ import os
 from django.views.static import serve
 import zerver.views.registration
 import zerver.views.auth
-import zerver.views.email_log
+import zerver.views.development.email_log
 
 # These URLs are available only in the development environment
 
@@ -38,9 +38,9 @@ urls = [
         {'template_name': 'zerver/dev_login.html'}, name='zerver.views.auth.login_page'),
 
     # Page for testing email templates
-    url(r'^emails/$', zerver.views.email_log.email_page),
-    url(r'^emails/generate/$', zerver.views.email_log.generate_all_emails),
-    url(r'^emails/clear/$', zerver.views.email_log.clear_emails),
+    url(r'^emails/$', zerver.views.development.email_log.email_page),
+    url(r'^emails/generate/$', zerver.views.development.email_log.generate_all_emails),
+    url(r'^emails/clear/$', zerver.views.development.email_log.clear_emails),
 
     # Listing of useful URLs and various tools for development
     url(r'^devtools/$', TemplateView.as_view(template_name='zerver/dev_tools.html')),
