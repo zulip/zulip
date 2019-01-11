@@ -23,8 +23,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
-    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, \
-    exif_rotate
+    DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, exif_rotate
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     Message, UserProfile, Realm, \
@@ -1780,15 +1779,15 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.user_profile = self.example_user('hamlet')
 
     def test_currently_used_upload_space(self) -> None:
-        self.assertEqual(0, currently_used_upload_space(self.realm))
+        self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
 
         data = b'zulip!'
         upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
-        self.assertEqual(len(data), currently_used_upload_space(self.realm))
+        self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
 
         data2 = b'more-data!'
         upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
-        self.assertEqual(len(data) + len(data2), currently_used_upload_space(self.realm))
+        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 
 class ExifRotateTests(TestCase):
     def test_image_do_not_rotate(self) -> None:

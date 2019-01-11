@@ -4,7 +4,7 @@ from typing.re import Match
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager, CASCADE
+from django.db.models import Manager, Sum, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -393,6 +393,12 @@ class Realm(models.Model):
         # We describe the quota to users in "GB" or "gigabytes", but actually apply
         # it as gibibytes (GiB) to be a bit more generous in case of confusion.
         return self.upload_quota_gb << 30
+
+    def currently_used_upload_space_bytes(self) -> int:
+        used_space = Attachment.objects.filter(realm=self).aggregate(Sum('size'))['size__sum']
+        if used_space is None:
+            return 0
+        return used_space
 
     @property
     def subdomain(self) -> str:

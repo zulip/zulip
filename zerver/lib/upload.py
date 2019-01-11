@@ -4,7 +4,6 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.files import File
 from django.http import HttpRequest
-from django.db.models import Sum
 from jinja2 import Markup as mark_safe
 import unicodedata
 
@@ -274,17 +273,11 @@ def upload_image_to_s3(
 
     key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
 
-def currently_used_upload_space(realm: Realm) -> int:
-    used_space = Attachment.objects.filter(realm=realm).aggregate(Sum('size'))['size__sum']
-    if used_space is None:
-        return 0
-    return used_space
-
 def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
     upload_quota = realm.upload_quota_bytes()
     if upload_quota is None:
         return
-    used_space = currently_used_upload_space(realm)
+    used_space = realm.currently_used_upload_space_bytes()
     if (used_space + uploaded_file_size) > upload_quota:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
