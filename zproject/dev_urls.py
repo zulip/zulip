@@ -3,7 +3,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 import os
 from django.views.static import serve
-import zerver.views.registration
+import zerver.views.development.registration
 import zerver.views.auth
 import zerver.views.development.email_log
 
@@ -51,7 +51,7 @@ urls = [
 ]
 
 i18n_urls = [
-    url(r'^confirmation_key/$', zerver.views.registration.confirmation_key),
+    url(r'^confirmation_key/$', zerver.views.development.registration.confirmation_key),
 ]
 
 # These are used for voyager development. On a real voyager instance,
