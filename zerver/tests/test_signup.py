@@ -27,8 +27,8 @@ from zerver.decorator import do_two_factor_login
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import confirmation_key, \
-    send_confirm_registration_email
+from zerver.views.registration import send_confirm_registration_email
+from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
     get_realm, get_user, get_stream_recipient,
