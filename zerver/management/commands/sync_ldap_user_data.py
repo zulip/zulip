@@ -1,12 +1,15 @@
 
 import logging
-from typing import Any
+
+from argparse import ArgumentParser
+from typing import Any, List
+
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 from zproject.backends import ZulipLDAPUserPopulator, ZulipLDAPException
 
@@ -15,10 +18,10 @@ logger = logging.getLogger(__name__)
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
-def sync_ldap_user_data() -> None:
+def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
     logger.info("Starting update.")
     backend = ZulipLDAPUserPopulator()
-    for u in UserProfile.objects.select_related().filter(is_bot=False).all():
+    for u in user_profiles:
         # This will save the user if relevant, and will do nothing if the user
         # does not exist.
         try:
@@ -31,6 +34,15 @@ def sync_ldap_user_data() -> None:
             logger.error(e)
     logger.info("Finished update.")
 
-class Command(BaseCommand):
+class Command(ZulipBaseCommand):
+    def add_arguments(self, parser: ArgumentParser) -> None:
+        self.add_realm_args(parser)
+        self.add_user_list_args(parser)
+
     def handle(self, *args: Any, **options: Any) -> None:
-        sync_ldap_user_data()
+        if "realm_id" in options:
+            realm = self.get_realm(options)
+            user_profiles = self.get_users(options, realm, is_bot=False)
+        else:
+            user_profiles = UserProfile.objects.select_related().filter(is_bot=False)
+        sync_ldap_user_data(user_profiles)
