@@ -8,7 +8,7 @@ set -x
 
 ./tools/lint --backend --no-gitlint --no-mypy  # gitlint disabled because flaky
 ./tools/test-tools
-./tools/test-backend --coverage
+./tools/test-backend --coverage --include-webhooks
 
 # We run mypy after the backend tests so we get output from the
 # backend tests, which tend to uncover more serious problems, first.

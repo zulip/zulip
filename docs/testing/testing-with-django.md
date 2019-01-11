@@ -51,6 +51,14 @@ iterative development, but you can override this behavior with the
 the `--rerun` option, which will rerun just the tests that failed in
 the last test run.
 
+**Webhook integrations**.  For performance, `test-backend` with no
+arguments will not run webhook integration tests (`zerver/webhooks/`),
+which would otherwise account for about 25% of the total runtime.
+When working on webhooks, we recommend instead running `test-backend
+zerver/webhooks` manually (or better, the direction for the specific
+webhooks you're working on).  And of course our CI is configured to
+always use `test-backend --include-webhooks` and run all of the tests.
+
 ## Writing tests
 
 Before you write your first tests of Zulip, it is worthwhile to read
