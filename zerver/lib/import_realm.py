@@ -22,7 +22,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.message import do_render_markdown, RealmAlertWords
-from zerver.lib.bugdown import version as bugdown_version
+from zerver.lib.bugdown import version as bugdown_version, convert as bugdown_convert
 from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
@@ -742,6 +742,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     # Stream objects are created by Django.
     fix_datetime_fields(data, 'zerver_stream')
     re_map_foreign_keys(data, 'zerver_stream', 'realm', related_table="realm")
+    # Handle rendering of stream descriptions for import from non-Zulip
+    for stream in data['zerver_stream']:
+        if 'rendered_description' in stream:
+            continue
+        stream["rendered_description"] = bugdown_convert(stream["description"])
     bulk_import_model(data, Stream)
 
     realm.notifications_stream_id = notifications_stream_id
