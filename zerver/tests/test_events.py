@@ -1313,6 +1313,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('description', check_string),
                 ('streams', check_list(check_dict_only([
                     ('description', check_string),
+                    ('rendered_description', check_string),
                     ('invite_only', check_bool),
                     ('is_announcement_only', check_bool),
                     ('name', check_string),
@@ -2190,6 +2191,7 @@ class EventsRegisterTest(ZulipTestCase):
         subscription_fields = [
             ('color', check_string),
             ('description', check_string),
+            ('rendered_description', check_string),
             ('email_address', check_string),
             ('invite_only', check_bool),
             ('is_announcement_only', check_bool),
@@ -2218,6 +2220,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('stream_id', check_int),
                 ('invite_only', check_bool),
                 ('description', check_string),
+                ('rendered_description', check_string),
             ]))),
         ])
         add_schema_checker = self.check_events_dict([
@@ -2252,6 +2255,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('description')),
             ('value', check_string),
+            ('rendered_value', check_string),
             ('stream_id', check_int),
             ('name', check_string),
         ])

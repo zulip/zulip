@@ -1124,6 +1124,7 @@ class Stream(models.Model):
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
     description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: str
+    rendered_description = models.TextField(default=u'')  # type: str
 
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
     history_public_to_subscribers = models.BooleanField(default=False)  # type: bool
@@ -1172,6 +1173,7 @@ class Stream(models.Model):
             name=self.name,
             stream_id=self.id,
             description=self.description,
+            rendered_description=self.rendered_description,
             invite_only=self.invite_only,
             is_announcement_only=self.is_announcement_only,
             history_public_to_subscribers=self.history_public_to_subscribers

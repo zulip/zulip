@@ -574,6 +574,7 @@ def build_custom_checkers(by_lang):
              'zerver/migrations/0032_verify_all_medium_avatar_images.py',
              'zerver/migrations/0060_move_avatars_to_be_uid_based.py',
              'zerver/migrations/0104_fix_unreads.py',
+             'zerver/migrations/0205_stream_rendered_description.py',
              'pgroonga/migrations/0002_html_escape_subject.py',
          ]),
          'description': "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md",
