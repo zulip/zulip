@@ -88,7 +88,8 @@ You can use the command list_realms to find ID of the realms in this server."""
             raise CommandError("There is no realm with id '%s'. Aborting." %
                                (options["realm_id"],))
 
-    def get_users(self, options: Dict[str, Any], realm: Optional[Realm]) -> List[UserProfile]:
+    def get_users(self, options: Dict[str, Any], realm: Optional[Realm],
+                  is_bot: Optional[bool]=None) -> List[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
 
@@ -102,7 +103,10 @@ You can use the command list_realms to find ID of the realms in this server."""
                 raise CommandError("The --all-users option requires a realm; please pass --realm.")
 
             if all_users:
-                return UserProfile.objects.filter(realm=realm)
+                user_profiles = UserProfile.objects.filter(realm=realm)
+                if is_bot is not None:
+                    return user_profiles.filter(is_bot=is_bot)
+                return user_profiles
 
         if options["users"] is None:
             return []
