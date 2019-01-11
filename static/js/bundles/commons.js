@@ -12,7 +12,6 @@ import "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js";
 import "node_modules/sortablejs/Sortable.js";
 import "third/bootstrap/css/bootstrap.css";
 import "third/bootstrap/css/bootstrap-btn.css";
-import "third/bootstrap/css/bootstrap-responsive.css";
 import "node_modules/perfect-scrollbar/css/perfect-scrollbar.css";
 import "node_modules/font-awesome/css/font-awesome.css";
 import "generated/icons/style.css";
