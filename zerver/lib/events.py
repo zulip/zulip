@@ -476,12 +476,16 @@ def apply_event(state: Dict[str, Any],
             for obj in state['subscriptions']:
                 if obj['name'].lower() == event['name'].lower():
                     obj[event['property']] = event['value']
+                    if event['property'] == "description":
+                        obj['rendered_description'] = event['rendered_description']
             # Also update the pure streams data
             for stream in state['streams']:
                 if stream['name'].lower() == event['name'].lower():
                     prop = event['property']
                     if prop in stream:
                         stream[prop] = event['value']
+                        if prop == 'description':
+                            stream['rendered_description'] = event['rendered_description']
         elif event['op'] == "occupy":
             state['streams'] += event['streams']
         elif event['op'] == "vacate":

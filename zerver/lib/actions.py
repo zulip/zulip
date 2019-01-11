@@ -1732,6 +1732,8 @@ def create_stream_if_needed(realm: Realm,
     )
 
     if created:
+        stream.rendered_description = bugdown_convert(stream.description)
+        stream.save(update_fields=["rendered_description"])
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
@@ -2577,6 +2579,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     push_notifications=subscription.push_notifications,
                     email_notifications=subscription.email_notifications,
                     description=stream.description,
+                    rendered_description=stream.rendered_description,
                     pin_to_top=subscription.pin_to_top,
                     is_old_stream=is_old_stream(stream.date_created),
                     stream_weekly_traffic=get_average_weekly_stream_traffic(
@@ -3415,7 +3418,8 @@ def do_rename_stream(stream: Stream,
 
 def do_change_stream_description(stream: Stream, new_description: str) -> None:
     stream.description = new_description
-    stream.save(update_fields=['description'])
+    stream.rendered_description = bugdown_convert(new_description)
+    stream.save(update_fields=['description', 'rendered_description'])
 
     event = dict(
         type='stream',
@@ -3424,6 +3428,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
         name=stream.name,
         stream_id=stream.id,
         value=new_description,
+        rendered_description=stream.rendered_description
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
@@ -4401,6 +4406,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
          'pin_to_top': False,
          'stream_id': stream.id,
          'description': stream.description,
+         'rendered_description': stream.rendered_description,
          'is_old_stream': is_old_stream(stream.date_created),
          'stream_weekly_traffic': get_average_weekly_stream_traffic(stream.id,
                                                                     stream.date_created,
@@ -4438,7 +4444,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
 
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
-                        "email_token", "description", "date_created",
+                        "email_token", "description", "rendered_description", "date_created",
                         "history_public_to_subscribers")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
@@ -4503,6 +4509,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'rendered_description': stream["rendered_description"],
                        'is_old_stream': is_old_stream(stream["date_created"]),
                        'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
                                                                                   stream["date_created"],
@@ -4536,6 +4543,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                                                                       stream["date_created"],
                                                                                       recent_traffic),
                            'description': stream['description'],
+                           'rendered_description': stream["rendered_description"],
                            'history_public_to_subscribers': stream['history_public_to_subscribers']}
             if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]
