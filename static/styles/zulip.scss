@@ -33,6 +33,20 @@ textarea {
     line-height: normal;
 }
 
+input,
+select {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    transition: border 0.2s ease;
+    padding: 0px 5px;
+}
+
+input:focus {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
 blockquote p {
     font-weight: normal;
 }
@@ -359,7 +373,7 @@ input[type="search"],
 input[type="tel"],
 input[type="color"] {
     font-size: inherit;
-    height: 1.4em;
+    height: 2em;
 }
 
 li,
