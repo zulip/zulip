@@ -23,6 +23,7 @@ from zerver.lib import cache
 from zerver.tornado import event_queue
 from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
+from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 from zerver.lib.actions import (
     get_stream_recipient,
@@ -325,7 +326,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
             return result
         return wrapper
 
-def write_instrumentation_reports(full_suite: bool) -> None:
+def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> None:
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
 
@@ -395,7 +396,7 @@ def write_instrumentation_reports(full_suite: bool) -> None:
             'node-coverage/(?P<path>.*)',
             'docs/(?P<path>.*)',
             'casper/(?P<path>.*)',
-        ])
+        ] + [webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks])
 
         untested_patterns -= exempt_patterns
 
