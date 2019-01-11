@@ -80,8 +80,9 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         self.assertEqual(get_user_profile_by_email(email), user_profile)
 
-    def get_users_sorted(self, options: Dict[str, Any], realm: Optional[Realm]) -> List[UserProfile]:
-        user_profiles = self.command.get_users(options, realm)
+    def get_users_sorted(self, options: Dict[str, Any], realm: Optional[Realm],
+                         is_bot: Optional[bool]=None) -> List[UserProfile]:
+        user_profiles = self.command.get_users(options, realm, is_bot=is_bot)
         return sorted(user_profiles, key = lambda x: x.email)
 
     def test_get_users(self) -> None:
@@ -126,6 +127,15 @@ class TestZulipBaseCommand(ZulipTestCase):
         error_message = "The --all-users option requires a realm; please pass --realm."
         with self.assertRaisesRegex(CommandError, error_message):
             self.command.get_users(dict(users=None, all_users=True), None)
+
+    def test_get_non_bot_users(self) -> None:
+        expected_user_profiles = sorted(UserProfile.objects.filter(realm=self.zulip_realm,
+                                                                   is_bot=False),
+                                        key = lambda x: x.email)
+        user_profiles = self.get_users_sorted(dict(users=None, all_users=True),
+                                              self.zulip_realm,
+                                              is_bot=False)
+        self.assertEqual(user_profiles, expected_user_profiles)
 
 class TestCommandsCanStart(TestCase):
 
