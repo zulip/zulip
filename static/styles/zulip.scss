@@ -37,6 +37,26 @@ blockquote p {
     font-weight: normal;
 }
 
+ul,
+ol {
+    padding: 0px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-family: inherit;
+}
+
 a {
     cursor: pointer;
 }
@@ -287,12 +307,12 @@ p.n-margin {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
+    top: 50px;
     z-index: 100;
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 238px;
     padding-left: 0px;
 }
 
@@ -757,8 +777,8 @@ td.pointer {
     display: inline-block;
     padding: 4px 6px 3px 6px;
     font-weight: normal;
-    height: 17px;
-    line-height: 17px;
+    height: 25px;
+    line-height: 15px;
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
