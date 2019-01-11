@@ -168,6 +168,7 @@ class HomeTest(ZulipTestCase):
             "realm_push_notifications_enabled",
             "realm_send_welcome_emails",
             "realm_signup_notifications_stream_id",
+            "realm_upload_quota",
             "realm_uri",
             "realm_user_groups",
             "realm_users",
