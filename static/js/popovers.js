@@ -226,7 +226,7 @@ function show_mobile_message_buttons_popover(element) {
 
 exports.hide_mobile_message_buttons_popover = function () {
     if (current_mobile_message_buttons_popover_elem) {
-        current_mobile_message_buttons_popover_elem.popover("destroy");
+        current_mobile_message_buttons_popover_elem.popover("dispose");
         current_mobile_message_buttons_popover_elem = undefined;
     }
 };
@@ -574,7 +574,7 @@ exports.actions_popped = function () {
 exports.hide_actions_popover = function () {
     if (popovers.actions_popped()) {
         $('.has_popover').removeClass('has_popover has_actions_popover');
-        current_actions_popover_elem.popover("destroy");
+        current_actions_popover_elem.popover("dispose");
         current_actions_popover_elem = undefined;
     }
     if (current_flatpickr_instance !== undefined) {
@@ -589,7 +589,7 @@ exports.message_info_popped = function () {
 
 exports.hide_message_info_popover = function () {
     if (exports.message_info_popped()) {
-        current_message_info_popover_elem.popover("destroy");
+        current_message_info_popover_elem.popover("dispose");
         current_message_info_popover_elem = undefined;
     }
 };
@@ -627,7 +627,7 @@ exports.hide_user_sidebar_popover = function () {
         // to a certain element. We thus save off the .data("popover") in the
         // show_user_sidebar_popover and inject it here before calling destroy.
         $('#user_presences').data("popover", current_user_sidebar_popover);
-        $('#user_presences').popover("destroy");
+        $('#user_presences').popover("dispose");
         current_user_sidebar_user_id = undefined;
         current_user_sidebar_popover = undefined;
     }

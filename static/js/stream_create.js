@@ -426,10 +426,9 @@ exports.set_up_handlers = function () {
             placement: "right",
             content: templates.render('announce_stream_docs', {
                 notifications_stream: page_params.notifications_stream}),
-            trigger: "manual"});
+            trigger: "manual",
+            html: true });
         announce_stream_docs.popover('show');
-        announce_stream_docs.data('popover').tip().css('z-index', 2000);
-        announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');
         e.stopPropagation();
     });
     container.on("mouseout", "#announce-stream-docs", function (e) {

@@ -183,6 +183,7 @@ function add_email_hint_handler() {
             title: "Email integration",
             content: email_address_hint_content,
             trigger: "manual",
+            html: true,
             animation: false});
         $(e.target).popover('show');
         e.stopPropagation();

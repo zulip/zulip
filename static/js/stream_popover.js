@@ -22,21 +22,21 @@ exports.all_messages_popped = function () {
 
 exports.hide_stream_popover = function () {
     if (exports.stream_popped()) {
-        $(current_stream_sidebar_elem).popover("destroy");
+        $(current_stream_sidebar_elem).popover("dispose");
         current_stream_sidebar_elem = undefined;
     }
 };
 
 exports.hide_topic_popover = function () {
     if (exports.topic_popped()) {
-        $(current_topic_sidebar_elem).popover("destroy");
+        $(current_topic_sidebar_elem).popover("dispose");
         current_topic_sidebar_elem = undefined;
     }
 };
 
 exports.hide_all_messages_popover = function () {
     if (exports.all_messages_popped()) {
-        $(all_messages_sidebar_elem).popover("destroy");
+        $(all_messages_sidebar_elem).popover("dispose");
         all_messages_sidebar_elem = undefined;
     }
 };
@@ -105,6 +105,7 @@ function build_stream_popover(e) {
     $(elt).popover({
         content: content,
         trigger: "manual",
+        html: true,
         fixed: true,
     });
 
@@ -157,6 +158,7 @@ function build_topic_popover(e) {
     $(elt).popover({
         content: content,
         trigger: "manual",
+        html: true,
         fixed: true,
     });
 
@@ -185,6 +187,7 @@ function build_all_messages_popover(e) {
     $(elt).popover({
         content: content,
         trigger: "manual",
+        html:true,
         fixed: true,
     });
 

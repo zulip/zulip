@@ -587,6 +587,7 @@ exports.render_emoji_popover = function (elt, id) {
         title: "",
         content: generate_emoji_picker_content(id),
         trigger: "manual",
+        html: true
     });
     elt.popover("show");
     elt.prop("title", i18n.t("Add emoji reaction (:)"));
