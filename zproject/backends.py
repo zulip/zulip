@@ -414,6 +414,11 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 
+def sync_user_from_ldap(user_profile: UserProfile) -> bool:
+    backend = ZulipLDAPUserPopulator()
+    updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
+    return updated_user is not None
+
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
