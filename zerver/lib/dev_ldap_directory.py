@@ -46,3 +46,20 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             }
 
     return ldap_dir
+
+def init_fakeldap() -> None:  # nocoverage
+    # We only use this in development.  Importing mock inside
+    # this function is an import time optimization, which
+    # avoids the expensive import of the mock module (slow
+    # because its dependency pbr uses pkgresources, which is
+    # really slow to import.)
+    import mock
+    from fakeldap import MockLDAP
+
+    ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+    mock_initialize = ldap_patcher.start()
+    mock_ldap = MockLDAP()
+    mock_initialize.return_value = mock_ldap
+
+    mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                settings.FAKE_LDAP_NUM_USERS)
