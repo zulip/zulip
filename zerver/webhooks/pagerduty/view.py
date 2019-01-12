@@ -9,7 +9,8 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.models import Client, UserProfile
 
 PAGER_DUTY_EVENT_NAMES = {
@@ -20,6 +21,13 @@ PAGER_DUTY_EVENT_NAMES = {
     'incident.assign': 'assigned',
     'incident.escalate': 'escalated',
     'incident.delegate': 'delineated',
+}
+
+PAGER_DUTY_EVENT_NAMES_V2 = {
+    'incident.trigger': 'triggered',
+    'incident.acknowledge': 'acknowledged',
+    'incident.resolve': 'resolved',
+    'incident.assign': 'assigned',
 }
 
 def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
@@ -68,6 +76,35 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     format_dict['trigger_message'] = u'\n'.join(trigger_message)
     return format_dict
 
+def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
+    format_dict = {}
+    format_dict['action'] = PAGER_DUTY_EVENT_NAMES_V2[message['event']]
+
+    format_dict['incident_id'] = message['incident']['id']
+    format_dict['incident_num'] = message['incident']['incident_number']
+    format_dict['incident_url'] = message['incident']['html_url']
+
+    format_dict['service_name'] = message['incident']['service']['name']
+    format_dict['service_url'] = message['incident']['service']['html_url']
+
+    assignments = message['incident']['assignments']
+    if assignments:
+        assignee = assignments[0]['assignee']
+        format_dict['assigned_to_username'] = assignee['summary']
+        format_dict['assigned_to_url'] = assignee['html_url']
+    else:
+        format_dict['assigned_to_username'] = 'nobody'
+        format_dict['assigned_to_url'] = ''
+
+    last_status_change_by = message['incident'].get('last_status_change_by')
+    if last_status_change_by is not None:
+        format_dict['resolved_by_username'] = last_status_change_by['summary']
+        format_dict['resolved_by_url'] = last_status_change_by['html_url']
+
+    trigger_description = message['incident'].get('description')
+    if trigger_description is not None:
+        format_dict['trigger_message'] = trigger_description
+    return format_dict
 
 def send_raw_pagerduty_json(request: HttpRequest,
                             user_profile: UserProfile,
@@ -98,6 +135,9 @@ def send_formated_pagerduty(request: HttpRequest,
     elif message_type == 'incident.resolve' and not format_dict['resolved_by_url']:
         template = (u':grinning: Incident '
                     u'[{incident_num}]({incident_url}) resolved\n\n>{trigger_message}')
+    elif message_type == 'incident.assign':
+        template = (u':no_good: Incident [{incident_num}]({incident_url}) '
+                    u'{action} to [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
     else:
         template = (u':no_good: Incident [{incident_num}]({incident_url}) '
                     u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
@@ -115,7 +155,12 @@ def api_pagerduty_webhook(
         payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
 ) -> HttpResponse:
     for message in payload['messages']:
-        message_type = message['type']
+        message_type = message.get('type')
+
+        # If the message has no "type" key, then this payload came from a
+        # Pagerduty Webhook V2.
+        if message_type is None:
+            continue
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
             send_raw_pagerduty_json(request, user_profile, message)
@@ -126,5 +171,19 @@ def api_pagerduty_webhook(
             send_raw_pagerduty_json(request, user_profile, message)
         else:
             send_formated_pagerduty(request, user_profile, message_type, format_dict)
+
+    for message in payload['messages']:
+        event = message.get('event')
+
+        # If the message has no "event" key, then this payload came from a
+        # Pagerduty Webhook V1.
+        if event is None:
+            continue
+
+        if event not in PAGER_DUTY_EVENT_NAMES_V2:
+            raise UnexpectedWebhookEventType('Pagerduty', event)
+
+        format_dict = build_pagerduty_formatdict_v2(message)
+        send_formated_pagerduty(request, user_profile, event, format_dict)
 
     return json_success()
