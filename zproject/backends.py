@@ -20,6 +20,7 @@ from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
+from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
@@ -256,22 +257,7 @@ LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def __init__(self) -> None:
         if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
-            # We only use this in development.  Importing mock inside
-            # this function is an import time optimization, which
-            # avoids the expensive import of the mock module (slow
-            # because its dependency pbr uses pkgresources, which is
-            # really slow to import.)
-            import mock
-            from fakeldap import MockLDAP
-            from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
-
-            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
-            self.mock_initialize = ldap_patcher.start()
-            self.mock_ldap = MockLDAP()
-            self.mock_initialize.return_value = self.mock_ldap
-
-            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_NUM_USERS)
+            init_fakeldap()
 
     # Don't use Django LDAP's permissions functions
     def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
