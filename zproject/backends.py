@@ -307,7 +307,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
             do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
 
-    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:  # nocoverage
+    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
         account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
@@ -331,7 +331,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return full_name, short_name
 
     def sync_full_name_from_ldap(self, user_profile: UserProfile,
-                                 ldap_user: _LDAPUser) -> None:  # nocoverage
+                                 ldap_user: _LDAPUser) -> None:
         from zerver.lib.actions import do_change_full_name
         full_name, _ = self.get_mapped_name(ldap_user)
         if full_name != user_profile.full_name:
@@ -342,7 +342,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             do_change_full_name(user_profile, full_name, None)
 
     def get_or_build_user(self, username: str,
-                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:  # nocoverage
+                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         (user, built) = super().get_or_build_user(username, ldap_user)
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
