@@ -1,9 +1,7 @@
 # Webhooks for external integrations.
 
-import pprint
 from typing import Any, Dict, Iterable, Optional
 
-import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
@@ -137,18 +135,6 @@ def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
         format_dict['trigger_message'] = trigger_description
     return format_dict
 
-def send_raw_pagerduty_json(request: HttpRequest,
-                            user_profile: UserProfile,
-                            message: Dict[str, Any]) -> None:
-    subject = 'pagerduty'
-    body = (
-        u'Unknown pagerduty message\n'
-        u'```\n'
-        u'%s\n'
-        u'```') % (ujson.dumps(message, indent=2),)
-    check_send_webhook_message(request, user_profile, subject, body)
-
-
 def send_formated_pagerduty(request: HttpRequest,
                             user_profile: UserProfile,
                             message_type: str,
@@ -168,7 +154,6 @@ def send_formated_pagerduty(request: HttpRequest,
     body = template.format(**format_dict)
     check_send_webhook_message(request, user_profile, subject, body)
 
-
 @api_key_only_webhook_view('PagerDuty')
 @has_request_variables
 def api_pagerduty_webhook(
@@ -184,14 +169,10 @@ def api_pagerduty_webhook(
             break
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
-            send_raw_pagerduty_json(request, user_profile, message)
+            raise UnexpectedWebhookEventType('Pagerduty', message_type)
 
-        try:
-            format_dict = build_pagerduty_formatdict(message)
-        except Exception:
-            send_raw_pagerduty_json(request, user_profile, message)
-        else:
-            send_formated_pagerduty(request, user_profile, message_type, format_dict)
+        format_dict = build_pagerduty_formatdict(message)
+        send_formated_pagerduty(request, user_profile, message_type, format_dict)
 
     for message in payload['messages']:
         event = message.get('event')
