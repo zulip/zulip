@@ -50,11 +50,3 @@ class PagerDutyHookTests(WebhookTestCase):
     def test_no_subject(self) -> None:
         expected_message = u'Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n``` quote\nmp_error_block_down_critical\u2119\u01b4\n```'
         self.send_and_test_stream_message('mp_fail', u"Incident 48219", expected_message)
-
-    def test_bad_message(self) -> None:
-        expected_message = 'Unknown pagerduty message\n```\n{\n  "type":"incident.triggered"\n}\n```'
-        self.send_and_test_stream_message('bad_message_type', u"pagerduty", expected_message)
-
-    def test_unknown_message_type(self) -> None:
-        expected_message = 'Unknown pagerduty message\n```\n{\n  "type":"foo"\n}\n```'
-        self.send_and_test_stream_message('unknown_message_type', u"pagerduty", expected_message)
