@@ -166,10 +166,6 @@
     margin-right: 10px;
 }
 
-.stream-row:hover .preview-stream {
-    display: inline-block;
-}
-
 .preview-stream {
     display: none;
     float: right;
@@ -596,25 +592,6 @@ form#add_new_subscription {
     cursor: pointer;
 }
 
-.stream-row.active {
-    background-color: hsl(0, 0%, 93%);
-}
-
-.stream-row > div {
-    display: inline-block;
-    vertical-align: top;
-}
-
-.stream-row::-moz-selection,
-.stream-row .icon .hashtag::-moz-selection {
-    background-color: transparent;
-}
-
-.stream-row::selection,
-.stream-row .icon .hashtag::selection {
-    background-color: transparent;
-}
-
 .stream-row .check {
     width: 25px;
     height: 25px;
@@ -632,22 +609,12 @@ form#add_new_subscription {
     margin: 0% 15%;
 }
 
-.stream-row:hover .check:not(.checked) svg,
-.stream-row.active:hover .check:not(.checked) svg {
-    fill: hsl(0, 0%, 87%);
-}
-
-.stream-row .check:not(.checked):hover svg,
-.stream-row.active .check:not(.checked):hover svg {
-    fill: hsl(0, 0%, 72%);
+.stream-row .checked svg {
+    fill: hsl(170, 48%, 54%);
 }
 
 .stream-row .check.checked:hover svg {
     opacity: 0.5;
-}
-
-.stream-row .checked svg {
-    fill: hsl(170, 48%, 54%);
 }
 
 .stream-row .icon {
@@ -723,6 +690,45 @@ form#add_new_subscription {
     line-height: 1.5;
 }
 
+.stream-row.active {
+    background-color: hsl(0, 0%, 93%);
+}
+
+.stream-row > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-row .settings-dropdown-trigger {
+    float: right;
+    margin-left: 10px;
+    color: hsl(0, 0%, 67%);
+}
+
+.stream-row:hover .preview-stream {
+    display: inline-block;
+}
+
+.stream-row:hover .check:not(.checked) svg,
+.stream-row.active:hover .check:not(.checked) svg {
+    fill: hsl(0, 0%, 87%);
+}
+
+.stream-row .check:not(.checked):hover svg,
+.stream-row.active .check:not(.checked):hover svg {
+    fill: hsl(0, 0%, 72%);
+}
+
+.stream-row::-moz-selection,
+.stream-row .icon .hashtag::-moz-selection {
+    background-color: transparent;
+}
+
+.stream-row::selection,
+.stream-row .icon .hashtag::selection {
+    background-color: transparent;
+}
+
 #subscription_overlay .stream-description .stream-description-editable:empty::after,
 .stream-row .sub-info-box .description:empty::after {
     content: attr(data-no-description);
@@ -745,12 +751,6 @@ form#add_new_subscription {
 
 #stream-creation .stream-creation-body {
     padding: 15px;
-}
-
-.stream-row .settings-dropdown-trigger {
-    float: right;
-    margin-left: 10px;
-    color: hsl(0, 0%, 67%);
 }
 
 .add-user-label {
