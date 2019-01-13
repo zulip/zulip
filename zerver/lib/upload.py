@@ -109,7 +109,7 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
         im = exif_rotate(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
-        raise BadImageError("Could not decode image; did you upload an image file?")
+        raise BadImageError(_("Could not decode image; did you upload an image file?"))
     out = io.BytesIO()
     if im.mode == 'CMYK':
         im = im.convert('RGB')
@@ -122,7 +122,7 @@ def resize_logo(image_data: bytes) -> bytes:
         im = exif_rotate(im)
         im.thumbnail((8*DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
     except IOError:
-        raise BadImageError("Could not decode image; did you upload an image file?")
+        raise BadImageError(_("Could not decode image; did you upload an image file?"))
     out = io.BytesIO()
     if im.mode == 'CMYK':
         im = im.convert('RGB')
@@ -162,7 +162,7 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             im.save(out, format=image_format)
             return out.getvalue()
     except IOError:
-        raise BadImageError("Could not decode image; did you upload an image file?")
+        raise BadImageError(_("Could not decode image; did you upload an image file?"))
 
 
 ### Common
