@@ -4778,6 +4778,14 @@ def do_remove_realm_filter(realm: Realm, pattern: Optional[str]=None,
         RealmFilter.objects.get(realm=realm, pk=id).delete()
     notify_realm_filters(realm)
 
+def do_update_realm_filter(realm: Realm, pattern: str, url_format_string: str) -> None:
+    pattern = pattern.strip()
+    url_format_string = url_format_string.strip()
+    realm_filter = RealmFilter.objects.get(realm=realm, pk=id)
+    realm_filter.pattern=pattern
+    realm_filter.url_format_string=url_format_string
+    realm_filter.save()
+
 def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)

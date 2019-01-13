@@ -41,3 +41,16 @@ def delete_filter(request: HttpRequest, user_profile: UserProfile,
     except RealmFilter.DoesNotExist:
         return json_error(_('Filter not found'))
     return json_success()
+
+@require_realm_admin
+@has_request_variables
+def update_filter(request: HttpRequest, user_profile: UserProfile, pattern: str=REQ(), url_format_string: str=REQ()):
+    try:
+        filter_id = do_update_realm_filter(
+            realm=user_profile.realm,
+            pattern=pattern,
+            url_format_string=url_format_string
+        )
+        return json_success({'id': filter_id})
+    except ValidationError as e:
+        return json_error(e.messages[0], data={"errors": dict(e)})
