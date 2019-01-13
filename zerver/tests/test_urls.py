@@ -146,7 +146,7 @@ class ErrorPageTest(TestCase):
         # when presented with an HTTP_HOST that's not a valid DNS name.
         client = Client(enforce_csrf_checks=True)
         response = client.post('/json/users',
-                             secure=True,
-                             HTTP_REFERER='https://somewhere',
-                             HTTP_HOST='$nonsense')
+                               secure=True,
+                               HTTP_REFERER='https://somewhere',
+                               HTTP_HOST='$nonsense')
         self.assertEqual(response.status_code, 400)
