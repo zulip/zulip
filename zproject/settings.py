@@ -1345,6 +1345,12 @@ if REGISTER_LINK_DISABLED is None:
     else:
         REGISTER_LINK_DISABLED = False
 
+if 'LDAP_DEACTIVATE_NON_MATCHING_USERS' not in vars():
+    if AUTHENTICATION_BACKENDS == ('zproject.backends.ZulipLDAPAuthBackend',):
+        LDAP_DEACTIVATE_NON_MATCHING_USERS = True
+    else:
+        LDAP_DEACTIVATE_NON_MATCHING_USERS = False
+
 ########################################################################
 # SOCIAL AUTHENTICATION SETTINGS
 ########################################################################
