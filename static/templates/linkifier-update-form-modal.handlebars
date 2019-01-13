@@ -1,0 +1,25 @@
+<div id="linkifier-update-form-modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="linkifier-update-form-modal-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="linkifier-update-form-modal-label">{{t "Update Linkifier" }}</h3>
+    </div>
+    <div class="modal-body">
+        <div id="user-linkifier-form" data-user-id="{{user_id}}">
+            <form class="form-horizontal name-setting">
+                <div class="input-group name_change_container">
+                    <label for="filter_pattern">{{t "Filter Pattern" }}</label>
+                    <input type="text" autocomplete="off" name="filter_pattern" value="{{ pattern }}" />
+                </div>
+                <div class="input-group name_change_container">
+                    <label for="filter_format_string">{{t "URL format string" }}</label>
+                    <input type="text" autocomplete="off" name="filter_format_string" value="{{ url_format_string }}" />
+                </div>
+                
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="button rounded sea-green submit_user_info_change">{{t 'Save changes' }}</button>
+        <button type="button" class="button rounded reset_edit_user" data-dismiss="modal">{{t "Cancel" }}</button>
+    </div>
+</div>
