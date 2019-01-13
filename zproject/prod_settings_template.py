@@ -478,6 +478,11 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # "userAccountControl": "userAccountControl",
 }
 
+# Whether to automatically deactivate users not found in LDAP. If LDAP
+# is the only authentication method, then this setting defaults to
+# True.  If other authentication methods are enabled, it defaults to
+# False.
+#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
 ################
 # Miscellaneous settings.
