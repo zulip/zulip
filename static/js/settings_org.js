@@ -1093,8 +1093,8 @@ exports.build_page = function () {
                 $("#upload_icon_button_text").expectOne().show();
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_logo_spinner"));
-                $("#upload_logo_button_text").expectOne().show();
+                loading.destroy_indicator($("#upload_icon_spinner"));
+                $("#upload_icon_button_text").expectOne().show();
                 ui_report.error("", xhr, error_field);
             },
         });
