@@ -15,6 +15,8 @@ from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.utils import IntegrityError
 from django.db.migrations.state import StateApps
+from boto.s3.connection import Location, S3Connection
+from boto.s3.bucket import Bucket
 
 import zerver.lib.upload
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
@@ -49,6 +51,7 @@ from zerver.models import (
 from zerver.lib.request import JsonableError
 
 if False:
+    # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections
@@ -61,7 +64,6 @@ import time
 import ujson
 import unittest
 import urllib
-from zerver.lib.str_utils import NonBinaryStr
 from moto import mock_s3_deprecated
 
 import fakeldap
@@ -107,6 +109,28 @@ def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
     yield
     event_queue.process_notification = real_event_queue_process_notification
 
+class EventInfo:
+    def populate(self, call_args_list: List[Any]) -> None:
+        args = call_args_list[0][0]
+        self.realm_id = args[0]
+        self.payload = args[1]
+        self.user_ids = args[2]
+
+@contextmanager
+def capture_event(event_info: EventInfo) -> Iterator[None]:
+    # Use this for simple endpoints that throw a single event
+    # in zerver.lib.actions.
+    with mock.patch('zerver.lib.actions.send_event') as m:
+        yield
+
+    if len(m.call_args_list) == 0:
+        raise AssertionError('No event was sent inside actions.py')
+
+    if len(m.call_args_list) > 1:
+        raise AssertionError('Too many events sent by action')
+
+    event_info.populate(m.call_args_list)
+
 @contextmanager
 def simulated_empty_cache() -> Generator[
         List[Tuple[str, Union[str, List[str]], str]], None, None]:
@@ -139,8 +163,8 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     queries = []  # type: List[Dict[str, Union[str, bytes]]]
 
     def wrapper_execute(self: TimeTrackingCursor,
-                        action: Callable[[NonBinaryStr, Iterable[Any]], None],
-                        sql: NonBinaryStr,
+                        action: Callable[[str, Iterable[Any]], None],
+                        sql: str,
                         params: Iterable[Any]=()) -> None:
         cache = get_cache_backend(None)
         cache.clear()
@@ -159,12 +183,12 @@ def queries_captured(include_savepoints: Optional[bool]=False) -> Generator[
     old_execute = TimeTrackingCursor.execute
     old_executemany = TimeTrackingCursor.executemany
 
-    def cursor_execute(self: TimeTrackingCursor, sql: NonBinaryStr,
+    def cursor_execute(self: TimeTrackingCursor, sql: str,
                        params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
-    def cursor_executemany(self: TimeTrackingCursor, sql: NonBinaryStr,
+    def cursor_executemany(self: TimeTrackingCursor, sql: str,
                            params: Iterable[Any]=()) -> None:
         return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
@@ -465,6 +489,11 @@ def use_s3_backend(method: FuncT) -> FuncT:
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
+
+def create_s3_buckets(*bucket_names: Tuple[str]) -> List[Bucket]:
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    buckets = [conn.create_bucket(name) for name in bucket_names]
+    return buckets
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
     def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:

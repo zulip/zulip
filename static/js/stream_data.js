@@ -97,6 +97,16 @@ exports.get_sub_by_name = function (name) {
     return subs_by_stream_id.get(stream_id);
 };
 
+exports.id_to_slug = function (stream_id) {
+    var name = exports.maybe_get_stream_name(stream_id) || 'unknown';
+
+    // The name part of the URL doesn't really matter, so we try to
+    // make it pretty.
+    name = name.replace(' ', '-');
+
+    return stream_id + '-' + name;
+};
+
 exports.name_to_slug = function (name) {
     var stream_id = exports.get_stream_id(name);
 
@@ -229,8 +239,11 @@ exports.update_calculated_fields = function (sub) {
     sub.can_change_stream_permissions = page_params.is_admin && (
         !sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
-    sub.can_access_subscribers = !sub.invite_only || sub.subscribed || page_params.is_admin;
-    sub.preview_url = hash_util.by_stream_uri(sub.name);
+    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
+    sub.can_access_subscribers = page_params.is_admin || sub.subscribed || !page_params.is_guest &&
+                                 !sub.invite_only;
+    sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
+    sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
     exports.render_stream_description(sub);
     exports.update_subscribers_count(sub);
 };
@@ -441,11 +454,16 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     // Our internal data structure for subscriptions is mostly plain dictionaries,
     // so we just reuse the attrs that are passed in to us, but we encapsulate how
-    // we handle subscribers.
-    var subscriber_user_ids = attrs.subscribers;
-    var raw_attrs = _.omit(attrs, 'subscribers');
+    // we handle subscribers.  We defensively remove the `subscribers` field from
+    // the original `attrs` object, which will get thrown away.  (We used to make
+    // a copy of the object with `_.omit(attrs, 'subscribers')`, but `_.omit` is
+    // slow enough to show up in timings when you have 1000s of streams.
 
-    sub = _.defaults(raw_attrs, {
+    var subscriber_user_ids = attrs.subscribers;
+
+    delete attrs.subscribers;
+
+    sub = _.defaults(attrs, {
         name: stream_name,
         render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
@@ -462,8 +480,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     exports.set_subscribers(sub, subscriber_user_ids);
 
     if (!sub.color) {
-        var used_colors = exports.get_colors();
-        sub.color = stream_color.pick_color(used_colors);
+        sub.color = color_data.pick_color();
     }
 
     exports.update_calculated_fields(sub);
@@ -500,7 +517,7 @@ exports.get_streams_for_settings_page = function () {
     var unsubscribed_rows = exports.unsubscribed_subs();
 
     // Sort and combine all our streams.
-    function by_name(a,b) {
+    function by_name(a, b) {
         return util.strcmp(a.name, b.name);
     }
     subscribed_rows.sort(by_name);
@@ -538,7 +555,7 @@ exports.sort_for_stream_settings = function (stream_ids) {
 
 exports.get_streams_for_admin = function () {
     // Sort and combine all our streams.
-    function by_name(a,b) {
+    function by_name(a, b) {
         return util.strcmp(a.name, b.name);
     }
 
@@ -549,7 +566,9 @@ exports.get_streams_for_admin = function () {
     return subs;
 };
 
-exports.initialize_from_page_params = function () {
+exports.initialize = function () {
+    color_data.claim_colors(page_params.subscriptions);
+
     function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
             var stream_name = sub.name;

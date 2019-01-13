@@ -72,6 +72,9 @@ The `--hostname` and `--email` options are required when using
 Zulip server machine to be reachable by that name from the public
 Internet.
 
+If you need to configure a multiple domain certificate, you can generate
+one as described in the section below after installing Zulip.
+
 [doc-install-script]: ../production/install.html#step-2-install-zulip
 
 ### After Zulip is already installed
@@ -80,11 +83,12 @@ To enable the Certbot automation on an already-installed Zulip
 server, run the following commands:
 ```
 sudo -s  # If not already root
-/home/zulip/deployments/current/scripts/setup/setup-certbot --hostname=HOSTNAME --email=EMAIL
+/home/zulip/deployments/current/scripts/setup/setup-certbot --email=EMAIL HOSTNAME [HOSTNAME2...]
 ```
 where HOSTNAME is the domain name users see in their browser when
 using the server (e.g., `zulip.example.com`), and EMAIL is a contact
-address for the server admins.
+address for the server admins. Additional hostnames can also be
+specified to issue a certificate for multiple domains.
 
 ### How it works
 
@@ -121,3 +125,9 @@ sudo -s  # If not already root
 ```
 where HOSTNAME is the domain name (or IP address) to use on the
 generated certificate.
+
+After replacing the certificates, you need to reload `nginx` by
+running the following as `root`:
+```
+service nginx reload
+```

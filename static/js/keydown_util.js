@@ -18,6 +18,10 @@ exports.handle = function (opts) {
     opts.elem.keydown(function (e) {
         var key = e.which || e.keyCode;
 
+        if (e.altKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
         var key_name = keys[key];
 
         if (!key_name) {

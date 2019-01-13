@@ -56,6 +56,7 @@ PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
+    set +x
     echo "error: --self-signed-cert and --certbot are incompatible" >&2
     echo >&2
     usage
@@ -80,14 +81,16 @@ export LANGUAGE="en_US.UTF-8"
 
 # Check for a supported OS release.
 apt-get install -y lsb-release sudo
-os_release="$(lsb_release -sc)"
-case "$os_release" in
+os_info="$(lsb_release --short --id --release --codename)"
+{ read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
+
+case "$os_codename" in
     trusty|xenial|stretch|bionic) ;;
     *)
         set +x
         cat <<EOF
 
-Unsupported OS release: $os_release
+Unsupported OS release: $os_codename
 
 Zulip in production is supported only on:
  - Debian 9 "stretch"
@@ -101,12 +104,30 @@ EOF
         exit 1
 esac
 
+if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
+           grep -q "^     release v=$os_release,o=Ubuntu,a=$os_codename,n=$os_codename,l=Ubuntu,c=universe"; then
+    set +x
+    cat <<'EOF'
+
+You must enable the Ubuntu Universe repository before installing
+Zulip.  You can do this with: `add-apt-repository universe`.
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+    exit 1
+fi
+
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
 # errors like a segfault running `pip install`.
 mem_kb=$(head -n1 /proc/meminfo | awk '{print $2}')
 if [ "$mem_kb" -lt 1900000 ]; then
-    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
+    set +x
+    echo -e '\033[0;31m' >&2
+    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM." >&2
+    echo >&2
+    echo -e '\033[0m' >&2
     exit 1
 fi
 
@@ -141,15 +162,22 @@ EOF
 fi
 
 apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
-apt-get install -y \
-    puppet git curl wget \
+if ! apt-get install -y \
+    puppet git curl wget jq \
     python python3 python-six python3-six crudini \
-    "${ADDITIONAL_PACKAGES[@]}"
+    "${ADDITIONAL_PACKAGES[@]}"; then
+    set +x
+    echo -e '\033[0;31m' >&2
+    echo "Installing packages failed; is network working and (on Ubuntu) the universe repository enabled?" >&2
+    echo >&2
+    echo -e '\033[0m' >&2
+    exit 1
+fi
 
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
         --no-zulip-conf --method=standalone \
-        --hostname "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 elif [ -n "$SELF_SIGNED_CERT" ]; then
     "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert \
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
@@ -303,7 +331,7 @@ if [ "$has_appserver" = 0 ]; then
         # If we're installing from a git checkout, we need to run
         # `tools/update-prod-static` in order to build the static
         # assets.
-        su zulip -c "/home/zulip/deployments/current/tools/update-prod-static --authors-not-required"
+        su zulip -c '/home/zulip/deployments/current/tools/update-prod-static --authors-not-required'
     fi
 fi
 
@@ -319,7 +347,7 @@ if [ -n "$NO_INIT_DB" ]; then
 
  Stopping because --no-init-db was passed.  To complete the installation, run:
 
-   su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
+   su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
 EOF
     exit 0
 fi

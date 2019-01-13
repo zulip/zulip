@@ -117,25 +117,16 @@ function setup_settings_label() {
     };
 }
 
-exports.setup_page = function () {
+exports.build_page = function () {
     ui.set_up_scrollbar($("#settings_page .sidebar.left"));
     ui.set_up_scrollbar($("#settings_content"));
-
-    var tab = (function () {
-        var tab = false;
-        var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(settings)/.test(hash_sequence[0])) {
-            tab = hash_sequence[1];
-            return tab || settings_panel_menu.normal_settings.current_tab();
-        }
-        return tab;
-    }());
 
     setup_settings_label();
 
     var rendered_settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
+        enable_sound_select: page_params.enable_sounds || page_params.enable_stream_sounds,
         zuliprc: 'zuliprc',
         botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
@@ -144,23 +135,16 @@ exports.setup_page = function () {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-
-    // Since we just swapped in a whole new settings widget, we need to
-    // tell settings_sections nothing is loaded.
-    settings_sections.reset_sections();
-
-    if (tab) {
-        exports.launch_page(tab);
-        settings_toggle.highlight_toggle('settings');
-    }
 };
 
-exports.launch_page = function (tab) {
-    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
+exports.launch = function (section) {
+    exports.build_page();
+    admin.build_page();
+    settings_sections.reset_sections();
 
     overlays.open_settings();
-
-    $active_tab.click();
+    settings_panel_menu.normal_settings.activate_section(section);
+    settings_toggle.highlight_toggle('settings');
 };
 
 exports.set_settings_header = function (key) {

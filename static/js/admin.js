@@ -2,30 +2,6 @@ var admin = (function () {
 
 var exports = {};
 
-exports.show_or_hide_menu_item = function () {
-    var item = $('.admin-menu-item').expectOne();
-    if (page_params.is_admin) {
-        item.find("span").text(i18n.t("Manage organization"));
-    } else {
-        item.find("span").text(i18n.t("Organization settings"));
-        $(".organization-box [data-name='organization-profile']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='organization-settings']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='organization-permissions']")
-            .find("input, textarea, button, select").attr("disabled", true);
-        $(".organization-box [data-name='auth-methods']")
-            .find("input, button, select, checked").attr("disabled", true);
-        $(".organization-box [data-name='default-streams-list']")
-            .find("input:not(.search), button, select").attr("disabled", true);
-        $(".organization-box [data-name='filter-settings']")
-            .find("input, button, select").attr("disabled", true);
-        $(".organization-box [data-name='profile-field-settings']")
-            .find("input, button, select").attr("disabled", true);
-        $(".control-label-disabled").addClass('enabled');
-    }
-};
-
 var admin_settings_label = {
     // Organization settings
     realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
@@ -38,10 +14,10 @@ var admin_settings_label = {
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
-    realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
+    realm_email_changes_disabled: i18n.t("Prevent users from changing their email address"),
 };
 
-exports.setup_page = function () {
+exports.build_page = function () {
     var options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
@@ -73,54 +49,39 @@ exports.setup_page = function () {
         is_guest: page_params.is_guest,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
+        realm_logo_source: page_params.realm_logo_source,
+        realm_logo_url: page_params.realm_logo_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
+        development: page_params.development_environment,
     };
 
     options.admin_settings_label = admin_settings_label;
     options.msg_edit_limit_dropdown_values = settings_org.msg_edit_limit_dropdown_values;
     options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
+    options.email_address_visibility_values = settings_org.email_address_visibility_values;
     var rendered_admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-
-    // Since we just swapped in a whole new page, we need to
-    // tell admin_sections nothing is loaded.
-    admin_sections.reset_sections();
-
-    var tab = (function () {
-        var tab = false;
-        var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(organization)/.test(hash_sequence[0])) {
-            tab = hash_sequence[1];
-            return tab || settings_panel_menu.org_settings.current_tab();
-        }
-        return tab;
-    }());
-
-    if (tab) {
-        exports.launch_page(tab);
-        settings_toggle.highlight_toggle('organization');
-    }
-
+    $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
-
-    // Do this after calling the setup_up methods, so that we can
-    // disable any dynamically rendered elements.
-    exports.show_or_hide_menu_item();
 };
 
-exports.launch_page = function (tab) {
-    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
+
+exports.launch = function (section) {
+    settings.build_page();
+    exports.build_page();
+    settings_sections.reset_sections();
 
     overlays.open_settings();
-    $active_tab.click();
+    settings_panel_menu.org_settings.activate_section(section);
+    settings_toggle.highlight_toggle('organization');
 };
 
 return exports;

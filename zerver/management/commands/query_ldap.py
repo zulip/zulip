@@ -17,7 +17,11 @@ def query_ldap(**options: str) -> None:
                 print("No such user found")
             else:
                 for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-                    print("%s: %s" % (django_field, ldap_attrs[ldap_field]))
+                    value = ldap_attrs[ldap_field]
+                    if django_field == "avatar":
+                        if isinstance(value[0], bytes):
+                            value = "(An avatar image file)"
+                    print("%s: %s" % (django_field, value))
                 if settings.LDAP_EMAIL_ATTR is not None:
                     print("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR]))
 

@@ -63,25 +63,17 @@ function update_user_custom_profile_fields(fields, method) {
                                    {data: JSON.stringify(fields)}, spinner);
 }
 
-exports.add_custom_profile_fields_to_settings = function () {
-    if (!overlays.settings_open()) {
-        return;
-    }
-
-    $("#account-settings .custom-profile-fields-form").html("");
-    if (page_params.custom_profile_fields.length > 0) {
-        $("#account-settings #custom-field-header").show();
-    } else {
-        $("#account-settings #custom-field-header").hide();
-    }
-
+exports.append_custom_profile_fields = function (element_id, user_id) {
     var all_custom_fields = page_params.custom_profile_fields;
     var field_types = page_params.custom_profile_field_types;
 
     all_custom_fields.forEach(function (field) {
         var field_type = field.type;
         var type;
-        var value = people.my_custom_profile_data(field.id);
+        var field_value = people.get_custom_profile_data(user_id, field.id);
+        if (field_value === undefined || field_value === null) {
+            field_value = {value: "", rendered_value: ""};
+        }
         var is_long_text = field_type === field_types.LONG_TEXT.id;
         var is_choice_field = field_type === field_types.CHOICE.id;
         var is_user_field = field_type === field_types.USER.id;
@@ -98,7 +90,7 @@ exports.add_custom_profile_fields_to_settings = function () {
                     field_choices[field_choice_dict[choice].order] = {
                         value: choice,
                         text: field_choice_dict[choice].text,
-                        selected: choice === value,
+                        selected: choice === field_value.value,
                     };
                 }
             }
@@ -107,33 +99,48 @@ exports.add_custom_profile_fields_to_settings = function () {
         } else if (field_type === field_types.URL.id) {
             type = "url";
         } else if (is_user_field) {
-            if (value) {
-                value = JSON.parse(value);
-            }
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
         }
 
-        if (value === undefined || value === null) {
-            // If user has not set value for field.
-            value = "";
-        }
-
         var html = templates.render("custom-user-profile-field", {
             field: field,
             field_type: type,
-            field_value: value,
+            field_value: field_value,
             is_long_text_field: is_long_text,
             is_choice_field: is_choice_field,
             is_user_field: is_user_field,
             is_date_field: is_date_field,
             field_choices: field_choices,
         });
-        $("#account-settings .custom-profile-fields-form").append(html);
+        $(element_id).append(html);
+    });
+};
 
-        if (is_user_field) {
-            var pill_container = $('.custom_user_field[data-field-id="' + field.id + '"] .pill-container').expectOne();
+exports.initialize_custom_date_type_fields = function (element_id) {
+    $(element_id).find(".custom_user_field .datepicker").flatpickr({
+        altInput: true,
+        altFormat: "F j, Y"});
+};
+
+exports.intialize_custom_user_type_fields = function (element_id, user_id, is_editable,
+                                                      set_handler_on_update) {
+    var field_types = page_params.custom_profile_field_types;
+    var user_pills = {};
+
+    page_params.custom_profile_fields.forEach(function (field) {
+        var field_value_raw = people.get_custom_profile_data(user_id, field.id);
+
+        if (field_value_raw) {
+            field_value_raw = field_value_raw.value;
+        }
+
+        // If field is not editable and field value is null, we don't expect
+        // pill container for that field and proceed further
+        if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
+            var pill_container = $(element_id).find('.custom_user_field[data-field-id="' +
+                                         field.id + '"] .pill-container').expectOne();
             var pills = user_pill.create_pills(pill_container);
 
             function update_custom_user_field() {
@@ -147,22 +154,50 @@ exports.add_custom_profile_fields_to_settings = function () {
                     update_user_custom_profile_fields(fields, channel.patch);
                 }
             }
-            if (value !== undefined && value.length > 0) {
-                value.forEach(function (user_id) {
-                    var user = people.get_person_from_user_id(user_id);
-                    user_pill.append_user(user, pills);
-                });
+
+            if (field_value_raw) {
+                var field_value = JSON.parse(field_value_raw);
+                if (field_value) {
+                    field_value.forEach(function (pill_user_id) {
+                        var user = people.get_person_from_user_id(pill_user_id);
+                        user_pill.append_user(user, pills);
+                    });
+                }
             }
-            var input = pill_container.children('.input');
-            user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
-            pills.onPillRemove(function () {
-                update_custom_user_field();
-            });
+
+            if (is_editable) {
+                var input = pill_container.children('.input');
+                if (set_handler_on_update) {
+                    user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
+                    pills.onPillRemove(function () {
+                        update_custom_user_field();
+                    });
+                } else {
+                    user_pill.set_up_typeahead_on_pills(input, pills, function () {});
+                }
+            }
+            user_pills[field.id] = pills;
         }
     });
-    $(".custom_user_field .datepicker").flatpickr({
-        altInput: true,
-        altFormat: "F j, Y"});
+    return user_pills;
+};
+
+exports.add_custom_profile_fields_to_settings = function () {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    var element_id = "#account-settings .custom-profile-fields-form";
+    $(element_id).html("");
+    if (page_params.custom_profile_fields.length > 0) {
+        $("#account-settings #custom-field-header").show();
+    } else {
+        $("#account-settings #custom-field-header").hide();
+    }
+
+    exports.append_custom_profile_fields(element_id, people.my_current_user_id());
+    exports.intialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);
+    exports.initialize_custom_date_type_fields(element_id);
 };
 
 exports.set_up = function () {
@@ -272,6 +307,12 @@ exports.set_up = function () {
 
     $('#change_password_modal').find('[data-dismiss=modal]').on('click', function () {
         clear_password_change();
+    });
+
+    // If the modal is closed using the 'close' button or the 'Cancel' button
+    $('.modal').find('[data-dismiss=modal]').on('click', function () {
+        // Enable mouse events for the background on closing modal
+        $('.overlay.show').attr("style", null);
     });
 
     $('#change_password_button').on('click', function (e) {
@@ -423,7 +464,7 @@ exports.set_up = function () {
         }
     });
 
-    $("#do_deactivate_self_button").on('click',function () {
+    $("#do_deactivate_self_button").on('click', function () {
         $("#do_deactivate_self_button .loader").css('display', 'inline-block');
         $("#do_deactivate_self_button span").hide();
         $("#do_deactivate_self_button object").on("load", function () {
@@ -437,21 +478,31 @@ exports.set_up = function () {
                 url: '/json/users/me',
                 success: function () {
                     $("#deactivate_self_modal").modal("hide");
-                    window.location.href = "/login";
+                    window.location.href = "/login/";
                 },
                 error: function (xhr) {
+                    var error_last_admin = i18n.t("Error: Cannot deactivate the only organization administrator.");
+                    var error_last_user = i18n.t("Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target=\"_blank\" href=\"/#organization/organization-profile\">Organization profile settings</a>.");
+                    var rendered_error_msg;
+                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
+                        if (xhr.responseJSON.is_last_admin) {
+                            rendered_error_msg = error_last_admin;
+                        } else {
+                            rendered_error_msg = error_last_user;
+                        }
+                    }
                     $("#deactivate_self_modal").modal("hide");
-                    ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+                    $("#account-settings-status").addClass("alert-error").html(rendered_error_msg).show();
                 },
             });
         }, 5000);
     });
 
-    $("#show_my_user_profile_modal").on('click', function (e) {
+    $("#show_my_user_profile_modal").on('click', function () {
         overlays.close_overlay("settings");
         var user = people.get_person_from_user_id(people.my_current_user_id());
         setTimeout(function () {
-            popovers.show_user_profile(e.target, user);
+            popovers.show_user_profile(user);
         }, 100);
     });
 

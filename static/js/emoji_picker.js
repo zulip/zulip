@@ -226,7 +226,7 @@ function filter_emojis() {
             message_id: message_id,
         });
         $('.emoji-search-results').html(rendered_search_results);
-        ui.update_scrollbar($(".emoji-search-results-container"));
+        ui.reset_scrollbar($(".emoji-search-results-container"));
         if (!search_results_visible) {
             show_search_results();
         }
@@ -583,10 +583,10 @@ exports.render_emoji_popover = function (elt, id) {
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
         placement: placement === 'viewport_center' ? 'left' : placement,
-        template:  template,
-        title:     "",
-        content:   generate_emoji_picker_content(id),
-        trigger:   "manual",
+        template: template,
+        title: "",
+        content: generate_emoji_picker_content(id),
+        trigger: "manual",
     });
     elt.popover("show");
     elt.prop("title", i18n.t("Add emoji reaction (:)"));

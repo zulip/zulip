@@ -30,7 +30,9 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.request import JsonableError
+from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
@@ -39,8 +41,10 @@ from zerver.lib.actions import (
     get_status_dict, streams_to_dicts_sorted,
     default_stream_groups_to_dicts_sorted,
     get_owned_bot_dicts,
+    get_available_notification_sounds,
 )
 from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_status import get_away_user_ids
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
     get_user_profile_by_id, \
@@ -55,11 +59,20 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     user_dicts = get_realm_user_dicts(realm_id)
 
     # TODO: Consider optimizing this query away with caching.
-    custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile__realm_id=realm_id)
+    custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
+        "field").filter(user_profile__realm_id=realm_id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
-        profiles_by_user_id[user_id][profile_field.field_id] = profile_field.value
+        if profile_field.field.is_renderable():
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value,
+                "rendered_value": profile_field.rendered_value
+            }
+        else:
+            profiles_by_user_id[user_id][profile_field.field_id] = {
+                "value": profile_field.value
+            }
 
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
@@ -170,6 +183,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
+        state['realm_logo_url'] = realm_logo_url(realm)
+        state['realm_logo_source'] = realm.logo_source
+        state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
@@ -284,6 +300,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
             state[notification] = getattr(user_profile, notification)
+        state['available_notification_sounds'] = get_available_notification_sounds()
+
+    if want('user_status'):
+        state['away_user_ids'] = sorted(list(get_away_user_ids(realm_id=realm.id)))
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION
@@ -363,7 +383,7 @@ def apply_event(state: Dict[str, Any],
                     state['avatar_url'] = person['avatar_url']
                     state['avatar_url_medium'] = person['avatar_url_medium']
 
-                for field in ['is_admin', 'email', 'full_name']:
+                for field in ['is_admin', 'delivery_email', 'email', 'full_name']:
                     if field in person and field in state:
                         state[field] = person[field]
 
@@ -397,7 +417,15 @@ def apply_event(state: Dict[str, Any],
                     if 'custom_profile_field' in person:
                         custom_field_id = person['custom_profile_field']['id']
                         custom_field_new_value = person['custom_profile_field']['value']
-                        p['profile_data'][custom_field_id] = custom_field_new_value
+                        if 'rendered_value' in person['custom_profile_field']:
+                            p['profile_data'][custom_field_id] = {
+                                'value': custom_field_new_value,
+                                'rendered_value': person['custom_profile_field']['rendered_value']
+                            }
+                        else:
+                            p['profile_data'][custom_field_id] = {
+                                'value': custom_field_new_value
+                            }
 
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
@@ -557,9 +585,9 @@ def apply_event(state: Dict[str, Any],
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
         # the unread_msgs data if the topic of an unread message changed.
-        if 'subject' in event:
+        if TOPIC_NAME in event:
             stream_dict = state['raw_unread_msgs']['stream_dict']
-            topic = event['subject']
+            topic = event[TOPIC_NAME]
             for message_id in event['message_ids']:
                 if message_id in stream_dict:
                     stream_dict[message_id]['topic'] = topic
@@ -646,6 +674,16 @@ def apply_event(state: Dict[str, Any],
         elif event['op'] == 'remove':
             state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
                                           if ug['id'] != event['group_id']]
+    elif event['type'] == 'user_status':
+        away_user_ids = set(state['away_user_ids'])
+        user_id = event['user_id']
+
+        if event['away']:
+            away_user_ids.add(user_id)
+        else:
+            away_user_ids.discard(user_id)
+
+        state['away_user_ids'] = sorted(list(away_user_ids))
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

@@ -1374,6 +1374,27 @@ paths:
                           "msg": "Topic is not muted",
                           "result": "error"
                       }
+  /realm/emoji/<emoji_name>:
+    post:
+      description: Upload a single emoji file.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                filename:
+                  type: string
+                  format: binary
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
   /realm/emoji:
     get:
       description: Get all the custom emoji in the user's realm.
@@ -1705,6 +1726,11 @@ paths:
                       type: boolean
                       description: Whether mobile/push notifications are
                         enabled.
+                    is_incompatible:
+                      type: boolean
+                      description: Whether the Zulip client that has sent a
+                        request to this endpoint is deemed incompatible with
+                        the server.
                     email_auth_enabled:
                       type: boolean
                       description: Setting for allowing users authenticate with
@@ -1723,8 +1749,12 @@ paths:
                       description: The realm's name.
                     realm_icon:
                       type: string
-                      description: The URI of the organization's icon (usually
-                        a logo).
+                      description: The URI of the organization's mobile icon (usually
+                        a square version of the logo).
+                    realm_logo:
+                      type: string
+                      description: The URI of the organization's top-left navbar logo
+                        (usually a wide rectangular version of the logo).
                     realm_description:
                       type: string
                       description: HTML description of the organization, as
@@ -1736,6 +1766,7 @@ paths:
                         "push_notifications_enabled": false,
                         "msg": "",
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
+                        "realm_logo": "/static/images/logo/zulip-org-logo.png",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
                         "email_auth_enabled": true,
                         "zulip_version": "1.9.0-rc1+git",
@@ -1895,6 +1926,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
+  /user_groups:
+    get:
+      description: Get all user groups of the realm.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    user_groups:
+                      type: array
+                      items:
+                        type: object
+                      description: A list of `user_group` objects, which contain a
+                        `description`, a `name`, their `id` and the list of members
+                        of the user group.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "user_groups": [
+                            {
+                                "description": "Characters of Hamlet",
+                                "id": 1,
+                                "name": "hamletcharacters",
+                                "members": [3, 4]
+                            },
+                            {
+                                "description": "Other users",
+                                "id": 2,
+                                "name": "other users",
+                                "members": [1, 2]
+                            }
+                        ]
+                    }
 components:
   #######################
   # Security definitions

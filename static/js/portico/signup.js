@@ -1,13 +1,24 @@
 $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
-    var password_field = $('#id_password, #id_new_password1');
 
-    $.validator.addMethod('password_strength', function (value) {
-        return common.password_quality(value, undefined, password_field);
-    }, function () {
-        return common.password_warning(password_field.val(), password_field);
-    });
+    var password_field = $('#id_password, #id_new_password1');
+    if (password_field.length > 0) {
+        $.validator.addMethod('password_strength', function (value) {
+            return common.password_quality(value, undefined, password_field);
+        }, function () {
+            return common.password_warning(password_field.val(), password_field);
+        });
+        // Reset the state of the password strength bar if the page
+        // was just reloaded due to a validation failure on the backend.
+        common.password_quality(password_field.val(), $('#pw_strength .bar'), password_field);
+
+        password_field.on('change keyup', function () {
+            // Update the password strength bar even if we aren't validating
+            // the field yet.
+            common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
+        });
+    }
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
@@ -20,7 +31,7 @@ $(function () {
 
     $('#registration, #password_reset').validate({
         rules: {
-            password:      'password_strength',
+            password: 'password_strength',
             new_password1: 'password_strength',
         },
         errorElement: "p",
@@ -34,15 +45,33 @@ $(function () {
                 error.insertAfter(element).addClass('help-inline alert alert-error');
             }
         },
-        highlight:   highlight('error'),
+        highlight: highlight('error'),
         unhighlight: highlight('success'),
     });
 
-    password_field.on('change keyup', function () {
-        // Update the password strength bar even if we aren't validating
-        // the field yet.
-        common.password_quality($(this).val(), $('#pw_strength .bar'), $(this));
-    });
+    if ($("#registration").length > 0) {
+        // Check if there is no input field with errors.
+        if ($('.help-inline:not(:empty)').length === 0) {
+            // Find the first input field present in the form that is
+            // not hidden and disabled and store it in a variable.
+            var firstInputElement = $("input:not(:hidden, :disabled):first");
+            // Focus on the first input field in the form.
+            common.autofocus(firstInputElement);
+        } else { // If input field with errors is present.
+            // Find the input field having errors and stores it in a variable.
+            var inputElementWithError = $('.help-inline:not(:empty):first').parent().find('input');
+            // Focus on the input field having errors.
+            common.autofocus(inputElementWithError);
+        }
+
+        // reset error message displays
+        $('#id_team_subdomain_error_client').css('display', 'none');
+        if ($('.team_subdomain_error_server').text() === '') {
+            $('.team_subdomain_error_server').css('display', 'none');
+        }
+
+        $("#timezone").val(moment.tz.guess());
+    }
 
     $("#send_confirm").validate({
         errorElement: "div",
@@ -87,6 +116,12 @@ $(function () {
             // by the server.
             $("#login_form .alert.alert-error").remove();
         },
+        showErrors: function (error_map) {
+            if (error_map.password) {
+                $("#login_form .alert.alert-error").remove();
+            }
+            this.defaultShowErrors();
+        },
     });
 
     function check_subdomain_avilable(subdomain) {
@@ -100,8 +135,7 @@ $(function () {
     }
 
     function update_full_name_section() {
-        var selected_realm = $("#source_realm_select").find(":selected").val();
-        if (selected_realm && selected_realm !== "on") {
+        if ($("#source_realm_select").length && $("#source_realm_select").find(":selected").val() !== "on") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
             var avatar_url = $("#source_realm_select").find(":selected").attr('data-avatar');

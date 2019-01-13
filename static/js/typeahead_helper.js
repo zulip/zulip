@@ -156,7 +156,7 @@ exports.render_emoji = function (item) {
     if (emoji.active_realm_emojis.hasOwnProperty(item.emoji_name)) {
         args.img_src = item.emoji_url;
     } else {
-        args.codepoint = item.codepoint;
+        args.emoji_code = item.emoji_code;
     }
     return exports.render_typeahead_item(args);
 };
@@ -168,7 +168,7 @@ function emoji_prefix_sort(query, objs, get_item) {
     var popular_emoji_matches = [];
     var other_emoji_matches = [];
     prefix_sort.matches.forEach(function (obj) {
-        if (emoji.frequently_used_emojis_list.indexOf(obj.codepoint) !== -1) {
+        if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
@@ -241,7 +241,7 @@ function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current
     return tertiary_compare(person_a, person_b);
 }
 
-exports.sort_for_at_mentioning = function (objs, current_stream_name, current_subject) {
+exports.sort_for_at_mentioning = function (objs, current_stream_name, current_topic) {
     // If sorting for recipientbox typeahead or compose state is private, then current_stream = ""
     var current_stream = false;
     if (current_stream_name) {
@@ -267,7 +267,7 @@ exports.sort_for_at_mentioning = function (objs, current_stream_name, current_su
                         user_a,
                         user_b,
                         stream_id,
-                        current_subject
+                        current_topic
                     );
                 },
                 current_stream.name
@@ -296,13 +296,13 @@ exports.sort_languages = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
+exports.sort_recipients = function (users, query, current_stream, current_topic, groups) {
     var users_name_results =  util.prefix_sort(
         query, users, function (x) { return x.full_name; });
     var result = exports.sort_for_at_mentioning(
         users_name_results.matches,
         current_stream,
-        current_subject
+        current_topic
     );
 
     var groups_results;
@@ -316,12 +316,12 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
     result = result.concat(exports.sort_for_at_mentioning(
         email_results.matches,
         current_stream,
-        current_subject
+        current_topic
     ));
     var rest_sorted = exports.sort_for_at_mentioning(
         email_results.rest,
         current_stream,
-        current_subject
+        current_topic
     );
     if (groups !== undefined) {
         rest_sorted = rest_sorted.concat(groups_results.rest);
@@ -403,7 +403,7 @@ exports.sort_people_and_user_groups = function (query, matches) {
         users,
         query,
         compose_state.stream_name(),
-        compose_state.subject(),
+        compose_state.topic(),
         groups);
     return recipients;
 };

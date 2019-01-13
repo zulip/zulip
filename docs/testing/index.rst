@@ -10,5 +10,6 @@ Code Testing
    testing-with-django
    testing-with-node
    testing-with-casper
-   travis
+   mypy
+   continuous-integration
    manual-testing

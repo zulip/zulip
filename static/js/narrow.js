@@ -92,7 +92,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     notifications.redraw_title();
-
+    notifications.hide_history_limit_message();
     blueslip.debug("Narrowed", {operators: _.map(operators,
                                                  function (e) { return e.operator; }),
                                 trigger: opts ? opts.trigger : undefined,
@@ -270,10 +270,9 @@ exports.activate = function (raw_operators, opts) {
 
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
+    typing_events.render_notifications_for_narrow();
+    tab_bar.initialize();
 
-    $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
-                                                           filter: current_filter,
-                                                           trigger: opts.trigger}));
     msg_list.initial_core_time = new Date();
     setTimeout(function () {
         msg_list.initial_free_time = new Date();
@@ -455,7 +454,7 @@ exports.stream_topic = function () {
     if (msg) {
         return {
             stream: msg.stream || undefined,
-            topic: msg.subject || undefined,
+            topic: util.get_message_topic(msg) || undefined,
         };
     }
 
@@ -565,7 +564,7 @@ exports.by = function (operator, operand, opts) {
     exports.activate([{operator: operator, operand: operand}], opts);
 };
 
-exports.by_subject = function (target_id, opts) {
+exports.by_topic = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var original = message_store.get(target_id);
     if (original.type !== 'stream') {
@@ -577,7 +576,7 @@ exports.by_subject = function (target_id, opts) {
     unread_ops.notify_server_message_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.subject},
+        {operator: 'topic', operand: util.get_message_topic(original)},
     ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate(search_terms, opts);
@@ -599,6 +598,68 @@ exports.by_recipient = function (target_id, opts) {
         break;
     }
 };
+
+// Called by the narrow_to_compose_target hotkey.
+exports.to_compose_target = function () {
+    if (!compose_state.composing()) {
+        return;
+    }
+
+    var opts = {
+        trigger: 'narrow_to_compose_target',
+    };
+
+    if (compose_state.get_message_type() === 'stream') {
+        var stream_name = compose_state.stream_name();
+        var stream_id = stream_data.get_stream_id(stream_name);
+        if (!stream_id) {
+            return;
+        }
+        // If we are composing to a new topic, we narrow to the stream but
+        // grey-out the message view instead of narrowing to an empty view.
+        var topics = topic_data.get_recent_names(stream_id);
+        var operators = [{operator: 'stream', operand: stream_name}];
+        var topic = compose_state.topic();
+        if (topics.indexOf(topic) !== -1) {
+            operators.push({operator: 'topic', operand: topic});
+        }
+        exports.activate(operators, opts);
+        return;
+    }
+
+    if (compose_state.get_message_type() === 'private') {
+        var recipient_string = compose_state.recipient();
+        var emails = util.extract_pm_recipients(recipient_string);
+        var invalid = _.reject(emails, people.is_valid_email_for_compose);
+        // If there are no recipients or any recipient is
+        // invalid, narrow to all PMs.
+        if (emails.length === 0 || invalid.length > 0) {
+            exports.by('is', 'private', opts);
+            return;
+        }
+        exports.by('pm-with', util.normalize_recipients(recipient_string), opts);
+    }
+};
+
+function handle_post_narrow_deactivate_processes() {
+    compose_fade.update_message_list();
+
+    // clear existing search pills
+    if (page_params.search_pills_enabled) {
+        search_pill_widget.widget.clear(true);
+    }
+
+    top_left_corner.handle_narrow_deactivated();
+    stream_list.handle_narrow_deactivated();
+    compose.update_stream_button_for_stream();
+    message_edit.handle_narrow_deactivated();
+    widgetize.set_widgets_for_list();
+    typing_events.render_notifications_for_narrow();
+    tab_bar.initialize();
+    exports.narrow_title = "home";
+    notifications.redraw_title();
+    notifications.hide_or_show_history_limit_message(home_msg_list);
+}
 
 exports.deactivate = function () {
     search.clear_search_form();
@@ -668,21 +729,7 @@ exports.deactivate = function () {
         current_msg_list.select_id(message_id_to_select, select_opts);
     }
 
-    compose_fade.update_message_list();
-
-    // clear existing search pills
-    if (page_params.search_pills_enabled) {
-        search_pill_widget.widget.clear(true);
-    }
-
-    top_left_corner.handle_narrow_deactivated();
-    stream_list.handle_narrow_deactivated();
-    compose.update_stream_button_for_stream();
-
-    $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
-
-    exports.narrow_title = "home";
-    notifications.redraw_title();
+    handle_post_narrow_deactivate_processes();
 
     unnarrow_times.initial_core_time = new Date();
     setTimeout(function () {
@@ -752,6 +799,9 @@ function pick_empty_narrow_banner() {
         }
         if (first_operand.indexOf(',') === -1) {
             // You have no private messages with this person
+            if (people.is_current_user(first_operand)) {
+                return $("#empty_narrow_self_private_message");
+            }
             return $("#empty_narrow_private_message");
         }
         return $("#empty_narrow_multi_private_message");

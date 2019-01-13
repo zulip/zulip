@@ -3,6 +3,27 @@ class zulip::supervisor {
                           'supervisor',
                           ]
   package { $supervisor_packages: ensure => 'installed' }
+
+  $supervisord_conf = $::osfamily ? {
+    'debian' => '/etc/supervisor/supervisord.conf',
+    'redhat' => '/etc/supervisord.conf',
+  }
+  # Command to start supervisor
+  $supervisor_start = $::osfamily ? {
+    'debian' => '/etc/init.d/supervisor start',
+    'redhat' => 'systemctl start supervisord',
+  }
+
+  if $::osfamily == 'redhat' {
+    file { $zulip::common::supervisor_conf_dir:
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'root',
+    }
+  }
+
+  $supervisor_service = $zulip::common::supervisor_service
+
   # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
@@ -10,7 +31,7 @@ class zulip::supervisor {
   # This logic is definitely a hack, but it's less bad than the old hack :(
   $puppet_classes = zulipconf('machine', 'puppet_classes', undef)
   if $puppet_classes == 'zulip::dockervoyager' {
-    service { 'supervisor':
+    service { $supervisor_service:
       ensure     => running,
       require    => [
         File['/var/log/zulip'],
@@ -22,7 +43,7 @@ class zulip::supervisor {
       restart    => '/bin/true'
     }
   } else {
-    service { 'supervisor':
+    service { $supervisor_service:
       ensure     => running,
       require    => [
         File['/var/log/zulip'],
@@ -45,25 +66,25 @@ class zulip::supervisor {
       # We use supervisor[d] as the pattern so the bash/grep commands don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => 'bash -c "if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi"'
+      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${supervisor_start}; fi'"
       # lint:endignore
     }
   }
 
-  file { '/etc/supervisor/supervisord.conf':
+  file { $supervisord_conf:
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
-    notify  => Service['supervisor'],
+    notify  => Service[$supervisor_service],
   }
 
   if $zulip::base::release_name == 'xenial' {
     exec {'enable supervisor':
-      unless  => 'systemctl is-enabled supervisor',
-      command => 'systemctl enable supervisor',
+      unless  => "systemctl is-enabled ${supervisor_service}",
+      command => "systemctl enable ${supervisor_service}",
       require => Package['supervisor'],
     }
   }

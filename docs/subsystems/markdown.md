@@ -126,6 +126,32 @@ Important considerations for any changes are:
   tests; they're easy to write and give us the flexibility to refactor
   frequently.
 
+## Per-realm features
+
+Zulip's markdown processor's rendering supports a number of features
+that depend on realm-specific or user-specific data.  For example, the
+realm could have
+[Linkifiers](https://zulipchat.com/help/add-a-custom-linkification-filter)
+or [Custom emoji](https://zulipchat.com/help/add-custom-emoji)
+configured, and Zulip supports mentions for streams, users, and user
+groups (which depend on data like users' names, IDs, etc.).
+
+At a backend code level, these are controlled by the `message_realm`
+object and other arguments passed into `do_convert` (`sent_by_bot`,
+`translate_emoticons`, `mention_data`, etc.).  Because
+`python-markdown` doesn't support directly passing arguments into the
+markdown processor, Bugdown attaches these data to the Markdown
+processor object via e.g. `_md_engine.zulip_db_data`, and then
+individual markdown rules can access the data from there.
+
+For non-message contexts (e.g. an organization's profile (aka the
+thing on the right-hand side of the login page), stream descriptions,
+or rendering custom profile fields), one needs to just pass in a
+`message_realm` (see, for example, `zulip_default_context` for the
+organization profile code for this).  But for messages, we need to
+pass in attributes like `sent_by_bot` and `translate_emoticons` that
+indicate details about how the user sending the message is configured.
+
 ## Zulip's Markdown philosophy
 
 Note that this discussion is based on a comparison with the original

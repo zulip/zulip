@@ -3,7 +3,6 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 
 from zerver.lib import bugdown
-from zerver.lib.bugdown import arguments
 from zerver.lib.actions import (
     do_set_user_display_setting,
     do_remove_realm_emoji,
@@ -52,7 +51,6 @@ import os
 import ujson
 
 import urllib
-from zerver.lib.str_utils import NonBinaryStr
 from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
 class FencedBlockPreprocessorTest(TestCase):
@@ -178,7 +176,7 @@ class BugdownMiscTest(ZulipTestCase):
         expected_diff = "\u001b[34m-\u001b[0m <p>The \u001b[33mquick brown\u001b[0m fox jumps over the lazy dog.  Animal stories are fun\u001b[31m, yeah\u001b[0m</p>\n\u001b[34m+\u001b[0m <p>The \u001b[33mfast\u001b[0m fox jumps over the lazy dog\u001b[32ms and cats\u001b[0m.  Animal stories are fun</p>\n"
         self.assertEqual(mdiff.diff_strings(str1, str2), expected_diff)
 
-    def test_get_full_name_info(self) -> None:
+    def test_get_possible_mentions_info(self) -> None:
         realm = get_realm('zulip')
 
         def make_user(email: str, full_name: str) -> UserProfile:
@@ -201,16 +199,21 @@ class BugdownMiscTest(ZulipTestCase):
         fred3.save()
 
         fred4 = make_user('fred4@example.com', 'Fred Flintstone')
-        fred4_key = 'fred flintstone|{}'.format(fred4.id)
 
-        dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
-        self.assertEqual(set(dct.keys()), {'fred flintstone', fred4_key, 'cordelia lear'})
-        self.assertEqual(dct['fred flintstone'], dict(
+        lst = bugdown.get_possible_mentions_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
+        set_of_names = set(map(lambda x: x['full_name'].lower(), lst))
+        self.assertEqual(set_of_names, {'fred flintstone', 'cordelia lear'})
+
+        by_id = {
+            row['id']: row
+            for row in lst
+        }
+        self.assertEqual(by_id.get(fred2.id), dict(
             email='fred2@example.com',
             full_name='Fred Flintstone',
             id=fred2.id
         ))
-        self.assertEqual(dct[fred4_key], dict(
+        self.assertEqual(by_id.get(fred4.id), dict(
             email='fred4@example.com',
             full_name='Fred Flintstone',
             id=fred4.id
@@ -229,7 +232,7 @@ class BugdownMiscTest(ZulipTestCase):
             id=hamlet.id
         ))
 
-        user = mention_data.get_user('king hamLET')
+        user = mention_data.get_user_by_name('king hamLET')
         assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
 
@@ -240,6 +243,9 @@ class BugdownMiscTest(ZulipTestCase):
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
 class BugdownTest(ZulipTestCase):
+    def setUp(self) -> None:
+        bugdown.clear_state_for_testing()
+
     def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
         if isinstance(first, str) and isinstance(second, str):
             if first != second:
@@ -319,6 +325,7 @@ class BugdownTest(ZulipTestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" target="_blank" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
+        bugdown.clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
             realm = Realm.objects.create(string_id='file_links_test')
             bugdown.maybe_update_markdown_engines(realm.id, False)
@@ -372,7 +379,7 @@ class BugdownTest(ZulipTestCase):
 
         msg = 'https://www.google.com/images/srpr/logo4w.png'
         thumbnail_img = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>'
-        with self.settings(THUMBOR_URL=''):
+        with self.settings(THUMBNAIL_IMAGES=False):
             converted = bugdown_convert(msg)
         self.assertIn(thumbnail_img, converted)
 
@@ -442,13 +449,12 @@ class BugdownTest(ZulipTestCase):
         settings.INLINE_IMAGE_PREVIEW = True
 
         sender_user_profile = self.example_user('othello')
-        arguments.current_message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
-        realm = arguments.current_message.get_realm()
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm = message.get_realm()
 
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
 
-        arguments.current_message = None
         ret = bugdown.image_preview_enabled_for_realm()
         self.assertEqual(ret, True)
 
@@ -458,16 +464,13 @@ class BugdownTest(ZulipTestCase):
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
 
-        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        ret = bugdown.url_embed_preview_enabled_for_realm()
         self.assertEqual(ret, False)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
-        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        ret = bugdown.url_embed_preview_enabled_for_realm()
         self.assertEqual(ret, realm.inline_image_preview)
-
-        ret = bugdown.url_embed_preview_enabled_for_realm(None)
-        self.assertEqual(ret, True)
 
     def test_inline_dropbox(self) -> None:
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
@@ -731,17 +734,17 @@ class BugdownTest(ZulipTestCase):
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
-        msg = Message(sender=self.example_user('othello'),
-                      subject="#444")
+        msg = Message(sender=self.example_user('othello'))
+        msg.set_topic_name("#444")
 
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, message_realm=realm, message=msg)
-        converted_subject = bugdown.subject_links(realm.id, msg.subject)
+        converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
-        self.assertEqual(converted_subject, [u'https://trac.zulip.net/ticket/444'])
+        self.assertEqual(converted_topic, [u'https://trac.zulip.net/ticket/444'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
@@ -809,10 +812,10 @@ class BugdownTest(ZulipTestCase):
         realm = get_realm('zulip')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
-        boring_msg = Message(sender=self.example_user('othello'),
-                             subject=u"no match here")
-        converted_boring_subject = bugdown.subject_links(realm.id, boring_msg.subject)
-        self.assertEqual(converted_boring_subject, [])
+        boring_msg = Message(sender=self.example_user('othello'))
+        boring_msg.set_topic_name("no match here")
+        converted_boring_topic = bugdown.topic_links(realm.id, boring_msg.topic_name())
+        self.assertEqual(converted_boring_topic, [])
 
     def test_is_status_message(self) -> None:
         user_profile = self.example_user('othello')
@@ -959,8 +962,8 @@ class BugdownTest(ZulipTestCase):
         assert_mentions('smush@**steve**smush', set())
 
         assert_mentions(
-            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson** @**all**',
-            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson'}
+            'Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**',
+            {'King Hamlet', 'Cordelia Lear', 'Foo van Barson|1234'}
         )
 
     def test_mention_multiple(self) -> None:
@@ -1235,7 +1238,7 @@ class BugdownTest(ZulipTestCase):
 
     def test_url_to_a(self) -> None:
         url = 'javascript://example.com/invalidURL'
-        converted = bugdown.url_to_a(url, url)
+        converted = bugdown.url_to_a(db_data=None, url=url, text=url)
         self.assertEqual(
             converted,
             'javascript://example.com/invalidURL',

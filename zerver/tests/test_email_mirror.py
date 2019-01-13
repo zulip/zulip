@@ -185,6 +185,33 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
+    def test_receive_stream_email_multiple_recipient_success(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        # stream address is angle-addr within multiple addresses
+        stream_to_addresses = ["A.N. Other <another@example.org>",
+                               "Denmark <{}>".format(encode_email_address(stream))]
+
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = ", ".join(stream_to_addresses)
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+
+        # Hamlet is subscribed to this stream so should see the email message from Othello.
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
+
+
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:
 
@@ -534,3 +561,30 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         self.assert_json_error(
             result,
             "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
+
+
+class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
+    def test_email_subject_stripping(self) -> None:
+        subject_list = ujson.loads(self.fixture_data('subjects.json', type='email'))
+
+        for subject in subject_list:
+            user_profile = self.example_user('hamlet')
+            self.login(user_profile.email)
+            self.subscribe(user_profile, "Denmark")
+            stream = get_stream("Denmark", user_profile.realm)
+            stream_to_address = encode_email_address(stream)
+            incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+            incoming_valid_message['Subject'] = subject['original_subject']
+            incoming_valid_message['From'] = self.example_email('hamlet')
+            incoming_valid_message['To'] = stream_to_address
+            incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+            process_message(incoming_valid_message)
+            message = most_recent_message(user_profile)
+
+            if subject['stripped_subject'] is not "":
+                expected_topic = subject['stripped_subject']
+            else:
+                expected_topic = "(no topic)"
+
+            self.assertEqual(expected_topic, message.topic_name())

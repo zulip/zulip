@@ -3,6 +3,7 @@ import json
 import os
 import requests
 import subprocess
+import sys
 from typing import Any
 
 from django.conf import settings
@@ -61,10 +62,14 @@ class Command(ZulipBaseCommand):
         print("")
 
         if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
-            raise CommandError(
-                "You must first agree to the Zulipchat Terms of Service: "
-                "https://zulipchat.com/terms/. Run as:\n"
-                "  ./manage.py %s --agree_to_terms_of_service\n" % (os.path.basename(__file__)[:-3],))
+            print("To register, you must agree to the Zulipchat Terms of Service: "
+                  "https://zulipchat.com/terms/")
+            tos_prompt = input("Do you agree to the Terms of Service? [Y/n] ")
+            print("")
+            if not (tos_prompt.lower() == 'y' or
+                    tos_prompt.lower() == '' or
+                    tos_prompt.lower() == 'yes'):
+                raise CommandError("Aborting, since Terms of Service have not been accepted.")
 
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         try:

@@ -74,20 +74,117 @@ those providers, Zulip's full-text search will be unavailable.
 ## Putting the Zulip application behind a reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.
-There are few things you need to be careful about when configuring a
-reverse proxy:
+This section contains notes on the configuration required with
+variable reverse proxy implementations.
+
+### Installer options
+
+If your Zulip server will not be on the public Internet, we recommend,
+installing with the `--self-signed-cert` option (rather than the
+`--certbot` option), since CertBot requires the server to be on the
+public Internet.
+
+#### Configuring Zulip to allow HTTP
+
+Depending on your environment, you may want the reverse proxy to talk
+to the Zulip server over HTTP; this can be secure when the Zulip
+server is not directly exposed to the public Internet.
+
+After installing the Zulip server as
+[described above](#installer-options), you can configure Zulip to talk
+HTTP as follows:
+
+1. Add the following block to `/etc/zulip/zulip.conf`:
+
+    ```
+    [application_server]
+    http_only = true
+    ```
+
+1. As root, run
+`/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
+will convert Zulip's main `nginx` configuration file to allow HTTP
+instead of HTTPS.
+
+1. Finally, restart the Zulip server, using
+`/home/zulip/deployments/current/scripts/restart-server`.
+
+### nginx configuration
+
+You can look at our
+[nginx reverse proxy configuration][nginx-loadbalancer] to see an
+example of how to do this properly (the various include files are
+available via the `zulip::nginx` puppet module).  Or modify this example:
+
+```
+map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+}
+server {
+        listen                  443 ssl;
+        server_name             zulip.example.net;
+
+        ssl                     on;
+        ssl_certificate         /path/to/fullchain-cert.pem;
+        ssl_certificate_key     /path/to/private-key.pem;
+
+        location / {
+                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header        Host $http_host;
+                proxy_set_header        Upgrade $http_upgrade;
+                proxy_set_header        Connection $connection_upgrade;
+                proxy_http_version      1.1;
+                proxy_buffering         off;
+                proxy_read_timeout      20m;
+                proxy_pass              https://zulip-upstream-host;
+        }
+}
+```
+
+Don't forget to update `server_name`, `ssl_certificate`,
+`ssl_certificate_key` and `proxy_pass` with propper values.
+
+[nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
+[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
+[voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
+[zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
+[nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
+
+### HAProxy configuration
+
+If you want to use HAProxy with Zulip, this `backend` config is a good
+place to start.
+
+```
+backend zulip
+    mode http
+    balance leastconn
+    http-request set-header X-Client-IP %[src]
+    reqadd X-Forwarded-Proto:\ https
+    server zulip 10.10.10.10:80 check
+```
+
+Since this configuration uses the `http` mode, you will also need to
+[configure Zulip to allow HTTP](#configuring-zulip-to-allow-http) as
+described above.
+
+### Other proxies
+
+If you're using another reverse proxy implementation, there are few
+things you need to be careful about when configuring it:
 
 1. Configure your reverse proxy (or proxies) to correctly maintain the
 `X-Forwarded-For` HTTP header, which is supposed to contain the series
-of IP addresses the request was forwarded through.  This
-[nginx code snippet][nginx-proxy-config] will do the right thing, and
-you can verify your work by looking at `/var/log/zulip/server.log` and
-checking it has the actual IP addresses of clients, not the IP address
-of the proxy server.
+of IP addresses the request was forwarded through.  You can verify
+your work by looking at `/var/log/zulip/server.log` and checking it
+has the actual IP addresses of clients, not the IP address of the
+proxy server.
 
-2. Ensure your proxy doesn't interfere with Zulip's use of long-polling
-for real-time push from the server to your users' browsers.  This
-[nginx code snippet][nginx-proxy-longpolling-config] will do the right thing.
+2. Ensure your proxy doesn't interfere with Zulip's use of
+long-polling for real-time push from the server to your users'
+browsers.  This [nginx code snippet][nginx-proxy-longpolling-config]
+does this.
 
 The key configuration options are, for the `/json/events` and
 `/api/1/events` endpoints:
@@ -97,22 +194,11 @@ The key configuration options are, for the `/json/events` and
 * `proxy_buffering off`.  If you don't do this, your `nginx` proxy may
   return occasional 502 errors to clients using Zulip's events API.
 
-3. The other tricky failure mode with `nginx` reverse proxies is that
-they can load-balance between the IPv4 and IPv6 addresses for a given
-hostname.  This can result in mysterious errors that can be quite
-difficult to debug.  Be sure to declare your `upstreams` in a way that
-won't do load-balancing unexpectedly (e.g. pointing to a DNS name that
-you haven't configured with multiple IPs for your Zulip machine;
-sometimes this happens with IPv6 configuration).
-
-You can look at our
-[nginx reverse proxy configuration][nginx-loadbalancer] to see an
-example of how to do this properly (the various include files are
-available via the `zulip::nginx` puppet module).
-
-[nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
-[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
-[voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
-[zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
-[nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
-
+3. The other tricky failure mode we've seen with `nginx` reverse
+proxies is that they can load-balance between the IPv4 and IPv6
+addresses for a given hostname.  This can result in mysterious errors
+that can be quite difficult to debug.  Be sure to declare your
+`upstreams` equivalent in a way that won't do load-balancing
+unexpectedly (e.g. pointing to a DNS name that you haven't configured
+with multiple IPs for your Zulip machine; sometimes this happens with
+IPv6 configuration).

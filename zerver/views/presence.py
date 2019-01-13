@@ -10,12 +10,18 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import human_users_only
-from zerver.lib.actions import get_status_dict, update_user_presence
+from zerver.lib.actions import (
+    do_revoke_away_status,
+    do_set_away_status,
+    get_status_dict,
+    update_user_presence,
+)
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool
-from zerver.models import UserActivity, UserPresence, UserProfile, get_active_user
+from zerver.models import UserActivity, UserPresence, UserProfile, \
+    get_active_user_by_delivery_email
 
 def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
     return {'presences': get_status_dict(requesting_user_profile),
@@ -24,7 +30,7 @@ def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
                          email: str) -> HttpResponse:
     try:
-        target = get_active_user(email, user_profile.realm)
+        target = get_active_user_by_delivery_email(email, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
@@ -44,6 +50,24 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
         val.pop('client', None)
         val.pop('pushable', None)
     return json_success(result)
+
+@human_users_only
+@has_request_variables
+def update_user_status_backend(request: HttpRequest,
+                               user_profile: UserProfile,
+                               away: bool=REQ(validator=check_bool),
+                               ) -> HttpResponse:
+    if away:
+        do_set_away_status(
+            user_profile=user_profile,
+            client_id=request.client.id,
+        )
+    else:
+        do_revoke_away_status(
+            user_profile=user_profile,
+        )
+
+    return json_success()
 
 @human_users_only
 @has_request_variables

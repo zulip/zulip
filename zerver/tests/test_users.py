@@ -21,7 +21,7 @@ from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, UserHotspot, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     get_source_profile, Message, get_context_for_message, \
-    ScheduledEmail, check_valid_user_ids, \
+    ScheduledEmail, check_valid_user_ids, get_user, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField
 
 from zerver.lib.avatar import avatar_url
@@ -810,7 +810,7 @@ class ActivateTest(ZulipTestCase):
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user('hamlet')
         send_future_email('zerver/emails/followup_day1', user.realm,
-                          to_user_id=user.id, delay=datetime.timedelta(hours=1))
+                          to_user_ids=[user.id], delay=datetime.timedelta(hours=1))
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         do_deactivate_user(user)
         self.assertEqual(ScheduledEmail.objects.count(), 0)

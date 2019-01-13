@@ -71,8 +71,13 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
 # data and should not be delivered anywhere.  The default is
-# e.g. noreply@zulip.example.com (if EXTERNAL_HOST is
-# zulip.example.com).
+# e.g. noreply-{random_token}@zulip.example.com (if EXTERNAL_HOST is
+# zulip.example.com).  There are potential security issues if you set
+# ADD_TOKENS_TO_NOREPLY_ADDRESS=False to remove the token; see
+# https://zulip.readthedocs.io/en/latest/production/email.html for details.
+#ADD_TOKENS_TO_NOREPLY_ADDRESS = True
+#TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@example.com"
+# Used for noreply emails only if ADD_TOKENS_TO_NOREPLY_ADDRESS=False
 #NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
 # Many countries and bulk mailers require certain types of email to display
@@ -109,6 +114,7 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
+    # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
@@ -173,6 +179,23 @@ AUTHENTICATION_BACKENDS = (
 # to include this subdomain.
 #
 #SOCIAL_AUTH_SUBDOMAIN = 'auth'
+
+
+########
+# Azure Active Directory OAuth.
+#
+# To set up Microsoft Azure AD authentication, you'll need to do the following:
+#
+# (1) Register an OAuth2 application with Microsoft at:
+# https://apps.dev.microsoft.com
+# Generate a new password under Application Secrets
+# Generate a new platform (web) under Platforms. For Redirect URL, enter:
+#   https://zulip.example.com/complete/azuread-oauth2/
+# Add User.Read permission under Microsoft Graph Permissions
+#
+# (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
+# (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
+#SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
 
 ########
 # SSO via REMOTE_USER.
@@ -440,6 +463,14 @@ LDAP_EMAIL_ATTR = None  # type: Optional[str]
 AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
+
+    # User avatars can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
+    # "avatar": "thumbnailPhoto",
+
+    # This line is for having Zulip to automatically deactivate users
+    # who are disabled in LDAP/Active Directory (and reactivate users who are not).
+    # See docs for usage details and precise semantics.
+    # "userAccountControl": "userAccountControl",
 }
 
 
@@ -485,9 +516,14 @@ CAMO_URI = '/external_content/'
 # By default, Zulip connects to the thumbor (the thumbnailing software
 # we use) service running locally on the machine.  If you're running
 # thumbor on a different server, you can configure that by setting
-# THUMBOR_URL here.  Setting THUMBOR_URL='' will disable
-# thumbnailing in Zulip.
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will let Zulip server know that
+# thumbor is not running or configured.
 #THUMBOR_URL = 'http://127.0.0.1:9995'
+#
+# This setting controls whether images shown in Zulip's inline image
+# previews should be thumbnailed by thumbor, which saves bandwidth but
+# can modify the image's appearance.
+#THUMBNAIL_IMAGES = True
 
 # Controls the Jitsi video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify

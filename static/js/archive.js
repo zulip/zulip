@@ -23,11 +23,11 @@ exports.initialize = function () {
     var recipient_and_topic = $('#display_recipient').html();
     var stream_name = recipient_and_topic.split('-')[0];
     var topic = recipient_and_topic.split('-')[1];
-    var recipient_color = stream_color.pick_color([]);
+    var recipient_color = color_data.pick_color();
     current_message_group.message_containers = [];
     current_message_group.show_date_separator = false;
     current_message_group.display_recipient = stream_name;
-    current_message_group.subject = topic;
+    current_message_group.topic = topic;
     current_message_group.background_color = recipient_color;
 
     function separate_into_groups(current_message_row, cur_msg_time, next_msg_time) {
@@ -43,7 +43,7 @@ exports.initialize = function () {
             timerender.render_date(time, prev_time, today)[0].outerHTML;
         current_message_group.show_date_separator = true;
         current_message_group.display_recipient = stream_name;
-        current_message_group.subject = topic;
+        current_message_group.topic = topic;
         current_message_group.background_color = recipient_color;
     }
 

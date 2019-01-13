@@ -16,9 +16,12 @@ from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import retry_event
+from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
+
+from version import ZULIP_VERSION
 
 class OutgoingWebhookServiceInterface:
 
@@ -40,7 +43,11 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def send_data_to_server(self,
                             base_url: str,
                             request_data: Any) -> Response:
-        headers = {'content-type': 'application/json'}
+        user_agent = 'ZulipOutgoingWebhook/' + ZULIP_VERSION
+        headers = {
+            'content-type': 'application/json',
+            'User-Agent': user_agent,
+        }
         response = requests.request('POST', base_url, data=request_data, headers=headers)
         return response
 
@@ -128,7 +135,7 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
     message_info is used to address the message and should have these fields:
         type - "stream" or "private"
         display_recipient - like we have in other message events
-        subject - the topic name (if relevant)
+        topic - see get_topic_from_message_info
 
     response_data is what the bot wants to send back and has these fields:
         content - raw markdown content for Zulip to render
@@ -136,7 +143,10 @@ def send_response_message(bot_id: str, message_info: Dict[str, Any], response_da
 
     message_type = message_info['type']
     display_recipient = message_info['display_recipient']
-    topic_name = message_info.get('subject')
+    try:
+        topic_name = get_topic_from_message_info(message_info)
+    except KeyError:
+        topic_name = None
 
     bot_user = get_user_profile_by_id(bot_id)
     realm = bot_user.realm

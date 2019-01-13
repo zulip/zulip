@@ -195,9 +195,9 @@ exports.initialize = function () {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
-        if (stream) {
-            window.location.href = '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
+        var stream_id = $(this).attr('data-stream-id');
+        if (stream_id) {
+            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr('href');
@@ -220,7 +220,7 @@ exports.initialize = function () {
         e.stopPropagation();
         popovers.hide_all();
     });
-    $('body').on('click','.always_visible_topic_edit,.on_hover_topic_edit', function (e) {
+    $('body').on('click', '.always_visible_topic_edit,.on_hover_topic_edit', function (e) {
         var recipient_row = $(this).closest(".recipient_row");
         message_edit.start_topic_edit(recipient_row);
         e.stopPropagation();
@@ -289,8 +289,7 @@ exports.initialize = function () {
         e.stopPropagation();
         var stream_id = $(e.currentTarget).attr('data-stream-id');
         var topic = $(e.currentTarget).attr('data-topic-name');
-        var stream = stream_data.get_sub_by_id(stream_id);
-        muting_ui.mute(stream.name, topic);
+        muting_ui.mute(stream_id, topic);
     });
 
     // RECIPIENT BARS
@@ -316,13 +315,13 @@ exports.initialize = function () {
         narrow.by_recipient(row_id, {trigger: 'message header'});
     });
 
-    $("#home").on("click", ".narrows_by_subject", function (e) {
+    $("#home").on("click", ".narrows_by_topic", function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
         e.preventDefault();
         var row_id = get_row_id_for_narrowing(this);
-        narrow.by_subject(row_id, {trigger: 'message header'});
+        narrow.by_topic(row_id, {trigger: 'message header'});
     });
 
     // SIDEBARS
@@ -389,7 +388,7 @@ exports.initialize = function () {
 
     $(".brand").on('click', function (e) {
         if (overlays.is_active()) {
-            ui_util.change_tab_to('#home');
+            overlays.close_active();
         } else {
             narrow.restore_home_state();
         }
@@ -511,7 +510,7 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        window.location.hash = "streams/all";
+        hashchange.go_to_location('streams/all');
     });
 
     $("#streams_filter_icon").click(function (e) {
@@ -563,8 +562,8 @@ exports.initialize = function () {
             }
 
             channel.post({
-                url:      "/accounts/webathena_kerberos_login/",
-                data:     {cred: JSON.stringify(r.session)},
+                url: "/accounts/webathena_kerberos_login/",
+                data: {cred: JSON.stringify(r.session)},
                 success: function () {
                     $("#zephyr-mirror-error").removeClass("show");
                 },
@@ -721,6 +720,12 @@ exports.initialize = function () {
         // Dismiss popovers if the user has clicked outside them
         if ($('.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded').has(e.target).length === 0) {
             popovers.hide_all();
+        }
+
+        // If user clicks outside an active modal
+        if ($('.modal.in').has(e.target).length === 0) {
+            // Enable mouse events for the background as the modal closes
+            $('.overlay.show').attr("style", null);
         }
 
         if (compose_state.composing()) {

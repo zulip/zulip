@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from zerver.lib.actions import get_realm, do_add_realm_filter
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmFilter
@@ -28,11 +30,11 @@ class RealmFilterTest(ZulipTestCase):
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
 
         data['pattern'] = r'ZUL-(?P<id>\d++)'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].')
 
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'
@@ -42,16 +44,57 @@ class RealmFilterTest(ZulipTestCase):
         data['pattern'] = r'ZUL-(?P<id>\d+)'
         data['url_format_string'] = 'https://realm.com/my_realm_filter/'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'URL format string must be in the following format: `https://example.com/%(\\w+)s`')
+        self.assert_json_error(result, 'Invalid URL format string.')
 
         data['url_format_string'] = 'https://realm.com/my_realm_filter/#hashtag/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'ZUL-15'))
 
         data['pattern'] = r'ZUL2-(?P<id>\d+)'
         data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'ZUL2-15'))
+
+        data['pattern'] = r'_code=(?P<id>[0-9a-zA-Z]+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], '_code=123abcdZ'))
+
+        data['pattern'] = r'PR (?P<id>[0-9]+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'PR 123'))
+
+        data['pattern'] = r'lp/(?P<id>[0-9]+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'lp/123'))
+
+        data['pattern'] = r'lp:(?P<id>[0-9]+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'lp:123'))
+
+        data['pattern'] = r'!(?P<id>[0-9]+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], '!123'))
+
+        # This is something we'd like to support, but don't currently;
+        # this test is a reminder of something we should allow in the
+        # future.
+        data['pattern'] = r'(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)'
+        data['url_format_string'] = 'https://github.com/%(org)s/%(repo)s/issue/%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data['pattern'], 'zulip/zulip#123'))
 
     def test_not_realm_admin(self) -> None:
         email = self.example_email('hamlet')

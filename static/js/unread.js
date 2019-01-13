@@ -298,7 +298,7 @@ exports.unread_topic_counter = (function () {
             per_stream_bucketer.each(function (msgs, topic) {
                 var topic_count = msgs.count();
                 res.topic_count.get(stream_id).set(topic, topic_count);
-                if (!muting.is_topic_muted(sub.name, topic)) {
+                if (!muting.is_topic_muted(stream_id, topic)) {
                     stream_count += topic_count;
                 }
             });
@@ -350,7 +350,7 @@ exports.unread_topic_counter = (function () {
 
         var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            if (sub && !muting.is_topic_muted(sub.name, topic)) {
+            if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 stream_count += msgs.count();
             }
         });
@@ -382,7 +382,7 @@ exports.unread_topic_counter = (function () {
         var topic_lists = [];
         var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            if (sub && !muting.is_topic_muted(sub.name, topic)) {
+            if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 topic_lists.push(msgs.members());
             }
         });
@@ -446,7 +446,9 @@ exports.get_unread_messages = function (messages) {
 };
 
 exports.update_unread_topics = function (msg, event) {
-    if (event.subject === undefined) {
+    var new_topic = util.get_edit_event_topic(event);
+
+    if (new_topic === undefined) {
         return;
     }
 
@@ -460,7 +462,7 @@ exports.update_unread_topics = function (msg, event) {
 
     exports.unread_topic_counter.add(
         msg.stream_id,
-        event.subject,
+        new_topic,
         msg.id
     );
 };
@@ -480,7 +482,7 @@ exports.process_loaded_messages = function (messages) {
         if (message.type === 'stream') {
             exports.unread_topic_counter.add(
                 message.stream_id,
-                message.subject,
+                util.get_message_topic(message),
                 message.id
             );
         }
@@ -540,8 +542,8 @@ exports.num_unread_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_stream_count(stream_id);
 };
 
-exports.num_unread_for_topic = function (stream_id, subject) {
-    return exports.unread_topic_counter.get(stream_id, subject);
+exports.num_unread_for_topic = function (stream_id, topic_name) {
+    return exports.unread_topic_counter.get(stream_id, topic_name);
 };
 
 exports.topic_has_any_unread = function (stream_id, topic) {
@@ -556,8 +558,8 @@ exports.get_msg_ids_for_stream = function (stream_id) {
     return exports.unread_topic_counter.get_msg_ids_for_stream(stream_id);
 };
 
-exports.get_msg_ids_for_topic = function (stream_id, subject) {
-    return exports.unread_topic_counter.get_msg_ids_for_topic(stream_id, subject);
+exports.get_msg_ids_for_topic = function (stream_id, topic_name) {
+    return exports.unread_topic_counter.get_msg_ids_for_topic(stream_id, topic_name);
 };
 
 exports.get_msg_ids_for_person = function (user_ids_string) {

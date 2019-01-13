@@ -22,6 +22,14 @@ var me = {
 people.add(me);
 people.initialize_current_user(me.user_id);
 
+var social = {
+    stream_id: 200,
+    name: 'social',
+    subscribed: true,
+    in_home_view: true,
+};
+stream_data.add_sub('social', social);
+
 var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
@@ -41,8 +49,8 @@ run_test('empty_counts_while_home', () => {
     assert.deepEqual(counts, zero_counts);
 });
 
-run_test('changing_subjects', () => {
-    // Summary: change the subject of a message from 'lunch'
+run_test('changing_topics', () => {
+    // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     var count = unread.num_unread_for_topic('social', 'lunch');
     assert.equal(count, 0);
@@ -54,7 +62,7 @@ run_test('changing_subjects', () => {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'luNch',
+        topic: 'luNch',
         unread: true,
     };
 
@@ -62,7 +70,7 @@ run_test('changing_subjects', () => {
         id: 16,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunCH',
+        topic: 'lunCH',
         unread: true,
     };
 
@@ -97,7 +105,7 @@ run_test('changing_subjects', () => {
     assert.deepEqual(msg_ids, []);
 
     var event = {
-        subject: 'dinner',
+        topic: 'dinner',
     };
 
     unread.update_unread_topics(message, event);
@@ -109,7 +117,7 @@ run_test('changing_subjects', () => {
     assert.equal(count, 1);
 
     event = {
-        subject: 'snack',
+        topic: 'snack',
     };
 
     unread.update_unread_topics(other_message, event);
@@ -127,7 +135,7 @@ run_test('changing_subjects', () => {
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
     event = {
-        subject: 'brunch',
+        topic: 'brunch',
     };
     unread.update_unread_topics(other_message, event);
 
@@ -136,7 +144,7 @@ run_test('changing_subjects', () => {
         id: 17,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'sticky',
+        topic: 'sticky',
         unread: true,
     };
 
@@ -159,7 +167,11 @@ run_test('changing_subjects', () => {
     assert.equal(count, 0);
     assert(!sticky_message.unread);
 
-    unread.update_unread_topics(sticky_message, {subject: 'sticky'});
+    event = {
+        topic: 'sticky',
+    };
+
+    unread.update_unread_topics(sticky_message, event);
     count = unread.num_unread_for_topic(stream_id, 'sticky');
     assert.equal(count, 0);
 
@@ -177,30 +189,16 @@ run_test('changing_subjects', () => {
 });
 
 run_test('muting', () => {
-    stream_data.is_subscribed = function () {
-        return true;
-    };
-
-    stream_data.in_home_view = function () {
-        return true;
-    };
-
     unread.declare_bankruptcy();
 
-    var stream_id = 101;
+    var stream_id = social.stream_id;
     var unknown_stream_id = 555;
-
-    stream_data.get_sub_by_id = function (stream_id) {
-        if (stream_id === 101) {
-            return {name: 'social'};
-        }
-    };
 
     var message = {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'test_muting',
+        topic: 'test_muting',
         unread: true,
     };
 
@@ -211,7 +209,7 @@ run_test('muting', () => {
     assert.equal(unread.num_unread_for_stream(stream_id), 1);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
 
-    muting.add_muted_topic('social', 'test_muting');
+    muting.add_muted_topic(social.stream_id, 'test_muting');
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id), 0);
     assert.equal(counts.home_unread_messages, 0);
@@ -243,7 +241,7 @@ run_test('num_unread_for_topic', () => {
     var message = {
         type: 'stream',
         stream_id: stream_id,
-        subject: 'LuncH',
+        topic: 'LuncH',
         unread: true,
     };
 
@@ -321,7 +319,7 @@ run_test('home_messages', () => {
         id: 15,
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunch',
+        topic: 'lunch',
         unread: true,
     };
 
@@ -355,7 +353,7 @@ run_test('phantom_messages', () => {
         id: 999,
         type: 'stream',
         stream_id: 555,
-        subject: 'phantom',
+        topic: 'phantom',
     };
 
     stream_data.get_sub_by_id = function () { return; };
@@ -450,9 +448,9 @@ run_test('mentions', () => {
         id: 15,
         type: 'stream',
         stream_id: 999,
-        subject: 'lunch',
+        topic: 'lunch',
         mentioned: true,
-        unread:true,
+        unread: true,
     };
 
     unread.process_loaded_messages([message]);
@@ -477,7 +475,7 @@ run_test('declare_bankruptcy', () => {
         id: 16,
         type: 'whatever',
         stream_id: 1999,
-        subject: 'whatever',
+        topic: 'whatever',
         mentioned: true,
     };
 

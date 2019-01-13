@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Any, Callable, Iterable, \
-    Optional, Tuple, Union, Sequence
+    Optional, Tuple, Union, Sequence, cast
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.decorator import has_request_variables, \
@@ -33,6 +33,15 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
+from zerver.lib.topic import (
+    topic_column_sa,
+    topic_match_sa,
+    user_message_exists_for_topic,
+    DB_TOPIC_NAME,
+    LEGACY_PREV_TOPIC,
+    MATCH_TOPIC,
+    REQ_topic,
+)
 from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
@@ -241,36 +250,36 @@ class NarrowBuilder:
             # instance "personal" to be the same.
             if base_topic in ('', 'personal', '(instance "")'):
                 cond = or_(
-                    func.upper(column("subject")) == func.upper(literal("")),
-                    func.upper(column("subject")) == func.upper(literal(".d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal(".d.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal('(instance "")')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d')),
-                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d.d')),
+                    topic_match_sa(""),
+                    topic_match_sa(".d"),
+                    topic_match_sa(".d.d"),
+                    topic_match_sa(".d.d.d"),
+                    topic_match_sa(".d.d.d.d"),
+                    topic_match_sa("personal"),
+                    topic_match_sa("personal.d"),
+                    topic_match_sa("personal.d.d"),
+                    topic_match_sa("personal.d.d.d"),
+                    topic_match_sa("personal.d.d.d.d"),
+                    topic_match_sa('(instance "")'),
+                    topic_match_sa('(instance "").d'),
+                    topic_match_sa('(instance "").d.d'),
+                    topic_match_sa('(instance "").d.d.d'),
+                    topic_match_sa('(instance "").d.d.d.d'),
                 )
             else:
                 # We limit `.d` counts, since postgres has much better
                 # query planning for this than they do for a regular
                 # expression (which would sometimes table scan).
                 cond = or_(
-                    func.upper(column("subject")) == func.upper(literal(base_topic)),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d")),
-                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d.d")),
+                    topic_match_sa(base_topic),
+                    topic_match_sa(base_topic + ".d"),
+                    topic_match_sa(base_topic + ".d.d"),
+                    topic_match_sa(base_topic + ".d.d.d"),
+                    topic_match_sa(base_topic + ".d.d.d.d"),
                 )
             return query.where(maybe_negate(cond))
 
-        cond = func.upper(column("subject")) == func.upper(literal(operand))
+        cond = topic_match_sa(operand)
         return query.where(maybe_negate(cond))
 
     def by_sender(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
@@ -286,6 +295,8 @@ class NarrowBuilder:
         return query
 
     def by_id(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
+        if not str(operand).isdigit():
+            raise BadNarrowOperator("Invalid message ID")
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
@@ -372,8 +383,8 @@ class NarrowBuilder:
         keywords = query_extract_keywords(operand_escaped)
         query = query.column(match_positions_character(column("rendered_content"),
                                                        keywords).label("content_matches"))
-        query = query.column(match_positions_character(func.escape_html(column("subject")),
-                                                       keywords).label("subject_matches"))
+        query = query.column(match_positions_character(func.escape_html(topic_column_sa()),
+                                                       keywords).label("topic_matches"))
         condition = column("search_pgroonga").op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
@@ -384,10 +395,10 @@ class NarrowBuilder:
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
                                            column("rendered_content"),
                                            tsquery).label("content_matches"))
-        # We HTML-escape the subject in Postgres to avoid doing a server round-trip
+        # We HTML-escape the topic in Postgres to avoid doing a server round-trip
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
-                                           func.escape_html(column("subject")),
-                                           tsquery).label("subject_matches"))
+                                           func.escape_html(topic_column_sa()),
+                                           tsquery).label("topic_matches"))
 
         # Do quoted string matching.  We really want phrase
         # search here so we can ignore punctuation and do
@@ -398,7 +409,7 @@ class NarrowBuilder:
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'
                 cond = or_(column("content").ilike(term),
-                           column("subject").ilike(term))
+                           topic_column_sa().ilike(term))
                 query = query.where(maybe_negate(cond))
 
         cond = column("search_tsvector").op("@@")(tsquery)
@@ -456,10 +467,12 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
     result += final_frag
     return result
 
-def get_search_fields(rendered_content: str, subject: str, content_matches: Iterable[Tuple[int, int]],
-                      subject_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
-    return dict(match_content=highlight_string(rendered_content, content_matches),
-                match_subject=highlight_string(escape_html(subject), subject_matches))
+def get_search_fields(rendered_content: str, topic_name: str, content_matches: Iterable[Tuple[int, int]],
+                      topic_matches: Iterable[Tuple[int, int]]) -> Dict[str, str]:
+    return {
+        'match_content': highlight_string(rendered_content, content_matches),
+        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
+    }
 
 def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
@@ -618,7 +631,7 @@ def add_narrow_conditions(user_profile: UserProfile,
 
     if search_operands:
         is_search = True
-        query = query.column(column("subject")).column(column("rendered_content"))
+        query = query.column(topic_column_sa()).column(column("rendered_content"))
         search_term = dict(
             operator='search',
             operand=' '.join(search_operands)
@@ -827,11 +840,11 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if is_search:
         for row in rows:
             message_id = row[0]
-            (subject, rendered_content, content_matches, subject_matches) = row[-4:]
+            (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
 
             try:
-                search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                              content_matches, subject_matches)
+                search_fields[message_id] = get_search_fields(rendered_content, topic_name,
+                                                              content_matches, topic_matches)
             except UnicodeDecodeError as err:  # nocoverage
                 # No coverage for this block since it should be
                 # impossible, and we plan to remove it once we've
@@ -1051,9 +1064,12 @@ def mark_topic_as_read(request: HttpRequest,
     stream, recipient, sub = access_stream_by_id(user_profile, stream_id)
 
     if topic_name:
-        topic_exists = UserMessage.objects.filter(user_profile=user_profile,
-                                                  message__recipient=recipient,
-                                                  message__subject__iexact=topic_name).exists()
+        topic_exists = user_message_exists_for_topic(
+            user_profile=user_profile,
+            recipient=recipient,
+            topic_name=topic_name,
+        )
+
         if not topic_exists:
             raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
 
@@ -1150,7 +1166,8 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def handle_deferred_message(sender: UserProfile, client: Client,
-                            message_type_name: str, message_to: Sequence[str],
+                            message_type_name: str,
+                            message_to: Union[Sequence[str], Sequence[int]],
                             topic_name: Optional[str],
                             message_content: str, delivery_type: str,
                             defer_until: str, tz_guess: str,
@@ -1190,10 +1207,10 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 @has_request_variables
 def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          message_type_name: str=REQ('type'),
-                         message_to: List[str]=REQ('to', converter=extract_recipients, default=[]),
+                         message_to: Union[Sequence[int], Sequence[str]]=REQ(
+                             'to', converter=extract_recipients, default=[]),
                          forged: bool=REQ(default=False),
-                         topic_name: Optional[str]=REQ('subject',
-                                                       converter=lambda x: x.strip(), default=None),
+                         topic_name: Optional[str]=REQ_topic(),
                          message_content: str=REQ('content'),
                          widget_content: Optional[str]=REQ(default=None),
                          realm_str: Optional[str]=REQ('realm_str', default=None),
@@ -1236,6 +1253,17 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Missing sender"))
         if message_type_name != "private" and not is_super_user:
             return json_error(_("User not authorized for this query"))
+
+        # For now, mirroring only works with recipient emails, not for
+        # recipient user IDs.
+        if not all(isinstance(to_item, str) for to_item in message_to):
+            return json_error(_("Mirroring not allowed with recipient user IDs"))
+
+        # We need this manual cast so that mypy doesn't complain about
+        # create_mirrored_message_users not being able to accept a Sequence[int]
+        # type parameter.
+        message_to = cast(Sequence[str], message_to)
+
         (valid_input, mirror_sender) = \
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
@@ -1275,7 +1303,7 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     """
     prev_content = message.content
     prev_rendered_content = message.rendered_content
-    prev_topic = message.subject
+    prev_topic = message.topic_name()
 
     # Make sure that the latest entry in the history corresponds to the
     # message's last edit time
@@ -1285,11 +1313,10 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
 
     for entry in message_history:
         entry['topic'] = prev_topic
-        if 'prev_subject' in entry:
-            # We replace use of 'subject' with 'topic' for downstream simplicity
-            prev_topic = entry['prev_subject']
+        if LEGACY_PREV_TOPIC in entry:
+            prev_topic = entry[LEGACY_PREV_TOPIC]
             entry['prev_topic'] = prev_topic
-            del entry['prev_subject']
+            del entry[LEGACY_PREV_TOPIC]
 
         entry['content'] = prev_content
         entry['rendered_content'] = prev_rendered_content
@@ -1330,9 +1357,10 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int),
-                           subject: Optional[str]=REQ(default=None),
+                           topic_name: Optional[str]=REQ_topic(),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
                            content: Optional[str]=REQ(default=None)) -> HttpResponse:
+
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
@@ -1375,11 +1403,11 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    if subject is None and content is None:
+    if topic_name is None and content is None:
         return json_error(_("Nothing to change"))
-    if subject is not None:
-        subject = subject.strip()
-        if subject == "":
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+        if topic_name == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
     links_for_embed = set()  # type: Set[str]
@@ -1406,7 +1434,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
         mention_user_ids = message.mentions_user_ids
 
-    number_changed = do_update_message(user_profile, message, subject,
+    number_changed = do_update_message(user_profile, message, topic_name,
                                        propagate_mode, content, rendered_content,
                                        prior_mention_user_ids,
                                        mention_user_ids)
@@ -1481,7 +1509,7 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = select([column("message_id"), column("subject"), column("rendered_content")],
+    query = select([column("message_id"), topic_column_sa(), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
                    join(table("zerver_usermessage"), table("zerver_message"),
@@ -1499,18 +1527,18 @@ def messages_in_narrow_backend(request: HttpRequest, user_profile: UserProfile,
     search_fields = dict()
     for row in query_result:
         message_id = row['message_id']
-        subject = row['subject']
+        topic_name = row[DB_TOPIC_NAME]
         rendered_content = row['rendered_content']
 
         if 'content_matches' in row:
             content_matches = row['content_matches']
-            subject_matches = row['subject_matches']
-            search_fields[message_id] = get_search_fields(rendered_content, subject,
-                                                          content_matches, subject_matches)
+            topic_matches = row['topic_matches']
+            search_fields[message_id] = get_search_fields(rendered_content, topic_name,
+                                                          content_matches, topic_matches)
         else:
-            search_fields[message_id] = dict(
-                match_content=rendered_content,
-                match_subject=escape_html(subject),
-            )
+            search_fields[message_id] = {
+                'match_content': rendered_content,
+                MATCH_TOPIC: escape_html(topic_name),
+            }
 
     return json_success({"messages": search_fields})

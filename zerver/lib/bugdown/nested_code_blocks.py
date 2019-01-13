@@ -72,4 +72,4 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
                 parent.remove(element_to_replace)
 
 def makeExtension(*args: Any, **kwargs: str) -> NestedCodeBlocksRenderer:
-    return NestedCodeBlocksRenderer(kwargs)
+    return NestedCodeBlocksRenderer(**kwargs)

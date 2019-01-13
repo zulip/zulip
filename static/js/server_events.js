@@ -1,4 +1,5 @@
 var server_events = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
 var exports = {};
 
@@ -142,6 +143,16 @@ function get_events_success(events) {
     });
 }
 
+function show_ui_connection_error() {
+    ui_report.show_error($("#connection-error"));
+    $("#connection-error").addClass('get-events-error');
+}
+
+function hide_ui_connection_error() {
+    ui_report.hide_error($("#connection-error"));
+    $("#connection-error").removeClass('get-events-error');
+}
+
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
@@ -174,16 +185,16 @@ function get_events(options) {
 
     get_events_timeout = undefined;
     get_events_xhr = channel.get({
-        url:      '/json/events',
-        data:     get_events_params,
+        url: '/json/events',
+        data: get_events_params,
         idempotent: true,
-        timeout:  page_params.poll_timeout,
+        timeout: page_params.poll_timeout,
         success: function (data) {
             exports.suspect_offline = false;
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                ui_report.hide_error($("#connection-error"));
+                hide_ui_connection_error();
 
                 get_events_success(data.events);
             } catch (ex) {
@@ -214,15 +225,15 @@ function get_events(options) {
                 } else if (error_type === 'timeout') {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    ui_report.hide_error($("#connection-error"));
+                    hide_ui_connection_error();
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 5) {
-                    ui_report.show_error($("#connection-error"));
+                    show_ui_connection_error();
                 } else {
-                    ui_report.hide_error($("#connection-error"));
+                    hide_ui_connection_error();
                 }
             } catch (ex) {
                 blueslip.error('Failed to handle get_events error\n' +
@@ -292,8 +303,8 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     // Set expired because in a reload we may be called twice.
     page_params.event_queue_expired = true;
     channel.del({
-        url:      '/json/events',
-        data:     {queue_id: page_params.queue_id},
+        url: '/json/events',
+        data: {queue_id: page_params.queue_id},
     });
 };
 

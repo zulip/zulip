@@ -24,10 +24,18 @@ exports.set_up_scrollbar = function (element) {
     element[0].perfectScrollbar = perfectScrollbar;
 };
 
-exports.update_scrollbar = function (element) {
+exports.update_scrollbar = function (element_selector) {
+    var element = element_selector[0];
+    if (element.perfectScrollbar !== undefined) {
+        element.perfectScrollbar.update();
+    }
+};
+
+exports.reset_scrollbar = function (element_selector) {
+    var element = element_selector[0];
     element.scrollTop = 0;
-    if (element[0].perfectScrollbar !== undefined) {
-        element[0].perfectScrollbar.update();
+    if (element.perfectScrollbar !== undefined) {
+        element.perfectScrollbar.update();
     }
 };
 
@@ -191,10 +199,6 @@ exports.restore_compose_cursor = function () {
 exports.initialize = function () {
     exports.set_compose_textarea_handlers();
     exports.show_error_for_unsupported_platform();
-
-    if (page_params.night_mode) {
-        night_mode.enable();
-    }
 };
 
 return exports;

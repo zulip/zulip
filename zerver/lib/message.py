@@ -16,7 +16,6 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
-    realm_first_visible_message_id_cache_key,
     cache_get, cache_set,
 )
 from zerver.lib.request import JsonableError
@@ -24,6 +23,12 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.topic import (
+    DB_TOPIC_NAME,
+    MESSAGE__TOPIC,
+    TOPIC_LINKS,
+    TOPIC_NAME,
+)
 from zerver.lib.topic_mutes import (
     build_topic_mute_checker,
     topic_is_muted,
@@ -222,7 +227,7 @@ class MessageDict:
             last_edit_time = message.last_edit_time,
             edit_history = message.edit_history,
             content = message.content,
-            subject = message.subject,
+            topic_name = message.topic_name(),
             pub_date = message.pub_date,
             rendered_content = message.rendered_content,
             rendered_content_version = message.rendered_content_version,
@@ -242,7 +247,7 @@ class MessageDict:
         # callers like get_messages_backend().
         fields = [
             'id',
-            'subject',
+            DB_TOPIC_NAME,
             'pub_date',
             'last_edit_time',
             'edit_history',
@@ -276,7 +281,7 @@ class MessageDict:
             last_edit_time = row['last_edit_time'],
             edit_history = row['edit_history'],
             content = row['content'],
-            subject = row['subject'],
+            topic_name = row[DB_TOPIC_NAME],
             pub_date = row['pub_date'],
             rendered_content = row['rendered_content'],
             rendered_content_version = row['rendered_content_version'],
@@ -297,7 +302,7 @@ class MessageDict:
             last_edit_time: Optional[datetime.datetime],
             edit_history: Optional[str],
             content: str,
-            subject: str,
+            topic_name: str,
             pub_date: datetime.datetime,
             rendered_content: Optional[str],
             rendered_content_version: Optional[int],
@@ -318,10 +323,10 @@ class MessageDict:
             recipient_type_id = recipient_type_id,
             recipient_type    = recipient_type,
             recipient_id      = recipient_id,
-            subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
             client            = sending_client_name)
 
+        obj[TOPIC_NAME] = topic_name
         obj['sender_realm_id'] = sender_realm_id
 
         obj['raw_display_recipient'] = get_display_recipient_by_id(
@@ -330,7 +335,7 @@ class MessageDict:
             recipient_type_id
         )
 
-        obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
+        obj[TOPIC_LINKS] = bugdown.topic_links(sender_realm_id, topic_name)
 
         if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
@@ -558,16 +563,53 @@ def render_markdown(message: Message,
                     user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
                     email_gateway: Optional[bool]=False) -> str:
-    """Return HTML for given markdown. Bugdown may add properties to the
-    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
-    `mentions_wildcard`.  These are only on this Django object and are not
-    saved in the database.
-    """
+    '''
+    This is basically just a wrapper for do_render_markdown.
+    '''
 
     if user_ids is None:
         message_user_ids = set()  # type: Set[int]
     else:
         message_user_ids = user_ids
+
+    if realm is None:
+        realm = message.get_realm()
+
+    if realm_alert_words is None:
+        realm_alert_words = dict()
+
+    sender = get_user_profile_by_id(message.sender_id)
+    sent_by_bot = sender.is_bot
+    translate_emoticons = sender.translate_emoticons
+
+    rendered_content = do_render_markdown(
+        message=message,
+        content=content,
+        realm=realm,
+        realm_alert_words=realm_alert_words,
+        message_user_ids=message_user_ids,
+        sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
+        mention_data=mention_data,
+        email_gateway=email_gateway,
+    )
+
+    return rendered_content
+
+def do_render_markdown(message: Message,
+                       content: str,
+                       realm: Realm,
+                       realm_alert_words: RealmAlertWords,
+                       message_user_ids: Set[int],
+                       sent_by_bot: bool,
+                       translate_emoticons: bool,
+                       mention_data: Optional[bugdown.MentionData]=None,
+                       email_gateway: Optional[bool]=False) -> str:
+    """Return HTML for given markdown. Bugdown may add properties to the
+    message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
+    `mentions_wildcard`.  These are only on this Django object and are not
+    saved in the database.
+    """
 
     message.mentions_wildcard = False
     message.mentions_user_ids = set()
@@ -575,16 +617,10 @@ def render_markdown(message: Message,
     message.alert_words = set()
     message.links_for_preview = set()
 
-    if realm is None:
-        realm = message.get_realm()
-
     possible_words = set()  # type: Set[str]
-    if realm_alert_words is not None:
-        for user_id, words in realm_alert_words.items():
-            if user_id in message_user_ids:
-                possible_words.update(set(words))
-
-    sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
+    for user_id, words in realm_alert_words.items():
+        if user_id in message_user_ids:
+            possible_words.update(set(words))
 
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(
@@ -593,18 +629,17 @@ def render_markdown(message: Message,
         message_realm=realm,
         possible_words=possible_words,
         sent_by_bot=sent_by_bot,
+        translate_emoticons=translate_emoticons,
         mention_data=mention_data,
         email_gateway=email_gateway
     )
 
-    if message is not None:
-        message.user_ids_with_alert_words = set()
+    message.user_ids_with_alert_words = set()
 
-        if realm_alert_words is not None:
-            for user_id, words in realm_alert_words.items():
-                if user_id in message_user_ids:
-                    if set(words).intersection(message.alert_words):
-                        message.user_ids_with_alert_words.add(user_id)
+    for user_id, words in realm_alert_words.items():
+        if user_id in message_user_ids:
+            if set(words).intersection(message.alert_words):
+                message.user_ids_with_alert_words.add(user_id)
 
     return rendered_content
 
@@ -727,7 +762,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
     ).values(
         'message_id',
         'message__sender_id',
-        'message__subject',
+        MESSAGE__TOPIC,
         'message__recipient_id',
         'message__recipient__type',
         'message__recipient__type_id',
@@ -776,7 +811,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
         if msg_type == Recipient.STREAM:
             stream_id = row['message__recipient__type_id']
-            topic = row['message__subject']
+            topic = row[MESSAGE__TOPIC]
             stream_dict[message_id] = dict(
                 stream_id=stream_id,
                 topic=topic,
@@ -876,7 +911,7 @@ def apply_unread_message_event(user_profile: UserProfile,
 
     if message_type == 'stream':
         stream_id = message['stream_id']
-        topic = message['subject']
+        topic = message[TOPIC_NAME]
         new_row = dict(
             stream_id=stream_id,
             topic=topic,
@@ -916,23 +951,21 @@ def estimate_recent_messages(realm: Realm, hours: int) -> int:
                                      realm=realm).aggregate(Sum('value'))['value__sum'] or 0
 
 def get_first_visible_message_id(realm: Realm) -> int:
-    val = cache_get(realm_first_visible_message_id_cache_key(realm))
-    if val is not None:
-        return val[0]
-    return 0
+    return realm.first_visible_message_id
 
 def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> None:
-    cache_empty = cache_get(realm_first_visible_message_id_cache_key(realm)) is None
     recent_messages_count = estimate_recent_messages(realm, lookback_hours)
-    if realm.message_visibility_limit is not None and (recent_messages_count > 0 or cache_empty):
+    if realm.message_visibility_limit is not None and recent_messages_count > 0:
         update_first_visible_message_id(realm)
 
 def update_first_visible_message_id(realm: Realm) -> None:
-    try:
-        # We have verified that the limit is not none before calling this function.
-        assert realm.message_visibility_limit is not None
-        first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
-            order_by('-id')[realm.message_visibility_limit - 1]["id"]
-    except IndexError:
-        first_visible_message_id = 0
-    cache_set(realm_first_visible_message_id_cache_key(realm), first_visible_message_id)
+    if realm.message_visibility_limit is None:
+        realm.first_visible_message_id = 0
+    else:
+        try:
+            first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
+                order_by('-id')[realm.message_visibility_limit - 1]["id"]
+        except IndexError:
+            first_visible_message_id = 0
+        realm.first_visible_message_id = first_visible_message_id
+    realm.save(update_fields=["first_visible_message_id"])

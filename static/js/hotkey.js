@@ -55,6 +55,7 @@ var keydown_ctrl_mappings = {
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
     83: {name: 'star_message', message_view_only: true}, // 's'
+    190: {name: 'narrow_to_compose_target', message_view_only: true}, // '.'
 };
 
 var keydown_either_mappings = {
@@ -92,7 +93,7 @@ var keypress_mappings = {
     77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
-    83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    83: {name: 'narrow_by_topic', message_view_only: true}, //'S'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
@@ -186,6 +187,11 @@ exports.process_escape_key = function (e) {
 
     if (exports.is_editing_stream_name(e)) {
         return false;
+    }
+
+    if (feedback_widget.is_open()) {
+        feedback_widget.dismiss();
+        return true;
     }
 
     if (overlays.is_modal_open()) {
@@ -384,7 +390,8 @@ exports.process_tab_key = function () {
     var focused_message_edit_content = $(".message_edit_content").filter(":focus");
     if (focused_message_edit_content.length > 0) {
         message_edit_form = focused_message_edit_content.closest(".message_edit_form");
-        message_edit_form.find(".message_edit_save").focus();
+        // Open message edit forms either have a save button or a close button, but not both.
+        message_edit_form.find(".message_edit_save,.message_edit_close").focus();
         return true;
     }
 
@@ -471,7 +478,7 @@ exports.process_hotkey = function (e, hotkey) {
         if (exports.processing_text()) {
             return false;
         }
-        if (event_name === 'narrow_by_subject' && overlays.streams_open()) {
+        if (event_name === 'narrow_by_topic' && overlays.streams_open()) {
             subs.keyboard_sub();
             return true;
         }
@@ -552,6 +559,11 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
+    if (event_name === 'narrow_to_compose_target') {
+        narrow.to_compose_target();
+        return true;
+    }
+
     // Process hotkeys specially when in an input, select, textarea, or send button
     if (exports.processing_text()) {
         // Note that there is special handling for enter/escape too, but
@@ -566,12 +578,12 @@ exports.process_hotkey = function (e, hotkey) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
-            $("#compose-textarea").caret(0).animate({ scrollTop: 0 }, "fast");
+            $(":focus").caret(0).animate({ scrollTop: 0 }, "fast");
             return true;
         } else if (event_name === "page_down") {
-            // so that it always goes to the end of the compose box.
-            var height = $("#compose-textarea")[0].scrollHeight;
-            $("#compose-textarea").caret(Infinity).animate({ scrollTop: height }, "fast");
+            // so that it always goes to the end of the text box.
+            var height = $(":focus")[0].scrollHeight;
+            $(":focus").caret(Infinity).animate({ scrollTop: height }, "fast");
             return true;
         } else if (event_name === "search_with_k") {
             // Do nothing; this allows one to use ctrl+k inside compose.
@@ -613,7 +625,7 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         }
         if (event_name === 'n_key' && overlays.streams_open() && page_params.can_create_streams) {
-            subs.new_stream_clicked();
+            subs.open_create_stream();
             return true;
         }
         return false;
@@ -718,8 +730,8 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
-    case 'narrow_by_subject':
-        return do_narrow_action(narrow.by_subject);
+    case 'narrow_by_topic':
+        return do_narrow_action(narrow.by_topic);
     case 'respond_to_author': // 'R': respond to author
         compose_actions.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
         return true;

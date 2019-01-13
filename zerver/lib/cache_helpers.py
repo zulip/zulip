@@ -48,7 +48,8 @@ def user_cache_items(items_for_remote_cache: Dict[str, Tuple[UserProfile]],
                      user_profile: UserProfile) -> None:
     for api_key in get_all_api_keys(user_profile):
         items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
-    items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (user_profile,)
+    items_for_remote_cache[user_profile_cache_key(user_profile.email,
+                                                  user_profile.realm)] = (user_profile,)
     # We have other user_profile caches, but none of them are on the
     # core serving path for lots of requests.
 
@@ -71,6 +72,11 @@ def recipient_cache_items(items_for_remote_cache: Dict[str, Tuple[Recipient]],
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache: Dict[str, str],
                         session: Session) -> None:
+    if settings.SESSION_ENGINE != "django.contrib.sessions.backends.cached_db":
+        # If we're not using the cached_db session engine, we there
+        # will be no store.cache_key attribute, and in any case we
+        # don't need to fill the cache, since it won't exist.
+        return
     store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 

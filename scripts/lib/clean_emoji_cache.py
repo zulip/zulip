@@ -4,6 +4,7 @@ import os
 import sys
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,7 +36,8 @@ def get_caches_in_use(threshold_days):
             # This happens for a deployment directory extracted from a
             # tarball, which just has a copy of the emoji data, not a symlink.
             continue
-        caches_in_use.add(os.readlink(emoji_link_path))
+        # The actual cache path doesn't include the /emoji
+        caches_in_use.add(os.path.dirname(os.readlink(emoji_link_path)))
     return caches_in_use
 
 def main(args: argparse.Namespace) -> None:

@@ -53,13 +53,6 @@ run_test('handlebars_bug', () => {
 
 run_test('actions_popover_content', () => {
     var args = {
-        message: {
-            is_stream: true,
-            id: "99",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
         should_display_quote_and_reply: true,
         can_edit_message: true,
         can_mute_topic: true,
@@ -73,13 +66,6 @@ run_test('actions_popover_content', () => {
     assert.equal(link.text().trim(), 'translated: Quote and reply');
 
     var deletedArgs = {
-        message: {
-            is_stream: true,
-            id: "100",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
         should_display_edit_and_view_source: false,
         should_display_quote_and_reply: false,
         narrowed: true,
@@ -419,11 +405,11 @@ run_test('alert_word_settings_item', () => {
     var li = $(html).find("li.alert-word-item:first");
     var value = li.find('.value');
     var button = li.find('button');
-    assert.equal(li.attr('data-word'),'lunch');
+    assert.equal(li.attr('data-word'), 'lunch');
     assert.equal(value.length, 1);
     assert.equal(value.text(), 'lunch');
     assert.equal(button.attr('title'), 'translated: Delete alert word');
-    assert.equal(button.attr('data-word'),'lunch');
+    assert.equal(button.attr('data-word'), 'lunch');
 
     var title = $(html).find('.new-alert-word-section-title');
     var textbox = $(html).find('#create_alert_word_name');
@@ -582,12 +568,12 @@ run_test('compose_notification', () => {
         note: "You sent a message to a muted topic.",
         link_text: "Narrow to here",
         link_msg_id: "99",
-        link_class: "compose_notification_narrow_by_subject",
+        link_class: "compose_notification_narrow_by_topic",
     };
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
     html += '</div>';
-    var a = $(html).find("a.compose_notification_narrow_by_subject");
+    var a = $(html).find("a.compose_notification_narrow_by_topic");
     assert.equal(a.text(), "Narrow to here");
 });
 
@@ -605,7 +591,7 @@ run_test('compose_private_stream_alert', () => {
 
 run_test('custom_user_profile_field', () => {
     var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
-    var args = {field: field, field_value: "@GitHub", field_type: "text"};
+    var args = {field: field, field_value: {value: "@GitHub", rendered_value: "<p>@GitHub</p>"}, field_type: "text"};
     var html = render('custom-user-profile-field', args);
     assert.equal($(html).attr('data-field-id'), 2);
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
@@ -850,7 +836,6 @@ run_test('single_message', () => {
         msg: {
             include_recipient: true,
             display_recipient: 'devel',
-            subject: 'testing',
             is_stream: true,
             content: 'This is message one.',
             last_edit_timestr: '11:00',
@@ -916,8 +901,7 @@ run_test('message_group', () => {
             message_containers: messages,
             show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
             show_date_separator: true,
-            subject: 'two messages',
-            match_subject: '<span class="highlight">two</span> messages',
+            match_topic: '<span class="highlight">two</span> messages',
         },
     ];
 
@@ -930,8 +914,8 @@ run_test('message_group', () => {
     var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
-    var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
-    assert.equal(highlighted_subject_word, 'two');
+    var highlighted_topic_word = $(html).find('a.narrows_by_topic .highlight').text();
+    assert.equal(highlighted_topic_word, 'two');
 });
 
 run_test('message_edit_history', () => {
@@ -1054,7 +1038,6 @@ run_test('reminder_popover_content', () => {
             is_stream: true,
             id: "420",
             stream: "devel",
-            subject: "testing",
             sender_full_name: "Iago",
         },
         can_edit_message: true,
@@ -1547,7 +1530,8 @@ run_test('user_profile_modal', () => {
 run_test('muted_topic_ui_row', () => {
     var args = {
         stream: 'Verona',
-        topic: 'Verona2',
+        stream_id: 99,
+        topic: 'pizza',
     };
 
     var html = '<table id="muted-topics-table">';
@@ -1556,8 +1540,8 @@ run_test('muted_topic_ui_row', () => {
     html += '</tbody>';
     html += '</table>';
 
-    assert.equal($(html).find("tr").data("stream"), "Verona");
-    assert.equal($(html).find("tr").data("topic"), "Verona2");
+    assert.equal($(html).find("tr").attr("data-stream-id"), 99);
+    assert.equal($(html).find("tr").attr("data-topic"), "pizza");
 });
 
 run_test('embedded_bot_config_item', () => {
@@ -1614,7 +1598,6 @@ run_test('archive_message_group', () => {
             message_containers: messages,
             show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
             show_date_separator: true,
-            subject: 'two messages',
         },
     ];
 

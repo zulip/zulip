@@ -9,7 +9,9 @@ from django.conf import settings
 from django.test import override_settings
 from django.template import Template, Context
 from django.template.loader import get_template
+from django.test.client import RequestFactory
 
+from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -82,18 +84,18 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/delete_message.html',
         ]
         unusual = [
-            'zerver/emails/confirm_new_email.subject',
+            'zerver/emails/confirm_new_email.subject.txt',
             'zerver/emails/compiled/confirm_new_email.html',
             'zerver/emails/confirm_new_email.txt',
-            'zerver/emails/notify_change_in_email.subject',
+            'zerver/emails/notify_change_in_email.subject.txt',
             'zerver/emails/compiled/notify_change_in_email.html',
-            'zerver/emails/digest.subject',
+            'zerver/emails/digest.subject.txt',
             'zerver/emails/digest.html',
             'zerver/emails/digest.txt',
-            'zerver/emails/followup_day1.subject',
+            'zerver/emails/followup_day1.subject.txt',
             'zerver/emails/compiled/followup_day1.html',
             'zerver/emails/followup_day1.txt',
-            'zerver/emails/followup_day2.subject',
+            'zerver/emails/followup_day2.subject.txt',
             'zerver/emails/followup_day2.txt',
             'zerver/emails/compiled/followup_day2.html',
             'zerver/emails/compiled/password_reset.html',
@@ -183,6 +185,8 @@ class TemplateTestCase(ZulipTestCase):
                 terms=get_form_value(True),
                 email=get_form_value(email),
                 emails=get_form_value(email),
+                subdomain=get_form_value("zulip"),
+                next_param=get_form_value("billing")
             ),
             current_url=lambda: 'www.zulip.com',
             integrations_dict={},
@@ -202,6 +206,7 @@ class TemplateTestCase(ZulipTestCase):
             api_uri_context={},
             cloud_annual_price=80,
             seat_count=8,
+            request=RequestFactory().get("/")
         )
 
         context.update(kwargs)
@@ -306,6 +311,25 @@ footer
                     '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
                     '<divclass="codehilite"><pre><span></span>'
                     'non-indentedcodeblockwithmultiplelines</pre></div>footer')
+        self.assertEqual(content_sans_whitespace, expected)
+
+    def test_custom_markdown_include_extension(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension.md"
+        }
+
+        with self.assertRaisesRegex(InvalidMarkdownIncludeStatement, "Invalid markdown include statement"):
+            template.render(context)
+
+    def test_custom_markdown_include_extension_empty_macro(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_custom_include_extension_empty.md"
+        }
+        content = template.render(context)
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        expected = 'headerfooter'
         self.assertEqual(content_sans_whitespace, expected)
 
     def test_custom_tos_template(self) -> None:

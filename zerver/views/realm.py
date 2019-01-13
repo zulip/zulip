@@ -1,6 +1,7 @@
 
 from typing import Any, Dict, Optional, List
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -15,6 +16,7 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_property,
     do_deactivate_realm,
+    do_reactivate_realm,
 )
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.request import has_request_variables, REQ, JsonableError
@@ -22,8 +24,10 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
+from zerver.lib.video_calls import request_zoom_video_call_url
 from zerver.models import Realm, UserProfile
 from zerver.forms import check_subdomain_available as check_subdomain
+from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
 
 @require_realm_admin
 @has_request_variables
@@ -56,9 +60,13 @@ def update_realm(
         message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        email_address_visibility: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[str]=REQ(validator=check_string, default=None),
-        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None)
+        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
+        zoom_user_id: Optional[str]=REQ(validator=check_string, default=None),
+        zoom_api_key: Optional[str]=REQ(validator=check_string, default=None),
+        zoom_api_secret: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -77,10 +85,29 @@ def update_realm(
             validate_domain(google_hangouts_domain)
         except ValidationError as e:
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
+    if video_chat_provider == "Zoom":
+        if not zoom_user_id:
+            return json_error(_('Invalid user ID: user ID cannot be empty'))
+        if not zoom_api_key:
+            return json_error(_('Invalid API key: API key cannot be empty'))
+        if not zoom_api_secret:
+            return json_error(_('Invalid API secret: API secret cannot be empty'))
+        # Technically, we could call some other API endpoint that
+        # doesn't create a video call link, but this is a nicer
+        # end-to-end test, since it verifies that the Zoom API user's
+        # scopes includes the ability to create video calls, which is
+        # the only capabiility we use.
+        if not request_zoom_video_call_url(zoom_user_id, zoom_api_key, zoom_api_secret):
+            return json_error(_('Invalid credentials for the %(third_party_service)s API.') % dict(
+                third_party_service="Zoom"))
 
-    # Additional validation of permissions values to add new bot
+    # Additional validation of enum-style values
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:
         return json_error(_("Invalid bot creation policy"))
+    if email_address_visibility is not None and \
+            email_address_visibility not in Realm.EMAIL_ADDRESS_VISIBILITY_TYPES:
+        return json_error(_("Invalid email address visibility policy"))
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
@@ -169,3 +196,12 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
         return json_success({"msg": "available"})
     except ValidationError as e:
         return json_success({"msg": e.message})
+
+def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+    try:
+        realm = get_object_from_key(confirmation_key, Confirmation.REALM_REACTIVATION)
+    except ConfirmationKeyException:
+        return render(request, 'zerver/realm_reactivation_link_error.html')
+    do_reactivate_realm(realm)
+    context = {"realm": realm}
+    return render(request, 'zerver/realm_reactivation.html', context)

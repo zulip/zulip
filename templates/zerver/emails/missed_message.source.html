@@ -1,0 +1,67 @@
+{% extends "zerver/emails/email_base_messages.html" %}
+
+{% block preheader %}
+    {% for recipient_block in messages %}
+        {% for sender_block in recipient_block.senders %}
+            {% for message_block in sender_block.content %}
+            {{ message_block.html|safe }}
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    Hello {{ name }},
+
+    <p>
+        While you were away you received {{ message_count }} new{% if group_pm %} group private{% elif private_message %} private{% endif %} message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+    </p>
+
+    {% if show_message_content %}
+    <div class='messages'>
+        {% for recipient_block in messages %}
+        {% if recipient_block.header.stream_message %}
+        <div class='recipient_block_with_messages'>
+            <div class='recipient_header_with_messages'>{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content_with_messages'>
+        {% else %}
+        <div class='recipient_block_without_messages'>
+            <div class='recipient_header_without_messages'>{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content_without_messages'>
+        {% endif %}
+                {% for sender_block in recipient_block.senders %}
+                    {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
+                    {% for message_block in sender_block.content %}
+                    <div class='message_content_block'>
+                        {{ message_block.html|safe }}
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <p>
+        <a href="{{ realm_uri }}">Click here to log in to Zulip and view your new messages.</a>
+        {% if reply_to_zulip %}
+        Or just reply to this email.
+        {% endif %}
+    </p>
+
+    {% if reply_warning %}
+    <p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.</p>
+    {% endif %}
+
+    <p>
+        Cheers,
+        <br />
+        The Zulip Team
+    </p>
+{% endblock %}
+
+{% block manage_preferences %}
+<p><a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>
+{% endblock %}

@@ -4,7 +4,8 @@ from typing import Any, Dict, Iterable, Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
@@ -34,6 +35,8 @@ STORY_UPDATE_PROJECT_TEMPLATE = ("The story {name_template} was moved from"
                                  " the **{old}** project to **{new}**.")
 STORY_UPDATE_TYPE_TEMPLATE = ("The type of the story {name_template} was changed"
                               " from **{old_type}** to **{new_type}**.")
+DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
+STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -73,12 +76,20 @@ def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
             event = "{}_{}".format(event, "project")
         elif changes.get("story_type") is not None:
             event = "{}_{}".format(event, "type")
+        elif changes.get("owner_ids") is not None:
+            event = "{}_{}".format(event, "owner")
+        else:
+            raise UnexpectedWebhookEventType("Clubhouse", event)
 
     return EVENT_BODY_FUNCTION_MAPPER.get(event)
 
 def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
     entity_type = get_action_with_primary_id(payload)["entity_type"]
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
+
+def get_delete_body(payload: Dict[str, Any]) -> str:
+    action = get_action_with_primary_id(payload)
+    return DELETE_TEMPLATE.format(**action)
 
 def get_story_create_body(payload: Dict[str, Any]) -> str:
     action = get_action_with_primary_id(payload)
@@ -341,9 +352,9 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
         return None
 
     label_id = label_ids_added[0]
-    for action in payload["actions"]:
-        if action["id"] == label_id:
-            kwargs.update({"label_name": action["name"]})
+    for reference in payload["references"]:
+        if reference["id"] == label_id:
+            kwargs.update({"label_name": reference["name"]})
 
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
@@ -379,6 +390,17 @@ def get_story_update_type_body(payload: Dict[str, Any]) -> str:
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
+def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
+    action = get_action_with_primary_id(payload)
+    kwargs = {
+        "name_template": STORY_NAME_TEMPLATE.format(
+            name=action["name"],
+            app_url=action["app_url"]
+        )
+    }
+
+    return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
+
 def get_entity_name(payload: Dict[str, Any], entity: Optional[str]=None) -> Optional[str]:
     name = get_action_with_primary_id(payload).get("name")
 
@@ -402,6 +424,8 @@ def get_name_template(entity: str) -> str:
 EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_archived": get_story_update_archived_body,
     "story_create": get_story_create_body,
+    "story_delete": get_delete_body,
+    "epic_delete": get_delete_body,
     "story-task_create": partial(get_story_task_body, action="added to"),
     "story-task_delete": partial(get_story_task_body, action="removed from"),
     "story-task_update_complete": get_story_task_completed_body,
@@ -409,6 +433,7 @@ EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_estimate": get_story_update_estimate_body,
     "story_update_attachment": get_story_update_attachment_body,
     "story_update_label": get_story_label_body,
+    "story_update_owner": get_story_update_owner_body,
     "story_update_project": get_story_update_project_body,
     "story_update_type": get_story_update_type_body,
     "epic_create": get_epic_create_body,
@@ -437,8 +462,17 @@ def api_clubhouse_webhook(
         payload: Dict[str, Any]=REQ(argument_type='body')
 ) -> HttpResponse:
 
+    # Clubhouse has a tendency to send empty POST requests to
+    # third-party endpoints. It is unclear as to which event type
+    # such requests correspond to. So, it is best to ignore such
+    # requests for now.
+    if payload is None:
+        return json_success()
+
     body_func = get_body_function_based_on_type(payload)
     topic_func = get_topic_function_based_on_type(payload)
+    if body_func is None or topic_func is None:
+        raise UnexpectedWebhookEventType('Clubhouse', 'unknown')
     topic = topic_func(payload)
     body = body_func(payload)
 

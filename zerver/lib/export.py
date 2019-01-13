@@ -1,5 +1,6 @@
 import datetime
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key  # for mypy
 from django.apps import apps
 from django.conf import settings
 from django.db import connection
@@ -13,7 +14,10 @@ import os
 import ujson
 import subprocess
 import tempfile
+import shutil
+from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from analytics.models import RealmCount, UserCount, StreamCount
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
@@ -51,12 +55,6 @@ PostProcessData = Any  # TODO: make more specific
 MessageOutput = Dict[str, Union[List[Record], List[int], int]]
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
-
-realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
-                ("zerver_realmemoji", RealmEmoji, "realmemoji"),
-                ("zerver_realmdomain", RealmDomain, "realmdomain"),
-                ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
-
 
 ALL_ZULIP_TABLES = {
     'analytics_anomaly',
@@ -119,6 +117,7 @@ ALL_ZULIP_TABLES = {
     'zerver_userprofile',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
+    'zerver_userstatus',
     'zerver_mutedtopic',
 }
 
@@ -173,10 +172,6 @@ NON_EXPORTED_TABLES = {
     # recompute it after a fillstate import.
     'analytics_installationcount',
 
-    # These analytics tables, however, should ideally be in the export.
-    'analytics_realmcount',
-    'analytics_streamcount',
-    'analytics_usercount',
     # Fillstate will require some cleverness to do the right partial export.
     'analytics_fillstate',
     # This table isn't yet used for anything.
@@ -187,6 +182,9 @@ NON_EXPORTED_TABLES = {
     'zerver_defaultstreamgroup',
     'zerver_defaultstreamgroup_streams',
     'zerver_submessage',
+
+    # This is low priority, since users can easily just reset themselves to away.
+    'zerver_userstatus',
 
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
@@ -219,6 +217,9 @@ DATE_FIELDS = {
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
     'zerver_userhotspot': ['timestamp'],
+    'analytics_realmcount': ['end_time'],
+    'analytics_usercount': ['end_time'],
+    'analytics_streamcount': ['end_time'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
@@ -729,6 +730,28 @@ def get_realm_config() -> Config:
         ]
     )
 
+    # Analytics tables
+    Config(
+        table='analytics_realmcount',
+        model=RealmCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_usercount',
+        model=UserCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_streamcount',
+        model=StreamCount,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
     return realm_config
 
 def sanity_check_stream_data(response: TableData, config: Config, context: Context) -> None:
@@ -912,7 +935,8 @@ def write_message_export(message_filename: Path, output: MessageOutput) -> None:
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
                                  chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE,
-                                 output_dir: Optional[Path]=None) -> Set[int]:
+                                 output_dir: Optional[Path]=None,
+                                 public_only: bool=False) -> Set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -936,18 +960,18 @@ def export_partial_message_files(realm: Realm,
     user_ids_for_us = get_ids(
         response['zerver_userprofile']
     )
-    recipient_ids_for_us = get_ids(response['zerver_recipient'])
-
     ids_of_our_possible_senders = get_ids(
         response['zerver_userprofile'] +
         response['zerver_userprofile_mirrordummy'] +
         response['zerver_userprofile_crossrealm'])
-    ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - user_ids_for_us
 
-    recipients_for_them = Recipient.objects.filter(
-        type=Recipient.PERSONAL,
-        type_id__in=ids_of_non_exported_possible_recipients).values("id")
-    recipient_ids_for_them = get_ids(recipients_for_them)
+    if public_only:
+        recipient_streams = Stream.objects.filter(realm=realm, invite_only=False)
+        recipient_ids = Recipient.objects.filter(
+            type=Recipient.STREAM, type_id__in=recipient_streams).values_list("id", flat=True)
+        recipient_ids_for_us = get_ids(response['zerver_recipient']) & set(recipient_ids)
+    else:
+        recipient_ids_for_us = get_ids(response['zerver_recipient'])
 
     # We capture most messages here, since the
     # recipients we subscribe to are also the
@@ -957,18 +981,31 @@ def export_partial_message_files(realm: Realm,
         recipient__in=recipient_ids_for_us,
     ).order_by('id')
 
-    # This should pick up stragglers; messages we sent
-    # where we the recipient wasn't subscribed to by any of
-    # us (such as PMs to "them").
-    messages_we_sent_to_them = Message.objects.filter(
-        sender__in=user_ids_for_us,
-        recipient__in=recipient_ids_for_them,
-    ).order_by('id')
+    if public_only:
+        # For the public stream export, we only need the messages those streams received.
+        message_queries = [
+            messages_we_received,
+        ]
+    else:
+        # This should pick up stragglers; messages we sent
+        # where we the recipient wasn't subscribed to by any of
+        # us (such as PMs to "them").
+        ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - user_ids_for_us
 
-    message_queries = [
-        messages_we_received,
-        messages_we_sent_to_them
-    ]
+        recipients_for_them = Recipient.objects.filter(
+            type=Recipient.PERSONAL,
+            type_id__in=ids_of_non_exported_possible_recipients).values("id")
+        recipient_ids_for_them = get_ids(recipients_for_them)
+
+        messages_we_sent_to_them = Message.objects.filter(
+            sender__in=user_ids_for_us,
+            recipient__in=recipient_ids_for_them,
+        ).order_by('id')
+
+        message_queries = [
+            messages_we_received,
+            messages_we_sent_to_them,
+        ]
 
     all_message_ids = set()  # type: Set[int]
     dump_file_id = 1
@@ -1062,6 +1099,69 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
                              output_dir=emoji_output_dir,
                              processing_emoji=True)
 
+def _check_key_metadata(email_gateway_bot: Optional[UserProfile],
+                        key: Key, processing_avatars: bool,
+                        realm: Realm, user_ids: Set[int]) -> None:
+    # Helper function for export_files_from_s3
+    if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
+        if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
+            raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+        # Email gateway bot sends messages, potentially including attachments, cross-realm.
+        print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
+    elif processing_avatars:
+        if 'user_profile_id' not in key.metadata:
+            raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
+        if int(key.metadata['user_profile_id']) not in user_ids:
+            raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
+    elif 'realm_id' not in key.metadata:
+        raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+
+def _get_exported_s3_record(
+        bucket_name: str,
+        key: Key,
+        processing_avatars: bool,
+        processing_emoji: bool) -> Dict[str, Union[str, int]]:
+    # Helper function for export_files_from_s3
+    record = dict(s3_path=key.name, bucket=bucket_name,
+                  size=key.size, last_modified=key.last_modified,
+                  content_type=key.content_type, md5=key.md5)
+    record.update(key.metadata)
+
+    if processing_emoji:
+        record['file_name'] = os.path.basename(key.name)
+
+    # A few early avatars don't have 'realm_id' on the object; fix their metadata
+    user_profile = get_user_profile_by_id(record['user_profile_id'])
+    if 'realm_id' not in record:
+        record['realm_id'] = user_profile.realm_id
+    record['user_profile_email'] = user_profile.email
+
+    # Fix the record ids
+    record['user_profile_id'] = int(record['user_profile_id'])
+    record['realm_id'] = int(record['realm_id'])
+
+    return record
+
+def _save_s3_object_to_file(
+        key: Key,
+        output_dir: str,
+        processing_avatars: bool,
+        processing_emoji: bool) -> None:
+
+    # Helper function for export_files_from_s3
+    if processing_avatars or processing_emoji:
+        filename = os.path.join(output_dir, key.name)
+    else:
+        fields = key.name.split('/')
+        if len(fields) != 3:
+            raise AssertionError("Suspicious key with invalid format %s" % (key.name))
+        filename = os.path.join(output_dir, key.name)
+
+    dirname = os.path.dirname(filename)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    key.get_contents_to_filename(filename)
+
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
                          processing_emoji: bool=False) -> None:
@@ -1097,50 +1197,11 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         key = bucket.get_key(bkey.name)
 
         # This can happen if an email address has moved realms
-        if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
-            if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-                raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
-            # Email gateway bot sends messages, potentially including attachments, cross-realm.
-            print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
-        elif processing_avatars:
-            if 'user_profile_id' not in key.metadata:
-                raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
-            if int(key.metadata['user_profile_id']) not in user_ids:
-                raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
-        elif 'realm_id' not in key.metadata:
-            raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
-
-        record = dict(s3_path=key.name, bucket=bucket_name,
-                      size=key.size, last_modified=key.last_modified,
-                      content_type=key.content_type, md5=key.md5)
-        record.update(key.metadata)
-
-        if processing_emoji:
-            record['file_name'] = os.path.basename(key.name)
-
-        # A few early avatars don't have 'realm_id' on the object; fix their metadata
-        user_profile = get_user_profile_by_id(record['user_profile_id'])
-        if 'realm_id' not in record:
-            record['realm_id'] = user_profile.realm_id
-        record['user_profile_email'] = user_profile.email
-
-        # Fix the record ids
-        record['user_profile_id'] = int(record['user_profile_id'])
-        record['realm_id'] = int(record['realm_id'])
+        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+        record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
 
         record['path'] = key.name
-        if processing_avatars or processing_emoji:
-            filename = os.path.join(output_dir, key.name)
-        else:
-            fields = key.name.split('/')
-            if len(fields) != 3:
-                raise AssertionError("Suspicious key with invalid format %s" % (key.name))
-            filename = os.path.join(output_dir, key.name)
-
-        dirname = os.path.dirname(filename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-        key.get_contents_to_filename(filename)
+        _save_s3_object_to_file(key, output_dir, processing_avatars, processing_emoji)
 
         records.append(record)
         count += 1
@@ -1159,7 +1220,7 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        subprocess.check_call(["cp", "-a", local_path, output_path])
+        shutil.copy2(local_path, output_path)
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
                       user_profile_id=attachment.owner.id,
@@ -1202,7 +1263,7 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
             os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
-            subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
+            shutil.copy2(str(local_path), str(output_path))
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,
                           user_profile_id=user.id,
@@ -1234,7 +1295,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         local_path = os.path.join(local_dir, emoji_path)
         output_path = os.path.join(output_dir, emoji_path)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        subprocess.check_call(["cp", "-a", local_path, output_path])
+        shutil.copy2(local_path, output_path)
         record = dict(realm_id=realm.id,
                       author=realm_emoji.author.id,
                       path=emoji_path,
@@ -1278,7 +1339,8 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write('\n')
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
-                    exportable_user_ids: Optional[Set[int]]=None) -> None:
+                    exportable_user_ids: Optional[Set[int]]=None,
+                    public_only: bool=False) -> None:
     response = {}  # type: TableData
 
     # We need at least one thread running to export
@@ -1286,8 +1348,6 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     # enforce this for us.
     if not settings.TEST_SUITE:
         assert threads >= 1
-
-    assert os.path.exists("./manage.py")
 
     realm_config = get_realm_config()
 
@@ -1313,7 +1373,8 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     # This is for performance reasons, of course.  Some installations
     # have millions of messages.
     logging.info("Exporting .partial files messages")
-    message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
+    message_ids = export_partial_message_files(realm, response, output_dir=output_dir,
+                                               public_only=public_only)
     logging.info('%d messages were exported' % (len(message_ids)))
 
     # zerver_reaction
@@ -1350,10 +1411,13 @@ def create_soft_link(source: Path, in_progress: bool=True) -> None:
     if in_progress:
         new_target = in_progress_link
     else:
-        subprocess.check_call(['rm', '-f', in_progress_link])
+        try:
+            os.remove(in_progress_link)
+        except FileNotFoundError:
+            pass
         new_target = done_link
 
-    subprocess.check_call(["ln", "-nsf", source, new_target])
+    overwrite_symlink(source, new_target)
     if is_done:
         logging.info('See %s for output files' % (new_target,))
 

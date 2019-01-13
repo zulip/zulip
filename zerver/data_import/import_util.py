@@ -3,9 +3,10 @@ import requests
 import shutil
 import logging
 import os
+import traceback
 import ujson
 
-from typing import List, Dict, Any, Optional, Set, Callable
+from typing import List, Dict, Any, Optional, Set, Callable, Iterable, Tuple, TypeVar
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
@@ -13,7 +14,7 @@ from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.parallel import run_parallel
+from zerver.lib.parallel import run_parallel, JobData
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -140,18 +141,14 @@ def build_public_stream_subscriptions(
 
     return subscriptions
 
-def build_private_stream_subscriptions(
+def build_stream_subscriptions(
         get_users: Callable[..., Set[int]],
         zerver_recipient: List[ZerverFieldsT],
         zerver_stream: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
 
     subscriptions = []  # type: List[ZerverFieldsT]
 
-    stream_ids = {
-        stream['id']
-        for stream in zerver_stream
-        if stream['invite_only']
-    }
+    stream_ids = {stream['id'] for stream in zerver_stream}
 
     recipient_map = {
         recipient['id']: recipient['type_id']  # recipient_id -> stream_id
@@ -263,9 +260,15 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
                        subscriber_map: Dict[int, Set[int]],
                        recipient_id: int,
                        mentioned_user_ids: List[int],
-                       message_id: int) -> None:
+                       message_id: int,
+                       long_term_idle: Optional[Set[int]]=None) -> Tuple[int, int]:
     user_ids = subscriber_map.get(recipient_id, set())
 
+    if long_term_idle is None:
+        long_term_idle = set()
+
+    user_messages_created = 0
+    user_messages_skipped = 0
     if user_ids:
         for user_id in sorted(user_ids):
             is_mentioned = user_id in mentioned_user_ids
@@ -273,6 +276,12 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
             # Slack and Gitter don't yet triage private messages.
             # It's possible we don't even get PMs from them.
             is_private = False
+
+            if not is_mentioned and not is_private and user_id in long_term_idle:
+                # these users are long-term idle
+                user_messages_skipped += 1
+                continue
+            user_messages_created += 1
 
             usermessage = build_user_message(
                 user_id=user_id,
@@ -282,6 +291,7 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT],
             )
 
             zerver_usermessage.append(usermessage)
+    return (user_messages_created, user_messages_skipped)
 
 def build_user_message(user_id: int,
                        message_id: int,
@@ -326,13 +336,12 @@ def build_stream(date_created: Any, realm_id: int, name: str,
     stream_dict['realm'] = realm_id
     return stream_dict
 
-def build_message(subject: str, pub_date: float, message_id: int, content: str,
+def build_message(topic_name: str, pub_date: float, message_id: int, content: str,
                   rendered_content: Optional[str], user_id: int, recipient_id: int,
                   has_image: bool=False, has_link: bool=False,
                   has_attachment: bool=True) -> ZerverFieldsT:
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
-        subject=subject,
         pub_date=pub_date,
         id=message_id,
         content=content,
@@ -340,6 +349,7 @@ def build_message(subject: str, pub_date: float, message_id: int, content: str,
         has_image=has_image,
         has_attachment=has_attachment,
         has_link=has_link)
+    zulip_message.set_topic_name(topic_name)
     zulip_message_dict = model_to_dict(zulip_message,
                                        exclude=['recipient', 'sender', 'sending_client'])
     zulip_message_dict['sender'] = user_id
@@ -388,17 +398,16 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
     downloaded.  For simpler conversions see write_avatar_png.
     """
 
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        avatar_url = avatar_upload_list[0]
+    def get_avatar(avatar_upload_item: List[str]) -> None:
+        avatar_url = avatar_upload_item[0]
 
-        image_path = os.path.join(avatar_dir, avatar_original_list[1])
-        original_image_path = os.path.join(avatar_dir, avatar_original_list[2])
+        image_path = os.path.join(avatar_dir, avatar_upload_item[1])
+        original_image_path = os.path.join(avatar_dir, avatar_upload_item[2])
 
         response = requests.get(avatar_url + size_url_suffix, stream=True)
         with open(image_path, 'wb') as image_file:
             shutil.copyfileobj(response.raw, image_file)
         shutil.copy(image_path, original_image_path)
-        return 0
 
     logging.info('######### GETTING AVATARS #########\n')
     logging.info('DOWNLOADING AVATARS .......\n')
@@ -425,7 +434,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id:
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
+    for (status, job) in run_parallel_wrapper(get_avatar, avatar_upload_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING AVATARS FINISHED #########\n')
@@ -458,9 +467,31 @@ def write_avatar_png(avatar_folder: str,
         s3_path=image_path,
         realm_id=realm_id,
         user_profile_id=user_id,
+        # We only write the .original file; ask the importer to do the thumbnailing.
+        importer_should_thumbnail=True,
     )
 
     return metadata
+
+ListJobData = TypeVar('ListJobData')
+def run_parallel_wrapper(f: Callable[[ListJobData], None], full_items: List[ListJobData],
+                         threads: int=6) -> Iterable[Tuple[int, List[ListJobData]]]:
+    logging.info("Distributing %s items across %s threads" % (len(full_items), threads))
+
+    def wrapping_function(items: List[ListJobData]) -> int:
+        count = 0
+        for item in items:
+            try:
+                f(item)
+            except Exception:
+                logging.info("Error processing item: %s" % (item,))
+                traceback.print_exc()
+            count += 1
+            if count % 1000 == 0:
+                logging.info("A download thread finished %s items" % (count,))
+        return 0
+    job_lists = [full_items[i::threads] for i in range(threads)]  # type: List[List[ListJobData]]
+    return run_parallel(wrapping_function, job_lists, threads=threads)
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
                     threads: int) -> List[ZerverFieldsT]:
@@ -471,7 +502,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
     1. upload_list: List of uploads to be mapped in uploads records.json file
     2. upload_dir: Folder where the downloaded uploads are saved
     """
-    def get_uploads(upload: List[str]) -> int:
+    def get_uploads(upload: List[str]) -> None:
         upload_url = upload[0]
         upload_path = upload[1]
         upload_path = os.path.join(upload_dir, upload_path)
@@ -480,7 +511,6 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
         os.makedirs(os.path.dirname(upload_path), exist_ok=True)
         with open(upload_path, 'wb') as upload_file:
             shutil.copyfileobj(response.raw, upload_file)
-        return 0
 
     logging.info('######### GETTING ATTACHMENTS #########\n')
     logging.info('DOWNLOADING ATTACHMENTS .......\n')
@@ -493,7 +523,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_uploads, upload_url_list, threads=threads):
+    for (status, job) in run_parallel_wrapper(get_uploads, upload_url_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
@@ -522,7 +552,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
     2. emoji_dir: Folder where the downloaded emojis are saved
     3. emoji_url_map: Maps emoji name to its url
     """
-    def get_emojis(upload: List[str]) -> int:
+    def get_emojis(upload: List[str]) -> None:
         emoji_url = upload[0]
         emoji_path = upload[1]
         upload_emoji_path = os.path.join(emoji_dir, emoji_path)
@@ -531,7 +561,6 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
         os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
         with open(upload_emoji_path, 'wb') as emoji_file:
             shutil.copyfileobj(response.raw, emoji_file)
-        return 0
 
     emoji_records = []
     upload_emoji_list = []
@@ -555,7 +584,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_emojis, upload_emoji_list, threads=threads):
+    for (status, job) in run_parallel_wrapper(get_emojis, upload_emoji_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')

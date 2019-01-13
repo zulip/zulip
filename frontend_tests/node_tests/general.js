@@ -76,7 +76,7 @@ const messages = {
         stream_id: denmark_stream.stream_id,
         type: 'stream',
         flags: ['has_alert_word'],
-        subject: 'copenhagen',
+        topic: 'copenhagen',
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },
@@ -171,13 +171,13 @@ run_test('filter', () => {
     assert.equal(predicate({
         type: 'stream',
         stream_id: denmark_stream.stream_id,
-        subject: 'does not match filter',
+        topic: 'does not match filter',
     }), false);
 
     assert.equal(predicate({
         type: 'stream',
         stream_id: denmark_stream.stream_id,
-        subject: 'copenhagen',
+        topic: 'copenhagen',
     }), true);
 });
 
@@ -423,8 +423,7 @@ run_test('insert_message', () => {
     assert.equal(message_store.get(new_message.id), undefined);
 
     helper.redirect('activity', 'process_loaded_messages');
-    helper.redirect('message_util', 'add_messages');
-    helper.redirect('message_util', 'insert_new_messages');
+    helper.redirect('message_util', 'add_new_messages');
     helper.redirect('notifications', 'received_messages');
     helper.redirect('resize', 'resize_page_components');
     helper.redirect('stream_list', 'update_streams_sidebar');
@@ -440,8 +439,8 @@ run_test('insert_message', () => {
     // the code invokes various objects when a new message
     // comes in:
     assert.deepEqual(helper.events, [
-        'message_util.add_messages',
-        'message_util.add_messages',
+        'message_util.add_new_messages',
+        'message_util.add_new_messages',
         'activity.process_loaded_messages',
         'unread_ui.update_unread_counts',
         'resize.resize_page_components',
@@ -474,7 +473,7 @@ run_test('insert_message', () => {
     These are reflected by the following calls:
 
         stream_list.update_streams_sidebar
-        message_util.add_messages
+        message_util.add_new_messages
         activity.process_loaded_messages
 
     For now, though, let's focus on another side effect
@@ -509,7 +508,7 @@ run_test('unread_ops', () => {
                 id: 50,
                 type: 'stream',
                 stream_id: denmark_stream.stream_id,
-                subject: 'copenhagen',
+                topic: 'copenhagen',
                 unread: true,
             },
         ];

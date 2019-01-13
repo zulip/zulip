@@ -234,6 +234,18 @@ def get_streams(client):
     validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
+def get_user_groups(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Get all user groups of the realm
+    result = client.get_user_groups()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/user_groups', 'get', '200')
+    user_groups = [u for u in result['user_groups'] if u['name'] == "hamletcharacters"]
+    assert user_groups[0]['description'] == 'Characters of Hamlet'
+
 def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
@@ -304,7 +316,7 @@ def toggle_mute_topic(client):
     message = {
         'type': 'stream',
         'to': 'Denmark',
-        'subject': 'boat party'
+        'topic': 'boat party'
     }
     client.call_endpoint(
         url='messages',
@@ -497,7 +509,7 @@ def test_nonexistent_stream_error(client):
     request = {
         "type": "stream",
         "to": "nonexistent_stream",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -550,7 +562,7 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -580,7 +592,7 @@ def test_delete_message_edit_permission_error(client, nonadmin_client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }
     result = client.send_message(request)
@@ -617,7 +629,7 @@ def update_message_flags(client):
     request = {
         "type": "stream",
         "to": "Denmark",
-        "subject": "Castle",
+        "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts."
     }  # type: Dict[str, Any]
     message_ids = []
@@ -690,12 +702,11 @@ def get_server_settings(client):
 
 def upload_file(client):
     # type: (Client) -> None
-    fp = StringIO("zulip")
-    fp.name = "zulip.txt"
+    path_to_file = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
 
     # {code_example|start}
     # Upload a file
-    # (Make sure that 'fp' is a file object)
+    fp = open(path_to_file, 'rb')
     result = client.call_endpoint(
         'user_uploads',
         method='POST',
@@ -740,6 +751,24 @@ def set_typing_status(client):
 
     validate_against_openapi_schema(result, '/typing', 'post', '200')
 
+def upload_custom_emoji(client):
+    # type: (Client) -> None
+    emoji_path = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
+
+    # {code_example|start}
+    # Upload a custom emoji; assume `emoji_path` is the path to your image.
+    fp = open(emoji_path, 'rb')
+    emoji_name = 'my_custom_emoji'
+    result = client.call_endpoint(
+        'realm/emoji/{}'.format(emoji_name),
+        method='POST',
+        files=[fp]
+    )
+    # {code_example|end}
+    fp.close()
+    validate_against_openapi_schema(result,
+                                    '/realm/emoji/<emoji_name>',
+                                    'post', '200')
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
@@ -784,6 +813,7 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions/properties:post': update_subscription_settings,
     '/users:get': get_members,
     '/realm/emoji:get': get_realm_emoji,
+    '/realm/emoji/<emoji_name>:post': upload_custom_emoji,
     '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
     '/realm/filters/<filter_id>:delete': remove_realm_filter,
@@ -793,6 +823,7 @@ TEST_FUNCTIONS = {
     '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
+    '/user_groups:get': get_user_groups,
 }
 
 # SETUP METHODS FOLLOW
@@ -871,6 +902,7 @@ def test_users(client):
     upload_file(client)
     set_typing_status(client)
     get_user_presence(client)
+    get_user_groups(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -908,6 +940,7 @@ def test_server_organizations(client):
     get_server_settings(client)
     remove_realm_filter(client)
     get_realm_emoji(client)
+    upload_custom_emoji(client)
 
 def test_errors(client):
     # type: (Client) -> None

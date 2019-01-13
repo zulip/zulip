@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+set_global('blueslip', global.make_zblueslip({}));
 set_global('document', {});
 
 zrequire('util');
@@ -19,6 +20,11 @@ run_test('CachedValue', () => {
     cv.reset();
     assert.equal(cv.get(), 12);
 
+});
+
+run_test('get_reload_topic', () => {
+    assert.equal(util.get_reload_topic({subject: 'foo'}), 'foo');
+    assert.equal(util.get_reload_topic({topic: 'bar'}), 'bar');
 });
 
 run_test('extract_pm_recipients', () => {
@@ -48,7 +54,7 @@ run_test('lower_bound', () => {
     assert.equal(util.lower_bound(arr, 55), 5);
     assert.equal(util.lower_bound(arr, 2, 4, 31), 3);
 
-    arr = [{x: 10}, {x: 20}, {x:30}];
+    arr = [{x: 10}, {x: 20}, {x: 30}];
 
     function compare(a, b) {
         return a.x < b;
@@ -62,12 +68,12 @@ run_test('lower_bound', () => {
 
 run_test('same_recipient', () => {
     assert(util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 101, subject: 'bar'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'stream', stream_id: 102, subject: 'whatever'}));
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
+        {type: 'stream', stream_id: 102, topic: 'whatever'}));
 
     assert(util.same_recipient(
         {type: 'private', to_user_ids: '101,102'},
@@ -78,7 +84,7 @@ run_test('same_recipient', () => {
         {type: 'private', to_user_ids: '103'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, topic: 'Bar'},
         {type: 'private'}));
 
     assert(!util.same_recipient(
@@ -108,12 +114,23 @@ run_test('robust_uri_decode', () => {
     }
 });
 
+run_test('get_message_topic', () => {
+    blueslip.set_test_data('warn', 'programming error: message has no topic');
+    assert.equal(util.get_message_topic({subject: 'foo'}), 'foo');
+    blueslip.clear_test_data();
+    assert.equal(util.get_message_topic({topic: 'bar'}), 'bar');
+});
+
 run_test('dumb_strcmp', () => {
     Intl.Collator = undefined;
     var strcmp = util.make_strcmp();
     assert.equal(strcmp('a', 'b'), -1);
     assert.equal(strcmp('c', 'c'), 0);
     assert.equal(strcmp('z', 'y'), 1);
+});
+
+run_test('get_edit_event_orig_topic', () => {
+    assert.equal(util.get_edit_event_orig_topic({orig_subject: 'lunch'}), 'lunch');
 });
 
 run_test('is_mobile', () => {
@@ -126,10 +143,10 @@ run_test('is_mobile', () => {
 
 run_test('array_compare', () => {
     assert(util.array_compare([], []));
-    assert(util.array_compare([1,2,3], [1,2,3]));
-    assert(!util.array_compare([1,2], [1,2,3]));
-    assert(!util.array_compare([1,2,3], [1,2]));
-    assert(!util.array_compare([1,2,3,4], [1,2,3,5]));
+    assert(util.array_compare([1, 2, 3], [1, 2, 3]));
+    assert(!util.array_compare([1, 2], [1, 2, 3]));
+    assert(!util.array_compare([1, 2, 3], [1, 2]));
+    assert(!util.array_compare([1, 2, 3, 4], [1, 2, 3, 5]));
 });
 
 run_test('normalize_recipients', () => {

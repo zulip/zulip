@@ -46,6 +46,15 @@ var org_settings = {
         google_hangouts_domain: {
             type: 'text',
         },
+        zoom_user_id: {
+            type: 'text',
+        },
+        zoom_api_key: {
+            type: 'text',
+        },
+        zoom_api_secret: {
+            type: 'text',
+        },
     },
     user_defaults: {
         default_language: {
@@ -75,6 +84,49 @@ var org_permissions = {
         bot_creation_policy: {
             type: 'integer',
         },
+        email_address_visibility: {
+            type: 'integer',
+        },
+    },
+};
+
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='organization-profile']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-settings']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-settings']")
+        .find(".control-label-disabled").addClass('enabled');
+
+    $(".organization-box [data-name='organization-permissions']")
+        .find("input, textarea, button, select").attr("disabled", true);
+
+    $(".organization-box [data-name='organization-permissions']")
+        .find(".control-label-disabled").addClass('enabled');
+
+    $(".organization-box [data-name='auth-methods']")
+        .find("input, button, select, checked").attr("disabled", true);
+};
+
+exports.email_address_visibility_values = {
+    everyone: {
+        code: 1,
+        description: i18n.t("Members, admins, and guests"),
+    },
+    //// Backend support for this configuration is not available yet.
+    // admins_and_members: {
+    //     code: 2,
+    //     description: i18n.t("Members and admins"),
+    // },
+    admins_only: {
+        code: 3,
+        description: i18n.t("Admins only"),
     },
 };
 
@@ -200,9 +252,17 @@ function set_video_chat_provider_dropdown() {
     $("#id_realm_video_chat_provider").val(chat_provider);
     if (chat_provider === "Google Hangouts") {
         $("#google_hangouts_domain").show();
+        $(".zoom_credentials").hide();
         $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
+    } else if (chat_provider === "Zoom") {
+        $("#google_hangouts_domain").hide();
+        $(".zoom_credentials").show();
+        $("#id_realm_zoom_user_id").val(page_params.realm_zoom_user_id);
+        $("#id_realm_zoom_api_key").val(page_params.realm_zoom_api_key);
+        $("#id_realm_zoom_api_secret").val(page_params.realm_zoom_api_secret);
     } else {
         $("#google_hangouts_domain").hide();
+        $(".zoom_credentials").hide();
     }
 }
 
@@ -361,7 +421,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
-                ui.update_scrollbar(dropdown_list_body);
+                ui.reset_scrollbar(dropdown_list_body);
             },
         },
     }).init();
@@ -407,7 +467,8 @@ function update_dependent_subsettings(property_name) {
     if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
         set_create_stream_permission_dropdown();
     } else if (property_name === 'realm_video_chat_provider' ||
-               property_name === 'realm_google_hangouts_domain') {
+               property_name === 'realm_google_hangouts_domain' ||
+               property_name.startsWith('realm_zoom')) {
         set_video_chat_provider_dropdown();
     } else if (property_name === 'realm_msg_edit_limit_setting' ||
                property_name === 'realm_message_content_edit_limit_minutes') {
@@ -505,6 +566,11 @@ exports.change_save_button_state = function ($element, state) {
 };
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
+
+exports.build_page = function () {
     meta.loaded = true;
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
@@ -586,7 +652,7 @@ exports.set_up = function () {
         subsection.find('.save-button').show();
         var properties_elements = get_subsection_property_elements(subsection);
         var show_change_process_button = false;
-        _.each(properties_elements , function (elem) {
+        _.each(properties_elements, function (elem) {
             if (check_property_changed(elem)) {
                 show_change_process_button = true;
             }
@@ -783,11 +849,15 @@ exports.set_up = function () {
 
     $("#id_realm_video_chat_provider").change(function (e) {
         var video_chat_provider = e.target.value;
-        var node = $("#google_hangouts_domain");
         if (video_chat_provider === "Google Hangouts") {
-            node.show();
+            $("#google_hangouts_domain").show();
+            $(".zoom_credentials").hide();
+        } else if (video_chat_provider === "Zoom") {
+            $("#google_hangouts_domain").hide();
+            $(".zoom_credentials").show();
         } else {
-            node.hide();
+            $("#google_hangouts_domain").hide();
+            $(".zoom_credentials").hide();
         }
     });
 
@@ -1006,8 +1076,11 @@ exports.set_up = function () {
             form_data.append('file-' + i, file);
         });
 
+        var error_field = $("#realm_icon_file_input_error");
+        error_field.hide();
         var spinner = $("#upload_icon_spinner").expectOne();
         loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
+        $("#upload_icon_button_text").expectOne().hide();
 
         channel.post({
             url: '/json/realm/icon',
@@ -1017,11 +1090,51 @@ exports.set_up = function () {
             contentType: false,
             success: function () {
                 loading.destroy_indicator($("#upload_icon_spinner"));
+                $("#upload_icon_button_text").expectOne().show();
+            },
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+                ui_report.error("", xhr, error_field);
             },
         });
 
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
+
+    function upload_realm_logo(file_input) {
+        var form_data = new FormData();
+
+        form_data.append('csrfmiddlewaretoken', csrf_token);
+        jQuery.each(file_input[0].files, function (i, file) {
+            form_data.append('file-' + i, file);
+        });
+
+        var error_field = $("#realm_logo_file_input_error");
+        error_field.hide();
+        var spinner = $("#upload_logo_spinner").expectOne();
+        loading.make_indicator(spinner, {text: i18n.t("Uploading logo.")});
+        $("#upload_logo_button_text").expectOne().hide();
+
+        channel.post({
+            url: '/json/realm/logo',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function () {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+            },
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+                $("#upload_logo_button_text").expectOne().show();
+                ui_report.error("", xhr, error_field);
+            },
+        });
+
+    }
+    realm_logo.build_realm_logo_widget(upload_realm_logo);
 
     $('#deactivate_realm_button').on('click', function (e) {
         if (!overlays.is_modal_open()) {
@@ -1036,7 +1149,7 @@ exports.set_up = function () {
             overlays.close_modal('deactivate-realm-modal');
         }
         channel.post({
-            url:'/json/realm/deactivate',
+            url: '/json/realm/deactivate',
             error: function (xhr) {
                 ui_report.error(
                     i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()

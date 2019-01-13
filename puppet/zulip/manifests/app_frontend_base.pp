@@ -1,6 +1,7 @@
 # Minimal configuration to run a Zulip application server.
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
+  include zulip::common
   include zulip::nginx
   include zulip::supervisor
 
@@ -11,7 +12,7 @@ class zulip::app_frontend_base {
   zulip::safepackage { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/app':
-    require => Package['nginx-full'],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -19,7 +20,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/upstreams':
-    require => Package['nginx-full'],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -27,7 +28,7 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/uploads.types':
-    require => Package['nginx-full'],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -53,6 +54,17 @@ class zulip::app_frontend_base {
     }
   }
 
+  # The number of Tornado processes to run on the server;
+  # historically, this has always been 1, but we now have experimental
+  # support for Tornado sharding.
+  $tornado_processes = zulipconf('application_server', 'tornado_processes', 1)
+  if $tornado_processes > 1 {
+    $tornado_ports = range(9800, 9800 + $tornado_processes)
+    $tornado_multiprocess = true
+  } else {
+    $tornado_multiprocess = false
+  }
+
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
@@ -67,14 +79,14 @@ class zulip::app_frontend_base {
   }
   $message_sender_processes = zulipconf('application_server', 'message_sender_processes',
                                         $message_sender_default_processes)
-  file { '/etc/supervisor/conf.d/zulip.conf':
+  file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
     content => template('zulip/supervisor/zulip.conf.template.erb'),
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
@@ -85,7 +97,7 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/uwsgi.ini.template.erb'),
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   file { '/home/zulip/tornado':
@@ -124,8 +136,8 @@ class zulip::app_frontend_base {
   file { '/etc/cron.d/email-mirror':
     ensure => absent,
   }
-  file { '/usr/lib/nagios/plugins/zulip_app_frontend':
-    require => Package[nagios-plugins-basic],
+  file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',

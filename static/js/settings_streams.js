@@ -10,6 +10,15 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='default-streams-list']")
+        .find("input:not(.search), button, select").attr("disabled", true);
+};
+
 exports.build_default_stream_table = function (streams_data) {
     var self = {};
 
@@ -30,7 +39,7 @@ exports.build_default_stream_table = function (streams_data) {
                 return item.name.toLowerCase().indexOf(value) >= 0;
             },
             onupdate: function () {
-                ui.update_scrollbar(table);
+                ui.reset_scrollbar(table);
             },
         },
     }).init();
@@ -87,7 +96,24 @@ function make_stream_default(stream_name) {
     });
 }
 
+exports.delete_default_stream = function (stream_name, default_stream_row, alert_element) {
+    channel.del({
+        url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+        error: function (xhr) {
+            ui_report.generic_row_button_error(xhr, alert_element);
+        },
+        success: function () {
+            default_stream_row.remove();
+        },
+    });
+};
+
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
+
+exports.build_page = function () {
     meta.loaded = true;
 
     exports.update_default_streams_table();
@@ -128,16 +154,7 @@ exports.set_up = function () {
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         var row = $(this).closest(".default_stream_row");
         var stream_name = row.attr("id");
-
-        channel.del({
-            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
-            error: function (xhr) {
-                ui_report.generic_row_button_error(xhr, $(e.target));
-            },
-            success: function () {
-                row.remove();
-            },
-        });
+        exports.delete_default_stream(stream_name, row, $(e.target));
     });
 };
 

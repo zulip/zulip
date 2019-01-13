@@ -85,18 +85,25 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         if ('override_api_url_scheme' in view_flags and
                 request.META.get('HTTP_AUTHORIZATION', None) is not None):
             # This request uses standard API based authentication.
-            target_function = authenticated_rest_api_view()(target_function)
+            # For override_api_url_scheme views, we skip our normal
+            # rate limiting, because there are good reasons clients
+            # might need to (e.g.) request a large number of uploaded
+            # files or avatars in quick succession.
+            target_function = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
         elif ('override_api_url_scheme' in view_flags and
               request.GET.get('api_key') is not None):
             # This request uses legacy API authentication.  We
-            # unfortunately need that in the React Native mobile
-            # apps, because there's no way to set
-            # HTTP_AUTHORIZATION in React Native.
-            target_function = authenticated_uploads_api_view()(target_function)
+            # unfortunately need that in the React Native mobile apps,
+            # because there's no way to set HTTP_AUTHORIZATION in
+            # React Native.  See last block for rate limiting notes.
+            target_function = authenticated_uploads_api_view(skip_rate_limiting=True)(target_function)
         # /json views (web client) validate with a session token (cookie)
         elif not request.path.startswith("/api") and request.user.is_authenticated:
             # Authenticated via sessions framework, only CSRF check needed
-            target_function = csrf_protect(authenticated_json_view(target_function))
+            auth_kwargs = {}
+            if 'override_api_url_scheme' in view_flags:
+                auth_kwargs["skip_rate_limiting"] = True
+            target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
 
         # most clients (mobile, bots, etc) use HTTP Basic Auth and REST calls, where instead of
         # username:password, we use email:apiKey
@@ -113,10 +120,15 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # browser, send the user to the login page
             if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
                 # TODO: It seems like the `?next=` part is unlikely to be helpful
-                return HttpResponseRedirect('%s/?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
+                return HttpResponseRedirect('%s?next=%s' % (settings.HOME_NOT_LOGGED_IN, request.path))
             # Ask for basic auth (email:apiKey)
             elif request.path.startswith("/api"):
                 return json_unauthorized(_("Not logged in: API authentication or user session required"))
+            # Logged out user accessing an endpoint with anonymous user access on JSON; proceed.
+            elif request.path.startswith("/json") and 'allow_anonymous_user_web' in view_flags:
+                auth_kwargs = dict(allow_unauthenticated=True)
+                target_function = csrf_protect(authenticated_json_view(
+                    target_function, **auth_kwargs))
             # Session cookie expired, notify the client
             else:
                 return json_unauthorized(_("Not logged in: API authentication or user session required"),

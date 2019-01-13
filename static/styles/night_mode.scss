@@ -59,6 +59,12 @@ body.night-mode {
         color: inherit !important;
     }
 
+    /* this one makes the border of the reactions highlighted on hovering. */
+    .message_reaction:hover,
+    .reaction_button:hover {
+        border-color: white !important;
+    }
+
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
@@ -132,6 +138,11 @@ on a dark background, and don't change the dark labels dark either. */
     .message_reactions:hover .message_reaction + .reaction_button {
         background-color: hsla(0, 0%, 0%, 0.5);
         border-color: hsla(0, 0%, 0%, 0.9);
+    }
+
+    /* this one makes the reacted reactions appear differently for the logged in user. */
+    .message_reactions .message_reaction.reacted {
+        background-color: hsl(200, 100%, 25%);
     }
 
     .message_reactions .message_reaction {
@@ -369,6 +380,12 @@ on a dark background, and don't change the dark labels dark either. */
         border: 1px solid hsl(49, 38%, 46%);
     }
 
+    .alert.home-error-bar {
+        color: hsl(236, 33%, 90%);
+        background-color: hsla(35, 84%, 62%, 0.25);
+        border: 1px solid hsl(11, 46%, 54%);
+    }
+
     .alert {
         text-shadow: none;
     }
@@ -460,7 +477,11 @@ on a dark background, and don't change the dark labels dark either. */
         stroke: hsl(0, 0%, 100%);
     }
 
-    #unmute_muted_topic_notification,
+    .history-limited-box {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    #feedback_container,
     .message_content code,
     .message_edit_content code,
     #settings_page code,

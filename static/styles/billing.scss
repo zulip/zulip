@@ -57,6 +57,7 @@
         }
     }
 
+    .license-management,
     .payment-schedule {
         label {
             display: inline-block;
@@ -101,6 +102,11 @@
             }
             .schedule-amount-2 {
                 font-size: 0.9em;
+            }
+            .management-type {
+                font-weight: bold;
+                font-size: 1.2em;
+                margin-top: 20px;
             }
         }
     }
@@ -152,18 +158,42 @@
         pointer-events: none;
     }
 
+    .invoice-button {
+        font-size: 17px;
+        font-weight: 700 !important;
+    }
+
+    #mix_license_count,
+    #manual_license_count,
+    #invoiced_licenses {
+        width: 50px;
+    }
+
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;
         display: none;
     }
 
-    #loading-section {
+    #cardchange-loading,
+    #invoice-loading,
+    #autopay-loading {
         display: none;
         min-height: 55px;
+        text-align: center;
     }
 
-    #card-updated-message {
+
+    #cardchange-success,
+    #invoice-success,
+    #autopay-success {
+        text-align: center;
+        display: none;
+    }
+
+    #cardchange-error,
+    #invoice-error,
+    #autopay-error {
         text-align: center;
         display: none;
     }
@@ -173,32 +203,38 @@
         min-height: 30px;
     }
 
-    .updating-card-logo {
+    .zulip-loading-logo {
         margin: 0 auto;
         width: 24px;
         height: 24px;
     }
 
-    .updating-card-logo svg circle {
+    .zulip-loading-logo svg circle {
         fill: hsl(0, 0%, 27%);
         stroke: hsl(0, 0%, 27%);
     }
 
-    .updating-card-logo svg path {
+    .zulip-loading-logo svg path {
         fill: hsl(0, 0%, 100%);
         stroke: hsl(0, 0%, 100%);
     }
 
-    #updating_card_indicator {
+    #cardchange_loading_indicator,
+    #invoice_loading_indicator,
+    #autopay_loading_indicator {
         margin: 10px auto;
     }
 
-    #updating_card_indicator_box_container {
+    #cardchange_loading_indicator_box_container,
+    #invoice_loading_indicator_box_container,
+    #autopay_loading_indicator_box_container {
         position: absolute;
         left: 50%;
     }
 
-    #updating_card_indicator_box {
+    #cardchange_loading_indicator_box,
+    #invoice_loading_indicator_box,
+    #autopay_loading_indicator_box {
         position: relative;
         left: -50%;
         top: -41px;
@@ -208,7 +244,24 @@
         border-radius: 6px;
     }
 
-    .loading_indicator_text {
-        margin-left: -75px;
+    #cardchange_loading_indicator .loading_indicator_text,
+    #invoice_loading_indicator .loading_indicator_text,
+    #autopay_loading_indicator .loading_indicator_text {
+        margin-left: -25px;
     }
+
+    #license-automatic-section,
+    #license-manual-section,
+    #license-mix-section {
+        display: none;
+    }
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
 }

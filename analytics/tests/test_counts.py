@@ -23,6 +23,7 @@ from zerver.lib.actions import do_activate_user, do_create_user, \
     do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
     InvitationError
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
+from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models import Client, Huddle, Message, Realm, \
     RealmAuditLog, Recipient, Stream, UserActivityInterval, \
     UserProfile, get_client, get_user, PreregistrationUser
@@ -56,7 +57,10 @@ class AnalyticsTestCase(TestCase):
             'api_key': '42'}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return UserProfile.objects.create(**kwargs)
+        kwargs['delivery_email'] = kwargs['email']
+        user_profile = UserProfile.objects.create(**kwargs)
+        # TODO: Make this pass user_profile.full_clean()
+        return user_profile
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1
@@ -82,7 +86,7 @@ class AnalyticsTestCase(TestCase):
         defaults = {
             'sender': sender,
             'recipient': recipient,
-            'subject': 'subject',
+            DB_TOPIC_NAME: 'subject',
             'content': 'hi',
             'pub_date': self.TIME_LAST_HOUR,
             'sending_client': get_client("website")}

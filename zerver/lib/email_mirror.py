@@ -1,26 +1,27 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 
 import logging
 import re
 
-from email.header import decode_header, Header
+from email.header import decode_header, make_header
+from email.utils import getaddresses
 import email.message as message
 
 from django.conf import settings
 
 from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
     internal_send_message, internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message
+    internal_send_stream_message, internal_send_huddle_message, \
+    truncate_body, truncate_topic
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
-from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, MAX_SUBJECT_LENGTH, \
+    Message, Realm, UserProfile, get_system_bot, get_user, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH
 
 logger = logging.getLogger(__name__)
@@ -104,7 +105,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
     data = {
         'user_profile_id': user_profile.id,
         'recipient_id': recipient_id,
-        'subject': message.subject.encode('utf-8'),
+        'subject': message.topic_name().encode('utf-8'),
     }
 
     while True:
@@ -192,8 +193,8 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
         sender,
         "stream",
         stream.name,
-        topic[:MAX_SUBJECT_LENGTH],
-        content[:MAX_MESSAGE_LENGTH],
+        truncate_topic(topic),
+        truncate_body(content),
         email_gateway=True)
 
 def valid_stream(stream_name: str, token: str) -> bool:
@@ -287,21 +288,28 @@ def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
-    recipient_headers = ["X-Gm-Original-To", "Delivered-To", "To"]
-    recipients = []  # type: List[Union[str, Header]]
-    for recipient_header in recipient_headers:
-        r = message.get_all(recipient_header, None)
-        if r:
-            recipients = r
-            break
+    recipient_headers = ["X-Gm-Original-To", "Delivered-To",
+                         "Resent-To", "Resent-CC", "To", "CC"]
 
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     match_email_re = re.compile(".*?".join(pattern_parts))
-    for recipient_email in [str(recipient) for recipient in recipients]:
-        if match_email_re.match(recipient_email):
-            return recipient_email
+
+    header_addresses = [str(addr)
+                        for recipient_header in recipient_headers
+                        for addr in message.get_all(recipient_header, [])]
+
+    for addr_tuple in getaddresses(header_addresses):
+        if match_email_re.match(addr_tuple[1]):
+            return addr_tuple[1]
 
     raise ZulipEmailForwardError("Missing recipient in mirror email")
+
+def strip_from_subject(subject: str) -> str:
+    # strips RE and FWD from the subject
+    # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
+    reg = r"([\[\(] *)?\b(RE|FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
+    stripped = re.sub(reg, "", subject, flags = re.IGNORECASE | re.MULTILINE)
+    return stripped.strip()
 
 def process_stream_message(to: str, subject: str, message: message.Message,
                            debug_info: Dict[str, Any]) -> None:
@@ -318,17 +326,8 @@ def process_missed_message(to: str, message: message.Message, pre_checked: bool)
     send_to_missed_message_address(to, message)
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
-    subject_header = str(message.get("Subject", "")).strip()
-    if subject_header == "":
-        subject_header = "(no topic)"
-    encoded_subject, encoding = decode_header(subject_header)[0]
-    if encoding is None:
-        subject = force_text(encoded_subject)  # encoded_subject has type str when encoding is None
-    else:
-        try:
-            subject = encoded_subject.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
-            subject = "(unreadable subject)"
+    subject_header = make_header(decode_header(message.get("Subject", "")))
+    subject = strip_from_subject(str(subject_header)) or "(no topic)"
 
     debug_info = {}
 

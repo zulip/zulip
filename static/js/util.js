@@ -56,10 +56,17 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
+function lower_same(a, b) {
+    return a.toLowerCase() === b.toLowerCase();
+}
+
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
-            a.subject.toLowerCase() === b.subject.toLowerCase();
+            lower_same(
+                exports.get_message_topic(a),
+                exports.get_message_topic(b)
+            );
 };
 
 exports.is_pm_recipient = function (email, message) {
@@ -270,6 +277,74 @@ exports.sorted_ids = function (ids) {
     id_list = _.uniq(id_list, true);
 
     return id_list;
+};
+
+exports.set_topic_links = function (obj, topic_links) {
+    // subject_links is a legacy name
+    obj.subject_links = topic_links;
+};
+
+exports.get_topic_links = function (obj) {
+    // subject_links is a legacy name
+    return obj.subject_links;
+};
+
+exports.set_match_data = function (target, source) {
+    target.match_subject = source.match_subject;
+    target.match_content = source.match_content;
+};
+
+exports.get_match_topic = function (obj) {
+    return obj.match_subject;
+};
+
+exports.get_draft_topic = function (obj) {
+    // We will need to support subject for old drafts.
+    return obj.topic || obj.subject || '';
+};
+
+exports.get_reload_topic = function (obj) {
+    // When we first upgrade to releases that have
+    // topic=foo in the code, the user's reload URL
+    // may still have subject=foo from the prior version.
+    return obj.topic || obj.subject || '';
+};
+
+exports.set_message_topic = function (obj, topic) {
+    obj.topic = topic;
+};
+
+exports.get_message_topic = function (obj) {
+    if (obj.topic === undefined) {
+        blueslip.warn('programming error: message has no topic');
+        return obj.subject;
+    }
+
+    return obj.topic;
+};
+
+exports.get_edit_event_topic = function (obj) {
+    if (obj.topic === undefined) {
+        return obj.subject;
+    }
+
+    // This code won't be reachable till we fix the
+    // server, but we use it now in tests.
+    return obj.topic;
+};
+
+exports.get_edit_event_orig_topic = function (obj) {
+    return obj.orig_subject;
+};
+
+exports.is_topic_synonym = function (operator) {
+    return operator === 'subject';
+};
+
+exports.convert_message_topic = function (message) {
+    if (message.topic === undefined) {
+        message.topic = message.subject;
+    }
 };
 
 return exports;

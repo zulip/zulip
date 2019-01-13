@@ -8,6 +8,7 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 
+zrequire('color_data');
 zrequire('util');
 zrequire('hash_util');
 zrequire('topic_data');
@@ -609,7 +610,7 @@ run_test('create_sub', () => {
         color: '#76ce90',
     };
 
-    global.stream_color.pick_color = function () {
+    color_data.pick_color = function () {
         return '#bd86e5';
     };
 
@@ -630,7 +631,7 @@ run_test('create_sub', () => {
     assert.equal(antarctica_sub.color, '#76ce90');
 });
 
-run_test('initialize_from_page_params', () => {
+run_test('initialize', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
@@ -650,7 +651,7 @@ run_test('initialize_from_page_params', () => {
 
     initialize();
     page_params.realm_notifications_stream_id = -1;
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
     assert(stream_names.indexOf('subscriptions') !== -1);
@@ -664,7 +665,7 @@ run_test('initialize_from_page_params', () => {
     // Simulate a private stream the user isn't subscribed to
     initialize();
     page_params.realm_notifications_stream_id = 89;
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
     assert.equal(page_params.notifications_stream, "");
 
     // Now actually subscribe the user to the stream
@@ -675,7 +676,7 @@ run_test('initialize_from_page_params', () => {
     };
 
     stream_data.add_sub('foo', foo);
-    stream_data.initialize_from_page_params();
+    stream_data.initialize();
     assert.equal(page_params.notifications_stream, "foo");
 });
 

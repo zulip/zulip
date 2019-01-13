@@ -1,0 +1,20 @@
+{
+    "CommonMark": {
+        "issue": "https://github.com/zulip/zulip/issues/10800",
+    },
+    "tornado": {
+        "issue": "https://github.com/zulip/zulip/issues/8913"
+    },
+    "Django": {
+        "issue": "https://github.com/zulip/zulip/pull/8231"
+    },
+    "ipython": {
+        "issue": "https://github.com/zulip/zulip/issues/10801"
+    },
+    "transifex-client": {
+        "issue": "https://github.com/zulip/zulip/issues/8914"
+    },
+    "pip-tools": {
+        "issue": "https://github.com/zulip/zulip/issues/10802"
+    }
+}

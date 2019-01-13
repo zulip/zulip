@@ -1,7 +1,6 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable, Iterable
 from typing.re import Match
-from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet, F
@@ -53,7 +52,7 @@ import time
 import datetime
 import sys
 
-MAX_SUBJECT_LENGTH = 60
+MAX_TOPIC_NAME_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH = 50  # type: int
 
@@ -145,8 +144,8 @@ class Realm(models.Model):
     MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
-    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
+    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts", u"Zoom"]
+    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser', u'AzureAD']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
     # User-visible display name and description used on e.g. the organization homepage
@@ -186,6 +185,20 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
 
+    # Who in the organization has access to users' actual email
+    # addresses.  Controls whether the UserProfile.email field is the
+    # same as UserProfile.delivery_email, or is instead garbage.
+    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
+    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
+    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    email_address_visibility = models.PositiveSmallIntegerField(default=EMAIL_ADDRESS_VISIBILITY_EVERYONE)  # type: int
+    EMAIL_ADDRESS_VISIBILITY_TYPES = [
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        # The MEMBERS level is not yet implemented on the backend.
+        ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+        EMAIL_ADDRESS_VISIBILITY_ADMINS,
+    ]
+
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
@@ -220,6 +233,9 @@ class Realm(models.Model):
     # are inaccessible to users (but not deleted).
     message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
 
+    # Messages older than this message ID in the organization are inaccessible.
+    first_visible_message_id = models.IntegerField(default=0)  # type: int
+
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
     COMMUNITY = 2
@@ -246,6 +262,9 @@ class Realm(models.Model):
 
     video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
     google_hangouts_domain = models.TextField(default="")
+    zoom_user_id = models.TextField(default="")
+    zoom_api_key = models.TextField(default="")
+    zoom_api_secret = models.TextField(default="")
 
     # Define the types of the various automatically managed properties
     property_types = dict(
@@ -258,8 +277,12 @@ class Realm(models.Model):
         default_twenty_four_hour_time = bool,
         description=str,
         disallow_disposable_email_addresses=bool,
+        email_address_visibility=int,
         email_changes_disabled=bool,
         google_hangouts_domain=str,
+        zoom_user_id=str,
+        zoom_api_key=str,
+        zoom_api_secret=str,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
@@ -274,6 +297,7 @@ class Realm(models.Model):
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
+    # Icon is the square mobile icon.
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'
     ICON_SOURCES = (
@@ -284,13 +308,26 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
+    # Logo is the horizonal logo we show in top-left of webapp navbar UI.
+    LOGO_DEFAULT = u'D'
+    LOGO_UPLOADED = u'U'
+    LOGO_SOURCES = (
+        (LOGO_DEFAULT, 'Default to Zulip'),
+        (LOGO_UPLOADED, 'Uploaded by administrator'),
+    )
+    logo_source = models.CharField(default=LOGO_DEFAULT, choices=LOGO_SOURCES,
+                                   max_length=1)  # type: str
+    logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
+
     BOT_CREATION_POLICY_TYPES = [
         BOT_CREATION_EVERYONE,
         BOT_CREATION_LIMIT_GENERIC_BOTS,
         BOT_CREATION_ADMINS_ONLY,
     ]
 
+    # Both of these fields are legacy, and will be removed after a manual migration.
     has_seat_based_plan = models.BooleanField(default=False)  # type: bool
+    seat_limit = models.PositiveIntegerField(null=True)  # type: Optional[int]
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the a mapping from authentication flags to their status,
@@ -546,8 +583,9 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
-    regex = re.compile(r'(?:[\w\-#]*)(\(\?P<\w+>.+\))')
-    error_msg = 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)'
+    regex = re.compile(r'^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$')
+    error_msg = _('Invalid filter pattern.  Valid characters are %s.' % (
+        '[ a-zA-Z_#=/:+!-]',))
 
     if not regex.match(str(value)):
         raise ValidationError(error_msg)
@@ -559,11 +597,10 @@ def filter_pattern_validator(value: str) -> None:
         raise ValidationError(error_msg)
 
 def filter_format_validator(value: str) -> None:
-    regex = re.compile(r'^[\.\/:a-zA-Z0-9#_?=-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
+    regex = re.compile(r'^([\.\/:a-zA-Z0-9#_?=-]+%\(([a-zA-Z0-9_-]+)\)s)+[a-zA-Z0-9_-]*$')
 
     if not regex.match(value):
-        raise ValidationError('URL format string must be in the following format: '
-                              r'`https://example.com/%(\w+)s`')
+        raise ValidationError(_('Invalid URL format string.'))
 
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
@@ -656,7 +693,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         EMBEDDED_BOT,
     ]
 
-    # The display email address, used for Zulip APIs, etc.
+    # The display email address, used for Zulip APIs, etc.  This field
+    # should never be used for actually emailing someone because it
+    # will be invalid for various values of
+    # Realm.email_address_visibility; for that, see delivery_email.
     email = models.EmailField(blank=False, db_index=True)  # type: str
 
     # delivery_email is just used for sending emails.  In almost all
@@ -726,6 +766,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_stream_email_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_push_notifications = models.BooleanField(default=False)  # type: bool
     enable_stream_sounds = models.BooleanField(default=False)  # type: bool
+    notification_sound = models.CharField(max_length=20, default='zulip')  # type: str
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)  # type: bool
@@ -847,6 +888,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
         message_content_in_email_notifications=bool,
+        notification_sound=str,
         pm_content_in_desktop_notifications=bool,
         realm_name_in_notifications=bool,
     )
@@ -857,10 +899,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
-        user_data = {v.field_id: v.value for v in values}
+        user_data = {v.field_id: {"value": v.value, "rendered_value": v.rendered_value} for v in values}
         data = []  # type: ProfileData
         for field in custom_profile_fields_for_realm(self.realm_id):
-            value = user_data.get(field.id, None)
+            field_values = user_data.get(field.id, None)
+            if field_values:
+                value, rendered_value = field_values.get("value"), field_values.get("rendered_value")
+            else:
+                value, rendered_value = None, None
             field_type = field.field_type
             if value is not None:
                 converter = field.FIELD_CONVERTERS[field_type]
@@ -870,6 +916,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             for k, v in field.as_dict().items():
                 field_data[k] = v
             field_data['value'] = value
+            field_data['rendered_value'] = rendered_value
             data.append(field_data)
 
         return data
@@ -1006,7 +1053,15 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
-    invited_as_admin = models.BooleanField(default=False)  # type: bool
+    # Changes to INVITED_AS should also be reflected in
+    # settings_invites.invited_as_values in
+    # static/js/settings_invites.js
+    INVITE_AS = dict(
+        MEMBER = 1,
+        REALM_ADMIN = 2,
+        GUEST_USER = 3,
+    )
+    invited_as = models.PositiveSmallIntegerField(default=INVITE_AS['MEMBER'])  # type: int
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
@@ -1040,6 +1095,7 @@ class AbstractPushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
+    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     # TODO: last_updated should be renamed date_created, since it is
     # no longer maintained as a last_updated value.
@@ -1054,7 +1110,6 @@ class AbstractPushDeviceToken(models.Model):
 class PushDeviceToken(AbstractPushDeviceToken):
     # The user who's device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)  # type: UserProfile
-    token = models.CharField(max_length=4096, db_index=True)  # type: bytes
 
     class Meta:
         unique_together = ("user", "kind", "token")
@@ -1163,7 +1218,7 @@ class MutedTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
-    topic_name = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
 
     class Meta:
         unique_together = ('user_profile', 'stream', 'topic_name')
@@ -1310,7 +1365,7 @@ class AbstractMessage(models.Model):
     # new code should generally also say "topic".
     #
     # See also the `topic_name` method on `Message`.
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)  # type: str
+    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)  # type: str
 
     content = models.TextField()  # type: str
     rendered_content = models.TextField(null=True)  # type: Optional[str]
@@ -1354,6 +1409,9 @@ class Message(AbstractMessage):
         eventual switch over to a separate topic table.
         """
         return self.subject
+
+    def set_topic_name(self, topic_name: str) -> None:
+        self.subject = topic_name
 
     def is_stream_message(self) -> bool:
         '''
@@ -1527,6 +1585,9 @@ class Reaction(models.Model):
         fields = ['message_id', 'emoji_name', 'emoji_code', 'reaction_type',
                   'user_profile__email', 'user_profile__id', 'user_profile__full_name']
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
+
+    def __str__(self) -> str:
+        return "%s / %s / %s" % (self.user_profile.email, self.message.id, self.emoji_name)
 
 # Whenever a message is sent, for each user subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
@@ -1758,15 +1819,31 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
     return UserProfile.objects.select_related().get(api_key=api_key)
 
+def get_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
+    # Fetches users by delivery_email for use in
+    # authentication/registration contexts. Do not use for user-facing
+    # views (e.g. Zulip API endpoints); for that, you want get_user.
+    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip(), realm=realm)
+
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
+    # Fetches the user by its visible-to-other users username (in the
+    # `email` field).  For use in API contexts; do not use in
+    # authentication/registration contexts; for that, you need to use
+    # get_user_by_delivery_email.
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+
+def get_active_user_by_delivery_email(email: str, realm: Realm) -> UserProfile:
+    user_profile = get_user_by_delivery_email(email, realm)
+    if not user_profile.is_active:
+        raise UserProfile.DoesNotExist()
+    return user_profile
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:
     user_profile = get_user(email, realm)
@@ -1832,7 +1909,7 @@ def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
         return None
 
     try:
-        return get_user(email, realm)
+        return get_user_by_delivery_email(email, realm)
     except UserProfile.DoesNotExist:
         return None
 
@@ -2093,7 +2170,7 @@ class UserPresence(models.Model):
         )
 
     @staticmethod
-    def status_from_string(status: NonBinaryStr) -> Optional[int]:
+    def status_from_string(status: str) -> Optional[int]:
         if status == 'active':
             status_val = UserPresence.ACTIVE  # type: Optional[int] # See https://github.com/python/mypy/issues/2611
         elif status == 'idle':
@@ -2102,6 +2179,16 @@ class UserPresence(models.Model):
             status_val = None
 
         return status_val
+
+class UserStatus(models.Model):
+    user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE)  # type: UserProfile
+
+    timestamp = models.DateTimeField()  # type: datetime.datetime
+    client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
+
+    AWAY = 1
+
+    status = models.PositiveSmallIntegerField(default=AWAY)  # type: int
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
@@ -2158,7 +2245,7 @@ class ScheduledEmail(AbstractScheduledJob):
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)  # type: str
+    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)  # type: str
     content = models.TextField()  # type: str
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
     stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
@@ -2176,6 +2263,12 @@ class ScheduledMessage(models.Model):
 
     delivery_type = models.PositiveSmallIntegerField(choices=DELIVERY_TYPES,
                                                      default=SEND_LATER)  # type: int
+
+    def topic_name(self) -> str:
+        return self.subject
+
+    def set_topic_name(self, topic_name: str) -> None:
+        self.subject = topic_name
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
@@ -2228,6 +2321,9 @@ class RealmAuditLog(models.Model):
     STRIPE_PLAN_CHANGED = 'stripe_plan_changed'
     STRIPE_PLAN_QUANTITY_RESET = 'stripe_plan_quantity_reset'
 
+    CUSTOMER_CREATED = 'customer_created'
+    CUSTOMER_PLAN_CREATED = 'customer_plan_created'
+
     USER_CREATED = 'user_created'
     USER_ACTIVATED = 'user_activated'
     USER_DEACTIVATED = 'user_deactivated'
@@ -2246,6 +2342,7 @@ class RealmAuditLog(models.Model):
     REALM_REACTIVATED = 'realm_reactivated'
     REALM_SCRUBBED = 'realm_scrubbed'
     REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
+    REALM_LOGO_CHANGED = 'realm_logo_changed'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'
@@ -2378,6 +2475,11 @@ class CustomProfileField(models.Model):
             'order': self.order,
         }
 
+    def is_renderable(self) -> bool:
+        if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:
+            return True
+        return False
+
     def __str__(self) -> str:
         return "<CustomProfileField: %s %s %s %d>" % (self.realm, self.name, self.field_type, self.order)
 
@@ -2388,6 +2490,7 @@ class CustomProfileFieldValue(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)  # type: CustomProfileField
     value = models.TextField()  # type: str
+    rendered_value = models.TextField(null=True, default=None)  # type: Optional[str]
 
     class Meta:
         unique_together = ('user_profile', 'field')

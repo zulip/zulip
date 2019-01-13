@@ -45,7 +45,7 @@ from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
-    get_client,
+    get_client, get_user
 )
 
 from zerver.lib.actions import (
@@ -53,7 +53,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user, set_default_streams, check_stream_name, do_get_streams,
+    set_default_streams, check_stream_name, do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -64,6 +64,7 @@ from zerver.lib.actions import (
     do_remove_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
+    do_rename_stream,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
     validate_user_access_to_subscribers_helper,
@@ -464,13 +465,21 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps('whatever')})
         self.assert_json_success(result)
-        # Should be a name event and an email address event
-        self.assert_length(events, 2)
+        # Should be a name event, an email address event and a notification event
+        self.assert_length(events, 3)
 
-        notified_user_ids = set(events[-1]['users'])
+        notified_user_ids = set(events[0]['users'])
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(cordelia.id, notified_user_ids)
         self.assertNotIn(prospero.id, notified_user_ids)
+
+        notified_with_bot_users = events[-1]['users']
+        notified_with_bot_user_ids = []
+        notified_with_bot_user_ids.append(notified_with_bot_users[0]['id'])
+        notified_with_bot_user_ids.append(notified_with_bot_users[1]['id'])
+        self.assertIn(user_profile.id, notified_with_bot_user_ids)
+        self.assertIn(cordelia.id, notified_with_bot_user_ids)
+        self.assertNotIn(prospero.id, notified_with_bot_user_ids)
 
     def test_rename_stream(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -501,7 +510,6 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_success(result)
-
         event = events[1]['event']
         self.assertEqual(event, dict(
             op='update',
@@ -598,6 +606,27 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_error(result, 'Must be an organization administrator')
+
+    def test_notify_on_stream_rename(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.make_stream('stream_name1')
+
+        stream = self.subscribe(user_profile, 'stream_name1')
+        do_change_is_admin(user_profile, True)
+        result = self.client_patch('/json/streams/%d' % (stream.id,),
+                                   {'new_name': ujson.dumps('stream_name2')})
+        self.assert_json_success(result)
+
+        # Inspect the notification message sent
+        message = self.get_last_message()
+        actual_stream = Stream.objects.get(id=message.recipient.type_id)
+        message_content = '@**King Hamlet** renamed stream **stream_name1** to **stream_name2**'
+        self.assertEqual(message.sender.realm, user_profile.realm)
+        self.assertEqual(actual_stream.name, 'stream_name2')
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertEqual(message.content, message_content)
+        self.assertEqual(message.sender.email, 'notification-bot@zulip.com')
 
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user('iago')
@@ -2111,7 +2140,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.subject, u'hello')
+        self.assertEqual(msg.topic_name(), u'hello')
         self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
         self.assertIn('Welcome to #**', msg.content)
 

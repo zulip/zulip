@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 
 from collections import defaultdict
 import datetime
@@ -10,12 +10,13 @@ from django.template import loader
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.notifications import build_message_list, one_click_unsubscribe_link
+from confirmation.models import one_click_unsubscribe_link
+from zerver.lib.notifications import build_message_list
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.url_encoding import encode_stream
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
-    Realm
+    Realm, Message
 from zerver.context_processors import common_context
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.logging_util import log_to_file
@@ -80,7 +81,7 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                 logger.info("%s is inactive, queuing for potential digest" % (
                     user_profile.email,))
 
-def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySet) -> List[Dict[str, Any]]:
+def gather_hot_conversations(user_profile: UserProfile, stream_ums: QuerySet) -> List[Dict[str, Any]]:
     # Gather stream conversations of 2 types:
     # 1. long conversations
     # 2. conversations where many different people participated
@@ -88,17 +89,25 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
+    # stream_ums is a list of UserMessage rows for a single
+    # user, so the list of messages is distinct here.
+    messages = [um.message for um in stream_ums]
+
     conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
+    conversation_messages = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
     conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, str], Set[str]]
-    for user_message in stream_messages:
-        if not user_message.message.sent_by_human():
+    for message in messages:
+        key = (message.recipient.type_id,
+               message.topic_name())
+
+        conversation_messages[key].append(message)
+
+        if not message.sent_by_human():
             # Don't include automated messages in the count.
             continue
 
-        key = (user_message.message.recipient.type_id,
-               user_message.message.subject)
         conversation_diversity[key].add(
-            user_message.message.sender.full_name)
+            message.sender.full_name)
         conversation_length[key] += 1
 
     diversity_list = list(conversation_diversity.items())
@@ -125,15 +134,12 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
 
     hot_conversation_render_payloads = []
     for h in hot_conversations:
-        stream_id, subject = h
         users = list(conversation_diversity[h])
         count = conversation_length[h]
+        messages = conversation_messages[h]
 
         # We'll display up to 2 messages from the conversation.
-        first_few_messages = [user_message.message for user_message in
-                              stream_messages.filter(
-                                  message__recipient__type_id=stream_id,
-                                  message__subject=subject)[:2]]
+        first_few_messages = messages[:2]
 
         teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),
@@ -187,7 +193,8 @@ def enough_traffic(unread_pms: str, hot_conversations: str, new_streams: int, ne
         return True
     return False
 
-def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
+def handle_digest_email(user_profile_id: int, cutoff: float,
+                        render_to_web: bool = False) -> Union[None, Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
 
     # We are disabling digest emails for soft deactivated users for the time.
@@ -200,7 +207,8 @@ def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
-        message__pub_date__gt=cutoff_date).order_by("message__pub_date")
+        message__pub_date__gt=cutoff_date
+    ).select_related('message').order_by("message__pub_date")
 
     context = common_context(user_profile)
 
@@ -250,11 +258,14 @@ def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
         user_profile, cutoff_date)
     context["new_users"] = new_users
 
+    if render_to_web:
+        return context
+
     # We don't want to send emails containing almost no information.
     if enough_traffic(context["unread_pms"], context["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledEmail
-        send_future_email('zerver/emails/digest', user_profile.realm, to_user_id=user_profile.id,
-                          from_name="Zulip Digest", from_address=FromAddress.NOREPLY,
-                          context=context)
+        send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
+                          from_name="Zulip Digest", from_address=FromAddress.NOREPLY, context=context)
+    return None

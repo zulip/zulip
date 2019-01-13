@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Thin wrapper around the actual install script (scripts/lib/install).
 # The purpose of this wrapper is to log the full install script output

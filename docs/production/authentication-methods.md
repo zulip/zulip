@@ -28,6 +28,7 @@ authenticate users with any of several single-sign-on (SSO)
 authentication providers:
 * Google accounts, with `GoogleMobileOauth2Backend`
 * GitHub accounts, with `GitHubAuthBackend`
+* Microsoft Azure Active Directory, with `AzureADAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details
@@ -73,8 +74,8 @@ In either configuration, you will need to do the following:
    in your LDAP database.
 
 4. Tell Zulip how to map the user information in your LDAP database to
-   the form it needs.  There are three supported ways to set up the
-   username and/or email mapping:
+   the form it needs for authentication.  There are three supported
+   ways to set up the username and/or email mapping:
 
    (A) Using email addresses as usernames, if LDAP has each user's
       email address.  To do this, just set `AUTH_LDAP_USER_SEARCH` to
@@ -93,12 +94,26 @@ In either configuration, you will need to do the following:
 You can quickly test whether your configuration works by running:
 
 ```
-  ./manage.py query_ldap username
+/home/zulip/deployments/current/manage.py query_ldap username
 ```
 
 from the root of your Zulip installation.  If your configuration is
 working, that will output the full name for your user (and that user's
 email address, if it isn't the same as the "Zulip username").
+
+**Active Directory**: For Active Directory, one typically sets
+  `AUTH_LDAP_USER_SEARCH` to one of:
+
+* To access by Active Directory username:
+    ```
+    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                       ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
+    ```
+* To access by Active Directory email address:
+    ```
+    AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
+                                       ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
+    ```
 
 **If you are using LDAP for authentication**: you will need to enable
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
@@ -108,13 +123,87 @@ your settings changes take effect), you should be able to log into
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
-**If you are using LDAP to populate names in Zulip**: once you finish
-configuring this integration, you will need to run:
+### Synchronizing data
+
+Zulip can automatically synchronize data declared in
+`AUTH_LDAP_USER_ATTR_MAP` from LDAP into Zulip, via the following
+management command:
+
 ```
-  ./manage.py sync_ldap_user_data
+/home/zulip/deployments/current/manage.py sync_ldap_user_data
 ```
-to sync names for existing users.  You may want to run this in a cron
-job to pick up name changes made on your LDAP server.
+
+This will sync the fields declared in `AUTH_LDAP_USER_ATTR_MAP` for
+all of your users; in the default configuration, it will just
+synchronize users' `full_name`.
+
+We recommend running this command in a **regular cron job**, to pick
+up name changes made on your LDAP server.
+
+When using this feature, you may also want to
+[prevent users from changing their display name in the Zulip UI][restrict-name-changes],
+since any such changes would be automatically overwritten on the sync
+run of `manage.py sync_ldap_user_data`.
+
+[restrict-name-changes]: https://zulipchat.com/help/restrict-name-and-email-changes
+
+#### Synchronizing avatars
+
+Starting with Zulip 2.0, Zulip supports syncing LDAP / Active
+Directory profile pictures (usually available in the `thumbnailPhoto`
+or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
+`AUTH_LDAP_USER_ATTR_MAP`.  This uses the same mechanism as populating
+names: Users will automatically receive the appropriate avatar on
+account creation, and `manage.py sync_ldap_user_data` will
+automatically update their avatar from the data in LDAP.
+
+#### Automatically deactivating users with Active Directory
+
+Starting with Zulip 2.0, Zulip supports synchronizing the
+disabled/deactivated status of users from Active Directory.  You can
+configure this by uncommenting the sample line `"userAccountControl":
+"userAccountControl",` in `AUTH_LDAP_USER_ATTR_MAP` (and restarting
+the Zulip server).  Zulip will then treat users that are disabled via
+the "Disable Account" feature in Active Directory as deactivated in
+Zulip.
+
+Users disabled in active directory will be immediately unable to login
+to Zulip, since Zulip queries the LDAP/Active Directory server on
+every login attempt.  The user will be fully deactivated the next time
+your `manage.py sync_ldap_user_data` cron job runs (at which point
+they will be forcefully logged out from all active browser sessions,
+appear as deactivated in the Zulip UI, etc.).
+
+This feature works by checking for the `ACCOUNTDISABLE` flag on the
+`userAccountControl` field in Active Directory.  See
+[this handy resource](https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/)
+for details on the various `userAccountControl` flags.
+
+#### Other fields
+
+Other fields you may want to sync from LDAP include:
+
+* Boolean flags; `is_realm_admin` (the organization's administrator
+  permission) is the main one.  You can use the
+  [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
+  `django-auth-ldap` to configure a group to get this permissions.
+  (We don't recommend using this flags feature for managing
+  `is_active` because deactivating a user this would way not disable
+  any active sessions the user might have; see the above discussion of
+  automatic deactivation for how to do that properly).
+* String fields like `default_language` (e.g. `en`) or `timezone`, if
+  you have that data in the right format in your LDAP database.
+* [Coming soon][custom-profile-fields-ldap]: Support for syncing
+  [custom profile fields](https://zulipchat.com/help/add-custom-profile-fields)
+  from your LDAP database.
+
+You can look at the [full list of fields][models-py] in the Zulip user
+model; search for `class UserProfile`, but the above should cover all
+the fields that would be useful to sync from your LDAP databases.
+
+[models-py]: https://github.com/zulip/zulip/blob/master/zerver/models.py
+[django-auth-booleans]: https://django-auth-ldap.readthedocs.io/en/latest/users.html#easy-attributes
+[custom-profile-fields-ldap]: https://github.com/zulip/zulip/issues/10976
 
 ### Multiple LDAP searches
 
@@ -216,10 +305,10 @@ to debug.
 
 * Since you've configured `/etc/zulip/settings.py` to only define the
   `zproject.backends.ZulipRemoteUserBackend`, `zproject/settings.py`
-  configures `/accounts/login/sso` as `HOME_NOT_LOGGED_IN`.  This
+  configures `/accounts/login/sso/` as `HOME_NOT_LOGGED_IN`.  This
   makes `https://zulip.example.com/` (a.k.a. the homepage for the main
   Zulip Django app running behind nginx) redirect to
-  `/accounts/login/sso` for a user that isn't logged in.
+  `/accounts/login/sso/` for a user that isn't logged in.
 
 * nginx proxies requests to `/accounts/login/sso/` to an Apache
   instance listening on `localhost:8888`, via the config in
@@ -244,17 +333,19 @@ to debug.
 
 ## Adding more authentication backends
 
-Adding an integration with another authentication provider (e.g.,
+Adding an integration with any of the more than 100 authentication
+providers supported by [python-social-auth][python-social-auth] (e.g.,
 Facebook, Twitter, etc.) is easy to do if you're willing to write a
 bit of code, and pull requests to add new backends are welcome.
 
-To write such an integration, look in `zproject/backends.py` at the
-implementation of `GitHubAuthBackend`, which is a small wrapper around
-the popular [python-social-auth] library.  You can write a similar
-class, and add a few settings to control it.  To test your backend
-(which we'd require for a pull request to the main Zulip codebase,)
-see the framework in `test_auth_backends.py`.
+For example, the
+[Azure Active Directory integration](https://github.com/zulip/zulip/commit/49dbd85a8985b12666087f9ea36acb6f7da0aa4f)
+was about 30 lines of code, plus some documentation and an
+[automatically generated migration][schema-migrations].  We also have
+helpful developer documentation on
+[testing auth backends](../subsystems/auth.html).
 
+[schema-migrations]: ../subsystems/schema-migrations.html
 [python-social-auth]: https://python-social-auth.readthedocs.io/en/latest/
 
 ## Development only

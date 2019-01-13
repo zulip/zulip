@@ -210,22 +210,22 @@ run_test('sort_recipients', () => {
 
     // For splitting based on recency
     global.recent_senders.process_message_for_senders({
-        sender_id : 7,
-        stream_id : 1,
-        subject : "Dev Topic",
-        id : _.uniqueId(),
+        sender_id: 7,
+        stream_id: 1,
+        topic: "Dev Topic",
+        id: _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 5,
-        stream_id : 1,
-        subject : "Dev Topic",
-        id : _.uniqueId(),
+        sender_id: 5,
+        stream_id: 1,
+        topic: "Dev Topic",
+        id: _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 6,
-        stream_id : 1,
-        subject : "Dev Topic",
-        id : _.uniqueId(),
+        sender_id: 6,
+        stream_id: 1,
+        topic: "Dev Topic",
+        id: _.uniqueId(),
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
@@ -240,16 +240,16 @@ run_test('sort_recipients', () => {
     ]);
 
     global.recent_senders.process_message_for_senders({
-        sender_id : 5,
-        stream_id : 2,
-        subject : "Linux Topic",
-        id : _.uniqueId(),
+        sender_id: 5,
+        stream_id: 2,
+        topic: "Linux Topic",
+        id: _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 7,
-        stream_id : 2,
-        subject : "Linux Topic",
-        id : _.uniqueId(),
+        sender_id: 7,
+        stream_id: 2,
+        topic: "Linux Topic",
+        id: _.uniqueId(),
     });
 
     // No match
@@ -500,7 +500,7 @@ run_test('render_emoji', () => {
     var rendered = false;
     var test_emoji = {
         emoji_name: 'thumbs_up',
-        codepoint: '1f44d',
+        emoji_code: '1f44d',
     };
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
@@ -510,7 +510,7 @@ run_test('render_emoji', () => {
         assert.equal(template_name, 'typeahead_list_item');
         assert.deepEqual(args, {
             primary: 'thumbs up',
-            codepoint: '1f44d',
+            emoji_code: '1f44d',
             is_emoji: true,
             has_image: false,
             has_secondary: false,

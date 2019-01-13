@@ -5,6 +5,10 @@ from typing import Dict
 #   zerver/tests/test_decorators.py
 # And extend zerver/tests/fixtures/user_agents_unique with any new test cases
 def parse_user_agent(user_agent: str) -> Dict[str, str]:
-    match = re.match("^(?P<name>[^/ ]*[^0-9/(]*)(/(?P<version>[^/ ]*))?([ /].*)?$", user_agent)
+    match = re.match(
+        """^ (?P<name> [^/ ]* [^0-9/(]* )
+             (/ (?P<version> [^/ ]* ))?
+             ([ /] .*)?
+           $""", user_agent, re.X)
     assert match is not None
     return match.groupdict()

@@ -1,5 +1,5 @@
 
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
@@ -9,6 +9,7 @@ from zerver.models import (
     Realm,
     UserProfile,
     get_user_including_cross_realm,
+    get_user_by_id_in_realm_including_cross_realm,
 )
 
 def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
@@ -21,22 +22,25 @@ def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
 
     return emails
 
-def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
+def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid email '%s'") % (email,))
+            raise JsonableError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
     return user_profiles
 
-def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
-    try:
-        return user_profiles_from_unvalidated_emails(emails, realm)
-    except ValidationError as e:
-        assert isinstance(e.messages[0], str)
-        raise JsonableError(e.messages[0])
+def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[UserProfile]:
+    user_profiles = []  # type: List[UserProfile]
+    for user_id in user_ids:
+        try:
+            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user ID {}".format(user_id)))
+        user_profiles.append(user_profile)
+    return user_profiles
 
 class Addressee:
     # This is really just a holder for vars that tended to be passed
@@ -83,7 +87,7 @@ class Addressee:
     @staticmethod
     def legacy_build(sender: UserProfile,
                      message_type_name: str,
-                     message_to: Sequence[str],
+                     message_to: Union[Sequence[int], Sequence[str]],
                      topic_name: str,
                      realm: Optional[Realm]=None) -> 'Addressee':
 
@@ -98,7 +102,7 @@ class Addressee:
                 raise JsonableError(_("Cannot send to multiple streams"))
 
             if message_to:
-                stream_name = message_to[0]
+                stream_name = cast(str, message_to[0])
             else:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
@@ -111,8 +115,15 @@ class Addressee:
 
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
-            emails = message_to
-            return Addressee.for_private(emails, realm)
+            if not message_to:
+                raise JsonableError(_("Message must have recipients"))
+
+            if isinstance(message_to[0], str):
+                emails = cast(Sequence[str], message_to)
+                return Addressee.for_private(emails, realm)
+            elif isinstance(message_to[0], int):
+                user_ids = cast(Sequence[int], message_to)
+                return Addressee.for_user_ids(user_ids=user_ids, realm=realm)
         else:
             raise JsonableError(_("Invalid message type"))
 
@@ -131,7 +142,17 @@ class Addressee:
 
     @staticmethod
     def for_private(emails: Sequence[str], realm: Realm) -> 'Addressee':
+        assert len(emails) > 0
         user_profiles = get_user_profiles(emails, realm)
+        return Addressee(
+            msg_type='private',
+            user_profiles=user_profiles,
+        )
+
+    @staticmethod
+    def for_user_ids(user_ids: Sequence[int], realm: Realm) -> 'Addressee':
+        assert len(user_ids) > 0
+        user_profiles = get_user_profiles_by_ids(user_ids, realm)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,

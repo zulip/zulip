@@ -1,39 +1,58 @@
 class zulip::base {
-  include apt
-  $base_packages = [
-    # Accurate time is essential
-    'ntp',
-    # Used in scripts including install-yarn.sh
-    'curl',
-    'wget',
-    # Used in scripts
-    'netcat',
-    # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
-    'nagios-plugins-basic',
-    # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
-    'crudini',
-    # Used for tools like sponge
-    'moreutils',
-    # Required for using HTTPS in apt repositories.
-    'apt-transport-https',
-    # Needed for the cron jobs installed by puppet
-    'cron',
-  ]
-  package { $base_packages: ensure => 'installed' }
-
-  $release_name = $::operatingsystemrelease ? {
-    # Debian releases
-    /^7.[0-9]*/ => 'wheezy',
-    /^8.[0-9]*/ => 'jessie',
-    /^9.[0-9]*/ => 'stretch',
-    # Ubuntu releases
-    '12.04' => 'precise',
-    '14.04' => 'trusty',
-    '15.04' => 'vivid',
-    '15.10' => 'wily',
-    '16.04' => 'xenial',
-    '18.04' => 'bionic',
+  include zulip::common
+  case $::osfamily {
+    'debian': {
+      $release_name = $::operatingsystemrelease ? {
+        # Debian releases
+        /^7.[0-9]*/ => 'wheezy',
+        /^8.[0-9]*/ => 'jessie',
+        /^9.[0-9]*/ => 'stretch',
+        # Ubuntu releases
+        '12.04' => 'precise',
+        '14.04' => 'trusty',
+        '15.04' => 'vivid',
+        '15.10' => 'wily',
+        '16.04' => 'xenial',
+        '18.04' => 'bionic',
+      }
+      $base_packages = [
+        # Accurate time is essential
+        'ntp',
+        # Used in scripts including install-yarn.sh
+        'curl',
+        'wget',
+        # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
+        'crudini',
+        # Used for tools like sponge
+        'moreutils',
+        # Used in scripts
+        'netcat',
+        # Nagios plugins; needed to ensure $zulip::common::nagios_plugins exists
+        'nagios-plugins-basic',
+        # Required for using HTTPS in apt repositories.
+        'apt-transport-https',
+        # Needed for the cron jobs installed by puppet
+        'cron',
+      ]
+    }
+    'redhat': {
+      $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
+      $base_packages = [
+        'ntp',
+        'curl',
+        'wget',
+        'crudini',
+        'moreutils',
+        'nmap-ncat',
+        'nagios-plugins',  # there is no dummy package on CentOS 7
+        'cronie'
+      ]
+    }
+    default: {
+      fail('osfamily not supported')
+    }
   }
+  package { $base_packages: ensure => 'installed' }
 
   $postgres_version = $release_name ? {
     'wheezy'  => '9.1',
@@ -45,6 +64,7 @@ class zulip::base {
     'wily'    => '9.4',
     'xenial'  => '9.5',
     'bionic'  => '10',
+    'CentOS7' => '10',
   }
 
   $normal_queues = [
@@ -136,8 +156,8 @@ class zulip::base {
     mode   => '0640',
   }
 
-  file { '/usr/lib/nagios/plugins/zulip_base':
-    require => Package[nagios-plugins-basic],
+  file { "${zulip::common::nagios_plugins_dir}/zulip_base":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',

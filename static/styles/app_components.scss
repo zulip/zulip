@@ -345,3 +345,24 @@
     background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 87%);
 }
+
+.guest-avatar {
+    position: relative;
+    background-size: 100%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    &::after {
+        content: " ";
+        background-color: hsl(0, 0%, 47%);
+        position: absolute;
+        bottom: -30%;
+        right: -30%;
+        width: 50%;
+        height: 50%;
+        -webkit-transform: rotate(45deg);
+        -moz-transform: rotate(45deg);
+        transform: rotate(45deg);
+    }
+}

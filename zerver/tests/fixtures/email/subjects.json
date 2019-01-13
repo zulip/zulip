@@ -1,0 +1,94 @@
+[
+    {
+        "original_subject": "Normal subject",
+        "stripped_subject": "Normal subject"
+    },
+    {
+        "original_subject": "",
+        "stripped_subject": ""
+    },
+    {
+        "original_subject": "Re: Fwd:  Re:  Sofware",
+        "stripped_subject": "Sofware"
+    },
+    {
+        "original_subject": "Fwd : Re : Re: Many",
+        "stripped_subject": "Many"
+    },
+    {
+        "original_subject": "Re : Re: Many",
+        "stripped_subject": "Many"
+    },
+    {
+        "original_subject": "Re  : : Re: Many",
+        "stripped_subject": "Many"
+    },
+    {
+        "original_subject": "Re:: Many",
+        "stripped_subject": "Many"
+    },
+    {
+        "original_subject": "Re; Many",
+        "stripped_subject": "Many"
+    },
+    {
+        "original_subject": ": noah - should not match anything",
+        "stripped_subject": ": noah - should not match anything"
+    },
+    {
+        "original_subject": "RE--",
+        "stripped_subject": ""
+    },
+    {
+        "original_subject": "RE: : Presidential Ballots for Florida",
+        "stripped_subject": "Presidential Ballots for Florida"
+    },
+    {
+        "original_subject": "[RE: (no subject)]",
+        "stripped_subject": "(no subject)"
+    },
+    {
+        "original_subject": "Request - should not match anything",
+        "stripped_subject": "Request - should not match anything"
+    },
+    {
+        "original_subject": "this is the subject (fwd)",
+        "stripped_subject": "this is the subject"
+    },
+    {
+        "original_subject": "Re: [Fwd: ] Blonde Joke",
+        "stripped_subject": "Blonde Joke"
+    },
+    {
+        "original_subject": "Re: [Fwd: [Fwd: FW: Policy]]",
+        "stripped_subject": "Policy"
+    },
+    {
+        "original_subject": "Re: Fwd: [Fwd: FW: \"Drink Plenty of Water\"]",
+        "stripped_subject": "\"Drink Plenty of Water\""
+    },
+    {
+        "original_subject": "FW: FW: (fwd) FW:  Warning from XYZ...",
+        "stripped_subject": "Warning from XYZ..."
+    },
+    {
+        "original_subject": "FW: (Fwd) (Fwd) ",
+        "stripped_subject": ""
+    },
+    {
+        "original_subject": "Fwd: [Fwd: [Fwd: Big, Bad Surf Moving]]",
+        "stripped_subject": "Big, Bad Surf Moving"
+    },
+    {
+        "original_subject": "FW: [Fwd: Fw: drawing by a school age child in PA (fwd)]",
+        "stripped_subject": "drawing by a school age child in PA"
+    },
+    {
+        "original_subject": "Re: Fwd",
+        "stripped_subject": ""
+    },
+    {
+        "original_subject": "Fwd: Re: fwd is an acronym (four-wheel drive)",
+        "stripped_subject": "fwd is an acronym (four-wheel drive)"
+    }
+]

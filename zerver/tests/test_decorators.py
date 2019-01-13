@@ -25,16 +25,18 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
     WebhookTestCase,
 )
-from zerver.lib.response import json_response
+from zerver.lib.response import json_response, json_success
 from zerver.lib.users import get_api_key
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
-    RequestVariableConversionError
+    RequestVariableConversionError, RequestConfusingParmsError
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_api_view,
+    authenticated_json_view,
     authenticated_rest_api_view,
+    authenticated_uploads_api_view,
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
@@ -104,6 +106,37 @@ class DecoratorTestCase(TestCase):
 
         self.assertEqual(get_client_name(req, is_browser_view=True), 'fancy phone')
         self.assertEqual(get_client_name(req, is_browser_view=False), 'fancy phone')
+
+    def test_REQ_aliases(self) -> None:
+
+        @has_request_variables
+        def double(request: HttpRequest,
+                   x: int=REQ(whence='number', aliases=['x', 'n'], converter=int)) -> int:
+            return x + x
+
+        class Request:
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
+
+        request = Request()
+
+        request.POST = dict(bogus='5555')
+        with self.assertRaises(RequestVariableMissingError):
+            double(request)
+
+        request.POST = dict(number='3')
+        self.assertEqual(double(request), 6)
+
+        request.POST = dict(x='4')
+        self.assertEqual(double(request), 8)
+
+        request.POST = dict(n='5')
+        self.assertEqual(double(request), 10)
+
+        request.POST = dict(number='6', x='7')
+        with self.assertRaises(RequestConfusingParmsError) as cm:
+            double(request)
+        self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
     def test_REQ_converter(self) -> None:
 
@@ -360,6 +393,74 @@ body:
         with self.assertRaisesRegex(JsonableError, "This organization has been deactivated"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
+class SkipRateLimitingTest(ZulipTestCase):
+    def test_authenticated_rest_api_view(self) -> None:
+        @authenticated_rest_api_view(skip_rate_limiting=False)
+        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+            return json_success()  # nocoverage # mock prevents this from being called
+
+        @authenticated_rest_api_view(skip_rate_limiting=True)
+        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+            return json_success()
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(self.example_email("hamlet"))
+        request.method = 'POST'
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_unlimited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            self.assert_json_success(result)
+            self.assertFalse(rate_limit_mock.called)
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_rate_limited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            # Don't assert json_success, since it'll be the rate_limit mock object
+            self.assertTrue(rate_limit_mock.called)
+
+    def test_authenticated_uploads_api_view(self) -> None:
+        @authenticated_uploads_api_view(skip_rate_limiting=False)
+        def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+            return json_success()  # nocoverage # mock prevents this from being called
+
+        @authenticated_uploads_api_view(skip_rate_limiting=True)
+        def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> str:
+            return json_success()
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = 'POST'
+        request.POST['api_key'] = get_api_key(self.example_user("hamlet"))
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_unlimited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            self.assert_json_success(result)
+            self.assertFalse(rate_limit_mock.called)
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_rate_limited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            # Don't assert json_success, since it'll be the rate_limit mock object
+            self.assertTrue(rate_limit_mock.called)
+
+    def test_authenticated_json_view(self) -> None:
+        def my_view(request: HttpRequest, user_profile: UserProfile) -> str:
+            return json_success()
+
+        my_rate_limited_view = authenticated_json_view(my_view, skip_rate_limiting=False)
+        my_unlimited_view = authenticated_json_view(my_view, skip_rate_limiting=True)
+
+        request = HostRequestMock(host="zulip.testserver")
+        request.method = 'POST'
+        request.is_authenticated = True  # type: ignore # HostRequestMock doesn't have is_authenticated
+        request.user = self.example_user("hamlet")
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_unlimited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            self.assert_json_success(result)
+            self.assertFalse(rate_limit_mock.called)
+
+        with mock.patch('zerver.decorator.rate_limit') as rate_limit_mock:
+            result = my_rate_limited_view(request)  # type: ignore # mypy doesn't seem to apply the decorator
+            # Don't assert json_success, since it'll be the rate_limit mock object
+            self.assertTrue(rate_limit_mock.called)
 
 class DecoratorLoggingTestCase(ZulipTestCase):
     def test_authenticated_api_view_logging(self) -> None:
@@ -1201,7 +1302,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/hotspots",
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",
-            "/api/v1/report/error",
             "/api/v1/report/send_times",
             "/api/v1/report/narrow_times",
             "/api/v1/report/unnarrow_times",

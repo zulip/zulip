@@ -115,6 +115,7 @@ if not CASPER_TESTS:
     set_loglevel('django.request', 'ERROR')
     set_loglevel('fakeldap', 'ERROR')
     set_loglevel('zulip.send_email', 'ERROR')
+    set_loglevel('zerver.lib.push_notifications', 'WARNING')
     set_loglevel('zerver.lib.digest', 'ERROR')
     set_loglevel('zerver.lib.email_mirror', 'ERROR')
     set_loglevel('zerver.worker.queue_processors', 'WARNING')
@@ -135,8 +136,8 @@ TERMS_OF_SERVICE = 'corporate/terms.md'
 
 INLINE_URL_EMBED_PREVIEW = False
 
-HOME_NOT_LOGGED_IN = '/login'
-LOGIN_URL = '/accounts/login'
+HOME_NOT_LOGGED_IN = '/login/'
+LOGIN_URL = '/accounts/login/'
 
 # By default will not send emails when login occurs.
 # Explicity set this to True within tests that must have this on.
@@ -158,6 +159,8 @@ PUSH_NOTIFICATION_BOUNCER_URL = None
 SLOW_QUERY_LOGS_STREAM = None
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
+THUMBNAIL_IMAGES = True
+THUMBOR_SERVES_CAMO = True
 
 # Logging the emails while running the tests adds them
 # to /emails page.

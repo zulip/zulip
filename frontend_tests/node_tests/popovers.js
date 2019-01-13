@@ -44,6 +44,7 @@ var alice = {
     email: 'alice@example.com',
     full_name: 'Alice Smith',
     user_id: 42,
+    is_guest: false,
 };
 
 var me = {
@@ -136,20 +137,23 @@ run_test('sender_hover', () => {
         case 'user_info_popover_title':
             assert.deepEqual(opts, {
                 user_avatar: 'avatar/alice@example.com',
+                user_is_guest: false,
             });
             return 'title-html';
 
         case 'user_info_popover_content':
             assert.deepEqual(opts, {
+                can_set_away: false,
+                can_revoke_away: false,
                 user_full_name: 'Alice Smith',
                 user_email: 'alice@example.com',
                 user_id: 42,
                 user_time: undefined,
+                user_type: i18n.t('Member'),
                 presence_status: 'offline',
                 user_last_seen_time_status: 'translated: More than 2 weeks ago',
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
-                narrowed: false,
                 private_message_class: 'respond_personal_button',
                 show_user_profile: false,
                 is_me: false,

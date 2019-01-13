@@ -21,8 +21,8 @@ exports.set_focused_recipient = function (msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        var stream_name = $('#stream').val();
-        focused_recipient.subject = $('#subject').val();
+        var stream_name = $('#stream_message_recipient_stream').val();
+        focused_recipient.topic = $('#stream_message_recipient_topic').val();
         focused_recipient.stream = stream_name;
         var sub = stream_data.get_sub(stream_name);
         if (sub) {
@@ -167,7 +167,7 @@ function want_normal_display() {
         // the user simply hasn't started typing it yet, but disabling fading here
         // means the feature doesn't help realms where topics aren't mandatory
         // (which is most realms as of this writing).
-        if (focused_recipient.subject === "") {
+        if (focused_recipient.topic === "") {
             return true;
         }
     }

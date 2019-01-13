@@ -6,6 +6,15 @@ var meta = {
     loaded: false,
 };
 
+exports.maybe_disable_widgets = function () {
+    if (page_params.is_admin) {
+        return;
+    }
+
+    $(".organization-box [data-name='profile-field-settings']")
+        .find("input, button, select").attr("disabled", true);
+};
+
 var order = [];
 var field_types = page_params.custom_profile_field_types;
 
@@ -181,7 +190,7 @@ function open_edit_form(e) {
 
     profile_field.row.hide();
     profile_field.form.show();
-    var field = get_profile_field(parseInt(field_id,10));
+    var field = get_profile_field(parseInt(field_id, 10));
     // Set initial value in edit form
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
@@ -342,7 +351,11 @@ function set_up_choices_field() {
 }
 
 exports.set_up = function () {
+    exports.build_page();
+    exports.maybe_disable_widgets();
+};
 
+exports.build_page = function () {
     // create loading indicators
     loading.make_indicator($('#admin_page_profile_fields_loading_indicator'));
     // Populate profile_fields table

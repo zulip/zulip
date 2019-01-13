@@ -114,7 +114,7 @@ strength allowed is controlled by two settings in
     figure out whether a stream with that name exists, but cannot see any
     other details about the stream.
 
-  * See [Stream permissions](/help/stream-permissions) for more details.
+  * See [Stream permissions](https://zulipchat.com/help/stream-permissions) for more details.
 
 * Zulip supports editing the content and topics of messages that have
   already been sent. As a general philosophy, our policies provide
@@ -129,24 +129,25 @@ strength allowed is controlled by two settings in
     any time by that administrator.
 
   * See
-    [Configuring message editing and deletion](/help/configure-message-editing-and-deletion)
+    [Configuring message editing and deletion](https://zulipchat.com/help/configure-message-editing-and-deletion)
     for more details.
 
 ## Users and Bots
 
-* There are three types of users in a Zulip organization: Organization
-  administrators, normal users, and bots.  Administrators have the
-  ability to deactivate and reactivate other human and bot users,
-  delete streams, add/remove administrator privileges, as well as
-  change configuration for the organization.
+* There are four types of users in a Zulip organization: Organization
+  Administrators, Members (normal users), Guests, and Bots.
 
-* Being an organization administrator does not generally provide the ability
+* Administrators have the ability to deactivate and reactivate other
+  human and bot users, delete streams, add/remove administrator
+  privileges, as well as change configuration for the organization.
+
+  Being an organization administrator does not generally provide the ability
   to read other users' private messages or messages sent to private
   streams to which the administrator is not subscribed. There are two
   exceptions:
 
   * Administrators may get access to private messages via some types of
-    [data export](/help/export-your-organization).
+    [data export](https://zulipchat.com/help/export-your-organization).
 
   * Administrators can change the ownership of a bot. If a bot is subscribed
     to a private stream, then an administrator can indirectly get access to
@@ -172,6 +173,9 @@ strength allowed is controlled by two settings in
   the API key to authenticate all future interactions with the site.
   Thus, if a user's phone is lost, in addition to changing passwords,
   you should rotate the user's Zulip API key.
+
+* Guest users are like Members, but they do not have automatic access
+  to public streams.
 
 * Zulip supports several kinds of bots with different capabilities.
 

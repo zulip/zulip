@@ -59,7 +59,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'presence':
-        activity.set_user_status(event.email, event.presence, event.server_timestamp);
+        activity.update_presence_info(event.email, event.presence, event.server_timestamp);
         break;
 
     case 'restart':
@@ -95,6 +95,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             default_language: noop,
             default_twenty_four_hour_time: noop,
             description: noop,
+            email_address_visibility: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
             google_hangouts_domain: noop,
@@ -159,6 +160,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             if (electron_bridge !== undefined) {
                 electron_bridge.send_event('realm_icon_url', event.data.icon_url);
             }
+        } else if (event.op === 'update_dict' && event.property === 'logo') {
+            page_params.realm_logo_url = event.data.logo_url;
+            page_params.realm_logo_source = event.data.logo_source;
+            realm_logo.rerender();
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }
@@ -192,12 +197,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         emoji.update_emojis(event.realm_emoji);
         settings_emoji.populate_emoji(event.realm_emoji);
         emoji_picker.generate_emoji_picker_data(emoji.active_realm_emojis);
+        composebox_typeahead.update_emoji_data();
         break;
 
     case 'realm_filters':
         page_params.realm_filters = event.realm_filters;
         markdown.set_realm_filters(page_params.realm_filters);
-        settings_filters.populate_filters(page_params.realm_filters);
+        settings_linkifiers.populate_filters(page_params.realm_filters);
         break;
 
     case 'realm_domains':
@@ -296,7 +302,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
                     stream_data.update_stream_email_address(sub, rec.email_address);
-                    stream_events.mark_subscribed(sub, rec.subscribers);
+                    stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                 } else {
                     blueslip.error('Subscribing to unknown stream with ID ' + rec.stream_id);
                 }
@@ -450,7 +456,16 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_user_groups.reload();
         break;
+
+    case 'user_status':
+        if (event.away) {
+            activity.on_set_away(event.user_id);
+        } else {
+            activity.on_revoke_away(event.user_id);
+        }
+        break;
     }
+
 };
 
 return exports;

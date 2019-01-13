@@ -1,17 +1,20 @@
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
-from confirmation.models import Confirmation, create_confirmation_link
+from confirmation.models import Confirmation, one_click_unsubscribe_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
+from django.contrib.auth import get_backends
+from django_auth_ldap.backend import LDAPBackend
 
 from zerver.decorator import statsd_increment
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import send_future_email, FromAddress
-from zerver.lib.url_encoding import pm_narrow_url, stream_narrow_url, topic_narrow_url
+from zerver.lib.url_encoding import personal_narrow_url, huddle_narrow_url, \
+    stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
     ScheduledEmail,
@@ -36,15 +39,6 @@ import subprocess
 import ujson
 from collections import defaultdict
 import pytz
-
-def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> str:
-    """
-    Generate a unique link that a logged-out user can visit to unsubscribe from
-    Zulip e-mails without having to first log in.
-    """
-    return create_confirmation_link(user_profile, user_profile.realm.host,
-                                    Confirmation.UNSUBSCRIBE,
-                                    url_args = {'email_type': email_type})
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.
@@ -177,24 +171,32 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name,)
-            html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
+            html_link = personal_narrow_url(
+                realm=user_profile.realm,
+                sender=message.sender,
+            )
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             disp_recipient = get_display_recipient(message.recipient)
             assert not isinstance(disp_recipient, str)
             other_recipients = [r['full_name'] for r in disp_recipient
-                                if r['email'] != user_profile.email]
+                                if r['id'] != user_profile.id]
             header = "You and %s" % (", ".join(other_recipients),)
-            html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
-                                      if r["email"] != user_profile.email])
+            other_user_ids = [r['id'] for r in disp_recipient
+                              if r['id'] != user_profile.id]
+            html_link = huddle_narrow_url(
+                realm=user_profile.realm,
+                other_user_ids=other_user_ids,
+            )
+
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
             header = "%s > %s" % (stream.name, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, stream)
-            topic_link = topic_narrow_url(user_profile.realm, stream, message.subject)
+            topic_link = topic_narrow_url(user_profile.realm, stream, message.topic_name())
             header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, stream.name, topic_link, message.subject)
+                stream_link, stream.name, topic_link, message.topic_name())
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -270,10 +272,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg['message'].recipient_id, msg['message'].subject) for msg in missed_messages)
+    recipients = set((msg['message'].recipient_id, msg['message'].topic_name()) for msg in missed_messages)
     if len(recipients) != 1:
         raise ValueError(
-            'All missed_messages must have the same recipient and subject %r' %
+            'All missed_messages must have the same recipient and topic %r' %
             recipients
         )
 
@@ -380,7 +382,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
     email_dict = {
         'template_prefix': 'zerver/emails/missed_message',
-        'to_user_id': user_profile.id,
+        'to_user_ids': [user_profile.id],
         'from_name': from_name,
         'from_address': from_address,
         'reply_to_email': formataddr((reply_to_name, reply_to_address)),
@@ -398,6 +400,9 @@ def handle_missedmessage_emails(user_profile_id: int,
     if not receives_offline_email_notifications(user_profile):
         return
 
+    # Note: This query structure automatically filters out any
+    # messages that were permanently deleted, since those would now be
+    # in the ArchivedMessage table, not the Message table.
     messages = Message.objects.filter(usermessage__user_profile_id=user_profile,
                                       id__in=message_ids,
                                       usermessage__flags=~UserMessage.flags.read)
@@ -408,20 +413,23 @@ def handle_missedmessage_emails(user_profile_id: int,
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
+    # We bucket messages by tuples that identify similar messages.
+    # For streams it's recipient_id and topic.
+    # For PMs it's recipient id and sender.
+    messages_by_bucket = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For PM's group using (recipient, sender).
-            messages_by_recipient_subject[(msg.recipient_id, msg.sender_id)].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:
-            messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
+            messages_by_bucket[(msg.recipient_id, msg.topic_name())].append(msg)
 
-    message_count_by_recipient_subject = {
-        recipient_subject: len(msgs)
-        for recipient_subject, msgs in messages_by_recipient_subject.items()
+    message_count_by_bucket = {
+        bucket_tup: len(msgs)
+        for bucket_tup, msgs in messages_by_bucket.items()
     }
 
-    for msg_list in messages_by_recipient_subject.values():
+    for msg_list in messages_by_bucket.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.is_stream_message():
             context_messages = get_context_for_message(msg)
@@ -429,17 +437,17 @@ def handle_missedmessage_emails(user_profile_id: int,
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    recipient_subjects = []  # type: List[Tuple[Tuple[int, str], int]]
-    for recipient_subject, msg_list in messages_by_recipient_subject.items():
+    bucket_tups = []  # type: List[Tuple[Tuple[int, str], int]]
+    for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
-        recipient_subjects.append((recipient_subject, max_message_id))
+        bucket_tups.append((bucket_tup, max_message_id))
 
-    recipient_subjects = sorted(recipient_subjects, key=lambda x: x[1])
+    bucket_tups = sorted(bucket_tups, key=lambda x: x[1])
 
-    # Send an email per recipient subject pair
-    for recipient_subject, ignored_max_id in recipient_subjects:
+    # Send an email per bucket.
+    for bucket_tup, ignored_max_id in bucket_tups:
         unique_messages = {}
-        for m in messages_by_recipient_subject[recipient_subject]:
+        for m in messages_by_bucket[bucket_tup]:
             unique_messages[m.id] = dict(
                 message=m,
                 trigger=message_ids.get(m.id)
@@ -447,7 +455,7 @@ def handle_missedmessage_emails(user_profile_id: int,
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),
-            message_count_by_recipient_subject[recipient_subject],
+            message_count_by_bucket[bucket_tup],
         )
 
 def clear_scheduled_invitation_emails(email: str) -> None:
@@ -499,26 +507,43 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
         from_name = None
         from_address = FromAddress.SUPPORT
 
+    other_account_count = UserProfile.objects.filter(
+        delivery_email__iexact=user.delivery_email).exclude(id=user.id).count()
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
     context = common_context(user)
     context.update({
         'unsubscribe_link': unsubscribe_link,
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
+        'realm_name': user.realm.name,
+        'realm_creation': realm_creation,
+        'email': user.email,
+        'is_realm_admin': user.is_realm_admin,
     })
     if user.is_realm_admin:
-        context['user_role_group'] = _('admins')
         context['getting_started_link'] = (user.realm.uri +
                                            '/help/getting-your-organization-started-with-zulip')
     else:
-        context['user_role_group'] = _('members')
-        context['getting_started_link'] = user.realm.uri + '/help/getting-started-with-zulip'
+        context['getting_started_link'] = "https://zulipchat.com"
+
+    from zproject.backends import email_belongs_to_ldap, require_email_format_usernames
+
+    if email_belongs_to_ldap(user.realm, user.email):
+        context["ldap"] = True
+        if settings.LDAP_APPEND_DOMAIN:
+            for backend in get_backends():
+                if isinstance(backend, LDAPBackend):
+                    context["ldap_username"] = backend.django_to_ldap_username(user.email)
+        elif not settings.LDAP_EMAIL_ATTR:
+            context["ldap_username"] = user.email
 
     send_future_email(
-        "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
+        "zerver/emails/followup_day1", user.realm, to_user_ids=[user.id], from_name=from_name,
         from_address=from_address, context=context)
-    send_future_email(
-        "zerver/emails/followup_day2", user.realm, to_user_id=user.id, from_name=from_name,
-        from_address=from_address, context=context, delay=followup_day2_email_delay(user))
+
+    if other_account_count == 0:
+        send_future_email(
+            "zerver/emails/followup_day2", user.realm, to_user_ids=[user.id], from_name=from_name,
+            from_address=from_address, context=context, delay=followup_day2_email_delay(user))
 
 def convert_html_to_markdown(html: str) -> str:
     # On Linux, the tool installs as html2markdown, and there's a command called

@@ -1,20 +1,21 @@
 class zulip::thumbor {
+  include zulip::common
   include zulip::nginx
   include zulip::supervisor
 
-  file { '/etc/supervisor/conf.d/thumbor.conf':
+  file { "${zulip::common::supervisor_conf_dir}/thumbor.conf":
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/supervisor/conf.d/thumbor.conf',
-    notify  => Service['supervisor'],
+    notify  => Service[$zulip::common::supervisor_service],
   }
 
   file { '/etc/nginx/zulip-include/app.d/thumbor.conf':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

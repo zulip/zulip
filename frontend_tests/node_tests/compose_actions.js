@@ -29,6 +29,7 @@ var cancel = compose_actions.cancel;
 var get_focus_area = compose_actions._get_focus_area;
 var respond_to_message = compose_actions.respond_to_message;
 var reply_with_mention = compose_actions.reply_with_mention;
+var quote_and_reply = compose_actions.quote_and_reply;
 
 var compose_state = global.compose_state;
 
@@ -84,6 +85,14 @@ function stub_selected_message(msg) {
     });
 }
 
+function stub_channel_get(success_value) {
+    set_global('channel', {
+        get: function (opts) {
+            opts.success(success_value);
+        },
+    });
+}
+
 function assert_visible(sel) {
     assert($(sel).visible());
 }
@@ -110,7 +119,7 @@ run_test('start', () => {
     global.narrow_state.set_compose_defaults = function () {
         var opts = {};
         opts.stream = 'stream1';
-        opts.subject = 'topic1';
+        opts.topic = 'topic1';
         return opts;
     };
 
@@ -120,8 +129,8 @@ run_test('start', () => {
     assert_visible('#stream-message');
     assert_hidden('#private-message');
 
-    assert.equal($('#stream').val(), 'stream1');
-    assert.equal($('#subject').val(), 'topic1');
+    assert.equal($('#stream_message_recipient_stream').val(), 'stream1');
+    assert.equal($('#stream_message_recipient_topic').val(), 'topic1');
     assert.equal(compose_state.get_message_type(), 'stream');
     assert(compose_state.composing());
 
@@ -188,7 +197,7 @@ run_test('respond_to_message', () => {
     msg = {
         type: 'stream',
         stream: 'devel',
-        subject: 'python',
+        topic: 'python',
         reply_to: 'bob', // compose.start needs this for dubious reasons
     };
     stub_selected_message(msg);
@@ -197,14 +206,14 @@ run_test('respond_to_message', () => {
     };
 
     respond_to_message(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
 });
 
 run_test('reply_with_mention', () => {
     var msg = {
         type: 'stream',
         stream: 'devel',
-        subject: 'python',
+        topic: 'python',
         reply_to: 'bob', // compose.start needs this for dubious reasons
         sender_full_name: 'Bob Roberts',
         sender_id: 40,
@@ -220,7 +229,7 @@ run_test('reply_with_mention', () => {
     };
 
     reply_with_mention(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts**');
     assert(compose_state.has_message_content());
 
@@ -239,25 +248,75 @@ run_test('reply_with_mention', () => {
     people.add_in_realm(bob_2);
 
     reply_with_mention(opts);
-    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#stream_message_recipient_stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts|40**');
     assert(compose_state.has_message_content());
 });
 
+run_test('quote_and_reply', () => {
+    var msg = {
+        type: 'stream',
+        stream: 'devel',
+        topic: 'python',
+        reply_to: 'bob',
+        sender_full_name: 'Bob Roberts',
+        sender_id: 40,
+    };
+    stub_selected_message(msg);
+    stub_channel_get({ raw_content: 'Testing.' });
+
+    current_msg_list.selected_id = function () {
+        return 100;
+    };
+
+    compose_ui.insert_syntax_and_focus = function (syntax) {
+        assert.equal(syntax, '[Quoting…]\n');
+    };
+
+    compose_ui.replace_syntax = function (syntax, replacement) {
+        assert.equal(syntax, '[Quoting…]');
+        assert.equal(replacement, '```quote\nTesting.\n```');
+    };
+
+    var opts = {
+        reply_type: 'personal',
+    };
+
+    quote_and_reply(opts);
+
+    current_msg_list.selected_message = function () {
+        return {
+            type: 'stream',
+            stream: 'devel',
+            topic: 'test',
+            reply_to: 'bob',
+            sender_full_name: 'Bob',
+            sender_id: 40,
+            raw_content: 'Testing.',
+        };
+    };
+
+    channel.get = function () {
+        assert.fail('channel.get should not be used if raw_content is present');
+    };
+
+    quote_and_reply(opts);
+});
+
 run_test('get_focus_area', () => {
-    assert.equal(get_focus_area('private', {}), 'private_message_recipient');
+    assert.equal(get_focus_area('private', {}), '#private_message_recipient');
     assert.equal(get_focus_area('private', {
-        private_message_recipient: 'bob@example.com'}), 'compose-textarea');
-    assert.equal(get_focus_area('stream', {}), 'stream');
+        private_message_recipient: 'bob@example.com'}), '#compose-textarea');
+    assert.equal(get_focus_area('stream', {}), '#stream_message_recipient_stream');
     assert.equal(get_focus_area('stream', {stream: 'fun'}),
-                 'subject');
+                 '#stream_message_recipient_topic');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more'}),
-                 'compose-textarea');
+                                           topic: 'more'}),
+                 '#compose-textarea');
     assert.equal(get_focus_area('stream', {stream: 'fun',
-                                           subject: 'more',
+                                           topic: 'more',
                                            trigger: 'new topic button'}),
-                 'subject');
+                 '#stream_message_recipient_topic');
 });
 
 run_test('focus_in_empty_compose', () => {

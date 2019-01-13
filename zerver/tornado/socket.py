@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#websockets
+# for high-level documentation on this subsystem.
 
 from typing import Any, Dict, Mapping, Optional, Union
 
@@ -29,6 +31,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.sessions import get_session_user
 from zerver.tornado.event_queue import get_client_descriptor
 from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.sharding import tornado_return_queue_name
 
 logger = logging.getLogger('zulip.socket')
 
@@ -220,7 +223,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
                                 req_id=msg['req_id'],
                                 server_meta=dict(user_id=self.session.user_profile.id,
                                                  client_id=self.client_id,
-                                                 return_queue="tornado_return",
+                                                 return_queue=tornado_return_queue_name(self.port),
                                                  log_data=log_data,
                                                  request_environ=request_environ)))
 
@@ -275,5 +278,6 @@ sockjs_url = '%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.ROOT_DOMAIN_UR
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
                                             {'sockjs_url': sockjs_url,
                                              'disabled_transports': ['eventsource', 'htmlfile']})
-def get_sockjs_router() -> sockjs.tornado.SockJSRouter:
+def get_sockjs_router(port: int) -> sockjs.tornado.SockJSRouter:
+    sockjs_router._connection.port = port
     return sockjs_router

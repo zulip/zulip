@@ -380,20 +380,26 @@ exports.initialize = function () {
     ui.set_up_scrollbar($("#group-pms"));
 };
 
-exports.set_user_status = function (email, info, server_time) {
-    if (people.is_current_user(email)) {
-        return;
-    }
-
+exports.update_presence_info = function (email, info, server_time) {
     var user_id = people.get_user_id(email);
     if (!user_id) {
         blueslip.warn('unknown email: ' + email);
         return;
     }
 
-    presence.set_user_status(user_id, info, server_time);
+    presence.set_info_for_user(user_id, info, server_time);
     exports.insert_user_into_list(user_id);
     exports.update_huddles();
+};
+
+exports.on_set_away = function (user_id) {
+    user_status.set_away(user_id);
+    exports.insert_user_into_list(user_id);
+};
+
+exports.on_revoke_away = function (user_id) {
+    user_status.revoke_away(user_id);
+    exports.insert_user_into_list(user_id);
 };
 
 exports.redraw = function () {

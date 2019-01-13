@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
@@ -21,8 +23,21 @@ an older version of the third-party service that doesn't provide that header.
 Contact {support_email} if you need help debugging!
 """
 
+INVALID_JSON_MESSAGE = """
+Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+but didn't correctly configure the webhook to send data in the JSON format
+that this integration expects!
+"""
+
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
+
+def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
+                                        webhook_client_name: str) -> None:
+    send_rate_limited_pm_notification_to_bot_owner(
+        user_profile, user_profile.realm,
+        INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip()
+    )
 
 class UnexpectedWebhookEventType(JsonableError):
     code = ErrorCode.UNEXPECTED_WEBHOOK_EVENT_TYPE
@@ -51,7 +66,8 @@ class MissingHTTPEventHeader(JsonableError):
 def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
         topic: str, body: str, stream: Optional[str]=REQ(default=None),
-        user_specified_topic: Optional[str]=REQ("topic", default=None)
+        user_specified_topic: Optional[str]=REQ("topic", default=None),
+        unquote_url_parameters: Optional[bool]=False
 ) -> None:
 
     if stream is None:
@@ -59,8 +75,17 @@ def check_send_webhook_message(
         check_send_private_message(user_profile, request.client,
                                    user_profile.bot_owner, body)
     else:
+        # Some third-party websites (such as Atlassian's JIRA), tend to
+        # double escape their URLs in a manner that escaped space characters
+        # (%20) are never properly decoded. We work around that by making sure
+        # that the URL parameters are decoded on our end.
+        if unquote_url_parameters:
+            stream = unquote(stream)
+
         if user_specified_topic is not None:
             topic = user_specified_topic
+            if unquote_url_parameters:
+                topic = unquote(topic)
 
         try:
             check_send_stream_message(user_profile, request.client,

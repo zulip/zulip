@@ -11,8 +11,9 @@ from zerver.decorator import has_request_variables, \
     zulip_login_required, REQ, human_users_only
 from zerver.lib.actions import do_change_password, do_change_notification_settings, \
     do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
-    do_set_user_display_setting, validate_email, do_change_user_email, \
-    do_start_email_change_process, check_change_full_name
+    do_set_user_display_setting, validate_email, do_change_user_delivery_email, \
+    do_start_email_change_process, check_change_full_name, do_change_user_delivery_email, \
+    get_available_notification_sounds
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
@@ -39,12 +40,13 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))
-    do_change_user_email(user_profile, new_email)
+
+    do_change_user_delivery_email(user_profile, new_email)
 
     context = {'realm_name': user_profile.realm.name, 'new_email': new_email}
-    send_email('zerver/emails/notify_change_in_email', to_email=old_email,
+    send_email('zerver/emails/notify_change_in_email', to_emails=[old_email],
                from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
-               context=context)
+               language=user_profile.default_language, context=context)
 
     ctx = {
         'new_email': new_email,
@@ -64,9 +66,9 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     if new_password != "":
         return_data = {}  # type: Dict[str, Any]
-        if email_belongs_to_ldap(user_profile.realm, user_profile.email):
+        if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             return json_error(_("Your Zulip password is managed in LDAP"))
-        if not authenticate(username=user_profile.email, password=old_password,
+        if not authenticate(username=user_profile.delivery_email, password=old_password,
                             realm=user_profile.realm, return_data=return_data):
             return json_error(_("Wrong password!"))
         do_change_password(user_profile, new_password)
@@ -87,7 +89,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 
     result = {}  # type: Dict[str, Any]
     new_email = email.strip()
-    if user_profile.email != new_email and new_email != '':
+    if user_profile.delivery_email != new_email and new_email != '':
         if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
             return json_error(_("Email address changes are disabled in this organization."))
         error, skipped = validate_email(user_profile, new_email)
@@ -154,6 +156,7 @@ def json_change_notify_settings(
         enable_stream_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_push_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_stream_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
+        notification_sound: Optional[str]=REQ(validator=check_string, default=None),
         enable_desktop_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_sounds: Optional[bool]=REQ(validator=check_bool, default=None),
         enable_offline_email_notifications: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -168,6 +171,10 @@ def json_change_notify_settings(
     result = {}
 
     # Stream notification settings.
+
+    if (notification_sound is not None and
+            notification_sound not in get_available_notification_sounds()):
+        raise JsonableError(_("Invalid notification sound '%s'") % (notification_sound,))
 
     req_vars = {k: v for k, v in list(locals().items()) if k in user_profile.notification_setting_types}
 

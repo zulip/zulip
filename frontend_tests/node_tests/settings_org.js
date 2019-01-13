@@ -55,6 +55,10 @@ const _ui_report = {
     },
 };
 
+const _realm_logo = {
+    build_realm_logo_widget: noop,
+};
+
 set_global('channel', _channel);
 set_global('csrf_token', 'token-stub');
 set_global('FormData', _FormData);
@@ -63,6 +67,7 @@ set_global('loading', _loading);
 set_global('overlays', _overlays);
 set_global('page_params', _page_params);
 set_global('realm_icon', _realm_icon);
+set_global('realm_logo', _realm_logo);
 set_global('templates', _templates);
 set_global('ui_report', _ui_report);
 
@@ -222,6 +227,7 @@ function test_submit_settings_form(submit_form) {
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
     $("#id_realm_message_retention_days").val("15");
     $("#id_realm_bot_creation_policy").val("1");
+    $("#id_realm_email_address_visibility").val("1");
 
     patched = false;
     submit_form(ev);
@@ -229,6 +235,7 @@ function test_submit_settings_form(submit_form) {
 
     let expected_value = {
         bot_creation_policy: '1',
+        email_address_visibility: '1',
         message_retention_days: '15',
         add_emoji_by_admins_only: false,
         create_stream_by_admins_only: false,
@@ -687,6 +694,7 @@ run_test('set_up', () => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
+    settings_org.maybe_disable_widgets = noop;
     settings_org.set_up();
 
     verify_realm_domains();

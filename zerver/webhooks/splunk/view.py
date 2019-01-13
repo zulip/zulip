@@ -9,7 +9,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.validator import check_dict, check_string
-from zerver.models import MAX_SUBJECT_LENGTH, UserProfile
+from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
 
 @api_key_only_webhook_view('Splunk')
 @has_request_variables
@@ -24,8 +24,8 @@ def api_splunk_webhook(request: HttpRequest, user_profile: UserProfile,
     raw = payload.get('result', {}).get('_raw', 'Missing _raw')
 
     # for the default topic, use search name but truncate if too long
-    if len(search_name) >= MAX_SUBJECT_LENGTH:
-        topic = "{}...".format(search_name[:(MAX_SUBJECT_LENGTH - 3)])
+    if len(search_name) >= MAX_TOPIC_NAME_LENGTH:
+        topic = "{}...".format(search_name[:(MAX_TOPIC_NAME_LENGTH - 3)])
     else:
         topic = search_name
 

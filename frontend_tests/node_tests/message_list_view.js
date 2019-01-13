@@ -26,7 +26,7 @@ set_global('timerender', {
         }
         return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
     },
-    stringify_time : function (time) {
+    stringify_time: function (time) {
         if (page_params.twenty_four_hour_time) {
             return time.toString('HH:mm');
         }
@@ -65,7 +65,7 @@ run_test('merge_message_groups', () => {
             status_message: false,
             type: 'stream',
             stream: 'Test Stream 1',
-            subject: 'Test Subject 1',
+            topic: 'Test Subject 1',
             sender_email: 'test@example.com',
             timestamp: _.uniqueId(),
         });
@@ -90,22 +90,28 @@ run_test('merge_message_groups', () => {
         return list;
     }
 
+    function extract_message_ids(lst) {
+        return _.map(lst, (item) => {
+            return item.msg.id;
+        });
+    }
+
     function assert_message_list_equal(list1, list2) {
-        assert.deepEqual(
-            _.chain(list1).pluck('msg').pluck('id').value(),
-            _.chain(list2).pluck('msg').pluck('id').value());
+        var ids1 = extract_message_ids(list1);
+        var ids2 = extract_message_ids(list2);
+        assert(ids1.length);
+        assert.deepEqual(ids1, ids2);
+    }
+
+    function extract_group(group) {
+        return extract_message_ids(group.message_containers);
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        function extract_message_ids(message_group) {
-            return _.chain(message_group.messages)
-                .pluck('msg')
-                .pluck('id')
-                .value();
-        }
-        assert.deepEqual(
-            _.map(list1, extract_message_ids),
-            _.map(list2, extract_message_ids));
+        var ids1 = _.map(list1, extract_group);
+        var ids2 = _.map(list2, extract_group);
+        assert(ids1.length);
+        assert.deepEqual(ids1, ids2);
     }
 
     (function test_empty_list_bottom() {
@@ -118,10 +124,10 @@ run_test('merge_message_groups', () => {
 
         assert_message_groups_list_equal(list._message_groups, [message_group]);
         assert_message_groups_list_equal(result.append_groups, [message_group]);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
     (function test_append_message_same_subject() {
@@ -142,21 +148,21 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [build_message_group([message1, message2])]);
-        assert_message_groups_list_equal(result.append_groups, []);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
+        assert.deepEqual(result.append_groups, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
         assert_message_list_equal(result.rerender_messages, [message1]);
     }());
 
-    (function test_append_message_diffrent_subject() {
+    (function test_append_message_different_subject() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test subject 2'});
+        var message2 = build_message_context({topic: 'Test subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
@@ -169,13 +175,13 @@ run_test('merge_message_groups', () => {
             list._message_groups,
             [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
-    (function test_append_message_diffrent_day() {
+    (function test_append_message_different_day() {
 
         var message1 = build_message_context({timestamp: 1000});
         var message_group1 = build_message_group([
@@ -195,10 +201,10 @@ run_test('merge_message_groups', () => {
             list._message_groups,
             [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
     (function test_append_message_historical() {
@@ -221,10 +227,10 @@ run_test('merge_message_groups', () => {
             list._message_groups,
             [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
     (function test_append_message_same_subject_me_message() {
@@ -246,9 +252,9 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [build_message_group([message1, message2])]);
-        assert_message_groups_list_equal(result.append_groups, []);
-        assert_message_groups_list_equal(result.prepend_groups, []);
-        assert_message_groups_list_equal(result.rerender_groups, []);
+        assert.deepEqual(result.append_groups, []);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
         assert_message_list_equal(result.rerender_messages, [message1]);
     }());
@@ -272,22 +278,22 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [build_message_group([message2, message1])]);
-        assert_message_groups_list_equal(result.append_groups, []);
-        assert_message_groups_list_equal(result.prepend_groups, []);
+        assert.deepEqual(result.append_groups, []);
+        assert.deepEqual(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups,
                                          [build_message_group([message2, message1])]);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
-    (function test_prepend_message_diffrent_subject() {
+    (function test_prepend_message_different_subject() {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
             message1,
         ]);
 
-        var message2 = build_message_context({subject: 'Test Subject 2'});
+        var message2 = build_message_context({topic: 'Test Subject 2'});
         var message_group2 = build_message_group([
             message2,
         ]);
@@ -298,14 +304,14 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]);
-        assert_message_groups_list_equal(result.append_groups, []);
+        assert.deepEqual(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
-    (function test_prepend_message_diffrent_day() {
+    (function test_prepend_message_different_day() {
 
         var message1 = build_message_context({timestamp: 900000});
         var message_group1 = build_message_group([
@@ -326,11 +332,11 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]);
-        assert_message_groups_list_equal(result.append_groups, []);
+        assert.deepEqual(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert_message_groups_list_equal(result.rerender_groups, [message_group1]);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
     (function test_prepend_message_historical() {
@@ -352,11 +358,11 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group2, message_group1]);
-        assert_message_groups_list_equal(result.append_groups, []);
+        assert.deepEqual(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
-        assert_message_groups_list_equal(result.rerender_groups, []);
-        assert_message_list_equal(result.append_messages, []);
-        assert_message_list_equal(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
     }());
 
 });

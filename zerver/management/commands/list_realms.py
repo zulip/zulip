@@ -24,20 +24,25 @@ Usage examples:
     def handle(self, *args: Any, **options: Any) -> None:
         realms = Realm.objects.all()
 
-        outer_format = "%-5s %-40s %-40s"
+        outer_format = "%-5s %-20s %-30s %-50s"
         inner_format = "%-40s %s"
         deactivated = False
 
         if not options["all"]:
-            print(outer_format % ("id", "string_id", "name"))
-            print(outer_format % ("--", "---------", "----"))
+            print(outer_format % ("id", "string_id", "name", "domain"))
+            print(outer_format % ("--", "---------", "----", "------"))
 
             for realm in realms:
+                display_string_id = realm.string_id if realm.string_id != '' else "''"
                 if realm.deactivated:
-                    print(self.style.ERROR(outer_format % (realm.id, realm.string_id, realm.name)))
+                    print(self.style.ERROR(outer_format % (
+                        realm.id,
+                        display_string_id,
+                        realm.name,
+                        realm.uri)))
                     deactivated = True
                 else:
-                    print(outer_format % (realm.id, realm.string_id, realm.name))
+                    print(outer_format % (realm.id, display_string_id, realm.name, realm.uri))
             if deactivated:
                 print(self.style.WARNING("\nRed rows represent deactivated realms."))
             sys.exit(0)
@@ -60,7 +65,7 @@ Usage examples:
                 else:
                     print(inner_format % (key, realm_dict[key]))
 
-            for key, value in sorted(realm_dict.iteritems()):
+            for key, value in sorted(realm_dict.items()):
                 if key not in identifier_attributes:
                     if realm.deactivated:
                         print(self.style.ERROR(inner_format % (key, value)))

@@ -23,7 +23,8 @@ from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails
-from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
+from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification, \
+    initialize_push_notifications
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, check_send_message, extract_recipients, \
@@ -31,7 +32,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
-    FromAddress, EmailNotDeliveredException
+    FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.streams import access_stream_by_id
 from zerver.decorator import JsonableError
@@ -39,7 +40,6 @@ from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
@@ -232,8 +232,9 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         send_future_email(
             "zerver/emails/invitation_reminder",
             referrer.realm,
-            to_email=invitee.email,
+            to_emails=[invitee.email],
             from_address=FromAddress.tokenized_no_reply_address(),
+            language=referrer.realm.default_language,
             context=context,
             delay=datetime.timedelta(days=2))
 
@@ -335,6 +336,7 @@ class EmailSendingWorker(QueueProcessingWorker):
         copied_event = copy.deepcopy(event)
         if 'failed_tries' in copied_event:
             del copied_event['failed_tries']
+        handle_send_email_format_changes(copied_event)
         send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')
@@ -352,6 +354,13 @@ class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
+    def start(self) -> None:
+        # initialize_push_notifications doesn't strictly do anything
+        # beyond printing some logging warnings if push notifications
+        # are not available in the current configuration.
+        initialize_push_notifications()
+        super().start()
+
     def consume(self, data: Mapping[str, Any]) -> None:
         if data.get("type", "add") == "remove":
             handle_remove_push_notification(data['user_profile_id'], data['message_id'])
@@ -470,11 +479,8 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
-    # who gets a digest is entirely determined by the enqueue_digest_emails
-    # management command, not here.
     def consume(self, event: Mapping[str, Any]) -> None:
-        message = force_str(event["message"])
-        mirror_email(email.message_from_string(message),
+        mirror_email(email.message_from_string(event["message"]),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
 
 @assign_queue('test', queue_type="test")

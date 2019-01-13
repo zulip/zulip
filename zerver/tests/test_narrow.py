@@ -31,6 +31,10 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.topic import (
+    MATCH_TOPIC,
+    TOPIC_NAME,
+)
 from zerver.lib.topic_mutes import (
     set_topic_mutes,
 )
@@ -230,6 +234,13 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_id_operator(self) -> None:
         term = dict(operator='id', operand=555)
         self._do_add_term_test(term, 'WHERE id = :param_1')
+
+    def test_add_term_using_id_operator_invalid(self) -> None:
+        term = dict(operator='id', operand='')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
+        term = dict(operator='id', operand='notanint')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
 
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator='id', operand=555, negated=True)
@@ -1489,18 +1500,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com">https://<span class="highlight">google.com</span></a></p>')
 
-        meeting_message = [m for m in messages if m['subject'] == 'meetings'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'meetings'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             'meetings')
         self.assertEqual(
             meeting_message['match_content'],
             '<p>discuss <span class="highlight">lunch</span> after ' +
             '<span class="highlight">lunch</span></p>')
 
-        meeting_message = [m for m in messages if m['subject'] == 'lunch plans'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'lunch plans'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             '<span class="highlight">lunch</span> plans')
         self.assertEqual(
             meeting_message['match_content'],
@@ -1533,18 +1544,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本'][-1]
+        japanese_message = [m for m in messages if m[TOPIC_NAME] == u'日本'][-1]
         self.assertEqual(
-            japanese_message['match_subject'],
+            japanese_message[MATCH_TOPIC],
             u'<span class="highlight">日本</span>')
         self.assertEqual(
             japanese_message['match_content'],
             u'<p>昨日、<span class="highlight">日本</span>' +
             u' のお菓子を送りました。</p>')
 
-        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        english_message = [m for m in messages if m[TOPIC_NAME] == 'english'][0]
         self.assertEqual(
-            english_message['match_subject'],
+            english_message[MATCH_TOPIC],
             'english')
         self.assertIn(
             english_message['match_content'],
@@ -1659,18 +1670,18 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 4)
         messages = result['messages']
 
-        japanese_message = [m for m in messages if m['subject'] == u'日本語'][-1]
+        japanese_message = [m for m in messages if m[TOPIC_NAME] == u'日本語'][-1]
         self.assertEqual(
-            japanese_message['match_subject'],
+            japanese_message[MATCH_TOPIC],
             u'<span class="highlight">日本</span>語')
         self.assertEqual(
             japanese_message['match_content'],
             u'<p>昨日、<span class="highlight">日本</span>の' +
             u'お菓子を送りました。</p>')
 
-        english_message = [m for m in messages if m['subject'] == 'english'][0]
+        english_message = [m for m in messages if m[TOPIC_NAME] == 'english'][0]
         self.assertEqual(
-            english_message['match_subject'],
+            english_message[MATCH_TOPIC],
             'english')
         self.assertIn(
             english_message['match_content'],
@@ -1733,7 +1744,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_before=0,
         ))  # type: Dict[str, Any]
         self.assertEqual(len(special_search_result['messages']), 1)
-        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+        self.assertEqual(special_search_result['messages'][0][MATCH_TOPIC],
                          'bread &amp; <span class="highlight">butter</span>')
 
         special_search_narrow = [
@@ -1746,7 +1757,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_before=0,
         ))
         self.assertEqual(len(special_search_result['messages']), 1)
-        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+        self.assertEqual(special_search_result['messages'][0][MATCH_TOPIC],
                          'bread <span class="highlight">&amp;</span> butter')
         self.assertEqual(special_search_result['messages'][0]['match_content'],
                          '<p>chalk <span class="highlight">&amp;</span> cheese</p>')
@@ -1782,7 +1793,7 @@ class GetOldMessagesTest(ZulipTestCase):
         message = messages[str(good_id)]
         self.assertIn('a href=', message['match_content'])
         self.assertIn('http://foo.com', message['match_content'])
-        self.assertEqual(message['match_subject'], 'test_topic')
+        self.assertEqual(message[MATCH_TOPIC], 'test_topic')
 
     def test_get_messages_with_only_searching_anchor(self) -> None:
         """
@@ -2403,13 +2414,13 @@ class GetOldMessagesTest(ZulipTestCase):
         expected_query = '''
             SELECT id AS message_id
             FROM zerver_message
-            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:upper_1))
+            WHERE NOT (recipient_id = :recipient_id_1 AND upper(subject) = upper(:param_1))
             '''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
 
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Scotland'))
-        self.assertEqual(params['upper_1'], 'golf')
+        self.assertEqual(params['param_1'], 'golf')
 
         mute_stream(realm, user_profile, 'Verona')
 
@@ -2428,15 +2439,15 @@ class GetOldMessagesTest(ZulipTestCase):
             FROM zerver_message
             WHERE recipient_id NOT IN (:recipient_id_1)
             AND NOT
-               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:upper_1) OR
-                recipient_id = :recipient_id_3 AND upper(subject) = upper(:upper_2))'''
+               (recipient_id = :recipient_id_2 AND upper(subject) = upper(:param_1) OR
+                recipient_id = :recipient_id_3 AND upper(subject) = upper(:param_2))'''
         self.assertEqual(fix_ws(query), fix_ws(expected_query))
         params = get_sqlalchemy_query_params(query)
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
         self.assertEqual(params['recipient_id_2'], get_recipient_id_for_stream_name(realm, 'Scotland'))
-        self.assertEqual(params['upper_1'], 'golf')
+        self.assertEqual(params['param_1'], 'golf')
         self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'web stuff'))
-        self.assertEqual(params['upper_2'], 'css')
+        self.assertEqual(params['param_2'], 'css')
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()
@@ -2533,19 +2544,19 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_search_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: str
+        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: str
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["search", "jumping"]]'},
                                              sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS topic_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
                                              sql)
 
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
+        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS topic_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["search", "\\"jumping\\" quickly"]]'},
@@ -2594,9 +2605,9 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(result['messages']), 1)
         messages = result['messages']
 
-        meeting_message = [m for m in messages if m['subject'] == 'say hello'][0]
+        meeting_message = [m for m in messages if m[TOPIC_NAME] == 'say hello'][0]
         self.assertEqual(
-            meeting_message['match_subject'],
+            meeting_message[MATCH_TOPIC],
             'say hello')
         othello = self.example_user('othello')
         self.assertEqual(

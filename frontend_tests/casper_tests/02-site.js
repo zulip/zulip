@@ -29,23 +29,23 @@ casper.then(function () {
 // Send some messages.
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test verona A' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test verona B' },
 
-    { stream:  'Verona', subject: 'other subject',
+    { stream: 'Verona', subject: 'other subject',
       content: 'test verona C' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal A' },
+      content: 'personal A' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal B' },
+      content: 'personal B' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal C' }]);
+      content: 'personal C' }]);
 
 common.wait_for_receive(function () {
     common.expected_messages('zhome', [
@@ -66,11 +66,11 @@ common.wait_for_receive(function () {
 });
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test verona D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal D' },
+      content: 'personal D' },
 ]);
 
 common.then_log_out();

@@ -1,4 +1,5 @@
 var compose = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 var exports = {};
 
@@ -137,10 +138,10 @@ exports.empty_topic_placeholder = function () {
 };
 
 function create_message_object() {
-    // Subjects are optional, and we provide a placeholder if one isn't given.
-    var subject = compose_state.subject();
-    if (subject === "") {
-        subject = compose.empty_topic_placeholder();
+    // Topics are optional, and we provide a placeholder if one isn't given.
+    var topic = compose_state.topic();
+    if (topic === "") {
+        topic = compose.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose_state.message_content());
@@ -152,8 +153,8 @@ function create_message_object() {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: '',
-        subject: '',
     };
+    util.set_message_topic(message, '');
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -171,7 +172,7 @@ function create_message_object() {
         if (sub) {
             message.stream_id = sub.stream_id;
         }
-        message.subject = subject;
+        util.set_message_topic(message, topic);
     }
     return message;
 }
@@ -465,16 +466,17 @@ exports.validation_error = function (error_type, stream_name) {
     switch (error_type) {
     case "does-not-exist":
         response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
-        compose_error(response, $('#stream'));
+        compose_error(response, $('#stream_message_recipient_stream'));
         return false;
     case "error":
-        compose_error(i18n.t("Error checking subscription"), $("#stream"));
+        compose_error(i18n.t("Error checking subscription"),
+                      $("#stream_message_recipient_stream"));
         return false;
     case "not-subscribed":
         var sub = stream_data.get_sub(stream_name);
         var new_row = templates.render("compose_not_subscribed", {
             should_display_sub_button: sub.should_display_subscription_button});
-        compose_not_subscribed_error(new_row, $('#stream'));
+        compose_not_subscribed_error(new_row, $('#stream_message_recipient_stream'));
         return false;
     }
     return true;
@@ -492,14 +494,14 @@ exports.validate_stream_message_address_info = function (stream_name) {
 function validate_stream_message() {
     var stream_name = compose_state.stream_name();
     if (stream_name === "") {
-        compose_error(i18n.t("Please specify a stream"), $("#stream"));
+        compose_error(i18n.t("Please specify a stream"), $("#stream_message_recipient_stream"));
         return false;
     }
 
     if (page_params.realm_mandatory_topics) {
-        var topic = compose_state.subject();
+        var topic = compose_state.topic();
         if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
+            compose_error(i18n.t("Please specify a topic"), $("#stream_message_recipient_topic"));
             return false;
         }
     }
@@ -686,10 +688,14 @@ exports.needs_subscribe_warning = function (email) {
     return true;
 };
 
+function insert_video_call_url(url) {
+    var video_call_link_text = '[' + _('Click to join video call') + '](' + url + ')';
+    compose_ui.insert_syntax_and_focus(video_call_link_text);
+}
 
 exports.initialize = function () {
-    $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
-    $('#stream,#subject,#private_message_recipient').on('change', update_fade);
+    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
+    $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
     $('#compose-textarea').on('keydown', function (event) {
         exports.handle_keydown(event, $("#compose-textarea").expectOne());
     });
@@ -774,7 +780,7 @@ exports.initialize = function () {
     $("#compose-send-status").on('click', '.sub_unsub_button', function (event) {
         event.preventDefault();
 
-        var stream_name = $('#stream').val();
+        var stream_name = $('#stream_message_recipient_stream').val();
         if (stream_name === undefined) {
             return;
         }
@@ -913,7 +919,7 @@ exports.initialize = function () {
         var rendered_preview_html;
         if (content !== undefined && markdown.is_status_message(content, rendered_content)) {
             // Handle previews of /me messages
-            rendered_preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
+            rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
         } else {
             rendered_preview_html = rendered_content;
         }
@@ -938,11 +944,18 @@ exports.initialize = function () {
         var video_call_id = util.random_int(100000000000000, 999999999999999);
         if (page_params.realm_video_chat_provider === "Google Hangouts") {
             video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
+            insert_video_call_url(video_call_link);
+        } else if (page_params.realm_video_chat_provider === "Zoom") {
+            channel.get({
+                url: '/json/calls/create',
+                success: function (response) {
+                    insert_video_call_url(response.zoom_url);
+                },
+            });
         } else {
             video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
+            insert_video_call_url(video_call_link);
         }
-        var video_call_link_text = '[' + _('Click to join video call') + '](' + video_call_link + ')';
-        compose_ui.insert_syntax_and_focus(video_call_link_text);
     });
 
     $("#compose").on("click", "#markdown_preview", function (e) {
@@ -1005,7 +1018,7 @@ exports.initialize = function () {
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
-            compose_actions.start("stream", {subject: page_params.narrow_topic});
+            compose_actions.start("stream", {topic: page_params.narrow_topic});
         } else {
             compose_actions.start("stream", {});
         }

@@ -18,7 +18,7 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 def sync_ldap_user_data() -> None:
     logger.info("Starting update.")
     backend = ZulipLDAPUserPopulator()
-    for u in UserProfile.objects.select_related().filter(is_active=True, is_bot=False).all():
+    for u in UserProfile.objects.select_related().filter(is_bot=False).all():
         # This will save the user if relevant, and will do nothing if the user
         # does not exist.
         try:

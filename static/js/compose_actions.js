@@ -4,7 +4,7 @@ var exports = {};
 
 function update_lock_icon_for_stream(stream_name) {
     var icon = $("#compose-lock-icon");
-    var streamfield = $("#stream");
+    var streamfield = $("#stream_message_recipient_stream");
     if (stream_data.get_invite_only(stream_name)) {
         icon.show();
         streamfield.addClass("lock-padding");
@@ -31,20 +31,20 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && !opts.subject) {
-        return 'subject';
+    if (msg_type === 'stream' && opts.stream && !opts.topic) {
+        return '#stream_message_recipient_topic';
     } else if (msg_type === 'stream' && opts.stream
                || msg_type === 'private' && opts.private_message_recipient) {
         if (opts.trigger === "new topic button") {
-            return 'subject';
+            return '#stream_message_recipient_topic';
         }
-        return 'compose-textarea';
+        return '#compose-textarea';
     }
 
     if (msg_type === 'stream') {
-        return 'stream';
+        return '#stream_message_recipient_stream';
     }
-    return 'private_message_recipient';
+    return '#private_message_recipient';
 }
 // Export for testing
 exports._get_focus_area = get_focus_area;
@@ -57,7 +57,7 @@ exports.set_focus = function (msg_type, opts) {
 
     if (window.getSelection().toString() === "" ||
          opts.trigger !== "message click") {
-        var elt = $('#' + focus_area);
+        var elt = $(focus_area);
         elt.focus().select();
     }
 };
@@ -170,11 +170,11 @@ exports.maybe_scroll_up_selected_message = function () {
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
-        message_type:     msg_type,
-        stream:           '',
-        subject:          '',
+        message_type: msg_type,
+        stream: '',
+        topic: '',
         private_message_recipient: '',
-        trigger:          'unknown',
+        trigger: 'unknown',
     };
 
     // Set default parameters based on the current narrowed view.
@@ -188,7 +188,7 @@ function same_recipient_as_before(msg_type, opts) {
     return compose_state.get_message_type() === msg_type &&
             (msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.subject() ||
+              opts.topic === compose_state.topic() ||
              msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient());
 }
@@ -209,7 +209,7 @@ exports.start = function (msg_type, opts) {
     if (opts.trigger === "compose_hotkey" ||
         opts.trigger === "new topic button" ||
         opts.trigger === "sidebar stream actions") {
-        opts.subject = '';
+        opts.topic = '';
         opts.private_message_recipient = '';
     }
 
@@ -219,13 +219,13 @@ exports.start = function (msg_type, opts) {
     }
 
     compose_state.stream_name(opts.stream);
-    compose_state.subject(opts.subject);
+    compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
 
     // If the user opens the compose box, types some text, and then clicks on a
-    // different stream/subject, we want to keep the text in the compose box
+    // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_state.message_content(opts.content);
     }
@@ -243,12 +243,12 @@ exports.cancel = function () {
 
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
-        // at least clear the subject and unfade.
+        // at least clear the topic and unfade.
         compose_fade.clear_compose();
         if (page_params.narrow_topic !== undefined) {
-            compose_state.subject(page_params.narrow_topic);
+            compose_state.topic(page_params.narrow_topic);
         } else {
-            compose_state.subject("");
+            compose_state.topic("");
         }
         return;
     }
@@ -304,10 +304,10 @@ exports.respond_to_message = function (opts) {
     unread_ops.notify_server_message_read(message);
 
     var stream = '';
-    var subject = '';
+    var topic = '';
     if (message.type === "stream") {
         stream = message.stream;
-        subject = message.subject;
+        topic = util.get_message_topic(message);
     }
 
     var pm_recipient = message.reply_to;
@@ -326,9 +326,8 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    exports.start(msg_type, {stream: stream, subject: subject,
+    exports.start(msg_type, {stream: stream, topic: topic,
                              private_message_recipient: pm_recipient,
-                             replying_to_message: message,
                              trigger: opts.trigger});
 
 };
@@ -362,7 +361,7 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject() && compose_state.has_message_content()) {
+    if (compose_state.topic() && compose_state.has_message_content()) {
         // If the user has written something to a different topic,
         // they probably want that content, so leave compose open.
         //
@@ -379,7 +378,7 @@ exports.on_topic_narrow = function () {
     // we should update the compose topic to match the new narrow.
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
-    compose_state.subject(narrow_state.topic());
+    compose_state.topic(narrow_state.topic());
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
     $('#compose-textarea').focus().select();
@@ -388,17 +387,23 @@ exports.on_topic_narrow = function () {
 exports.quote_and_reply = function (opts) {
     var textarea = $("#compose-textarea");
     var message_id = current_msg_list.selected_id();
+    var message = current_msg_list.selected_message();
 
     exports.respond_to_message(opts);
+    compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
+
+    if (message && message.raw_content) {
+        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + message.raw_content + '\n```', textarea);
+        $("#compose-textarea").trigger("autosize.resize");
+        return;
+    }
+
     channel.get({
         url: '/json/messages/' + message_id,
         idempotent: true,
         success: function (data) {
-            if (textarea.val() === "") {
-                textarea.val("```quote\n" + data.raw_content + "\n```\n");
-            } else {
-                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content + "\n```\n");
-            }
+            message.raw_content = data.raw_content;
+            compose_ui.replace_syntax('[Quoting…]', '```quote\n' + data.raw_content + '\n```', textarea);
             $("#compose-textarea").trigger("autosize.resize");
         },
     });
@@ -412,6 +417,11 @@ exports.on_narrow = function (opts) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.
         exports.cancel();
+        return;
+    }
+
+    if (opts.trigger === "narrow_to_compose_target") {
+        compose_fade.update_message_list();
         return;
     }
 

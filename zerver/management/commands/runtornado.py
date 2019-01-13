@@ -25,6 +25,7 @@ from zerver.tornado.application import create_tornado_application, \
 from zerver.tornado.autoreload import start as zulip_autoreload_start
 from zerver.tornado.event_queue import add_client_gc_hook, \
     missedmessage_hook, process_notification, setup_event_queue
+from zerver.tornado.sharding import notify_tornado_queue_name, tornado_return_queue_name
 from zerver.tornado.socket import respond_send_message
 
 if settings.USING_RABBITMQ:
@@ -90,12 +91,14 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 queue_client = get_queue_client()
                 # Process notifications received via RabbitMQ
-                queue_client.register_json_consumer('notify_tornado', process_notification)
-                queue_client.register_json_consumer('tornado_return', respond_send_message)
+                queue_client.register_json_consumer(notify_tornado_queue_name(int(port)),
+                                                    process_notification)
+                queue_client.register_json_consumer(tornado_return_queue_name(int(port)),
+                                                    respond_send_message)
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
-                application = create_tornado_application()
+                application = create_tornado_application(int(port))
                 if settings.AUTORELOAD:
                     zulip_autoreload_start()
 
@@ -105,9 +108,11 @@ class Command(BaseCommand):
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
 
-                setup_event_queue()
+                setup_event_queue(int(port))
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
+                from zerver.tornado.ioloop_logging import logging_data
+                logging_data['port'] = port
 
                 instance = ioloop.IOLoop.instance()
 

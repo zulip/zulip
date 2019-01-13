@@ -4,7 +4,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
             <span aria-hidden="true" id="exit-sign">&times;</span>
         </button>
-        <div id="avatar" style="background-image: url('{{user_avatar}}');" ></div>
+        <div id="avatar"{{#if user_is_guest}} class="guest-avatar"{{/if}} style="background-image: url('{{user_avatar}}');" ></div>
         <div id="default-section">
             <div id="name">
                 {{full_name}}
@@ -23,6 +23,10 @@
                 <span class="name">{{#tr this}}Joined{{/tr}}</span>
                 <span class="value">{{date_joined}}</span>
             </div>
+            <div id="user-type" class="default-field">
+                <span class="name">{{#tr this}}Role{{/tr}}</span>
+                <span class="value">{{user_type}}</span>
+            </div>
             <div class="default-field">
                 <span class="name">{{#tr this}}Last seen{{/tr}}</span>
                 <span class="value">{{last_seen}}</span>
@@ -37,16 +41,20 @@
         <hr>
         <div id="content">
             {{#each profile_data}}
-            <div data-type="{{this.type}}" class="field-section">
+            <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
                 <div class="name">{{this.name}}</div>
                 {{#if this.is_user_field}}
-                <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                    <div class="input" contenteditable="false" style="display: none;"></div>
-                </div>
-                {{else if this.is_link}}
-                <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
+                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                        <div class="input" contenteditable="false" style="display: none;"></div>
+                    </div>
+                    {{else if this.is_link}}
+                    <a href={{this.value}} target="_blank" class="value">{{this.value}}</a>
                 {{else}}
-                <div class="value">{{this.value}}</div>
+                    {{#if this.rendered_value}}
+                    <div class="value">{{{this.rendered_value}}}</div>
+                    {{else}}
+                    <div class="value">{{this.value}}</div>
+                    {{/if}}
                 {{/if}}
             </div>
             {{/each}}

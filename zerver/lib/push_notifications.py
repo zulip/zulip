@@ -4,7 +4,7 @@ import base64
 import binascii
 from functools import partial
 import logging
-import lxml.html as LH
+import lxml.html
 import os
 import re
 import time
@@ -30,8 +30,11 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_push_notifications, \
-    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id
+    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id, \
+    ArchivedMessage
 from version import ZULIP_VERSION
+
+logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken
@@ -114,8 +117,8 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 
     client = get_apns_client()  # type: APNsClient
     if client is None:
-        logging.warning("APNs: Dropping a notification because nothing configured.  "
-                        "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
+        logger.debug("APNs: Dropping a notification because nothing configured.  "
+                     "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
         return
 
     if remote:
@@ -123,8 +126,8 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
     else:
         DeviceTokenClass = PushDeviceToken
 
-    logging.info("APNs: Sending notification for user %d to %d devices",
-                 user_id, len(devices))
+    logger.info("APNs: Sending notification for user %d to %d devices",
+                user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
     expiration = int(time.time() + 24 * 3600)
     retries_left = APNS_MAX_RETRIES
@@ -132,14 +135,22 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         # TODO obviously this should be made to actually use the async
 
         def attempt_send() -> Optional[str]:
-            stream_id = client.send_notification_async(
-                device.token, payload, topic='org.zulip.Zulip',
-                expiration=expiration)
             try:
+                stream_id = client.send_notification_async(
+                    device.token, payload, topic='org.zulip.Zulip',
+                    expiration=expiration)
                 return client.get_notification_result(stream_id)
             except HTTP20Error as e:
-                logging.warning("APNs: HTTP error sending for user %d to device %s: %s",
-                                user_id, device.token, e.__class__.__name__)
+                logger.warning("APNs: HTTP error sending for user %d to device %s: %s",
+                               user_id, device.token, e.__class__.__name__)
+                return None
+            except BrokenPipeError as e:
+                logger.warning("APNs: BrokenPipeError sending for user %d to device %s: %s",
+                               user_id, device.token, e.__class__.__name__)
+                return None
+            except ConnectionError as e:  # nocoverage
+                logger.warning("APNs: ConnectionError sending for user %d to device %s: %s",
+                               user_id, device.token, e.__class__.__name__)
                 return None
 
         result = attempt_send()
@@ -154,16 +165,16 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
             # different format, as a tuple of the pair ("Unregistered", 12345132131).
             result = result[0]  # type: ignore # APNS API is inconsistent
         if result == 'Success':
-            logging.info("APNs: Success sending for user %d to device %s",
-                         user_id, device.token)
+            logger.info("APNs: Success sending for user %d to device %s",
+                        user_id, device.token)
         elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
-            logging.info("APNs: Removing invalid/expired token %s (%s)" % (device.token, result))
+            logger.info("APNs: Removing invalid/expired token %s (%s)" % (device.token, result))
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
             DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
-            logging.warning("APNs: Failed to send for user %d to device %s: %s",
-                            user_id, device.token, result)
+            logger.warning("APNs: Failed to send for user %d to device %s: %s",
+                           user_id, device.token, result)
 
 #
 # Sending to GCM, for Android
@@ -186,8 +197,8 @@ def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
                                    remote: bool=False) -> None:
     if not gcm:
-        logging.warning("Skipping sending a GCM push notification since "
-                        "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
+        logger.debug("Skipping sending a GCM push notification since "
+                     "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
     reg_ids = [device.token for device in devices]
 
@@ -199,12 +210,12 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     try:
         res = gcm.json_request(registration_ids=reg_ids, data=data, retries=10)
     except IOError as e:
-        logging.warning(str(e))
+        logger.warning(str(e))
         return
 
     if res and 'success' in res:
         for reg_id, msg_id in res['success'].items():
-            logging.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+            logger.info("GCM: Sent %s as %s" % (reg_id, msg_id))
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
@@ -213,21 +224,21 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         for reg_id, new_reg_id in res['canonical'].items():
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
-                logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
+                logger.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
             elif not DeviceTokenClass.objects.filter(token=new_reg_id,
                                                      kind=DeviceTokenClass.GCM).count():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
                 # previously registered in our system.
                 #
                 # That said, recovery is easy: just update the current PDT object to use the new ID.
-                logging.warning(
+                logger.warning(
                     "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
                     (new_reg_id, reg_id))
                 DeviceTokenClass.objects.filter(
                     token=reg_id, kind=DeviceTokenClass.GCM).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
-                logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
+                logger.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
 
                 DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
 
@@ -235,13 +246,13 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         for error, reg_ids in res['errors'].items():
             if error in ['NotRegistered', 'InvalidRegistration']:
                 for reg_id in reg_ids:
-                    logging.info("GCM: Removing %s" % (reg_id,))
+                    logger.info("GCM: Removing %s" % (reg_id,))
                     # We remove all entries for this token (There
                     # could be multiple for different Zulip servers).
                     DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
             else:
                 for reg_id in reg_ids:
-                    logging.warning("GCM: Delivery to %s failed: %s" % (reg_id, error))
+                    logger.warning("GCM: Delivery to %s failed: %s" % (reg_id, error))
 
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
@@ -354,8 +365,8 @@ def add_push_device_token(user_profile: UserProfile,
                           token_str: bytes,
                           kind: int,
                           ios_app_id: Optional[str]=None) -> None:
-    logging.info("Registering push device: %d %r %d %r",
-                 user_profile.id, token_str, kind, ios_app_id)
+    logger.info("Registering push device: %d %r %d %r",
+                user_profile.id, token_str, kind, ios_app_id)
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
@@ -370,7 +381,7 @@ def add_push_device_token(user_profile: UserProfile,
         if kind == PushDeviceToken.APNS:
             post_data['ios_app_id'] = ios_app_id
 
-        logging.info("Sending new push device to bouncer: %r", post_data)
+        logger.info("Sending new push device to bouncer: %r", post_data)
         # Calls zilencer.views.register_remote_push_device
         send_to_push_bouncer('POST', 'register', post_data)
         return
@@ -429,6 +440,15 @@ def push_notifications_enabled() -> bool:
         return True
     return False
 
+def initialize_push_notifications() -> None:
+    if not push_notifications_enabled():
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # Avoid unnecessary spam on development environment startup
+            return
+        logger.warning("Mobile push notifications are not configured.\n  "
+                       "See https://zulip.readthedocs.io/en/latest/"
+                       "production/mobile-push-notifications.html")
+
 def get_gcm_alert(message: Message) -> str:
     """
     Determine what alert string to display based on the missed messages.
@@ -444,7 +464,7 @@ def get_gcm_alert(message: Message) -> str:
         return "New stream message from %s in %s" % (sender_str, get_display_recipient(message.recipient),)
 
 def get_mobile_push_content(rendered_content: str) -> str:
-    def get_text(elem: LH.HtmlElement) -> str:
+    def get_text(elem: lxml.html.HtmlElement) -> str:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
@@ -468,7 +488,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         quote_text += '\n'
         return quote_text
 
-    def process(elem: LH.HtmlElement) -> str:
+    def process(elem: lxml.html.HtmlElement) -> str:
         plain_text = get_text(elem)
         sub_text = ''
         for child in elem:
@@ -481,10 +501,10 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
     if settings.PUSH_NOTIFICATION_REDACT_CONTENT:
         return "***REDACTED***"
-    else:
-        elem = LH.fromstring(rendered_content)
-        plain_text = process(elem)
-        return plain_text
+
+    elem = lxml.html.fromstring(rendered_content)
+    plain_text = process(elem)
+    return plain_text
 
 def truncate_content(content: str) -> Tuple[str, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
@@ -510,7 +530,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     if message.recipient.type == Recipient.STREAM:
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
-        data['topic'] = message.subject
+        data['topic'] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data['recipient_type'] = "private"
         data['pm_users'] = huddle_users(message.recipient.id)
@@ -555,6 +575,7 @@ def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, A
             'subtitle': get_apns_alert_subtitle(message),
             'body': content,
         },
+        'sound': 'default',
         'badge': 0,  # TODO: set badge count in a better way
         'custom': {'zulip': zulip_data},
     }
@@ -608,7 +629,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
                                           gcm_payload)
         except requests.ConnectionError:  # nocoverage
             def failure_processor(event: Dict[str, Any]) -> None:
-                logging.warning(
+                logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id']))
         return
@@ -628,15 +649,27 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     missed_message is the event received by the
     zerver.worker.queue_processors.PushNotificationWorker.consume function.
     """
+    if not push_notifications_enabled():
+        return
     user_profile = get_user_profile_by_id(user_profile_id)
     if not (receives_offline_push_notifications(user_profile) or
             receives_online_notifications(user_profile)):
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    try:
+        (message, user_message) = access_message(user_profile, missed_message['message_id'])
+    except JsonableError:
+        if ArchivedMessage.objects.filter(id=missed_message['message_id']).exists():
+            # If the cause is a race with the message being deleted,
+            # that's normal and we have no need to log an error.
+            return
+        logging.error("Unexpected message access failure handling push notifications: %s %s" % (
+            user_profile.id, missed_message['message_id']))
+        return
+
     if user_message is not None:
-        # If ther user has read the message already, don't push-notify.
+        # If the user has read the message already, don't push-notify.
         #
         # TODO: It feels like this is already handled when things are
         # put in the queue; maybe we should centralize this logic with
@@ -654,7 +687,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # queue for messages they haven't received if they're
         # long-term idle; anything else is likely a bug.
         if not user_profile.long_term_idle:
-            logging.error("Could not find UserMessage with message_id %s and user_id %s" % (
+            logger.error("Could not find UserMessage with message_id %s and user_id %s" % (
                 missed_message['message_id'], user_profile_id))
             return
 
@@ -662,7 +695,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     apns_payload = get_apns_payload(user_profile, message)
     gcm_payload = get_gcm_payload(user_profile, message)
-    logging.info("Sending push notification to user %s" % (user_profile_id,))
+    logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
         try:
@@ -671,7 +704,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                                           gcm_payload)
         except requests.ConnectionError:
             def failure_processor(event: Dict[str, Any]) -> None:
-                logging.warning(
+                logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id']))
             retry_event('missedmessage_mobile_notifications', missed_message,

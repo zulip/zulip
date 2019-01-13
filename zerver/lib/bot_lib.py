@@ -13,11 +13,13 @@ from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
     is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
 from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.topic import get_topic_from_message_info
+
+from django.utils.translation import ugettext as _
 
 import configparser
 
-if False:
-    from mypy_extensions import NoReturn
+from mypy_extensions import NoReturn
 from typing import Any, Optional, List, Dict
 from types import ModuleType
 
@@ -60,6 +62,9 @@ class StateHandler:
 class EmbeddedBotQuitException(Exception):
     pass
 
+class EmbeddedBotEmptyRecipientsList(Exception):
+    pass
+
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
@@ -68,6 +73,7 @@ class EmbeddedBotHandler:
         self.full_name = user_profile.full_name
         self.email = user_profile.email
         self.storage = StateHandler(user_profile)
+        self.user_id = user_profile.id
 
     def send_message(self, message: Dict[str, Any]) -> None:
         if not self._rate_limit.is_legal():
@@ -75,7 +81,7 @@ class EmbeddedBotHandler:
 
         if message['type'] == 'stream':
             internal_send_stream_message(self.user_profile.realm, self.user_profile, message['to'],
-                                         message['subject'], message['content'])
+                                         message['topic'], message['content'])
             return
 
         assert message['type'] == 'private'
@@ -83,7 +89,9 @@ class EmbeddedBotHandler:
         # usual 'to' field could be either a List[str] or a str.
         recipients = ','.join(message['to']).split(',')
 
-        if len(message['to']) == 1:
+        if len(message['to']) == 0:
+            raise EmbeddedBotEmptyRecipientsList(_('Message must have recipients!'))
+        elif len(message['to']) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
             internal_send_private_message(self.user_profile.realm, self.user_profile,
                                           recipient_user, message['content'])
@@ -103,7 +111,7 @@ class EmbeddedBotHandler:
             self.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
-                subject=message['subject'],
+                topic=get_topic_from_message_info(message),
                 content=response,
                 sender_email=message['sender_email'],
             ))

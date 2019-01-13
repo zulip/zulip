@@ -27,6 +27,8 @@
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
+
+        <li>{{ user_type }}</li>
     </div>
     <hr />
     {{#if show_user_profile}}
@@ -64,16 +66,33 @@
     </li>
     {{/unless}}
     <hr />
-    {{#unless is_me}}
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
-            <i class="fa fa-lock" aria-hidden="true"></i> {{#tr this}}View private messages{{/tr}}
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            {{#if is_me}}
+                {{#tr this}}View private messages to myself{{/tr}}
+            {{else}}
+                {{#tr this}}View private messages{{/tr}}
+            {{/if}}
         </a>
     </li>
-    {{/unless}}
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
             <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
+    {{#if can_set_away}}
+    <li>
+        <a href="#" class="set_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Set status to away{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_revoke_away}}
+    <li>
+        <a href="#" class="revoke_away_status">
+            <i class="fa fa-circle-thin" aria-hidden="true"></i> {{#tr this}}Clear away status{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 </ul>

@@ -48,6 +48,11 @@ def get_secret(key: str, default_value: Optional[Any]=None,
         return secrets_file.get('secrets', key)
     return default_value
 
+def get_config(section: str, key: str, default_value: Optional[Any]=None) -> Optional[Any]:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")
 
@@ -154,6 +159,7 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
+    'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',
@@ -173,6 +179,7 @@ DEFAULT_SETTINGS = {
 
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
+    'DEFAULT_LOGO_URI': '/static/images/logo/zulip-org-logo.png',
     'S3_AVATAR_BUCKET': '',
     'S3_AUTH_UPLOADS_BUCKET': '',
     'S3_REGION': '',
@@ -202,6 +209,8 @@ DEFAULT_SETTINGS = {
     'REMOTE_POSTGRES_HOST': '',
     'REMOTE_POSTGRES_SSLMODE': '',
     'THUMBOR_URL': '',
+    'THUMBOR_SERVES_CAMO': False,
+    'THUMBNAIL_IMAGES': False,
     'SENDFILE_BACKEND': None,
 
     # ToS/Privacy templates
@@ -344,6 +353,7 @@ DEFAULT_SETTINGS.update({
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
     'MAX_AVATAR_FILE_SIZE': 5,
     'MAX_ICON_FILE_SIZE': 5,
+    'MAX_LOGO_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
     # Limits to help prevent spam, in particular by sending invitations.
@@ -446,10 +456,6 @@ DEFAULT_SETTINGS.update({
     # Enables billing pages and plan-based feature gates. If False, all features
     # are available to all realms.
     'BILLING_ENABLED': False,
-
-    # Controls whether we run the worker that syncs billing-related updates
-    # into Stripe. Should be True on at most one machine.
-    'BILLING_PROCESSOR_ENABLED': False,
 })
 
 
@@ -486,13 +492,6 @@ TIME_ZONE = 'UTC'
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
-
-# The ID, as an integer, of the current site in the django_site database table.
-# This is used so that application data can hook into specific site(s) and a
-# single database can manage content for multiple sites.
-#
-# We set this site's string_id to 'zulip' in populate_db.
-SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -542,6 +541,8 @@ MIDDLEWARE = (
     # Make sure 2FA middlewares come after authentication middleware.
     'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
+    # Needs to be after CommonMiddleware, which sets Content-Length
+    'zerver.middleware.FinalizeOpenGraphDescription',
 )
 
 ANONYMOUS_USER_ID = None
@@ -561,7 +562,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.staticfiles',
     'confirmation',
     'pipeline',
@@ -584,6 +584,7 @@ CORPORATE_ENABLED = 'corporate' in INSTALLED_APPS
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
+TORNADO_PROCESSES = int(get_config('application_server', 'tornado_processes', 1))
 TORNADO_SERVER = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
 AUTORELOAD = DEBUG
@@ -698,13 +699,10 @@ if PRODUCTION:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-try:
     # For get_updates hostname sharding.
-    domain = config_file.get('django', 'cookie_domain')
-    CSRF_COOKIE_DOMAIN = '.' + domain
-except configparser.Error:
-    # Failing here is OK
-    pass
+    domain = get_config('django', 'cookie_domain', None)
+    if domain is not None:
+        CSRF_COOKIE_DOMAIN = '.' + domain
 
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
@@ -784,6 +782,13 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
 
 # Bots that are created for each realm like the reminder-bot goes here.
 REALM_INTERNAL_BOTS = []
+# These are realm-internal bots that may exist in some organizations,
+# so configure power the setting, but should not be auto-created at this time.
+DISABLED_REALM_INTERNAL_BOTS = [
+    {'var_name': 'REMINDER_BOT',
+     'email_template': 'reminder-bot@%s',
+     'name': 'Reminder Bot'}
+]
 
 if PRODUCTION:
     INTERNAL_BOTS += [
@@ -798,7 +803,7 @@ if PRODUCTION:
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
 # Set the realm-specific bot names
-for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS:
+for bot in INTERNAL_BOTS + REALM_INTERNAL_BOTS + DISABLED_REALM_INTERNAL_BOTS:
     if vars().get(bot['var_name']) is None:
         bot_email = bot['email_template'] % (INTERNAL_BOT_DOMAIN,)
         vars()[bot['var_name']] = bot_email
@@ -852,9 +857,9 @@ if DEBUG:
         'pipeline.finders.PipelineFinder',
     )
     if PIPELINE_ENABLED:
-        STATIC_ROOT = os.path.abspath('prod-static/serve')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'prod-static/serve'))
     else:
-        STATIC_ROOT = os.path.abspath('static/')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'static/'))
 else:
     STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
@@ -864,7 +869,7 @@ else:
     if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
-        STATIC_ROOT = os.path.abspath('prod-static/serve')
+        STATIC_ROOT = os.path.abspath(os.path.join(DEPLOY_ROOT, 'prod-static/serve'))
 
 # If changing this, you need to also the hack modifications to this in
 # our compilemessages management command.
@@ -1027,7 +1032,7 @@ ZULIP_PATHS = [
     ("ERROR_FILE_LOG_PATH", "/var/log/zulip/errors.log"),
     ("MANAGEMENT_LOG_PATH", "/var/log/zulip/manage.log"),
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
-    ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
+    ("JSON_PERSISTENT_QUEUE_FILENAME_PATTERN", "/home/zulip/tornado/event_queues%s.json"),
     ("EMAIL_LOG_PATH", "/var/log/zulip/send_email.log"),
     ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
     ("EMAIL_DELIVERER_LOG_PATH", "/var/log/zulip/email-deliverer.log"),
@@ -1294,17 +1299,17 @@ USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION
 
 if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
                                           "zproject.backends.ZulipRemoteUserBackend"):
-    HOME_NOT_LOGGED_IN = "/accounts/login/sso"
+    HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
     ONLY_SSO = True
 else:
-    HOME_NOT_LOGGED_IN = '/login'
+    HOME_NOT_LOGGED_IN = '/login/'
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
-# Redirect to /devlogin by default in dev mode
+# Redirect to /devlogin/ by default in dev mode
 if DEVELOPMENT:
-    HOME_NOT_LOGGED_IN = '/devlogin'
-    LOGIN_URL = '/devlogin'
+    HOME_NOT_LOGGED_IN = '/devlogin/'
+    LOGIN_URL = '/devlogin/'
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 

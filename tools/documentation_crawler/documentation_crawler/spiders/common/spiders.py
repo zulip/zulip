@@ -16,6 +16,11 @@ EXCLUDED_URLS = [
     'https://medium.freecodecamp.org/',
     # Returns 404 to HEAD requests unconditionally
     'https://www.git-tower.com/blog/command-line-cheat-sheet/',
+    # Requires authentication
+    'https://circleci.com/gh/zulip/zulip',
+    'https://circleci.com/gh/zulip/zulip/16617',
+    # 500s because the site is semi-down
+    'http://citizencodeofconduct.org/',
 ]
 
 
@@ -32,6 +37,7 @@ class BaseDocumentationSpider(scrapy.Spider):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.has_error = False
+        self.skip_external = kwargs.get('skip_external', None)
 
     def _set_error_state(self) -> None:
         self.has_error = True
@@ -44,6 +50,18 @@ class BaseDocumentationSpider(scrapy.Spider):
 
     def check_existing(self, response: Any) -> None:
         self.log(response)
+
+    def _is_external_link(self, url: str) -> bool:
+        if "zulip.readthedocs" in url or "zulipchat.com" in url or "zulip.org" in url:
+            # We want CI to check any links to Zulip sites.
+            return False
+        if (len(url) > 4 and url[:4] == "file") or ("localhost" in url):
+            # We also want CI to check any links to built documentation.
+            return False
+        if 'github.com/zulip' in url:
+            # Finally, links to our own GitHub organization should always work.
+            return False
+        return True
 
     def check_permalink(self, response: Any) -> None:
         self.log(response)
@@ -72,6 +90,9 @@ class BaseDocumentationSpider(scrapy.Spider):
             elif '#' in link.url:
                 dont_filter = True
                 callback = self.check_permalink
+            if self.skip_external:
+                if (self._is_external_link(link.url)):
+                    continue
             yield Request(link.url, method=method, callback=callback, dont_filter=dont_filter,
                           errback=self.error_callback)
 

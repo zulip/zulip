@@ -18,7 +18,7 @@ import signal
 import tornado.autoreload
 import tornado.ioloop
 import random
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile, Client, Realm
 from zerver.decorator import cachify
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
@@ -30,6 +30,8 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
+    notify_tornado_queue_name, tornado_return_queue_name
 import copy
 
 requests_client = requests.Session()
@@ -42,8 +44,10 @@ for host in ['127.0.0.1', 'localhost']:
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
 # due to the accumulation of message data in those queues.
-IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
-EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 5
+DEFAULT_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
+# We garbage-collect every minute; this is totally fine given that the
+# GC scan takes ~2ms with 1000 event queues.
+EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 1
 
 # Capped limit for how long a client can request an event queue
 # to live
@@ -78,7 +82,6 @@ class ClientDescriptor:
         self.current_handler_id = None  # type: Optional[int]
         self.current_client_name = None  # type: Optional[str]
         self.event_queue = event_queue
-        self.queue_timeout = lifespan_secs
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
@@ -89,9 +92,11 @@ class ClientDescriptor:
         self.narrow = narrow
         self.narrow_filter = build_narrow_filter(narrow)
 
-        # Clamp queue_timeout to between minimum and maximum timeouts
-        self.queue_timeout = max(IDLE_EVENT_QUEUE_TIMEOUT_SECS,
-                                 min(self.queue_timeout, MAX_QUEUE_TIMEOUT_SECS))
+        # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
+        # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
+        if lifespan_secs == 0:
+            lifespan_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+        self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> Dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
@@ -178,10 +183,7 @@ class ClientDescriptor:
     def accepts_messages(self) -> bool:
         return self.event_types is None or "message" in self.event_types
 
-    def idle(self, now: float) -> bool:
-        if not hasattr(self, 'queue_timeout'):
-            self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
-
+    def expired(self, now: float) -> bool:
         return (self.current_handler_id is None and
                 now - self.last_connection_time >= self.queue_timeout)
 
@@ -393,41 +395,51 @@ def do_gc_event_queues(to_remove: AbstractSet[str], affected_users: AbstractSet[
             cb(clients[id].user_profile_id, clients[id], clients[id].user_profile_id not in user_clients)
         del clients[id]
 
-def gc_event_queues() -> None:
+def gc_event_queues(port: int) -> None:
     start = time.time()
     to_remove = set()  # type: Set[str]
     affected_users = set()  # type: Set[int]
     affected_realms = set()  # type: Set[int]
     for (id, client) in clients.items():
-        if client.idle(start):
+        if client.expired(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
 
     # We don't need to call e.g. finish_current_handler on the clients
-    # being removed because they are guaranteed to be idle and thus
-    # not have a current handler.
+    # being removed because they are guaranteed to be idle (because
+    # they are expired) and thus not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
     if settings.PRODUCTION:
-        logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+        logging.info(('Tornado %d removed %d expired event queues owned by %d users in %.3fs.' +
                       '  Now %d active queues, %s')
-                     % (len(to_remove), len(affected_users), time.time() - start,
+                     % (port, len(to_remove), len(affected_users), time.time() - start,
                         len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
     statsd.gauge('tornado.active_users', len(user_clients))
 
-def dump_event_queues() -> None:
+def persistent_queue_filename(port: int, last: bool=False) -> str:
+    if settings.TORNADO_PROCESSES == 1:
+        # Use non-port-aware, legacy version.
+        if last:
+            return "/var/tmp/event_queues.json.last"
+        return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('',)
+    if last:
+        return "/var/tmp/event_queues.%d.last.json" % (port,)
+    return settings.JSON_PERSISTENT_QUEUE_FILENAME_PATTERN % ('.' + str(port),)
+
+def dump_event_queues(port: int) -> None:
     start = time.time()
 
-    with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
+    with open(persistent_queue_filename(port), "w") as stored_queues:
         ujson.dump([(qid, client.to_dict()) for (qid, client) in clients.items()],
                    stored_queues)
 
-    logging.info('Tornado dumped %d event queues in %.3fs'
-                 % (len(clients), time.time() - start))
+    logging.info('Tornado %d dumped %d event queues in %.3fs'
+                 % (port, len(clients), time.time() - start))
 
-def load_event_queues() -> None:
+def load_event_queues(port: int) -> None:
     global clients
     start = time.time()
 
@@ -435,13 +447,13 @@ def load_event_queues() -> None:
     # file reading from the loading so that we don't silently fail if we get
     # bad input.
     try:
-        with open(settings.JSON_PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
+        with open(persistent_queue_filename(port), "r") as stored_queues:
             json_data = stored_queues.read()
         try:
             clients = dict((qid, ClientDescriptor.from_dict(client))
                            for (qid, client) in ujson.loads(json_data))
         except Exception:
-            logging.exception("Could not deserialize event queues")
+            logging.exception("Tornado %d could not deserialize event queues" % (port,))
     except (IOError, EOFError):
         pass
 
@@ -450,8 +462,8 @@ def load_event_queues() -> None:
 
         add_to_client_dicts(client)
 
-    logging.info('Tornado loaded %d event queues in %.3fs'
-                 % (len(clients), time.time() - start))
+    logging.info('Tornado %d loaded %d event queues in %.3fs'
+                 % (port, len(clients), time.time() - start))
 
 def send_restart_events(immediate: bool=False) -> None:
     event = dict(type='restart', server_generation=settings.SERVER_GENERATION)  # type: Dict[str, Any]
@@ -461,22 +473,22 @@ def send_restart_events(immediate: bool=False) -> None:
         if client.accepts_event(event):
             client.add_event(event.copy())
 
-def setup_event_queue() -> None:
+def setup_event_queue(port: int) -> None:
     if not settings.TEST_SUITE:
-        load_event_queues()
-        atexit.register(dump_event_queues)
+        load_event_queues(port)
+        atexit.register(dump_event_queues, port)
         # Make sure we dump event queues even if we exit via signal
         signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
-        tornado.autoreload.add_reload_hook(dump_event_queues)
+        tornado.autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
     try:
-        os.rename(settings.JSON_PERSISTENT_QUEUE_FILENAME, "/var/tmp/event_queues.json.last")
+        os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
     except OSError:
         pass
 
     # Set up event queue garbage collection
     ioloop = tornado.ioloop.IOLoop.instance()
-    pc = tornado.ioloop.PeriodicCallback(gc_event_queues,
+    pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port),
                                          EVENT_QUEUE_GC_FREQ_MSECS, ioloop)
     pc.start()
 
@@ -555,6 +567,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         all_public_streams: bool=False,
                         narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
     if settings.TORNADO_SERVER:
+        tornado_uri = get_tornado_uri(user_profile.realm)
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'client_gravatar': ujson.dumps(client_gravatar),
@@ -569,8 +582,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
             req['event_types'] = ujson.dumps(event_types)
 
         try:
-            resp = requests_client.post(settings.TORNADO_SERVER +
-                                        '/api/v1/events/internal',
+            resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                         data=req)
         except requests.adapters.ConnectionError:
             logging.error('Tornado server does not seem to be running, check %s '
@@ -578,7 +590,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                           (settings.ERROR_FILE_LOG_PATH, "tornado.log"))
             raise requests.adapters.ConnectionError(
                 "Django cannot connect to Tornado server (%s); try restarting" %
-                (settings.TORNADO_SERVER))
+                (tornado_uri,))
 
         resp.raise_for_status()
 
@@ -588,6 +600,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[Any, Any]]:
     if settings.TORNADO_SERVER:
+        tornado_uri = get_tornado_uri(user_profile.realm)
         post_data = {
             'queue_id': queue_id,
             'last_event_id': last_event_id,
@@ -596,7 +609,7 @@ def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int
             'secret': settings.SHARED_SECRET,
             'client': 'internal'
         }  # type: Dict[str, Any]
-        resp = requests_client.post(settings.TORNADO_SERVER + '/api/v1/events/internal',
+        resp = requests_client.post(tornado_uri + '/api/v1/events/internal',
                                     data=post_data)
         resp.raise_for_status()
 
@@ -609,6 +622,7 @@ NOTIFY_AFTER_IDLE_HOURS = 1
 def build_offline_notification(user_profile_id: int, message_id: int) -> Dict[str, Any]:
     return {"user_profile_id": user_profile_id,
             "message_id": message_id,
+            "type": "add",
             "timestamp": time.time()}
 
 def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_client: bool) -> None:
@@ -616,14 +630,14 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
     has no active client suffers from a somewhat fundamental race
     condition.  If the client is no longer on the Internet,
     receiver_is_off_zulip will still return true for
-    IDLE_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
     garbage-collected.  This would cause us to reliably miss
     push/email notifying users for messages arriving during the
-    IDLE_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
     example).  We address this by, when the queue is garbage-collected
     at the end of those 10 minutes, checking to see if it's the last
     one, and if so, potentially triggering notifications to the user
-    at that time, resulting in at most a IDLE_EVENT_QUEUE_TIMEOUT_SECS
+    at that time, resulting in at most a DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
     delay in the arrival of their notifications.
 
     As Zulip's APIs get more popular and the mobile apps start using
@@ -772,6 +786,10 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
 
 
 def process_message_event(event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]) -> None:
+    """See
+    https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
+    for high-level documentation on this subsystem.
+    """
     send_to_clients = get_client_info_for_message_event(event_template, users)
 
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
@@ -979,19 +997,21 @@ def process_notification(notice: Mapping[str, Any]) -> None:
 # We use JSON rather than bare form parameters, so that we can represent
 # different types and for compatibility with non-HTTP transports.
 
-def send_notification_http(data: Mapping[str, Any]) -> None:
+def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
-        requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
+        tornado_uri = get_tornado_uri(realm)
+        requests_client.post(tornado_uri + '/notify_tornado', data=dict(
             data   = ujson.dumps(data),
             secret = settings.SHARED_SECRET))
     else:
         process_notification(data)
 
-def send_event(event: Mapping[str, Any],
+def send_event(realm: Realm, event: Mapping[str, Any],
                users: Union[Iterable[int], Iterable[Mapping[str, Any]]]) -> None:
     """`users` is a list of user IDs, or in the case of `message` type
     events, a list of dicts describing the users and metadata about
     the user/message pair."""
-    queue_json_publish("notify_tornado",
+    port = get_tornado_port(realm)
+    queue_json_publish(notify_tornado_queue_name(port),
                        dict(event=event, users=users),
-                       send_notification_http)
+                       lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs))

@@ -3,7 +3,7 @@ set_global('document', 'document-stub');
 
 zrequire('message_fetch');
 
-var noop = function () {};
+var noop = () => {};
 
 set_global('MessageListView', function () { return {}; });
 
@@ -17,7 +17,9 @@ set_global('page_params', {
     have_initial_messages: true,
     pointer: 444,
 });
-
+set_global('ui_report', {
+    hide_error: noop,
+});
 set_global('activity', {});
 set_global('channel', {});
 set_global('document', 'document-stub');
@@ -25,6 +27,9 @@ set_global('message_util', {});
 set_global('message_store', {});
 set_global('muting', {});
 set_global('narrow_state', {});
+set_global('notifications', {
+    hide_or_show_history_limit_message: () => {},
+});
 set_global('pm_list', {});
 set_global('resize', {});
 set_global('server_events', {});
@@ -96,9 +101,9 @@ function config_process_results(messages) {
         assert.deepEqual(arg, messages);
     };
 
-    message_util.add_messages = function (new_messages, msg_list, opts) {
+    message_util.add_old_messages = function (new_messages, msg_list) {
         assert.deepEqual(new_messages, messages);
-        msg_list.add_messages(new_messages, opts);
+        msg_list.add_messages(new_messages);
     };
 
     activity.process_loaded_messages = function (arg) {

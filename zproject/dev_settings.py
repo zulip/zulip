@@ -39,10 +39,11 @@ AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleMobileOauth2Backend',
+    # 'zproject.backends.AzureADAuthBackend',
 )
 
 EXTERNAL_URI_SCHEME = "http://"
-EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
+EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 # SLOW_QUERY_LOGS_STREAM = "errors"
@@ -119,6 +120,7 @@ if FAKE_LDAP_MODE:
     AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)  # type: ignore # tuple hackery
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
+THUMBNAIL_IMAGES = True
 
 SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)
 

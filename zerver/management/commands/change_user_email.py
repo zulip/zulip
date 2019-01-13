@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_change_user_email
+from zerver.lib.actions import do_change_user_delivery_email
 from zerver.lib.management import ZulipBaseCommand
 
 class Command(ZulipBaseCommand):
@@ -22,4 +22,4 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         user_profile = self.get_user(old_email, realm)
 
-        do_change_user_email(user_profile, new_email)
+        do_change_user_delivery_email(user_profile, new_email)

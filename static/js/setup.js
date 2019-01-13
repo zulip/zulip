@@ -1,6 +1,5 @@
 // Miscellaneous early setup.
 
-var csrf_token;
 $(function () {
     if (util.is_mobile()) {
         // if the client is mobile, disable websockets for message sending
@@ -19,10 +18,6 @@ $(function () {
     } else if (!page_params.needs_tutorial) {
         $('#first_run_message').show();
     }
-    // This requires that we used Django's {% csrf_token %} somewhere on the page.
-    csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');
-    window.csrf_token = csrf_token;
-
 
     // This is an issue fix where in jQuery v3 the result of outerHeight on a node
     // that doesn’t exist is now “undefined” rather than “null”, which means it
@@ -36,15 +31,6 @@ $(function () {
     $.fn.safeOuterWidth = function () {
         return $(this).outerWidth.apply(this, arguments) || 0;
     };
-
-    $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                // Only send the token to relative URLs i.e. locally.
-                xhr.setRequestHeader("X-CSRFToken", csrf_token);
-            }
-        },
-    });
 
     // For some reason, jQuery wants this to be attached to an element.
     $(document).ajaxError(function (event, xhr) {

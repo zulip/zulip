@@ -49,6 +49,10 @@ people.add_in_realm(zoe);
 people.add_in_realm(bot);
 people.initialize_current_user(me.user_id);
 
+run_test('my user', () => {
+    assert.equal(presence.get_status(me.user_id), 'active');
+});
+
 run_test('on_mobile_property', () => {
     // TODO: move this test to a new test module directly testing presence.js
     var status_from_timestamp = presence._status_from_timestamp;
@@ -161,6 +165,13 @@ run_test('set_presence_info', () => {
         },
     };
 
+    presences[me.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
     presence.set_info(presences, base_time);
 
     assert.deepEqual(presence.presence_info[alice.user_id],
@@ -169,6 +180,10 @@ run_test('set_presence_info', () => {
 
     assert.deepEqual(presence.presence_info[fred.user_id],
                      { status: 'idle', mobile: false, last_active: 500}
+    );
+
+    assert.deepEqual(presence.presence_info[me.user_id],
+                     { status: 'active', mobile: false, last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[zoe.user_id],
@@ -210,7 +225,7 @@ run_test('last_active_date', () => {
     assert.deepEqual(presence.last_active_date(alice.user_id), {seconds: 500000});
 });
 
-run_test('set_user_status', () => {
+run_test('set_info_for_user', () => {
     var server_time = 500;
     var info = {
         website: {
@@ -220,7 +235,7 @@ run_test('set_user_status', () => {
     };
 
     presence.presence_info[alice.user_id] = undefined;
-    presence.set_user_status(alice.user_id, info, server_time);
+    presence.set_info_for_user(alice.user_id, info, server_time);
 
     var expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);

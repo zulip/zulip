@@ -47,9 +47,11 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         expected_keys = [
             "alert_words",
+            "available_notification_sounds",
             "avatar_source",
             "avatar_url",
             "avatar_url_medium",
+            "away_user_ids",
             "bot_types",
             "can_create_streams",
             "can_subscribe_other_users",
@@ -95,6 +97,7 @@ class HomeTest(ZulipTestCase):
             "login_page",
             "max_avatar_file_size",
             "max_icon_file_size",
+            "max_logo_file_size",
             "max_message_id",
             "maxfilesize",
             "message_content_in_email_notifications",
@@ -104,6 +107,7 @@ class HomeTest(ZulipTestCase):
             "needs_tutorial",
             "never_subscribed",
             "night_mode",
+            "notification_sound",
             "password_min_guesses",
             "password_min_length",
             "pm_content_in_desktop_notifications",
@@ -131,6 +135,7 @@ class HomeTest(ZulipTestCase):
             "realm_digest_emails_enabled",
             "realm_disallow_disposable_email_addresses",
             "realm_domains",
+            "realm_email_address_visibility",
             "realm_email_auth_enabled",
             "realm_email_changes_disabled",
             "realm_emails_restricted_to_domains",
@@ -145,6 +150,8 @@ class HomeTest(ZulipTestCase):
             "realm_invite_by_admins_only",
             "realm_invite_required",
             "realm_is_zephyr_mirror_realm",
+            "realm_logo_source",
+            "realm_logo_url",
             "realm_mandatory_topics",
             "realm_message_content_delete_limit_seconds",
             "realm_message_content_edit_limit_seconds",
@@ -164,6 +171,9 @@ class HomeTest(ZulipTestCase):
             "realm_users",
             "realm_video_chat_provider",
             "realm_waiting_period_threshold",
+            "realm_zoom_api_key",
+            "realm_zoom_api_secret",
+            "realm_zoom_user_id",
             "root_domain_uri",
             "save_stacktraces",
             "search_pills_enabled",
@@ -211,7 +221,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 42)
+        self.assert_length(queries, 43)
         self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
@@ -277,7 +287,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 39)
+            self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -309,7 +319,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 36)
+        self.assert_length(queries2, 37)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')
@@ -355,7 +365,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get('/', dict(stream='Denmark'))
 
             html = result.content.decode('utf-8')
-            self.assertIn('There are new Terms of Service', html)
+            self.assertIn('Accept the new Terms of Service', html)
 
     def test_terms_of_service_first_time_template(self) -> None:
         user = self.example_user('hamlet')

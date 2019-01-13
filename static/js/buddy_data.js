@@ -14,8 +14,10 @@ var exports = {};
 exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
+    away_me: 'is away',
+    away_them: 'is away',
     active: 'is active',
-    idle:   'is not active',
+    idle: 'is not active',
 };
 
 var fade_config = {
@@ -30,20 +32,42 @@ var fade_config = {
     },
 };
 
-function level(status) {
+exports.level = function (user_id) {
+    if (people.is_my_user_id(user_id)) {
+        // Always put current user at the top.
+        return 0;
+    }
+
+    var status = exports.buddy_status(user_id);
+
     switch (status) {
     case 'active':
         return 1;
     case 'idle':
         return 2;
+    case 'away_them':
+        return 3;
     default:
         return 3;
     }
-}
+};
+
+exports.buddy_status = function (user_id) {
+    if (user_status.is_away(user_id)) {
+        if (people.is_my_user_id(user_id)) {
+            return 'away_me';
+        }
+
+        return 'away_them';
+    }
+
+    // get active/idle/etc.
+    return presence.get_status(user_id);
+};
 
 exports.compare_function = function (a, b) {
-    var level_a = level(presence.get_status(a));
-    var level_b = level(presence.get_status(b));
+    var level_a = exports.level(a);
+    var level_b = exports.level(b);
     var diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
@@ -69,6 +93,8 @@ function filter_user_ids(filter_text, user_ids) {
     if (filter_text === '') {
         return user_ids;
     }
+
+    user_ids = _.reject(user_ids, people.is_my_user_id);
 
     var search_terms = filter_text.toLowerCase().split(",");
     search_terms = _.map(search_terms, function (s) {
@@ -96,17 +122,32 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id);
 }
 
+exports.my_user_status = function (user_id) {
+    if (!people.is_my_user_id(user_id)) {
+        return;
+    }
+
+    if (user_status.is_away(user_id)) {
+        return i18n.t('(away)');
+    }
+
+    return i18n.t('(you)');
+};
+
 exports.info_for = function (user_id) {
-    var status = presence.get_status(user_id);
+    var buddy_status = exports.buddy_status(user_id);
     var person = people.get_person_from_user_id(user_id);
+    var my_user_status = exports.my_user_status(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id: user_id,
+        my_user_status: my_user_status,
+        is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        type: status,
-        type_desc: presence_descriptions[status],
+        type: buddy_status,
+        type_desc: presence_descriptions[buddy_status],
     };
 };
 
@@ -118,7 +159,7 @@ exports.get_item = function (user_id) {
 
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange cirle
-    return level(presence.get_status(user_id)) <= 2;
+    return exports.level(user_id) <= 2;
 }
 
 function maybe_shrink_list(user_ids, filter_text) {
@@ -159,8 +200,8 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         var person = people.get_person_from_user_id(user_id);
 
         if (person) {
-            // if the user is you or a bot, do not show in presence data.
-            if (person.is_bot || person.user_id === page_params.user_id) {
+            // if the user is bot, do not show in presence data.
+            if (person.is_bot) {
                 return false;
             }
         }

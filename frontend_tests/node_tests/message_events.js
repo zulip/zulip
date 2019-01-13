@@ -1,6 +1,7 @@
 zrequire('message_events');
 zrequire('message_store');
 zrequire('people');
+zrequire('util');
 
 set_global('alert_words', {});
 set_global('condense', {});
@@ -109,6 +110,7 @@ run_test('update_messages', () => {
             sender_full_name: 'Alice Patel',
             sender_id: 32,
             sent_by_me: false,
+            topic: undefined,
         },
     ]);
 

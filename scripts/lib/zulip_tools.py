@@ -11,12 +11,15 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import json
 import uuid
+import configparser
 
 if False:
-    from typing import Sequence, Set, Any, Dict, List
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import Sequence, Set, Any, Dict, List, Optional
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -37,6 +40,23 @@ YELLOW = '\x1b[33m'
 BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
+
+def overwrite_symlink(src, dst):
+    # type: (str, str) -> None
+    while True:
+        tmp = tempfile.mktemp(
+            prefix='.' + os.path.basename(dst) + '.',
+            dir=os.path.dirname(dst))
+        try:
+            os.symlink(src, tmp)
+        except FileExistsError:
+            continue
+        break
+    try:
+        os.rename(tmp, dst)
+    except Exception:
+        os.remove(tmp)
+        raise
 
 def parse_cache_script_args(description):
     # type: (str) -> argparse.Namespace
@@ -155,10 +175,6 @@ def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(map(shlex.quote, args)),))
-
-    if kwargs.get('shell'):
-        # With shell=True we can only pass string to Popen
-        args = " ".join(args)
 
     try:
         subprocess.check_call(args, **kwargs)
@@ -308,7 +324,27 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
 
 def parse_lsb_release():
     # type: () -> Dict[str, str]
-    distro_info = {}
+    distro_info = {}  # type: Dict[str, str]
+    if os.path.exists("/etc/redhat-release"):
+        with open('/etc/redhat-release', 'r') as fp:
+            info = fp.read().strip().split(' ')
+        vendor = info[0]
+        if vendor == 'CentOS':
+            # E.g. "CentOS Linux release 7.5.1804 (Core)"
+            codename = vendor.lower() + info[3][0]
+        elif vendor == 'Fedora':
+            # E.g. "Fedora release 29 (Twenty Nine)"
+            codename = vendor.lower() + info[2]
+        elif vendor == 'Red':
+            # E.g. "Red Hat Enterprise Linux Server release 7.6 (Maipo)"
+            vendor = 'RedHat'
+            codename = 'rhel' + info[6][0]  # 7
+        distro_info = dict(
+            DISTRIB_CODENAME=codename,
+            DISTRIB_ID=vendor,
+            DISTRIB_FAMILY='redhat',
+        )
+        return distro_info
     try:
         # For performance reasons, we read /etc/lsb-release directly,
         # rather than using the lsb_release command; this saves ~50ms
@@ -321,6 +357,7 @@ def parse_lsb_release():
                 # from lsb_release in the exception code path.
                 continue
             distro_info[k] = v
+        distro_info['DISTRIB_FAMILY'] = 'debian'
     except FileNotFoundError:
         # Unfortunately, Debian stretch doesn't yet have an
         # /etc/lsb-release, so we instead fetch the pieces of data
@@ -329,7 +366,8 @@ def parse_lsb_release():
         codename = subprocess_text_output(["lsb_release", "-cs"])
         distro_info = dict(
             DISTRIB_CODENAME=codename,
-            DISTRIB_ID=vendor
+            DISTRIB_ID=vendor,
+            DISTRIB_FAMILY='debian',
         )
     return distro_info
 
@@ -359,3 +397,45 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
             hash_file.write(new_hash)
             return True
     return False
+
+def is_root() -> bool:
+    if 'posix' in os.name and os.geteuid() == 0:
+        return True
+    return False
+
+def assert_not_running_as_root() -> None:
+    script_name = os.path.abspath(sys.argv[0])
+    if is_root():
+        msg = ("{shortname} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
+               "user before rerunning this, or use \n  su zulip -c '{name} ...'\n"
+               "to switch users and run this as a single command.").format(
+            name=script_name,
+            shortname=os.path.basename(script_name))
+        print(msg)
+        sys.exit(1)
+
+def assert_running_as_root(strip_lib_from_paths: bool=False) -> None:
+    script_name = os.path.abspath(sys.argv[0])
+    # Since these Python scripts are run inside a thin shell wrapper,
+    # we need to replace the paths in order to ensure we instruct
+    # users to (re)run the right command.
+    if strip_lib_from_paths:
+        script_name = script_name.replace("scripts/lib/upgrade", "scripts/upgrade")
+    if not is_root():
+        print("{} must be run as root.".format(script_name))
+        sys.exit(1)
+
+def get_config(config_file, section, key, default_value=""):
+    # type: (configparser.RawConfigParser, str, str, str) -> str
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+def get_config_file() -> configparser.RawConfigParser:
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+    return config_file
+
+def get_deploy_options(config_file):
+    # type: (configparser.RawConfigParser) -> List[str]
+    return get_config(config_file, 'deployment', 'deploy_options', "").strip().split()

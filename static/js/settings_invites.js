@@ -15,10 +15,38 @@ function failed_listing_invites(xhr) {
     ui_report.error(i18n.t("Error listing invites"), xhr, $("#organization-status"));
 }
 
+exports.invited_as_values = {
+    member: {
+        value: 1,
+        description: i18n.t("Member"),
+    },
+    admin_user: {
+        value: 2,
+        description: i18n.t("Organization administrator"),
+    },
+    guest_user: {
+        value: 3,
+        description: i18n.t("Guest user"),
+    },
+};
+
+function add_invited_as_text(invites) {
+    invites.forEach(function (data) {
+        var invited_as_type = _.findKey(exports.invited_as_values, function (elem) {
+            return elem.value === data.invited_as;
+        });
+        data.invited_as_text = exports.invited_as_values[invited_as_type].description;
+    });
+}
+
+
 function populate_invites(invites_data) {
     if (!meta.loaded) {
         return;
     }
+
+    add_invited_as_text(invites_data.invites);
+
     var invites_table = $("#admin_invites_table").expectOne();
 
     var admin_invites_list = list_render.get("admin_invites_list");
@@ -57,7 +85,7 @@ exports.set_up = function () {
     channel.get({
         url: '/json/invites',
         idempotent: true,
-        timeout:  10 * 1000,
+        timeout: 10 * 1000,
         success: exports.on_load_success,
         error: failed_listing_invites,
     });

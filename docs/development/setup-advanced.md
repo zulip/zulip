@@ -2,18 +2,21 @@
 
 Contents:
 
-* [Installing directly on Ubuntu or Debian](#installing-directly-on-ubuntu-or-debian)
+* [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 * [Installing manually on Linux](#installing-manually-on-linux)
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
 
-## Installing directly on Ubuntu or Debian
+## Installing directly on Ubuntu, Debian, Centos, or Fedora
 
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-* Ubuntu 18.04 Bionic, 16.04 Xenial, 14.04 Trusty, or
+* Ubuntu 18.04 Bionic, 16.04 Xenial, 14.04 Trusty
 * Debian 9 Stretch
+* Centos 7 (beta)
+* Fedora 29 (beta)
+* RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.
 
@@ -36,6 +39,9 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
+# On CentOS/RHEL, you must first install epel-release, and then python36,
+# and finally you must run `sudo ln -nsf /usr/bin/python36 /usr/bin/python3`
+# On Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
@@ -121,8 +127,7 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA][zulip-ppa] (for 14.04
-     Trusty, 16.04 Xenial, or 18.04 Bionic):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty, 16.04 Xenial, or 18.04 Bionic):
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
@@ -148,8 +153,9 @@ Now continue with the [All Systems](#all-systems) instructions below.
 
 ### On Fedora 22 (experimental):
 
-These instructions are experimental and may have bugs; patches
-welcome!
+These instructions are both experimental (in terms of stability) and
+deprecated by the new support for doing this with `tools/provision`
+above, and are soon to be removed.
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
@@ -170,8 +176,9 @@ Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instruc
 
 ### On CentOS 7 Core (experimental):
 
-These instructions are experimental and may have bugs; patches
-welcome!
+These instructions are both experimental (in terms of stability) and
+deprecated by the new support for doing this with `tools/provision`
+above, and are soon to be removed.
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
@@ -199,7 +206,7 @@ su zulip
 
 # Enable EPEL 7 repo so we can install rabbitmq-server, redis and
 # other dependencies
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum install epel-release
 
 # Install dependencies
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
@@ -357,7 +364,7 @@ sudo chown -R `whoami`:`whoami` /srv/zulip-emoji-cache
 ./tools/inline-email-css
 ./tools/setup/generate-custom-icon-webfont
 ./tools/setup/build_pygments_data
-./tools/setup/generate_zulip_bots_static_files
+./tools/setup/generate_zulip_bots_static_files.py
 ./scripts/setup/generate_secrets.py --development
 if [ $(uname) = "OpenBSD" ]; then
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/

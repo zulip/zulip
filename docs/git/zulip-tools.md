@@ -5,12 +5,14 @@ time when working with Git on the Zulip project.
 
 ## Set up git repo script
 
-In the `tools` directory of [zulip/zulip][github-zulip-zulip] you'll
-find a bash script `setup-git-repo`. This script installs the Zulip
-pre-commit hook.  This hook will run each time you `git commit` to
-automatically run Zulip's linters on just the files that the commit
-modifies. The hook passes no matter the result of the linter, but you
-should still pay attention to any notices or warnings it displays.
+**Extremely useful**.  In the `tools` directory of
+[zulip/zulip][github-zulip-zulip] you'll find a bash script
+`setup-git-repo`. This script installs a pre-commit hook, which will
+run each time you `git commit` to automatically run
+[Zulip's linter suite](../testing/linters.html) on just the files that
+the commit modifies (which is really fast!). The hook passes no matter
+the result of the linter, but you should still pay attention to any
+notices or warnings it displays.
 
 It's simple to use. Make sure you're in the clone of zulip and run the following:
 
@@ -27,9 +29,9 @@ $ ls -l .git/hooks
 pre-commit -> ../../tools/pre-commit
 ```
 
-## Set up Travis CI integration
+## Configure continuous integration for your Zulip fork
 
-You might also wish to [configure your fork for use with Travis CI][zulip-git-guide-travisci].
+You might also wish to [configure continuous integration for your fork][zulip-git-guide-ci].
 
 ## Reset to pull request
 
@@ -147,4 +149,4 @@ git rebase --continue
 
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [zulip-git-guide-fetch-pr]: ../git/collaborate.html#checkout-a-pull-request-locally
-[zulip-git-guide-travisci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[zulip-git-guide-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

@@ -21,16 +21,18 @@ class AbstractEnum(Enum):
     def value(self) -> None:
         raise AssertionError("Not implemented")
 
-    def __reduce_ex__(self, proto: int) -> NoReturn:
+    def __reduce_ex__(self, proto: object) -> NoReturn:
         raise AssertionError("Not implemented")
 
 class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
     REQUEST_VARIABLE_MISSING = ()
     REQUEST_VARIABLE_INVALID = ()
+    INVALID_JSON = ()
     BAD_IMAGE = ()
     REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
+    CANNOT_DEACTIVATE_LAST_USER = ()
     MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
@@ -39,6 +41,9 @@ class ErrorCode(AbstractEnum):
     CSRF_FAILED = ()
     INVITATION_FAILED = ()
     INVALID_ZULIP_SERVER = ()
+    INVALID_MARKDOWN_INCLUDE_STATEMENT = ()
+    REQUEST_CONFUSING_VAR = ()
+    INVALID_API_KEY = ()
 
 class JsonableError(Exception):
     '''A standardized error format we can turn into a nice JSON HTTP response.
@@ -137,9 +142,50 @@ class StreamDoesNotExistError(JsonableError):
     def msg_format() -> str:
         return _("Stream '{stream}' does not exist")
 
+class CannotDeactivateLastUserError(JsonableError):
+    code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
+    data_fields = ['is_last_admin', 'entity']
+
+    def __init__(self, is_last_admin: bool) -> None:
+        self.is_last_admin = is_last_admin
+        self.entity = _("organization administrator") if is_last_admin else _("user")
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Cannot deactivate the only {entity}.")
+
+class InvalidMarkdownIncludeStatement(JsonableError):
+    code = ErrorCode.INVALID_MARKDOWN_INCLUDE_STATEMENT
+    data_fields = ['include_statement']
+
+    def __init__(self, include_statement: str) -> None:
+        self.include_statement = include_statement
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid markdown include statement: {include_statement}")
+
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
         super().__init__(msg)
 
+class InvalidJSONError(JsonableError):
+    code = ErrorCode.INVALID_JSON
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Malformed JSON")
+
 class BugdownRenderingException(Exception):
     pass
+
+class InvalidAPIKeyError(JsonableError):
+    code = ErrorCode.INVALID_API_KEY
+    http_status_code = 401
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Invalid API key")

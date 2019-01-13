@@ -430,7 +430,7 @@ class UserGroupAPITestCase(ZulipTestCase):
             to=stream_name,
             sender=sender.email,
             client='test suite',
-            subject='whatever',
+            topic='whatever',
             content=content_with_group_mention,
         )
 

@@ -56,6 +56,7 @@ const _resize = {
     resize_page_components: () => {},
 };
 
+set_global('i18n', global.stub_i18n);
 set_global('padded_widget', {
     update_padding: () => {},
 });
@@ -84,6 +85,7 @@ zrequire('people');
 zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('user_search');
+zrequire('user_status');
 zrequire('list_cursor');
 zrequire('activity');
 
@@ -339,6 +341,7 @@ run_test('presence_list_full_update', () => {
     });
 
     assert.deepEqual(user_ids, [
+        me.user_id,
         fred.user_id,
         jill.user_id,
         norbert.user_id,
@@ -424,18 +427,21 @@ run_test('group_update_dom_counts', () => {
 run_test('handlers', () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
+    let me_li;
     let alice_li;
     let fred_li;
 
     function init() {
         reset_setup();
         buddy_list.populate({
-            keys: [alice.user_id, fred.user_id],
+            keys: [me.user_id, alice.user_id, fred.user_id],
         });
 
+        me_li = $.create('me stub');
         alice_li = $.create('alice stub');
         fred_li = $.create('fred stub');
 
+        buddy_list_add(me.user_id, me_li);
         buddy_list_add(alice.user_id, alice_li);
         buddy_list_add(fred.user_id, fred_li);
     }
@@ -769,7 +775,7 @@ run_test('update_huddles_and_redraw', () => {
 
 reset_setup();
 
-run_test('set_user_status', () => {
+run_test('update_presence_info', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -788,21 +794,22 @@ run_test('set_user_status', () => {
         inserted = true;
     };
 
-    presence.presence_info[alice.user_id] = undefined;
-    activity.set_user_status(me.email, info, server_time);
-    assert(!inserted);
+    presence.presence_info[me.user_id] = undefined;
+    activity.update_presence_info(me.email, info, server_time);
+    assert(inserted);
+    assert.deepEqual(presence.presence_info[me.user_id].status, 'active');
 
-    assert.equal(presence.presence_info[alice.user_id], undefined);
-    activity.set_user_status(alice.email, info, server_time);
+    presence.presence_info[alice.user_id] = undefined;
+    activity.update_presence_info(alice.email, info, server_time);
     assert(inserted);
 
     const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
 
-    activity.set_user_status(alice.email, info, server_time);
+    activity.update_presence_info(alice.email, info, server_time);
     blueslip.set_test_data('warn', 'unknown email: foo@bar.com');
     blueslip.set_test_data('error', 'Unknown email for get_user_id: foo@bar.com');
-    activity.set_user_status('foo@bar.com', info, server_time);
+    activity.update_presence_info('foo@bar.com', info, server_time);
     assert(blueslip.get_test_logs('warn').length, 1);
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
@@ -857,4 +864,12 @@ run_test('initialize', () => {
     };
 
     activity.initialize();
+});
+
+run_test('away_status', () => {
+    assert(!user_status.is_away(alice.user_id));
+    activity.on_set_away(alice.user_id);
+    assert(user_status.is_away(alice.user_id));
+    activity.on_revoke_away(alice.user_id);
+    assert(!user_status.is_away(alice.user_id));
 });

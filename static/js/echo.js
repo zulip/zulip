@@ -1,4 +1,5 @@
 var echo = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 var exports = {};
 
@@ -62,7 +63,7 @@ function insert_local_message(message_request, local_id) {
     message.local_id = local_id;
     message.locally_echoed = true;
     message.id = message.local_id;
-    markdown.add_subject_links(message);
+    markdown.add_topic_links(message);
 
     waiting_for_id[message.local_id] = message;
     waiting_for_ack[message.local_id] = message;
@@ -127,14 +128,14 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     if (new_topic !== undefined) {
         topic_data.remove_message({
             stream_id: message.stream_id,
-            topic_name: message.subject,
+            topic_name: util.get_message_topic(message),
         });
 
-        message.subject = new_topic;
+        util.set_message_topic(message, new_topic);
 
         topic_data.add_message({
             stream_id: message.stream_id,
-            topic_name: message.subject,
+            topic_name: util.get_message_topic(message),
             message_id: message.id,
         });
     }

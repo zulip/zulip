@@ -340,7 +340,8 @@ exports.create = function (opts) {
 
         // when the "×" is clicked on a pill, it should delete that pill and then
         // select the next pill (or input).
-        store.$parent.on("click", ".exit", function () {
+        store.$parent.on("click", ".exit", function (e) {
+            e.stopPropagation();
             var $pill = $(this).closest(".pill");
             var $next = $pill.next();
             var id = $pill.data("id");

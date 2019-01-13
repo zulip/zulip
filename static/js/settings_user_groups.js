@@ -61,10 +61,10 @@ exports.populate_user_groups = function () {
             if (exports.can_edit(group_id)) {
                 return;
             }
-            userg.find('.name').attr('contenteditable','false');
-            userg.find('.description').attr('contenteditable','false');
+            userg.find('.name').attr('contenteditable', 'false');
+            userg.find('.description').attr('contenteditable', 'false');
             userg.addClass('ntm');
-            pill_container.find('.input').attr('contenteditable','false');
+            pill_container.find('.input').attr('contenteditable', 'false');
             pill_container.find('.input').css('display', 'none');
             pill_container.addClass('not-editable');
             pill_container.off('keydown', '.pill');

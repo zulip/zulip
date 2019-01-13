@@ -80,9 +80,29 @@ label {
     width: 214px;
 }
 
+.subsection-header > h3 a {
+    color: inherit;
+}
+
+.subsection-header > h3 .fa-question-circle-o {
+    opacity: 0.4;
+    position: relative;
+    top: 1px;
+    left: 5px;
+}
+
+.subsection-header > h3 .fa-question-circle-o:hover {
+    opacity: 1;
+}
+
 .user-avatar-section,
+.realm-logo-section,
 .realm-icon-section {
     position: relative;
+}
+
+.realm-logo-block {
+    margin-bottom: 10px;
 }
 
 .user-avatar-section {
@@ -101,8 +121,9 @@ label {
 }
 
 .user-avatar-section .inline-block,
+.realm-logo-section .inline-block,
 .realm-icon-section .inline-block {
-    margin: 10px 20px 0px 0px;
+    margin: 5px 20px 0px 0px;
     vertical-align: top;
 
     border-radius: 4px;
@@ -127,6 +148,17 @@ label {
 
 .side-padded-container {
     padding: 0px 20px;
+}
+
+#notification_sound,
+#play_notification_sound {
+    display: inline;
+    margin-right: 8px;
+    margin-bottom: 0px;
+}
+
+.attributions_title {
+    margin-top: 24px;
 }
 
 .table.table-condensed.table-striped {
@@ -173,6 +205,13 @@ label {
 .upload-file-name {
     width: 30%;
     word-break: break-all;
+}
+
+#filter-settings {
+    #filter_pattern,
+    #filter_format_string {
+        width: calc(100% - 10em - 6em);
+    }
 }
 
 td .button {
@@ -445,6 +484,11 @@ input[type=checkbox] + .inline-block {
 
 .org-settings-form .organization-submission {
     margin-top: 0px;
+}
+
+.realm-logo-section {
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .realm-icon-section {
@@ -760,8 +804,8 @@ input[type=checkbox].inline-block {
 
 .bots_list .name {
     font-weight: 600;
-    font-size: 1.3rem;
-    margin: 10px 0px 5px 0px;
+    font-size: 1.1rem;
+    margin: 7px 5px;
 
     overflow: hidden;
     line-height: 1.3em;
@@ -822,7 +866,7 @@ input[type=checkbox].inline-block {
 }
 
 .bots_list img.avatar {
-    margin: 10px 5px 10px 10px;
+    margin: 10px 5px 0px 10px;
     height: 50px;
     width: 50px;
     border-radius: 4px;
@@ -830,7 +874,8 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
 }
 
-.bots_list .email {
+.bots_list .email,
+.bots_list .type {
     margin-bottom: 5px;
 }
 
@@ -914,7 +959,6 @@ input[type=checkbox].inline-block {
 
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
-#get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
 .admin-profile-field-form .control-label,
@@ -925,6 +969,7 @@ input[type=checkbox].inline-block {
 }
 
 #upload_avatar_spinner,
+#upload_logo_spinner,
 #upload_icon_spinner {
     font-size: 14px;
     margin: auto;
@@ -1008,6 +1053,14 @@ input[type=checkbox].inline-block {
     min-width: initial !important;
 }
 
+#api_key_buttons {
+    display: inline-flex;
+}
+
+#api_key_buttons .regenerate_api_key {
+    margin-right: 5px;
+}
+
 .right.show .emoji_alt_code {
     font-size: 1.2em;
 }
@@ -1019,6 +1072,15 @@ input[type=checkbox].inline-block {
     height: 200px;
 
     transition: all 0.3s ease;
+
+    #user-avatar-block {
+        background-size: 100%;
+        height: 100%;
+    }
+
+    .guest-avatar::after {
+        outline: 9px solid hsl(0, 0%, 100%);
+    }
 }
 
 #user-settings-avatar:hover #user-avatar-block {
@@ -1049,6 +1111,15 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
     width: 100px;
     height: 100px;
+}
+
+#realm-settings-logo {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.2);
+    /* We allow actual images up to 800x100 in the main display, but the
+       settings UI looks bad beyond ~730px, so we limit the width here */
+    height: 100px;
+    max-width: 720px;
 }
 
 .invite-user-link i {
@@ -1392,8 +1463,24 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
-#account-settings .custom_user_field .field_hint {
-    color: hsl(0, 0%, 67%);
+#account-settings {
+    .user-role button {
+        cursor: default;
+    }
+
+    .custom_user_field .field_hint {
+        color: hsl(0, 0%, 67%);
+    }
+
+    #show_my_user_profile_modal {
+        width: 219px;
+        margin-top: 20px;
+    }
+
+    #show_my_user_profile_modal i {
+        padding-left: 2px;
+        vertical-align: middle;
+    }
 }
 
 #settings_page .custom_user_field {
@@ -1430,16 +1517,6 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
     min-width: 206px;
 }
 
-#account-settings #show_my_user_profile_modal {
-    width: 219px;
-    margin-top: 20px;
-}
-
-#account-settings #show_my_user_profile_modal i {
-    padding-left: 2px;
-    vertical-align: middle;
-}
-
 #settings_page #change_password_modal .change_password_info,
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
@@ -1453,6 +1530,7 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 
 .modal.fade.in {
     top: 50%;
+    pointer-events: all;
 }
 
 #id_realm_create_stream_permission,
@@ -1553,13 +1631,14 @@ input[type=text]#settings_search {
 }
 
 #settings_page .sidebar li .text,
-#settings_page .sidebar li .icon {
+#settings_page .sidebar li .icon,
+#settings_page .sidebar li .locked {
     display: inline-block;
     vertical-align: top;
 }
 
 #settings_page .sidebar li .text {
-    width: calc(100% - 55px);
+    width: calc(100% - 90px);
     padding: 10px 12px 10px 0px;
 }
 
@@ -1567,9 +1646,22 @@ input[type=text]#settings_search {
     width: 18px;
     height: 18px;
     margin: 10px 10px;
+    text-align: center;
 
     font-size: 1.4em;
     color: hsl(0, 0%, 53%);
+
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#settings_page .sidebar li .locked {
+    width: 18px;
+    height: 18px;
+    margin: 14px 8px 6px;
+
+    font-size: 1em;
+    color: hsl(0, 0%, 62%);
 
     background-size: cover;
     background-repeat: no-repeat;
@@ -1596,6 +1688,12 @@ input[type=text]#settings_search {
     margin: 0 0 0 5px;
 }
 
+@media (max-width: 1023px) {
+    #realm-settings-logo {
+        max-width: 600px;
+        height: 75px;
+    }
+}
 
 @media (max-width: 953px) {
     .user-avatar-section,
@@ -1616,6 +1714,11 @@ input[type=text]#settings_search {
     .subsection-failed-status p {
         margin: 5px 0 0 0;
     }
+
+    #realm-settings-logo {
+        max-width: 400px;
+        height: 50px;
+    }
 }
 
 @media (max-width: 786px) {
@@ -1632,6 +1735,14 @@ input[type=text]#settings_search {
 
     #settings_page .sidebar .sidebar-bottom-anchor .border-top {
         border: none;
+    }
+}
+
+@media (max-width: 450px) {
+    #api_key_buttons,
+    #download_zuliprc {
+        flex-direction: column;
+        margin-top: 5px;
     }
 }
 
@@ -1781,9 +1892,13 @@ thead .actions {
 .custom_user_field .pill-container:focus-within {
     border-color: rgba(82, 168, 236, 0.8);
     outline: 0;
-    outline: thin dotted \9;
+    outline: 1px dotted \9;
 
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+#get_api_key_button {
+    display: block;
 }

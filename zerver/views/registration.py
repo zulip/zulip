@@ -14,8 +14,9 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
+    get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
+    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
+    PreregistrationUser
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -23,7 +24,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     email_not_system_bot, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm
+    CreateUserForm, FindMyTeamForm, RealmRedirectForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, REQ, do_login
@@ -34,11 +35,11 @@ from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
-from zerver.views.auth import create_preregistration_user, \
-    redirect_and_log_into_subdomain, \
-    redirect_to_deactivation_notice
+from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
+    redirect_to_deactivation_notice, get_safe_redirect_to
+
 from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend, \
-    ZulipLDAPException, email_auth_enabled
+    ZulipLDAPExceptionOutsideDomain, email_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -79,7 +80,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
-    is_realm_admin = prereg_user.invited_as_admin or realm_creation
+    is_realm_admin = prereg_user.invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] or realm_creation
+    is_guest = prereg_user.invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
 
     try:
         validators.validate_email(email)
@@ -141,7 +143,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 if isinstance(backend, LDAPBackend):
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
-                    except ZulipLDAPException:
+                    except ZulipLDAPExceptionOutsideDomain:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
@@ -219,7 +221,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         if not realm_creation:
             try:
-                existing_user_profile = get_user(email, realm)  # type: Optional[UserProfile]
+                existing_user_profile = get_user_by_delivery_email(email, realm)  # type: Optional[UserProfile]
             except UserProfile.DoesNotExist:
                 existing_user_profile = None
         else:
@@ -279,7 +281,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # make it respect invited_as_admin / is_realm_admin.
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
-                                          prereg_user=prereg_user, is_realm_admin=is_realm_admin,
+                                          prereg_user=prereg_user,
+                                          is_realm_admin=is_realm_admin,
+                                          is_guest=is_guest,
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
@@ -359,10 +363,10 @@ def prepare_activation_url(email: str, request: HttpRequest,
         request.session['confirmation_key'] = {'confirmation_key': activation_url.split('/')[-1]}
     return activation_url
 
-def send_confirm_registration_email(email: str, activation_url: str) -> None:
-    send_email('zerver/emails/confirm_registration', to_email=email,
+def send_confirm_registration_email(email: str, activation_url: str, language: str) -> None:
+    send_email('zerver/emails/confirm_registration', to_emails=[email],
                from_address=FromAddress.tokenized_no_reply_address(),
-               context={'activate_url': activation_url})
+               language=language, context={'activate_url': activation_url})
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
@@ -383,7 +387,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                           context={'message': _('New organization creation disabled')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
-    # subject to a few restrictions on their email address.
+    # with a few restrictions on their email address.
     if request.method == 'POST':
         form = RealmCreationForm(request.POST)
         if form.is_valid():
@@ -398,7 +402,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                 return HttpResponseRedirect(activation_url)
 
             try:
-                send_confirm_registration_email(email, activation_url)
+                send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
                 logging.error('Error in create_realm: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
@@ -412,10 +416,6 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                   'zerver/create_realm.html',
                   context={'form': form, 'current_url': request.get_full_path},
                   )
-
-# This is used only by the casper test in 00-realm-creation.js.
-def confirmation_key(request: HttpRequest) -> HttpResponse:
-    return json_success(request.session.get('confirmation_key'))
 
 def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
@@ -439,7 +439,7 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
             email = form.cleaned_data['email']
             activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe)
             try:
-                send_confirm_registration_email(email, activation_url)
+                send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
                 logging.error('Error in accounts_home: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
@@ -475,6 +475,7 @@ def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)
 
 def find_account(request: HttpRequest) -> HttpResponse:
+    from zerver.context_processors import common_context
     url = reverse('zerver.views.registration.find_account')
 
     emails = []  # type: List[str]
@@ -482,15 +483,13 @@ def find_account(request: HttpRequest) -> HttpResponse:
         form = FindMyTeamForm(request.POST)
         if form.is_valid():
             emails = form.cleaned_data['emails']
-            for user_profile in UserProfile.objects.filter(
+            for user in UserProfile.objects.filter(
                     email__in=emails, is_active=True, is_bot=False, realm__deactivated=False):
-                ctx = {
-                    'full_name': user_profile.full_name,
-                    'email': user_profile.email,
-                    'realm_uri': user_profile.realm.uri,
-                    'realm_name': user_profile.realm.name,
-                }
-                send_email('zerver/emails/find_team', to_user_id=user_profile.id, context=ctx)
+                context = common_context(user)
+                context.update({
+                    'email': user.email,
+                })
+                send_email('zerver/emails/find_team', to_user_ids=[user.id], context=context)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
@@ -515,3 +514,16 @@ def find_account(request: HttpRequest) -> HttpResponse:
                   'zerver/find_account.html',
                   context={'form': form, 'current_url': lambda: url,
                            'emails': emails},)
+
+def realm_redirect(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = RealmRedirectForm(request.POST)
+        if form.is_valid():
+            subdomain = form.cleaned_data['subdomain']
+            realm = get_realm(subdomain)
+            redirect_to = get_safe_redirect_to(request.GET.get("next", ""), realm.uri)
+            return HttpResponseRedirect(redirect_to)
+    else:
+        form = RealmRedirectForm()
+
+    return render(request, 'zerver/realm_redirect.html', context={'form': form})

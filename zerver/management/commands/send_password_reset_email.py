@@ -45,8 +45,9 @@ class Command(ZulipBaseCommand):
                 'email': user_profile.email,
                 'reset_url': generate_password_reset_url(user_profile, default_token_generator),
                 'realm_uri': user_profile.realm.uri,
+                'realm_name': user_profile.realm.name,
                 'active_account_in_realm': True,
             }
-            send_email('zerver/emails/password_reset', to_user_id=user_profile.id,
+            send_email('zerver/emails/password_reset', to_user_ids=[user_profile.id],
                        from_address=FromAddress.tokenized_no_reply_address(),
                        from_name="Zulip Account Security", context=context)

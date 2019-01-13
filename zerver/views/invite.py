@@ -22,12 +22,15 @@ import re
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          invitee_emails_raw: str=REQ("invitee_emails"),
-                         invite_as_admin: Optional[bool]=REQ(validator=check_bool, default=False),
+                         invite_as: Optional[int]=REQ(
+                             validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
                          ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         return json_error(_("Must be an organization administrator"))
-    if invite_as_admin and not user_profile.is_realm_admin:
+    if invite_as not in PreregistrationUser.INVITE_AS.values():
+        return json_error(_("Must be invited as an valid type of user"))
+    if invite_as == PreregistrationUser.INVITE_AS['REALM_ADMIN'] and not user_profile.is_realm_admin:
         return json_error(_("Must be an organization administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
@@ -52,7 +55,7 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
-    do_invite_users(user_profile, invitee_emails, streams, invite_as_admin)
+    do_invite_users(user_profile, invitee_emails, streams, invite_as)
     return json_success()
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:

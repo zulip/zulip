@@ -3,14 +3,22 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
+$postgres_conf = $::osfamily ? {
+  'debian' => "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
+  'redhat' => "/var/lib/pgsql/${zulip::base::postgres_version}/data/postgresql.conf",
+}
+$postgres_restart = $::osfamily ? {
+  'debian' => "pg_ctlcluster ${zulip::base::postgres_version} main restart",
+  'redhat' => "systemctl restart postgresql-${zulip::base::postgres_version}",
+}
 if $zulip::base::release_name == 'trusty' {
   # tools for database setup
   $postgres_appdb_tuned_packages = ['pgtune']
   package { $postgres_appdb_tuned_packages: ensure => 'installed' }
 
-  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
+  file { "${postgres_conf}.template":
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
@@ -44,11 +52,9 @@ vm.dirty_background_ratio = 5
   exec { 'pgtune':
     require     => Package['pgtune'],
     # Let Postgres use half the memory on the machine
-    # lint:ignore:140chars
-    command     => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
-    # lint:endignore
+    command     => "pgtune -T Web -M ${half_memory} -i ${postgres_conf}.template -o ${postgres_conf}",
     refreshonly => true,
-    subscribe   => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
+    subscribe   => File["${postgres_conf}.template"]
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
@@ -74,19 +80,19 @@ vm.dirty_background_ratio = 5
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
-  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
+  file { $postgres_conf:
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$zulip::postgres_appdb_base::postgresql],
     owner   => 'postgres',
     group   => 'postgres',
     mode    => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
-  exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
-    require     => Package["postgresql-${zulip::base::postgres_version}"],
+  exec { $postgres_restart:
+    require     => Package[$zulip::postgres_appdb_base::postgresql],
     refreshonly => true,
-    subscribe   => [ File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"] ]
+    subscribe   => [ File[$postgres_conf] ]
   }
 }
 

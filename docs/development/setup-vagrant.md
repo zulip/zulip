@@ -84,7 +84,7 @@ Jump to:
    [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
    Versions 10.13.2 and above have the bug fixed.
 1. Install [Vagrant][vagrant-dl-macos] (2.0.2).
-2. Install [VirtualBox][vbox-dl-macos] (5.2.20).
+2. Install [VirtualBox][vbox-dl] (latest).
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
@@ -204,7 +204,7 @@ finishing those steps, you will be ready for
 #### Windows 10
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install [VirtualBox][vbox-dl] (version == 5.2.20).
+2. Install [VirtualBox][vbox-dl] (latest).
 3. Install [Vagrant][vagrant-dl-win] (version 2.0.2 is best tested).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
@@ -592,7 +592,7 @@ Next, read the following to learn more about developing for Zulip:
 
 * [Git & GitHub Guide][rtd-git-guide]
 * [Using the Development Environment][rtd-using-dev-env]
-* [Testing][rtd-testing] (and [Configuring Travis CI][travis-ci] to
+* [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
@@ -1062,4 +1062,4 @@ for the IP address that means any IP address can connect to your development ser
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.html
-[travis-ci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork

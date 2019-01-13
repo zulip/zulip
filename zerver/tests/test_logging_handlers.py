@@ -19,7 +19,6 @@ from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
 from zerver.middleware import JsonErrorHandler
-from zerver.views.compatibility import check_compatibility
 from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]

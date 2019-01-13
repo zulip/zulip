@@ -1,8 +1,10 @@
 
 import os
 import hashlib
+import json
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Optional, List, IO, Tuple, Any
 
 from scripts.lib.zulip_tools import subprocess_text_output, run
@@ -17,6 +19,7 @@ if 'TRAVIS' in os.environ:
 
 NODE_MODULES_CACHE_PATH = os.path.join(ZULIP_SRV_PATH, 'zulip-npm-cache')
 YARN_BIN = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/bin/yarn')
+YARN_PACKAGE_JSON = os.path.join(ZULIP_SRV_PATH, 'zulip-yarn/package.json')
 
 DEFAULT_PRODUCTION = False
 
@@ -39,7 +42,9 @@ def generate_sha1sum_node_modules(setup_dir=None, production=DEFAULT_PRODUCTION)
     if os.path.exists(YARN_LOCK_FILE_PATH):
         # For backwards compatibility, we can't assume yarn.lock exists
         sha1sum.update(subprocess_text_output(['cat', YARN_LOCK_FILE_PATH]).encode('utf8'))
-    sha1sum.update(subprocess_text_output([YARN_BIN, '--version']).encode('utf8'))
+    with open(YARN_PACKAGE_JSON, "r") as f:
+        yarn_version = json.loads(f.read())['version']
+        sha1sum.update(yarn_version.encode("utf8"))
     sha1sum.update(subprocess_text_output(['node', '--version']).encode('utf8'))
     yarn_args = get_yarn_args(production=production)
     sha1sum.update(''.join(sorted(yarn_args)).encode('utf8'))

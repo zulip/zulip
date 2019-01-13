@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+# Ensure the directory for LAST_DEPENDENCIES_HASH exists
+mkdir -p /var/lib/zulip
+
+SOURCES_FILE=/etc/apt/sources.list.d/zulip_debathena.list
+STAMP_FILE=/etc/apt/sources.list.d/zulip_debathena.list.apt-update-in-progress
+
+ZULIP_SCRIPTS="$(dirname "$(dirname "$0")")"
+DEPENDENCIES_HASH=$(sha1sum "$ZULIP_SCRIPTS/setup/"*.asc "$0")
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-debathena"
+# Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
+touch "$DEPENDENCIES_HASH_FILE"
+LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
+
+# First, we only do anything in setup-apt-repo if any of its inputs
+# (apt keys, code, etc.)  changed.
+if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
+    exit 0
+fi
+
+# Ensure that the sources file exists
+touch "$SOURCES_FILE"
+
+# Hash it to check if the sources file is changed by the script later.
+zulip_source_hash=$(sha1sum "$SOURCES_FILE")
+
+apt-get install -y lsb-release apt-transport-https gnupg
+
+SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
+
+release=$(lsb_release -sc)
+if [ "$release" = "xenial" ]; then
+    apt-key add "$SCRIPTS_PATH"/setup/debathena-archive.asc
+    cat >$SOURCES_FILE <<EOF
+    deb http://debathena.mit.edu/apt $release debathena debathena-config
+    deb-src http://debathena.mit.edu/apt $release debathena debathena-config
+EOF
+else
+    echo "Unsupported release $release."
+    exit 1
+fi
+
+# Copied blindly from scripts/lib/setup-apt-repo
+if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then
+    echo "zulip.list file did not change; skipping apt-get update"
+else
+    # We create this stamp file to ensure `apt-get update` will be run
+    # the next time this script is invoked, and each time after, until
+    # `apt-get update` finishes successfully.
+    touch "$STAMP_FILE"
+    apt-get update && rm -f "$STAMP_FILE"
+fi
+
+echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"

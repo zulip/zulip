@@ -12,6 +12,8 @@ case $1 in
     -h|--help)
         echo "--help, -h                   show this help message and exit"
         echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+        echo "--skip-check-links           skip checking of links"
+        echo "--skip-external-links        skip checking of external links"
         exit 0
         ;;
     -L|--loglevel)
@@ -19,6 +21,9 @@ case $1 in
         ;;
     --skip-check-links)
         skip_check_links=1
+        ;;
+    --skip-external-links)
+        skip_external_links=1
         ;;
 esac
 
@@ -36,11 +41,17 @@ if [ -n "$skip_check_links" ]; then
     exit 0
 fi
 
-color_message 94 "Testing links in documentation..."
-
 cd ../tools/documentation_crawler
 set +e
-scrapy crawl_with_status documentation_crawler "${loglevel[@]}"
+if [ -n "$skip_external_links" ]; then
+    color_message 94 "Testing only internal links in documentation..."
+    scrapy crawl_with_status documentation_crawler -a skip_external=set "${loglevel[@]}"
+    # calling crawl directly as parameter needs to be passed
+else
+    color_message 94 "Testing links in documentation..."
+    scrapy crawl_with_status documentation_crawler "${loglevel[@]}"
+fi
+
 result=$?
 if [ "$result" = 1 ]; then
     color_message 91 "Failed!"

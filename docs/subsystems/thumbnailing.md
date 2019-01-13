@@ -16,7 +16,9 @@ Thumbor is responsible for a few things in Zulip:
 
 * Serving all image content over HTTPS, even if the original/upstream
   image was hosted on HTTP (this was previously done by `camo` in
-  older versions of Zulip).  This is important to avoid mixed-content
+  older versions of Zulip; the `THUMBOR_SERVES_CAMO` setting controls
+  whether Thumbor will serve the old-style Camo URLs that might be
+  present in old messages).  This is important to avoid mixed-content
   warnings from browsers (which look very bad), and does have some
   real security benefit in protecting our users from malicious
   content.
@@ -28,7 +30,7 @@ Thumbor is responsible for a few things in Zulip:
 Thumbor handles a lot of details for us, varying from signing of
 thumbnailing URLs, to caching for DoS prevention.
 
-It is configured via the `THUMBOR_URL` setting in
+It is configured via the `THUMBOR_URL` and `THUMBNAIL_IMAGES` settings in
 `/etc/zulip/settings.py`; you can host Thumbor on the same machine as
 the Zulip server, or a remote server (which is better for isolation,
 since security bugs in image-processing libraries have in the past

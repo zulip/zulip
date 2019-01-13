@@ -77,7 +77,7 @@ messages until the migration finishes.
 
 Once the migrations are complete, restart Zulip:
 
-    su zulip -c /home/zulip/deployments/current/scripts/restart-server
+    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 
 Now, you can use full-text search across all languages.
 
@@ -100,7 +100,7 @@ Then, set `USING_PGROONGA = False` in `/etc/zulip/settings.py`:
 
 And, restart Zulip:
 
-    su zulip -c /home/zulip/deployments/current/scripts/restart-server
+    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 
 Now, full-text search feature based on PGroonga is disabled.  If you'd
 like, you can also remove the `pgroonga = enabled` line in

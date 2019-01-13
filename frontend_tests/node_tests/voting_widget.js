@@ -1,4 +1,4 @@
-zrequire('voting_widget');
+zrequire('poll_widget');
 
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
@@ -18,7 +18,7 @@ run_test('poll_data_holder my question', () => {
     const sender_id = 99;
     people.my_current_user_id = () => sender_id;
 
-    const data_holder = voting_widget.poll_data_holder(is_my_poll, question);
+    const data_holder = poll_widget.poll_data_holder(is_my_poll, question);
 
     let data = data_holder.get_widget_data();
 
@@ -175,6 +175,7 @@ run_test('activate another person poll', () => {
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
+    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
 
@@ -197,7 +198,7 @@ run_test('activate another person poll', () => {
         vote_button_callback = func;
     };
 
-    voting_widget.activate(opts);
+    poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
     assert.equal(widget_comment_container.html(), 'poll-widget-results');
@@ -279,6 +280,7 @@ run_test('activate another person poll', () => {
     widget_elem.handle_events(add_question_event);
 
     assert(!poll_question_container.visible());
+    assert(poll_comment_container.visible());
 });
 
 run_test('activate own poll', () => {
@@ -324,6 +326,7 @@ run_test('activate own poll', () => {
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
+    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
 
@@ -344,7 +347,7 @@ run_test('activate own poll', () => {
     // Setting visiblity to true as default is false
     poll_question_container.show();
 
-    voting_widget.activate(opts);
+    poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
     assert.equal(widget_comment_container.html(), 'poll-widget-results');
@@ -368,4 +371,5 @@ run_test('activate own poll', () => {
         question_button_callback(e);
         assert.deepEqual(out_data, undefined);
     }
+    assert(poll_comment_container.visible());
 });

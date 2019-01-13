@@ -85,12 +85,29 @@ p.n-margin {
     z-index: 102;
 }
 
+.history-limited-box {
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    border-radius: 4px;
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+    display: none;
+    height: 28x;
+    font-size: 16px;
+    margin: 0 auto 12px;
+    padding: 5px;
+    i {
+        margin: 0 3px 0 1px;
+    }
+    p {
+        margin: 0;
+        padding: 4px;
+    }
+}
+
 .top-messages-logo {
-    position: absolute;
-    left: calc(50% - 12px);
-    top: 57px;
     width: 24px;
     height: 24px;
+    margin: 0 auto 12px;
 }
 
 .top-messages-logo svg circle {
@@ -103,7 +120,7 @@ p.n-margin {
     stroke: hsl(0, 0%, 100%);
 }
 
-#unmute_muted_topic_notification {
+#feedback_container {
     display: none;
     position: absolute;
     width: 400px;
@@ -124,11 +141,11 @@ p.n-margin {
     transition-duration: 0.5s;
 }
 
-#unmute_muted_topic_notification.show {
+#feedback_container.show {
     top: 50px;
 }
 
-#unmute_muted_topic_notification h3 {
+#feedback_container h3 {
     font-size: 16pt;
     margin-top: 2px;
 }
@@ -159,7 +176,7 @@ p.n-margin {
     animation-iteration-count: 1;
 }
 
-#unmute_muted_topic_notification .exit-me {
+#feedback_container .exit-me {
     font-size: 30pt;
     font-weight: 200;
     margin: 5px 0px 0px 10px;
@@ -580,7 +597,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 93px;
+    margin-top: 57px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -626,14 +643,6 @@ td.pointer {
     left: 0px;
     top: 16px;
     @include prefixed-user-select(none);
-}
-
-.include-sender .message_edit_notice::before {
-    content: "(";
-}
-
-.include-sender .message_edit_notice::after {
-    content: ")";
 }
 
 .include-sender .message_time {
@@ -1352,6 +1361,12 @@ div.focused_table {
 .message-edit-timer-control-group {
     float: right;
     display: none;
+    margin-top: 5px;
+}
+
+.message-edit-feature-group {
+    display: inline-block;
+    margin-bottom: -5px;
 }
 
 .topic_edit {
@@ -1530,6 +1545,10 @@ blockquote p {
     vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0, 0%, 100%);
+    }
 }
 
 .home-error-bar {
@@ -1827,8 +1846,8 @@ nav .column-left .nav-logo {
     display: inline-block;
     vertical-align: top;
     margin-top: 8px;
-    width: 25px;
     height: 25px;
+    max-width: 200px;
 }
 
 nav .column-left .company-name {
@@ -2138,6 +2157,27 @@ div.floating_recipient {
     width: 30%;
     height: 30px;
     margin-top: 7px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-section .realm-icon-section .loading_indicator_text,
+.settings-section .realm-logo-section .loading_indicator_text {
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+    margin-top: 0px;
+    margin-left: -12px;
+}
+
+.settings-section .realm-logo-section .loading_indicator_spinner,
+.settings-section .realm-icon-section .loading_indicator_spinner {
+    width: 10%;
+    height: 16px;
+    margin-top: 2px;
     vertical-align: middle;
     display: inline-block;
 }

@@ -5,6 +5,7 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 import argparse
+import configparser
 import hashlib
 import subprocess
 import os
@@ -20,15 +21,13 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip, assert_running_as_root
+
+assert_running_as_root()
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
-
-if os.getuid() != 0:
-    logging.error("Must be run as root.")
-    sys.exit(1)
 
 # make sure we have appropriate file permissions
 os.umask(0o22)
@@ -42,10 +41,19 @@ parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_t
                     help="Skip doing migrations.")
 parser.add_argument("--from-git", dest="from_git", action='store_true',
                     help="Upgrading from git, so run update-prod-static.")
+parser.add_argument("--skip-purge-old-deployments", dest="skip_purge_old_deployments",
+                    action="store_true", help="Skip purging old deployments.")
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+try:
+    tornado_processes = int(config_file.get('application_server', 'tornado_processes'))
+except (configparser.NoSectionError, configparser.NoOptionError):
+    tornado_processes = 1
 
 # Handle issues around upstart on Ubuntu Xenial
 subprocess.check_call(["./scripts/lib/check-upstart"])
@@ -55,10 +63,11 @@ if not args.skip_puppet:
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
 
-if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
-    # For upgrading from <1.4.0.  See discussion in commit 586b23637.
-    subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
-                           os.path.join(deploy_path, "zproject/prod_settings.py")])
+if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings.py"))):
+    # This is normally done in unpack-zulip, but for upgrading from
+    # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
+    os.symlink("/etc/zulip/settings.py",
+               os.path.join(deploy_path, "zproject/prod_settings.py"))
 
 # Now we should have an environment setup where we can run our tools;
 # first, creating the production venv.
@@ -141,7 +150,8 @@ if not args.skip_migrations:
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
+core_server_services = ["zulip-django", "zulip-senders:*",
+                        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*"]
 worker_services = ["zulip-workers:*"]
 # Stop and start thumbor service only if thumbor is installed.
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
@@ -170,4 +180,8 @@ logging.info("Restarting Zulip...")
 subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
 logging.info("Upgrade complete!")
 
-subprocess.check_call(["./scripts/purge-old-deployments"])
+if not args.skip_purge_old_deployments:
+    logging.info("Purging old deployments...")
+    subprocess.check_call(["./scripts/purge-old-deployments"])
+else:
+    logging.info("Skipping purging old deployments.")

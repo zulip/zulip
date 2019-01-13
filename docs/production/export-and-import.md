@@ -55,6 +55,16 @@ archive of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
+The Zulip server you're importing into needs to be running the same
+version of Zulip as the server you exported from, so that the same
+formats are consistent.  For exports from zulipchat.com, usually this
+means you need to upgrade your Zulip server to the latest `master`
+branch, using [upgrade-zulip-from-git][upgrade-zulip-from-git].
+
+First [install a new Zulip server](../production/install.html),
+skipping "Step 3: Create a Zulip organization, and log in" (you'll
+create your Zulip organization via the data import tool instead).
+
 Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data
 export tarball:

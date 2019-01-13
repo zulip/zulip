@@ -17,6 +17,7 @@ set_global('drafts', {});
 set_global('favicon', {});
 set_global('floating_recipient_bar', {});
 set_global('info_overlay', {});
+set_global('message_viewport', {});
 set_global('narrow', {});
 set_global('overlays', {});
 set_global('settings', {});
@@ -36,7 +37,7 @@ run_test('operators_round_trip', () => {
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/topic/algol');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -49,7 +50,7 @@ run_test('operators_round_trip', () => {
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/-topic/visual.20c.2B.2B');
 
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'visual c++', negated: true},
@@ -66,7 +67,7 @@ run_test('operators_round_trip', () => {
     ];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/987-Florida.2C-USA');
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'Florida, USA', negated: false},
     ]);
@@ -77,7 +78,7 @@ run_test('operators_trailing_slash', () => {
     var narrow;
 
     hash = '#narrow/stream/devel/topic/algol/';
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'devel', negated: false},
         {operator: 'topic', operand: 'algol', negated: false},
@@ -101,7 +102,7 @@ run_test('people_slugs', () => {
     ];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
-    narrow = hashchange.parse_narrow(hash.split('/'));
+    narrow = hash_util.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
         {operator: 'sender', operand: 'alice@example.com', negated: false},
     ]);
@@ -113,17 +114,6 @@ run_test('people_slugs', () => {
     assert.equal(hash, '#narrow/pm-with/42-alice');
 });
 
-function stub_trigger(f) {
-    set_global('$', () => {
-        return {
-            trigger: f,
-        };
-    });
-    $.Event = (name) => {
-        assert.equal(name, 'zuliphashchange.zulip');
-    };
-}
-
 function test_helper() {
     var events = [];
     var narrow_terms;
@@ -134,17 +124,16 @@ function test_helper() {
         };
     }
 
-    stub('admin', 'setup_page');
+    stub('admin', 'launch');
     stub('drafts', 'launch');
     stub('favicon', 'reset');
     stub('floating_recipient_bar', 'update');
+    stub('message_viewport', 'stop_auto_scrolling');
     stub('narrow', 'deactivate');
     stub('overlays', 'close_for_hash_change');
-    stub('settings', 'setup_page');
+    stub('settings', 'launch');
     stub('subs', 'launch');
     stub('ui_util', 'blur_active_element');
-
-    stub_trigger(() => { events.push('trigger event'); });
 
     ui_util.change_tab_to = (hash) => {
         events.push('change_tab_to ' + hash);
@@ -181,7 +170,7 @@ run_test('hash_interactions', () => {
     hashchange.initialize();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.deactivate',
         'floating_recipient_bar.update',
@@ -191,7 +180,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.deactivate',
         'floating_recipient_bar.update',
@@ -203,7 +192,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.activate',
         'floating_recipient_bar.update',
@@ -217,7 +206,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'change_tab_to #home',
         'narrow.activate',
         'floating_recipient_bar.update',
@@ -240,7 +229,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: keyboard-shortcuts',
     ]);
 
@@ -250,7 +239,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: message-formatting',
     ]);
 
@@ -260,7 +249,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'info: search-operators',
     ]);
 
@@ -279,8 +268,7 @@ run_test('hash_interactions', () => {
     window.onhashchange();
     helper.assert_events([
         'overlays.close_for_hash_change',
-        'settings.setup_page',
-        'admin.setup_page',
+        'settings.launch',
     ]);
 
     window.location.hash = '#organization/user-list-admin';
@@ -288,8 +276,8 @@ run_test('hash_interactions', () => {
     helper.clear_events();
     window.onhashchange();
     helper.assert_events([
-        'settings.setup_page',
-        'admin.setup_page',
+        'overlays.close_for_hash_change',
+        'admin.launch',
     ]);
 
     var called_back;
@@ -313,9 +301,12 @@ run_test('save_narrow', () => {
         {operator: 'is', operand: 'private'},
     ];
 
+    blueslip.set_test_data('warn', 'browser does not support pushState');
     hashchange.save_narrow(operators);
+    blueslip.clear_test_data();
+
     helper.assert_events([
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'favicon.reset',
     ]);
     assert.equal(window.location.hash, '#narrow/is/private');
@@ -332,7 +323,7 @@ run_test('save_narrow', () => {
     helper.clear_events();
     hashchange.save_narrow(operators);
     helper.assert_events([
-        'trigger event',
+        'message_viewport.stop_auto_scrolling',
         'favicon.reset',
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');

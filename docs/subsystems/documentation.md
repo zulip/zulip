@@ -12,11 +12,15 @@ Zulip has three major documentation systems:
   might look at when deciding whether to use Zulip.  We don't expect
   to ever have more than about 10 pages written using this system.
 
-* General user documentation: Our scalable system for documenting
+* User-facing documentation: Our scalable system for documenting
   Zulip's huge collection of specific features without a lot of
-  overhead or duplicated code/syntax, written in Markdown.  We expect
-  to eventually have around 100 pages written using this system.  The
-  target audience for this system is individual Zulip users.
+  overhead or duplicated code/syntax, written in Markdown.  We have
+  several hundred pages written using this system.  There are 3
+  branches of this documentation: user documentation (with a target
+  audience of individual Zulip users), integrations documentation
+  (with an audience of IT folks setting up integrations), and API
+  documentaiton (with an audience of developers writing code to extend
+  Zulip).
 
 These three systems are documented in detail.
 
@@ -75,7 +79,61 @@ unless there's a good reason, but we don't intend to migrate them,
 either, since this system gives us the flexibility to express these
 important elements of the product clearly.
 
-## General user documentation
+## User facing documentation
 
-To learn more about Zulip's general user documentation, visit our guide
-on writing user documentation [here](user-docs.html).
+All of these systems use a common Markdown-based framework with
+various extensions for macros and variable interpolation,
+(`render_markdown_path` in the code), designed to make it convenient
+to do the things one does a lot in each type of documentation.
+
+### General user documentation
+
+To learn more about Zulip's general user documentation,
+[visit it on zulipchat.com](https://zulipchat.com/help/) or
+[read our guide on writing user documentation](user-docs.html).
+
+### Integrations documentation
+
+To learn more about Zulip's integrations documentation,
+[visit it on zulipchat.com](https://zulipchat.com/integrations/) or
+[read our guide on writing user documentation](integration-docs.html).
+
+### API documentation
+
+To learn more about Zulip's API documentation,
+[visit it on zulipchat.com](https://zulipchat.com/api/) or
+[read our tutorial on writing user documentation](../tutorials/documenting-api-endpoints.html).
+
+## Automated testing
+
+Zulip has several automated test suites that we run in CI and
+recommend running locally when making significant edits:
+
+* `tools/lint` catches a number of common mistakes, and we highly
+recommend
+[using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
+See the [main linter doc](../testing/linters.html) for more details.
+
+* The ReadTheDocs docs are built and the links tested by
+`tools/test-documentation`, which runs `build-docs` and then checks
+all the links.
+
+There's an exclude list for the link testing at this horrible path:
+`tools/documentation_crawler/documentation_crawler/spiders/common/spiders.py`,
+which is relevant for flaky links.
+
+* The API docs are tested by `tools/test-api`, which does some basic
+payload verification.  Note that this test does not check for broken
+links (those are checked by `test-help-documentation`).
+
+* `tools/test-help-documentation` checks `/help/`, `/api/`,
+  `/integrations/`, and the Core website ("portico") documentation for
+  broken links.  Note that the "portico" documentation check has a
+  manually maintained whitelist of pages, so if you add a new page to
+  this site, you will need to edit `PorticoDocumentationSpider` to add it.
+
+* `tools/test-backend test_docs.py` tests various internal details of
+  the variable substitution logic, as well as rendering.  It's
+  essential when editing the documentation framework, but not
+  something you'll usually need to interact with when editing
+  documentation.

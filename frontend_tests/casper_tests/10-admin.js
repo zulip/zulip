@@ -122,14 +122,6 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    // Leave the page and return
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#streams"]');
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#organization"]');
-});
-
 casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
     // Test Setting was saved
     casper.test.assertEval(function () {
@@ -278,7 +270,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
+        casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern');
     });
 });
 

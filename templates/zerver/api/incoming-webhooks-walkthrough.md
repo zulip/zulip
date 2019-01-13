@@ -130,7 +130,7 @@ it must exist before a message can be created in it. (See
 [Step 4: Create tests](#step-4-create-tests) for how to handle this in tests.)
 
 The line that begins `# type` is a mypy type annotation. See [this
-page](https://zulip.readthedocs.io/en/latest/contributing/mypy.html) for details about
+page](https://zulip.readthedocs.io/en/latest/testing/mypy.html) for details about
 how to properly annotate your webhook functions.
 
 In the body of the function we define the body of the message as `Hello! I am
@@ -191,7 +191,7 @@ Now you can test using Zulip itself, or curl on the command line.
 Using `manage.py` from within the Zulip development environment:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
     '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
@@ -236,11 +236,11 @@ class HelloWorldHookTests(WebhookTestCase):
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
-        expected_subject = "Hello World";
+        expected_topic = "Hello World";
         expected_message = "Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
 
         # use fixture named helloworld_hello
-        self.send_and_test_stream_message('hello', expected_subject, expected_message,
+        self.send_and_test_stream_message('hello', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:
@@ -277,11 +277,11 @@ class called something like `test_goodbye_message`:
 
 ```
     def test_goodbye_message(self) -> None:
-        expected_subject = "Hello World";
+        expected_topic = "Hello World";
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
 
         # use fixture named helloworld_goodbye
-        self.send_and_test_stream_message('goodbye', expected_subject, expected_message,
+        self.send_and_test_stream_message('goodbye', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 ```
 
@@ -303,7 +303,7 @@ Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+(zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
 
@@ -352,7 +352,7 @@ stream name:
 To trigger a notification using this webhook, use
 `send_webhook_fixture_message` from the Zulip command line:
 
-    (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+    (zulip-py3-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
     ./manage.py send_webhook_fixture_message \
         --fixture=zerver/tests/fixtures/helloworld/hello.json \
         '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
@@ -503,10 +503,10 @@ class QuerytestHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
-        expected_subject = "Query Test"
+        expected_topic = "Query Test"
         expected_message = "This is a test of custom query parameters."
 
-        self.send_and_test_stream_message('test_one', expected_subject, expected_message,
+        self.send_and_test_stream_message('test_one', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:

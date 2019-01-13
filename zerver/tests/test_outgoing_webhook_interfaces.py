@@ -10,6 +10,7 @@ from zerver.lib.outgoing_webhook import (
     process_success_response,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import TOPIC_NAME
 from zerver.models import Service, get_realm, get_user, SLACK_INTERFACE
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
@@ -130,7 +131,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 'type': 'private',
                 'sender_realm_id': 1,
                 'id': 219,
-                'subject': 'test',
+                TOPIC_NAME: 'test',
                 'content': 'test content',
             }
         }

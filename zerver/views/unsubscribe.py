@@ -34,6 +34,9 @@ def do_welcome_unsubscribe(user_profile: UserProfile) -> None:
 def do_digest_unsubscribe(user_profile: UserProfile) -> None:
     do_change_notification_settings(user_profile, 'enable_digest_emails', False)
 
+def do_login_unsubscribe(user_profile: UserProfile) -> None:
+    do_change_notification_settings(user_profile, 'enable_login_emails', False)
+
 # The keys are part of the URL for the unsubscribe link and must be valid
 # without encoding.
 # The values are a tuple of (display name, unsubscribe function), where the
@@ -41,7 +44,8 @@ def do_digest_unsubscribe(user_profile: UserProfile) -> None:
 email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
     "welcome": ("welcome", do_welcome_unsubscribe),
-    "digest": ("digest", do_digest_unsubscribe)
+    "digest": ("digest", do_digest_unsubscribe),
+    "login": ("login", do_login_unsubscribe)
 }
 
 # Login NOT required. These are for one-click unsubscribes.

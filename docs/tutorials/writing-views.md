@@ -72,7 +72,7 @@ def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
 ```
 
-This decorator ensures that the requst was a POST--here, we're
+This decorator ensures that the request was a POST--here, we're
 checking that the registration submission page is requested with a
 post, and inside the function, we'll check the form data. If you
 request this page with GET, you'll get a HTTP 405 METHOD NOT ALLOWED
@@ -283,7 +283,7 @@ def do_set_realm_name(realm, name):
         property='name',
         value=name,
     )
-    send_event(event, active_user_ids(realm))
+    send_event(realm, event, active_user_ids(realm))
 ```
 
 `realm.save()` actually saves the changes to the realm to the

@@ -18,7 +18,7 @@ function log_in(credentials) {
     }
 
     casper.test.info('Logging in');
-    casper.fill('form[action^="/accounts/login"]', {
+    casper.fill('form[action^="/accounts/login/"]', {
         username: credentials.username,
         password: credentials.password,
     }, true /* submit form */);
@@ -106,7 +106,7 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
+    var log_in_url = "http://zulip.zulipdev.com:9981/accounts/login/";
     exports.init_viewport();
     casper.start(log_in_url, function () {
         exports.initialize_casper(viewport);
@@ -169,7 +169,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
                 currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
-        }, {field_selector:field_selector, str: str, item: item});
+        }, {field_selector: field_selector, str: str, item: item});
     });
 };
 
@@ -239,6 +239,16 @@ exports.then_send_message = function (type, params) {
 
         exports.pm_recipient.set(params.recipient);
         delete params.recipient;
+
+        if (params.stream) {
+            params.stream_message_recipient_stream = params.stream;
+            delete params.stream;
+        }
+
+        if (params.subject) {
+            params.stream_message_recipient_topic = params.subject;
+            delete params.subject;
+        }
 
         casper.fill('form[action^="/json/messages"]', params);
 

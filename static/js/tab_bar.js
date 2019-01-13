@@ -99,13 +99,13 @@ function make_tab_data() {
             tabs.push(make_tab("Search results", false));
         }
 
-        // Third breadcrumb item for stream-subject naarrows
+        // Third breadcrumb item for stream-topic naarrows
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
-            var subject = filter.operands("topic")[0];
+            var topic = filter.operands("topic")[0];
             hashed = hash_util.operators_to_hash(ops.slice(0, 2));
 
-            tabs.push(make_tab(subject, hashed, null));
+            tabs.push(make_tab(topic, hashed, null));
         }
     }
 
@@ -166,13 +166,6 @@ function build_tab_bar() {
 }
 
 exports.initialize = function () {
-    $(document).on('narrow_activated.zulip', function () {
-        build_tab_bar();
-    });
-    $(document).on('narrow_deactivated.zulip', function () {
-        build_tab_bar();
-    });
-
     build_tab_bar();
 };
 

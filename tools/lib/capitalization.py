@@ -23,6 +23,7 @@ IGNORED_PHRASES = [
     r"Google",
     r"Gravatar",
     r"Hamlet",
+    r"Help Center",
     r"HTTP",
     r"ID",
     r"IDs",
@@ -51,12 +52,16 @@ IGNORED_PHRASES = [
     r"WordPress",
     r"XML",
     r"Zephyr",
+    r"Zoom",
     r"Zulip",
+    r"Zulip Account Security",
+    r"Zulip Security",
     r"Zulip Team",
     r"iPhone",
     r"iOS",
     r"Emoji One",
     r"mailinator.com",
+    r"HQ",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",
@@ -93,6 +98,9 @@ IGNORED_PHRASES = [
     r"was too large; the maximum file size is 25MiB.",
     r"selected message",
     r"a-z",
+    r"organization administrator",
+    r"user",
+    r"an unknown operating system",
 
     # SPECIAL CASES
     # Enter is usually capitalized
@@ -116,6 +124,10 @@ IGNORED_PHRASES = [
     # Used to refer custom time limits
     r"\bN\b",
 
+    r"group private messages with __recipient__",
+    r"private messages with __recipient__",
+    r"private messages with yourself",
+
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
     r"or Choose a user",
@@ -126,6 +138,8 @@ IGNORED_PHRASES = [
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",
+    # Subdomain placeholder
+    r"your-organization-url",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

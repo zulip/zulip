@@ -4,7 +4,7 @@ var exports = {};
 
 var widgets = {};
 
-widgets.poll = voting_widget;
+widgets.poll = poll_widget;
 widgets.tictactoe = tictactoe_widget;
 widgets.todo = todo_widget;
 widgets.zform = zform;
@@ -81,8 +81,6 @@ exports.set_widgets_for_list = function () {
         }
     });
 };
-
-$(document).on('narrow_deactivated.zulip', exports.set_widgets_for_list);
 
 exports.handle_event = function (widget_event) {
     var widget_elem = widget_contents[widget_event.message_id];

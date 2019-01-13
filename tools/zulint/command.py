@@ -8,7 +8,10 @@ import logging
 import os
 import subprocess
 import sys
-from typing import Any, Callable, Dict, List, Optional
+
+if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import Any, Callable, Dict, List, Optional
 
 from zulint.printer import print_err, colors
 
@@ -57,8 +60,8 @@ class LinterConfig:
         self.lint_functions[func.__name__] = func
         return func
 
-    def external_linter(self, name, command, target_langs=[]):
-        # type: (str, List[str], List[str]) -> None
+    def external_linter(self, name, command, target_langs=[], pass_targets=True):
+        # type: (str, List[str], List[str], bool) -> None
         """Registers an external linter program to be run as part of the
         linter.  This program will be passed the subset of files being
         linted that have extensions in target_langs.  If there are no
@@ -80,7 +83,11 @@ class LinterConfig:
                     # invoking the external linter.
                     return 0
 
-            p = subprocess.Popen(command + targets,
+            if pass_targets:
+                full_command = command + targets
+            else:
+                full_command = command
+            p = subprocess.Popen(full_command,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT)
 

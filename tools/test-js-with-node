@@ -31,13 +31,15 @@ enforce_fully_covered = {
     'static/js/buddy_data.js',
     'static/js/buddy_list.js',
     'static/js/channel.js',
+    'static/js/color_data.js',
     'static/js/colorspace.js',
     'static/js/common.js',
     'static/js/components.js',
     'static/js/compose_pm_pill.js',
     'static/js/compose_state.js',
     'static/js/compose_ui.js',
-    'static/js/composebox_typeahead.js',
+    # Temporarily removed until we finish merging emoji commits.
+    # 'static/js/composebox_typeahead.js',
     'static/js/dict.js',
     'static/js/emoji.js',
     'static/js/fenced_code.js',
@@ -82,10 +84,12 @@ enforce_fully_covered = {
     'static/js/user_groups.js',
     'static/js/user_pill.js',
     'static/js/user_search.js',
+    'static/js/user_status.js',
     'static/js/util.js',
     'static/js/widgetize.js',
-    'static/js/voting_widget.js',
+    'static/js/poll_widget.js',
     'static/js/search_pill.js',
+    'static/js/billing/billing.js',
 }
 
 parser = argparse.ArgumentParser(USAGE)

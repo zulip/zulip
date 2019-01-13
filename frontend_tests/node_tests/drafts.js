@@ -59,9 +59,23 @@ function stub_timestamp(timestamp, func) {
     Date.prototype.getTime = original_func;
 }
 
+var legacy_draft = {
+    stream: "stream",
+    subject: "lunch",
+    type: "stream",
+    content: "whatever",
+};
+
+var compose_args_for_legacy_draft = {
+    stream: "stream",
+    topic: "lunch",
+    type: "stream",
+    content: "whatever",
+};
+
 var draft_1 = {
     stream: "stream",
-    subject: "topic",
+    topic: "topic",
     type: "stream",
     content: "Test Stream Message",
 };
@@ -77,6 +91,13 @@ var short_msg = {
     type: "stream",
     content: "a",
 };
+
+run_test('legacy', () => {
+    assert.deepEqual(
+        drafts.restore_message(legacy_draft),
+        compose_args_for_legacy_draft
+    );
+});
 
 run_test('draft_model', () => {
     var draft_model = drafts.draft_model;
@@ -147,8 +168,8 @@ run_test('snapshot_message', () => {
         global.compose_state.stream_name = function () {
             return draft.stream;
         };
-        global.compose_state.subject = function () {
-            return draft.subject;
+        global.compose_state.topic = function () {
+            return draft.topic;
         };
     }
 
@@ -234,8 +255,8 @@ run_test('format_drafts', () => {
         updatedAt: new Date(1549958107000).setDate(-2),
     };
 
-    var expected = {
-        id3: {
+    var expected = [
+        {
             draft_id: 'id3',
             is_stream: true,
             stream: 'stream 2',
@@ -244,28 +265,28 @@ run_test('format_drafts', () => {
             raw_content: 'Test Stream Message 2',
             time_stamp: 'Jan 21',
         },
-        id4: {
+        {
             draft_id: 'id4',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message 2',
             time_stamp: 'Jan 26',
         },
-        id5: {
+        {
             draft_id: 'id5',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message 3',
             time_stamp: 'Jan 29',
         },
-        id2: {
+        {
             draft_id: 'id2',
             is_stream: false,
             recipients: 'aaron',
             raw_content: 'Test Private Message',
             time_stamp: 'Jan 30',
         },
-        id1: {
+        {
             draft_id: 'id1',
             is_stream: true,
             stream: 'stream',
@@ -274,7 +295,7 @@ run_test('format_drafts', () => {
             raw_content: 'Test Stream Message',
             time_stamp: '7:55 AM',
         },
-    };
+    ];
 
     blueslip.error = noop;
     $('#drafts_table').append = noop;
@@ -298,6 +319,8 @@ run_test('format_drafts', () => {
         return '<draft table stub>';
     };
 
-    drafts.setup_page();
+    drafts.open_modal = noop;
+    drafts.set_initial_element = noop;
+    drafts.launch();
     timerender.render_now = stub_render_now;
 });

@@ -212,7 +212,7 @@ function build_stream_sidebar_li(sub) {
     var args = {
         name: name,
         id: sub.stream_id,
-        uri: hash_util.by_stream_uri(name),
+        uri: hash_util.by_stream_uri(sub.stream_id),
         not_in_home_view: stream_data.in_home_view(sub.stream_id) === false,
         invite_only: sub.invite_only,
         color: stream_data.get_color(name),
@@ -315,9 +315,9 @@ exports.update_dom_with_unread_counts = function (counts) {
     });
 
     // counts.topic_count maps streams to hashes of topics to counts
-    counts.topic_count.each(function (subject_hash, stream_id) {
-        subject_hash.each(function (count, subject) {
-            topic_list.set_count(stream_id, subject, count);
+    counts.topic_count.each(function (topic_hash, stream_id) {
+        topic_hash.each(function (count, topic) {
+            topic_list.set_count(stream_id, topic, count);
         });
     });
 };
@@ -371,8 +371,8 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
 
     result.stream_id = stream_id;
 
-    var op_subject = filter.operands('topic');
-    result.topic_selected = op_subject.length === 1;
+    var op_topic = filter.operands('topic');
+    result.topic_selected = op_topic.length === 1;
 
     return result;
 };
@@ -453,9 +453,6 @@ function keydown_enter_key() {
         return;
     }
 
-    if (overlays.is_active()) {
-        ui_util.change_tab_to('#home');
-    }
     exports.clear_and_hide_search();
     narrow.by('stream', sub.name, {trigger: 'sidebar enter key'});
 }
@@ -483,9 +480,6 @@ exports.initialize = function () {
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
-        }
-        if (overlays.is_active()) {
-            ui_util.change_tab_to('#home');
         }
         var stream_id = $(e.target).parents('li').attr('data-stream-id');
         var sub = stream_data.get_sub_by_id(stream_id);

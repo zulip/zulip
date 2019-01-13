@@ -1,17 +1,24 @@
 set_global('$', global.make_zjquery());
 
 zrequire('settings_muting');
+zrequire('stream_data');
 zrequire('muting');
 set_global('muting_ui', {});
 
 var noop = function () {};
 
+var frontend = {
+    stream_id: 101,
+    name: 'frontend',
+};
+stream_data.add_sub('frontend', frontend);
+
 run_test('settings', () => {
 
-    muting.add_muted_topic('frontend', 'js');
+    muting.add_muted_topic(frontend.stream_id, 'js');
     var set_up_ui_called = false;
     muting_ui.set_up_muted_topics_ui = function (opts) {
-        assert.deepEqual(opts, [['frontend', 'js']]);
+        assert.deepEqual(opts, [[frontend.stream_id, 'js']]);
         set_up_ui_called = true;
     };
 
@@ -32,20 +39,20 @@ run_test('settings', () => {
     };
 
     var data_called = 0;
-    tr_html.data = function (opts) {
-        if (opts === 'stream') {
+    tr_html.attr = function (opts) {
+        if (opts === 'data-stream-id') {
             data_called += 1;
-            return 'frontend';
+            return frontend.stream_id;
         }
-        if (opts === 'topic') {
+        if (opts === 'data-topic') {
             data_called += 1;
             return 'js';
         }
     };
 
     var unmute_called = false;
-    muting_ui.unmute = function (stream, topic) {
-        assert.equal(stream, 'frontend');
+    muting_ui.unmute = function (stream_id, topic) {
+        assert.equal(stream_id, frontend.stream_id);
         assert.equal(topic, 'js');
         unmute_called = true;
     };

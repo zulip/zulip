@@ -150,6 +150,10 @@ ul.remind_me_popover .remind_icon {
     background-size: cover;
     background-position: center;
     position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0, 0%, 100%);
+    }
 }
 
 #user-profile-modal {
@@ -168,6 +172,10 @@ ul.remind_me_popover .remind_icon {
         border-radius: 5px;
         margin-right: 10px;
         border: 1px solid hsla(0, 0%, 0%, 0.2);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0, 0%, 100%);
+        }
     }
 
     #default-section {
@@ -185,7 +193,7 @@ ul.remind_me_popover .remind_icon {
             }
         }
 
-        #date-joined {
+        #user-type {
             margin-bottom: 15px;
         }
 
@@ -318,4 +326,11 @@ ul.remind_me_popover .remind_icon {
     float: initial;
     position: relative;
     top: 1px;
+}
+
+.popover .cant_add_subs_hint {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: small;
+    text-align: justify;
 }

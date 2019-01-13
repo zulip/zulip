@@ -16,7 +16,7 @@ class TestCustomRules(TestCase):
     def setUp(self) -> None:
         self.all_rules = []  # type: List[Dict[str, Any]]
         with patch('tools.linter_lib.custom_check.custom_check_file', return_value=False) as mock_custom_check_file:
-            by_lang = dict.fromkeys(['py', 'js', 'sh', 'css', 'handlebars', 'html',
+            by_lang = dict.fromkeys(['py', 'js', 'sh', 'scss', 'handlebars', 'html',
                                      'json', 'md', 'txt', 'text', 'yaml', 'rst'],
                                     ['foo/bar.baz'])
             check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)

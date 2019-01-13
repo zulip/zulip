@@ -6,7 +6,7 @@ class BasecampHookTests(WebhookTestCase):
     STREAM_NAME = 'basecamp'
     URL_TEMPLATE = u"/api/v1/external/basecamp?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'basecamp'
-    EXPECTED_SUBJECT = "Zulip HQ"
+    EXPECTED_TOPIC = "Zulip HQ"
 
     def test_basecamp_makes_doc_active(self) -> None:
         expected_message = u"Tomasz activated the document [New doc](https://3.basecamp.com/3688623/buckets/2957043/documents/432522214)"
@@ -129,4 +129,4 @@ class BasecampHookTests(WebhookTestCase):
         self._send_and_test_message('comment_created', expected_message)
 
     def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
-        self.send_and_test_stream_message(fixture_name, self.EXPECTED_SUBJECT, expected_message)
+        self.send_and_test_stream_message(fixture_name, self.EXPECTED_TOPIC, expected_message)

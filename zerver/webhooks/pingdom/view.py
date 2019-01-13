@@ -12,7 +12,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
-PINGDOM_SUBJECT_TEMPLATE = '{name} status.'
+PINGDOM_TOPIC_TEMPLATE = '{name} status.'
 PINGDOM_MESSAGE_TEMPLATE = ('Service {service_url} changed its {type} status'
                             ' from {previous_state} to {current_state}.')
 PINGDOM_MESSAGE_DESCRIPTION_TEMPLATE = 'Description: {description}.'
@@ -49,7 +49,7 @@ def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
-    return PINGDOM_SUBJECT_TEMPLATE.format(name=payload['check_name'])
+    return PINGDOM_TOPIC_TEMPLATE.format(name=payload['check_name'])
 
 
 def get_body_for_http_request(payload: Dict[str, Any]) -> str:

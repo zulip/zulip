@@ -16,20 +16,39 @@ function MessageListView(list, table_name, collapse_messages) {
 
 (function () {
 
-function mention_button_refers_to_me(elem) {
+function get_user_id_for_mention_button(elem) {
     var user_id = $(elem).attr('data-user-id');
-    if (user_id === '*' || people.is_my_user_id(user_id)) {
-        return true;
-    }
-
     // Handle legacy markdown that was rendered before we cut
     // over to using data-user-id.
     var email = $(elem).attr('data-user-email');
-    if (email === '*' || people.is_current_user(email)) {
-        return true;
+
+    if (user_id === "*" || email === "*") {
+        return "*";
     }
 
-    return false;
+    if (user_id) {
+        return user_id;
+    }
+
+    if (email) {
+        // Will return undefined if there's no match
+        var user = people.get_by_email(email);
+        if (user) {
+            return user.user_id;
+        }
+        return;
+    }
+    return;
+}
+
+function get_user_group_id_for_mention_button(elem) {
+    var user_group_id = $(elem).attr('data-user-group-id');
+
+    if (user_group_id) {
+        return user_group_id;
+    }
+
+    return;
 }
 
 function same_day(earlier_msg, later_msg) {
@@ -56,7 +75,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function add_display_time(group, message_container, prev) {
+function update_group_time_display(group, message_container, prev) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     var today = new XDate();
 
@@ -72,8 +91,11 @@ function add_display_time(group, message_container, prev) {
         group.show_date_separator = false;
         group.show_date = timerender.render_date(time, undefined, today)[0].outerHTML;
     }
+}
 
+function update_timestr(message_container) {
     if (message_container.timestr === undefined) {
+        var time = new XDate(message_container.msg.timestamp * 1000);
         message_container.timestr = timerender.stringify_time(time);
     }
 }
@@ -85,9 +107,9 @@ function set_topic_edit_properties(group, message) {
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
-    if (message.subject === compose.empty_topic_placeholder()) {
+    if (util.get_message_topic(message) === compose.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
-    } else if (page_params.is_admin || message_edit.is_topic_editable(message)) {
+    } else if (message_edit.is_topic_editable(message)) {
         group.on_hover_topic_edit = true;
     }
 }
@@ -100,8 +122,8 @@ function populate_group_from_message_container(group, message_container) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
-        group.subject = message_container.msg.subject;
-        group.match_subject = message_container.msg.match_subject;
+        group.topic = util.get_message_topic(message_container.msg);
+        group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
         var sub = stream_data.get_sub(message_container.msg.stream);
@@ -119,7 +141,7 @@ function populate_group_from_message_container(group, message_container) {
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
-    group.subject_links = message_container.msg.subject_links;
+    group.topic_links = util.get_topic_links(message_container.msg);
 
     set_topic_edit_properties(group, message_container.msg);
 
@@ -232,18 +254,19 @@ MessageListView.prototype = {
 
                 if (message_container.msg.stream) {
                     message_container.stream_url =
-                        hash_util.by_stream_uri(message_container.msg.stream);
+                        hash_util.by_stream_uri(message_container.msg.stream_id);
                     message_container.topic_url =
-                        hash_util.by_stream_subject_uri(
-                            message_container.msg.stream,
-                            message_container.msg.subject);
+                        hash_util.by_stream_topic_uri(
+                            message_container.msg.stream_id,
+                            util.get_message_topic(message_container.msg));
                 } else {
                     message_container.pm_with_url =
                         message_container.msg.pm_with_url;
                 }
             }
 
-            add_display_time(current_group, message_container, prev);
+            update_group_time_display(current_group, message_container, prev);
+            update_timestr(message_container);
 
             message_container.include_sender = true;
             if (!message_container.include_recipient &&
@@ -331,11 +354,29 @@ MessageListView.prototype = {
         };
         var first_group;
         var second_group;
+        var curr_msg_container;
+        var prev_msg_container;
 
         if (where === 'top') {
             first_group = _.last(new_message_groups);
             second_group = _.first(this._message_groups);
-            if (this.join_message_groups(first_group, second_group)) {
+        } else {
+            first_group = _.last(this._message_groups);
+            second_group = _.first(new_message_groups);
+        }
+
+        if (first_group) {
+            prev_msg_container = _.last(first_group.message_containers);
+        }
+
+        if (second_group) {
+            curr_msg_container = _.first(second_group.message_containers);
+        }
+
+        var was_joined = this.join_message_groups(first_group, second_group);
+
+        if (where === 'top') {
+            if (was_joined) {
                 // join_message_groups moved the old message to the end of the
                 // new group. We need to replace the old rendered message
                 // group. So we will reuse its ID.
@@ -351,41 +392,29 @@ MessageListView.prototype = {
             } else if (!same_day(second_group.message_containers[0],
                                  first_group.message_containers[0])) {
                 // The groups did not merge, so we need up update the date row for the old group
-                add_display_time(
-                    second_group,
-                    _.first(second_group.message_containers),
-                    _.last(first_group.message_containers)
-                );
+                update_group_time_display(second_group, curr_msg_container, prev_msg_container);
+                update_timestr(curr_msg_container);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = new_message_groups.concat(this._message_groups);
         } else {
-            first_group = _.last(this._message_groups);
-            second_group = _.first(new_message_groups);
-            if (this.join_message_groups(first_group, second_group)) {
+            if (was_joined) {
                 // rerender the last message
-                message_actions.rerender_messages.push(
-                    first_group.message_containers[
-                        first_group.message_containers.length
-                        - second_group.message_containers.length - 1]
-                );
+                message_actions.rerender_messages.push(prev_msg_container);
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
-                var last_msg_container = _.last(first_group.message_containers);
-                var first_msg_container = _.first(second_group.message_containers);
-
-                if (same_day(last_msg_container, first_msg_container)) {
+                if (same_day(prev_msg_container, curr_msg_container)) {
                     // Clear the date if it is the same as the last group
-                    delete second_group.show_date;
-                    delete second_group.show_date_separator;
+                    second_group.show_date = false;
+                    second_group.show_date_separator = undefined;
                 } else {
                     // If we just sent the first message on a new day
                     // in a narrow, make sure we render a date separator.
-                    add_display_time(second_group, first_msg_container,
-                                     last_msg_container);
+                    update_group_time_display(second_group, curr_msg_container, prev_msg_container);
+                    update_timestr(curr_msg_container);
                 }
             }
             message_actions.append_groups = new_message_groups;
@@ -437,20 +466,56 @@ MessageListView.prototype = {
             content.addClass('rtl');
         }
 
-        if (row.hasClass('mention')) {
-            row.find('.user-mention').each(function () {
-                // We give special highlights to the mention buttons
-                // that refer to the current user.
-                if (mention_button_refers_to_me(this)) {
-                    $(this).addClass('user-mention-me');
+        content.find('.user-mention').each(function () {
+            var user_id = get_user_id_for_mention_button(this);
+            // We give special highlights to the mention buttons
+            // that refer to the current user.
+            if (user_id === "*" || people.is_my_user_id(user_id)) {
+                // Either a wildcard mention or us, so mark it.
+                $(this).addClass('user-mention-me');
+            }
+            if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
+                // If it's a mention of a specific user, edit the
+                // mention text to show the user's current name,
+                // assuming that you're not searching for text
+                // inside the highlight.
+                var person = people.get_person_from_user_id(user_id);
+                if (person !== undefined) {
+                    // Note that person might be undefined in some
+                    // unpleasant corner cases involving data import.
+                    $(this).text("@" + person.full_name);
                 }
-            });
-        }
+            }
+        });
+
+        content.find('.user-group-mention').each(function () {
+            var user_group_id = get_user_group_id_for_mention_button(this);
+            var my_user_id = people.my_current_user_id();
+            // Mark user group you're a member of.
+            if (user_groups.is_member_of(user_group_id, my_user_id)) {
+                $(this).addClass('user-mention-me');
+            }
+
+            if (user_group_id && !$(this).find(".highlight").length) {
+                // Edit the mention to show the current name for the
+                // user group, if its not in search.
+                $(this).text("@" + user_groups.get_user_group_from_id(user_group_id).name);
+            }
+        });
+
+        content.find('a.stream').each(function () {
+            var stream_id = $(this).attr('data-stream-id');
+            if (stream_id && !$(this).find(".highlight").length) {
+                // Display the current name for stream if it is not
+                // being displayed in search highlight.
+                $(this).text("#" + stream_data.maybe_get_stream_name(stream_id));
+            }
+        });
 
         // Display emoji (including realm emoji) as text if
         // page_params.emojiset is 'text'.
         if (page_params.emojiset === 'text') {
-            row.find(".emoji").replaceWith(function () {
+            content.find(".emoji").replaceWith(function () {
                 var text = $(this).attr("title");
                 return ":" + text + ":";
             });
@@ -489,6 +554,12 @@ MessageListView.prototype = {
         var message_containers;
 
         var self = this;
+
+        // If we start with the message feed scrolled up (i.e.
+        // the bottom message is not visible), then we will respect
+        // the user's current position after rendering, rather
+        // than auto-scrolling.
+        var started_scrolled_up = message_viewport.is_scrolled_up();
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
@@ -677,15 +748,23 @@ MessageListView.prototype = {
         }
 
         if (list === current_msg_list && messages_are_new) {
-            self._maybe_autoscroll(new_dom_elements);
+            if (started_scrolled_up) {
+                return {
+                    need_user_to_scroll: true,
+                };
+            }
+            var new_messages_height = self._new_messages_height(new_dom_elements);
+            var need_user_to_scroll = self._maybe_autoscroll(new_messages_height);
+
+            if (need_user_to_scroll) {
+                return {
+                    need_user_to_scroll: true,
+                };
+            }
         }
     },
 
-
-    _maybe_autoscroll: function (rendered_elems) {
-        // If we are near the bottom of our feed (the bottom is visible) and can
-        // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
+    _new_messages_height: function (rendered_elems) {
         var new_messages_height = 0;
         var id_of_last_message_sent_by_us = -1;
 
@@ -708,25 +787,44 @@ MessageListView.prototype = {
             }
         }, this);
 
+        return new_messages_height;
+    },
+
+    _scroll_limit: function (selected_row, viewport_info) {
+        // This scroll limit is driven by the TOP of the feed, and
+        // it's the max amount that we can scroll down (or "skooch
+        // up" the messages) before knocking the selected message
+        // out of the feed.
+        var selected_row_top = selected_row.offset().top;
+        var scroll_limit = selected_row_top - viewport_info.visible_top;
+
+        if (scroll_limit < 0) {
+            // This shouldn't happen, but if we're off by a pixel or
+            // something, we can deal with it, and just warn.
+            blueslip.warn('Selected row appears too high on screen.');
+            scroll_limit = 0;
+        }
+
+        return scroll_limit;
+    },
+
+    _maybe_autoscroll: function (new_messages_height) {
+        // If we are near the bottom of our feed (the bottom is visible) and can
+        // scroll up without moving the pointer out of the viewport, do so, by
+        // up to the amount taken up by the new message.
+        //
+        // returns `true` if we need the user to scroll
+
         var selected_row = this.selected_row();
         var last_visible = rows.last_visible();
 
         // Make sure we have a selected row and last visible row. (defensive)
         if (!(selected_row && selected_row.length > 0 && last_visible)) {
-            return;
-        }
-
-        var selected_row_offset = selected_row.offset().top;
-        var info = message_viewport.message_viewport_info();
-        var available_space_for_scroll = selected_row_offset - info.visible_top;
-
-        // Don't scroll if we can't move the pointer up.
-        if (available_space_for_scroll <= 0) {
-            return;
+            return false;
         }
 
         if (new_messages_height <= 0) {
-            return;
+            return false;
         }
 
         if (!activity.has_focus) {
@@ -737,13 +835,19 @@ MessageListView.prototype = {
             // throttled by modern Chrome's aggressive power-saving
             // features.
             blueslip.log("Suppressing scrolldown due to inactivity");
-            return;
+            return false;
         }
 
         // do not scroll if there are any active popovers.
         if (popovers.any_active()) {
-            return;
+            // If a popover is active, then we are pretty sure the
+            // incoming message is not from the user themselves, so
+            // we don't need to tell users to scroll down.
+            return false;
         }
+
+        var info = message_viewport.message_viewport_info();
+        var scroll_limit = this._scroll_limit(selected_row, info);
 
         // This next decision is fairly debatable.  For a big message that
         // would push the pointer off the screen, we do a partial autoscroll,
@@ -753,25 +857,31 @@ MessageListView.prototype = {
         //    c) scroll amount isn't really tied to size of new messages (bad)
         //    d) all the bad things about scrolling for users who want messages
         //       to stay on the screen
-        var scroll_amount = new_messages_height;
+        var scroll_amount;
+        var need_user_to_scroll;
 
-        if (scroll_amount > available_space_for_scroll) {
-            scroll_amount = available_space_for_scroll;
-        }
-
-        // Let's work our way back to whether the user was already dealing
-        // with messages off the screen, in which case we shouldn't autoscroll.
-        var bottom_last_visible = last_visible.offset().top + last_visible.height();
-        var bottom_old_last_visible = bottom_last_visible - new_messages_height;
-        var bottom_viewport = info.visible_top + info.visible_height;
-
-        // Exit if the user was already past the bottom.
-        if (bottom_old_last_visible > bottom_viewport) {
-            return;
+        if (new_messages_height <= scroll_limit) {
+            // This is the happy path where we can just scroll
+            // automatically, and the user will see the new message.
+            scroll_amount = new_messages_height;
+            need_user_to_scroll = false;
+        } else {
+            // Sometimes we don't want to scroll the entire height of
+            // the message, but our callers can give appropriate
+            // warnings if the message is gonna be offscreen.
+            // (Even if we are somewhat constrained here, the message may
+            // still end up being visible, so we do some arithmetic.)
+            scroll_amount = scroll_limit;
+            var offset = message_viewport.offset_from_bottom(last_visible);
+            need_user_to_scroll = offset > scroll_amount;
         }
 
         // Ok, we are finally ready to actually scroll.
-        message_viewport.system_initiated_animate_scroll(scroll_amount);
+        if (scroll_amount > 0) {
+            message_viewport.system_initiated_animate_scroll(scroll_amount);
+        }
+
+        return need_user_to_scroll;
     },
 
 
@@ -948,9 +1058,11 @@ MessageListView.prototype = {
 
     append: function (messages, messages_are_new) {
         var cur_window_size = this._render_win_end - this._render_win_start;
+        var render_info;
+
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
-            this.render(slice_to_render, 'bottom', messages_are_new);
+            render_info = this.render(slice_to_render, 'bottom', messages_are_new);
             this._render_win_end += slice_to_render.length;
         }
 
@@ -959,7 +1071,13 @@ MessageListView.prototype = {
         // newly received message should trigger a rerender so that
         // the new message, which will appear in the viewable area,
         // is rendered.
-        this.maybe_rerender();
+        var needed_rerender = this.maybe_rerender();
+
+        if (needed_rerender) {
+            render_info = {need_user_to_scroll: true};
+        }
+
+        return render_info;
     },
 
     prepend: function (messages) {
@@ -1050,8 +1168,13 @@ MessageListView.prototype = {
 
     _maybe_format_me_message: function (message_container) {
         if (message_container.msg.is_me_message) {
-            // Slice the '<p>/me ' off the front, and '</p>' off the end
-            message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+            // Slice the '<p>/me ' off the front, and '</p>' off the first line
+            // 'p' tag is sliced off to get sender in the same line as the
+            // first line of the message
+            var msg_content = message_container.msg.content;
+            var p_index = msg_content.indexOf('</p>');
+            message_container.status_message = msg_content.slice('<p>/me '.length, p_index) +
+                                                msg_content.slice(p_index + '</p>'.length);
             message_container.include_sender = true;
         } else {
             message_container.status_message = false;

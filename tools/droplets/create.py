@@ -206,7 +206,7 @@ Your remote Zulip dev server has been created!
   `ssh zulipdev@{0}.zulipdev.org` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your ssh keys.
-- Once you log in, you should see `(zulip-venv) ~$`.
+- Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser at
   http://{0}.zulipdev.org:9991.

@@ -2,17 +2,17 @@ var message_events = (function () {
 
 var exports = {};
 
-function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
+function maybe_add_narrowed_messages(messages, msg_list) {
     var ids = [];
     _.each(messages, function (elem) {
         ids.push(elem.id);
     });
 
     channel.get({
-        url:      '/json/messages/matches_narrow',
-        data:     {msg_ids: JSON.stringify(ids),
-                   narrow:  JSON.stringify(narrow_state.public_operators())},
-        timeout:  5000,
+        url: '/json/messages/matches_narrow',
+        data: {msg_ids: JSON.stringify(ids),
+               narrow: JSON.stringify(narrow_state.public_operators())},
+        timeout: 5000,
         success: function (data) {
             if (msg_list !== current_msg_list) {
                 // We unnarrowed in the mean time
@@ -23,8 +23,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             var elsewhere_messages = [];
             _.each(messages, function (elem) {
                 if (data.messages.hasOwnProperty(elem.id)) {
-                    elem.match_subject = data.messages[elem.id].match_subject;
-                    elem.match_content = data.messages[elem.id].match_content;
+                    util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
                     elsewhere_messages.push(elem);
@@ -39,11 +38,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             // message.  Arguably, it's counterproductive complexity.
             new_messages = _.map(new_messages, message_store.add_message_metadata);
 
-            message_util.add_messages(
-                new_messages,
-                msg_list,
-                {messages_are_new: messages_are_new}
-            );
+            message_util.add_new_messages(new_messages, msg_list);
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -53,7 +48,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
+                    maybe_add_narrowed_messages(messages, msg_list);
                 }
             }, 5000);
         }});
@@ -65,21 +60,32 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
 
     unread.process_loaded_messages(messages);
 
-    message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
-    message_util.add_messages(messages, message_list.all, {messages_are_new: true});
+    // message_list.all is a data-only list that we use to populate
+    // other lists, so we always update this
+    message_util.add_new_messages(messages, message_list.all);
+
+    var render_info;
 
     if (narrow_state.active()) {
+        // We do this NOW even though the home view is not active,
+        // because we want the home view to load fast later.
+        message_util.add_new_messages(messages, home_msg_list);
+
         if (narrow_state.filter().can_apply_locally()) {
-            message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
+            render_info = message_util.add_new_messages(messages, message_list.narrowed);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed, true);
+            maybe_add_narrowed_messages(messages, message_list.narrowed);
         }
+    } else {
+        // we're in the home view, so update its list
+        render_info = message_util.add_new_messages(messages, home_msg_list);
     }
 
 
     if (locally_echoed) {
-        notifications.notify_local_mixes(messages);
+        var need_user_to_scroll = render_info && render_info.need_user_to_scroll;
+        notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
     activity.process_loaded_messages(messages);
@@ -150,7 +156,9 @@ exports.update_messages = function update_messages(events) {
             message_edit.end(row);
         }
 
-        if (event.subject !== undefined) {
+        var new_topic = util.get_edit_event_topic(event);
+
+        if (new_topic !== undefined) {
             // A topic edit may affect multiple messages, listed in
             // event.message_ids. event.message_id is still the first message
             // where the user initiated the edit.
@@ -160,12 +168,13 @@ exports.update_messages = function update_messages(events) {
 
             var stream_name = stream_data.get_sub_by_id(event.stream_id).name;
             var compose_stream_name = compose_state.stream_name();
+            var orig_topic = util.get_edit_event_orig_topic(event);
 
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
-                    if (event.orig_subject === compose_state.subject()) {
+                    if (orig_topic === compose_state.topic()) {
                         changed_compose = true;
-                        compose_state.subject(event.subject);
+                        compose_state.topic(new_topic);
                         compose_fade.set_focused_recipient("stream");
                     }
                 }
@@ -178,8 +187,8 @@ exports.update_messages = function update_messages(events) {
                 if (selection_changed_topic) {
                     var current_filter = narrow_state.filter();
                     if (current_filter && stream_name) {
-                        if (current_filter.has_topic(stream_name, event.orig_subject)) {
-                            var new_filter = current_filter.filter_with_new_topic(event.subject);
+                        if (current_filter.has_topic(stream_name, orig_topic)) {
+                            var new_filter = current_filter.filter_with_new_topic(new_topic);
                             var operators = new_filter.operators();
                             var opts = {
                                 trigger: 'topic change',
@@ -199,24 +208,24 @@ exports.update_messages = function update_messages(events) {
                 }
 
                 // Remove the recent topics entry for the old topics;
-                // must be called before we update msg.subject
+                // must be called before we call set_message_topic.
                 topic_data.remove_message({
                     stream_id: msg.stream_id,
-                    topic_name: msg.subject,
+                    topic_name: util.get_message_topic(msg),
                 });
 
                 // Update the unread counts; again, this must be called
-                // before we update msg.subject
+                // before we call set_message_topic.
                 unread.update_unread_topics(msg, event);
 
-                msg.subject = event.subject;
-                msg.subject_links = event.subject_links;
+                util.set_message_topic(msg, new_topic);
+                util.set_topic_links(msg, util.get_topic_links(event));
 
                 // Add the recent topics entry for the new topics; must
-                // be called after we update msg.subject
+                // be called after we call set_message_topic.
                 topic_data.add_message({
                     stream_id: msg.stream_id,
-                    topic_name: msg.subject,
+                    topic_name: util.get_message_topic(msg),
                     message_id: msg.id,
                 });
             });

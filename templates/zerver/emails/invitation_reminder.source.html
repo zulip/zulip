@@ -8,17 +8,22 @@
 <p>{{ _("Hi again,") }}
 </p>
 <p>
-    {% trans %}This is a friendly reminder that {{ referrer_name }} (<a href="mailto:{{ referrer_email }}">{{ referrer_email }}</a>) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.{% endtrans %}
+    {% trans %}
+    This is a friendly reminder that
+    {{ referrer_name }} (<a href="mailto:{{ referrer_email }}">{{ referrer_email }}</a>)
+    wants you to join them on Zulip &mdash; the team communication tool designed for productivity.
+    {% endtrans %}
 </p>
 <p>
-    {{ _("To get started, please click here:") }}
+    {{ _("To get started, click the button below.") }}
     <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
 </p>
 <p>
-    {% trans %}We're here for you at <a href="mailto:{{ support_email }}">{{ support_email }}</a> if you have any questions.{% endtrans %}
-</p>
-<p>
-    {{ _("Cheers,") }}<br />
-    {{ _("The Zulip Team") }}
+    {{ _("This is the last reminder you'll receive for this invitation.") }}
+    {% trans %}
+    Contact us any time at
+    <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+    if you run into trouble, have any feedback, or just want to chat!
+    {% endtrans %}
 </p>
 {% endblock %}

@@ -104,7 +104,7 @@ run_test('filter_table', () => {
     };
 
     var ui_called = false;
-    ui.update_scrollbar = function (elem) {
+    ui.reset_scrollbar = function (elem) {
         ui_called = true;
         assert.equal(elem, $("#subscription_overlay .streams-list"));
     };

@@ -9,7 +9,7 @@ upstream zulipbot {
 }
 
 server {
-    listen 443;
+    listen 443 http2;
     server_name zulip.org;
 
     ssl on;

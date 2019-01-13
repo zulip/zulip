@@ -7,6 +7,7 @@ import platform
 import subprocess
 import glob
 import hashlib
+import traceback
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -16,14 +17,18 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
-    setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
+    setup_virtualenv, VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
+    FEDORA_VENV_DEPENDENCIES
 )
 from scripts.lib.node_cache import setup_node_modules, NODE_MODULES_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
-    from typing import Any
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
+    from typing import Any, List
 
+from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -34,6 +39,15 @@ SUPPORTED_PLATFORMS = {
     "Debian": [
         "stretch",
     ],
+    "CentOS": [
+        "centos7",
+    ],
+    "Fedora": [
+        "fedora29",
+    ],
+    "RedHat": [
+        "rhel7",
+    ]
 }
 
 VENV_PATH = "/srv/zulip-py3-venv"
@@ -99,12 +113,14 @@ else:
 
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
-if not os.path.exists("/usr/bin/lsb_release"):
+is_rhel_based = os.path.exists("/etc/redhat-release")
+if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
     subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
 codename = distro_info['DISTRIB_CODENAME']
+family = distro_info['DISTRIB_FAMILY']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -114,53 +130,78 @@ POSTGRES_VERSION_MAP = {
     "trusty": "9.3",
     "xenial": "9.5",
     "bionic": "10",
+    "centos7": "10",
+    "fedora29": "10",
+    "rhel7": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
-UBUNTU_COMMON_APT_DEPENDENCIES = [
+COMMON_DEPENDENCIES = [
     "closure-compiler",
     "memcached",
     "rabbitmq-server",
-    "redis-server",
-    "hunspell-en-us",
     "supervisor",
     "git",
-    "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
-    "puppet",               # Used by lint
-    "puppet-lint",
+    "puppet",               # Used by lint (`puppet parser validate`)
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
-    "netcat",               # Used for flushing memcached
     "moreutils",            # Used for sponge command
+]
+
+UBUNTU_COMMON_APT_DEPENDENCIES = COMMON_DEPENDENCIES + [
+    "redis-server",
+    "hunspell-en-us",
+    "yui-compressor",
+    "puppet-lint",
+    "netcat",               # Used for flushing memcached
     "libfontconfig1",       # Required by phantomjs
 ] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
 
-APT_DEPENDENCIES = {
-    "stretch": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.6",
-        "postgresql-9.6-tsearch-extras",
-        "postgresql-9.6-pgroonga",
-    ],
-    "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.3",
-        "postgresql-9.3-tsearch-extras",
-        "postgresql-9.3-pgroonga",
-    ],
-    "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.5",
-        "postgresql-9.5-tsearch-extras",
-        "postgresql-9.5-pgroonga",
-    ],
-    "bionic": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-10",
-        "postgresql-10-pgroonga",
-        "postgresql-10-tsearch-extras",
-    ],
-}
+COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
+    "redis",
+    "hunspell-en-US",
+    "yuicompressor",
+    "rubygem-puppet-lint",
+    "nmap-ncat",
+    "fontconfig",  # phantomjs dependencies from here until libstdc++
+    "freetype",
+    "freetype-devel",
+    "fontconfig-devel",
+    "libstdc++"
+] + YUM_THUMBOR_VENV_DEPENDENCIES
 
-TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
+if vendor in ["Ubuntu", "Debian"]:
+    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql-{0}",
+            "postgresql-{0}-tsearch-extras",
+            "postgresql-{0}-pgroonga",
+        ]
+    ]
+elif vendor in ["CentOS", "RedHat"]:
+    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql{0}-server",
+            "postgresql{0}",
+            "postgresql{0}-devel",
+            "postgresql{0}-pgroonga",
+        ]
+    ] + REDHAT_VENV_DEPENDENCIES
+elif vendor == "Fedora":
+    SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
+        pkg.format(POSTGRES_VERSION) for pkg in [
+            "postgresql{0}-server",
+            "postgresql{0}",
+            "postgresql{0}-devel",
+        ]
+    ] + FEDORA_VENV_DEPENDENCIES
+
+if family == 'redhat':
+    TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
+else:
+    TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
     "puppet",
@@ -169,8 +210,6 @@ REPO_STOPWORDS_PATH = os.path.join(
     "postgresql",
     "zulip_english.stop",
 )
-
-LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 user_id = os.getuid()
 
@@ -194,13 +233,97 @@ def setup_shell_profile(shell_profile):
     write_command(source_activate_command)
     write_command('cd /srv/zulip')
 
-def install_apt_deps():
-    # type: () -> None
+def install_system_deps(retry=False):
+    # type: (bool) -> None
+
+    # By doing list -> set -> list conversion, we remove duplicates.
+    deps_to_install = list(set(SYSTEM_DEPENDENCIES))
+
+    if family == 'redhat':
+        install_yum_deps(deps_to_install, retry=retry)
+        return
+
+    if vendor in ["Debian", "Ubuntu"]:
+        install_apt_deps(deps_to_install, retry=retry)
+        return
+
+    raise AssertionError("Invalid vendor")
+
+def install_apt_deps(deps_to_install, retry=False):
+    # type: (List[str], bool) -> None
+    if retry:
+        print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
+        # Since a common failure mode is for the caching in
+        # `setup-apt-repo` to optimize the fast code path to skip
+        # running `apt-get update` when the target apt repository
+        # is out of date, we run it explicitly here so that we
+        # recover automatically.
+        run(['sudo', 'apt-get', 'update'])
+
     # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    # By doing list -> set -> list conversion we remove duplicates.
-    deps_to_install = list(set(APT_DEPENDENCIES[codename]))
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+
+def install_yum_deps(deps_to_install, retry=False):
+    # type: (List[str], bool) -> None
+    print(WARNING + "RedHat support is still experimental.")
+    run(["sudo", "./scripts/lib/setup-yum-repo"])
+
+    # Hack specific to unregistered RHEL system.  The moreutils
+    # package requires a perl module package, which isn't available in
+    # the unregistered RHEL repositories.
+    #
+    # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
+    #        Requires: perl(IPC::Run)
+    yum_extra_flags = []  # type: List[str]
+    if vendor == 'RedHat':
+        exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
+        if exitcode == 1:
+            # TODO this might overkill since `subscription-manager` is already
+            # called in setup-yum-repo
+            if 'Status' in subs_status:
+                # The output is well-formed
+                yum_extra_flags = ["--skip-broken"]
+            else:
+                print("Unrecognized output. `subscription-manager` might not be available")
+
+    run(["sudo", "yum", "install", "-y"] + yum_extra_flags + deps_to_install)
+    if vendor in ["CentOS", "RedHat"]:
+        # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
+        # for python35 and later.
+        run(["sudo", "python36", "-m", "ensurepip"])
+        # `python36` is not aliased to `python3` by default
+        run(["sudo", "ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
+    postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
+    for cmd in ['pg_config', 'pg_isready', 'psql']:
+        # Our tooling expects these postgres scripts to be at
+        # well-known paths.  There's an argument for eventually
+        # making our tooling auto-detect, but this is simpler.
+        run(["sudo", "ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
+             "/usr/bin/%s" % (cmd,)])
+    # Compile tsearch-extras from scratch, since we maintain the
+    # package and haven't built an RPM package for it.
+    run(["sudo", "./scripts/lib/build-tsearch-extras"])
+    if vendor == "Fedora":
+        # Compile PGroonga from scratch, since pgroonga upstream
+        # doesn't provide Fedora packages.
+        run(["sudo", "./scripts/lib/build-pgroonga"])
+
+    # From here, we do the first-time setup/initialization for the postgres database.
+    pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
+    pg_hba_conf = os.path.join(pg_datadir, "pg_hba.conf")
+
+    # We can't just check if the file exists with os.path, since the
+    # current user likely doesn't have permission to read the
+    # pg_datadir directory.
+    if subprocess.call(["sudo", "test", "-e", pg_hba_conf]) == 0:
+        # Skip setup if it has been applied previously
+        return
+
+    run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
+    # Use vendored pg_hba.conf, which enables password authentication.
+    run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
+    # Later steps will ensure postgres is started
 
 def main(options):
     # type: (Any) -> int
@@ -209,14 +332,19 @@ def main(options):
     # project.
     os.chdir(ZULIP_PATH)
 
-    # setup-apt-repo does an `apt-get update`
     # hash the apt dependencies
     sha_sum = hashlib.sha1()
 
-    for apt_depedency in APT_DEPENDENCIES[codename]:
+    for apt_depedency in SYSTEM_DEPENDENCIES:
         sha_sum.update(apt_depedency.encode('utf8'))
-    # hash the content of setup-apt-repo
-    sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    if vendor in ["Ubuntu", "Debian"]:
+        sha_sum.update(open('scripts/lib/setup-apt-repo', 'rb').read())
+    else:
+        # hash the content of setup-yum-repo and build-*
+        sha_sum.update(open('scripts/lib/setup-yum-repo', 'rb').read())
+        build_paths = glob.glob("scripts/lib/build-")
+        for bp in build_paths:
+            sha_sum.update(open(bp, 'rb').read())
 
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
@@ -227,17 +355,10 @@ def main(options):
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
-            install_apt_deps()
+            install_system_deps()
         except subprocess.CalledProcessError:
             # Might be a failure due to network connection issues. Retrying...
-            print(WARNING + "`apt-get -y install` failed while installing dependencies; retrying..." + ENDC)
-            # Since a common failure mode is for the caching in
-            # `setup-apt-repo` to optimize the fast code path to skip
-            # running `apt-get update` when the target apt repository
-            # is out of date, we run it explicitly here so that we
-            # recover automatically.
-            run(['sudo', 'apt-get', 'update'])
-            install_apt_deps()
+            install_system_deps(retry=True)
         with open(apt_hash_file_path, 'w') as hash_file:
             hash_file.write(new_apt_dependencies_hash)
     else:
@@ -285,13 +406,13 @@ def main(options):
     os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
     # create test upload directory `var/test_upload`
     os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
-    # create coverage directory`var/coverage`
+    # create coverage directory `var/coverage`
     os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
-    # create linecoverage directory`var/node-coverage`
+    # create linecoverage directory `var/node-coverage`
     os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
 
-    # `build_emoji` script requires `emoji-datasource` package which we install
-    # via npm and hence it should be executed after we are done installing npm
+    # The `build_emoji` script requires `emoji-datasource` package
+    # which we install via npm; thus this step is after installing npm
     # packages.
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
@@ -299,7 +420,7 @@ def main(options):
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
-    run(["tools/setup/generate_zulip_bots_static_files"])
+    generate_zulip_bots_static_files()
 
     webfont_paths = ["tools/setup/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
     webfont_paths += glob.glob('static/assets/icons/*')
@@ -317,7 +438,12 @@ def main(options):
         print("No need to run `tools/setup/build_pygments_data`.")
 
     run(["scripts/setup/generate_secrets.py", "--development"])
-    run(["tools/update-authors-json", "--use-fixture"])
+
+    update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
+    if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
+        run(["tools/update-authors-json", "--use-fixture"])
+    else:
+        print("No need to run `tools/update-authors-json`.")
 
     email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
@@ -331,6 +457,10 @@ def main(options):
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
         run(["sudo", "service", "postgresql", "restart"])
+    elif family == 'redhat':
+        for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
+            run(["sudo", "-H", "systemctl", "enable", service])
+            run(["sudo", "-H", "systemctl", "start", service])
     elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])

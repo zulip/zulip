@@ -64,6 +64,14 @@ exports.get_notifications = function () {
     return notice_memory;
 };
 
+function get_audio_file_path(audio_element, audio_file_without_extension) {
+    if (audio_element.canPlayType('audio/ogg; codecs="vorbis"')) {
+        return audio_file_without_extension + ".ogg";
+    }
+
+    return audio_file_without_extension + ".mp3";
+}
+
 exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
@@ -86,20 +94,36 @@ exports.initialize = function () {
         supports_sound = false;
     } else {
         supports_sound = true;
+
         $("#notifications-area").append(audio);
+        audio.append($("<source>").attr("loop", "yes"));
+        var source = $("#notifications-area audio source");
+
         if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
-            audio.append(
-                $("<source>").attr("type", "audio/ogg")
-                    .attr("loop", "yes")
-                    .attr("src", "/static/audio/zulip.ogg"));
+            source.attr("type", "audio/ogg");
         } else {
-            audio.append(
-                $("<source>").attr("type", "audio/mpeg")
-                    .attr("loop", "yes")
-                    .attr("src", "/static/audio/zulip.mp3"));
+            source.attr("type", "audio/mpeg");
         }
+
+        var audio_file_without_extension
+            = "/static/audio/notification_sounds/" + page_params.notification_sound;
+        source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
     }
 };
+
+function update_notification_sound_source() {
+    // Simplified version of the source creation in `exports.initialize`, for
+    // updating the source instead of creating it for the first time.
+    var audio = $("#notifications-area audio");
+    var source = $("#notifications-area audio source");
+    var audio_file_without_extension
+        = "/static/audio/notification_sounds/" + page_params.notification_sound;
+    source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
+
+    // Load it so that it is ready to be played; without this the old sound
+    // is played.
+    $("#notifications-area").find("audio")[0].load();
+}
 
 exports.permission_state = function () {
     if (window.Notification === undefined) {
@@ -154,6 +178,29 @@ exports.redraw_title = function () {
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
         window.electron_bridge.send_event('total_unread_count', new_message_count);
+    }
+};
+
+exports.show_history_limit_message = function () {
+    $(".top-messages-logo").hide();
+    $(".history-limited-box").show();
+    narrow.hide_empty_narrow_message();
+};
+
+exports.hide_history_limit_message = function () {
+    $(".top-messages-logo").show();
+    $(".history-limited-box").hide();
+};
+
+exports.hide_or_show_history_limit_message = function (msg_list) {
+    if (msg_list !== current_msg_list) {
+        return;
+    }
+
+    if (msg_list.fetch_status.history_limited()) {
+        notifications.show_history_limit_message();
+    } else {
+        notifications.hide_history_limit_message();
     }
 };
 
@@ -243,6 +290,8 @@ function process_notification(notification) {
     ui.replace_emoji_with_text(content);
     content = content.text();
 
+    var topic = util.get_message_topic(message);
+
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
     }
@@ -260,7 +309,7 @@ function process_notification(notification) {
         notification_source = 'pm';
     } else {
         key = message.sender_full_name + " to " +
-              message.stream + " > " + message.subject;
+              message.stream + " > " + topic;
         if (message.mentioned) {
             notification_source = 'mention';
         } else if (message.alerted) {
@@ -308,10 +357,10 @@ function process_notification(notification) {
     }
 
     if (message.type === "stream") {
-        title += " (to " + message.stream + " > " + message.subject + ")";
+        title += " (to " + message.stream + " > " + topic + ")";
         raw_operators = [
             {operator: "stream", operand: message.stream},
-            {operator: "topic", operand: message.subject},
+            {operator: "topic", operand: topic},
         ];
     }
 
@@ -326,7 +375,7 @@ function process_notification(notification) {
         notification_object.onclick = function () {
             notification_object.cancel();
             if (feature_flags.clicking_notification_causes_narrow) {
-                narrow.by_subject(message.id, {trigger: 'notification'});
+                narrow.by_topic(message.id, {trigger: 'notification'});
             }
             window.focus();
         };
@@ -347,7 +396,7 @@ function process_notification(notification) {
                     // by calling `window.focus()` as well as don't need to clear the
                     // notification since it is the default behavior in Firefox.
                     if (feature_flags.clicking_notification_causes_narrow) {
-                        narrow.by_subject(message.id, {trigger: 'notification'});
+                        narrow.by_topic(message.id, {trigger: 'notification'});
                     }
                 };
             } else {
@@ -399,7 +448,7 @@ exports.message_is_notifiable = function (message) {
     }
 
     if (message.type === "stream" &&
-        muting.is_topic_muted(message.stream, message.subject)) {
+        muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
         return false;
     }
 
@@ -502,15 +551,17 @@ exports.received_messages = function (messages) {
 
 function get_message_header(message) {
     if (message.type === "stream") {
-        return message.stream + " > " + message.subject;
+        return message.stream + " > " + util.get_message_topic(message);
     }
     if (message.display_recipient.length > 2) {
-        return "group PM with " + message.display_reply_to;
+        return i18n.t("group private messages with __recipient__",
+                      {recipient: message.display_reply_to});
     }
     if (people.is_current_user(message.reply_to)) {
-        return "PM with yourself";
+        return i18n.t("private messages with yourself");
     }
-    return "PM with " + message.display_reply_to;
+    return i18n.t("private messages with __recipient__",
+                  {recipient: message.display_reply_to});
 }
 
 exports.get_local_notify_mix_reason = function (message) {
@@ -521,21 +572,21 @@ exports.get_local_notify_mix_reason = function (message) {
         return;
     }
 
-    if (message.type === "stream" && muting.is_topic_muted(message.stream, message.subject)) {
-        return "Sent! Your message was sent to a topic you have muted.";
+    if (message.type === "stream" && muting.is_topic_muted(message.stream_id, util.get_message_topic(message))) {
+        return i18n.t("Sent! Your message was sent to a topic you have muted.");
     }
 
     if (message.type === "stream" && !stream_data.in_home_view(message.stream_id)) {
-        return "Sent! Your message was sent to a stream you have muted.";
+        return i18n.t("Sent! Your message was sent to a stream you have muted.");
     }
 
     // offscreen because it is outside narrow
     // we can only look for these on non-search (can_apply_locally) messages
     // see also: exports.notify_messages_outside_current_search
-    return "Sent! Your message is outside your current narrow.";
+    return i18n.t("Sent! Your message is outside your current narrow.");
 };
 
-exports.notify_local_mixes = function (messages) {
+exports.notify_local_mixes = function (messages, need_user_to_scroll) {
     /*
         This code should only be called when we are locally echoing
         messages.  It notifies users that their messages aren't
@@ -557,13 +608,23 @@ exports.notify_local_mixes = function (messages) {
         var reason = exports.get_local_notify_mix_reason(message);
 
         if (!reason) {
-            // This is more than normal, just continue on.
+            if (need_user_to_scroll) {
+                reason = i18n.t("Sent! Scroll down to view your message.");
+                exports.notify_above_composebox(reason, "", null, "");
+                setTimeout(function () {
+                    $('#out-of-view-notification').hide();
+                }, 3000);
+            }
+
+            // This is the HAPPY PATH--for most messages we do nothing
+            // other than maybe sending the above message.
             return;
         }
 
         var link_msg_id = message.id;
-        var link_class = "compose_notification_narrow_by_subject";
-        var link_text = "Narrow to " + get_message_header(message);
+        var link_class = "compose_notification_narrow_by_topic";
+        var link_text = i18n.t("Narrow to __- message_recipient__",
+                               {message_recipient: get_message_header(message)});
 
         exports.notify_above_composebox(reason, link_class, link_msg_id, link_text);
     });
@@ -576,10 +637,12 @@ exports.notify_messages_outside_current_search = function (messages) {
         if (!people.is_current_user(message.sender_email)) {
             return;
         }
-        exports.notify_above_composebox("Sent! Your recent message is outside the current search.",
-                                        "compose_notification_narrow_by_subject",
+        var link_text = i18n.t("Narrow to __- message_recipient__",
+                               {message_recipient: get_message_header(message)});
+        exports.notify_above_composebox(i18n.t("Sent! Your recent message is outside the current search."),
+                                        "compose_notification_narrow_by_topic",
                                         message.id,
-                                        "Narrow to " + get_message_header(message));
+                                        link_text);
     });
 };
 
@@ -606,9 +669,9 @@ exports.reify_message_id = function (opts) {
 };
 
 exports.register_click_handlers = function () {
-    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_subject', function (e) {
+    $('#out-of-view-notification').on('click', '.compose_notification_narrow_by_topic', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        narrow.by_subject(msgid, {trigger: 'compose_notification'});
+        narrow.by_topic(msgid, {trigger: 'compose_notification'});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -632,6 +695,11 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // particular stream should receive notifications.
     if (settings_notifications.notification_settings.indexOf(notification_name) !== -1) {
         page_params[notification_name] = setting;
+    }
+
+    if (notification_name === "notification_sound") {
+        // Change the sound source with the new page `notification_sound`.
+        update_notification_sound_source();
     }
 };
 

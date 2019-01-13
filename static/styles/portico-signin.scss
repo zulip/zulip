@@ -127,6 +127,11 @@ html {
     font-weight: 400;
 }
 
+.app-main.goto-account-page-container {
+    width: 500px;
+    font-weight: 400;
+}
+
 .app-main.confirm-continue-page-container {
     width: 400px;
     font-weight: 400;
@@ -224,6 +229,11 @@ html {
     margin-top: 0px;
 }
 
+.account-accept-terms-page .terms-of-service .input-group {
+    width: 450px;
+    margin: 0 auto 10px;
+}
+
 .register-account .terms-of-service .input-group {
     width: 330px;
     margin: 0 auto 10px;
@@ -308,7 +318,6 @@ html {
 .new-style .alert:not(.alert-info) {
     padding: 0;
     margin-bottom: 0;
-
     font-weight: 600;
     font-size: 0.7em;
     line-height: 1.2;
@@ -469,7 +478,8 @@ html {
     color: hsl(0, 0%, 67%);
 }
 
-.register-account .pitch {
+.register-account .pitch,
+.account-accept-terms-page .pitch {
     margin-bottom: 5px;
     text-align: center;
 }
@@ -625,6 +635,16 @@ button.login-google-button {
     transform: translateX(15px) translateY(13px);
 }
 
+.azure-wrapper::before {
+    content: "\f17a";
+    position: absolute;
+
+    font-family: "FontAwesome";
+    font-size: 2rem;
+    color: hsl(0, 0%, 20%);
+    transform: translateX(15px) translateY(13px);
+}
+
 .login-page-container .right-side .actions,
 .forgot-password-container .actions {
     margin: 20px 0px 0px;
@@ -640,6 +660,18 @@ button.login-google-button {
     top: 5px;
 
     font-size: 0.8em;
+}
+
+#find-account-section {
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    #find-account-link {
+        color: hsl(164, 100%, 23%);
+    }
 }
 
 .split-view .actions a,
@@ -726,6 +758,11 @@ button.login-google-button {
     width: 150px;
 }
 
+#registration #id_team_subdomain-error {
+    margin-top: 5px;
+    display: block;
+}
+
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
     margin-top: 12px;
     margin-left: 180px;
@@ -741,7 +778,6 @@ button.login-google-button {
 
 #registration #subdomain_section .inline-block {
     width: 100%;
-    overflow-x: auto;
 }
 
 #registration #subdomain_section .or {
@@ -831,6 +867,21 @@ button.login-google-button {
     margin-right: 10px;
 }
 
+#profile_info_section {
+    #profile_avatar {
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 8px;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 10px;
+    }
+
+    #profile_full_name {
+        font-size: 1.2rem;
+        font-weight: 400;
+    }
+}
+
 /* -- media queries -- */
 
 @media (max-width: 950px) {
@@ -917,6 +968,7 @@ button.login-google-button {
     .app-main.register-page-container,
     .app-main.login-page-container,
     .app-main.find-account-page-container,
+    .app-main.goto-account-page-container,
     .app-main.forgot-password-container {
         display: inline-block;
         padding: 20px;
@@ -977,4 +1029,50 @@ button.login-google-button {
     font-size: 1.2rem;
     height: 45px;
     width: 325px;
+    &:focus {
+        outline: none;
+    }
+}
+
+.goto-account-page {
+    #realm_redirect_subdomain {
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+    }
+
+    #realm_redirect_external_host {
+        font-size: 20px;
+        top: 13px;
+        left: 5px;
+        position: relative;
+    }
+
+    #realm_redirect_description {
+        top: 15px;
+        position: relative;
+    }
+
+    #enter-realm-button {
+        margin-top: 14px;
+    }
+
+    #find-account-section {
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 500;
+        font-size: 0.9em;
+    }
+
+    #create-organization-section {
+        text-align: center;
+        margin-top: 20px;
+        font-weight: 500;
+        margin-left: -28px;
+        font-size: 0.9em;
+    }
+
+    .find-account-link {
+        color: hsl(165, 100.0%, 14.7%);
+    }
 }

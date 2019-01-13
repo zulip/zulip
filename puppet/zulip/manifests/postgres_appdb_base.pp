@@ -4,37 +4,67 @@ class zulip::postgres_appdb_base {
   include zulip::supervisor
   include zulip::process_fts_updates
 
-  $appdb_packages = [
-    # Needed for our full text search system
-    "postgresql-${zulip::base::postgres_version}-tsearch-extras",
-  ]
-  zulip::safepackage { $appdb_packages: ensure => 'installed' }
+  case $::osfamily {
+    'debian': {
+      include zulip::apt_repository
+      $postgresql = "postgresql-${zulip::base::postgres_version}"
+      $appdb_packages = [
+        # Needed for our full text search system
+        "${postgresql}-tsearch-extras",
+      ]
+      zulip::safepackage {
+        $appdb_packages:
+          ensure  => 'installed',
+          require => Exec['setup_apt_repo'],
+      }
+      $postgres_sharedir = "/usr/share/postgresql/${zulip::base::postgres_version}"
+      $tsearch_datadir = "${postgres_sharedir}/tsearch_data"
+      $pgroonga_setup_sql_path = "${postgres_sharedir}/pgroonga_setup.sql"
+      $setup_system_deps = 'setup_apt_repo'
+    }
+    'redhat': {
+      include zulip::yum_repository
+      $postgresql = "postgresql${zulip::base::postgres_version}"
+      exec {'build_tsearch_extras':
+        command => "bash -c ${::zulip_scripts_path}/lib/build-tsearch-extras",
+        creates => "/usr/pgsql-${zulip::base::postgres_version}/lib/tsearch_extras.so",
+      }
+      $postgres_sharedir = "/usr/pgsql-${zulip::base::postgres_version}/share"
+      $tsearch_datadir = "${postgres_sharedir}/tsearch_data/"
+      $pgroonga_setup_sql_path = "${postgres_sharedir}/pgroonga_setup.sql"
+      $setup_system_deps = 'setup_yum_repo'
+    }
+    default: {
+      fail('osfamily not supported')
+    }
+  }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
     ensure => absent,
   }
 
-  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.dict":
+  file { "${tsearch_datadir}/en_us.dict":
     ensure  => 'link',
-    require => Package["postgresql-${zulip::base::postgres_version}"],
-    target  => '/var/cache/postgresql/dicts/en_us.dict',
+    require => Package[$postgresql],
+    target  => '/var/cache/postgresql/dicts/en_us.dict',  # TODO check cache dir on CentOS
   }
-  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.affix":
+  file { "${tsearch_datadir}/en_us.affix":
     ensure  => 'link',
-    require => Package["postgresql-${zulip::base::postgres_version}"],
-    target  => '/var/cache/postgresql/dicts/en_us.affix',
+    require => Package[$postgresql],
+    target  => '/var/cache/postgresql/dicts/en_us.affix',  # TODO check cache dir on CentOS
+
   }
-  file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/zulip_english.stop":
+  file { "${tsearch_datadir}/zulip_english.stop":
     ensure  => file,
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require => Package[$postgresql],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/postgresql/zulip_english.stop',
   }
-  file { '/usr/lib/nagios/plugins/zulip_postgres_appdb':
-    require => Package[nagios-plugins-basic],
+  file { "${zulip::common::nagios_plugins_dir}/zulip_postgres_appdb":
+    require => Package[$zulip::common::nagios_plugins],
     recurse => true,
     purge   => true,
     owner   => 'root',
@@ -45,20 +75,16 @@ class zulip::postgres_appdb_base {
 
   $pgroonga = zulipconf('machine', 'pgroonga', '')
   if $pgroonga == 'enabled' {
-    apt::ppa {'ppa:groonga/ppa':
-      before => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
-    }
-
     # Needed for optional our full text search system
-    package{"postgresql-${zulip::base::postgres_version}-pgroonga":
+    package{"${postgresql}-pgroonga":
       ensure  => 'installed',
-      require => Package["postgresql-${zulip::base::postgres_version}"],
+      require => [Package[$postgresql],
+                  Exec[$setup_system_deps]],
     }
 
-    $pgroonga_setup_sql_path = "/usr/share/postgresql/${zulip::base::postgres_version}/pgroonga_setup.sql"
     file { $pgroonga_setup_sql_path:
       ensure  => file,
-      require => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
+      require => Package["${postgresql}-pgroonga"],
       owner   => 'postgres',
       group   => 'postgres',
       mode    => '0640',

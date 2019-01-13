@@ -7,26 +7,26 @@
 #
 # For details, see requirements/README.md .
 #
-alabaster==0.7.11
+alabaster==0.7.12
 babel==2.5.3
-certifi==2017.11.5        # via requests
+certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests
 commonmark==0.5.4
 docutils==0.14
-idna==2.6                 # via requests
-imagesize==1.0.0
+idna==2.8                 # via requests
+imagesize==1.1.0
 jinja2==2.10              # via sphinx
-markupsafe==1.0           # via jinja2
-packaging==16.8           # via sphinx
-pygments==2.2.0           # via sphinx
-pyparsing==2.2.0          # via packaging
-pytz==2017.3              # via babel
+markupsafe==1.1.0         # via jinja2
+packaging==18.0           # via sphinx
+pygments==2.3.1           # via sphinx
+pyparsing==2.3.0          # via packaging
+pytz==2018.9              # via babel
 recommonmark==0.4.0
-requests==2.18.4          # via sphinx
-six==1.11.0               # via packaging, sphinx
+requests==2.21.0          # via sphinx
+six==1.12.0               # via packaging, sphinx
 snowballstemmer==1.2.1
-sphinx-rtd-theme==0.4.1
-sphinx==1.7.6
-sphinxcontrib-websupport==1.0.1  # via sphinx
-typing==3.6.4
-urllib3==1.22             # via requests
+sphinx-rtd-theme==0.4.2
+sphinx==1.8.3
+sphinxcontrib-websupport==1.1.0  # via sphinx
+typing==3.6.6
+urllib3==1.24.1           # via requests

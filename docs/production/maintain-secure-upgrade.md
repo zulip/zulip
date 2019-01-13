@@ -355,7 +355,7 @@ Application server and queue worker monitoring:
 * `check_worker_memory` (monitors for memory leaks in queue workers)
 
 * `check_email_deliverer_backlog` and `check_email_deliverer_process`
-  (monitors for whether outgoing emails are being sent)
+  (monitors for whether scheduled outgoing emails are being sent)
 
 Database monitoring:
 
@@ -374,6 +374,11 @@ Standard server monitoring:
 * `check_website_response.sh` (standard HTTP check)
 
 * `check_debian_packages` (checks apt repository is up to date)
+
+**Note**: While most commands require no special permissions,
+  `check_email_deliverer_backlog`, requires the `nagios` user to be in
+  the `zulip` group, in order to access `SECRET_KEY` and thus run
+  Zulip management commands.
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
@@ -466,16 +471,49 @@ the code) of a management command before using it, since they are
 generally less polished and more designed for expert use than the rest
 of the Zulip system.
 
+### Running management commands
+
+Many management commands require the Zulip realm/organization to
+interact with as an argument, which you can specify via numeric or
+string ID.
+
+You can see all the organizations on your Zulip server using
+`./manage.py list_realms`.
+
+```
+zulip@zulip:~$ /home/zulip/deployments/current/manage.py list_realms
+id    string_id                                name
+--    ---------                                ----
+1     zulip                                    None
+2                                              Zulip Community
+```
+
+(Note that every Zulip server has a special `zulip` realm containing
+system-internal bots like `welcome-bot`; you are unlikely to need to
+interact with that realm.)
+
+Unless you are
+[hosting multiple organizations on your Zulip server](../production/multiple-organizations.html),
+your single Zulip organization on the root domain will have the empty
+string (`''`) as its `string_id`.  So you can run e.g.:
+```
+zulip@zulip:~$ /home/zulip/deployments/current/manage.py show_admins -r ''
+```
+
+Otherwise, the `string_id` will correspond to the organization's
+subdomain.  E.g. on `it.zulip.example.com`, use
+`/home/zulip/deployments/current/manage.py show_admins -r it`.
+
 ### manage.py shell
 
 You can get an iPython shell with full access to code within the Zulip
 project using `manage.py shell`, e.g., you can do the following to
-change an email address:
+change a user's email address:
 
 ```
 $ /home/zulip/deployments/current/manage.py shell
 In [1]: user_profile = get_user_profile_by_email("email@example.com")
-In [2]: do_change_user_email(user_profile, "new_email@example.com")
+In [2]: do_change_user_delivery_email(user_profile, "new_email@example.com")
 ```
 
 #### manage.py dbshell

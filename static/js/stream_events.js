@@ -2,12 +2,6 @@ var stream_events = (function () {
 
 var exports = {};
 
-function get_color() {
-    var used_colors = stream_data.get_colors();
-    var color = stream_color.pick_color(used_colors);
-    return color;
-}
-
 function update_stream_desktop_notifications(sub, value) {
     var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
@@ -100,14 +94,15 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     }
 
     // If the backend sent us a color, use that
-    if (color !== undefined) {
+    if (color !== undefined && sub.color !== color) {
         sub.color = color;
+        stream_color.update_stream_color(sub, color, {update_historical: true});
     } else if (sub.color === undefined) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
         // needed.
         blueslip.warn("Frontend needed to pick a color in mark_subscribed");
-        color = get_color();
+        color = color_data.pick_color();
         subs.set_color(sub.stream_id, color);
     }
     stream_data.subscribe_myself(sub);

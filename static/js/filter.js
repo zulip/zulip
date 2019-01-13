@@ -31,7 +31,7 @@ function zephyr_topic_name_match(message, operand) {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
     }
 
-    return related_regexp.test(message.subject);
+    return related_regexp.test(util.get_message_topic(message));
 }
 
 function message_in_home(message) {
@@ -106,7 +106,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return message.subject.toLowerCase() === operand;
+        return util.get_message_topic(message).toLowerCase() === operand;
 
 
     case 'sender':
@@ -154,12 +154,15 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {from: "sender", subject: "topic"};
-
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
-    if (canonical_operators.hasOwnProperty(operator)) {
-        return canonical_operators[operator];
+
+    if (operator === 'from') {
+        return 'sender';
+    }
+
+    if (util.is_topic_synonym(operator)) {
+        return 'topic';
     }
     return operator;
 };
@@ -234,7 +237,7 @@ function encodeOperand(operand) {
 
 function decodeOperand(encoded, operator) {
     encoded = encoded.replace(/"/g, '');
-    if (_.contains(['group-pm-with','pm-with','sender','from'],operator) === false) {
+    if (_.contains(['group-pm-with', 'pm-with', 'sender', 'from'], operator) === false) {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded).trim();
@@ -298,7 +301,7 @@ Filter.parse = function (str) {
 /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
-       ['subject', 'my amazing subject']
+       ['topic', 'my amazing topic']
 
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
@@ -575,6 +578,8 @@ Filter.sorted_term_types = function (term_types) {
 Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 
+    operator = Filter.canonicalize_operator(operator);
+
     if (operator === 'search') {
         return negated ? 'exclude' : 'search for';
     }
@@ -595,11 +600,9 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'id':
         return verb + 'message ID';
 
-    case 'subject':
     case 'topic':
         return verb + 'topic';
 
-    case 'from':
     case 'sender':
         return verb + 'sent by';
 

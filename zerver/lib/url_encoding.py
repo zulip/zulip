@@ -1,7 +1,8 @@
 import urllib
 from typing import Any, Dict, List
 
-from zerver.models import Realm, Stream
+from zerver.lib.topic import get_topic_from_message_info
+from zerver.models import Realm, Stream, UserProfile
 
 def hash_util_encode(string: str) -> str:
     # Do the same encoding operation as hash_util.encodeHashComponent on the
@@ -15,10 +16,16 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
     stream_name = stream_name.replace(' ', '-')
     return str(stream_id) + '-' + hash_util_encode(stream_name)
 
-def pm_narrow_url(realm: Realm, participants: List[str]) -> str:
-    participants.sort()
+def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
     base_url = "%s/#narrow/pm-with/" % (realm.uri,)
-    return base_url + hash_util_encode(",".join(participants))
+    email_user = sender.email.split('@')[0].lower()
+    pm_slug = str(sender.id) + '-' + hash_util_encode(email_user)
+    return base_url + pm_slug
+
+def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
+    pm_slug = ','.join(str(user_id) for user_id in sorted(other_user_ids)) + '-group'
+    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
+    return base_url + pm_slug
 
 def stream_narrow_url(realm: Realm, stream: Stream) -> str:
     base_url = "%s/#narrow/stream/" % (realm.uri,)
@@ -51,7 +58,7 @@ def near_stream_message_url(realm: Realm,
     message_id = str(message['id'])
     stream_id = message['stream_id']
     stream_name = message['display_recipient']
-    topic_name = message['subject']
+    topic_name = get_topic_from_message_info(message)
     encoded_topic = hash_util_encode(topic_name)
     encoded_stream = encode_stream(stream_id=stream_id, stream_name=stream_name)
 

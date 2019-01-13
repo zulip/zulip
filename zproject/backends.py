@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
+from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
 from social_core.utils import handle_http_errors
@@ -18,12 +19,12 @@ from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
-from zerver.lib.actions import do_create_user
+from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    remote_user_to_email, email_to_username, get_realm, get_user
+    remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
 
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
@@ -66,9 +67,6 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
-def remote_auth_enabled(realm: Optional[Realm]=None) -> bool:
-    return auth_enabled_helper(['RemoteUser'], realm)
-
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
@@ -83,13 +81,13 @@ def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
 def common_get_active_user(email: str, realm: Realm,
                            return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
     try:
-        user_profile = get_user(email, realm)
+        user_profile = get_user_by_delivery_email(email, realm)
     except UserProfile.DoesNotExist:
         # If the user doesn't have an account in the target realm, we
         # check whether they might have an account in another realm,
         # and if so, provide a helpful error message via
         # `invalid_subdomain`.
-        if not UserProfile.objects.filter(email__iexact=email).exists():
+        if not UserProfile.objects.filter(delivery_email__iexact=email).exists():
             return None
         if return_data is not None:
             return_data['invalid_subdomain'] = True
@@ -106,41 +104,6 @@ def common_get_active_user(email: str, realm: Realm,
             return_data['inactive_realm'] = True
         return None
     return user_profile
-
-def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Sequence[str]]]:
-    mode = mode.lower()
-    names = []
-    for i in range(1, num_users+1):
-        names.append(('LDAP User %d' % (i,), 'ldapuser%d@zulip.com' % (i,)))
-
-    ldap_dir = {}
-    if mode == 'a':
-        for name in names:
-            email = name[1].lower()
-            email_username = email.split('@')[0]
-            ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
-                'cn': [name[0], ],
-                'userPassword':  email_username,
-            }
-    elif mode == 'b':
-        for name in names:
-            email = name[1].lower()
-            email_username = email.split('@')[0]
-            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
-                'cn': [name[0], ],
-                'userPassword': email_username,
-            }
-    elif mode == 'c':
-        for name in names:
-            email = name[1].lower()
-            email_username = email.split('@')[0]
-            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
-                'cn': [name[0], ],
-                'userPassword': email_username + '_test',
-                'email': email,
-            }
-
-    return ldap_dir
 
 class ZulipAuthMixin:
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
@@ -257,6 +220,13 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
         return common_get_active_user(email, realm, return_data=return_data)
 
+def is_valid_email(email: str) -> bool:
+    try:
+        validate_email(email)
+    except ValidationError:
+        return False
+    return True
+
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     if not ldap_auth_enabled(realm):
         return False
@@ -281,7 +251,28 @@ class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
 class ZulipLDAPConfigurationError(Exception):
     pass
 
+LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
+
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
+    def __init__(self) -> None:
+        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
+            # We only use this in development.  Importing mock inside
+            # this function is an import time optimization, which
+            # avoids the expensive import of the mock module (slow
+            # because its dependency pbr uses pkgresources, which is
+            # really slow to import.)
+            import mock
+            from fakeldap import MockLDAP
+            from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+
+            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+            self.mock_initialize = ldap_patcher.start()
+            self.mock_ldap = MockLDAP()
+            self.mock_initialize.return_value = self.mock_ldap
+
+            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                             settings.FAKE_LDAP_NUM_USERS)
+
     # Don't use Django LDAP's permissions functions
     def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
         # Using Any type is safe because we are not doing anything with
@@ -303,10 +294,11 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
-            if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
-                    username, settings.LDAP_APPEND_DOMAIN))
-            return email_to_username(username)
+            if is_valid_email(username):
+                if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
+                    raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
+                        username, settings.LDAP_APPEND_DOMAIN))
+                return email_to_username(username)
         return username
 
     def ldap_to_django_username(self, username: str) -> str:
@@ -314,26 +306,45 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             return "@".join((username, settings.LDAP_APPEND_DOMAIN))
         return username
 
+    def sync_avatar_from_ldap(self, user: UserProfile, ldap_user: _LDAPUser) -> None:
+        if 'avatar' in settings.AUTH_LDAP_USER_ATTR_MAP:
+            # We do local imports here to avoid import loops
+            from zerver.lib.upload import upload_avatar_image
+            from zerver.lib.actions import do_change_avatar_fields
+            from io import BytesIO
+
+            avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP['avatar']
+            if avatar_attr_name not in ldap_user.attrs:  # nocoverage
+                # If this specific user doesn't have e.g. a
+                # thumbnailPhoto set in LDAP, just skip that user.
+                return
+            upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
+            do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
+
+    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:  # nocoverage
+        account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
+        ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
+        return ldap_disabled
+
+    def get_or_build_user(self, username: str,
+                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:  # nocoverage
+        (user, built) = super().get_or_build_user(username, ldap_user)
+        self.sync_avatar_from_ldap(user, ldap_user)
+        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
+            user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
+            if user_disabled_in_ldap and user.is_active:
+                logging.info("Deactivating user %s because they are disabled in LDAP." %
+                             (user.email,))
+                do_deactivate_user(user)
+                return (user, built)
+            if not user_disabled_in_ldap and not user.is_active:
+                logging.info("Reactivating user %s because they are not disabled in LDAP." %
+                             (user.email,))
+                do_reactivate_user(user)
+        return (user, built)
+
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
-
-    def __init__(self) -> None:
-        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
-            # We only use this in development.  Importing mock inside
-            # this function is an import time optimization, which
-            # avoids the expensive import of the mock module (slow
-            # because its dependency pbr uses pkgresources, which is
-            # really slow to import.)
-            import mock
-            from fakeldap import MockLDAP
-
-            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
-            self.mock_initialize = ldap_patcher.start()
-            self.mock_ldap = MockLDAP()
-            self.mock_initialize.return_value = self.mock_ldap
-
-            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_NUM_USERS)
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
@@ -366,6 +377,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                     settings.LDAP_EMAIL_ATTR,))
 
             username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
+
+        if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
+            ldap_disabled = self.is_account_control_disabled_user(ldap_user)
+            if ldap_disabled:
+                # Treat disabled users as deactivated in Zulip.
+                return_data["inactive_user"] = True
+                raise ZulipLDAPException("User has been deactivated")
 
         user_profile = common_get_active_user(username, self._realm, return_data)
         if user_profile is not None:
@@ -400,6 +418,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             short_name = ldap_user.attrs[short_name_attr][0]
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        self.sync_avatar_from_ldap(user_profile, ldap_user)
 
         return user_profile, True
 
@@ -432,7 +451,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if realm is None:
         return_data["invalid_realm"] = True
         return None
-    return_data["realm"] = realm
+    return_data["realm_id"] = realm.id
 
     if not auth_enabled_helper([backend.auth_backend_name], realm):
         return_data["auth_backend_disabled"] = True
@@ -545,7 +564,7 @@ def social_auth_finish(backend: Any,
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
     redirect_to = strategy.session_get('next')
-    realm = return_data["realm"]
+    realm = Realm.objects.get(id=return_data["realm_id"])
 
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
     if mobile_flow_otp is not None:
@@ -598,14 +617,16 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             # case without any verified emails
             emails = []
 
-        verified_emails = []
+        verified_emails = []  # type: List[str]
         for email_obj in emails:
             if not email_obj.get("verified"):
                 continue
-            # TODO: When we add a screen to let the user select an email, remove this line.
-            if not email_obj.get("primary"):
-                continue
-            verified_emails.append(email_obj["email"])
+            # social_associate_user_helper assumes that the first email in
+            # verified_emails is primary.
+            if email_obj.get("primary"):
+                verified_emails.insert(0, email_obj["email"])
+            else:
+                verified_emails.append(email_obj["email"])
 
         return verified_emails
 
@@ -634,6 +655,9 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 return dict(auth_failed_reason="GitHub user is not member of required organization")
 
         raise AssertionError("Invalid configuration")
+
+class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
+    auth_backend_name = "AzureAD"
 
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,

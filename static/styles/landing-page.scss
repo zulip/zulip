@@ -1648,6 +1648,10 @@ nav ul li.active::after {
     font-size: 1.2rem;
 }
 
+.portico-landing.hello .testimonials .carousel {
+    min-height: 250px;
+}
+
 .portico-landing.hello .testimonials .carousel-quotes {
     width: 60%;
     margin: auto;
@@ -1716,7 +1720,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .testimonials .company-container {
     width: 60%;
-    margin: 20px auto;
+    margin: 30px auto;
     text-align: left;
 }
 
@@ -1791,6 +1795,38 @@ nav ul li.active::after {
 .portico-landing.hello .testimonials .company-box .company.levelup {
     background-image: url(/static/images/landing-page/logos/levelup.png);
     background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.wildfly {
+    background-image: url(/static/images/landing-page/logos/wildfly.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.hail {
+    background-image: url(/static/images/landing-page/logos/hail.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.openshot {
+    background-image: url(/static/images/landing-page/logos/openshot.png);
+    background-color: transparent;
+    height: 52px;
+}
+
+.portico-landing.hello .testimonials .company-box .company.wikimedia-outreach {
+    background-image: url(/static/images/landing-page/logos/wikimedia-outreach.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.fhir {
+    background-image: url(/static/images/landing-page/logos/fhir.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.mixxx {
+    background-image: url(/static/images/landing-page/logos/mixxx.png);
+    background-color: transparent;
+    height: 45px;
 }
 
 .portico-landing.hello .apps {
@@ -1929,7 +1965,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 125px 100px 0px 100px;
+    padding: 100px 100px 0px 100px;
     margin-top: 0px;
 }
 
@@ -1955,6 +1991,12 @@ nav ul li.active::after {
 .portico-landing.hello .call-to-action-bottom h1 {
     text-align: center;
     margin-top: 20px;
+}
+
+.portico-landing.hello .call-to-action-bottom .atlassian-migration {
+    margin-top: 60px;
+    text-align: center;
+    font-size: 1.3rem;
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
@@ -2186,7 +2228,8 @@ nav ul li.active::after {
     line-height: 1.6;
     font-size: 1.2em;
     margin-bottom: 5px;
-    p {
+    p,
+    li {
         /* Avoid double-applying the 1.2em font-size here */
         font-size: 1em;
     }
@@ -2264,6 +2307,12 @@ nav ul li.active::after {
 
 .portico-landing.why-page .bg-pycon.security {
     background-image: url(/static/images/landing-page/security.jpg);
+}
+
+.portico-landing.why-page .bg-pycon.atlassian {
+    background-size: 300px;
+    background-image: url(/static/images/landing-page/atlassian.jpg);
+    background-repeat: repeat-x;
 }
 
 .portico-landing.why-page .bg-pycon.why-zulip {
@@ -2583,8 +2632,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .integration-categories-dropdown {
-    cursor: pointer;
-    margin: 30px 0;
+    margin: 30px auto;
     display: none;
 }
 
@@ -3349,6 +3397,10 @@ nav ul li.active::after {
         width: 80%;
         left: 0;
     }
+
+    .portico-landing.hello .hero header {
+        width: calc(100% - 50px);
+    }
 }
 
 @media (max-width: 906px) {
@@ -3358,35 +3410,42 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-categories-dropdown {
         display: block;
+        width: 670px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown h3,
     .portico-landing.integrations .integration-categories-dropdown h4 {
         font-weight: 400;
-        margin: 0 25px;
+        margin: 0;
         padding: 12px 20px;
-        border-bottom: 1px solid hsl(208, 46%, 93%);
     }
 
     .portico-landing.integrations .integration-categories-dropdown .dropdown-toggle {
+        cursor: pointer;
+        display: flex;
         position: relative;
+        padding: 0;
+        align-items: center;
+        justify-content: space-between;
+        margin-left: 25px;
+        margin-right: 25px;
+        border: 1px solid hsl(208, 46%, 93%);
     }
 
     .portico-landing.integrations .integration-categories-dropdown i {
-        position: absolute;
-        top: 10px;
-        right: 36px;
+        margin-right: 10px;
         font-size: 24px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown .dropdown-list {
         display: none;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 25px;
+        margin-right: 25px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown h3 {
-        border-top: 1px solid hsl(208, 46%, 93%);
-        border-left: 1px solid hsl(208, 46%, 93%);
-        border-right: 1px solid hsl(208, 46%, 93%);
         font-size: 1em;
         text-align: left;
     }
@@ -3394,6 +3453,7 @@ nav ul li.active::after {
     .portico-landing.integrations .integration-categories-dropdown h4 {
         border-left: 1px solid hsl(208, 46%, 93%);
         border-right: 1px solid hsl(208, 46%, 93%);
+        border-bottom: 1px solid hsl(208, 46%, 93%);
         transition: all 0.3s ease;
         font-size: .9em;
     }
@@ -3512,6 +3572,16 @@ nav ul li.active::after {
 
     .tour .carousel-inner .tour-item-header {
         font-size: 1.1em;
+    }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 666px;
+    }
+}
+
+@media (max-width: 786px) {
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 509px;
     }
 }
 
@@ -3648,6 +3718,10 @@ nav ul li.active::after {
 
     .portico-landing.features-app section {
         padding: 0px 20px;
+    }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 666px;
     }
 
     .billing-upgrade-page {
@@ -3894,11 +3968,21 @@ nav ul li.active::after {
     .tour .carousel-inner button.call-to-action {
         margin: 40px auto;
     }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 509px;
+    }
 }
 
 @media (max-width: 640px) {
     .portico-landing.hello .integrations .integration-icons .group {
         margin: 10px 16px 0 16px;
+    }
+}
+
+@media (max-width: 578px) {
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 351px;
     }
 }
 
@@ -4014,6 +4098,10 @@ nav ul li.active::after {
         padding: 0 45px 0 45px;
     }
 
+    .portico-landing.hello .integrations .content header {
+        padding: 0;
+    }
+
     .portico-landing.hello .integrations .integration-icons .group {
         margin: 4px 2px;
     }
@@ -4096,6 +4184,10 @@ nav ul li.active::after {
     .portico-landing.features-app section.keyboard-shortcuts::after {
         left: 0;
     }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 323px;
+    }
 }
 
 @media (max-width: 357px) {
@@ -4119,6 +4211,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-lozenge .integration-category {
         font-size: .77em;
+    }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 299px;
     }
 }
 

@@ -48,7 +48,7 @@ function message_hover(message_row) {
     }
 }
 
-function initialize_kitchen_sink_stuff() {
+exports.initialize_kitchen_sink_stuff = function () {
     // TODO:
     //      This function is a historical dumping ground
     //      for lots of miscellaneous setup.  Almost all of
@@ -166,7 +166,9 @@ function initialize_kitchen_sink_stuff() {
         $(this).removeClass("active");
     });
 
-    $("#stream").on('blur', function () { compose_actions.decorate_stream_bar(this.value); });
+    $("#stream_message_recipient_stream").on('blur', function () {
+        compose_actions.decorate_stream_bar(this.value);
+    });
 
     $(window).on('blur', function () {
         $(document.body).addClass('window_blurred');
@@ -270,17 +272,19 @@ function initialize_kitchen_sink_stuff() {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }
-}
+};
 
-$(function () {
+exports.initialize_everything = function () {
     // initialize other stuff
+    people.initialize();
     scroll_bar.initialize();
-    muting_ui.initialize();
     message_viewport.initialize();
-    initialize_kitchen_sink_stuff();
+    exports.initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_color.initialize();
     stream_edit.initialize();
+    stream_data.initialize();
+    muting.initialize();
     subs.initialize();
     condense.initialize();
     lightbox.initialize();
@@ -293,7 +297,7 @@ $(function () {
         tab_bar.initialize();
     }
     server_events.initialize();
-    people.initialize();
+    user_status.initialize();
     compose_pm_pill.initialize();
     search_pill_widget.initialize();
     reload.initialize();
@@ -327,9 +331,14 @@ $(function () {
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();
+    night_mode.initialize();
     panels.initialize();
     typing.initialize();
     starred_messages.initialize();
+};
+
+$(function () {
+    exports.initialize_everything();
 });
 
 

@@ -365,6 +365,10 @@
                     <a href="https://github.com/RocketChat/Rocket.Chat/graphs/contributors">Rocket.Chat</a>,
                     and <a href="https://github.com/matrix-org/synapse/graphs/contributors">matrix.org</a>.
                 </p>
+                <p>
+                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html"
+                    class="button">Install Zulip {{ latest_release_version }}</a> or <a href="{{ latest_release_announcement }}">read the Zulip {{ latest_major_version }} release announcement</a>.
+                </p>
             </div>
         </div>
     </div>
@@ -416,7 +420,7 @@
             </a>
             <a href="/integrations/doc/jira">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/jira.svg" alt="{{ _('JIRA logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/jira.png" alt="{{ _('JIRA logo') }}">
                     <h3 class="integration-name">JIRA</h3>
                     <p class="integration-description">Monitor project bugs and issues</p>
                 </div>
@@ -504,7 +508,7 @@
 
             <div class="company-container">
                 <header>
-                    <h2 class="float left">Leading organizations use Zulip:</h2>
+                    <h2 class="float left">Trusted by thousands of teams</h2>
                     <div class="float clear"></div>
                 </header>
                 <div class="company-box">
@@ -527,19 +531,23 @@
         {% if root_domain_landing_page %}
         <a href="{{ url('plans') }}">
             <button href="" class="download-button" type="button"
-              name="button">{{ _('See plans and pricing!') }}</button>
+              name="button">{{ _('See plans and pricing') }}</button>
         </a>
         {% endif %}
         {% if register_link_disabled %}
         {% elif only_sso %}
         <a href="{{ url('login-sso') }}">
-            <button href="" type="button" name="button">{{ _('Log in now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Log in now') }}</button>
         </a>
         {% else %}
         <a href="{{ url('register') }}">
-            <button href="" type="button" name="button">{{ _('Sign up now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Sign up now') }}</button>
         </a>
         {% endif %}
+        <div class="atlassian-migration">
+            Migrating from HipChat or Stride?
+            Check out our <a href="/atlassian">Atlassian migration guide</a>.
+        </div>
         <div class="zulip-octopus"></div>
     </div>
 </div>

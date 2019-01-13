@@ -634,6 +634,16 @@ var event_fixtures = {
             description: 'All Frontend people',
         },
     },
+    user_status__revoke_away: {
+        type: 'user_status',
+        user_id: 63,
+        away: false,
+    },
+    user_status__set_away: {
+        type: 'user_status',
+        user_id: 55,
+        away: true,
+    },
 };
 
 function assert_same(actual, expected) {
@@ -762,7 +772,7 @@ with_overrides(function (override) {
     var event = event_fixtures.presence;
 
     global.with_stub(function (stub) {
-        override('activity.set_user_status', stub.f);
+        override('activity.update_presence_info', stub.f);
         dispatch(event);
         var args = stub.get_args('email', 'presence', 'server_time');
         assert_same(args.email, 'alice@example.com');
@@ -963,6 +973,7 @@ with_overrides(function (override) {
         override('emoji.update_emojis', stub.f);
         override('settings_emoji.populate_emoji', noop);
         override('emoji_picker.generate_emoji_picker_data', noop);
+        override('composebox_typeahead.update_emoji_data', noop);
         dispatch(event);
         var args = stub.get_args('realm_emoji');
         assert_same(args.realm_emoji, event.realm_emoji);
@@ -973,7 +984,7 @@ with_overrides(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override('settings_filters.populate_filters', noop);
+    override('settings_linkifiers.populate_filters', noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 
@@ -1372,5 +1383,24 @@ with_overrides(function (override) {
         var args = stub.get_args('opts');
         assert_same(args.opts.stream_id, 99);
         assert_same(args.opts.topic_name, 'topic1');
+    });
+});
+
+with_overrides(function (override) {
+    // attachements
+    var event = event_fixtures.user_status__set_away;
+    global.with_stub(function (stub) {
+        override('activity.on_set_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 55);
+    });
+
+    event = event_fixtures.user_status__revoke_away;
+    global.with_stub(function (stub) {
+        override('activity.on_revoke_away', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, 63);
     });
 });

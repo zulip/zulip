@@ -31,10 +31,7 @@
     <nav class="header-main rightside-userlist" id="top_navbar">
         <div class="column-left">
             <a class="brand no-style" href="#">
-                <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
-                <div class="company-name">
-                    zulip
-                </div>
+                <img id="realm-logo" src="{{ realm_logo }}" alt="" class="nav-logo no-drag">
             </a>
         </div>
         <div class="column-middle" id="navbar-middle">
@@ -95,7 +92,7 @@
                             #}
                             <li class="invisible" style="display:none;" role="presentation"><a href="#home" data-toggle="tab"></a></li>
                             <li role="presentation">
-                                <a href="#streams" role="menuitem">
+                                <a href="#streams/subscribed" role="menuitem">
                                     <i class="fa fa-exchange" aria-hidden="true"></i> {{ _('Manage streams') }}
                                 </a>
                             </li>
@@ -157,14 +154,14 @@
                             {% endif %}
                             {% if show_plans %}
                             <li role="presentation">
-                                <a href="/plans" role="menuitem">
+                                <a href="/plans" target="_blank" role="menuitem">
                                     <i class="fa fa-rocket" aria-hidden="true"></i> {{ _('Plans and pricing') }}
                                 </a>
                             </li>
                             {% endif %}
                             {% if show_billing %}
                             <li role="presentation">
-                                <a href="/billing" role="menuitem">
+                                <a href="/billing" target="_blank" role="menuitem">
                                     <i class="fa fa-credit-card" aria-hidden="true"></i> {{ _('Billing') }}
                                 </a>
                             </li>

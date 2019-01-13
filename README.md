@@ -8,10 +8,11 @@ allows users to easily process hundreds or thousands of messages a day. With
 over 300 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest growing open source group chat project.
 
-[![CircleCI Build Status](https://circleci.com/gh/zulip/zulip.svg?style=svg)](https://circleci.com/gh/zulip/zulip)
+[![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip)
 [![Travis Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
 [![Coverage Status](https://img.shields.io/codecov/c/github/zulip/zulip.svg)](https://codecov.io/gh/zulip/zulip)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
+[![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
@@ -58,7 +59,7 @@ You might be interested in:
 * **Running a Zulip server**. Setting up a server takes just a couple
   of minutes. Zulip runs on Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial,
   Ubuntu 14.04 Trusty, and Debian 9 Stretch. The installation process is
-  [documented here](https://zulip.readthedocs.io/en/stable/prod.html).
+  [documented here](https://zulip.readthedocs.io/en/stable/production/install.html).
   Commercial support is available; see <https://zulipchat.com/plans>
   for details.
 

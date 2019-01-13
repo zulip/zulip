@@ -76,8 +76,18 @@ regular software update on your system, e.g. with
    `x.x.x` with the actual name of the downloaded file).
 3. Run the file from your app launcher, or from a terminal.
 
-No installer is necessary; this file is the Zulip app. The app will NOT
-update automatically. You can repeat these steps to upgrade to future versions.
+No installer is necessary; this file is the Zulip app. The app will update
+automatically to future versions.
+
+### Snap
+
+1. Make sure [snapd](https://docs.snapcraft.io/core/install) is installed.
+
+2. Execute following command to install Zulip:
+
+        sudo snap install zulip
+
+3. Run Zulip from your app launcher, or with `zulip` from a terminal.
 
 <!-- TODO why dpkg? -->
 

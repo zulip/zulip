@@ -108,11 +108,10 @@ exports.update_booleans = function (message, flags) {
 exports.add_message_metadata = function (message) {
     var cached_msg = stored_messages[message.id];
     if (cached_msg !== undefined) {
-        // Copy the match subject and content over if they exist on
+        // Copy the match topic and content over if they exist on
         // the new message
-        if (message.match_subject !== undefined) {
-            cached_msg.match_subject = message.match_subject;
-            cached_msg.match_content = message.match_content;
+        if (util.get_match_topic(message) !== undefined) {
+            util.set_match_data(cached_msg, message);
         }
         return cached_msg;
     }
@@ -128,6 +127,10 @@ exports.add_message_metadata = function (message) {
         message.sender_email = sender.email;
     }
 
+    // Convert topic even for PMs, as legacy code
+    // wants the empty field.
+    util.convert_message_topic(message);
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
@@ -136,7 +139,7 @@ exports.add_message_metadata = function (message) {
 
         topic_data.add_message({
             stream_id: message.stream_id,
-            topic_name: message.subject,
+            topic_name: util.get_message_topic(message),
             message_id: message.id,
         });
 

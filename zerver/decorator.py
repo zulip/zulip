@@ -5,6 +5,7 @@ from django_otp import user_has_device, _user_is_authenticated
 from django_otp.conf import settings as otp_settings
 
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
+from django.contrib.auth.models import AnonymousUser
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as django_login
@@ -17,15 +18,17 @@ from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
+
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
-from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
+from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
+    InvalidJSONError, InvalidAPIKeyError
 from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-    api_calls_left, RateLimitedUser
+    api_calls_left, RateLimitedUser, RateLimiterLockingException
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -179,13 +182,13 @@ def get_client_name(request: HttpRequest, is_browser_view: bool) -> str:
 def process_client(request: HttpRequest, user_profile: UserProfile,
                    *, is_browser_view: bool=False,
                    client_name: Optional[str]=None,
-                   remote_server_request: bool=False,
+                   skip_update_user_activity: bool=False,
                    query: Optional[str]=None) -> None:
     if client_name is None:
         client_name = get_client_name(request, is_browser_view)
 
     request.client = get_client(client_name)
-    if not remote_server_request:
+    if not skip_update_user_activity:
         update_user_activity(request, user_profile, query)
 
 class InvalidZulipServerError(JsonableError):
@@ -225,7 +228,8 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         request.user = remote_server
         request._email = "zulip-server:" + role
         remote_server.rate_limits = ""
-        process_client(request, remote_server, remote_server_request=True)
+        # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
+        process_client(request, remote_server, skip_update_user_activity=True)
         return remote_server
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
@@ -233,7 +237,7 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
         raise JsonableError(_("This API is not available to incoming webhook bots."))
 
     request.user = user_profile
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     process_client(request, user_profile, client_name=client_name)
 
     return user_profile
@@ -255,19 +259,19 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
              request.META["SERVER_NAME"] == "127.0.0.1" and
              request.META["REMOTE_ADDR"] == "127.0.0.1")):
         logging.warning("User %s (%s) attempted to access API on wrong subdomain (%s)" % (
-            user_profile.email, user_profile.realm.subdomain, get_subdomain(request)))
+            user_profile.delivery_email, user_profile.realm.subdomain, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
 
 def access_user_by_api_key(request: HttpRequest, api_key: str, email: Optional[str]=None) -> UserProfile:
     try:
         user_profile = get_user_profile_by_api_key(api_key)
     except UserProfile.DoesNotExist:
-        raise JsonableError(_("Invalid API key"))
-    if email is not None and email.lower() != user_profile.email.lower():
+        raise InvalidAPIKeyError()
+    if email is not None and email.lower() != user_profile.delivery_email.lower():
         # This covers the case that the API key is correct, but for a
         # different user.  We may end up wanting to relaxing this
         # constraint or give a different error message in the future.
-        raise JsonableError(_("Invalid API key"))
+        raise InvalidAPIKeyError()
 
     validate_account_and_subdomain(request, user_profile)
 
@@ -309,7 +313,7 @@ body:
 
 {body}
     """.format(
-        email=user_profile.email,
+        email=user_profile.delivery_email,
         realm=user_profile.realm.string_id,
         client_name=request.client.name,
         body=payload,
@@ -326,9 +330,13 @@ def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[st
     return "Zulip{}Webhook".format(raw_client_name)
 
 # Use this for webhook views that don't get an email passed in.
-def api_key_only_webhook_view(webhook_client_name: str) -> Callable[[ViewFuncT], ViewFuncT]:
+def api_key_only_webhook_view(
+        webhook_client_name: str,
+        notify_bot_owner_on_invalid_json: Optional[bool]=True
+) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
+
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
@@ -343,7 +351,14 @@ def api_key_only_webhook_view(webhook_client_name: str) -> Callable[[ViewFuncT],
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
-                log_exception_to_webhook_logger(request, user_profile)
+                if isinstance(err, InvalidJSONError) and notify_bot_owner_on_invalid_json:
+                    # NOTE: importing this at the top of file leads to a
+                    # cyclic import; correct fix is probably to move
+                    # notify_bot_owner_about_invalid_json to a smaller file.
+                    from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
+                    notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
+                else:
+                    log_exception_to_webhook_logger(request, user_profile)
                 raise err
 
         return _wrapped_func_arguments
@@ -413,7 +428,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    request._email = user_profile.email
+    request._email = user_profile.delivery_email
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Login with two factor authentication as well.
@@ -429,7 +444,7 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
 def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        request._email = request.user.email
+        request._email = request.user.delivery_email
         process_client(request, request.user, is_browser_view=True,
                        query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
@@ -544,7 +559,7 @@ def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], View
 # This API endpoint is used only for the mobile apps.  It is part of a
 # workaround for the fact that React Native doesn't support setting
 # HTTP basic authentication headers.
-def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
+def authenticated_uploads_api_view(skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
@@ -553,7 +568,10 @@ def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
                                     api_key: str=REQ(),
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
-            limited_func = rate_limit()(view_func)
+            if not skip_rate_limiting:
+                limited_func = rate_limit()(view_func)
+            else:
+                limited_func = view_func
             return limited_func(request, user_profile, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
@@ -564,7 +582,8 @@ def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
 def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
-                                is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+                                is_webhook: bool=False,
+                                skip_rate_limiting: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @wraps(view_func)
@@ -592,8 +611,12 @@ def authenticated_rest_api_view(*, webhook_client_name: Optional[str]=None,
             except JsonableError as e:
                 return json_unauthorized(e.msg)
             try:
-                # Apply rate limiting
-                return rate_limit()(view_func)(request, profile, *args, **kwargs)
+                if not skip_rate_limiting:
+                    # Apply rate limiting
+                    target_view_func = rate_limit()(view_func)
+                else:
+                    target_view_func = view_func
+                return target_view_func(request, profile, *args, **kwargs)
             except Exception as err:
                 if is_webhook or webhook_client_name is not None:
                     request_body = request.POST.get('payload')
@@ -636,9 +659,23 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
 def authenticate_log_and_execute_json(request: HttpRequest,
                                       view_func: ViewFuncT,
-                                      *args: Any, **kwargs: Any) -> HttpResponse:
+                                      *args: Any, skip_rate_limiting: bool = False,
+                                      allow_unauthenticated: bool=False,
+                                      **kwargs: Any) -> HttpResponse:
+    if not skip_rate_limiting:
+        limited_view_func = rate_limit()(view_func)
+    else:
+        limited_view_func = view_func
+
     if not request.user.is_authenticated:
-        return json_error(_("Not logged in"), status=401)
+        if not allow_unauthenticated:
+            return json_error(_("Not logged in"), status=401)
+
+        process_client(request, request.user, is_browser_view=True,
+                       skip_update_user_activity=True,
+                       query=view_func.__name__)
+        return limited_view_func(request, request.user, *args, **kwargs)
+
     user_profile = request.user
     validate_account_and_subdomain(request, user_profile)
 
@@ -647,8 +684,8 @@ def authenticate_log_and_execute_json(request: HttpRequest,
 
     process_client(request, user_profile, is_browser_view=True,
                    query=view_func.__name__)
-    request._email = user_profile.email
-    return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
+    request._email = user_profile.delivery_email
+    return limited_view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
@@ -662,10 +699,13 @@ def authenticated_json_post_view(view_func: ViewFuncT) -> ViewFuncT:
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
-def authenticated_json_view(view_func: ViewFuncT) -> ViewFuncT:
+def authenticated_json_view(view_func: ViewFuncT, skip_rate_limiting: bool=False,
+                            allow_unauthenticated: bool=False) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest,
                            *args: Any, **kwargs: Any) -> HttpResponse:
+        kwargs["skip_rate_limiting"] = skip_rate_limiting
+        kwargs["allow_unauthenticated"] = allow_unauthenticated
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
@@ -759,7 +799,14 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
         statsd.incr("ratelimiter.limited.%s.%s" % (type(user), user.id))
         raise RateLimited()
 
-    incr_ratelimit(entity)
+    try:
+        incr_ratelimit(entity)
+    except RateLimiterLockingException:  # nocoverage # Should add on next rate limit pass
+        logging.warning("Deadlock trying to incr_ratelimit for %s on %s" % (
+            user.id, request.path))
+        # rate-limit users who are hitting the API so hard we can't update our stats.
+        raise RateLimited()
+
     calls_remaining, time_reset = api_calls_left(entity)
 
     request._ratelimit_remaining = calls_remaining
@@ -795,10 +842,14 @@ def rate_limit(domain: str='all') -> Callable[[ViewFuncT], ViewFuncT]:
                               func.__name__)
                 return func(request, *args, **kwargs)
 
+            if isinstance(user, AnonymousUser):  # nocoverage
+                # We can only rate-limit logged-in users for now.
+                # We also only support rate-limiting authenticated
+                # views right now.
+                # TODO: implement per-IP non-authed rate limiting
+                return func(request, *args, **kwargs)
+
             # Rate-limiting data is stored in redis
-            # We also only support rate-limiting authenticated
-            # views right now.
-            # TODO(leo) - implement per-IP non-authed rate limiting
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)

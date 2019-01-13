@@ -11,35 +11,35 @@ casper.then(function () {
 });
 
 common.then_send_many([
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message A' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message B' },
 
-    { stream:  'Verona', subject: 'other subject',
+    { stream: 'Verona', subject: 'other subject',
       content: 'test message C' },
 
-    { stream:  'Denmark', subject: 'frontend test',
+    { stream: 'Denmark', subject: 'frontend test',
       content: 'other message' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal A' },
+      content: 'personal A' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal B' },
+      content: 'personal B' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal C' },
+      content: 'personal C' },
 
-    { stream:  'Verona', subject: 'frontend test',
+    { stream: 'Verona', subject: 'frontend test',
       content: 'test message D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal D' },
+      content: 'personal D' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal E' },
+      content: 'personal E' },
 ]);
 
 
@@ -447,15 +447,36 @@ casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function
 
 un_narrow();
 
+function assert_in_list(name) {
+    casper.test.assertExists(
+        '#user_presences li [data-name="' + name + '"]',
+        'User ' + name + ' is IN buddy list'
+    );
+}
+
+function assert_selected(name) {
+    casper.test.assertExists(
+        '#user_presences li.highlighted_user [data-name="' + name + '"]',
+        'User ' + name + ' is SELECTED IN buddy list'
+    );
+}
+
+function assert_not_selected(name) {
+    assert_in_list(name);
+    casper.test.assertDoesntExist(
+        '#user_presences li.highlighted_user [data-name="' + name + '"]',
+        'User ' + name + ' is NOT SELECTED buddy list'
+    );
+}
+
+
 // User search at the right sidebar
 casper.then(function () {
     casper.test.info('Search users using right sidebar');
-    casper.test.assertExists('#user_presences li [data-name="Cordelia Lear"]',
-                             'User Cordelia Lear exists');
-    casper.test.assertExists('#user_presences li [data-name="King Hamlet"]',
-                             'User King Hamlet exists');
-    casper.test.assertExists('#user_presences li [data-name="aaron"]',
-                             'User aaron exists');
+    assert_in_list('Iago');
+    assert_in_list('Cordelia Lear');
+    assert_in_list('King Hamlet');
+    assert_in_list('aaron');
 });
 
 // Enter the search box and test selected suggestion navigation
@@ -470,12 +491,10 @@ casper.then(function () {
 
 casper.waitForSelector('#user_presences .highlighted_user', function () {
     casper.test.info('Suggestion highlighting - initial situation');
-    casper.test.assertExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
-                            'User Cordelia Lear is selected');
-    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
-                                  'User King Hamlet is not selected');
-    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="aaron"]',
-                                  'User aaron is not selected');
+    assert_selected('Iago');
+    assert_not_selected('Cordelia Lear');
+    assert_not_selected('King Hamlet');
+    assert_not_selected('aaron');
 });
 
 // Use arrow keys to navigate through suggestions
@@ -485,18 +504,25 @@ casper.then(function () {
                         casper.page.event.key[key],
                         {keepFocus: true});
     }
-    arrow('Down'); // Cordelia -> Hamlet
-    arrow('Up'); // Hamlet -> Cordelia
-    arrow('Up'); // already at top
-    arrow('Down'); // Cordelia -> Hamlet
+
+    // go down 2, up 3 (which is really 2), then down 2
+    //    Iago
+    //    Cordelia
+    //    Hamlet
+    arrow('Down');
+    arrow('Down');
+    arrow('Up');
+    arrow('Up');
+    arrow('Up'); // does nothing
+    arrow('Down');
+    arrow('Down');
 });
 
 casper.waitForSelector('#user_presences li.highlighted_user [data-name="King Hamlet"]', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
-    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
-                                  'User Cordelia Lear not is selected');
-    casper.test.assertExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
-                            'User King Hamlet is selected');
+    assert_not_selected('Iago');
+    assert_not_selected('Cordelia Lear');
+    assert_selected('King Hamlet');
 });
 
 common.then_log_out();

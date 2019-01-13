@@ -64,10 +64,8 @@ exports.widget = function (parent_elem, my_stream_id) {
 
         var max_topics = 5;
         var topic_names = topic_data.get_recent_names(my_stream_id);
-        var my_stream_name = stream_data.get_sub_by_id(my_stream_id).name;
 
         var ul = $('<ul class="topic-list">');
-        ul.attr('data-stream', my_stream_name);
 
         _.each(topic_names, function (topic_name, idx) {
             var num_unread = unread.num_unread_for_topic(my_stream_id, topic_name);
@@ -86,8 +84,8 @@ exports.widget = function (parent_elem, my_stream_id) {
                 topic_name: topic_name,
                 unread: num_unread,
                 is_zero: num_unread === 0,
-                is_muted: muting.is_topic_muted(my_stream_name, topic_name),
-                url: hash_util.by_stream_subject_uri(my_stream_name, topic_name),
+                is_muted: muting.is_topic_muted(my_stream_id, topic_name),
+                url: hash_util.by_stream_topic_uri(my_stream_id, topic_name),
             };
             var li = $(templates.render('topic_list_item', topic_info));
             self.topic_items.set(topic_name, li);
@@ -284,9 +282,6 @@ exports.initialize = function () {
 
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
-        if (overlays.is_active()) {
-            ui_util.change_tab_to('#home');
-        }
 
         var stream_id = $(e.target).parents('.narrow-filter').attr('data-stream-id');
         var sub = stream_data.get_sub_by_id(stream_id);

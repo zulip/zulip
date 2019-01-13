@@ -7,9 +7,9 @@ exports.mark_all_as_read = function (cont) {
     unread_ui.update_unread_counts();
 
     channel.post({
-        url:      '/json/mark_all_as_read',
+        url: '/json/mark_all_as_read',
         idempotent: true,
-        success:  cont});
+        success: cont});
 };
 
 function process_newly_read_message(message, options) {

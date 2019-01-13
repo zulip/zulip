@@ -21,6 +21,7 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
+import stripe
 
 from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
@@ -36,6 +37,7 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
+from zproject.settings import get_secret
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False) -> HttpRequest:
@@ -476,7 +478,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
         row['plan_type_string'] = [
-            '', 'self hosted', 'limited', 'standard', 'standard free'][row['plan_type']]
+            '', 'self hosted', 'limited', 'standard', 'open source'][row['plan_type']]
         row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
@@ -489,6 +491,16 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             row['history'] = counts[row['string_id']]['cnts']
         except Exception:
             row['history'] = ''
+
+    # estimate annual subscription revenue
+    total_amount = 0
+    if settings.BILLING_ENABLED:
+        from corporate.lib.stripe import estimate_annual_recurring_revenue_by_realm
+        estimated_arrs = estimate_annual_recurring_revenue_by_realm()
+        for row in rows:
+            if row['string_id'] in estimated_arrs:
+                row['amount'] = estimated_arrs[row['string_id']]
+        total_amount += sum(estimated_arrs.values())
 
     # augment data with realm_minutes
     total_hours = 0.0
@@ -525,9 +537,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         total_bot_count += int(row['bot_count'])
         total_wau_count += int(row['wau_count'])
 
-    rows.append(dict(
+    total_row = dict(
         string_id='Total',
         plan_type_string="",
+        amount=total_amount,
         stats_link = '',
         date_created_day='',
         realm_admin_email='',
@@ -536,7 +549,9 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         bot_count=total_bot_count,
         hours=int(total_hours),
         wau_count=total_wau_count,
-    ))
+    )
+
+    rows.insert(0, total_row)
 
     content = loader.render_to_string(
         'analytics/realm_summary_table.html',
@@ -562,15 +577,15 @@ def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
     ).only(
         'start',
         'end',
-        'user_profile__email',
+        'user_profile__delivery_email',
         'user_profile__realm__string_id'
     ).order_by(
         'user_profile__realm__string_id',
-        'user_profile__email'
+        'user_profile__delivery_email'
     )
 
     by_string_id = lambda row: row.user_profile.realm.string_id
-    by_email = lambda row: row.user_profile.email
+    by_email = lambda row: row.user_profile.delivery_email
 
     realm_minutes = {}
 
@@ -855,7 +870,7 @@ def get_activity(request: HttpRequest) -> HttpResponse:
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     fields = [
         'user_profile__full_name',
-        'user_profile__email',
+        'user_profile__delivery_email',
         'query',
         'client__name',
         'count',
@@ -867,7 +882,7 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
         user_profile__is_active=True,
         user_profile__is_bot=is_bot
     )
-    records = records.order_by("user_profile__email", "-last_visit")
+    records = records.order_by("user_profile__delivery_email", "-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
     return records
 
@@ -881,7 +896,7 @@ def get_user_activity_records_for_email(email: str) -> List[QuerySet]:
     ]
 
     records = UserActivity.objects.filter(
-        user_profile__email=email
+        user_profile__delivery_email=email
     )
     records = records.order_by("-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -1055,7 +1070,7 @@ def realm_user_summary_table(all_records: List[QuerySet],
     user_records = {}
 
     def by_email(record: QuerySet) -> str:
-        return record.user_profile.email
+        return record.user_profile.delivery_email
 
     for email, records in itertools.groupby(all_records, by_email):
         user_records[email] = get_user_activity_summary(list(records))
@@ -1126,7 +1141,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
-    admin_emails = {admin.email for admin in admins}
+    admin_emails = {admin.delivery_email for admin in admins}
 
     for is_bot, page_title in [(False, 'Humans'), (True, 'Bots')]:
         all_records = list(get_user_activity_records_for_realm(realm_str, is_bot))

@@ -13,6 +13,28 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
+exports.emoji_collection = [];
+
+exports.update_emoji_data = function () {
+    exports.emoji_collection = [];
+    _.each(emoji.emojis_by_name, function (emoji_dict) {
+        if (emoji_dict.is_realm_emoji === true) {
+            exports.emoji_collection.push({
+                emoji_name: emoji_dict.name,
+                emoji_url: emoji_dict.url,
+                is_realm_emoji: true,
+            });
+        } else {
+            _.each(emoji_dict.aliases, function (alias) {
+                exports.emoji_collection.push({
+                    emoji_name: alias,
+                    emoji_code: emoji_dict.emoji_code,
+                });
+            });
+        }
+    });
+};
+
 exports.topics_seen_for = function (stream_name) {
     var stream_id = stream_data.get_stream_id(stream_name);
     if (!stream_id) {
@@ -111,43 +133,110 @@ function query_matches_emoji(query, emoji) {
 // has reliable information about whether it was a tab or a shift+tab.
 var nextFocus = false;
 
+exports.should_enter_send = function (e) {
+    var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
+    var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
+    var this_enter_sends;
+    if (page_params.enter_sends) {
+        // With the enter_sends setting, we should send
+        // the message unless the user was holding a
+        // modifier key.
+        this_enter_sends = !has_modifier_key;
+    } else {
+        // If enter_sends is not enabled, just hitting
+        // enter should add a newline, but with a
+        // non-shift modifier key held down, we should
+        // send.  With shift, we shouldn't, because
+        // shift+enter to get a newline is a common
+        // keyboard habit for folks for dealing with other
+        // chat products where enter-always-sends.
+        this_enter_sends = has_non_shift_modifier_key;
+    }
+    return this_enter_sends;
+};
+
+exports.handle_enter = function (textarea, e) {
+    // Used only if enter doesn't send.
+
+    // Since this enter doesn't send, we just want to do
+    // the browser's default behavior for the "enter" key.
+    // Letting the browser handle it works great if the
+    // key actually pressed was enter or shift-enter.
+
+    // But the default browser behavior for ctrl/alt/meta
+    // + enter is to do nothing, so we need to emulate
+    // the browser behavior for "enter" in those cases.
+    //
+    // We do this using caret and range from jquery-caret.
+    var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
+    if (has_non_shift_modifier_key) {
+
+        // To properly emulate browser "enter", if the
+        // user had selected something in the textarea,
+        // we need those characters to be cleared.
+        var range = textarea.range();
+        if (range.length > 0) {
+            textarea.range(range.start, range.end).range('');
+        }
+
+        // Now add the newline, remembering to resize the
+        // textarea if needed.
+        textarea.caret("\n");
+        textarea.trigger("autosize.resize");
+        e.preventDefault();
+        return;
+    }
+    // Fall through to native browser behavior, otherwise.
+};
+
 function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
     if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
-        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
+        var target_sel;
+
+        if (e.target.id) {
+            target_sel = '#' + e.target.id;
+        }
+
+        var on_stream = target_sel === "#stream_message_recipient_stream";
+        var on_topic = target_sel  === "#stream_message_recipient_topic";
+        var on_pm = target_sel === "#private_message_recipient";
+        var on_compose = target_sel === '#compose-textarea';
+
+        if (on_stream || on_topic || on_pm) {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();
         }
 
         // In the compose_textarea box, preventDefault() for tab but not for enter
-        if (e.target.id === 'compose-textarea' && code !== 13) {
+        if (on_compose && code !== 13) {
             e.preventDefault();
         }
 
-        if (e.target.id === "stream") {
-            nextFocus = "subject";
-        } else if (e.target.id === "subject") {
+        if (on_stream) {
+            nextFocus = "#stream_message_recipient_topic";
+        } else if (on_topic) {
             if (code === 13) {
                 e.preventDefault();
             }
-            nextFocus = 'compose-textarea';
-        } else if (e.target.id === "private_message_recipient") {
-            nextFocus = 'compose-textarea';
-        } else if (e.target.id === 'compose-textarea') {
+            nextFocus = '#compose-textarea';
+        } else if (on_pm) {
+            nextFocus = '#compose-textarea';
+        } else if (on_compose) {
             if (code === 13) {
                 nextFocus = false;
             } else {
-                nextFocus = "compose-send-button";
+                nextFocus = "#compose-send-button";
             }
         } else {
             nextFocus = false;
         }
 
         // If no typeaheads are shown...
-        if (!($("#subject").data().typeahead.shown ||
-              $("#stream").data().typeahead.shown ||
+        if (!($("#stream_message_recipient_topic").data().typeahead.shown ||
+              $("#stream_message_recipient_stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
               $("#compose-textarea").data().typeahead.shown)) {
 
@@ -159,30 +248,12 @@ function handle_keydown(e) {
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
             if (nextFocus) {
-                ui_util.focus_on(nextFocus);
+                $(nextFocus).focus();
                 nextFocus = false;
             }
 
-            if (e.target.id === 'compose-textarea' && code === 13) {
-                var has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-                var has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
-                var this_enter_sends;
-                if (page_params.enter_sends) {
-                    // With the enter_sends setting, we should send
-                    // the message unless the user was holding a
-                    // modifier key.
-                    this_enter_sends = !has_modifier_key;
-                } else {
-                    // If enter_sends is not enabled, just hitting
-                    // enter should add a newline, but with a
-                    // non-shift modifier key held down, we should
-                    // send.  With shift, we shouldn't, because
-                    // shift+enter to get a newline is a common
-                    // keyboard habit for folks for dealing with other
-                    // chat products where enter-always-sends.
-                    this_enter_sends = has_non_shift_modifier_key;
-                }
-                if (this_enter_sends) {
+            if (on_compose && code === 13) {
+                if (exports.should_enter_send(e)) {
                     e.preventDefault();
                     if ($("#compose-send-button").attr('disabled') !== "disabled") {
                         $("#compose-send-button").attr('disabled', 'disabled');
@@ -190,37 +261,7 @@ function handle_keydown(e) {
                     }
                     return;
                 }
-
-                // Since this enter doesn't send, we just want to do
-                // the browser's default behavior for the "enter" key.
-                // Letting the browser handle it works great if the
-                // key actually pressed was enter or shift-enter.
-
-                // But the default browser behavior for ctrl/alt/meta
-                // + enter is to do nothing, so we need to emulate
-                // the browser behavior for "enter" in those cases.
-                //
-                // We do this using caret and range from jquery-caret.
-                if (has_non_shift_modifier_key) {
-                    var textarea = $("#compose-textarea");
-
-                    // To properly emulate browser "enter", if the
-                    // user had selected something in the compose box,
-                    // we need those characters to be cleared.
-                    var range = textarea.range();
-                    if (range.length > 0) {
-                        textarea.range(range.start, range.end).range('');
-                    }
-
-                    // Now add the newline, remembering to resize the
-                    // compose box if needed.
-                    textarea.caret("\n");
-                    compose_ui.autosize_textarea();
-                    e.preventDefault();
-                    return;
-                }
-
-                // Fall through to native browser behavior, otherwise.
+                exports.handle_enter($("#compose-textarea"), e);
             }
         }
     }
@@ -230,7 +271,7 @@ function handle_keyup(e) {
     var code = e.keyCode || e.which;
     if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
         if (nextFocus) {
-            ui_util.focus_on(nextFocus);
+            $(nextFocus).focus();
             nextFocus = false;
         }
     }
@@ -319,7 +360,7 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
-    var syntax_token = current_token.substring(0,3);
+    var syntax_token = current_token.substring(0, 3);
     if (this.options.completions.syntax && (syntax_token === '```' || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
@@ -357,7 +398,7 @@ exports.compose_content_begins_typeahead = function (query) {
         }
         this.completing = 'emoji';
         this.token = current_token.substring(1);
-        return emoji.emojis;
+        return exports.emoji_collection;
     }
 
     if (this.options.completions.mention && current_token[0] === '@') {
@@ -540,8 +581,9 @@ exports.initialize_compose_typeahead = function (selector) {
 };
 
 exports.initialize = function () {
-    select_on_focus("stream");
-    select_on_focus("subject");
+    exports.update_emoji_data();
+    select_on_focus("stream_message_recipient_stream");
+    select_on_focus("stream_message_recipient_topic");
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
@@ -573,7 +615,7 @@ exports.initialize = function () {
     }
 
     // limit number of items so the list doesn't fall off the screen
-    $("#stream").typeahead({
+    $("#stream_message_recipient_stream").typeahead({
         source: function () {
             return stream_data.subscribed_streams();
         },
@@ -590,7 +632,7 @@ exports.initialize = function () {
         },
     });
 
-    $("#subject").typeahead({
+    $("#stream_message_recipient_topic").typeahead({
         source: function () {
             var stream_name = compose_state.stream_name();
             return exports.topics_seen_for(stream_name);

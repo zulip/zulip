@@ -34,8 +34,8 @@ with these details in mind:
   discipline][zulip-rtd-commit-discipline]** for details).
 
 - We provide **many tools to help you submit quality code.** These include
-  [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
-  integration with [Travis CI][travis-ci], and [mypy][zulip-rtd-mypy].
+  [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], [continuous
+  integration][continuous-integration] and [mypy][zulip-rtd-mypy].
 
 - We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
   pull requests to create a better GitHub workflow for contributors.
@@ -46,7 +46,7 @@ with these details in mind:
   tasks of testing other contributors' pull requests to single commands.
 
 Finally, install the [Zulip developer environment][zulip-rtd-dev-overview], and then
-[configure your fork for use with Travis CI][zulip-git-guide-travisci].
+[configure continuous integration for your fork][zulip-git-guide-fork-ci].
 
 ***
 
@@ -58,14 +58,14 @@ git workflow, or if you'd like a git refresher.
 [github-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[travis-ci]: https://travis-ci.org/
-[zulip-git-guide-travisci]: ../git/cloning.html#step-3-configure-travis-ci-continuous-integration
+[continuous-integration]: ../testing/continuous-integration.html
+[zulip-git-guide-fork-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
 [zulip-rtd-code-style]: ../contributing/code-style.html
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
 [zulip-rtd-dev-overview]: ../development/overview.html
 [zulip-rtd-lint-tools]: ../contributing/code-style.html#lint-tools
-[zulip-rtd-mypy]: ../contributing/mypy.html
+[zulip-rtd-mypy]: ../testing/mypy.html
 [zulip-rtd-testing]: ../testing/testing.html
 [zulip-rtd-zulip-tools]: ../git/zulip-tools.html
 [zulip-rtd-zulipbot-usage]: ../contributing/zulipbot-usage.html

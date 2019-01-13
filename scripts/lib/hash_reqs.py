@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-
-
 import os
 import sys
 import argparse
 import hashlib
 
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from typing import Iterable, List, MutableSet
 
 def expand_reqs_helper(fpath, visited):

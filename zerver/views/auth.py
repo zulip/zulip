@@ -31,15 +31,15 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
     get_realm
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
-    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled, \
-    remote_auth_enabled
+    ldap_auth_enabled, ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, \
+    AUTH_BACKEND_NAME_MAP, auth_enabled_helper
 from version import ZULIP_VERSION
 
 import hashlib
@@ -142,11 +142,12 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False,
                                   redirect_to: str='') -> HttpResponse:
+    email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
-        # We have verified the user controls an email address
-        # (remote_username) but there's no associated Zulip user
-        # account.  Consider sending the request to registration.
-        return maybe_send_to_registration(request, remote_user_to_email(remote_username),
+        # We have verified the user controls an email address, but
+        # there's no associated Zulip user account.  Consider sending
+        # the request to registration.
+        return maybe_send_to_registration(request, email,
                                           full_name, password_required=False, is_signup=is_signup)
 
     # Otherwise, the user has successfully authenticated to an
@@ -158,7 +159,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
         api_key = get_api_key(user_profile)
         params = {
             'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
-            'email': remote_username,
+            'email': email,
             'realm': user_profile.realm.uri,
         }
         # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
@@ -318,6 +319,7 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
+    # TODO: Add a similar block of AzureAD.
 
     return oauth_redirect_to_root(request, backend_url, 'social')
 
@@ -348,6 +350,7 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
         'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
         'scope': 'profile email',
         'state': csrf_state,
+        'prompt': 'select_account',
     }
     return redirect(google_uri + urllib.parse.urlencode(params))
 
@@ -607,7 +610,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     elif request.user.is_authenticated:
         return HttpResponseRedirect(request.user.realm.uri)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = reverse('zerver.views.registration.find_account')
+        redirect_url = reverse('zerver.views.registration.realm_redirect')
+        if request.method == "GET" and request.GET:
+            redirect_url = "{}?{}".format(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)
@@ -822,15 +827,13 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
             raise JsonableError(_("Subdomain required"))
         else:
             realm = None
-    return {
+    result = {
         "password": password_auth_enabled(realm),
-        "dev": dev_auth_enabled(realm),
-        "email": email_auth_enabled(realm),
-        "github": github_auth_enabled(realm),
-        "google": google_auth_enabled(realm),
-        "remoteuser": remote_auth_enabled(realm),
-        "ldap": ldap_auth_enabled(realm),
     }
+    for auth_backend_name in AUTH_BACKEND_NAME_MAP:
+        key = auth_backend_name.lower()
+        result[key] = auth_enabled_helper([auth_backend_name], realm)
+    return result
 
 @csrf_exempt
 def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
@@ -839,13 +842,20 @@ def api_get_auth_backends(request: HttpRequest) -> HttpResponse:
     auth_backends['zulip_version'] = ZULIP_VERSION
     return json_success(auth_backends)
 
+def check_server_incompatibility(request: HttpRequest) -> bool:
+    user_agent = parse_user_agent(request.META.get("HTTP_USER_AGENT", "Missing User-Agent"))
+    return user_agent['name'] == "ZulipInvalid"
+
 @require_GET
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
+    # Log which client is making this request.
+    process_client(request, request.user, skip_update_user_activity=True)
     result = dict(
         authentication_methods=get_auth_backends_data(request),
         zulip_version=ZULIP_VERSION,
         push_notifications_enabled=push_notifications_enabled(),
+        is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)
     # IMPORTANT NOTE:
@@ -859,6 +869,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             "realm_uri",
             "realm_name",
             "realm_icon",
+            "realm_logo",
             "realm_description"]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]

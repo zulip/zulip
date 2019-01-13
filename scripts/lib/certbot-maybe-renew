@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 zulip_conf_get_boolean() {
     # Get a boolean flag from zulip.conf, using the Python

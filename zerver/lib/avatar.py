@@ -1,8 +1,5 @@
 from django.conf import settings
 
-if False:
-    from zerver.models import UserProfile
-
 from typing import Any, Dict, Optional
 
 from zerver.lib.avatar_hash import gravatar_hash, user_avatar_path_from_ids

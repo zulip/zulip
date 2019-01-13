@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #"OK": 0
 #"WARNING": 1
 #"CRITICAL": 2
 #"UNKNOWN": 3
 
-SUPERVISOR_STATUS=$(supervisorctl status zulip-workers:zulip-deliver-enqueued-emails 2>&1)
+SUPERVISOR_STATUS=$(supervisorctl status zulip-workers:zulip_deliver_enqueued_emails 2>&1)
 STATUS=$(echo "$SUPERVISOR_STATUS" | awk '{ print $2 }')
 
 

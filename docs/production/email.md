@@ -55,6 +55,30 @@ follows:
   providers
 * The password like `email_password = abcd1234` in `/etc/zulip/zulip-secrets.conf`.
 
+### Using system email
+
+If you'd like to send outgoing email using the local operating
+system's email delivery configuration (e.g. you have `postfix`
+configuration on the system that forwards email sent locally into your
+corporate email system), you will likely need to use something like
+these setting values:
+
+```
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = ""
+```
+
+We should emphasize that because modern spam filtering is very
+aggressive, you should make sure your downstream email system is
+configured to properly sign outgoing email sent by your Zulip server
+(or check your spam folder) when using this configuration.  See
+[documentation on using Django with a local postfix server][postfix-email]
+for additional advice.
+
+[postfix-email]: https://stackoverflow.com/questions/26333009/how-do-you-configure-django-to-send-mail-through-postfix
+
 ### Using Gmail for outgoing email
 
 We don't recommend using an inbox product like Gmail for outgoing

@@ -43,13 +43,13 @@ run_test('set_focused_recipient', () => {
 
     global.$ = function (selector) {
         switch (selector) {
-        case '#stream':
+        case '#stream_message_recipient_stream':
             return {
                 val: function () {
                     return 'social';
                 },
             };
-        case '#subject':
+        case '#stream_message_recipient_topic':
             return {
                 val: function () {
                     return 'lunch';

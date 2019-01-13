@@ -17,7 +17,10 @@ from zerver.lib.outgoing_webhook import (
 )
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.topic import TOPIC_NAME
 from zerver.models import get_realm, get_user, UserProfile, get_display_recipient
+
+from version import ZULIP_VERSION
 
 class ResponseMock:
     def __init__(self, status_code: int, content: Optional[Any]=None) -> None:
@@ -47,7 +50,7 @@ class DoRestCallTests(ZulipTestCase):
             'failed_tries': 3,
             'message': {'display_recipient': 'Verona',
                         'stream_id': 999,
-                        'subject': 'Foo',
+                        TOPIC_NAME: 'Foo',
                         'id': '',
                         'type': 'stream'},
             'user_profile_id': user_profile.id,
@@ -94,6 +97,19 @@ The webhook got a response with status code *500*.''')
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
 The webhook got a response with status code *400*.''')
             self.assertEqual(bot_owner_notification.recipient_id, self.bot_user.bot_owner.id)
+
+    def test_headers(self) -> None:
+        with mock.patch('requests.request') as mock_request:
+            do_rest_call('', 'payload-stub', self.mock_event, service_handler)
+            kwargs = mock_request.call_args[1]
+            self.assertEqual(kwargs['data'], 'payload-stub')
+
+            user_agent = 'ZulipOutgoingWebhook/' + ZULIP_VERSION
+            headers = {
+                'content-type': 'application/json',
+                'User-Agent': user_agent,
+            }
+            self.assertEqual(kwargs['headers'], headers)
 
     def test_error_handling(self) -> None:
         def helper(side_effect: Any, error_text: str) -> None:
@@ -154,6 +170,6 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
-        self.assertEqual(last_message.subject, "bar")
+        self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")

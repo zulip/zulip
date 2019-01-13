@@ -181,10 +181,10 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             mentioned_user_ids = get_usermentions(message, user_map,
                                                   user_short_name_to_full_name)
             rendered_content = None
-            subject = 'imported from gitter'
+            topic_name = 'imported from gitter'
             user_id = user_map[message['fromUser']['id']]
 
-            zulip_message = build_message(subject, float(message_time), message_id, message['text'],
+            zulip_message = build_message(topic_name, float(message_time), message_id, message['text'],
                                           rendered_content, user_id, recipient_id)
             zerver_message.append(zulip_message)
 
@@ -217,8 +217,13 @@ def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
         for mention in message['mentions']:
             if mention.get('userId') in user_map:
                 gitter_mention = '@%s' % (mention['screenName'])
-                zulip_mention = ('@**%s**' %
-                                 (user_short_name_to_full_name[mention['screenName']]))
+                if mention['screenName'] not in user_short_name_to_full_name:
+                    logging.info("Mentioned user %s never sent any messages, so has no full name data" %
+                                 mention['screenName'])
+                    full_name = mention['screenName']
+                else:
+                    full_name = user_short_name_to_full_name[mention['screenName']]
+                zulip_mention = ('@**%s**' % (full_name,))
                 message['text'] = message['text'].replace(gitter_mention, zulip_mention)
 
                 mentioned_user_ids.append(user_map[mention['userId']])

@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+import os
+import configparser
+import sys
+import subprocess
+import logging
+import time
+import argparse
+import configparser
+
+LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
+    get_deployment_lock, overwrite_symlink, release_deployment_lock, su_to_zulip, assert_running_as_root, \
+    get_config_file, get_deploy_options, get_config
+
+config_file = get_config_file()
+deploy_options = get_deploy_options(config_file)
+remote_url = get_config(config_file, 'deployment', 'git_repo_url', "https://github.com/zulip/zulip.git")
+
+assert_running_as_root(strip_lib_from_paths=True)
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
+                    level=logging.INFO)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
+parser.add_argument("--remote-url", dest="remote_url",
+                    help="Override the Git remote URL configured in /etc/zulip/zulip.conf.")
+args = parser.parse_args()
+
+refname = args.refname
+# Command line remote URL will be given preference above the one
+# in /etc/zulip/zulip.conf.
+if args.remote_url:
+    remote_url = args.remote_url
+
+os.makedirs(DEPLOYMENTS_DIR, exist_ok=True)
+os.makedirs('/home/zulip/logs', exist_ok=True)
+
+error_rerun_script = "%s/current/scripts/upgrade-zulip-from-git %s" % (DEPLOYMENTS_DIR, refname)
+get_deployment_lock(error_rerun_script)
+
+try:
+    deploy_path = make_deploy_path()
+    if not os.path.exists(LOCAL_GIT_CACHE_DIR):
+        logging.info("Cloning the repository")
+        subprocess.check_call(["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+                              stdout=open('/dev/null', 'w'))
+        subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
+
+    logging.info("Fetching the latest commits")
+    os.chdir(LOCAL_GIT_CACHE_DIR)
+    subprocess.check_call(["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip)
+    subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
+
+    subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
+                          stdout=open('/dev/null', 'w'),
+                          preexec_fn=su_to_zulip)
+    os.chdir(deploy_path)
+
+    overwrite_symlink("/etc/zulip/settings.py", "zproject/prod_settings.py")
+
+    overwrite_symlink(deploy_path, os.path.join(DEPLOYMENTS_DIR, "next"))
+
+    subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
+                           deploy_path, "--from-git"] + deploy_options)
+finally:
+    release_deployment_lock()

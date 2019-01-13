@@ -45,6 +45,7 @@ run_test('test_basics', () => {
         full_name: 'Embedded bot 1',
         services: [{config_data: {key: '12345678'},
                     service_name: "giphy"}],
+        owner: 'cordelia@zulip.com',
     };
 
     (function test_add() {
@@ -136,7 +137,7 @@ run_test('test_basics', () => {
     (function test_get_editable() {
         let can_admin;
 
-        bot_data.add({...test_bot ,user_id: 44, owner: 'owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 44, owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
         bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
 
@@ -155,5 +156,12 @@ run_test('test_basics', () => {
         assert.equal(bots.length, 2);
         assert.equal(bots[0].email, 'bot1@zulip.com');
         assert.equal(bots[1].email, 'bot2@zulip.com');
+    }());
+
+    (function test_get_bot_owner_email() {
+        let bot_owner_email = bot_data.get_bot_owner_email(test_embedded_bot.user_id);
+        assert.equal('cordelia@zulip.com', bot_owner_email);
+        bot_owner_email = bot_data.get_bot_owner_email(test_bot.user_id);
+        assert.equal(undefined, bot_owner_email);
     }());
 });

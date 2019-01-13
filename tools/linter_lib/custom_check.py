@@ -11,27 +11,48 @@ from zulint.printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
+Rule = Dict[str, Any]
 RuleList = List[Dict[str, Any]]
+LineTup = Tuple[int, str, str, str]
 
-def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=None):
-    # type: (str, str, RuleList, str, Optional[Iterable[str]], Optional[int]) -> bool
-    failed = False
+FILES_WITH_LEGACY_SUBJECT = {
+    # This basically requires a big DB migration:
+    'zerver/lib/topic.py',
 
+    # This is for backward compatibility.
+    'zerver/tests/test_legacy_subject.py',
+
+    # Other migration-related changes require extreme care.
+    'zerver/lib/fix_unreads.py',
+    'zerver/tests/test_migrations.py',
+
+    # These use subject in the email sense, and will
+    # probably always be exempt:
+    'zerver/lib/email_mirror.py',
+    'zerver/lib/feedback.py',
+    'zerver/tests/test_new_users.py',
+    'zerver/tests/test_email_mirror.py',
+
+    # These are tied more to our API than our DB model.
+    'zerver/lib/api_test_helpers.py',
+
+    # This has lots of query data embedded, so it's hard
+    # to fix everything until we migrate the DB to "topic".
+    'zerver/tests/test_narrow.py',
+}
+
+def get_line_info_from_file(fn: str) -> List[LineTup]:
     line_tups = []
     for i, line in enumerate(open(fn)):
         line_newline_stripped = line.strip('\n')
         line_fully_stripped = line_newline_stripped.strip()
-        skip = False
-        for skip_rule in skip_rules or []:
-            if re.match(skip_rule, line):
-                skip = True
         if line_fully_stripped.endswith('  # nolint'):
-            continue
-        if skip:
             continue
         tup = (i, line, line_newline_stripped, line_fully_stripped)
         line_tups.append(tup)
+    return line_tups
 
+def get_rules_applying_to_fn(fn: str, rules: RuleList) -> RuleList:
     rules_to_apply = []
     for rule in rules:
         excluded = False
@@ -50,71 +71,117 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
                 continue
         rules_to_apply.append(rule)
 
+    return rules_to_apply
+
+def check_file_for_pattern(fn: str,
+                           line_tups: List[LineTup],
+                           identifier: str,
+                           color: Optional[Iterable[str]],
+                           rule: Rule) -> bool:
+
+    '''
+    DO NOT MODIFY THIS FUNCTION WITHOUT PROFILING.
+
+    This function gets called ~40k times, once per file per regex.
+
+    Inside it's doing a regex check for every line in the file, so
+    it's important to do things like pre-compiling regexes.
+
+    DO NOT INLINE THIS FUNCTION.
+
+    We need to see it show up in profiles, and the function call
+    overhead will never be a bottleneck.
+    '''
+    exclude_lines = {
+        line for
+        (exclude_fn, line) in rule.get('exclude_line', set())
+        if exclude_fn == fn
+    }
+
+    pattern = re.compile(rule['pattern'])
+    strip_rule = rule.get('strip')  # type: Optional[str]
+
+    ok = True
+    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+        if line_fully_stripped in exclude_lines:
+            exclude_lines.remove(line_fully_stripped)
+            continue
+        try:
+            line_to_check = line_fully_stripped
+            if strip_rule is not None:
+                if strip_rule == '\n':
+                    line_to_check = line_newline_stripped
+                else:
+                    raise Exception("Invalid strip rule")
+            if pattern.search(line_to_check):
+                if rule.get("exclude_pattern"):
+                    if re.search(rule['exclude_pattern'], line_to_check):
+                        continue
+                print_err(identifier, color, '{} at {} line {}:'.format(
+                    rule['description'], fn, i+1))
+                print_err(identifier, color, line)
+                ok = False
+        except Exception:
+            print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
+            traceback.print_exc()
+
+    if exclude_lines:
+        print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
+
+    return ok
+
+def custom_check_file(fn: str,
+                      identifier: str,
+                      rules: RuleList,
+                      color: Optional[Iterable[str]],
+                      max_length: Optional[int]=None) -> bool:
+    failed = False
+
+    line_tups = get_line_info_from_file(fn=fn)
+
+    rules_to_apply = get_rules_applying_to_fn(fn=fn, rules=rules)
+
     for rule in rules_to_apply:
-        exclude_lines = {
-            line for
-            (exclude_fn, line) in rule.get('exclude_line', set())
-            if exclude_fn == fn
-        }
-
-        pattern = rule['pattern']
-        for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-            if line_fully_stripped in exclude_lines:
-                exclude_lines.remove(line_fully_stripped)
-                continue
-            try:
-                line_to_check = line_fully_stripped
-                if rule.get('strip') is not None:
-                    if rule['strip'] == '\n':
-                        line_to_check = line_newline_stripped
-                    else:
-                        raise Exception("Invalid strip rule")
-                if re.search(pattern, line_to_check):
-                    if rule.get("exclude_pattern"):
-                        if re.search(rule['exclude_pattern'], line_to_check):
-                            continue
-                    print_err(identifier, color, '{} at {} line {}:'.format(
-                        rule['description'], fn, i+1))
-                    print_err(identifier, color, line)
-                    failed = True
-            except Exception:
-                print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
-                traceback.print_exc()
-
-        if exclude_lines:
-            print('Please remove exclusions for file %s: %s' % (fn, exclude_lines))
+        ok = check_file_for_pattern(
+            fn=fn,
+            line_tups=line_tups,
+            identifier=identifier,
+            color=color,
+            rule=rule,
+        )
+        if not ok:
+            failed = True
 
     # TODO: Move the below into more of a framework.
     firstline = None
+    lastLine = None
     if line_tups:
         firstline = line_tups[0][3]  # line_fully_stripped for the first line.
-    lastLine = None
-    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
-        if isinstance(line, bytes):
-            line_length = len(line.decode("utf-8"))
-        else:
-            line_length = len(line)
-        if (max_length is not None and line_length > max_length and
-            '# type' not in line and 'test' not in fn and 'example' not in fn and
-            # Don't throw errors for markdown format URLs
-            not re.search(r"^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
-            # Don't throw errors for URLs in code comments
-            not re.search(r"[#].*http.*", line) and
-            not re.search(r"`\{\{ api_url \}\}[^`]+`", line) and
-                "# ignorelongline" not in line and 'migrations' not in fn):
-            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+        lastLine = line_tups[-1][1]
+
+    if max_length is not None:
+        ok = check_file_for_long_lines(
+            fn=fn,
+            max_length=max_length,
+            line_tups=line_tups,
+        )
+        if not ok:
             failed = True
-        lastLine = line
 
     if firstline:
         if os.path.splitext(fn)[1] and 'zerver/' in fn:
             shebang_rules = [{'pattern': '^#!',
                               'description': "zerver library code shouldn't have a shebang line."}]
         else:
-            shebang_rules = [{'pattern': '#!/usr/bin/python',
-                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/python`"},
-                             {'pattern': '#!/usr/bin/env python$',
-                              'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}]
+            shebang_rules = [
+                # /bin/sh and /usr/bin/env are the only two binaries
+                # that NixOS provides at a fixed path (outside a
+                # buildFHSUserEnv sandbox).
+                {'pattern': '^#!(?! *(?:/usr/bin/env|/bin/sh)(?: |$))',
+                 'description': "Use `#!/usr/bin/env foo` instead of `#!/path/foo` for interpreters other than sh."},
+                {'pattern': '^#!/usr/bin/env python$',
+                 'description': "Use `#!/usr/bin/env python3` instead of `#!/usr/bin/env python`."}
+            ]
         for rule in shebang_rules:
             if re.search(rule['pattern'], firstline):
                 print_err(identifier, color,
@@ -127,6 +194,27 @@ def custom_check_file(fn, identifier, rules, color, skip_rules=None, max_length=
         failed = True
 
     return failed
+
+def check_file_for_long_lines(fn: str,
+                              max_length: int,
+                              line_tups: List[LineTup]) -> bool:
+    ok = True
+    for (i, line, line_newline_stripped, line_fully_stripped) in line_tups:
+        if isinstance(line, bytes):
+            line_length = len(line.decode("utf-8"))
+        else:
+            line_length = len(line)
+        if (line_length > max_length and
+            '# type' not in line and 'test' not in fn and 'example' not in fn and
+            # Don't throw errors for markdown format URLs
+            not re.search(r"^\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
+            # Don't throw errors for URLs in code comments
+            not re.search(r"[#].*http.*", line) and
+            not re.search(r"`\{\{ api_url \}\}[^`]+`", line) and
+                "# ignorelongline" not in line and 'migrations' not in fn):
+            print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+            ok = False
+    return ok
 
 def build_custom_checkers(by_lang):
     # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
@@ -150,12 +238,12 @@ def build_custom_checkers(by_lang):
          },
         {'pattern': '\t',
          'strip': '\n',
-         'exclude': set(['tools/travis/success-http-headers.txt']),
+         'exclude': set(['tools/ci/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
     ]  # type: RuleList
     comma_whitespace_rule = [
         {'pattern': ', {2,}[^#/ ]',
-         'exclude': set(['zerver/tests', 'frontend_tests/node_tests']),
+         'exclude': set(['zerver/tests', 'frontend_tests/node_tests', 'corporate/tests']),
          'description': "Remove multiple whitespaces after ','",
          'good_lines': ['foo(1, 2, 3)', 'foo = bar  # some inline comment'],
          'bad_lines': ['foo(1,  2, 3)', 'foo(1,    2, 3)']},
@@ -174,6 +262,13 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['###some heading', '#another heading']},
     ]  # type: RuleList
     js_rules = cast(RuleList, [
+        {'pattern': 'subject|SUBJECT',
+         'exclude': set(['static/js/util.js',
+                         'frontend_tests/']),
+         'exclude_pattern': 'emails',
+         'description': 'avoid subject in JS code',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
         {'pattern': r'[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
         {'pattern': r'.*blueslip.warning\(.*',
@@ -239,9 +334,11 @@ def build_custom_checkers(by_lang):
                         'by i18n.t()'},
         {'pattern': r'ui.report_error\(',
          'description': 'Deprecated function, use ui_report.error.'},
-        {'pattern': r'''report.error\(["']''',
-         'description': 'Argument to report_error should be a literal string enclosed '
-                        'by i18n.t()'},
+        {'pattern': r'''report.error\(["'][^'"]''',
+         'description': 'Argument to ui_report.error should be a literal string enclosed '
+                        'by i18n.t()',
+         'good_lines': ['ui_report.error("")', 'ui_report.error(_("text"))'],
+         'bad_lines': ['ui_report.error("test")']},
         {'pattern': r'\$\(document\)\.ready\(',
          'description': "`Use $(f) rather than `$(document).ready(f)`",
          'good_lines': ['$(function () {foo();}'],
@@ -272,6 +369,17 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},
     ]) + whitespace_rules + comma_whitespace_rule
     python_rules = cast(RuleList, [
+        {'pattern': 'subject|SUBJECT',
+         'exclude_pattern': 'subject to the|email|outbox',
+         'description': 'avoid subject as a var',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN'],
+         'exclude': FILES_WITH_LEGACY_SUBJECT,
+         'include_only': set([
+             'zerver/data_import/',
+             'zerver/lib/',
+             'zerver/tests/',
+             'zerver/views/'])},
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required',
          'good_lines': ['@zulip_login_required', '# foo @login_required'],
@@ -379,6 +487,22 @@ def build_custom_checkers(by_lang):
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
          'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
+        {'pattern': '^from typing import',
+         'strip': '\n',
+         'include_only': set([
+             'scripts/',
+             'puppet/',
+             'tools/zulint/',
+         ]),
+         'exclude': set([
+             # Not important, but should fix
+             'scripts/lib/process-mobile-i18n',
+             # Uses setup_path_on_import before importing.
+             'puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time',
+         ]),
+         'description': 'For scripts run as part of installer, cannot rely on typing existing; use `if False` workaround.',
+         'good_lines': ['    from typing import List'],
+         'bad_lines': ['from typing import List']},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translation',
@@ -399,10 +523,6 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['return json_error(_variable)', 'return json_error(_(variable))']},
         {'pattern': r'''\Wjson_error\(['"].+[),]$''',
          'exclude': set(['zerver/tests']),
-         'exclude_line': set([
-             # We don't want this string tagged for translation.
-             ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
-         ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': r'\WJsonableError\(_\(?\w.+\)',
@@ -422,7 +542,6 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r]Message.objects.get',
          'exclude': set(["zerver/tests",
                          "zerver/lib/onboarding.py",
-                         "zerver/lib/import_realm.py",
                          "zilencer/management/commands/add_mock_conversation.py",
                          "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
@@ -453,7 +572,6 @@ def build_custom_checkers(by_lang):
          'include_only': set(["/migrations/"]),
          'exclude': set([
              'zerver/migrations/0032_verify_all_medium_avatar_images.py',
-             'zerver/migrations/0041_create_attachments_for_old_messages.py',
              'zerver/migrations/0060_move_avatars_to_be_uid_based.py',
              'zerver/migrations/0104_fix_unreads.py',
              'pgroonga/migrations/0002_html_escape_subject.py',
@@ -606,6 +724,12 @@ def build_custom_checkers(by_lang):
          'description': "Use Botserver instead of botserver or bot server."},
     ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
+        {'pattern': 'subject|SUBJECT',
+         'exclude': set(['templates/zerver/email.html']),
+         'exclude_pattern': 'email subject',
+         'description': 'avoid subject in templates',
+         'good_lines': ['topic_name'],
+         'bad_lines': ['subject="foo"', ' MAX_SUBJECT_LEN']},
         {'pattern': r'placeholder="[^{#](?:(?!\.com).)+$',
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
@@ -656,7 +780,7 @@ def build_custom_checkers(by_lang):
          'description': "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
                         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
                         "the DOM is ready (inside a $(function () {...}) block).",
-         'exclude': set(['templates/zerver/dev_login.html']),
+         'exclude': set(['templates/zerver/dev_login.html', 'templates/corporate/upgrade.html']),
          'good_lines': ["($('#foo').on('click', function () {}"],
          'bad_lines': ["<button id='foo' onclick='myFunction()'>Foo</button>", "<input onchange='myFunction()'>"]},
         {'pattern': 'style ?=',
@@ -678,8 +802,6 @@ def build_custom_checkers(by_lang):
              # Old-style email templates need to use inline style
              # attributes; it should be possible to clean these up
              # when we convert these templates to use premailer.
-             'templates/zerver/emails/digest.html',
-             'templates/zerver/emails/missed_message.html',
              'templates/zerver/emails/email_base_messages.html',
 
              # Email log templates; should clean up.
@@ -702,6 +824,7 @@ def build_custom_checkers(by_lang):
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
              'templates/corporate/billing.html',
+             'templates/corporate/upgrade.html',
 
              # Miscellaneous violations to be cleaned up
              'static/templates/user_info_popover_title.handlebars',
@@ -758,7 +881,7 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
-        {'pattern': r':["\[\{]',
+        {'pattern': r'":["\[\{]',
          'exclude': set(['zerver/webhooks/', 'zerver/tests/fixtures/']),
          'description': 'Require space after : in JSON'},
     ]  # type: RuleList
@@ -767,8 +890,16 @@ def build_custom_checkers(by_lang):
          'description': 'Linkified markdown URLs should use cleaner <http://example.com> syntax.'},
         {'pattern': 'https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]',
          'exclude': ['docs/overview/contributing.md', 'docs/overview/readme.md', 'docs/README.md'],
+         'exclude_line': set([
+             ('docs/testing/mypy.md',
+              '# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts')
+         ]),
          'include_only': set(['docs/']),
          'description': "Use relative links (../foo/bar.html) to other documents in docs/",
+         },
+        {'pattern': "su zulip -c [^']",
+         'include_only': set(['docs/']),
+         'description': "Always quote arguments using `su zulip -c '` to avoid confusion about how su works.",
          },
         {'pattern': r'\][(][^#h]',
          'include_only': set(['README.md', 'CONTRIBUTING.md']),
@@ -812,8 +943,8 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         color = next(colors)
-        for fn in by_lang['css']:
-            if custom_check_file(fn, 'css', css_rules, color):
+        for fn in by_lang['scss']:
+            if custom_check_file(fn, 'scss', css_rules, color):
                 failed = True
 
         color = next(colors)
@@ -847,6 +978,9 @@ def build_custom_checkers(by_lang):
             "templates/zerver/api/incoming-webhooks-walkthrough.md",
             # This macro has a long indented URL
             "templates/zerver/help/include/git-webhook-url-with-branches-indented.md",
+            # These two are the same file and have some too-long lines for GitHub badges
+            "README.md",
+            "docs/overview/readme.md",
         }
         for fn in by_lang['md']:
             max_length = None

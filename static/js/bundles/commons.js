@@ -5,6 +5,7 @@ import "node_modules/jquery/dist/jquery.js";
 import "node_modules/underscore/underscore.js";
 import "js/blueslip.js";
 import "third/bootstrap/js/bootstrap.js";
+import "third/bootstrap-typeahead/typeahead.js";
 import "js/common.js";
 import "node_modules/moment/min/moment.min.js";
 import "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js";

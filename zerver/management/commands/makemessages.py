@@ -41,8 +41,6 @@ from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
 from django.utils.translation import template
 
-from zerver.lib.str_utils import force_text
-
 strip_whitespace_right = re.compile("(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (
                                     BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 strip_whitespace_left = re.compile("\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
@@ -249,7 +247,7 @@ class Command(makemessages.Command):
                 old_strings = {}
 
             new_strings = {
-                force_text(k): v
+                k: v
                 for k, v in self.get_new_strings(old_strings,
                                                  translation_strings,
                                                  locale).items()

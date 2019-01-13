@@ -1,0 +1,1 @@
+{% trans %}New login from {{ device_browser }} on {{ device_os }}{% endtrans %}

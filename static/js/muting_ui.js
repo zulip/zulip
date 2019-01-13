@@ -23,85 +23,9 @@ exports.rerender = function () {
     }
 };
 
-exports.notify_with_undo_option = (function () {
-    var meta = {
-        stream: null,
-        topic: null,
-        hide_me_time: null,
-        alert_hover_state: false,
-        $mute: null,
-    };
-    var animate = {
-        fadeOut: function () {
-            if (meta.$mute) {
-                meta.$mute.fadeOut(500).removeClass("show");
-            }
-        },
-        fadeIn: function () {
-            if (meta.$mute) {
-                meta.$mute.fadeIn(500).addClass("show");
-            }
-        },
-    };
-    setInterval(function () {
-        if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
-            animate.fadeOut();
-        }
-    }, 100);
-
-    return function (stream, topic) {
-        var $exit = $("#unmute_muted_topic_notification .exit-me");
-
-        if (!meta.$mute) {
-            meta.$mute = $("#unmute_muted_topic_notification");
-
-            $exit.click(function () {
-                animate.fadeOut();
-            });
-
-            meta.$mute.find("#unmute").click(function () {
-                // it should reference the meta variable and not get stuck with
-                // a pass-by-value of stream, topic.
-                exports.unmute(meta.stream, meta.topic);
-                animate.fadeOut();
-            });
-        }
-
-        meta.stream = stream;
-        meta.topic = topic;
-        // add a four second delay before closing up.
-        meta.hide_me_time = new Date().getTime() + 4000;
-
-        meta.$mute.find(".topic").text(topic);
-        meta.$mute.find(".stream").text(stream);
-
-        animate.fadeIn();
-
-        // if the user mouses over the notification, don't hide it.
-        meta.$mute.mouseenter(function () {
-            meta.alert_hover_state = true;
-        });
-
-        // once the user's mouse leaves the notification, restart the countdown.
-        meta.$mute.mouseleave(function () {
-            meta.alert_hover_state = false;
-            // add at least 2000ms but if more than that exists just keep the
-            // current amount.
-            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
-        });
-    };
-}());
-
-exports.dismiss_mute_confirmation = function () {
-    var $mute = $("#unmute_muted_topic_notification");
-    if ($mute) {
-        $mute.fadeOut(500).removeClass("show");
-    }
-};
-
-exports.persist_mute = function (stream_name, topic_name) {
+exports.persist_mute = function (stream_id, topic_name) {
     var data = {
-        stream: stream_name,
+        stream_id: stream_id,
         topic: topic_name,
         op: 'add',
     };
@@ -113,9 +37,9 @@ exports.persist_mute = function (stream_name, topic_name) {
     });
 };
 
-exports.persist_unmute = function (stream_name, topic_name) {
+exports.persist_unmute = function (stream_id, topic_name) {
     var data = {
-        stream: stream_name,
+        stream_id: stream_id,
         topic: topic_name,
         op: 'remove',
     };
@@ -147,45 +71,74 @@ exports.update_muted_topics = function (muted_topics) {
 exports.set_up_muted_topics_ui = function (muted_topics) {
     var muted_topics_table = $("#muted_topics_table tbody");
     muted_topics_table.empty();
-    _.each(muted_topics, function (list) {
-        var row = templates.render('muted_topic_ui_row', {stream: list[0], topic: list[1]});
+    _.each(muted_topics, function (tup) {
+        var stream_id = tup[0];
+        var topic = tup[1];
+
+        var stream = stream_data.maybe_get_stream_name(stream_id);
+
+        if (!stream) {
+            blueslip.warn('Unknown stream_id in set_up_muted_topics_ui: ' + stream_id);
+            return;
+        }
+
+        var template_data = {
+            stream: stream,
+            stream_id: stream_id,
+            topic: topic,
+        };
+
+        var row = templates.render('muted_topic_ui_row', template_data);
         muted_topics_table.append(row);
     });
 };
 
-exports.mute = function (stream, topic) {
+exports.mute = function (stream_id, topic) {
+    var stream_name = stream_data.maybe_get_stream_name(stream_id);
+
     stream_popover.hide_topic_popover();
-    muting.add_muted_topic(stream, topic);
+    muting.add_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_mute(stream, topic);
-    exports.notify_with_undo_option(stream, topic);
+    exports.persist_mute(stream_id, topic);
+    feedback_widget.show({
+        populate: function (container) {
+            var rendered_html = templates.render('topic_muted');
+            container.html(rendered_html);
+            container.find(".stream").text(stream_name);
+            container.find(".topic").text(topic);
+        },
+        on_undo: function () {
+            exports.unmute(stream_id, topic);
+        },
+        title_text: i18n.t("Topic muted"),
+        undo_button_text: i18n.t("Unmute"),
+    });
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
-exports.unmute = function (stream, topic) {
+exports.unmute = function (stream_id, topic) {
     // we don't run a unmute_notify function because it isn't an issue as much
     // if someone accidentally unmutes a stream rather than if they mute it
     // and miss out on info.
     stream_popover.hide_topic_popover();
-    muting.remove_muted_topic(stream, topic);
+    muting.remove_muted_topic(stream_id, topic);
     unread_ui.update_unread_counts();
     exports.rerender();
-    exports.persist_unmute(stream, topic);
+    exports.persist_unmute(stream_id, topic);
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
-    exports.dismiss_mute_confirmation();
+    feedback_widget.dismiss();
 };
 
-exports.toggle_mute = function (msg) {
-    if (muting.is_topic_muted(msg.stream, msg.subject)) {
-        exports.unmute(msg.stream, msg.subject);
-    } else if (msg.type === 'stream') {
-        exports.mute(msg.stream, msg.subject);
+exports.toggle_mute = function (message) {
+    var stream_id = message.stream_id;
+    var topic = util.get_message_topic(message);
+
+    if (muting.is_topic_muted(stream_id, topic)) {
+        exports.unmute(stream_id, topic);
+    } else if (message.type === 'stream') {
+        exports.mute(stream_id, topic);
     }
-};
-
-exports.initialize = function () {
-    exports.update_muted_topics(page_params.muted_topics);
 };
 
 return exports;

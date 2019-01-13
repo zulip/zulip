@@ -21,7 +21,7 @@ and will otherwise fall back to the zulip realm."""
                                  .order_by('-string_id').first()
         if realm is None:
             print('Warning: Using default zulip realm, which has an unusual configuration.\n'
-                  'Try running `python manage.py add_new_realm`, and then running this again.')
+                  'Try running `manage.py add_new_realm`, and then running this again.')
             valid_realm = Realm.objects.get(string_id='zulip')
             domain = 'zulip.com'
         else:

@@ -8,6 +8,7 @@ Subsystems Documentation
    dependencies
    settings
    events-system
+   sending-messages
    queuing
    custom-apps
    pointer
@@ -31,7 +32,7 @@ Subsystems Documentation
    logging
    typing-indicators
    users
-   guest-users
+   django-upgrades
    release-checklist
    api-release-checklist
    openapi-api-docs

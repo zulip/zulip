@@ -68,7 +68,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_button', function () {
-        casper.fill('#get_api_key_form', {password:test_credentials.default_user.password});
+        casper.fill('#get_api_key_form', {password: test_credentials.default_user.password});
         casper.click('#get_api_key_button');
     });
 });
@@ -114,7 +114,7 @@ casper.then(function () {
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form for an outgoing webhook bot');
 
-    casper.fill('#create_bot_form',{
+    casper.fill('#create_bot_form', {
         bot_name: 'Bot 1',
         bot_short_name: '1',
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
@@ -146,7 +146,7 @@ casper.then(function () {
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form for a normal bot');
 
-    casper.fill('#create_bot_form',{
+    casper.fill('#create_bot_form', {
         bot_name: 'Bot 2',
         bot_short_name: '2',
         bot_type: GENERIC_BOT_TYPE,
@@ -336,6 +336,28 @@ casper.thenClick('a[data-code="en"]');
  */
 casper.waitUntilVisible('#language-settings-status a', function () {
     casper.test.assertSelectorHasText('#language-settings-status', 'Gespeichert. Bitte lade die Seite neu um die Änderungen zu aktivieren.');
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('[data-section="notifications"]', function () {
+        casper.test.info('Testing disabled/enabled behavior for Notification sound');
+        casper.click('[data-section="notifications"]');
+    });
+});
+
+casper.then(function () {
+    // At the beginning, `#enable_sounds` will be on and `#enable_stream_sounds`
+    // will be off by default.
+    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+
+    casper.click('#enable_stream_sounds');
+    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+
+    casper.click('#enable_sounds');
+    casper.test.assertVisible("#notification_sound:enabled", "Notification sound selector is enabled");
+
+    casper.click('#enable_stream_sounds');
+    casper.test.assertVisible("#notification_sound:disabled", "Notification sound selector is disabled");
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");

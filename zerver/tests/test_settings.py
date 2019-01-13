@@ -11,7 +11,8 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP
 from zerver.lib.users import get_all_api_keys
-from zerver.models import get_realm, get_user, UserProfile
+from zerver.models import get_realm, get_user, UserProfile, \
+    get_user_profile_by_api_key
 
 class ChangeSettingsTest(ZulipTestCase):
 
@@ -131,8 +132,39 @@ class ChangeSettingsTest(ZulipTestCase):
     # This is basically a don't-explode test.
     def test_notify_settings(self) -> None:
         for notification_setting in UserProfile.notification_setting_types:
-            self.check_for_toggle_param_patch("/json/settings/notifications",
-                                              notification_setting)
+            # `notification_sound` is a string not a boolean, so this test
+            # doesn't work for it.
+            #
+            # TODO: Make this work more like do_test_realm_update_api
+            if notification_setting is not 'notification_sound':
+                self.check_for_toggle_param_patch("/json/settings/notifications",
+                                                  notification_setting)
+
+    def test_change_notification_sound(self) -> None:
+        pattern = "/json/settings/notifications"
+        param = "notification_sound"
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps("invalid")})
+        self.assert_json_error(json_result, "Invalid notification sound 'invalid'")
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps("ding")})
+        self.assert_json_success(json_result)
+
+        # refetch user_profile object to correctly handle caching
+        user_profile = self.example_user('hamlet')
+        self.assertEqual(getattr(user_profile, param), "ding")
+
+        json_result = self.client_patch(pattern,
+                                        {param: ujson.dumps('zulip')})
+
+        self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
+        user_profile = self.example_user('hamlet')
+        self.assertEqual(getattr(user_profile, param), 'zulip')
 
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
@@ -286,8 +318,14 @@ class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
+
         self.login(email)
         old_api_keys = get_all_api_keys(user)
+        # Ensure the old API keys are in the authentication cache, so
+        # that the below logic can test whether we have a cache-flushing bug.
+        for api_key in old_api_keys:
+            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
+
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = result.json()['api_key']
@@ -295,3 +333,10 @@ class UserChangesTest(ZulipTestCase):
         user = self.example_user('hamlet')
         current_api_keys = get_all_api_keys(user)
         self.assertIn(new_api_key, current_api_keys)
+
+        for api_key in old_api_keys:
+            with self.assertRaises(UserProfile.DoesNotExist):
+                get_user_profile_by_api_key(api_key)
+
+        for api_key in current_api_keys:
+            self.assertEqual(get_user_profile_by_api_key(api_key).email, email)

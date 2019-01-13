@@ -223,6 +223,19 @@ exports.get_user_time = function (user_id) {
     }
 };
 
+exports.get_user_type = function (user_id) {
+    var user_profile = exports.get_person_from_user_id(user_id);
+
+    if (user_profile.is_admin) {
+        return i18n.t("Administrator");
+    } else if (user_profile.is_guest) {
+        return i18n.t("Guest");
+    } else if (user_profile.is_bot) {
+        return i18n.t("Bot");
+    }
+    return i18n.t("Member");
+};
+
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     return exports.email_list_to_user_ids_string(emails);
@@ -731,10 +744,10 @@ function remove_diacritics(s) {
         return s;
     }
 
-    return s.replace(/[áàãâä]/g,"a")
-        .replace(/[éèëê]/g,"e")
-        .replace(/[íìïî]/g,"i")
-        .replace(/[óòöôõ]/g,"o")
+    return s.replace(/[áàãâä]/g, "a")
+        .replace(/[éèëê]/g, "e")
+        .replace(/[íìïî]/g, "i")
+        .replace(/[óòöôõ]/g, "o")
         .replace(/[úùüû]/g, "u")
         .replace(/[ç]/g, "c")
         .replace(/[ñ]/g, "n");
@@ -827,7 +840,7 @@ exports.track_duplicate_full_name = function (full_name, user_id, to_remove) {
     if (to_remove && user_id && ids.has(user_id)) {
         ids.del(user_id);
     }
-    duplicate_full_name_data.set(full_name,ids);
+    duplicate_full_name_data.set(full_name, ids);
 };
 
 exports.is_duplicate_full_name = function (full_name) {
@@ -968,7 +981,10 @@ exports.set_custom_profile_field_data = function (user_id, field) {
         blueslip.error("Unknown field id " + field.id);
         return;
     }
-    people_by_user_id_dict.get(user_id).profile_data[field.id] = field.value;
+    people_by_user_id_dict.get(user_id).profile_data[field.id] = {
+        value: field.value,
+        rendered_value: field.rendered_value,
+    };
 };
 
 exports.is_current_user = function (email) {

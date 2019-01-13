@@ -14,11 +14,10 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
-from zerver.models import Realm, UserProfile, get_user
+from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead
-    'comment_updated',  # we handle issue_update event instead
     'comment_deleted',  # we handle issue_update event instead
 ]
 
@@ -112,7 +111,7 @@ def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None) -> s
 def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
     if assignee_email != '':
         try:
-            assignee_name = get_user(assignee_email, realm).full_name
+            assignee_name = get_user_by_delivery_email(assignee_email, realm).full_name
         except UserProfile.DoesNotExist:
             assignee_name = assignee_email
         return u"**{}**".format(assignee_name)
@@ -176,7 +175,13 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
             verb = 'edited comment on'
         else:
             verb = 'deleted comment from'
-        content = u"{} **{}** {}{}".format(get_issue_author(payload), verb, issue, assignee_blurb)
+
+        if payload.get('webhookEvent') == 'comment_created':
+            author = payload['comment']['author']['displayName']
+        else:
+            author = get_issue_author(payload)
+
+        content = u"{} **{}** {}{}".format(author, verb, issue, assignee_blurb)
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
@@ -236,10 +241,15 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event == 'jira:issue_updated':
         subject = get_issue_subject(payload)
         content = handle_updated_issue_event(payload, user_profile)
+    elif event == 'comment_created':
+        subject = get_issue_subject(payload)
+        content = handle_updated_issue_event(payload, user_profile)
     elif event in IGNORED_EVENTS:
         return json_success()
     else:
         raise UnexpectedWebhookEventType('Jira', event)
 
-    check_send_webhook_message(request, user_profile, subject, content)
+    check_send_webhook_message(request, user_profile,
+                               subject, content,
+                               unquote_url_parameters=True)
     return json_success()

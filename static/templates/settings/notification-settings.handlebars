@@ -105,6 +105,23 @@
               "is_checked" page_params.realm_name_in_notifications
               "label" settings_label.realm_name_in_notifications}}
         </div>
-    </form>
 
+        <label for="notification_sound">
+            {{t "Notification sound:" }}
+        </label>
+
+        <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+            <select name="notification_sound" id="notification_sound"
+              {{#unless enable_sound_select}}
+              disabled
+              {{/unless}}>
+                {{#each page_params.available_notification_sounds}}
+                <option value="{{ this }}">{{ this }}</option>
+                {{/each}}
+            </select>
+            <a id="play_notification_sound">
+                {{t "Play sound" }}
+            </a>
+        </div>
+    </form>
 </div>

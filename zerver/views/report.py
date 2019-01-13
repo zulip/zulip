@@ -90,7 +90,6 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
     statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
     return json_success()
 
-@human_users_only
 @has_request_variables
 def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
                  stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
@@ -125,13 +124,20 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
     if more_info.get('draft_content'):
         more_info['draft_content'] = privacy_clean_markdown(more_info['draft_content'])
 
+    if user_profile.is_authenticated:
+        email = user_profile.delivery_email
+        full_name = user_profile.full_name
+    else:
+        email = "unauthenticated@example.com"
+        full_name = "Anonymous User"
+
     queue_json_publish('error_reports', dict(
         type = "browser",
         report = dict(
             host = request.get_host().split(":")[0],
             ip_address = remote_ip,
-            user_email = user_profile.email,
-            user_full_name = user_profile.full_name,
+            user_email = email,
+            user_full_name = full_name,
             user_visible = ui_message,
             server_path = settings.DEPLOY_ROOT,
             version = version,

@@ -25,8 +25,8 @@ tar -xf zulip-server-latest.tar.gz
 * If you'd like to verify the download, we
 [publish the sha256sums of our release tarballs](https://www.zulip.org/dist/releases/SHA256SUMS.txt).
 * You can also
-[install a development version of Zulip](../production/deployment.html#installing-zulip-from-git)
-by cloning our [repository on GitHub](https://github.com/zulip/zulip/).
+[install a pre-release version of Zulip](../production/deployment.html#installing-zulip-from-git)
+using code from our [repository on GitHub](https://github.com/zulip/zulip/).
 
 ## Step 2: Install Zulip
 

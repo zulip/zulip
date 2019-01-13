@@ -4,6 +4,7 @@ from django.conf import settings
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     use_s3_backend,
+    create_s3_buckets,
     override_settings,
     get_test_image_file
 )
@@ -11,7 +12,6 @@ from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
 from io import StringIO
-from boto.s3.connection import S3Connection
 import ujson
 import urllib
 import base64
@@ -21,15 +21,17 @@ class ThumbnailTest(ZulipTestCase):
     @use_s3_backend
     def test_s3_source_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/s3'
+            url_in_result = 'smart/filters:no_upscale()%s/%s/source_type/s3'
+            sharpen_filter = ''
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
+                sharpen_filter = ':sharpen(0.5,0.2,true)'
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
-            return url_in_result % (hex_uri)
+            return url_in_result % (sharpen_filter, hex_uri)
 
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET,
+            settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -98,7 +100,7 @@ class ThumbnailTest(ZulipTestCase):
             encoded_url = base64.urlsafe_b64encode(image_url.encode()).decode('utf-8')
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test thumbnail size.
@@ -137,7 +139,7 @@ class ThumbnailTest(ZulipTestCase):
             self.login(self.example_email("iago"))
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
-            expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + encoded_url + '/source_type/external'
+            expected_part_url = '/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
         image_url = 'https://images.foobar.com/12345'
@@ -148,11 +150,13 @@ class ThumbnailTest(ZulipTestCase):
 
     def test_local_file_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/local_file'
+            url_in_result = 'smart/filters:no_upscale()%s/%s/source_type/local_file'
+            sharpen_filter = ''
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
+                sharpen_filter = ':sharpen(0.5,0.2,true)'
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
-            return url_in_result % (hex_uri)
+            return url_in_result % (sharpen_filter, hex_uri)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -307,16 +311,18 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302, result)
         base = 'http://test-thumborhost.com/'
         self.assertEqual(base, result.url[:len(base)])
-        expected_part_url = '/smart/filters:no_upscale():sharpen(0.5,0.2,true)/' + hex_uri + '/source_type/local_file'
+        expected_part_url = '/smart/filters:no_upscale()/' + hex_uri + '/source_type/local_file'
         self.assertIn(expected_part_url, result.url)
 
     def test_with_different_sizes(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            url_in_result = 'smart/filters:no_upscale():sharpen(0.5,0.2,true)/%s/source_type/local_file'
+            url_in_result = 'smart/filters:no_upscale()%s/%s/source_type/local_file'
+            sharpen_filter = ''
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
+                sharpen_filter = ':sharpen(0.5,0.2,true)'
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
-            return url_in_result % (hex_uri)
+            return url_in_result % (sharpen_filter, hex_uri)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")

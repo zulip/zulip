@@ -12,7 +12,7 @@ On to the documentation. Zulip's email system is fairly straightforward,
 with only a few things you need to know to get started.
 
 * All email templates are in `templates/zerver/emails/`. Each email has three
-  template files: `<template_prefix>.subject`, `<template_prefix>.txt`, and
+  template files: `<template_prefix>.subject.txt`, `<template_prefix>.txt`, and
   `<template_prefix>.source.html`. Email templates, along with all other templates
   in the `templates/` directory, are Jinja2 templates.
 * Most of the CSS and HTML layout for emails is in `email_base.html`. Note
@@ -24,6 +24,9 @@ with only a few things you need to know to get started.
   eventually call the `send_email` function. The most interesting one is
   `send_future_email`. The `ScheduledEmail` entries are eventually processed
   by a supervisor job that runs `zerver/management/commands/deliver_email.py`.
+* Always use `user_profile.delivery_email`, not `user_profile.email`,
+  when passing data into the `send_email` library.  The
+  `user_profile.email` field may not always be valid.
 * A good way to find a bunch of example email pathways is to `git grep` for
   `zerver/emails` in the `zerver/` directory.
 

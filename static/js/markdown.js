@@ -5,6 +5,7 @@
 // modified from the original implementation.
 
 var markdown = (function () {
+// Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
 var exports = {};
 
@@ -105,18 +106,18 @@ exports.apply_markdown = function (message) {
     message.is_me_message = exports.is_status_message(message.raw_content, message.content);
 };
 
-exports.add_subject_links = function (message) {
+exports.add_topic_links = function (message) {
     if (message.type !== 'stream') {
-        message.subject_links = [];
+        util.set_topic_links(message, []);
         return;
     }
-    var subject = message.subject;
+    var topic = util.get_message_topic(message);
     var links = [];
     _.each(realm_filter_list, function (realm_filter) {
         var pattern = realm_filter[0];
         var url = realm_filter[1];
         var match;
-        while ((match = pattern.exec(subject)) !== null) {
+        while ((match = pattern.exec(topic)) !== null) {
             var link_url = url;
             var matched_groups = match.slice(1);
             var i = 0;
@@ -130,14 +131,13 @@ exports.add_subject_links = function (message) {
             links.push(link_url);
         }
     });
-    message.subject_links = links;
+    util.set_topic_links(message, links);
 };
 
 exports.is_status_message = function (raw_content, content) {
     return raw_content.indexOf('/me ') === 0 &&
-            raw_content.indexOf('\n') === -1 &&
             content.indexOf('<p>') === 0 &&
-            content.lastIndexOf('</p>') === content.length - 4;
+            content.indexOf('</p>') !== -1;
 };
 
 function handleUnicodeEmoji(unicode_emoji) {

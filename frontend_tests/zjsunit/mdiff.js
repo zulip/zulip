@@ -16,13 +16,13 @@ const difflib = require('difflib');
 
 function apply_color(input_string, changes) {
     let previous_index = 0;
-    let processed_string = input_string.slice(0,2);
+    let processed_string = input_string.slice(0, 2);
     input_string = input_string.slice(2);
 
     const formatter = {
-        delete : (string) => { return "\u001b[31m" + string + "\u001b[0m"; },
-        insert : (string) => { return "\u001b[32m" + string + "\u001b[0m"; },
-        replace : (string) => { return "\u001b[33m" + string + "\u001b[0m"; },
+        delete: (string) => { return "\u001b[31m" + string + "\u001b[0m"; },
+        insert: (string) => { return "\u001b[32m" + string + "\u001b[0m"; },
+        replace: (string) => { return "\u001b[33m" + string + "\u001b[0m"; },
     };
     changes.forEach((change) => {
         if (formatter.hasOwnProperty(change.tag)) {
@@ -57,16 +57,16 @@ function parse_questionmark_line(questionmark_line) {
 
     const changes_list = [];
     const aliases = {
-        "^" : "replace",
-        "+" : "insert",
-        "-" : "delete",
+        "^": "replace",
+        "+": "insert",
+        "-": "delete",
     };
     const add_change = () => {
         if (current_sequence) {
             changes_list.push({
-                tag : aliases[current_sequence],
+                tag: aliases[current_sequence],
                 beginning_index,
-                ending_index : index,
+                ending_index: index,
             });
             current_sequence = "";
         }
@@ -116,7 +116,7 @@ function diff_strings(string_0, string_1) {
     });
 
     const emphasize_codes = (string) => {
-        return "\u001b[34m" + string.slice(0,1) + "\u001b[0m" + string.slice(1);
+        return "\u001b[34m" + string.slice(0, 1) + "\u001b[0m" + string.slice(1);
     };
     output_lines = _.map(output_lines, emphasize_codes);
 

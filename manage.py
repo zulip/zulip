@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
+from __future__ import (print_function)
 import os
 import sys
 import types
+import configparser
+if sys.version_info <= (3, 0):
+    print("Error: Zulip is a Python 3 project, and cannot be run with Python 2.")
+    print("Use e.g. `/path/to/manage.py` not `python /path/to/manage.py`.")
+    sys.exit(1)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
+from scripts.lib.zulip_tools import assert_not_running_as_root
 
 if __name__ == "__main__":
-    if 'posix' in os.name and os.geteuid() == 0:
-        print("manage.py should not be run as root.  Use `su zulip` to drop root.")
-        sys.exit(1)
-    if (os.access('/etc/zulip/zulip.conf', os.R_OK) and not
-            os.access('/etc/zulip/zulip-secrets.conf', os.R_OK)):
+    assert_not_running_as_root()
+
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+    PRODUCTION = config_file.has_option('machine', 'deploy_type')
+    HAS_SECRETS = os.access('/etc/zulip/zulip-secrets.conf', os.R_OK)
+
+    if PRODUCTION and not HAS_SECRETS:
         # The best way to detect running manage.py as another user in
         # production before importing anything that would require that
         # access is to check for access to /etc/zulip/zulip.conf (in

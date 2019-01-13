@@ -4,6 +4,9 @@ from zerver.data_import.hipchat import (
 from zerver.data_import.hipchat_user import (
     UserHandler,
 )
+from zerver.data_import.sequencer import (
+    IdMapper,
+)
 
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -15,6 +18,9 @@ class HipChatImporter(ZulipTestCase):
     def test_sender_ids(self) -> None:
         realm_id = 5
         user_handler = UserHandler()
+
+        user_id_mapper = IdMapper()
+        user_id_mapper.has = lambda key: True  # type: ignore # it's just a stub
 
         # Simulate a "normal" user first.
         user_with_id = dict(
@@ -31,7 +37,9 @@ class HipChatImporter(ZulipTestCase):
 
         sender_id = get_hipchat_sender_id(
             realm_id=realm_id,
+            slim_mode=False,
             message_dict=normal_message,
+            user_id_mapper=user_id_mapper,
             user_handler=user_handler,
         )
 
@@ -48,7 +56,9 @@ class HipChatImporter(ZulipTestCase):
         for i in range(3):
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
+                slim_mode=False,
                 message_dict=bot_message,
+                user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
             )
 
@@ -65,7 +75,9 @@ class HipChatImporter(ZulipTestCase):
         for i in range(3):
             sender_id = get_hipchat_sender_id(
                 realm_id=realm_id,
+                slim_mode=False,
                 message_dict=id_zero_message,
+                user_id_mapper=user_id_mapper,
                 user_handler=user_handler,
             )
 

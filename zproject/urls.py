@@ -20,6 +20,7 @@ import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
 import zerver.views.archive
+import zerver.views.camo
 import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.email_mirror
@@ -33,6 +34,7 @@ import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
 import zerver.views.realm
+import zerver.views.digest
 
 from zerver.lib.rest import rest_dispatch
 
@@ -95,6 +97,12 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.realm_icon.upload_icon',
          'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
          'GET': 'zerver.views.realm_icon.get_icon_backend'}),
+
+    # realm/logo -> zerver.views.realm_logo_
+    url(r'^realm/logo$', rest_dispatch,
+        {'POST': 'zerver.views.realm_logo.upload_logo',
+         'DELETE': 'zerver.views.realm_logo.delete_logo_backend',
+         'GET': 'zerver.views.realm_logo.get_logo_backend'}),
 
     # realm/filters -> zerver.views.realm_filters
     url(r'^realm/filters$', rest_dispatch,
@@ -245,6 +253,8 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.pointer.update_pointer_backend'}),
     url(r'^users/me/presence$', rest_dispatch,
         {'POST': 'zerver.views.presence.update_active_status_backend'}),
+    url(r'^users/me/status$', rest_dispatch,
+        {'POST': 'zerver.views.presence.update_user_status_backend'}),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     url(r'^users/me/apns_device_token$', rest_dispatch,
@@ -351,13 +361,18 @@ v1_api_and_json_patterns = [
 
     # report -> zerver.views.report
     url(r'^report/error$', rest_dispatch,
-        {'POST': 'zerver.views.report.report_error'}),
+        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
+        {'POST': ('zerver.views.report.report_error', {'allow_anonymous_user_web'})}),
     url(r'^report/send_times$', rest_dispatch,
         {'POST': 'zerver.views.report.report_send_times'}),
     url(r'^report/narrow_times$', rest_dispatch,
         {'POST': 'zerver.views.report.report_narrow_times'}),
     url(r'^report/unnarrow_times$', rest_dispatch,
         {'POST': 'zerver.views.report.report_unnarrow_times'}),
+
+    # Used to generate a Zoom video call URL
+    url(r'^calls/create$', rest_dispatch,
+        {'GET': 'zerver.views.video_calls.get_zoom_url'})
 ]
 
 # These views serve pages (HTML). As such, their internationalization
@@ -417,6 +432,9 @@ i18n_urls = [
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
 
+    # Displays digest email content in browser.
+    url(r'^digest/$', zerver.views.digest.digest_page),
+
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/social/(\w+)$',
         zerver.views.auth.start_social_signup,
@@ -453,11 +471,19 @@ i18n_urls = [
     url(r'^accounts/find/$', zerver.views.registration.find_account,
         name='zerver.views.registration.find_account'),
 
+    # Go to organization subdomain
+    url(r'^accounts/go/$', zerver.views.registration.realm_redirect,
+        name='zerver.views.registration.realm_redirect'),
+
     # Realm Creation
     url(r'^new/$', zerver.views.registration.create_realm,
         name='zerver.views.create_realm'),
     url(r'^new/(?P<creation_key>[\w]+)$',
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+
+    # Realm Reactivation
+    url(r'^reactivate/(?P<confirmation_key>[\w]+)', zerver.views.realm.realm_reactivation,
+        name='zerver.views.realm.realm_reactivation'),
 
     # Global public streams (Zulip's way of doing archives)
     url(r'^archive/streams/(?P<stream_id>\d+)/topics/(?P<topic_name>[^/]+)$',
@@ -497,6 +523,7 @@ i18n_urls = [
         TemplateView.as_view(template_name='zerver/for-working-groups-and-communities.html')),
     url(r'^for/mystery-hunt/$', TemplateView.as_view(template_name='zerver/for-mystery-hunt.html')),
     url(r'^security/$', TemplateView.as_view(template_name='zerver/security.html')),
+    url(r'^atlassian/$', TemplateView.as_view(template_name='zerver/atlassian.html')),
 
     # Terms of Service and privacy pages.
     url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
@@ -564,6 +591,14 @@ urls += [
 urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
             name='zerver.views.report.report_csp_violations'),
 
+# This url serves as a way to provide backward compatibility to messages
+# rendered at the time Zulip used camo for doing http -> https conversion for
+# such links with images previews. Now thumbor can be used for serving such
+# images.
+urls += url(r'^external_content/(?P<digest>[\S]+)/(?P<received_url>[\S]+)',
+            zerver.views.camo.handle_camo_url,
+            name='zerver.views.camo.handle_camo_url'),
+
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
 # because of generic one below
@@ -583,14 +618,17 @@ urls += [
 urls += [
     # This json format view used by the mobile apps lists which
     # authentication backends the server allows as well as details
-    # like the requested subdomains'd realm icon (if known).
+    # like the requested subdomains'd realm icon (if known) and
+    # server-specific compatibility.
     url(r'^api/v1/server_settings', zerver.views.auth.api_get_server_settings),
     # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends,
         name='zerver.views.auth.api_get_auth_backends'),
 
-    # used by mobile apps to check if they are compatible with the server
-    url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
+    # Used as a global check by all mobile clients, which currently send
+    # requests to https://zulipchat.com/compatibility almost immediately after
+    # starting up.
+    url(r'^compatibility$', zerver.views.compatibility.check_global_compatibility),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.

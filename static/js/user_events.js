@@ -23,10 +23,19 @@ exports.update_person = function update(person) {
         compose.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
-            settings_account.update_email(new_email);
+            page_params.email = new_email;
         }
 
         people.update_email(user_id, new_email);
+    }
+
+    if (_.has(person, 'delivery_email')) {
+        var delivery_email = person.delivery_email;
+
+        if (people.is_my_user_id(person.user_id)) {
+            settings_account.update_email(delivery_email);
+            page_params.delivery_email = delivery_email;
+        }
     }
 
     if (_.has(person, 'full_name')) {
@@ -48,7 +57,11 @@ exports.update_person = function update(person) {
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.is_admin = person.is_admin;
-            admin.show_or_hide_menu_item();
+            gear_menu.update_org_settings_menu_item();
+            settings_linkifiers.maybe_disable_widgets();
+            settings_org.maybe_disable_widgets();
+            settings_profile_fields.maybe_disable_widgets();
+            settings_streams.maybe_disable_widgets();
         }
     }
 
@@ -65,7 +78,7 @@ exports.update_person = function update(person) {
             page_params.avatar_source = person.avatar_source;
             page_params.avatar_url = url;
             page_params.avatar_url_medium = person.avatar_url_medium;
-            $("#user-avatar-block").attr("src", person.avatar_url_medium);
+            $("#user-avatar-block").attr("style", "background-image:url(" + person.avatar_url_medium + ")");
         }
 
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);

@@ -7,18 +7,18 @@ class NewRelicHookTests(WebhookTestCase):
     URL_TEMPLATE = u"/api/v1/external/newrelic?stream={stream}&api_key={api_key}"
 
     def test_alert(self) -> None:
-        expected_subject = "Apdex score fell below critical level of 0.90"
+        expected_topic = "Apdex score fell below critical level of 0.90"
         expected_message = 'Alert opened on [application name]: \
 Apdex score fell below critical level of 0.90\n\
 [View alert](https://rpm.newrelc.com/accounts/[account_id]/applications/[application_id]/incidents/[incident_id])'
-        self.send_and_test_stream_message('alert', expected_subject, expected_message,
+        self.send_and_test_stream_message('alert', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def test_deployment(self) -> None:
-        expected_subject = 'Test App deploy'
+        expected_topic = 'Test App deploy'
         expected_message = '`1242` deployed by **Zulip Test**\n\
 Description sent via curl\n\nChangelog string'
-        self.send_and_test_stream_message('deployment', expected_subject, expected_message,
+        self.send_and_test_stream_message('deployment', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: str) -> str:

@@ -5,6 +5,7 @@ Nagios plugin to check the difference between the primary and
 secondary Postgres servers' xlog location.
 """
 if False:
+    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
     from mypy_extensions import NoReturn
 
 import subprocess

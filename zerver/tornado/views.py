@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import REQ, RespondAsynchronously, \
-    _RespondAsynchronously, asynchronous, \
+    _RespondAsynchronously, asynchronous, to_non_negative_int, \
     has_request_variables, internal_notify_view, process_client
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_list, check_string
@@ -60,7 +60,7 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler:
                        event_types: Optional[str]=REQ(default=None, validator=check_list(check_string)),
                        dont_block: bool=REQ(default=False, validator=check_bool),
                        narrow: Iterable[Sequence[str]]=REQ(default=[], validator=check_list(None)),
-                       lifespan_secs: int=REQ(default=0, converter=int)
+                       lifespan_secs: int=REQ(default=0, converter=to_non_negative_int)
                        ) -> Union[HttpResponse, _RespondAsynchronously]:
     if user_client is None:
         valid_user_client = request.client

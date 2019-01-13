@@ -6,11 +6,25 @@ zrequire('user_events');
 set_global('activity', {
     redraw: function () {},
 });
+
+set_global('settings_linkifiers', {
+    maybe_disable_widgets: function () {},
+});
+set_global('settings_org', {
+    maybe_disable_widgets: function () {},
+});
+set_global('settings_profile_fields', {
+    maybe_disable_widgets: function () {},
+});
+set_global('settings_streams', {
+    maybe_disable_widgets: function () {},
+});
 set_global('settings_users', {
     update_user_data: function () {},
 });
-set_global('admin', {
-    show_or_hide_menu_item: function () {},
+
+set_global('gear_menu', {
+    update_org_settings_menu_item: function () {},
 });
 set_global('page_params', {
     is_admin: true,
@@ -143,7 +157,17 @@ run_test('updates', () => {
     blueslip.clear_test_data();
 
     me.profile_data = {};
-    user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value'}});
+    user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value', rendered_value: '<p>Value</p>'}});
     person = people.get_by_email(me.email);
-    assert.equal(person.profile_data[3], 'Value');
+    assert.equal(person.profile_data[3].value, 'Value');
+    assert.equal(person.profile_data[3].rendered_value, '<p>Value</p>');
+
+    var updated = false;
+    settings_account.update_email = (email) => {
+        assert.equal(email, 'you@example.org');
+        updated = true;
+    };
+
+    user_events.update_person({user_id: me.user_id, delivery_email: 'you@example.org'});
+    assert(updated);
 });

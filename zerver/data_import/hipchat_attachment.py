@@ -22,11 +22,22 @@ class AttachmentHandler:
         if not attachment:
             return None
 
-        size = attachment['size']
-        path = attachment['path']
         name = attachment['name']
 
+        if 'path' not in attachment:
+            logging.info('Skipping HipChat attachment with missing path data: ' + name)
+            return None
+
+        size = attachment['size']
+        path = attachment['path']
+
         local_fn = os.path.join(files_dir, path)
+
+        if not os.path.exists(local_fn):
+            # HipChat has an option to not include these in its
+            # exports, since file uploads can be very large.
+            logging.info('Skipping attachment with no file data: ' + local_fn)
+            return None
 
         target_path = os.path.join(
             str(realm_id),
@@ -92,7 +103,6 @@ class AttachmentHandler:
                 s3_path=target_path,
                 path=target_path,
                 content_type=None,
-                last_modified=None,
             )
             uploads_records.append(upload_rec)
 

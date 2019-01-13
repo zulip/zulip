@@ -81,7 +81,7 @@ exports.set_compose_defaults = function () {
     var opts = {};
     var single = collect_single(exports.operators());
 
-    // Set the stream, subject, and/or PM recipient if they are
+    // Set the stream, topic, and/or PM recipient if they are
     // uniquely specified in the narrow view.
 
     if (single.has('stream')) {
@@ -89,7 +89,7 @@ exports.set_compose_defaults = function () {
     }
 
     if (single.has('topic')) {
-        opts.subject = single.get('topic');
+        opts.topic = single.get('topic');
     }
 
     if (single.has('pm-with')) {
@@ -314,7 +314,7 @@ exports.narrowed_by_topic_reply = function () {
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
-// to a PM (or huddle), and when you're narrowed to some stream/subject pair
+// to a PM (or huddle), and when you're narrowed to some stream/topic pair
 exports.narrowed_by_reply = function () {
     return exports.narrowed_by_pm_reply() ||
             exports.narrowed_by_topic_reply();

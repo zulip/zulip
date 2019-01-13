@@ -161,9 +161,14 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         UserMessage.objects.bulk_create(user_messages_to_insert)
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
-    user_profile.last_active_message_id = UserMessage.objects.filter(
-        user_profile=user_profile).order_by(
-        '-message__id')[0].message_id
+    try:
+        user_profile.last_active_message_id = UserMessage.objects.filter(
+            user_profile=user_profile).order_by(
+                '-message__id')[0].message_id
+    except IndexError:  # nocoverage
+        # In the unlikely event that a user somehow has never received
+        # a message, we just use the overall max message ID.
+        user_profile.last_active_message_id = Message.objects.max().id
     user_profile.long_term_idle = True
     user_profile.save(update_fields=[
         'long_term_idle',
@@ -172,21 +177,30 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
                 (user_profile.id, user_profile.email))
 
 def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
+    BATCH_SIZE = 100
     users_soft_deactivated = []
-    with transaction.atomic():
-        realm_logs = []
-        for user in users:
-            do_soft_deactivate_user(user)
-            event_time = timezone_now()
-            log = RealmAuditLog(
-                realm=user.realm,
-                modified_user=user,
-                event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
-                event_time=event_time
-            )
-            realm_logs.append(log)
-            users_soft_deactivated.append(user)
-        RealmAuditLog.objects.bulk_create(realm_logs)
+    while True:
+        (user_batch, users) = (users[0:BATCH_SIZE], users[BATCH_SIZE:])
+        if len(user_batch) == 0:
+            break
+        with transaction.atomic():
+            realm_logs = []
+            for user in user_batch:
+                do_soft_deactivate_user(user)
+                event_time = timezone_now()
+                log = RealmAuditLog(
+                    realm=user.realm,
+                    modified_user=user,
+                    event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
+                    event_time=event_time
+                )
+                realm_logs.append(log)
+                users_soft_deactivated.append(user)
+            RealmAuditLog.objects.bulk_create(realm_logs)
+
+        logging.info("Soft-deactivated batch of %s users; %s remain to process" %
+                     (len(user_batch), len(users)))
+
     return users_soft_deactivated
 
 def maybe_catch_up_soft_deactivated_user(user_profile: UserProfile) -> Union[UserProfile, None]:
