@@ -529,13 +529,18 @@ exports.set_up = function () {
             success: function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 $("#user_avatar_delete_button").show();
+                $("#user_avatar_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
-            error: function () {
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_avatar_spinner"));
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }
+                var $error = $("#user_avatar_file_input_error");
+                $error.text(JSON.parse(xhr.responseText).msg);
+                $error.show();
             },
         });
 
