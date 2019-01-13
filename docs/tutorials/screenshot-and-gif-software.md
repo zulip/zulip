@@ -13,12 +13,15 @@ to checkout your branch.
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
 
 ### macOS
-- Command-Shift-3 to capture all of the screen
+- Command-Shift-3 to capture the entire screen
 - Command-Shift-4 and drag cursor to select a specific area
+- Command-Shift-5 and select suitable option to capture or record screen (macOS Mojave)
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
 - [Gyazo](https://gyazo.com/en)
 
 ### Windows
+- PrtScn to copy the screen to the clipboard
+- Windows-PrtScn to save the screen to a file
 - Snipping Tool (inbuilt)
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
 - [Gyazo](https://gyazo.com/en)
@@ -33,6 +36,7 @@ to checkout your branch.
 (Tip: Use Alt+i to interact with the page while recording)
 
 ### macOS
+- [QuickTime](https://support.apple.com/en-in/HT201066)
 - [GIPHY](https://giphy.com/apps/giphycapture)
 - [CloudApp](https://www.getcloudapp.com)
 - [GIF Brewery](http://gifbrewery.com)
