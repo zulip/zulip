@@ -90,19 +90,19 @@ class PublicURLTest(ZulipTestCase):
 
     def test_get_gcid_when_not_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID=None):
-            resp = self.client_get("/api/v1/fetch_google_client_id")
-            self.assertEqual(400, resp.status_code,
+            response = self.client_get("/api/v1/fetch_google_client_id")
+            self.assertEqual(400, response.status_code,
                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
-                                 resp.status_code,))
-            self.assertEqual('error', resp.json()['result'])
+                                 response.status_code,))
+            self.assertEqual('error', response.json()['result'])
 
     def test_get_gcid_when_configured(self) -> None:
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
-            resp = self.client_get("/api/v1/fetch_google_client_id")
-            self.assertEqual(200, resp.status_code,
+            response = self.client_get("/api/v1/fetch_google_client_id")
+            self.assertEqual(200, response.status_code,
                              msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % (
-                                 resp.status_code,))
-            data = ujson.loads(resp.content)
+                                 response.status_code,))
+            data = ujson.loads(response.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
@@ -140,13 +140,13 @@ class URLResolutionTest(TestCase):
 class ErrorPageTest(TestCase):
     def test_bogus_http_host(self) -> None:
         # This tests that we've successfully worked around a certain bug in
-        # Django's exception handling.  The enforce_csrf_checks=True,
+        # Django's exception handling. The enforce_csrf_checks=True,
         # secure=True, and HTTP_REFERER with an `https:` scheme are all
         # there to get us down just the right path for Django to blow up
         # when presented with an HTTP_HOST that's not a valid DNS name.
         client = Client(enforce_csrf_checks=True)
-        result = client.post('/json/users',
+        response = client.post('/json/users',
                              secure=True,
                              HTTP_REFERER='https://somewhere',
                              HTTP_HOST='$nonsense')
-        self.assertEqual(result.status_code, 400)
+        self.assertEqual(response.status_code, 400)
