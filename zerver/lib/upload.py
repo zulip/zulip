@@ -26,6 +26,7 @@ import base64
 import os
 import re
 from PIL import Image, ImageOps, ExifTags
+from PIL.Image import DecompressionBombError
 from PIL.GifImagePlugin import GifImageFile
 import io
 import random
@@ -110,6 +111,8 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
+    except DecompressionBombError:
+        raise BadImageError(_("Image size exceeds limit."))
     out = io.BytesIO()
     if im.mode == 'CMYK':
         im = im.convert('RGB')
@@ -123,6 +126,8 @@ def resize_logo(image_data: bytes) -> bytes:
         im.thumbnail((8*DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
     except IOError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
+    except DecompressionBombError:
+        raise BadImageError(_("Image size exceeds limit."))
     out = io.BytesIO()
     if im.mode == 'CMYK':
         im = im.convert('RGB')
@@ -163,6 +168,8 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
             return out.getvalue()
     except IOError:
         raise BadImageError(_("Could not decode image; did you upload an image file?"))
+    except DecompressionBombError:
+        raise BadImageError(_("Image size exceeds limit."))
 
 
 ### Common
