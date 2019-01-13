@@ -578,7 +578,7 @@ exports.hide_actions_popover = function () {
         current_actions_popover_elem = undefined;
     }
     if (current_flatpickr_instance !== undefined) {
-        current_flatpickr_instance.destroy();
+        current_flatpickr_instance.dispose();
         current_flatpickr_instance = undefined;
     }
 };
