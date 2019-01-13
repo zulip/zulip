@@ -2587,6 +2587,19 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             hamlet = self.example_user('hamlet')
             self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
 
+    def test_deactivate_non_matching_users(self) -> None:
+        self.mock_ldap.directory = {}
+
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com',
+                           AUTH_LDAP_BIND_PASSWORD='',
+                           AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
+                           LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
+            result = sync_user_from_ldap(self.example_user('hamlet'))
+
+            self.assertFalse(result)
+            hamlet = self.example_user('hamlet')
+            self.assertFalse(hamlet.is_active)
+
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:
         backend = ZulipAuthMixin()

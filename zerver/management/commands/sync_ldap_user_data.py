@@ -28,6 +28,8 @@ def sync_ldap_user_data(user_profiles: List[UserProfile]) -> None:
                 logger.info("Updated %s." % (u.email,))
             else:
                 logger.warning("Did not find %s in LDAP." % (u.email,))
+                if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+                    logger.info("Deactivated non-matching user: %s" % (u.email,))
         except ZulipLDAPException as e:
             logger.error("Error attempting to update user %s:" % (u.email,))
             logger.error(e)

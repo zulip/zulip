@@ -443,7 +443,11 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
 def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     backend = ZulipLDAPUserPopulator()
     updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
-    return updated_user is not None
+    if not updated_user:
+        if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+            do_deactivate_user(user_profile)
+        return False
+    return True
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.

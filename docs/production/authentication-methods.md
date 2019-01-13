@@ -179,6 +179,18 @@ This feature works by checking for the `ACCOUNTDISABLE` flag on the
 [this handy resource](https://jackstromberg.com/2013/01/useraccountcontrol-attributeflag-values/)
 for details on the various `userAccountControl` flags.
 
+#### Deactivating non-matching users
+
+Starting with Zulip 2.0, Zulip supports automatically deactivating
+users if they are not found by the `AUTH_LDAP_USER_SEARCH` query
+(either because the user is no longer in LDAP/Active Directory, or
+because the user no longer matches the query).  This feature is
+enabled by default if LDAP is the only authentication backend
+configured on the Zulip server.  Otherwise, you can enable this
+feature by setting `LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
+`/etc/zulip/settings.py`.  Nonmatching users will be fully deactivated
+the next time your `manage.py sync_ldap_user_data` cron job runs.
+
 #### Other fields
 
 Other fields you may want to sync from LDAP include:
