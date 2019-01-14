@@ -2416,29 +2416,36 @@ li .message_inline_image img {
     text-align: center;
 }
 
-button.primary {
-    background-color: hsl(207, 21%, 62%);
-    padding: 2px;
-    color: hsl(0, 0%, 100%);
+.small_square_button {
+    background-color: hsl(156, 30%, 50%);
+    padding: 0;
+    color: hsl(0, 0%, 95%);
     border: none;
-    border-radius: 0px;
-}
-
-button.primary:hover {
-    background-color: hsl(207, 25%, 65%);
-}
-
-button.primary:focus {
-    outline: none;
-}
-
-button.topic_edit_save,
-button.topic_edit_cancel {
     font-size: 12px;
     width: 18px;
     height: 18px;
-    vertical-align: baseline;
     border-radius: 4px;
+    margin-bottom: 3px;
+}
+
+.small_square_button:hover {
+    color: hsl(0, 0%, 100%);
+    box-shadow: 0 10px 41px 0 hsl(166, 35%, 48%);
+}
+
+.small_square_button:focus {
+    outline: none;
+}
+
+.small_square_x {
+    background-color: white;
+    color: hsl(0, 0%, 47%);
+}
+
+.small_square_x:hover {
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 18%);
+    box-shadow: 0 10px 41px 0 hsl(0, 0%, 48%);
 }
 
 div.topic_edit_spinner {
