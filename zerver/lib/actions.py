@@ -3305,16 +3305,19 @@ def do_change_plan_type(realm: Realm, plan_type: int) -> None:
     if plan_type == Realm.STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
+        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
+        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
+        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
 
     update_first_visible_message_id(realm)
 
-    realm.save(update_fields=['_max_invites', 'message_visibility_limit'])
+    realm.save(update_fields=['_max_invites', 'message_visibility_limit', 'upload_quota_gb'])
 
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:

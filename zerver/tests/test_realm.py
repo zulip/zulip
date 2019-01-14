@@ -482,32 +482,38 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(do_create_realm('hosted', 'hosted').plan_type, Realm.LIMITED)
             self.assertEqual(get_realm("hosted").max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
             self.assertEqual(get_realm("hosted").message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
+            self.assertEqual(get_realm("hosted").upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
 
         with self.settings(BILLING_ENABLED=False):
             self.assertEqual(do_create_realm('onpremise', 'onpremise').plan_type, Realm.SELF_HOSTED)
             self.assertEqual(get_realm('onpremise').max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
             self.assertEqual(get_realm('onpremise').message_visibility_limit, None)
+            self.assertEqual(get_realm("onpremise").upload_quota_gb, None)
 
     def test_change_plan_type(self) -> None:
         realm = get_realm('zulip')
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, None)
 
         do_change_plan_type(realm, Realm.STANDARD)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
         do_change_plan_type(realm, Realm.LIMITED)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
 
         do_change_plan_type(realm, Realm.STANDARD_FREE)
         realm = get_realm('zulip')
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
 class RealmAPITest(ZulipTestCase):
 

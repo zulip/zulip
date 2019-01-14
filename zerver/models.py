@@ -255,6 +255,8 @@ class Realm(models.Model):
     bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)  # type: int
 
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
+    UPLOAD_QUOTA_LIMITED = 5
+    UPLOAD_QUOTA_STANDARD = 50
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
     video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
