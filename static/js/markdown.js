@@ -141,8 +141,9 @@ exports.is_status_message = function (raw_content, content) {
 };
 
 function make_emoji_span(codepoint, title, alt_text) {
-    return '<span class="emoji emoji-' + codepoint + '"' +
-           ' title="' + title + '">' + alt_text +
+    return '<span aria-label="' + title + '"' +
+           ' class="emoji emoji-' + codepoint + '"' +
+           ' role="img" title="' + title + '">' + alt_text +
            '</span>';
 }
 
