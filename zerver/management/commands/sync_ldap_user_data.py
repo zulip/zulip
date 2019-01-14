@@ -14,7 +14,7 @@ from zerver.models import UserProfile
 from zproject.backends import ZulipLDAPException, sync_user_from_ldap
 
 ## Setup ##
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('zulip.sync_ldap_user_data')
 log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 
 # Run this on a cronjob to pick up on name changes.
