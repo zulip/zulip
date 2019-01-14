@@ -62,6 +62,9 @@ def init_fakeldap() -> None:  # nocoverage
     ldap_auth_logger = logging.getLogger('django_auth_ldap')
     ldap_auth_logger.setLevel(logging.CRITICAL)
 
+    fakeldap_logger = logging.getLogger('fakeldap')
+    fakeldap_logger.setLevel(logging.CRITICAL)
+
     ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
     mock_initialize = ldap_patcher.start()
     mock_ldap = MockLDAP()
