@@ -1,5 +1,6 @@
 /* eslint indent: "off" */
 import SimpleBar from 'simplebar';
+import {activate_correct_tab} from './tabbed-instructions.js';
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -14,8 +15,6 @@ function registerCodeSection($codeSection) {
         $blocks.removeClass("active");
         $blocks.filter("[data-language=" + language + "]").addClass("active");
     });
-
-    $li.eq(0).click();
 }
 
 function highlight_current_article() {
@@ -69,6 +68,7 @@ function adjust_mac_shortcuts() {
 
 function render_code_sections() {
     $(".code-section").each(function () {
+        activate_correct_tab($(this));
         registerCodeSection($(this));
     });
 
