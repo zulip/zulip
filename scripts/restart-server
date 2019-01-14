@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import configparser
 import os
 import sys
@@ -14,6 +15,11 @@ logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--fill-cache', action='store_true', dest='fill_cache', default=False,
+                    help='Fill the memcached caches')
+args = parser.parse_args()
+
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 os.chdir(deploy_path)
 
@@ -24,8 +30,9 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
 # Send a statsd event on restarting the server
 subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
-logging.info("Filling memcached caches")
-subprocess.check_call(["./manage.py", "fill_memcached_caches"])
+if args.fill_cache:
+    logging.info("Filling memcached caches")
+    subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
 core_server_services = ["zulip-django", "zulip-senders:*"]
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
