@@ -251,6 +251,10 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
 
     return messages_to_render
 
+def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -> bool:
+    return user_profile.realm.message_content_allowed_in_email_notifications and \
+        user_profile.message_content_in_email_notifications
+
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                                                 missed_messages: List[Dict[str, Any]],
@@ -286,7 +290,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         'message_count': message_count,
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
-        'show_message_content': user_profile.message_content_in_email_notifications,
+        'show_message_content': message_content_allowed_in_missedmessage_emails(user_profile)
     })
 
     triggers = list(message['trigger'] for message in missed_messages)
@@ -350,7 +354,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         raise AssertionError("Invalid messages!")
 
     # If message content is disabled, then flush all information we pass to email.
-    if not user_profile.message_content_in_email_notifications:
+    if not message_content_allowed_in_missedmessage_emails(user_profile):
         context.update({
             'reply_to_zulip': False,
             'messages': [],

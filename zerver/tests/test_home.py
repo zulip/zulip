@@ -152,6 +152,7 @@ class HomeTest(ZulipTestCase):
             "realm_logo_source",
             "realm_logo_url",
             "realm_mandatory_topics",
+            "realm_message_content_allowed_in_email_notifications",
             "realm_message_content_delete_limit_seconds",
             "realm_message_content_edit_limit_seconds",
             "realm_message_retention_days",
