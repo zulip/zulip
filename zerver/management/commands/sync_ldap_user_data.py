@@ -41,7 +41,7 @@ class Command(ZulipBaseCommand):
         self.add_user_list_args(parser)
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if "realm_id" in options:
+        if options.get('realm_id') is not None:
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False)
         else:
