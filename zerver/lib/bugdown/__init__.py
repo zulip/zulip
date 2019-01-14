@@ -1091,6 +1091,8 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     span = markdown.util.etree.Element('span')
     span.set('class', 'emoji emoji-%s' % (codepoint,))
     span.set('title', title)
+    span.set('role', 'img')
+    span.set('aria-label', title)
     span.text = display_string
     return span
 
