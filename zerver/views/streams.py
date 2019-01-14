@@ -29,7 +29,7 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.topic import get_topic_history_for_stream
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string
+    check_bool, check_variable_type, check_capped_string, check_color
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
     get_system_bot, get_active_user
@@ -506,7 +506,7 @@ def update_subscription_properties_backend(
     [{"stream_id": "1", "property": "in_home_view", "value": False},
      {"stream_id": "1", "property": "color", "value": "#c2c2c2"}]
     """
-    property_converters = {"color": check_string, "in_home_view": check_bool,
+    property_converters = {"color": check_color, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
                            "push_notifications": check_bool,
