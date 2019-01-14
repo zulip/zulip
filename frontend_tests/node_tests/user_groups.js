@@ -89,4 +89,9 @@ run_test('user_groups', () => {
 
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
+
+    blueslip.set_test_data('error', 'Could not find user group with ID -1');
+    assert.equal(user_groups.is_member_of(-1, 15), false);
+    assert(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 });

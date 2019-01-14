@@ -61,6 +61,10 @@ exports.get_realm_user_groups = function () {
 
 exports.is_member_of = function (user_group_id, user_id) {
     var user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error("Could not find user group with ID " + user_group_id);
+        return false;
+    }
     return user_group.members.has(user_id);
 };
 
