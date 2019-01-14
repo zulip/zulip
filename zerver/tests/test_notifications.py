@@ -856,7 +856,7 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_fix_emoji(self) -> None:
         # An emoji.
-        test_data = '<p>See <span class="emoji emoji-26c8" title="cloud with lightning and rain">' + \
+        test_data = '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8" role="img" title="cloud with lightning and rain">' + \
                     ':cloud_with_lightning_and_rain:</span>.</p>'
         actual_output = fix_emojis(test_data, "http://example.com", "google")
         expected_output = '<p>See <img alt=":cloud_with_lightning_and_rain:" src="http://example.com/static/generated/emoji/images-google-64/26c8.png" ' + \
