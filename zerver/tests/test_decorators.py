@@ -47,7 +47,7 @@ from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
-    check_string_fixed_length, check_capped_string
+    check_string_fixed_length, check_capped_string, check_color
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm, Recipient
@@ -764,6 +764,22 @@ class ValidatorTestCase(TestCase):
 
         x = [{}]
         self.assertEqual(check_float('x', x), 'x is not a float')
+
+    def test_check_color(self) -> None:
+        x = ['#000099', '#80ffaa', '#80FFAA', '#abcd12']  # valid
+        y = ['000099', '#80f_aa', '#80fraa', '#abcd1234', 'blue']  # invalid
+        z = 5  # invalid
+
+        for hex_color in x:
+            error = check_color('color', hex_color)
+            self.assertEqual(error, None)
+
+        for hex_color in y:
+            error = check_color('color', hex_color)
+            self.assertEqual(error, 'color is not a valid hex color code')
+
+        error = check_color('color', z)
+        self.assertEqual(error, 'color is not a string')
 
     def test_check_list(self) -> None:
         x = 999  # type: Any

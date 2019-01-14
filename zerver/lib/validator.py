@@ -25,6 +25,7 @@ A simple example of composition is this:
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
+import re
 import ujson
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
@@ -100,6 +101,15 @@ def check_float(var_name: str, val: object) -> Optional[str]:
 def check_bool(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
+    return None
+
+def check_color(var_name: str, val: object) -> Optional[str]:
+    if not isinstance(val, str):
+        return _('%s is not a string') % (var_name,)
+    valid_color_pattern = re.compile(r'^#(?:[a-fA-F0-9]{6})$')
+    matched_results = valid_color_pattern.match(val)
+    if not matched_results:
+        return _('%s is not a valid hex color code') % (var_name,)
     return None
 
 def check_none_or(sub_validator: Validator) -> Validator:
