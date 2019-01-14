@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
+from zerver.lib.cache import get_realm_used_upload_space_cache_key, cache_get
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.users import get_api_key
 from zerver.views.upload import upload_file_backend
@@ -1779,15 +1780,32 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.user_profile = self.example_user('hamlet')
 
     def test_currently_used_upload_space(self) -> None:
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
+        self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
         data = b'zulip!'
         upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
+        self.assertEqual(len(data), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
         data2 = b'more-data!'
         upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
+        self.assertEqual(len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+
+        attachment = Attachment.objects.get(file_name="dummy.txt")
+        attachment.file_name = "dummy1.txt"
+        attachment.save(update_fields=["file_name"])
+        self.assertEqual(len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
+
+        attachment.delete()
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
+        self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
+        self.assertEqual(len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
 class ExifRotateTests(TestCase):
     def test_image_do_not_rotate(self) -> None:

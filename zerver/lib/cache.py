@@ -331,6 +331,9 @@ realm_user_dict_fields = [
 def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
 
+def get_realm_used_upload_space_cache_key(realm: 'Realm') -> str:
+    return u'realm_used_upload_space:%s' % (realm.id,)
+
 def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)
 
@@ -453,6 +456,12 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
            Q(default_sending_stream=stream) |
            Q(default_events_register_stream=stream)).exists():
         cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
+
+def flush_used_upload_space_cache(sender: Any, **kwargs: Any) -> None:
+    attachment = kwargs['instance']
+
+    if kwargs.get("created") is None or kwargs.get("created") is True:
+        cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 def to_dict_cache_key_id(message_id: int) -> str:
     return 'message_dict:%d' % (message_id,)
