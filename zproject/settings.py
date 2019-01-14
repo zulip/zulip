@@ -201,7 +201,6 @@ DEFAULT_SETTINGS = {
 
     # External service configuration
     'CAMO_URI': '',
-    'MEMCACHED_LOCATION': '127.0.0.1:11211',
     'RABBITMQ_HOST': '127.0.0.1',
     'RABBITMQ_USERNAME': 'zulip',
     'REDIS_HOST': '127.0.0.1',
@@ -340,8 +339,8 @@ DEFAULT_SETTINGS.update({
     # mainly in development.
     'DEBUG_ERROR_REPORTING': False,
 
-    # Whether to flush memcached after data migrations.  Because of
-    # how we do deployments in a way that avoids reusing memcached,
+    # Whether to flush redis after data migrations.  Because of
+    # how we do deployments in a way that avoids reusing redis,
     # this is disabled in production, but we need it in development.
     'POST_MIGRATION_CACHE_FLUSHING': False,
 
@@ -654,8 +653,8 @@ PYLIBMC_COMPRESS_LEVEL = 1
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
-        'LOCATION': MEMCACHED_LOCATION,
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': "redis://%s:%s/1" % (REDIS_HOST, REDIS_PORT),
         'TIMEOUT': 3600,
         'OPTIONS': {
             'verify_keys': True,

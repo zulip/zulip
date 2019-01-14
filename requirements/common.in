@@ -108,11 +108,6 @@ pyasn1==0.4.5
 pyasn1-modules==0.2.3
 pycrypto==2.6.1
 
-# Needed for memcached usage
-pylibmc==1.6.0
-
-# Needed for compression support in memcached via pylibmc
-django-pylibmc==0.6.1
 
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil==2.7.5
@@ -122,6 +117,7 @@ pytz==2018.9
 
 # Needed for redis
 redis==2.10.6
+django-redis==4.8.0
 
 requests_oauthlib==1.0.0
 rsa==4.0

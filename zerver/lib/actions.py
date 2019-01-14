@@ -4897,7 +4897,7 @@ def do_remove_realm_filter(realm: Realm, pattern: Optional[str]=None,
     notify_realm_filters(realm)
 
 def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
-    # We may eventually use memcached to speed this up, but the DB is fast.
+    # We may eventually use redis to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 
 def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (RealmDomain):

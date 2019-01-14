@@ -24,8 +24,8 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
 # Send a statsd event on restarting the server
 subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
-logging.info("Filling memcached caches")
-subprocess.check_call(["./manage.py", "fill_memcached_caches"])
+logging.info("Filling redis caches")
+subprocess.check_call(["./manage.py", "fill_remote_caches"])
 
 core_server_services = ["zulip-django", "zulip-senders:*"]
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):

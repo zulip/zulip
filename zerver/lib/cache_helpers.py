@@ -122,7 +122,7 @@ cache_fillers = {
     'recipient': (get_recipients, recipient_cache_items, 3600*24*7, 10000),
     'stream': (get_streams, stream_cache_items, 3600*24*7, 10000),
     # Message cache fetching disabled until we can fix the fact that it
-    # does a bunch of inefficient memcached queries as part of filling
+    # does a bunch of inefficient redis queries as part of filling
     # the display_recipient cache
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),

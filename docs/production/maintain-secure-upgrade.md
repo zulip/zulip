@@ -404,7 +404,7 @@ running Zulip with larger teams (especially >1000 users).
   database](postgres.html) for isolation, though it is
   not required.  In the following, we discuss a relatively simple
   configuration with two types of servers: application servers
-  (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and
+  (running Django, Tornado, RabbitMQ, Redis, etc.) and
   database servers.
 
 * You can scale to a pretty large installation (O(~1000) concurrently
@@ -413,16 +413,13 @@ running Zulip with larger teams (especially >1000 users).
   of RAM) sitting mostly idle (<10% CPU used and only 4GB of the 16GB
   RAM actively in use).  You can probably get away with half that
   (e.g. c3.xlarge), but ~8GB of RAM is highly recommended at scale.
-  Beyond a 1000 active users, you will eventually want to increase the
-  memory cap in `memcached.conf` from the default 512MB to avoid high
-  rates of memcached misses.
 
 * For the database server, we highly recommend SSD disks, and RAM is
   the primary resource limitation.  We have not aggressively tested
   for the minimum resources required, but 8 cores with 30GB of RAM
   (e.g. AWS's m3.2xlarge) should suffice; you may be able to get away
   with less especially on the CPU side.  The database load per user is
-  pretty optimized as long as `memcached` is working correctly.  This
+  pretty optimized as long as your cache is working correctly.  This
   has not been tested, but from extrapolating the load profile, it
   should be possible to scale a Zulip installation to 10,000s of
   active users using a single large database server without doing
@@ -438,8 +435,8 @@ running Zulip with larger teams (especially >1000 users).
 
 * Zulip does not support dividing traffic for a given Zulip realm
   between multiple application servers.  There are two issues: you
-  need to share the memcached/Redis/RabbitMQ instance (these should
-  can be moved to a network service shared by multiple servers with a
+  need to share the Redis/RabbitMQ instance (these can / should
+  be moved to a network service shared by multiple servers with a
   bit of configuration) and the Tornado event system for pushing to
   browsers currently has no mechanism for multiple frontend servers
   (or event processes) talking to each other.  One can probably get a
