@@ -1404,7 +1404,8 @@ class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
         """
         A POST request to /api/v1/users/me/subscriptions/properties with stream_id and
-        color data sets the stream color, and for that stream only.
+        color data sets the stream color, and for that stream only. Also, make sure that
+        any invalid hex color codes are bounced.
         """
         test_user = self.example_user('hamlet')
         test_email = test_user.email
@@ -1438,6 +1439,13 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 break
         old_subs.remove(found_sub)
         self.assertEqual(old_subs, new_subs)
+
+        invalid_color = "3ffrff"
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": "color",
+                                                                   "stream_id": stream_id,
+                                                                   "value": invalid_color}])})
+        self.assert_json_error(result, "color is not a valid hex color code")
 
     def test_set_color_missing_stream_id(self) -> None:
         """
