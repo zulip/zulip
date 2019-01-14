@@ -18,7 +18,10 @@ function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
-    var invite_as = parseInt($('#invite_as').val(), 10);
+    var invite_as = 1;  // Default to Member for non-admins
+    if (page_params.is_admin) {
+        invite_as = parseInt($('#invite_as').val(), 10);
+    }
     var data = {
         invitee_emails: $("#invitee_emails").val(),
         invite_as: invite_as,
