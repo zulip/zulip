@@ -586,6 +586,38 @@ class TestMissedMessages(ZulipTestCase):
     def test_deleted_message_in_huddle_missed_stream_messages(self) -> None:
         self._deleted_message_in_huddle_missed_stream_messages(False)
 
+    def test_realm_message_content_allowed_in_email_notifications(self) -> None:
+        user = self.example_user("hamlet")
+
+        # When message content is allowed at realm level
+        realm = get_realm("zulip")
+        realm.message_content_allowed_in_email_notifications = True
+        realm.save(update_fields=['message_content_allowed_in_email_notifications'])
+
+        # Emails have missed message content when message content is enabled by the user
+        do_change_notification_settings(user, "message_content_in_email_notifications", True)
+        mail.outbox = []
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
+
+        # Emails don't have missed message content when message content is disabled by the user
+        do_change_notification_settings(user, "message_content_in_email_notifications", False)
+        mail.outbox = []
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+
+        # When message content is not allowed at realm level
+        # Emails don't have missed message irrespective of message content setting of the user
+        realm = get_realm("zulip")
+        realm.message_content_allowed_in_email_notifications = False
+        realm.save(update_fields=['message_content_allowed_in_email_notifications'])
+
+        do_change_notification_settings(user, "message_content_in_email_notifications", True)
+        mail.outbox = []
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+
+        do_change_notification_settings(user, "message_content_in_email_notifications", False)
+        mail.outbox = []
+        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=False)
+
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_realm_emoji_in_missed_message(self, mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
