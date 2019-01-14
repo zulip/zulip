@@ -11,6 +11,8 @@ var admin_settings_label = {
     realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
     realm_default_twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
     realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
+    realm_message_content_allowed_in_email_notifications:
+        i18n.t("Allow message content in missed message emails"),
 
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
@@ -53,6 +55,8 @@ exports.build_page = function () {
         realm_logo_url: page_params.realm_logo_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
+        realm_message_content_allowed_in_email_notifications:
+            page_params.realm_message_content_allowed_in_email_notifications,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
         development: page_params.development_environment,
     };

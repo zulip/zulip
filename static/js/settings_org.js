@@ -68,6 +68,9 @@ var org_settings = {
         send_welcome_emails: {
             type: 'bool',
         },
+        message_content_allowed_in_email_notifications: {
+            type: 'bool',
+        },
     },
 };
 
@@ -338,6 +341,14 @@ function set_org_join_restrictions_dropdown() {
     }
 }
 
+function set_message_content_in_email_notifications_visiblity() {
+    if (page_params.realm_message_content_allowed_in_email_notifications) {
+        $('#message_content_in_email_notifications_label').parent().show();
+    } else {
+        $('#message_content_in_email_notifications_label').parent().hide();
+    }
+}
+
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
@@ -480,6 +491,8 @@ function update_dependent_subsettings(property_name) {
         set_org_join_restrictions_dropdown();
     } else if (property_name === 'realm_user_invite_restriction') {
         set_user_invite_restriction_dropdown();
+    } else if (property_name === 'realm_message_content_allowed_in_email_notifications') {
+        set_message_content_in_email_notifications_visiblity();
     }
 }
 
@@ -617,6 +630,7 @@ exports.build_page = function () {
     set_msg_delete_limit_dropdown();
     set_org_join_restrictions_dropdown();
     set_user_invite_restriction_dropdown();
+    set_message_content_in_email_notifications_visiblity();
 
     function check_property_changed(elem) {
         elem = $(elem);
