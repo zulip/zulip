@@ -178,6 +178,7 @@ class Realm(models.Model):
     digest_emails_enabled = models.BooleanField(default=True)  # type: bool
 
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
+    message_content_allowed_in_email_notifications = models.BooleanField(default=True)  # type: bool
 
     mandatory_topics = models.BooleanField(default=False)  # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
@@ -293,6 +294,7 @@ class Realm(models.Model):
         name_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
+        message_content_allowed_in_email_notifications=bool,
         video_chat_provider=str,
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
