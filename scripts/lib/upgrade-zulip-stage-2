@@ -177,7 +177,7 @@ if migrations_needed:
 subprocess.check_call(["./manage.py", "create_realm_internal_bots"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
-subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
+subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
 logging.info("Upgrade complete!")
 
 if not args.skip_purge_old_deployments:
