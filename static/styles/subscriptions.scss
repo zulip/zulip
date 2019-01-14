@@ -641,6 +641,14 @@ form#add_new_subscription {
     font-weight: 600;
 }
 
+.stream-row .icon .hashtag::-moz-selection {
+    background-color: transparent;
+}
+
+.stream-row .icon .hashtag::selection {
+    background-color: transparent;
+}
+
 .stream-row .sub-info-box {
     width: calc(100% - 90px);
 }
@@ -657,8 +665,7 @@ form#add_new_subscription {
     vertical-align: top;
 }
 
-.stream-row .sub-info-box .top-bar .stream-name,
-.stream-row .sub-info-box .bottom-bar .description {
+.stream-row .sub-info-box .top-bar .stream-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -668,16 +675,19 @@ form#add_new_subscription {
     font-weight: 600;
 }
 
-.stream-row .sub-info-box .top-bar .subscriber-count,
-.stream-row .sub-info-box .bottom-bar .stream-message-count {
+.stream-row .sub-info-box .top-bar .subscriber-count {
     white-space: nowrap;
     color: hsl(0, 0%, 67%);
 }
 
 .stream-row .sub-info-box .top-bar .subscriber-count-text,
-.stream-row .sub-info-box .top-bar .subscriber-count-lock,
-.stream-row .sub-info-box .bottom-bar .stream-message-count-text {
+.stream-row .sub-info-box .top-bar .subscriber-count-lock {
     margin-right: 5px;
+}
+
+.stream-row .sub-info-box .bottom-bar {
+    margin-top: 2px;
+    line-height: 1.5;
 }
 
 .stream-row .sub-info-box .bottom-bar > div {
@@ -685,9 +695,25 @@ form#add_new_subscription {
     vertical-align: bottom;
 }
 
-.stream-row .sub-info-box .bottom-bar {
-    margin-top: 2px;
-    line-height: 1.5;
+.stream-row .sub-info-box .bottom-bar .description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stream-row .sub-info-box .description:empty::after {
+    content: attr(data-no-description);
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+.stream-row .sub-info-box .bottom-bar .stream-message-count {
+    white-space: nowrap;
+    color: hsl(0, 0%, 67%);
+}
+
+.stream-row .sub-info-box .bottom-bar .stream-message-count-text {
+    margin-right: 5px;
 }
 
 .stream-row.active {
@@ -719,18 +745,15 @@ form#add_new_subscription {
     fill: hsl(0, 0%, 72%);
 }
 
-.stream-row::-moz-selection,
-.stream-row .icon .hashtag::-moz-selection {
+.stream-row::-moz-selection {
     background-color: transparent;
 }
 
-.stream-row::selection,
-.stream-row .icon .hashtag::selection {
+.stream-row::selection {
     background-color: transparent;
 }
 
-#subscription_overlay .stream-description .stream-description-editable:empty::after,
-.stream-row .sub-info-box .description:empty::after {
+#subscription_overlay .stream-description .stream-description-editable:empty::after {
     content: attr(data-no-description);
     font-style: italic;
     color: hsl(0, 0%, 67%);
