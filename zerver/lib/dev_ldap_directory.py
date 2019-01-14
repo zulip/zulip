@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 from typing import Any, Dict
 
@@ -55,6 +56,11 @@ def init_fakeldap() -> None:  # nocoverage
     # really slow to import.)
     import mock
     from fakeldap import MockLDAP
+
+    # Silent `django_auth_ldap` logger in dev mode to avoid
+    # spammy user not found log messages.
+    ldap_auth_logger = logging.getLogger('django_auth_ldap')
+    ldap_auth_logger.setLevel(logging.CRITICAL)
 
     ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
     mock_initialize = ldap_patcher.start()
