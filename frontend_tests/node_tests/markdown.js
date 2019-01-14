@@ -297,9 +297,9 @@ run_test('marked', () => {
         {input: 'mmm...:burrito:s',
          expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>'},
         {input: 'This is an :poop: message',
-         expected: '<p>This is an <span class="emoji emoji-1f4a9" title="poop">:poop:</span> message</p>'},
+         expected: '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>'},
         {input: "\ud83d\udca9",
-         expected: '<p><span class="emoji emoji-1f4a9" title="poop">:poop:</span></p>'},
+         expected: '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>'},
         {input: '\u{1f6b2}',
          expected: '<p>\u{1f6b2}</p>' },
         // Test only those realm filters which don't return True for
@@ -349,7 +349,7 @@ run_test('marked', () => {
         {input: ':)',
          expected: '<p>:)</p>'},
         {input: ':)',
-         expected: '<p><span class="emoji emoji-1f642" title="slight smile">:slight_smile:</span></p>',
+         expected: '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
          translate_emoticons: true},
         // Test HTML Escape in Custom Zulip Rules
         {input: '@**<h1>The Rogue One</h1>**',
