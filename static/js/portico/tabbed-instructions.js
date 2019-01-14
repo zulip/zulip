@@ -1,4 +1,4 @@
-function detect_user_os() {
+export function detect_user_os() {
     if (/Android/i.test(navigator.userAgent)) {
         return "android";
     }
@@ -17,7 +17,7 @@ function detect_user_os() {
     return "mac"; // if unable to determine OS return Mac by default
 }
 
-function activate_correct_tab($codeSection) {
+export function activate_correct_tab($codeSection) {
     var user_os = detect_user_os();
     var desktop_os = ["mac", "linux", "windows"];
     const $li = $codeSection.find("ul.nav li");
