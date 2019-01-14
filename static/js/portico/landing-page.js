@@ -4,6 +4,7 @@ const ELECTRON_APP_URL_MAC = "https://github.com/zulip/zulip-electron/releases/d
 const ELECTRON_APP_URL_WINDOWS = "https://github.com/zulip/zulip-electron/releases/download/v" + ELECTRON_APP_VERSION + "/Zulip-Web-Setup-" + ELECTRON_APP_VERSION + ".exe";
 
 import render_tabs from './team.js';
+import {detect_user_os}  from './tabbed-instructions.js';
 
 // this will either smooth scroll to an anchor where the `name`
 // is the same as the `scroll-to` reference, or to a px height
@@ -83,25 +84,6 @@ var apps_events = function () {
 
     var version;
 
-    function get_user_os() {
-        if (/Android/i.test(navigator.userAgent)) {
-            return "android";
-        }
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            return "ios";
-        }
-        if (/Mac/i.test(navigator.userAgent)) {
-            return "mac";
-        }
-        if (/Win/i.test(navigator.userAgent)) {
-            return "windows";
-        }
-        if (/Linux/i.test(navigator.userAgent)) {
-            return "linux";
-        }
-        return "mac"; // if unable to determine OS return Mac by default
-    }
-
     function get_version_from_path() {
         var result;
         var parts = path_parts();
@@ -112,7 +94,7 @@ var apps_events = function () {
             }
         });
 
-        result = result || get_user_os();
+        result = result || detect_user_os();
         return result;
     }
 
