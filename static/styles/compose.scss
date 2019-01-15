@@ -416,7 +416,7 @@ input.recipient_box {
     display: inline-block;
 }
 
-#compose a.message-control-button {
+a.message-control-button {
     display: block;
     opacity: 0.4;
     color: inherit;
@@ -430,7 +430,7 @@ input.recipient_box {
     float: left;
 }
 
-#compose a.message-control-button:hover {
+a.message-control-button:hover {
     opacity: 1;
 }
 
