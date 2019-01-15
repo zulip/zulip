@@ -1405,8 +1405,12 @@ def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int
 
 def create_soft_link(source: Path, in_progress: bool=True) -> None:
     is_done = not in_progress
-    in_progress_link = '/tmp/zulip-export-in-progress'
-    done_link = '/tmp/zulip-export-most-recent'
+    if settings.DEVELOPMENT:
+        in_progress_link = os.path.join(settings.DEPLOY_ROOT, 'var', 'export-in-progress')
+        done_link = os.path.join(settings.DEPLOY_ROOT, 'var', 'export-most-recent')
+    else:
+        in_progress_link = '/home/zulip/export-in-progress'
+        done_link = '/home/zulip/export-most-recent'
 
     if in_progress:
         new_target = in_progress_link
