@@ -590,167 +590,171 @@ form#add_new_subscription {
     padding: 15px 10px 11px 10px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
-}
 
-.stream-row .check {
-    width: 25px;
-    height: 25px;
-    position: relative;
-    margin-right: 8px;
-    margin-top: 9px;
-    background-size: 60% auto;
-    background-repeat: no-repeat;
-    background-position: center center;
-}
+    .check {
+        width: 25px;
+        height: 25px;
+        position: relative;
+        margin-right: 8px;
+        margin-top: 9px;
+        background-size: 60% auto;
+        background-repeat: no-repeat;
+        background-position: center center;
 
-.stream-row .check svg {
-    fill: transparent;
-    width: 70%;
-    margin: 0% 15%;
-}
+        svg {
+            fill: transparent;
+            width: 70%;
+            margin: 0% 15%;
+        }
 
-.stream-row .checked svg {
-    fill: hsl(170, 48%, 54%);
-}
+        &.checked {
+            svg {
+                fill: hsl(170, 48%, 54%);
+            }
 
-.stream-row .check.checked:hover svg {
-    opacity: 0.5;
-}
+            &:hover {
+                svg {
+                    opacity: 0.5;
+                }
+            }
+        }
+    }
 
-.stream-row .icon {
-    width: 35px;
-    height: 35px;
-    margin-right: 8px;
-    margin-top: 4px;
-    background-color: hsl(300, 100%, 25%);
-    border-radius: 4px;
-    color: hsl(0, 0%, 100%);
-}
+    .icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 8px;
+        margin-top: 4px;
+        background-color: hsl(300, 100%, 25%);
+        border-radius: 4px;
+        color: hsl(0, 0%, 100%);
 
-.stream-row .icon .symbol {
-    font-weight: 600;
-    font-size: 1.1em;
-}
+        .symbol {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
 
-.stream-row .icon .fa-lock {
-    font-size: 1.4em;
-}
+        .fa-lock {
+            font-size: 1.4em;
+        }
 
-.stream-row .icon .hashtag {
-    font-size: 1.4em;
-    font-weight: 600;
-}
+        .hashtag {
+            font-size: 1.4em;
+            font-weight: 600;
 
-.stream-row .icon .hashtag::-moz-selection {
-    background-color: transparent;
-}
+            &::-moz-selection,
+            &::selection {
+                background-color: transparent;
+            }
+        }
+    }
 
-.stream-row .icon .hashtag::selection {
-    background-color: transparent;
-}
+    .sub-info-box {
+        width: calc(100% - 90px);
 
-.stream-row .sub-info-box {
-    width: calc(100% - 90px);
-}
+        .top-bar,
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
 
-.stream-row .sub-info-box .top-bar,
-.stream-row .sub-info-box .bottom-bar {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-}
+        .top-bar {
+            & > div {
+                display: inline-block;
+                vertical-align: top;
+            }
 
-.stream-row .sub-info-box .top-bar > div {
-    display: inline-block;
-    vertical-align: top;
-}
+            .stream-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-weight: 600;
+            }
 
-.stream-row .sub-info-box .top-bar .stream-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+            .subscriber-count {
+                white-space: nowrap;
+                color: hsl(0, 0%, 67%);
+            }
 
-.stream-row .sub-info-box .top-bar .stream-name {
-    font-weight: 600;
-}
+            .subscriber-count-text,
+            .subscriber-count-lock {
+                margin-right: 5px;
+            }
+        }
 
-.stream-row .sub-info-box .top-bar .subscriber-count {
-    white-space: nowrap;
-    color: hsl(0, 0%, 67%);
-}
+        .bottom-bar {
+            margin-top: 2px;
+            line-height: 1.5;
 
-.stream-row .sub-info-box .top-bar .subscriber-count-text,
-.stream-row .sub-info-box .top-bar .subscriber-count-lock {
-    margin-right: 5px;
-}
+            & > div {
+                display: inline-block;
+                vertical-align: bottom;
+            }
 
-.stream-row .sub-info-box .bottom-bar {
-    margin-top: 2px;
-    line-height: 1.5;
-}
+            .description {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
-.stream-row .sub-info-box .bottom-bar > div {
-    display: inline-block;
-    vertical-align: bottom;
-}
+                &:empty::after {
+                    content: attr(data-no-description);
+                    font-style: italic;
+                    color: hsl(0, 0%, 67%);
+                }
+            }
 
-.stream-row .sub-info-box .bottom-bar .description {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+            .stream-message-count {
+                white-space: nowrap;
+                color: hsl(0, 0%, 67%);
+            }
 
-.stream-row .sub-info-box .description:empty::after {
-    content: attr(data-no-description);
-    font-style: italic;
-    color: hsl(0, 0%, 67%);
-}
+            .stream-message-count-text {
+                margin-right: 5px;
+            }
+        }
+    }
 
-.stream-row .sub-info-box .bottom-bar .stream-message-count {
-    white-space: nowrap;
-    color: hsl(0, 0%, 67%);
-}
+    &.active {
+        background-color: hsl(0, 0%, 93%);
+    }
 
-.stream-row .sub-info-box .bottom-bar .stream-message-count-text {
-    margin-right: 5px;
-}
+    & > div {
+        display: inline-block;
+        vertical-align: top;
+    }
 
-.stream-row.active {
-    background-color: hsl(0, 0%, 93%);
-}
+    .settings-dropdown-trigger {
+        float: right;
+        margin-left: 10px;
+        color: hsl(0, 0%, 67%);
+    }
 
-.stream-row > div {
-    display: inline-block;
-    vertical-align: top;
-}
+    &:hover {
+        .preview-stream {
+            display: inline-block;
+        }
+    }
 
-.stream-row .settings-dropdown-trigger {
-    float: right;
-    margin-left: 10px;
-    color: hsl(0, 0%, 67%);
-}
+    &:hover,
+    &.active:hover {
+        .check:not(.checked) {
+            svg {
+                fill: hsl(0, 0%, 87%);
+            }
 
-.stream-row:hover .preview-stream {
-    display: inline-block;
-}
+            &:hover {
+                svg {
+                    fill: hsl(0, 0%, 72%);
+                }
+            }
+        }
+    }
 
-.stream-row:hover .check:not(.checked) svg,
-.stream-row.active:hover .check:not(.checked) svg {
-    fill: hsl(0, 0%, 87%);
-}
-
-.stream-row .check:not(.checked):hover svg,
-.stream-row.active .check:not(.checked):hover svg {
-    fill: hsl(0, 0%, 72%);
-}
-
-.stream-row::-moz-selection {
-    background-color: transparent;
-}
-
-.stream-row::selection {
-    background-color: transparent;
+    &::-moz-selection,
+    &::selection {
+        background-color: transparent;
+    }
 }
 
 #subscription_overlay .stream-description .stream-description-editable:empty::after {
