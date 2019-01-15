@@ -5133,6 +5133,22 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
                 "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type})
 
+def check_remove_custom_profile_field_value(user_profile: UserProfile,
+                                            field_id: Union[int, str, List[int]]
+                                            ) -> None:
+    try:
+        field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
+        field_value.delete()
+        notify_user_update_custom_profile_data(user_profile, {'id': field_id,
+                                                              'value': None,
+                                                              'rendered_value': None,
+                                                              'type': field.field_type})
+    except CustomProfileField.DoesNotExist:
+        raise JsonableError(_('Field id {id} not found.').format(id=field_id))
+    except CustomProfileFieldValue.DoesNotExist:
+        pass
+
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
     event = dict(type="user_group",
                  op="add",
