@@ -1230,6 +1230,7 @@ run_test('subscription_stream_privacy_modal', () => {
     var args = {
         stream_id: 999,
         is_private: true,
+        is_admin: true,
     };
     var html = render('subscription_stream_privacy_modal', args);
 
