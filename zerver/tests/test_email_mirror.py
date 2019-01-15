@@ -38,6 +38,8 @@ from zerver.lib.notifications import (
 from zerver.management.commands import email_mirror
 
 from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 
 import re
 import ujson
@@ -244,6 +246,42 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
                                    incoming_valid_message['Subject'],
                                    incoming_valid_message,
                                    debug_info)
+        except ZulipEmailForwardError as e:
+            # empty body throws exception
+            exception_message = str(e)
+        self.assertEqual(exception_message, "Email has no nonempty body sections; ignoring.")
+
+    def test_receive_stream_email_messages_no_textual_body(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+        headers = {}
+        headers['Reply-To'] = self.example_email('othello')
+
+        # No textual body
+        incoming_valid_message = MIMEMultipart()  # type: Any # https://github.com/python/typeshed/issues/275
+        with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
+            incoming_valid_message.attach(MIMEImage(f.read()))
+
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        exception_message = ""
+        debug_info = {}  # type: Dict[str, Any]
+
+        # process_message eats the exception & logs an error which can't be parsed here
+        # so calling process_stream_message directly
+        try:
+            with mock.patch('logging.warning'):
+                process_stream_message(incoming_valid_message['To'],
+                                       incoming_valid_message['Subject'],
+                                       incoming_valid_message,
+                                       debug_info)
         except ZulipEmailForwardError as e:
             # empty body throws exception
             exception_message = str(e)
