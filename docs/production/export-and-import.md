@@ -70,10 +70,10 @@ following commands, replacing the filename with the path to your data
 export tarball:
 
 ```
-cd /tmp
+cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
-./manage.py import '' /tmp/zulip-export-zcmpxfm6
+./manage.py import '' ~/zulip-export-zcmpxfm6
 ./manage reactivate_realm -r ''  # Reactivates the organization
 ```
 
@@ -89,7 +89,7 @@ root domain. Replace the last two lines above with the following, after replacin
 `<subdomain>` with the desired subdomain.
 
 ```
-./manage.py import <subdomain> /tmp/zulip-export-zcmpxfm6
+./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
 ./manage reactivate_realm -r <subdomain>  # Reactivates the organization
 ```
 
