@@ -4,21 +4,7 @@ var exports = {};
 
 var attachments;
 
-function delete_attachments(attachment) {
-    var status = $('#delete-upload-status');
-    channel.del({
-        url: '/json/attachments/' + attachment,
-        idempotent: true,
-        error: function (xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, status);
-        },
-        success: function () {
-            ui_report.success(i18n.t("Attachment deleted"), status);
-        },
-    });
-}
-
-function bytes_to_size(bytes, kb_with_1024_bytes) {
+exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
@@ -33,6 +19,20 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
         size = Math.round(bytes / Math.pow(kb_size, i) * 10) / 10;
     }
     return size + ' ' + sizes[i];
+};
+
+function delete_attachments(attachment) {
+    var status = $('#delete-upload-status');
+    channel.del({
+        url: '/json/attachments/' + attachment,
+        idempotent: true,
+        error: function (xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, status);
+        },
+        success: function () {
+            ui_report.success(i18n.t("Attachment deleted"), status);
+        },
+    });
 }
 
 function render_attachments_ui() {
@@ -81,7 +81,7 @@ function format_attachment_data(new_attachments) {
     _.each(new_attachments, function (attachment) {
         var time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
-        attachment.size_str = bytes_to_size(attachment.size);
+        attachment.size_str = exports.bytes_to_size(attachment.size);
     });
 }
 
