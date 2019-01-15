@@ -395,6 +395,68 @@ class PermissionTest(ZulipTestCase):
                                        {'profile_data': ujson.dumps(new_profile_data)})
             self.assert_json_error(result, error_msg)
 
+        # non-existant field and no data
+        invalid_profile_data = [{
+            'id': 9001,
+            'value': ''
+        }]
+        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                   {'profile_data': ujson.dumps(invalid_profile_data)})
+        self.assert_json_error(result, 'Field id 9001 not found.')
+
+        # non-existant field and data
+        invalid_profile_data = [{
+            'id': 9001,
+            'value': 'some data'
+        }]
+        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                   {'profile_data': ujson.dumps(invalid_profile_data)})
+        self.assert_json_error(result, 'Field id 9001 not found.')
+
+        # Test for clearing/resetting field values.
+        empty_profile_data = []
+        for field_name in fields:
+            field = CustomProfileField.objects.get(name=field_name, realm=realm)
+            value = ''  # type: Union[str, None, List[Any]]
+            if field.field_type == CustomProfileField.USER:
+                value = []
+            empty_profile_data.append({
+                'id': field.id,
+                'value': value,
+            })
+        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                   {'profile_data': ujson.dumps(empty_profile_data)})
+        self.assert_json_success(result)
+        for field_dict in cordelia.profile_data:
+            self.assertEqual(field_dict['value'], None)
+
+        # Test adding some of the field values after removing all.
+        hamlet = self.example_user("hamlet")
+        new_fields = {
+            'Phone number': None,
+            'Biography': 'A test user',
+            'Favorite food': None,
+            'Favorite editor': None,
+            'Birthday': None,
+            'GitHub profile': 'https://github.com/DEF',
+            'Mentor': [hamlet.id]
+        }
+        new_profile_data = []
+        for field_name in fields:
+            field = CustomProfileField.objects.get(name=field_name, realm=realm)
+            value = None
+            if new_fields[field_name]:
+                value = new_fields[field_name]
+            new_profile_data.append({
+                'id': field.id,
+                'value': value,
+            })
+        result = self.client_patch('/json/users/{}'.format(cordelia.id),
+                                   {'profile_data': ujson.dumps(new_profile_data)})
+        self.assert_json_success(result)
+        for field_dict in cordelia.profile_data:
+            self.assertEqual(field_dict['value'], new_fields[str(field_dict['name'])])
+
     def test_non_admin_user_cannot_change_profile_data(self) -> None:
         self.login(self.example_email("cordelia"))
         hamlet = self.example_user("hamlet")
