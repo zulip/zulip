@@ -5,33 +5,33 @@ import filecmp
 import os
 import subprocess
 import shutil
+import tempfile
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
-TMP_DIR = "/var/tmp"
 
-def generate_files(source_file: str) -> None:
+def generate_files(source_file: str, tmp_dir: str) -> None:
     # Copy the source CSV file to out temporary test directory.
     input_file_path = source_file
-    output_file_path = os.path.join(TMP_DIR, "CSV_A")
+    output_file_path = os.path.join(tmp_dir, "CSV_A")
     shutil.copyfile(input_file_path, output_file_path)
 
     # Generate the name map file in the temporary directory.
     input_file_path = output_file_path
-    output_file_path = os.path.join(TMP_DIR, 'NAME_MAP_A')
+    output_file_path = os.path.join(tmp_dir, 'NAME_MAP_A')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'import_emoji_names_from_csv'),
                            '--input-file', input_file_path, '--output-file', output_file_path],
                           stdout=subprocess.DEVNULL)
 
     # Regenerate the CSV file from name map.
     input_file_path = output_file_path
-    output_file_path = os.path.join(TMP_DIR, 'CSV_B')
+    output_file_path = os.path.join(tmp_dir, 'CSV_B')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'export_emoji_names_to_csv'),
                            '--input-file', input_file_path, '--output-file', output_file_path],
                           stdout=subprocess.DEVNULL)
 
     # Regenerate the name map file from the regenerated CSV file.
     input_file_path = output_file_path
-    output_file_path = os.path.join(TMP_DIR, 'NAME_MAP_B')
+    output_file_path = os.path.join(tmp_dir, 'NAME_MAP_B')
     subprocess.check_call([os.path.join(TOOLS_DIR, 'setup', 'emoji', 'import_emoji_names_from_csv'),
                            '--input-file', input_file_path, '--output-file', output_file_path],
                           stdout=subprocess.DEVNULL)
@@ -56,15 +56,15 @@ def compare_files(first_file: str, second_file: str) -> None:
         print_diff(first_file, second_file)
         raise Exception("Round trip conversion failed!!")
 
-def check_files() -> None:
+def check_files(tmp_dir: str) -> None:
     # Compare the original and regenerated CSV files.
-    first_file = os.path.join(TMP_DIR, 'CSV_A')
-    second_file = os.path.join(TMP_DIR, 'CSV_B')
+    first_file = os.path.join(tmp_dir, 'CSV_A')
+    second_file = os.path.join(tmp_dir, 'CSV_B')
     compare_files(first_file, second_file)
 
     # Compare the name map files.
-    first_file = os.path.join(TMP_DIR, 'NAME_MAP_A')
-    second_file = os.path.join(TMP_DIR, 'NAME_MAP_B')
+    first_file = os.path.join(tmp_dir, 'NAME_MAP_A')
+    second_file = os.path.join(tmp_dir, 'NAME_MAP_B')
     compare_files(first_file, second_file)
 
 def main() -> None:
@@ -78,8 +78,9 @@ def main() -> None:
         help="Path to the CSV file to be used for round-trip conversion.")
 
     args = parser.parse_args()
-    generate_files(args.input_file_path)
-    check_files()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        generate_files(args.input_file_path, tmp_dir)
+        check_files(tmp_dir)
 
 if __name__ == "__main__":
     main()
