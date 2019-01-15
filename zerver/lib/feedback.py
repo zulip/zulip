@@ -24,15 +24,6 @@ def has_enough_time_expired_since_last_message(sender_email: str, min_delay: flo
     delay = t - int(last_time)
     return delay > min_delay
 
-def get_ticket_number() -> int:
-    num_file = '/var/tmp/.feedback-bot-ticket-number'
-    try:
-        ticket_number = int(open(num_file).read()) + 1
-    except Exception:
-        ticket_number = 1
-    open(num_file, 'w').write('%d' % (ticket_number,))
-    return ticket_number
-
 def deliver_feedback_by_zulip(message: Mapping[str, Any]) -> None:
     subject = "%s" % (message["sender_email"],)
 
@@ -48,7 +39,7 @@ def deliver_feedback_by_zulip(message: Mapping[str, Any]) -> None:
     need_ticket = has_enough_time_expired_since_last_message(sender_email, 180)
 
     if need_ticket:
-        ticket_number = get_ticket_number()
+        ticket_number = message['id']
         content += '\n~~~'
         content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
         content += '\nsender: %s' % (message['sender_full_name'],)
