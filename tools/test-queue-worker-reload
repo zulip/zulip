@@ -6,47 +6,44 @@ import sys
 import time
 import signal
 import subprocess
-import re
+import types
 
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import IO
-
 # TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-successful_worker_launches = [
-    '[process_queue] 20 queue worker threads were launched',
-]
+successful_worker_launch = '[process_queue] 20 queue worker threads were launched\n'
 
-def check_worker_launch(logfile_name):
-    # type: (str) -> bool
-    def check(content):
-        # type: (str) -> bool
-        flag = True
-        for entry in successful_worker_launches:
-            flag = flag and entry in content
-        return flag
+def check_worker_launch(run_dev: subprocess.Popen) -> bool:
+    failed = False
+    i = 0
 
-    failed = True
-    log_output = []
-    print("Polling logfile", end='')
-    logfile = open(logfile_name, 'rb', buffering=0)
-    # Attempt to poll the log file for 60 sec. to see if all worker threads are launched.
-    for i in range(200):
-        time.sleep(0.3)
+    def on_timer(signum: int, frame: types.FrameType) -> None:
+        nonlocal failed, i
         sys.stdout.write('.')
         sys.stdout.flush()
-        new_data = logfile.read().decode()
-        if new_data:
-            log_output.append(new_data)
+        i += 1
+        if i == 200:
+            failed = True
+            run_dev.send_signal(signal.SIGINT)
+            signal.setitimer(signal.ITIMER_REAL, 0, 0)
 
-        if check(''.join(log_output)):
-            failed = False
+    log_output = []
+    print("Polling run-dev", end='')
+    # Attempt to poll the log file for 60 sec. to see if all worker threads are launched.
+    old_handler = signal.signal(signal.SIGALRM, on_timer)
+    signal.setitimer(signal.ITIMER_REAL, 0.3, 0.3)
+    for line in run_dev.stdout:
+        log_output.append(line)
+        if line.endswith(successful_worker_launch):
             break
+    else:
+        failed = True
+    signal.setitimer(signal.ITIMER_REAL, 0, 0)
+    signal.signal(signal.SIGALRM, old_handler)
     sys.stdout.write('\n')
-    logfile.close()
 
     if not failed:
         print('Worker threads launched successfully')
@@ -58,16 +55,17 @@ def check_worker_launch(logfile_name):
 
 if __name__ == '__main__':
     print('\nStarting Development Server')
-    logfile_name = '/tmp/run-dev-output'
-    logfile = open(logfile_name, 'wb', buffering=0)
     args = ["{}/run-dev.py".format(TOOLS_DIR)]
-    run_dev = subprocess.Popen(args, stdout=logfile, stderr=subprocess.STDOUT)
+    run_dev = subprocess.Popen(
+        args,
+        bufsize=1,  # line buffered
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        universal_newlines=True)
+    failed = check_worker_launch(run_dev)
 
-    failed = check_worker_launch(logfile_name)
     if failed:
         run_dev.send_signal(signal.SIGINT)
         run_dev.wait()
-        logfile.close()
         sys.exit(1)
 
     # In dev. environment, queues are run through Django's autoreload code. The
@@ -81,16 +79,12 @@ if __name__ == '__main__':
     # just allow enough time to the Django loop to touch every file at least
     # once.
     time.sleep(1.3)
-    # Removing all data from the server log file.
-    logfile.truncate(0)
-    logfile.seek(0)
 
     print("Attempting to modify a file")
     os.utime('zerver/lib/actions.py')
-    failed = check_worker_launch(logfile_name)
+    failed = check_worker_launch(run_dev)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
-    logfile.close()
     if failed:
         sys.exit(1)
