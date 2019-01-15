@@ -15,6 +15,7 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
                                 do_update_user_custom_profile_data,
                                 try_reorder_realm_custom_profile_fields,
+                                check_remove_custom_profile_field_value,
                                 notify_user_update_custom_profile_data)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
@@ -132,21 +133,7 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
                                     data: List[int]=REQ(validator=check_list(
                                                         check_int))) -> HttpResponse:
     for field_id in data:
-        try:
-            field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
-        except CustomProfileField.DoesNotExist:
-            return json_error(_('Field id {id} not found.').format(id=field_id))
-
-        try:
-            field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
-        except CustomProfileFieldValue.DoesNotExist:
-            continue
-        field_value.delete()
-        notify_user_update_custom_profile_data(user_profile, {'id': field_id,
-                                                              'value': None,
-                                                              'rendered_value': None,
-                                                              'type': field.field_type})
-
+        check_remove_custom_profile_field_value(user_profile, field_id)
     return json_success()
 
 @human_users_only
