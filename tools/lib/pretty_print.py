@@ -190,11 +190,13 @@ def validate_indent_html(fn):
     phtml = pretty_print_html(html)
     file.close()
     if not html.split('\n') == phtml.split('\n'):
-        temp_file = open('/var/tmp/pretty_html.txt', 'w')
-        temp_file.write(phtml)
-        temp_file.close()
         print('Invalid Indentation detected in file: '
               '%s\nDiff for the file against expected indented file:' % (fn), flush=True)
-        subprocess.call(['diff', fn, '/var/tmp/pretty_html.txt'], stderr=subprocess.STDOUT)
+        with subprocess.Popen(
+                ['diff', fn, '-'],
+                stdin=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True) as p:
+            p.communicate(phtml)
         return 0
     return 1
