@@ -580,6 +580,7 @@ exports.setup_page = function (callback) {
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.stream_name_max_length,
             max_description_length: page_params.stream_description_max_length,
+            is_admin: page_params.is_admin,
         };
 
         var rendered = templates.render('subscription_table_body', template_data);
