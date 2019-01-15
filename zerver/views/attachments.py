@@ -11,9 +11,9 @@ def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
     return json_success({"attachments": user_attachments(user_profile)})
 
 
-def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: int) -> HttpResponse:
-    attachment = access_attachment_by_id(user_profile, attachment_id,
+def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: str) -> HttpResponse:
+    attachment = access_attachment_by_id(user_profile, int(attachment_id),
                                          needs_owner=True)
-    notify_attachment_update(user_profile, "remove", {"id": attachment.id})
     remove_attachment(user_profile, attachment)
+    notify_attachment_update(user_profile, "remove", {"id": int(attachment_id)})
     return json_success()
