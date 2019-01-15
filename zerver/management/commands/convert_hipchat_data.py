@@ -9,10 +9,10 @@ from typing import Any
 Example usage for testing purposes:
 
 Move the data:
-    rm -Rf /tmp/hipchat*
-    mkdir /tmp/hipchat
-    ./manage.py convert_hipchat_data ~/hipchat-31028-2018-08-08_23-23-22.tar --output /tmp/hipchat
-    ./manage.py import --destroy-rebuild-database hipchat /tmp/hipchat
+    rm -Rf ~/hipchat-data
+    mkdir ~/hipchat-data
+    ./manage.py convert_hipchat_data ~/hipchat-31028-2018-08-08_23-23-22.tar --output ~/hipchat-data
+    ./manage.py import --destroy-rebuild-database hipchat ~/hipchat-data
 
 
 Test out the realm:
