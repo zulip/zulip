@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import ujson
 
 from typing import Optional, List, Tuple
@@ -15,7 +16,6 @@ TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)
 REQS_DIR = os.path.join(ZULIP_PATH, 'requirements')
 CACHE_DIR = os.path.join(ZULIP_PATH, 'var', 'tmp')
-TMP_DIR = '/var/tmp'
 if 'TRAVIS' in os.environ:
     CACHE_DIR = os.path.join(os.environ['HOME'], 'misc')
 CACHE_FILE = os.path.join(CACHE_DIR, 'requirements_hashes')
@@ -34,34 +34,34 @@ def print_diff(path_file1, path_file2):
     for line in diff:
         print(line)
 
-def test_locked_requirements():
-    # type: () -> bool
+def test_locked_requirements(tmp_dir):
+    # type: (str) -> bool
     # `pip-compile` tries to avoid unnecessarily updating recursive dependencies
     # if lock files are present already. If we don't copy these files to the tmp
     # dir then recursive dependencies will get updated to their latest version
     # without any change in the input requirements file and the test will not pass.
     for fn in LOCKED_REQS_FILE_NAMES:
         locked_file = os.path.join(REQS_DIR, fn)
-        test_locked_file = os.path.join(TMP_DIR, fn)
+        test_locked_file = os.path.join(tmp_dir, fn)
         shutil.copyfile(locked_file, test_locked_file)
-    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', TMP_DIR],
+    subprocess.check_call([os.path.join(TOOLS_DIR, 'update-locked-requirements'), '--output-dir', tmp_dir],
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     same = True
     for fn in LOCKED_REQS_FILE_NAMES:
         locked_file = os.path.join(REQS_DIR, fn)
-        test_locked_file = os.path.join(TMP_DIR, fn)
+        test_locked_file = os.path.join(tmp_dir, fn)
         same = same and filecmp.cmp(test_locked_file, locked_file, shallow=False)
 
     return same
 
-def get_requirements_hash(use_test_lock_files=False):
-    # type: (Optional[bool]) -> str
+def get_requirements_hash(tmp_dir, use_test_lock_files=False):
+    # type: (str, Optional[bool]) -> str
     sha1 = hashlib.sha1()
     reqs_files = glob.glob(os.path.join(ZULIP_PATH, "requirements", "*.in"))
     lock_files_path = REQS_DIR
     if use_test_lock_files:
-        lock_files_path = TMP_DIR
+        lock_files_path = tmp_dir
     reqs_files.extend([os.path.join(lock_files_path, fn) for fn in LOCKED_REQS_FILE_NAMES])
     for file_path in reqs_files:
         with open(file_path) as fp:
@@ -94,24 +94,26 @@ def main():
     # type: () -> None
     may_be_setup_cache()
     hash_list = load_cache()
-    curr_hash = get_requirements_hash()
+    tmp = tempfile.TemporaryDirectory()
+    tmp_dir = tmp.name
+    curr_hash = get_requirements_hash(tmp_dir)
 
     if curr_hash in hash_list:
         # We have already checked this set of requirements and they
         # were consistent so no need to check again.
         return
 
-    requirements_are_consistent = test_locked_requirements()
+    requirements_are_consistent = test_locked_requirements(tmp_dir)
 
     # Cache the hash so that we need not to run the `update_locked_requirements`
     # tool again for checking this set of requirements.
-    valid_hash = get_requirements_hash(use_test_lock_files=True)
+    valid_hash = get_requirements_hash(tmp_dir, use_test_lock_files=True)
     hash_list.append(valid_hash)
     update_cache(hash_list)
     if not requirements_are_consistent:
         for fn in LOCKED_REQS_FILE_NAMES:
             locked_file = os.path.join(REQS_DIR, fn)
-            test_locked_file = os.path.join(TMP_DIR, fn)
+            test_locked_file = os.path.join(tmp_dir, fn)
             print_diff(test_locked_file, locked_file)
         # Flush the output to ensure we print the error at the end.
         sys.stdout.flush()
