@@ -19,7 +19,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
     check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
     do_update_bot_config_data, check_change_bot_full_name, do_change_is_guest, \
-    do_update_user_custom_profile_data
+    do_update_user_custom_profile_data, check_remove_custom_profile_field_value
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError, CannotDeactivateLastUserError
@@ -113,8 +113,15 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
         check_change_full_name(target, full_name, user_profile)
 
     if profile_data is not None:
-        validate_user_custom_profile_data(target.realm.id, profile_data)
-        do_update_user_custom_profile_data(target, profile_data)
+        clean_profile_data = []
+        for entry in profile_data:
+            if not entry["value"]:
+                field_id = entry["id"]
+                check_remove_custom_profile_field_value(target, field_id)
+            else:
+                clean_profile_data.append(entry)
+        validate_user_custom_profile_data(target.realm.id, clean_profile_data)
+        do_update_user_custom_profile_data(target, clean_profile_data)
 
     return json_success()
 
