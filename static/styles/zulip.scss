@@ -1347,6 +1347,10 @@ div.focused_table {
     max-height: 24em;
 }
 
+.message_edit_history_content {
+    max-height: none;
+}
+
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
