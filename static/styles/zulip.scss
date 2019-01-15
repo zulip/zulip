@@ -1366,6 +1366,7 @@ div.focused_table {
 
 .message-edit-feature-group {
     display: inline-block;
+    margin-left: 10px;
     margin-bottom: -5px;
 }
 
@@ -2725,19 +2726,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #message_edit_form .control-group.no-margin {
     margin-bottom: 0px;
-}
-
-#message_edit_form a.message-control-button {
-    display: inline;
-    color: hsl(0, 0%, 47%);
-    text-decoration: none;
-    font-size: 12px;
-    width: 12px;
-    height: 14px;
-    text-align: center;
-    float: right;
-    padding-left: 5px;
-    padding-top: 3px;
 }
 
 #message_edit_form .action-buttons {
