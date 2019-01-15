@@ -34,7 +34,7 @@ class Command(ZulipBaseCommand):
 
         output_dir = options["output_dir"]
         if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
+            output_dir = tempfile.mkdtemp(prefix="zulip-export-")
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
