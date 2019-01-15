@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from typing import Any, Dict
 from datetime import timedelta
@@ -8,7 +9,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
 from zerver.models import ScheduledMessage, Message, get_user_by_delivery_email
@@ -58,19 +58,18 @@ Usage: ./manage.py deliver_scheduled_messages
             # the comment in zproject/settings.py file about renaming this setting.
             sleep_forever()
 
-        with lockfile("/tmp/zulip_scheduled_message_deliverer.lockfile"):
-            while True:
-                messages_to_deliver = ScheduledMessage.objects.filter(
-                    scheduled_timestamp__lte=timezone_now(),
-                    delivered=False)
-                if messages_to_deliver:
-                    for message in messages_to_deliver:
-                        with transaction.atomic():
-                            do_send_messages([self.construct_message(message)])
-                            message.delivered = True
-                            message.save(update_fields=['delivered'])
+        while True:
+            messages_to_deliver = ScheduledMessage.objects.filter(
+                scheduled_timestamp__lte=timezone_now(),
+                delivered=False)
+            if messages_to_deliver:
+                for message in messages_to_deliver:
+                    with transaction.atomic():
+                        do_send_messages([self.construct_message(message)])
+                        message.delivered = True
+                        message.save(update_fields=['delivered'])
 
-                cur_time = timezone_now()
-                time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)
-                sleep_time = (time_next_min - cur_time).total_seconds()
-                time.sleep(sleep_time)
+            cur_time = timezone_now()
+            time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)
+            sleep_time = (time_next_min - cur_time).total_seconds()
+            time.sleep(sleep_time)
