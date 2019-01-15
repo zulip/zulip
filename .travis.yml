@@ -38,7 +38,7 @@ cache:
     - $HOME/misc
 env:
   global:
-    - BOTO_CONFIG=/tmp/nowhere
+    - BOTO_CONFIG=/nonexistent
 language: python
 # Our test suites generally run on Python 3.4, the version in
 # Ubuntu 14.04 trusty, which is the oldest OS release we support.
