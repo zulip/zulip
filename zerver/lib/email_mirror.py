@@ -237,6 +237,9 @@ def extract_body(message: message.Message) -> str:
     if html_content:
         return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
 
+    if plaintext_content is not None or html_content is not None:
+        raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
+
     logging.warning("Content types: %s" % ([part.get_content_type() for part in message.walk()]))
     raise ZulipEmailForwardUserError("Unable to find plaintext or HTML message body")
 
