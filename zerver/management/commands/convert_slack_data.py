@@ -36,7 +36,7 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         output_dir = options["output_dir"]
         if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="/tmp/converted-slack-data-")
+            output_dir = tempfile.mkdtemp(prefix="converted-slack-data-")
         else:
             output_dir = os.path.realpath(output_dir)
 
