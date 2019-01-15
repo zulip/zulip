@@ -68,7 +68,7 @@ mount -t overlay overlay \
     "$shared_dir"/mnt
 
 lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
-         -m bind="$shared_dir"/mnt:/tmp/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
+         -m bind="$shared_dir"/mnt:/mnt/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
 
 "$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
 
@@ -76,6 +76,6 @@ run() {
     lxc-attach -n "$CONTAINER_NAME" -- "$@"
 }
 
-run eatmydata -- /tmp/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
+run eatmydata -- /mnt/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
 
 # TODO settings.py, initialize-database, create realm
