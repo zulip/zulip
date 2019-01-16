@@ -95,16 +95,20 @@ by the Supervisor configuration (which explains how to start the server
 processes; see "Supervisor" below) and the nginx configuration (which
 explains which HTTP requests get sent to which app server).
 
-Tornado is an asynchronous server and is meant specifically to hold open
-tens of thousands of long-lived (long-polling or websocket) connections
--- that is to say, routes that maintain a persistent connection from
-every running client. For this reason, it's responsible for event
-(message) delivery, but not much else. We try to avoid any blocking
-calls in Tornado because we don't want to delay delivery to thousands of
-other connections (as this would make Zulip very much not real-time).
-For instance, we avoid doing cache or database queries inside the
-Tornado code paths, since those blocking requests carry a very high
-performance penalty for a single-threaded, asynchronous server.
+Tornado is an asynchronous server and is meant specifically to hold
+open tens of thousands of long-lived (long-polling or websocket)
+connections -- that is to say, routes that maintain a persistent
+connection from every running client. For this reason, it's
+responsible for event (message) delivery, but not much else. We try to
+avoid any blocking calls in Tornado because we don't want to delay
+delivery to thousands of other connections (as this would make Zulip
+very much not real-time).  For instance, we avoid doing cache or
+database queries inside the Tornado code paths, since those blocking
+requests carry a very high performance penalty for a single-threaded,
+asynchronous server system.  (In principle, we could do non-blocking
+requests to those services, but the Django-based database libraries we
+use in most of our codebase using don't support that, and in any case,
+our architecture doesn't require Tornado to do that).
 
 The parts that are activated relatively rarely (e.g. when people type or
 click on something) are processed by the Django application server. One
