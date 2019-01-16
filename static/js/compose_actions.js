@@ -389,7 +389,28 @@ exports.quote_and_reply = function (opts) {
     var message_id = current_msg_list.selected_id();
     var message = current_msg_list.selected_message();
 
-    exports.respond_to_message(opts);
+    if (compose_state.has_message_content()) {
+        // The user already started typing a message,
+        // so we won't re-open the compose box.
+        // (If you did re-open the compose box, you
+        // are prone to glitches where you select the
+        // text, plus it's a complicated codepath that
+        // can have other unintended consequences.)
+        //
+        // Note also that we always put the quoted text
+        // above the current text, which explains us
+        // moving the caret below.  I think this is what
+        // most users will want, and it's consistent with
+        // the behavior we had on FF before this change
+        // (which may have been an accident of
+        // implementation).  If we change this decision,
+        // we'll need to make `insert_syntax_and_focus`
+        // smarter about newlines.
+        textarea.caret(0);
+    } else {
+        exports.respond_to_message(opts);
+    }
+
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
     function replace_content(raw_content) {
