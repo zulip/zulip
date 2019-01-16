@@ -82,9 +82,17 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
 ## Step 3: Create a Zulip organization, and log in
 
-On success, the install script prints a link.  Open the link in a
-browser.  Follow the prompts to set up your organization, and your own
-user account as an administrator.  Then, log in!
+On success, the install script prints a link.  If you're importing
+your data from e.g. [HipChat][hipchat-import] or
+[Slack][slack-import], you should stop here and follow the import
+instructions.
+
+[hipchat-import]: https://zulipchat.com/help/import-from-hipchat
+[slack-import]: https://zulipchat.com/help/import-from-slack
+
+Otherwise, open the link in a browser.  Follow the prompts to set up
+your organization, and your own user account as an administrator.
+Then, log in!
 
 The link is a secure one-time-use link.  If you need another
 later, you can generate a new one by running `manage.py
