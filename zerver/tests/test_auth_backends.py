@@ -1428,7 +1428,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -1681,7 +1681,7 @@ class TestTwoFactor(ZulipTestCase):
         full_name = 'New LDAP fullname'
         mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': [full_name],
                 'sn': ['shortname'],
             }
@@ -2163,10 +2163,24 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'email'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_dev_ldap_fail_login(self) -> None:
+        # Tests that login with a substring of password fails. We had a bug in
+        # dev LDAP environment that allowed login via password substrings.
+        self.mock_ldap.directory = generate_dev_ldap_dir('B', 8)
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('ldapuser1', 'dapu',
+                                                     realm=get_realm('zulip'))
+
+            assert(user_profile is None)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2183,7 +2197,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_success_with_username(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2200,7 +2214,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_success_with_email_attr(self) -> None:
         self.mock_ldap.directory = {
             'uid=letham,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'email': ['hamlet@zulip.com'],
             }
         }
@@ -2217,7 +2231,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_failure_due_to_wrong_password(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2231,7 +2245,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2373,7 +2387,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2388,7 +2402,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_failure_due_to_invalid_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2403,7 +2417,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_success_with_valid_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2419,7 +2433,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_failure_due_to_deactivated_user(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         user_profile = self.example_user("hamlet")
@@ -2442,7 +2456,7 @@ class TestLDAP(ZulipLDAPTestCase):
         self.mock_ldap.directory = {
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'cn': ['NonExisting', ],
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()],
             }
         }
@@ -2468,7 +2482,7 @@ class TestLDAP(ZulipLDAPTestCase):
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'fn': ['Non', ],
                 'ln': ['Existing', ],
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
             }
         }
         with self.settings(
