@@ -122,6 +122,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
     name_validated = False
     full_name = None
+    require_ldap_password = False
 
     if request.POST.get('from_confirmation'):
         try:
@@ -161,9 +162,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         # go through this interstitial.
                         form = RegistrationForm({'full_name': ldap_full_name},
                                                 realm_creation=realm_creation)
-                        # FIXME: This will result in the user getting
-                        # validation errors if they have to enter a password.
-                        # Not relevant for ONLY_SSO, though.
+                        require_ldap_password = True
                         break
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
@@ -327,6 +326,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  # we have to set it here.
                  'creating_new_team': realm_creation,
                  'password_required': password_auth_enabled(realm) and password_required,
+                 'require_ldap_password': require_ldap_password,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
                  'default_stream_groups': get_default_stream_groups(realm),
