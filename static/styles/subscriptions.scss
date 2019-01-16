@@ -587,33 +587,30 @@ form#add_new_subscription {
 }
 
 .stream-row {
-    padding: 15px 10px 11px 10px;
+    padding: 15px 15px 15px 0;
     border-bottom: 1px solid hsl(0, 0%, 93%);
+    display: flex;
+    align-items: center;
     cursor: pointer;
 
     .check {
-        width: 25px;
-        height: 25px;
-        position: relative;
-        margin-right: 8px;
-        margin-top: 9px;
-        background-size: 60% auto;
-        background-repeat: no-repeat;
-        background-position: center center;
+        display: flex;
+        font-size: 18px;
+        flex: 1;
+        align-self: center;
+        margin: 0 15px;
 
-        svg {
-            fill: transparent;
-            width: 70%;
-            margin: 0% 15%;
+        i {
+            color: transparent;
         }
 
         &.checked {
-            svg {
-                fill: hsl(170, 48%, 54%);
+            i {
+                color: hsl(170, 48%, 54%);
             }
 
             &:hover {
-                svg {
+                i {
                     opacity: 0.5;
                 }
             }
@@ -621,10 +618,9 @@ form#add_new_subscription {
     }
 
     .icon {
-        width: 35px;
+        min-width: 35px;
         height: 35px;
-        margin-right: 8px;
-        margin-top: 4px;
+        margin-right: 14px;
         background-color: hsl(300, 100%, 25%);
         border-radius: 4px;
         color: hsl(0, 0%, 100%);
@@ -739,13 +735,13 @@ form#add_new_subscription {
     &:hover,
     &.active:hover {
         .check:not(.checked) {
-            svg {
-                fill: hsl(0, 0%, 87%);
+            i {
+                color: hsl(0, 0%, 87%);
             }
 
             &:hover {
-                svg {
-                    fill: hsl(0, 0%, 72%);
+                i {
+                    color: hsl(0, 0%, 72%);
                 }
             }
         }
@@ -910,17 +906,17 @@ form#add_new_subscription {
     color: hsl(0, 0%, 27%);
 }
 
-#subscription_overlay .checkmark {
+#subscription_overlay span.checkmark {
     display: none;
     margin-left: 5px;
     font-size: 0.9rem;
     color: hsl(0, 0%, 67%);
 
     cursor: pointer;
-}
 
-#subscription_overlay .checkmark.show {
-    display: block;
+    &.show {
+        display: block;
+    }
 }
 
 #subscription_overlay .subscription-type {
