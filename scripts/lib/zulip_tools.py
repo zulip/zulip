@@ -113,8 +113,8 @@ def subprocess_text_output(args):
 def get_zulip_uid() -> int:
     return os.stat(get_deploy_root()).st_uid
 
-def su_to_zulip():
-    # type: () -> None
+def su_to_zulip(save_suid=False):
+    # type: (bool) -> None
     """Warning: su_to_zulip assumes that the zulip checkout is owned by
     the zulip user (or whatever normal user is running the Zulip
     installation).  It should never be run from the installer or other
@@ -122,7 +122,10 @@ def su_to_zulip():
     created."""
     pwent = pwd.getpwuid(get_zulip_uid())
     os.setgid(pwent.pw_gid)
-    os.setuid(pwent.pw_uid)
+    if save_suid:
+        os.setresuid(pwent.pw_uid, pwent.pw_uid, os.getuid())
+    else:
+        os.setuid(pwent.pw_uid)
     os.environ['HOME'] = pwent.pw_dir
 
 def make_deploy_path():
