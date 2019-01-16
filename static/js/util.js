@@ -60,7 +60,15 @@ function lower_same(a, b) {
     return a.toLowerCase() === b.toLowerCase();
 }
 
-exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
+exports.same_stream_name = function (a, b) {
+    return lower_same(a, b);
+};
+
+exports.same_topic = function (a, b) {
+    return lower_same(a, b);
+};
+
+exports.same_stream_and_topic = function (a, b) {
     // Streams and topics are case-insensitive.
     return a.stream_id === b.stream_id &&
             lower_same(

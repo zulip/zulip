@@ -25,6 +25,21 @@ exports.focus_in_empty_compose = function () {
         $('#compose-textarea').is(':focus'));
 };
 
+exports.replying_to_message = function (message) {
+    if (message.type === 'stream') {
+        return util.same_stream_name(message.stream,
+                                     exports.stream_name()) &&
+                util.same_topic(util.get_message_topic(message),
+                                exports.topic());
+    }
+
+    if (message.type === 'private') {
+        return message.reply_to.toLowerCase() === exports.recipient().toLowerCase();
+    }
+
+    return false;
+};
+
 function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set

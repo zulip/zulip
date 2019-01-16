@@ -407,6 +407,10 @@ exports.quote_and_reply = function (opts) {
         // we'll need to make `insert_syntax_and_focus`
         // smarter about newlines.
         textarea.caret(0);
+        if (!compose_state.replying_to_message(message)) {
+            var reason = i18n.t('Please check your message destination.');
+            notifications.notify_above_composebox(reason);
+        }
     } else {
         exports.respond_to_message(opts);
     }

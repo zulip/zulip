@@ -2,6 +2,8 @@ var noop = function () {};
 var return_false = function () { return false; };
 var return_true = function () { return true; };
 
+set_global('i18n', global.stub_i18n);
+
 set_global('document', {
     location: {}, // we need this to load compose.js
 });
@@ -14,6 +16,8 @@ set_global('$', global.make_zjquery());
 
 set_global('compose_pm_pill', {
 });
+
+set_global('notifications', {});
 
 zrequire('people');
 zrequire('compose_ui');
@@ -284,6 +288,10 @@ run_test('quote_and_reply', () => {
 
     $('#compose-textarea').caret = (pos) => {
         assert.equal(pos, 0);
+    };
+
+    notifications.notify_above_composebox = (reason) => {
+        assert.equal(reason, 'translated: Please check your message destination.');
     };
 
     quote_and_reply(opts);
