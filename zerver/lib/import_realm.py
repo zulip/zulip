@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, \
 
 from analytics.models import RealmCount, StreamCount, UserCount
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums, \
-    do_change_plan_type
+    do_change_plan_type, do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -24,7 +24,7 @@ from zerver.lib.export import DATE_FIELDS, \
 from zerver.lib.message import do_render_markdown, RealmAlertWords
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
-    guess_type
+    guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
@@ -653,9 +653,15 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
                         # times in development (where one might reuse the
                         # same realm ID from a previous iteration).
                         os.remove(medium_file_path)
-                upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
-                if record.get("importer_should_thumbnail"):
-                    upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+                try:
+                    upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+                    if record.get("importer_should_thumbnail"):
+                        upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+                except BadImageError:
+                    logging.warning("Could not thumbnail avatar image for user %s; ignoring" % (
+                        user_profile.id))
+                    # Delete the record of the avatar to avoid 404s.
+                    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
