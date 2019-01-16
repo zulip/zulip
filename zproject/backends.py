@@ -312,7 +312,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
-    def get_mapped_name(self, ldap_user: _LDAPUser) -> Tuple[str, str]:
+    @classmethod
+    def get_mapped_name(cls, ldap_user: _LDAPUser) -> Tuple[str, str]:
         if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             short_name = full_name = ldap_user.attrs[full_name_attr][0]
