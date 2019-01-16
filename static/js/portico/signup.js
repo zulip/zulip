@@ -146,7 +146,6 @@ $(function () {
         } else {
             $("#full_name_input_section").show();
             $("#profile_info_section").hide();
-            $("#id_full_name").val("");
         }
     }
 
