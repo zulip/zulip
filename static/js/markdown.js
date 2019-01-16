@@ -140,15 +140,19 @@ exports.is_status_message = function (raw_content, content) {
             content.indexOf('</p>') !== -1;
 };
 
+function make_emoji_span(codepoint, title, alt_text) {
+    return '<span class="emoji emoji-' + codepoint + '"' +
+           ' title="' + title + '">' + alt_text +
+           '</span>';
+}
+
 function handleUnicodeEmoji(unicode_emoji) {
     var codepoint = unicode_emoji.codePointAt(0).toString(16);
     if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
         var emoji_name = emoji_codes.codepoint_to_name[codepoint];
         var alt_text = ':' + emoji_name + ':';
         var title = emoji_name.split("_").join(" ");
-        return '<span class="emoji emoji-' + codepoint + '"' +
-               ' title="' + title + '">' + alt_text +
-               '</span>';
+        return make_emoji_span(codepoint, title, alt_text);
     }
     return unicode_emoji;
 }
@@ -163,9 +167,7 @@ function handleEmoji(emoji_name) {
                ' title="' + title + '">';
     } else if (emoji_codes.name_to_codepoint.hasOwnProperty(emoji_name)) {
         var codepoint = emoji_codes.name_to_codepoint[emoji_name];
-        return '<span class="emoji emoji-' + codepoint + '"' +
-               ' title="' + title + '">' + alt_text +
-               '</span>';
+        return make_emoji_span(codepoint, title, alt_text);
     }
     return alt_text;
 }
