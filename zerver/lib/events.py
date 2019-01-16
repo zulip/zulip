@@ -202,6 +202,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
         state['realm_push_notifications_enabled'] = push_notifications_enabled()
         state['realm_upload_quota'] = realm.upload_quota_bytes()
+        state['realm_plan_type'] = realm.plan_type
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream

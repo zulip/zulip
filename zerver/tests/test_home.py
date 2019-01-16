@@ -164,6 +164,7 @@ class HomeTest(ZulipTestCase):
             "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",
+            "realm_plan_type",
             "realm_presence_disabled",
             "realm_push_notifications_enabled",
             "realm_send_welcome_emails",
