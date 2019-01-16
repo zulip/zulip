@@ -689,7 +689,7 @@ class RealmFilter(models.Model):
     pattern = models.TextField(validators=[filter_pattern_validator])  # type: str
     url_format_string = models.TextField(validators=[URLValidator(), filter_format_validator])  # type: str
     is_stream_filter = models.BooleanField(default=False)  # type: bool
-    stream_ids = models.TextField(validators=[validate_comma_separated_integer_list], blank=True, null=True)  # type: Optional[str]
+    stream_ids = models.ArrayField(, blank=True, null=True)  # type: Optional[str]
 
     class Meta:
         unique_together = ("realm", "pattern", "stream_ids")
