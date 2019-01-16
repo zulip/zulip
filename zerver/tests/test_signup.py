@@ -21,7 +21,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
-from zerver.lib.actions import do_change_password
+from zerver.lib.actions import do_change_password, get_default_streams_for_realm
 from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.decorator import do_two_factor_login
@@ -59,6 +59,7 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
 from zerver.lib.notifications import enqueue_welcome_emails, \
     followup_day2_email_delay
 from zerver.lib.subdomains import is_root_domain_available
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock, load_subdomain_token
 from zerver.lib.test_classes import (
@@ -2777,6 +2778,83 @@ class UserSignUpTest(ZulipTestCase):
             user_profile = UserProfile.objects.get(email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
+
+    def ldap_invite_and_signup_as(self, invite_as: int, streams: List[str]=['Denmark']) -> None:
+        ldap_user_attr_map = {'full_name': 'fn'}
+        mock_directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': ['testing'],
+                'fn': ['LDAP Name'],
+            }
+        }
+        init_fakeldap(mock_directory)
+
+        subdomain = 'zulip'
+        email = self.nonreg_email('newuser')
+        password = 'testing'
+
+        # Invite user.
+        self.login(self.example_email('iago'))
+        response = self.client_post("/json/invites",
+                                    {"invitee_emails": [self.nonreg_email('newuser')],
+                                     "stream": streams,
+                                     "invite_as": invite_as})
+        self.assert_json_success(response)
+        self.logout()
+
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Ignore",
+                                                   from_confirmation="1",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Ignore",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 302)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend'))
+    def test_ldap_invite_user_as_admin(self) -> None:
+        self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['REALM_ADMIN'])
+        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        self.assertTrue(user_profile.is_realm_admin)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend'))
+    def test_ldap_invite_user_as_guest(self) -> None:
+        self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['GUEST_USER'])
+        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        self.assertTrue(user_profile.is_guest)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend'))
+    def test_ldap_invite_streams(self) -> None:
+        stream_name = 'Rome'
+        realm = get_realm('zulip')
+        stream = get_stream(stream_name, realm)
+        default_streams = get_default_streams_for_realm(realm)
+        default_streams_name = [stream.name for stream in default_streams]
+        self.assertNotIn(stream_name, default_streams_name)
+
+        # Invite user.
+        self.ldap_invite_and_signup_as(PreregistrationUser.INVITE_AS['REALM_ADMIN'], streams=[stream_name])
+
+        user_profile = UserProfile.objects.get(email=self.nonreg_email('newuser'))
+        self.assertTrue(user_profile.is_realm_admin)
+        sub = get_stream_subscriptions_for_user(user_profile).filter(recipient__type_id=stream.id)
+        self.assertEqual(len(sub), 1)
 
     def test_registration_when_name_changes_are_disabled(self) -> None:
         """
