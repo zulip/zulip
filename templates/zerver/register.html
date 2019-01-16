@@ -144,7 +144,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <div id="profile_full_name"></div>
                 </div>
 
-                {% if password_required %}
+                {% if require_ldap_password %}
+                <div class="input-box">
+                    <input id="ldap-password" class="required" type="password" name="password" required />
+                    <label for="ldap-password" class="inline-block">{{ _('Password') }}</label>
+                    <span class="help-inline">
+                        {{ _('Enter your LDAP/Active Directory password.') }}
+                    </span>
+                </div>
+                {% elif password_required %}
                 <div class="input-box">
                     <input id="id_password" class="required" type="password" name="password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
