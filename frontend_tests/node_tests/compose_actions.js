@@ -282,6 +282,10 @@ run_test('quote_and_reply', () => {
         reply_type: 'personal',
     };
 
+    $('#compose-textarea').caret = (pos) => {
+        assert.equal(pos, 0);
+    };
+
     quote_and_reply(opts);
 
     current_msg_list.selected_message = function () {
