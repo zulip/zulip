@@ -2489,8 +2489,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .modal {
     overflow: hidden;
-    margin-top: 0;
-    top: 5%;
     /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
        so avoid the outline it causes */
     outline: 0;

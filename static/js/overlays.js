@@ -50,7 +50,6 @@ exports.active_modal = function () {
 
 exports.open_overlay = function (opts) {
     popovers.hide_all();
-
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_overlay');
         return;
@@ -93,15 +92,10 @@ exports.open_modal = function (name) {
         return;
     }
 
-    if (exports.is_modal_open()) {
-        blueslip.error('open_modal() was called while ' + exports.active_modal() +
-            ' modal was open.');
-        return;
-    }
-
     blueslip.debug('open modal: ' + name);
 
     $("#" + name).modal("show").attr("aria-hidden", false);
+    $("#" + name).addClass('in');
     // Disable background mouse events when modal is active
     $('.overlay.show').attr("style", "pointer-events: none");
     // Remove previous alert messsages from modal, if exists.
@@ -122,6 +116,7 @@ exports.close_overlay = function (name) {
     blueslip.debug('close overlay: ' + name);
 
     active_overlay.removeClass("show");
+    $("#" + name).removeClass('in');
 
     active_overlay.attr("aria-hidden", "true");
     $('.app').attr("aria-hidden", "false");

@@ -281,14 +281,14 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_name_changes_disabled || page_params.is_admin) {
-            overlays.open_modal('change_full_name_modal');
+            //overlays.open_modal('change_full_name_modal');
         }
     });
 
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal('change_password_modal');
+        //overlays.open_modal('change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
@@ -305,9 +305,9 @@ exports.set_up = function () {
         }
     });
 
-    $('#change_password_modal').find('[data-dismiss=modal]').on('click', function () {
-        clear_password_change();
-    });
+    // $('#change_password_modal').find('[data-dismiss=modal]').on('click', function () {
+    //     clear_password_change();
+    // });
 
     // If the modal is closed using the 'close' button or the 'Cancel' button
     $('.modal').find('[data-dismiss=modal]').on('click', function () {
@@ -330,6 +330,7 @@ exports.set_up = function () {
             url: "/json/settings",
             data: data,
             beforeSubmit: function () {
+                console.log('asdasd');
                 if (page_params.realm_password_auth_enabled !== false) {
                     // FIXME: Check that the two password fields match
                     // FIXME: Use the same jQuery validation plugin as the signup form?
@@ -416,7 +417,7 @@ exports.set_up = function () {
                 } else {
                     settings_change_success(i18n.t("No changes made."));
                 }
-                overlays.close_modal('change_email_modal');
+                $('#change_email_modal').modal('hide');
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, change_email_info);
@@ -428,7 +429,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
-            overlays.open_modal('change_email_modal');
+           // overlays.open_modal('change_email_modal');
             var email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
         }
@@ -439,7 +440,7 @@ exports.set_up = function () {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        $("#deactivate_self_modal").modal("show");
+        // $("#deactivate_self_modal").modal("show");
     });
 
     $('#settings_page').on('click', '.custom_user_field .remove_date', function (e) {

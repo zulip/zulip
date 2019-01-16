@@ -130,11 +130,6 @@ label {
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.1);
 }
 
-#change_email_modal,
-#change_full_name_modal {
-    width: 460px;
-}
-
 .admin-realm-description {
     height: 16em;
     width: 100%;
@@ -244,6 +239,7 @@ td .button {
 .settings-wrapper.show .settings-section {
     display: block;
 }
+
 
 .settings-section .settings-section-title {
     font-size: 1.4em;
@@ -1320,16 +1316,6 @@ input[type=checkbox].inline-block {
     transition: opacity 100ms ease-out;
 }
 
-.modal.fade {
-    /* Ensure the modal is entirely off-screen while we fade the background */
-    top: -50%;
-    -webkit-transition: opacity 0.3s linear;
-    -moz-transition: opacity 0.3s linear;
-    -o-transition: opacity 0.3s linear;
-    transition: opacity 0.3s linear;
-    transform: translateY(-50%);
-}
-
 #settings_page .table-striped thead th.active::after {
     content: " \f0d8";
     white-space: pre;
@@ -1459,10 +1445,6 @@ input[type=checkbox].inline-block {
     cursor: pointer;
 }
 
-#settings_page #change_password_modal {
-    width: auto;
-}
-
 #account-settings {
     .user-role button {
         cursor: default;
@@ -1542,13 +1524,6 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 
 .m-t-10 {
     margin-top: 10px;
-}
-
-.modal {
-    box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
-    border: none;
-    border-radius: 0px;
 }
 
 #do_deactivate_self_button .loader {
