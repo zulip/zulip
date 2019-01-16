@@ -1,7 +1,7 @@
 import glob
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from django.conf import settings
 
@@ -48,7 +48,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
 
     return ldap_dir
 
-def init_fakeldap() -> None:  # nocoverage
+def init_fakeldap(directory: Optional[Dict[str, Dict[str, List[str]]]]=None) -> None:
     # We only use this in development.  Importing mock inside
     # this function is an import time optimization, which
     # avoids the expensive import of the mock module (slow
@@ -70,5 +70,5 @@ def init_fakeldap() -> None:  # nocoverage
     mock_ldap = MockLDAP()
     mock_initialize.return_value = mock_ldap
 
-    mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                settings.FAKE_LDAP_NUM_USERS)
+    mock_ldap.directory = directory or generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                             settings.FAKE_LDAP_NUM_USERS)
