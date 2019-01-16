@@ -244,6 +244,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                        username=email,
                                        password=password,
                                        realm=realm,
+                                       prereg_user=prereg_user,
                                        return_data=return_data)
             if auth_result is not None:
                 # Since we'll have created a user, we now just log them in.

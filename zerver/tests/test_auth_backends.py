@@ -2125,10 +2125,11 @@ class ZulipLDAPTestCase(ZulipTestCase):
         self.mock_ldap = MockLDAP()
         self.mock_initialize.return_value = self.mock_ldap
         self.backend = ZulipLDAPAuthBackend()
-        # Internally `_realm` attribute is automatically set by the
-        # `authenticate()` method. But for testing the `get_or_build_user()`
-        # method separately, we need to set it manually.
+        # Internally `_realm` and `_prereg_user` attributes are automatically set
+        # by the `authenticate()` method. But for testing the `get_or_build_user()`
+        # method separately, we need to set them manually.
         self.backend._realm = get_realm('zulip')
+        self.backend._prereg_user = None
 
     def tearDown(self) -> None:
         self.mock_ldap.reset()
