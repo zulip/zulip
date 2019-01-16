@@ -18,7 +18,9 @@ def request_zoom_video_call_url(user_id: str, api_key: str, api_secret: str) -> 
         json = {}
     )
 
-    if response.status_code != 200:
+    try:
+        response.raise_for_status()
+    except Exception:
         return None
 
     return response.json()
