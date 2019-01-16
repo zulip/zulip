@@ -2409,7 +2409,7 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['New LDAP fullname']
             }
         }
@@ -2464,7 +2464,7 @@ class UserSignUpTest(ZulipTestCase):
             # Test the TypeError exception handler
             mock_ldap.directory = {
                 'uid=newuser,ou=users,dc=zulip,dc=com': {
-                    'userPassword': 'testing',
+                    'userPassword': ['testing', ],
                     'fn': None  # This will raise TypeError
                 }
             }
@@ -2494,7 +2494,7 @@ class UserSignUpTest(ZulipTestCase):
         full_name = 'New LDAP fullname'
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': [full_name],
                 'sn': ['shortname'],
             }
@@ -2566,7 +2566,7 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['First'],
                 'ln': ['Last'],
             }
@@ -2636,7 +2636,7 @@ class UserSignUpTest(ZulipTestCase):
         full_name = 'New LDAP fullname'
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': [full_name],
                 'sn': ['shortname'],
             }
@@ -2672,7 +2672,7 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['New LDAP fullname'],
                 'sn': ['New LDAP shortname'],
             }
@@ -2730,7 +2730,7 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['New LDAP fullname'],
                 'sn': ['New LDAP shortname'],
             }
@@ -2845,7 +2845,7 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['New User Name']
             }
         }
