@@ -2400,7 +2400,7 @@ class UserSignUpTest(ZulipTestCase):
         password = "testing"
         email = "newuser@zulip.com"
         subdomain = "zulip"
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'fn'}
 
         ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
         mock_initialize = ldap_patcher.start()
@@ -2542,7 +2542,7 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
 
-            # Submit the final form with the wrong password.
+            # Submit the final form with the correct password.
             result = self.submit_reg_form_for_user(email,
                                                    password,
                                                    full_name=full_name,
@@ -2551,6 +2551,65 @@ class UserSignUpTest(ZulipTestCase):
             user_profile = UserProfile.objects.get(email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
+            # Short name comes from LDAP.
+            self.assertEqual(user_profile.short_name, "shortname")
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_ldap_split_full_name_mapping(self) -> None:
+        ldap_user_attr_map = {'first_name': 'fn', 'last_name': 'ln'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': ['First'],
+                'ln': ['Last'],
+            }
+        }
+
+        subdomain = 'zulip'
+        email = 'newuser@zulip.com'
+        password = 'testing'
+        with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            # Click confirmation link
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Ignore",
+                                                   from_confirmation="1",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+
+            # Test split name mapping.
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Ignore",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            user_profile = UserProfile.objects.get(email=email)
+            # Name comes from form which was set by LDAP.
+            self.assertEqual(user_profile.full_name, "First Last")
+            # Short name comes from LDAP.
+            self.assertEqual(user_profile.short_name, "First")
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
@@ -2777,7 +2836,7 @@ class UserSignUpTest(ZulipTestCase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
         realm_name = "Zulip"
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {'full_name': 'fn'}
 
         ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
         mock_initialize = ldap_patcher.start()
