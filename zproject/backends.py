@@ -24,8 +24,9 @@ from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
-from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
+from zerver.models import PreregistrationUser, UserProfile, Realm, get_default_stream_groups, \
+    get_user_profile_by_id, remote_user_to_email, email_to_username, get_realm, \
+    get_user_by_delivery_email
 
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
@@ -364,10 +365,12 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
+                     prereg_user: Optional[PreregistrationUser]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if realm is None:
             return None
         self._realm = realm
+        self._prereg_user = prereg_user
         if not ldap_auth_enabled(realm):
             return None
 
@@ -430,7 +433,15 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except JsonableError as e:
             raise ZulipLDAPException(e.msg)
 
-        user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        opts = {}   # type: Dict[str, Any]
+        if self._prereg_user:
+            invited_as = self._prereg_user.invited_as
+            opts['prereg_user'] = self._prereg_user
+            opts['is_realm_admin'] = invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']
+            opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
+            opts['default_stream_groups'] = get_default_stream_groups(self._realm)
+
+        user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
         self.sync_avatar_from_ldap(user_profile, ldap_user)
 
         return user_profile, True
