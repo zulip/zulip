@@ -31,9 +31,13 @@ class TestFeedbackBot(ZulipTestCase):
             def json(self) -> Dict[str, str]:
                 return {"join_url": "example.com"}
 
+            def raise_for_status(self) -> None:
+                return None
+
         with mock.patch('requests.post', return_value=MockResponse()):
             result = self.client_get("/json/calls/create")
             self.assert_json_success(result)
+            self.assertEqual(result.status_code, 200)
 
     def test_create_video_request(self) -> None:
         with mock.patch('requests.post'):
