@@ -2457,9 +2457,10 @@ class UserSignUpTest(ZulipTestCase):
 
             # Verify that the user is asked for name
             self.assert_in_success_response(['id_full_name'], result)
-            # TODO: Ideally, we wouldn't ask for a password if LDAP is
-            # enabled, in which case this assert should be invertedq.
-            self.assert_in_success_response(['id_password'], result)
+            # Verify that user is asked for its LDAP/Active Directory password.
+            self.assert_in_success_response(['Enter your LDAP/Active Directory password.',
+                                             'ldap-password'], result)
+            self.assert_not_in_success_response(['id_password'], result)
 
             # Test the TypeError exception handler
             mock_ldap.directory = {
