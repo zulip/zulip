@@ -392,9 +392,13 @@ exports.quote_and_reply = function (opts) {
     exports.respond_to_message(opts);
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
-    if (message && message.raw_content) {
-        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + message.raw_content + '\n```', textarea);
+    function replace_content(raw_content) {
+        compose_ui.replace_syntax('[Quoting…]', '```quote\n' + raw_content + '\n```', textarea);
         $("#compose-textarea").trigger("autosize.resize");
+    }
+
+    if (message && message.raw_content) {
+        replace_content(message.raw_content);
         return;
     }
 
@@ -403,8 +407,7 @@ exports.quote_and_reply = function (opts) {
         idempotent: true,
         success: function (data) {
             message.raw_content = data.raw_content;
-            compose_ui.replace_syntax('[Quoting…]', '```quote\n' + data.raw_content + '\n```', textarea);
-            $("#compose-textarea").trigger("autosize.resize");
+            replace_content(message.raw_content);
         },
     });
 };
