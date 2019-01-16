@@ -1,3 +1,4 @@
+import json
 import mock
 from zerver.lib.test_classes import ZulipTestCase
 from typing import Dict
@@ -37,7 +38,23 @@ class TestFeedbackBot(ZulipTestCase):
         with mock.patch('requests.post', return_value=MockResponse()):
             result = self.client_get("/json/calls/create")
             self.assert_json_success(result)
-            self.assertEqual(result.status_code, 200)
+
+    def test_create_video_request_http_error(self) -> None:
+        class MockResponse:
+            def __init__(self) -> None:
+                self.status_code = 401
+
+            def raise_for_status(self) -> None:
+                raise Exception("Invalid request!")
+
+        with mock.patch('requests.post', return_value=MockResponse()):
+            result = self.client_get("/json/calls/create")
+            self.assert_json_success(result)
+            result_dict = json.loads(result.content.decode('utf-8'))
+
+            # TODO: Arguably this is the wrong result for errors, but
+            # in any case we should test it.
+            self.assertEqual(result_dict['zoom_url'], '')
 
     def test_create_video_request(self) -> None:
         with mock.patch('requests.post'):
