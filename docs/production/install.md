@@ -82,13 +82,14 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
 ## Step 3: Create a Zulip organization, and log in
 
-On success, the install script prints a link.  If you're importing
-your data from e.g. [HipChat][hipchat-import] or
-[Slack][slack-import], you should stop here and follow the import
-instructions.
+On success, the install script prints a link.  If you're [restoring a
+backup][zulip-backups] or importing your data from [HipChat][hipchat-import],
+[Slack][slack-import], or another Zulip server, you should stop here
+and return to the the import instructions.
 
 [hipchat-import]: https://zulipchat.com/help/import-from-hipchat
 [slack-import]: https://zulipchat.com/help/import-from-slack
+[zulip-backups]: ../production/maintain-secure-upgrade.html#backups
 
 Otherwise, open the link in a browser.  Follow the prompts to set up
 your organization, and your own user account as an administrator.
