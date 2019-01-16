@@ -8,10 +8,6 @@ writing interactive bots that react to messages), so we recommend it
 if you're trying to decide.
 
 {start_tabs}
-{tab|curl}
-
-No download required!
-
 {tab|python}
 
 Install the Python API with [pip](https://pypi.python.org/pypi/zulip/):
@@ -35,5 +31,9 @@ Install the JavaScript API with [npm](https://www.npmjs.com/package/zulip-js):
 ```
 npm install zulip-js
 ```
+
+{tab|curl}
+
+No download required!
 
 {end_tabs}
