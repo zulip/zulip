@@ -25,7 +25,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
-                'userPassword':  email_username,
+                'userPassword':  [email_username, ],
                 'thumbnailPhoto': [profile_images[i % len(profile_images)], ],
                 'userAccountControl': [LDAP_USER_ACCOUNT_CONTROL_NORMAL, ],
             }
@@ -34,7 +34,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
-                'userPassword': email_username,
+                'userPassword': [email_username, ],
                 'jpegPhoto': [profile_images[i % len(profile_images)], ],
             }
         elif mode == 'c':
@@ -42,7 +42,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, An
             email_username = email.split('@')[0]
             ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
                 'cn': [name[0], ],
-                'userPassword': email_username + '_test',
+                'userPassword': [email_username + '_test', ],
                 'email': email,
             }
 
