@@ -148,10 +148,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
 
-                    ldap_attrs = _LDAPUser(backend, ldap_username).attrs
+                    ldap_user = _LDAPUser(backend, ldap_username)
 
                     try:
-                        ldap_full_name = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
+                        ldap_full_name, _ = backend.get_mapped_name(ldap_user)
                         request.session['authenticated_full_name'] = ldap_full_name
                         name_validated = True
                         # We don't use initial= here, because if the form is
