@@ -14,18 +14,18 @@
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                     </div>
                 </div>
-                {% if is_admin %}
                 <div class="control-group">
                     <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
                     <div class="controls">
                         <select id="invite_as">
                             <option name="invite_as" value="{{ invite_as.MEMBER }}">{{ _('Members') }}</option>
+                            {% if is_admin %}
                             <option name="invite_as" value="{{ invite_as.REALM_ADMIN }}">{{ _('Organization administrators') }}</option>
+                            {% endif %}
                             <option name="invite_as" value="{{ invite_as.GUEST_USER }}">{{ _('Guest users') }}</option>
                         </select>
                     </div>
                 </div>
-                {% endif %}
                 <div class="alert" id="invite_status"></div>
                 {% if development_environment %}
                 <div class="alert" id="dev_env_msg"></div>
