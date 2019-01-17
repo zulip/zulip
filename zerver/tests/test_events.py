@@ -2525,6 +2525,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('name', check_float),
                 ]))),
             ])),
+            ('upload_space_used', equals(6)),
         ])
 
         self.login(self.example_email("hamlet"))
@@ -2567,6 +2568,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('name', check_float),
                 ]))),
             ])),
+            ('upload_space_used', equals(6)),
         ])
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
@@ -2584,6 +2586,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('attachment', check_dict_only([
                 ('id', check_int),
             ])),
+            ('upload_space_used', equals(0)),
         ])
 
         events = self.do_test(

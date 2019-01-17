@@ -5221,6 +5221,7 @@ def notify_attachment_update(user_profile: UserProfile, op: str,
         'type': 'attachment',
         'op': op,
         'attachment': attachment_dict,
+        "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
     send_event(user_profile.realm, event, [user_profile.id])
 

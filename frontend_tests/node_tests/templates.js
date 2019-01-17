@@ -1410,6 +1410,24 @@ run_test('typing_notifications', () => {
 
 });
 
+run_test('upload_space_stats', () => {
+    var args = {
+        show_upgrade_message: true,
+        percent_used: 50,
+        upload_quota: "1 GB",
+    };
+    var html = render('upload-space-stats', args);
+    assert.equal($(html).text().trim(), "translated: Organization using 50% of 1 GB.\n    translated: Upgrade for more space.");
+
+    args = {
+        show_upgrade_message: false,
+        percent_used: 10,
+        upload_quota: "5 GB",
+    };
+    html = render('upload-space-stats', args);
+    assert.equal($(html).text().trim(), "translated: Organization using 10% of 5 GB.");
+});
+
 run_test('user_group_info_popover', () => {
     var html = render('user_group_info_popover');
 

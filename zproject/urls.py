@@ -127,9 +127,6 @@ v1_api_and_json_patterns = [
     url(r'^realm/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
 
-    url(r'^realm/upload_space_used$', rest_dispatch,
-        {'GET': 'zerver.views.attachments.upload_space_used'}),
-
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on

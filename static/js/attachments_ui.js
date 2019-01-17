@@ -3,6 +3,7 @@ var attachments_ui = (function () {
 var exports = {};
 
 var attachments;
+var upload_space_used;
 
 exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
@@ -21,6 +22,26 @@ exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
     return size + ' ' + sizes[i];
 };
 
+exports.percentage_used_space = function (uploads_size) {
+    if (page_params.realm_upload_quota === null) {
+        return null;
+    }
+    return (100 * uploads_size / page_params.realm_upload_quota).toFixed(1);
+};
+
+function set_upload_space_stats() {
+    if (page_params.realm_upload_quota === null) {
+        return;
+    }
+    var args = {
+        show_upgrade_message: page_params.realm_plan_type === 2,
+        percent_used: exports.percentage_used_space(upload_space_used),
+        upload_quota: attachments_ui.bytes_to_size(page_params.realm_upload_quota, true),
+    };
+    var rendered_upload_stats_html = templates.render("upload-space-stats", args);
+    $("#attachment-stats-holder").html(rendered_upload_stats_html);
+}
+
 function delete_attachments(attachment) {
     var status = $('#delete-upload-status');
     channel.del({
@@ -36,6 +57,8 @@ function delete_attachments(attachment) {
 }
 
 function render_attachments_ui() {
+    set_upload_space_stats();
+
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
     var $search_input = $("#upload_file_search");
 
@@ -99,7 +122,7 @@ exports.update_attachments = function (event) {
         format_attachment_data([event.attachment]);
         attachments.push(event.attachment);
     }
-
+    upload_space_used = event.upload_space_used;
     // TODO: This is inefficient and we should be able to do some sort
     // of incremental list_render update instead.
     render_attachments_ui();
@@ -125,6 +148,7 @@ exports.set_up_attachments = function () {
             loading.destroy_indicator($('#attachments_loading_indicator'));
             format_attachment_data(data.attachments);
             attachments = data.attachments;
+            upload_space_used = data.upload_space_used;
             render_attachments_ui();
         },
         error: function (xhr) {
