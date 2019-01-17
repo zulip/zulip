@@ -1807,6 +1807,16 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
         self.assertEqual(len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
 
+    def test_upload_space_used_api(self) -> None:
+        self.login(self.user_profile.email)
+        response = self.client_get("/json/realm/upload_space_used")
+        self.assert_in_success_response(["0"], response)
+
+        data = b'zulip!'
+        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        response = self.client_get("/json/realm/upload_space_used")
+        self.assert_in_success_response([str(len(data))], response)
+
 class ExifRotateTests(TestCase):
     def test_image_do_not_rotate(self) -> None:
         # Image does not have _getexif method.

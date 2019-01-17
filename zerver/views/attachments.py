@@ -17,3 +17,6 @@ def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: str) 
     remove_attachment(user_profile, attachment)
     notify_attachment_update(user_profile, "remove", {"id": int(attachment_id)})
     return json_success()
+
+def upload_space_used(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    return json_success({"upload_space_used": user_profile.realm.currently_used_upload_space_bytes()})
