@@ -1639,7 +1639,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             'subscriptions': ujson.dumps([{'name': 'my_test_stream_3', 'color': '#0g0g0g'}])
         }
         result = self.api_post(email, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Incorrect color hex code.")
+        self.assert_json_error(result, 'subscriptions[0]["color"] is not a valid hex color code')
 
     def test_api_valid_property(self) -> None:
         """

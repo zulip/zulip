@@ -281,7 +281,7 @@ def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Mapping[str, str]]=REQ(
             "subscriptions", validator=check_list(check_dict(
-                [('name', check_string)]))),
+                [('name', check_string)], optional_keys=[('color', check_color)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
         is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -295,12 +295,7 @@ def add_subscriptions_backend(
         # 'color' field is optional
         # check for its presence in the streams_raw first
         if 'color' in stream_dict:
-            # check if the provided color has the correct hex code format
-            check_color_format = re.search("^#([0-9a-fA-F]{3,6})$", stream_dict['color'])
-            if (check_color_format):
-                color_map[stream_dict['name']] = stream_dict['color']
-            else:
-                return json_error(_("Incorrect color hex code."))
+            color_map[stream_dict['name']] = stream_dict['color']
 
         stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
