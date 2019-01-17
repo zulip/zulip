@@ -102,7 +102,10 @@ def run():
     linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
     linter_config.external_linter('shellcheck', ['shellcheck', '-x'], ['sh'])
     if not args.no_mypy:
-        linter_config.external_linter('mypy', ['tools/run-mypy'], ['py'], pass_targets=False)
+        command = ['tools/run-mypy']
+        if args.force:
+            command.append('--force')
+        linter_config.external_linter('mypy', command, ['py'], pass_targets=False)
 
     # Disabled check for imperative mood until it is stabilized
     if not args.no_gitlint:
