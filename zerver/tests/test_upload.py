@@ -1786,15 +1786,15 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
         data = b'zulip!'
         upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
-        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
-        self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
+        # notify_attachment_update function calls currently_used_upload_space_bytes which
+        # updates the cache.
         self.assertEqual(len(data), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
 
         data2 = b'more-data!'
         upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
-        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
-        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
         self.assertEqual(len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 
         attachment = Attachment.objects.get(file_name="dummy.txt")
         attachment.file_name = "dummy1.txt"
@@ -1805,17 +1805,6 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         attachment.delete()
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
         self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
-        self.assertEqual(len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
-
-    def test_upload_space_used_api(self) -> None:
-        self.login(self.user_profile.email)
-        response = self.client_get("/json/realm/upload_space_used")
-        self.assert_in_success_response(["0"], response)
-
-        data = b'zulip!'
-        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
-        response = self.client_get("/json/realm/upload_space_used")
-        self.assert_in_success_response([str(len(data))], response)
 
 class ExifRotateTests(TestCase):
     def test_image_do_not_rotate(self) -> None:
