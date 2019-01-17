@@ -18,10 +18,7 @@ function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
-    var invite_as = 1;  // Default to Member for non-admins
-    if (page_params.is_admin) {
-        invite_as = parseInt($('#invite_as').val(), 10);
-    }
+    var invite_as = parseInt($('#invite_as').val(), 10);
     var data = {
         invitee_emails: $("#invitee_emails").val(),
         invite_as: invite_as,
@@ -49,9 +46,8 @@ function submit_invitation_form() {
         },
         success: function () {
             $('#submit-invitation').button('reset');
-            invite_status.text(i18n.t('User(s) invited successfully.'))
-                .addClass('alert-success')
-                .show();
+            ui_report.success(i18n.t('User(s) invited successfully.'), invite_status);
+            invitee_emails_group.removeClass('warning');
             invitee_emails.val('');
 
             if (page_params.development_environment) {
@@ -65,23 +61,21 @@ function submit_invitation_form() {
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
-                invite_status.text(arr.msg)
-                    .addClass('alert-error')
-                    .show();
+                ui_report.error("", xhr, invite_status);
             } else {
                 // Some users were not invited.
                 var invitee_emails_errored = [];
-                var error_list = $('<ul>');
-                _.each(arr.errors, function (value) {
-                    error_list.append($('<li>').text(value.join(': ')));
+                var error_list = [];
+                arr.errors.forEach(function (value) {
+                    error_list.push(value.join(': '));
                     invitee_emails_errored.push(value[0]);
                 });
 
-                invite_status.addClass('alert-warning')
-                    .empty()
-                    .append($('<p>').text(arr.msg))
-                    .append(error_list)
-                    .show();
+                var error_response = templates.render("invitation_failed_error", {
+                    error_message: arr.msg,
+                    error_list: error_list,
+                });
+                ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass('warning');
 
                 if (arr.sent_invitations) {
