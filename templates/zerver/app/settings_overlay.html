@@ -45,7 +45,7 @@
 
             <ul class="org-settings-list">
                 <li tabindex="0" data-section="organization-profile">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
+                    <i class="icon fa fa-address-card" aria-hidden="true"></i>
                     <div class="text">{{ _('Organization profile') }}</div>
                     {% if not is_admin %}
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
@@ -85,7 +85,7 @@
                     {% endif %}
                 </li>
                 <li tabindex="0" data-section="auth-methods">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
+                    <i class="icon fa fa-key" aria-hidden="true"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
                     {% if not is_admin %}
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
