@@ -206,7 +206,8 @@ class TemplateTestCase(ZulipTestCase):
             api_uri_context={},
             cloud_annual_price=80,
             seat_count=8,
-            request=RequestFactory().get("/")
+            request=RequestFactory().get("/"),
+            invite_as={"MEMBER": 1},
         )
 
         context.update(kwargs)
