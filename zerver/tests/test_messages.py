@@ -277,6 +277,59 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
+class TopicDeleteTest(ZulipTestCase):
+    def test_topic_delete(self) -> None:
+        initial_last_msg_id = self.get_last_message().id
+        stream_name = 'new_stream'
+        topic_name = 'new topic 2'
+
+        # NON-ADMIN USER
+        user_profile = self.example_user('hamlet')
+        self.subscribe(user_profile, stream_name)
+
+        # Send message
+        stream = get_stream(stream_name, user_profile.realm)
+        self.send_stream_message(user_profile.email, stream_name, topic_name=topic_name)
+        last_msg_id = self.send_stream_message(user_profile.email, stream_name, topic_name=topic_name)
+
+        # Deleting the topic
+        self.login(user_profile.email, realm=user_profile.realm)
+        endpoint = '/json/streams/' + str(stream.id) + '/delete_topic'
+        result = self.client_post(endpoint, {
+            "topic_name": topic_name
+        })
+        self.assert_json_error(result, "Must be an organization administrator")
+        self.assertEqual(self.get_last_message().id, last_msg_id)
+
+        # Make stream private with limited history
+        do_change_stream_invite_only(stream, invite_only=True,
+                                     history_public_to_subscribers=False)
+
+        # ADMIN USER subscribed now
+        user_profile = self.example_user('iago')
+        self.subscribe(user_profile, stream_name)
+        self.login(user_profile.email, realm=user_profile.realm)
+        new_last_msg_id = self.send_stream_message(user_profile.email, stream_name, topic_name=topic_name)
+
+        # Now admin deletes all messages in topic -- which should only
+        # delete new_last_msg_id, i.e. the one sent since they joined.
+        self.assertEqual(self.get_last_message().id, new_last_msg_id)
+        result = self.client_post(endpoint, {
+            "topic_name": topic_name
+        })
+        self.assert_json_success(result)
+        self.assertEqual(self.get_last_message().id, last_msg_id)
+
+        # Make the stream's history public to subscribers
+        do_change_stream_invite_only(stream, invite_only=True,
+                                     history_public_to_subscribers=True)
+        # Delete the topic should now remove all messages
+        result = self.client_post(endpoint, {
+            "topic_name": topic_name
+        })
+        self.assert_json_success(result)
+        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
         realm = Realm.objects.create(string_id=domain, invite_required=False)
