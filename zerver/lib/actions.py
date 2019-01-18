@@ -673,7 +673,7 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
 def do_scrub_realm(realm: Realm) -> None:
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
-        do_delete_messages(user)
+        do_delete_messages_by_sender(user)
         do_delete_avatar_image(user)
         user.full_name = "Scrubbed {}".format(generate_key()[:15])
         scrubbed_email = "scrubbed-{}@{}".format(generate_key()[:15], realm.host)
@@ -4211,7 +4211,7 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
     move_messages_to_archive([message.id])
     send_event(user_profile.realm, event, ums)
 
-def do_delete_messages(user: UserProfile) -> None:
+def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')
     if message_ids:
         move_messages_to_archive(message_ids)
