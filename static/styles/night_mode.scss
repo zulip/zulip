@@ -62,7 +62,7 @@ body.night-mode {
     /* this one makes the border of the reactions highlighted on hovering. */
     .message_reaction:hover,
     .reaction_button:hover {
-        border-color: white !important;
+        border-color: hsl(0, 0%, 100%) !important;
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're

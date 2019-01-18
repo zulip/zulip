@@ -185,14 +185,14 @@ a.button:hover {
 
 .recipient_block {
     background-color: #f0f4f5;
-    border: 1px solid black;
+    border: 1px solid #000000;
     margin-bottom: 4px;
 }
 
 .recipient_header {
     color: #e0dada;
     background-color: #444444;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #000000;
     font-weight: bold;
     padding: 2px;
 }
@@ -221,13 +221,13 @@ a.button:hover {
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid black;
+    border: 1px solid #000000;
     margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #000000;
     font-weight: bold;
     padding: 2px;
 }
@@ -243,13 +243,13 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    border: 1px solid black;
+    border: 1px solid #000000;
     margin-bottom: 4px;
 }
 
 .recipient_header_with_messages {
     background-color: #9ecaff;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #000000;
     font-weight: bold;
     padding: 2px;
 }
@@ -261,14 +261,14 @@ a.button:hover {
 
 .recipient_block_without_messages {
     background-color: #f0f4f5;
-    border: 1px solid black;
+    border: 1px solid #000000;
     margin-bottom: 4px;
 }
 
 .recipient_header_without_messages {
     color: #ffffff;
     background-color: #444444;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #000000;
     font-weight: bold;
     padding: 2px;
 }
