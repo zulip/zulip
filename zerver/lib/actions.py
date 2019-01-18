@@ -4190,26 +4190,32 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     return len(changed_messages)
 
 
-def do_delete_message(user_profile: UserProfile, message: Message) -> None:
-    message_type = "stream"
-    if not message.is_stream_message():
-        message_type = "private"
+def do_delete_messages(user_profile: UserProfile, messages: Iterable[Message]) -> None:
+    message_ids = []
+    for message in messages:
+        message_ids.append(message.id)
+        message_type = "stream"
+        if not message.is_stream_message():
+            message_type = "private"
 
-    event = {
-        'type': 'delete_message',
-        'sender': user_profile.email,
-        'message_id': message.id,
-        'message_type': message_type, }  # type: Dict[str, Any]
-    if message_type == "stream":
-        event['stream_id'] = message.recipient.type_id
-        event['topic'] = message.topic_name()
-    else:
-        event['recipient_user_ids'] = message.recipient.type_id
+        event = {
+            'type': 'delete_message',
+            'sender': user_profile.email,
+            'message_id': message.id,
+            'message_type': message_type, }  # type: Dict[str, Any]
+        if message_type == "stream":
+            event['stream_id'] = message.recipient.type_id
+            event['topic'] = message.topic_name()
+        else:
+            event['recipient_user_ids'] = message.recipient.type_id
 
-    ums = [{'id': um.user_profile_id} for um in
-           UserMessage.objects.filter(message=message.id)]
-    move_messages_to_archive([message.id])
-    send_event(user_profile.realm, event, ums)
+        # TODO: Each part of the following should be changed to bulk
+        # queries, since right now if you delete 1000 messages, you'll
+        # end up doing 1000 database queries in a loop and timing out.
+        ums = [{'id': um.user_profile_id} for um in
+               UserMessage.objects.filter(message=message.id)]
+        move_messages_to_archive([message.id])
+        send_event(user_profile.realm, event, ums)
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = Message.objects.filter(sender=user).values_list('id', flat=True).order_by('id')

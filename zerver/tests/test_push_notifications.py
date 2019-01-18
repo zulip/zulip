@@ -34,7 +34,7 @@ from zerver.models import (
     Stream,
     Subscription,
 )
-from zerver.lib.actions import do_delete_message
+from zerver.lib.actions import do_delete_messages
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
@@ -493,7 +493,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'trigger': 'private_message',
         }
         # Now, delete the message the normal way
-        do_delete_message(user_profile, message)
+        do_delete_messages(user_profile, [message])
 
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \
