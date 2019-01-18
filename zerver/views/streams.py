@@ -22,16 +22,17 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    prep_stream_welcome_message, do_change_stream_announcement_only
+    prep_stream_welcome_message, do_change_stream_announcement_only, \
+    do_delete_messages
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
-from zerver.lib.topic import get_topic_history_for_stream
+from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
-    Recipient, get_recipient, get_stream, \
+    Recipient, Message, UserMessage, get_recipient, get_stream, \
     get_system_bot, get_active_user
 
 from collections import defaultdict
@@ -452,6 +453,25 @@ def get_topics_backend(request: HttpRequest, user_profile: UserProfile,
     )
 
     return json_success(dict(topics=result))
+
+@require_realm_admin
+@has_request_variables
+def delete_in_topic(request: HttpRequest, user_profile: UserProfile,
+                    stream_id: int=REQ(converter=to_non_negative_int),
+                    topic_name: str=REQ("topic_name")) -> HttpResponse:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+
+    messages = messages_for_topic(stream.id, topic_name)
+    if not stream.is_history_public_to_subscribers():
+        # Don't allow the user to delete messages that they don't have access to.
+        deletable_message_ids = UserMessage.objects.filter(
+            user_profile=user_profile, message_id__in=messages).values_list("message_id", flat=True)
+        messages = [message for message in messages if message.id in
+                    deletable_message_ids]
+
+    do_delete_messages(user_profile, messages)
+
+    return json_success()
 
 @authenticated_json_post_view
 @has_request_variables

@@ -329,6 +329,11 @@ v1_api_and_json_patterns = [
     url(r'^streams/(?P<stream_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.streams.update_stream_backend',
          'DELETE': 'zerver.views.streams.deactivate_stream_backend'}),
+
+    # Delete topic in stream
+    url(r'^streams/(?P<stream_id>\d+)/delete_topic$', rest_dispatch,
+        {'POST': 'zerver.views.streams.delete_in_topic'}),
+
     url(r'^default_streams$', rest_dispatch,
         {'POST': 'zerver.views.streams.add_default_stream',
          'DELETE': 'zerver.views.streams.remove_default_stream'}),

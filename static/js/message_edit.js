@@ -641,6 +641,18 @@ exports.delete_message = function (msg_id) {
     });
 };
 
+exports.delete_topic = function (stream_id, topic_name) {
+    channel.post({
+        url: "/json/streams/" + stream_id + "/delete_topic",
+        data: {
+            topic_name: topic_name,
+        },
+        success: function () {
+            $('#delete_topic_modal').modal('hide');
+        },
+    });
+};
+
 exports.handle_narrow_deactivated = function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {

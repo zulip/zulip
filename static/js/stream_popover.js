@@ -152,6 +152,7 @@ function build_topic_popover(e) {
         topic_name: topic_name,
         can_mute_topic: can_mute_topic,
         can_unmute_topic: can_unmute_topic,
+        is_admin: sub.is_admin,
     });
 
     $(elt).popover({
@@ -373,6 +374,31 @@ exports.register_topic_handlers = function () {
         var topic = $(e.currentTarget).attr('data-topic-name');
         exports.hide_topic_popover();
         unread_ops.mark_topic_as_read(stream_id, topic);
+        e.stopPropagation();
+    });
+
+    // Deleting all message in a topic
+    $('body').on('click', '.sidebar-popover-delete-topic-messages', function (e) {
+        var stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
+            return;
+        }
+
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        var args = {
+            topic_name: topic,
+        };
+
+        exports.hide_topic_popover();
+
+        $('#delete-topic-modal-holder').html(templates.render('delete_topic_modal', args));
+
+        $('#do_delete_topic_button').on('click', function () {
+            message_edit.delete_topic(stream_id, topic);
+        });
+
+        $('#delete_topic_modal').modal('show');
+
         e.stopPropagation();
     });
 };

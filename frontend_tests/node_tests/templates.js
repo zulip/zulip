@@ -1339,12 +1339,33 @@ run_test('topic_sidebar_actions', () => {
         stream_name: 'social',
         topic_name: 'lunch',
         can_mute_topic: true,
+        is_admin: false,
     };
     var html = render('topic_sidebar_actions', args);
 
     var a = $(html).find("a.narrow_to_topic");
     assert.equal(a.text().trim(), 'translated: Narrow to topic lunch');
 
+    var delete_topic_option = $(html).find("a.sidebar-popover-delete-topic-messages");
+    assert.equal(delete_topic_option.length, 0);
+
+    args = {
+        is_admin: true,
+    };
+    html = render('topic_sidebar_actions', args);
+
+    delete_topic_option = $(html).find("a.sidebar-popover-delete-topic-messages");
+    assert.equal(delete_topic_option.length, 1);
+});
+
+run_test('delete_topic_modal', () => {
+    var args = {
+        topic_name: 'lunch',
+    };
+    var html = render('delete_topic_modal', args);
+
+    var modal_body = $(html).find('.modal-body');
+    assert.equal(modal_body.text().trim(), 'translated: Delete all messages in topic lunch?');
 });
 
 run_test('typeahead_list_item', () => {
