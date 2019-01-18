@@ -176,6 +176,11 @@ exports.save = function (row, from_topic_edited_only) {
         message_edit.end(row);
         return;
     }
+    var transition_base_duration = 125;
+    var secondary_fade_duration = 25 / 2;
+    row.find(".message_edit").slideUp(transition_base_duration - secondary_fade_duration);
+    row.find(".message_content, .status-message, .message_controls").fadeIn(transition_base_duration);
+
     channel.patch({
         url: '/json/messages/' + message.id,
         data: request,
