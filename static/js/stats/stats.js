@@ -719,7 +719,7 @@ function populate_number_of_users(data) {
 
     // Initial drawing of plot
     draw_or_update_plot(_15day_trace, true);
-    $('#15day_actives_button').addClass("selected");
+    $('#all_time_actives_button').addClass("selected");
 }
 
 
