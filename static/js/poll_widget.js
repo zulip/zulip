@@ -269,6 +269,20 @@ exports.activate = function (opts) {
             update_edit_controls();
         });
 
+        elem.find('input.poll-question').on('keydown', function (e) {
+            e.stopPropagation();
+
+            if (e.keyCode === 13) {
+                submit_question();
+                return;
+            }
+
+            if (e.keyCode === 27) {
+                abort_edit();
+                return;
+            }
+        });
+
         elem.find('.poll-edit-question').on('click', function (e) {
             e.stopPropagation();
             start_editing();
@@ -288,6 +302,21 @@ exports.activate = function (opts) {
             e.stopPropagation();
             submit_option();
         });
+
+        elem.find('input.poll-comment').on('keydown', function (e) {
+            e.stopPropagation();
+
+            if (e.keyCode === 13) {
+                submit_option();
+                return;
+            }
+
+            if (e.keyCode === 27) {
+                $('input.poll-comment').val('');
+                return;
+            }
+        });
+
     }
 
     function render_results() {
