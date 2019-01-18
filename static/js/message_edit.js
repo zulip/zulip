@@ -38,8 +38,7 @@ function is_topic_editable(message, edit_limit_seconds_buffer) {
     }
 
     // If you're using community topic editing, there's a deadline.
-    // TODO: Change hardcoded value (24 hrs) to be realm setting.  Currently, it is
-    // DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
+   
     return 86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) > 0;
 }
 
