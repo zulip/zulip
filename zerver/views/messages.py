@@ -17,7 +17,7 @@ from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
+    extract_recipients, truncate_body, render_incoming_message, do_delete_messages, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.addressee import raw_pm_with_emails
@@ -1479,7 +1479,7 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
                            message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     message, ignored_user_message = access_message(user_profile, message_id)
     validate_can_delete_message(user_profile, message)
-    do_delete_message(user_profile, message)
+    do_delete_messages(user_profile, [message])
     return json_success()
 
 @has_request_variables
