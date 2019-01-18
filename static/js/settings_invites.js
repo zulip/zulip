@@ -12,7 +12,7 @@ exports.reset = function () {
 
 function failed_listing_invites(xhr) {
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
-    ui_report.error(i18n.t("Error listing invites"), xhr, $("#organization-status"));
+    ui_report.error(i18n.t("Error listing invites"), xhr, $("#invites-field-status"));
 }
 
 exports.invited_as_values = {

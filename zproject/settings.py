@@ -1297,6 +1297,11 @@ ZULIP_IOS_APP_ID = 'org.zulip.Zulip'
 
 USING_APACHE_SSO = ('zproject.backends.ZulipRemoteUserBackend' in AUTHENTICATION_BACKENDS)
 
+if 'LDAP_DEACTIVATE_NON_MATCHING_USERS' not in vars():
+    LDAP_DEACTIVATE_NON_MATCHING_USERS = (
+        len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
+                                               "zproject.backends.ZulipLDAPAuthBackend"))
+
 if len(AUTHENTICATION_BACKENDS) == 1 and (AUTHENTICATION_BACKENDS[0] ==
                                           "zproject.backends.ZulipRemoteUserBackend"):
     HOME_NOT_LOGGED_IN = "/accounts/login/sso/"

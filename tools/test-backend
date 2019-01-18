@@ -5,8 +5,10 @@ from mypy_extensions import NoReturn
 import glob
 import argparse
 import os
+import shlex
 import sys
 import subprocess
+import tempfile
 import ujson
 import httplib2
 import httpretty
@@ -441,12 +443,13 @@ if __name__ == "__main__":
             failures = True
     if options.profile:
         prof.disable()
-        prof.dump_stats("/tmp/profile.data")
-        print("Profile data saved to /tmp/profile.data")
-        print("You can visualize it using e.g. `snakeviz /tmp/profile.data`")
-        print("Note: If you are using vagrant for development environment you will need to do:")
-        print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
-        print("2.) `snakeviz -s /tmp/profile.data`")
+        with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
+            prof.dump_stats(stats_file.name)
+            print("Profile data saved to {}".format(stats_file.name))
+            print("You can visualize it using e.g. `snakeviz {}`".format(shlex.quote(stats_file.name)))
+            print("Note: If you are using vagrant for development environment you will need to do:")
+            print("1.) `vagrant ssh -- -L 8080:127.0.0.1:8080`")
+            print("2.) `snakeviz -s {}`".format(shlex.quote(stats_file.name)))
 
     if options.report_slow_tests:
         from zerver.lib.test_runner import report_slow_tests

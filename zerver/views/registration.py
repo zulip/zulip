@@ -122,6 +122,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
     name_validated = False
     full_name = None
+    require_ldap_password = False
 
     if request.POST.get('from_confirmation'):
         try:
@@ -148,10 +149,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
 
-                    ldap_attrs = _LDAPUser(backend, ldap_username).attrs
+                    ldap_user = _LDAPUser(backend, ldap_username)
 
                     try:
-                        ldap_full_name = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
+                        ldap_full_name, _ = backend.get_mapped_name(ldap_user)
                         request.session['authenticated_full_name'] = ldap_full_name
                         name_validated = True
                         # We don't use initial= here, because if the form is
@@ -161,9 +162,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                         # go through this interstitial.
                         form = RegistrationForm({'full_name': ldap_full_name},
                                                 realm_creation=realm_creation)
-                        # FIXME: This will result in the user getting
-                        # validation errors if they have to enter a password.
-                        # Not relevant for ONLY_SSO, though.
+                        require_ldap_password = True
                         break
                     except TypeError:
                         # Let the user fill out a name and/or try another backend
@@ -245,6 +244,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                        username=email,
                                        password=password,
                                        realm=realm,
+                                       prereg_user=prereg_user,
                                        return_data=return_data)
             if auth_result is not None:
                 # Since we'll have created a user, we now just log them in.
@@ -327,6 +327,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  # we have to set it here.
                  'creating_new_team': realm_creation,
                  'password_required': password_auth_enabled(realm) and password_required,
+                 'require_ldap_password': require_ldap_password,
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
                  'default_stream_groups': get_default_stream_groups(realm),

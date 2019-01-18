@@ -3,10 +3,10 @@
 # usage:
 # git clone --bare git@git.zulip.net:eng/zulip.git
 # cd zulip.git
-# git fast-export --export-marks=/tmp/em --progress=1000 --all > /tmp/fe
+# git fast-export --export-marks=../zulip.em --progress=1000 --all > ../zulip.fe
 # git init --bare ../zulip-zanitized.git
 # cd ../zulip-zanitized.git
-# zanitizer /tmp/fe /tmp/em | git fast-import --quiet
+# zanitizer ../zulip.fe ../zulip.em | git fast-import --quiet
 
 use strict;
 use warnings;

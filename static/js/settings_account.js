@@ -504,6 +504,21 @@ exports.set_up = function () {
         setTimeout(function () {
             popovers.show_user_profile(user);
         }, 100);
+
+        // If user opened the "preview profile" modal from user
+        // settings, then closing preview profile modal should
+        // send them back to the settings modal.
+        $('body').one('hidden.bs.modal', '#user-profile-modal', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            popovers.hide_user_profile();
+
+            setTimeout(function () {
+                if (!overlays.settings_open()) {
+                    overlays.open_settings();
+                }
+            }, 100);
+        });
     });
 
 
@@ -529,13 +544,18 @@ exports.set_up = function () {
             success: function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 $("#user_avatar_delete_button").show();
+                $("#user_avatar_file_input_error").hide();
                 $("#user-avatar-source").hide();
                 // Rest of the work is done via the user_events -> avatar_url event we will get
             },
-            error: function () {
+            error: function (xhr) {
+                loading.destroy_indicator($("#upload_avatar_spinner"));
                 if (page_params.avatar_source === 'G') {
                     $("#user-avatar-source").show();
                 }
+                var $error = $("#user_avatar_file_input_error");
+                $error.text(JSON.parse(xhr.responseText).msg);
+                $error.show();
             },
         });
 

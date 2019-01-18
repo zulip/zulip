@@ -14,7 +14,8 @@ function get_user_info_row(user_id) {
     return $("tr.user_row[data-user-id='" + user_id + "']");
 }
 
-function update_view_on_deactivate(row) {
+function update_view_on_deactivate() {
+    var row = meta.current_deactivate_bot_modal_row;
     var button = row.find("button.deactivate");
     row.find('button.open-user-form').hide();
     button.addClass("btn-warning");
@@ -24,8 +25,27 @@ function update_view_on_deactivate(row) {
     button.text(i18n.t("Reactivate"));
     row.addClass("deactivated_user");
 }
+function update_view_on_deactivate_reactivate_failure(xhr) {
+    ui_report.generic_row_button_error(xhr, meta.current_bot_element);
 
-function update_view_on_reactivate(row) {
+}
+
+function get_status_field() {
+    var current_tab = settings_panel_menu.org_settings.current_tab();
+    switch (current_tab) {
+    case 'deactivated-users-admin':
+        return $("#deactivated-user-field-status").expectOne();
+    case 'user-list-admin':
+        return $("#user-field-status").expectOne();
+    case 'bot-list-admin':
+        return $("#bot-field-status").expectOne();
+    default:
+        blueslip.fatal("Invalid admin settings page");
+    }
+}
+
+function update_view_on_reactivate() {
+    var row = meta.current_bot_element.closest(".user_row");
     row.find(".user-admin-settings").show();
     var button = row.find("button.reactivate");
     row.find("button.open-user-form").show();
@@ -78,7 +98,8 @@ exports.update_user_data = function (user_id, new_data) {
 
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
-    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#organization-status"));
+    var status = get_status_field();
+    ui_report.error(i18n.t("Error listing users or bots"), xhr, status);
 }
 
 function populate_users(realm_people_data) {
@@ -238,6 +259,20 @@ exports.on_load_success = function (realm_people_data) {
         meta.current_deactivate_user_modal_row = row;
     });
 
+    function update_button_on_success() {
+        var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+        button.prop("disabled", false);
+        button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
+        button.text(i18n.t("Reactivate"));
+        meta.current_deactivate_user_modal_row.addClass("deactivated_user");
+        meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
+        meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
+    }
+    function update_button_on_failure() {
+        var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+        button.text(i18n.t("Deactivate"));
+    }
+
     $("#do_deactivate_user_button").expectOne().click(function () {
         var email = meta.current_deactivate_user_modal_row.attr("data-email");
         var user_id = meta.current_deactivate_user_modal_row.attr("data-user-id");
@@ -249,24 +284,16 @@ exports.on_load_success = function (realm_people_data) {
         }
         $("#deactivation_user_modal").modal("hide");
         meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text(i18n.t("Working…"));
-        channel.del({
-            url: '/json/users/' + encodeURIComponent(user_id),
-            error: function (xhr) {
-                var status = $("#organization-status").expectOne();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
-                button.text(i18n.t("Deactivate"));
-            },
-            success: function () {
-                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
-                button.text(i18n.t("Reactivate"));
-                meta.current_deactivate_user_modal_row.addClass("deactivated_user");
-                meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
-                meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
-            },
-        });
+        var data = {
+        };
+        var opts = {
+            success_continuation: update_button_on_success,
+            error_continuation: update_button_on_failure,
+        };
+        var status = get_status_field();
+        var url = '/json/users/' + encodeURIComponent(user_id);
+        settings_ui.do_settings_change(channel.del, url, data, status, opts);
+
     });
 
     $(".admin_bot_table").on("click", ".deactivate", function (e) {
@@ -274,37 +301,37 @@ exports.on_load_success = function (realm_people_data) {
         e.stopPropagation();
 
         var row = $(e.target).closest(".user_row");
-
+        meta.current_deactivate_bot_modal_row = row;
+        meta.current_bot_element = $(e.target);
         var bot_id = row.attr("data-user-id");
+        var url = '/json/bots/' + encodeURIComponent(bot_id);
+        var data = {
+        };
+        var opts = {
+            success_continuation: update_view_on_deactivate,
+            error_continuation: update_view_on_deactivate_reactivate_failure,
+        };
+        var status = get_status_field();
+        settings_ui.do_settings_change(channel.del, url, data, status, opts);
 
-        channel.del({
-            url: '/json/bots/' + encodeURIComponent(bot_id),
-            error: function (xhr) {
-                ui_report.generic_row_button_error(xhr, $(e.target));
-            },
-            success: function () {
-                update_view_on_deactivate(row);
-            },
-        });
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
-
+        meta.current_bot_element = $(e.target);
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
         var user_id = row.attr("data-user-id");
+        var url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
+        var data = {};
+        var status = get_status_field();
 
-        channel.post({
-            url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
-            error: function (xhr) {
-                ui_report.generic_row_button_error(xhr, $(e.target));
-            },
-            success: function () {
-                update_view_on_reactivate(row);
-            },
-        });
+        var opts = {
+            success_continuation: update_view_on_reactivate,
+            error_continuation: update_view_on_deactivate_reactivate_failure,
+        };
+        settings_ui.do_settings_change(channel.post, url, data, status, opts);
     });
 
     function open_user_info_form_modal(person) {
@@ -342,10 +369,15 @@ exports.on_load_success = function (realm_people_data) {
         }
 
         var user_info_form_modal = open_user_info_form_modal(person);
+        var element = "#user-info-form-modal .custom-profile-field-form";
+        $(element).html("");
+        settings_account.append_custom_profile_fields(element, user_id);
+        settings_account.initialize_custom_date_type_fields(element);
+        var fields_user_pills = settings_account.intialize_custom_user_type_fields(element, user_id,
+                                                                                   true, false);
 
         var url;
         var data;
-        var admin_status = $('#organization-status').expectOne();
         var full_name = user_info_form_modal.find("input[name='full_name']");
 
         user_info_form_modal.find('.submit_user_info_change').on("click", function (e) {
@@ -354,6 +386,7 @@ exports.on_load_success = function (realm_people_data) {
 
             var user_role_select_value = user_info_form_modal.find('#user-role-select').val();
 
+            var admin_status = get_status_field();
             if (person.is_bot) {
                 url = "/json/bots/" + encodeURIComponent(user_id);
                 data = {
@@ -364,26 +397,38 @@ exports.on_load_success = function (realm_people_data) {
                     data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
+                var new_profile_data = [];
+                $("#user-info-form-modal .custom_user_field_value").each(function () {
+                    // Remove duplicate datepicker input element genearted flatpicker library
+                    if (!$(this).hasClass("form-control")) {
+                        new_profile_data.push({
+                            id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                            value: $(this).val(),
+                        });
+                    }
+                });
+                // Append user type field values also
+                _.each(fields_user_pills, function (field_pills, field_id) {
+                    if (field_pills) {
+                        var user_ids = user_pill.get_user_ids(field_pills);
+                        new_profile_data.push({
+                            id: parseInt(field_id, 10),
+                            value: user_ids,
+                        });
+                    }
+                });
+
                 url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                     is_admin: JSON.stringify(user_role_select_value === 'admin'),
                     is_guest: JSON.stringify(user_role_select_value === 'guest'),
+                    profile_data: JSON.stringify(new_profile_data),
                 };
             }
 
-            channel.patch({
-                url: url,
-                data: data,
-                success: function () {
-                    ui_report.success(i18n.t('Updated successfully!'), admin_status);
-                    overlays.close_modal('user-info-form-modal');
-                },
-                error: function (xhr) {
-                    ui_report.error(i18n.t('Failed'), xhr, admin_status);
-                    overlays.close_modal('user-info-form-modal');
-                },
-            });
+            settings_ui.do_settings_change(channel.patch, url, data, admin_status);
+            overlays.close_modal('user-info-form-modal');
         });
     });
 

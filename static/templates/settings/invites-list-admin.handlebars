@@ -1,6 +1,10 @@
 <div id="admin-invites-list" class="settings-section" data-name="invites-list-admin">
     <a class="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{t "Invite more users" }}</a>
-    <input type="text" class="search" placeholder="{{t 'Filter invites' }}" aria-label="{{t 'Filter invites' }}"/>
+    <div>
+        <h3 class="inline-block">{{t "Invites" }}</h3>
+        <input type="text" class="search" placeholder="{{t 'Filter invites' }}" aria-label="{{t 'Filter invites' }}"/>
+        <div class="alert-notification" id="invites-field-status"></div>
+    </div>
     <div class="clear-float"></div>
 
     <div class="progressive-table-wrapper">

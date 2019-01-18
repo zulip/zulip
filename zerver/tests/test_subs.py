@@ -621,7 +621,7 @@ class StreamAdminTest(ZulipTestCase):
         # Inspect the notification message sent
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        message_content = '@**King Hamlet** renamed stream **stream_name1** to **stream_name2**'
+        message_content = '_@**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**'.format(user_profile.id)
         self.assertEqual(message.sender.realm, user_profile.realm)
         self.assertEqual(actual_stream.name, 'stream_name2')
         self.assertEqual(message.recipient.type, Recipient.STREAM)
@@ -1404,7 +1404,8 @@ class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
         """
         A POST request to /api/v1/users/me/subscriptions/properties with stream_id and
-        color data sets the stream color, and for that stream only.
+        color data sets the stream color, and for that stream only. Also, make sure that
+        any invalid hex color codes are bounced.
         """
         test_user = self.example_user('hamlet')
         test_email = test_user.email
@@ -1438,6 +1439,13 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 break
         old_subs.remove(found_sub)
         self.assertEqual(old_subs, new_subs)
+
+        invalid_color = "3ffrff"
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": "color",
+                                                                   "stream_id": stream_id,
+                                                                   "value": invalid_color}])})
+        self.assert_json_error(result, "color is not a valid hex color code")
 
     def test_set_color_missing_stream_id(self) -> None:
         """
@@ -1913,6 +1921,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         invitee = self.example_email("iago")
         invitee_full_name = 'Iago'
+        invitee_user = self.example_user('iago')
 
         current_stream = self.get_streams(invitee, self.test_realm)[0]
         invite_streams = self.make_random_stream_names([current_stream])[:1]
@@ -1938,7 +1947,7 @@ class SubscriptionAPITest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
+        expected_msg = "_@**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_cross_realm_notification(self) -> None:
@@ -1976,8 +1985,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
         stream_id = Stream.objects.latest('id').id
-        expected_rendered_msg = '<p>%s just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s-%s">#%s</a>.</p>' % (
-            user.full_name, stream_id, stream_id, invite_streams[0], invite_streams[0])
+        expected_rendered_msg = '<p><span class="user-mention silent" data-user-id="%d">@%s</span> just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s-%s">#%s</a>.</p>' % (
+            user.id, user.full_name, stream_id, stream_id, invite_streams[0], invite_streams[0])
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:
@@ -1986,6 +1995,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         invitee = self.example_email("iago")
         invitee_full_name = 'Iago'
+        invitee_user = self.example_user('iago')
 
         current_stream = self.get_streams(invitee, self.test_realm)[0]
         notifications_stream = get_stream(current_stream, self.test_realm)
@@ -2005,7 +2015,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
+        expected_msg = "_@**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
@@ -2920,7 +2930,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=ujson.dumps([user1.email, user2.email])
                 )
             )
-        self.assert_length(queries, 52)
+        self.assert_length(queries, 53)
 
 class GetPublicStreamsTest(ZulipTestCase):
 

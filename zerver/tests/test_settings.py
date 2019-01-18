@@ -199,7 +199,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'ldappassword',
+                'userPassword': ['ldappassword', ],
                 'fn': ['New LDAP fullname']
             }
         }

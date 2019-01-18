@@ -9,6 +9,7 @@ condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
 on all but one machine to make the command have no effect.)
 """
 
+import os
 import logging
 import time
 from typing import Any
@@ -18,7 +19,6 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 from ujson import loads
 
-from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
 from zerver.lib.send_email import EmailNotDeliveredException, send_email, \
@@ -43,21 +43,20 @@ Usage: ./manage.py deliver_email
         if settings.EMAIL_DELIVERER_DISABLED:
             sleep_forever()
 
-        with lockfile("/tmp/zulip_email_deliver.lockfile"):
-            while True:
-                email_jobs_to_deliver = ScheduledEmail.objects.filter(
-                    scheduled_timestamp__lte=timezone_now())
-                if email_jobs_to_deliver:
-                    for job in email_jobs_to_deliver:
-                        data = loads(job.data)
-                        handle_send_email_format_changes(data)
-                        try:
-                            send_email(**data)
-                            job.delete()
-                        except EmailNotDeliveredException:
-                            logger.warning("%r not delivered" % (job,))
-                    time.sleep(10)
-                else:
-                    # Less load on the db during times of activity,
-                    # and more responsiveness when the load is low
-                    time.sleep(2)
+        while True:
+            email_jobs_to_deliver = ScheduledEmail.objects.filter(
+                scheduled_timestamp__lte=timezone_now())
+            if email_jobs_to_deliver:
+                for job in email_jobs_to_deliver:
+                    data = loads(job.data)
+                    handle_send_email_format_changes(data)
+                    try:
+                        send_email(**data)
+                        job.delete()
+                    except EmailNotDeliveredException:
+                        logger.warning("%r not delivered" % (job,))
+                time.sleep(10)
+            else:
+                # Less load on the db during times of activity,
+                # and more responsiveness when the load is low
+                time.sleep(2)

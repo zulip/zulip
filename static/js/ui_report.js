@@ -6,16 +6,11 @@ var exports = {};
    response- response that we want to display
    status_box- element being used to display the response
    cls- class that we want to add/remove to/from the status_box
-   type- used to define more complex logic for special cases
 */
 
-exports.message = function (response, status_box, cls, type, remove_after) {
+exports.message = function (response, status_box, cls, remove_after) {
     if (cls === undefined) {
         cls = 'alert';
-    }
-
-    if (type === undefined) {
-        type = ' ';
     }
 
     // Note we use html() below, since we can rely on our callers escaping HTML
@@ -39,7 +34,7 @@ function escape(html) {
         .replace(/'/g, '&#39;');
 }
 
-exports.error = function (response, xhr, status_box, type) {
+exports.error = function (response, xhr, status_box) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
@@ -51,11 +46,11 @@ exports.error = function (response, xhr, status_box, type) {
         }
     }
 
-    exports.message(response, status_box, 'alert-error', type);
+    exports.message(response, status_box, 'alert-error');
 };
 
-exports.success = function (response, status_box, type, remove_after) {
-    exports.message(response, status_box, 'alert-success', type, remove_after);
+exports.success = function (response, status_box, remove_after) {
+    exports.message(response, status_box, 'alert-success', remove_after);
 };
 
 exports.generic_embed_error = function (error) {

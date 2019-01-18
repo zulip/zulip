@@ -462,7 +462,12 @@ LDAP_EMAIL_ATTR = None  # type: Optional[str]
 # LDAP database uses for the same concept.
 AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
+    # If names are encoded in your LDAP directory as first and last
+    # name, you can instead specify first_name and last_name, and
+    # Zulip will combine those to construct a full_name automatically.
     "full_name": "cn",
+    # "first_name": "fn",
+    # "last_name": "ln",
 
     # User avatars can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
@@ -473,6 +478,11 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # "userAccountControl": "userAccountControl",
 }
 
+# Whether to automatically deactivate users not found in LDAP. If LDAP
+# is the only authentication method, then this setting defaults to
+# True.  If other authentication methods are enabled, it defaults to
+# False.
+#LDAP_DEACTIVATE_NON_MATCHING_USERS = True
 
 ################
 # Miscellaneous settings.

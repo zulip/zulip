@@ -1782,3 +1782,20 @@ class ExifRotateTests(TestCase):
             img = Image.open(io.BytesIO(img_data))
             exif_rotate(img)
             rotate.assert_called_with(90, expand=True)
+
+class DecompressionBombTests(ZulipTestCase):
+    def setUp(self) -> None:
+        self.test_urls = {
+            "/json/users/me/avatar": "Image size exceeds limit.",
+            "/json/realm/logo": "Image size exceeds limit.",
+            "/json/realm/icon": "Image size exceeds limit.",
+            "/json/realm/emoji/bomb_emoji": "Image file upload failed.",
+        }
+
+    def test_decompression_bomb(self) -> None:
+        self.login(self.example_email("iago"))
+        with get_test_image_file("bomb.png") as fp:
+            for url, error_string in self.test_urls.items():
+                fp.seek(0, 0)
+                result = self.client_post(url, {'f1': fp})
+                self.assert_json_error(result, error_string)

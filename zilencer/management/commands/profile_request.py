@@ -1,5 +1,6 @@
 import cProfile
 import logging
+import tempfile
 from typing import Any, Dict
 
 from django.core.management.base import CommandParser
@@ -41,9 +42,10 @@ def profile_request(request: HttpRequest) -> HttpResponse:
     ret = get_messages_backend(request, request.user,
                                apply_markdown=True)
     prof.disable()
-    prof.dump_stats("/tmp/profile.data")
-    request_logger.process_response(request, ret)
-    logging.info("Profiling data written to /tmp/profile.data")
+    with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
+        prof.dump_stats(stats_file.name)
+        request_logger.process_response(request, ret)
+        logging.info("Profiling data written to {}".format(stats_file.name))
     return ret
 
 class Command(ZulipBaseCommand):

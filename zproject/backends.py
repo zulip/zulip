@@ -20,11 +20,13 @@ from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
+from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
-from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
-    remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
+from zerver.models import PreregistrationUser, UserProfile, Realm, get_default_stream_groups, \
+    get_user_profile_by_id, remote_user_to_email, email_to_username, get_realm, \
+    get_user_by_delivery_email
 
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
@@ -256,22 +258,7 @@ LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def __init__(self) -> None:
         if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
-            # We only use this in development.  Importing mock inside
-            # this function is an import time optimization, which
-            # avoids the expensive import of the mock module (slow
-            # because its dependency pbr uses pkgresources, which is
-            # really slow to import.)
-            import mock
-            from fakeldap import MockLDAP
-            from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
-
-            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
-            self.mock_initialize = ldap_patcher.start()
-            self.mock_ldap = MockLDAP()
-            self.mock_initialize.return_value = self.mock_ldap
-
-            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_NUM_USERS)
+            init_fakeldap()
 
     # Don't use Django LDAP's permissions functions
     def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
@@ -321,15 +308,46 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             upload_avatar_image(BytesIO(ldap_user.attrs[avatar_attr_name][0]), user, user)
             do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
 
-    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:  # nocoverage
+    def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
         account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
+    @classmethod
+    def get_mapped_name(cls, ldap_user: _LDAPUser) -> Tuple[str, str]:
+        if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
+            short_name = full_name = ldap_user.attrs[full_name_attr][0]
+        elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in {"first_name", "last_name"}):
+            first_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["first_name"]
+            last_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["last_name"]
+            short_name = ldap_user.attrs[first_name_attr][0]
+            full_name = short_name + ' ' + ldap_user.attrs[last_name_attr][0]
+        else:
+            raise ZulipLDAPException("Missing required mapping for user's full name")
+
+        if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
+            short_name = ldap_user.attrs[short_name_attr][0]
+
+        return full_name, short_name
+
+    def sync_full_name_from_ldap(self, user_profile: UserProfile,
+                                 ldap_user: _LDAPUser) -> None:
+        from zerver.lib.actions import do_change_full_name
+        full_name, _ = self.get_mapped_name(ldap_user)
+        if full_name != user_profile.full_name:
+            try:
+                full_name = check_full_name(full_name)
+            except JsonableError as e:
+                raise ZulipLDAPException(e.msg)
+            do_change_full_name(user_profile, full_name, None)
+
     def get_or_build_user(self, username: str,
-                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:  # nocoverage
+                          ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         (user, built) = super().get_or_build_user(username, ldap_user)
         self.sync_avatar_from_ldap(user, ldap_user)
+        self.sync_full_name_from_ldap(user, ldap_user)
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap and user.is_active:
@@ -347,10 +365,12 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
+                     prereg_user: Optional[PreregistrationUser]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         if realm is None:
             return None
         self._realm = realm
+        self._prereg_user = prereg_user
         if not ldap_auth_enabled(realm):
             return None
 
@@ -407,17 +427,21 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPException("Realm has been deactivated")
 
         # We have valid LDAP credentials; time to create an account.
-        full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
-        short_name = full_name = ldap_user.attrs[full_name_attr][0]
+        full_name, short_name = self.get_mapped_name(ldap_user)
         try:
             full_name = check_full_name(full_name)
         except JsonableError as e:
             raise ZulipLDAPException(e.msg)
-        if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
-            short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
-            short_name = ldap_user.attrs[short_name_attr][0]
 
-        user_profile = do_create_user(username, None, self._realm, full_name, short_name)
+        opts = {}   # type: Dict[str, Any]
+        if self._prereg_user:
+            invited_as = self._prereg_user.invited_as
+            opts['prereg_user'] = self._prereg_user
+            opts['is_realm_admin'] = invited_as == PreregistrationUser.INVITE_AS['REALM_ADMIN']
+            opts['is_guest'] = invited_as == PreregistrationUser.INVITE_AS['GUEST_USER']
+            opts['default_stream_groups'] = get_default_stream_groups(self._realm)
+
+        user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
         self.sync_avatar_from_ldap(user_profile, ldap_user)
 
         return user_profile, True
@@ -427,6 +451,15 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
+
+def sync_user_from_ldap(user_profile: UserProfile) -> bool:
+    backend = ZulipLDAPUserPopulator()
+    updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
+    if not updated_user:
+        if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
+            do_deactivate_user(user_profile)
+        return False
+    return True
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.

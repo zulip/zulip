@@ -22,6 +22,7 @@ var current_index = 0;
 var search_is_active = false;
 var search_results = [];
 var section_head_offsets = [];
+var edit_message_id = null;
 
 function get_all_emoji_categories() {
     return [
@@ -644,14 +645,34 @@ exports.register_click_handlers = function () {
     $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
         var emoji_name = $(this).data("emoji-name");
         var emoji_text = ':' + emoji_name + ':';
-        compose_ui.insert_syntax_and_focus(emoji_text);
+        // The following check will return false if emoji was not selected in
+        // message edit form.
+        if (edit_message_id !== null) {
+            var edit_message_textarea = $("#message_edit_content_" + edit_message_id);
+            // Assign null to edit_message_id so that the selection of emoji in new
+            // message composition form works correctly.
+            edit_message_id = null;
+            compose_ui.insert_syntax_and_focus(emoji_text, edit_message_textarea);
+        } else {
+            compose_ui.insert_syntax_and_focus(emoji_text);
+        }
         e.stopPropagation();
         emoji_picker.hide_emoji_popover();
     });
 
-    $("#compose").on("click", "#emoji_map", function (e) {
+    $("body").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        // The data-message-id atribute is only present in the emoji icon present in
+        // the message edit form. So the following check will return false if this
+        // event was not fired from message edit form.
+        if ($(this).attr("data-message-id") !== undefined) {
+            // Store data-message-id value in global variable edit_message_id so that
+            // its value can be further used to correclty find the message textarea element.
+            edit_message_id = $(this).attr("data-message-id");
+        } else {
+            edit_message_id = null;
+        }
         emoji_picker.toggle_emoji_popover(this);
     });
 

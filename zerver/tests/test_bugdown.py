@@ -555,7 +555,7 @@ class BugdownTest(ZulipTestCase):
         media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
-        emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="100">:100:</span>% open-source!"""
+        emoji_in_tweet_html = """Zulip is <span aria-label=\"100\" class="emoji emoji-1f4af" role=\"img\" title="100">:100:</span>% open-source!"""
 
         def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str='') -> str:
             ## As of right now, all previews are mocked to be the exact same tweet
@@ -702,11 +702,11 @@ class BugdownTest(ZulipTestCase):
     def test_unicode_emoji(self) -> None:
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, u'<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><span class="emoji emoji-2615" title="coffee">:coffee:</span><span class="emoji emoji-2615" title="coffee">:coffee:</span></p>')
+        self.assertEqual(converted, u'<p><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span><span aria-label=\"coffee\" class="emoji emoji-2615" role=\"img\" title="coffee">:coffee:</span></p>')
 
     def test_no_translate_emoticons_if_off(self) -> None:
         user_profile = self.example_user('othello')
@@ -956,6 +956,19 @@ class BugdownTest(ZulipTestCase):
                          '@King Hamlet</span></p>' % (user_id))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
+    def test_mention_silent(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "_@**King Hamlet**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention silent" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span></p>' % (user_id))
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_mentions(content), names)
@@ -986,6 +999,37 @@ class BugdownTest(ZulipTestCase):
                          'data-user-id="%s">@Cordelia Lear</span>, '
                          'check this out</p>' % (hamlet.id, cordelia.id))
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+
+    def test_mention_in_quotes(self) -> None:
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        msg = Message(sender=othello, sending_client=get_client("test"))
+
+        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<blockquote>\n<p>'
+                         '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                         ' and '
+                         '<span class="user-mention silent" data-user-id="%s">@Othello, the Moor of Venice</span>'
+                         '</p>\n</blockquote>\n'
+                         '<p>'
+                         '<span class="user-mention" data-user-id="%s">@King Hamlet</span>'
+                         ' and '
+                         '<span class="user-mention" data-user-id="%s">@Cordelia Lear</span>'
+                         '</p>' % (hamlet.id, othello.id, hamlet.id, cordelia.id))
+        self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
+
+        # Both fenced quote and > quote should be identical
+        expected = ('<blockquote>\n<p>'
+                    '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                    '</p>\n</blockquote>' % (hamlet.id))
+        content = "```quote\n@**King Hamlet**\n```"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "> @**King Hamlet**"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
 
     def test_mention_duplicate_full_name(self) -> None:
         realm = get_realm('zulip')

@@ -57,7 +57,8 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain
+    ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
+    ZulipLDAPException, sync_user_from_ldap
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user,
@@ -1427,7 +1428,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -1680,7 +1681,7 @@ class TestTwoFactor(ZulipTestCase):
         full_name = 'New LDAP fullname'
         mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': [full_name],
                 'sn': ['shortname'],
             }
@@ -2114,7 +2115,7 @@ class TestJWTLogin(ZulipTestCase):
                 user_profile = self.example_user('hamlet')
                 self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-class TestLDAP(ZulipTestCase):
+class ZulipLDAPTestCase(ZulipTestCase):
     def setUp(self) -> None:
         user_profile = self.example_user('hamlet')
         self.setup_subdomain(user_profile)
@@ -2124,10 +2125,11 @@ class TestLDAP(ZulipTestCase):
         self.mock_ldap = MockLDAP()
         self.mock_initialize.return_value = self.mock_ldap
         self.backend = ZulipLDAPAuthBackend()
-        # Internally `_realm` attribute is automatically set by the
-        # `authenticate()` method. But for testing the `get_or_build_user()`
-        # method separately, we need to set it manually.
+        # Internally `_realm` and `_prereg_user` attributes are automatically set
+        # by the `authenticate()` method. But for testing the `get_or_build_user()`
+        # method separately, we need to set them manually.
         self.backend._realm = get_realm('zulip')
+        self.backend._prereg_user = None
 
     def tearDown(self) -> None:
         self.mock_ldap.reset()
@@ -2138,6 +2140,7 @@ class TestLDAP(ZulipTestCase):
         realm.string_id = 'zulip'
         realm.save()
 
+class TestLDAP(ZulipLDAPTestCase):
     def test_generate_dev_ldap_dir(self) -> None:
         ldap_dir = generate_dev_ldap_dir('A', 10)
         self.assertEqual(len(ldap_dir), 10)
@@ -2161,10 +2164,24 @@ class TestLDAP(ZulipTestCase):
             self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'email'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_dev_ldap_fail_login(self) -> None:
+        # Tests that login with a substring of password fails. We had a bug in
+        # dev LDAP environment that allowed login via password substrings.
+        self.mock_ldap.directory = generate_dev_ldap_dir('B', 8)
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('ldapuser1', 'dapu',
+                                                     realm=get_realm('zulip'))
+
+            assert(user_profile is None)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2181,7 +2198,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_success_with_username(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2198,7 +2215,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_success_with_email_attr(self) -> None:
         self.mock_ldap.directory = {
             'uid=letham,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'email': ['hamlet@zulip.com'],
             }
         }
@@ -2215,7 +2232,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_wrong_password(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2229,7 +2246,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_nonexistent_user(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2343,6 +2360,17 @@ class TestLDAP(ZulipTestCase):
                 backend.get_or_build_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_build_user_when_ldap_has_no_full_name_mapping(self) -> None:
+        class _LDAPUser:
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={}):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, "Missing required mapping for user's full name"):
+                backend.get_or_build_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_when_domain_does_not_match(self) -> None:
         backend = self.backend
         email = self.example_email("hamlet")
@@ -2360,7 +2388,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_wrong_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2375,7 +2403,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_invalid_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2390,7 +2418,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_success_with_valid_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         with self.settings(
@@ -2406,7 +2434,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_deactivated_user(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing'
+                'userPassword': ['testing', ]
             }
         }
         user_profile = self.example_user("hamlet")
@@ -2429,7 +2457,7 @@ class TestLDAP(ZulipTestCase):
         self.mock_ldap.directory = {
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'cn': ['NonExisting', ],
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()],
             }
         }
@@ -2449,11 +2477,143 @@ class TestLDAP(ZulipTestCase):
             result = self.client_get(avatar_url(user_profile))
             self.assertEqual(result.status_code, 200)
 
-class TestZulipLDAPUserPopulator(ZulipTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_when_user_does_not_exist_with_split_full_name_mapping(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+                'fn': ['Non', ],
+                'ln': ['Existing', ],
+                'userPassword': ['testing', ],
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='acme.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com',
+                AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn', 'last_name': 'ln'}):
+            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+                                                     realm=get_realm('zulip'))
+            assert(user_profile is not None)
+            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.full_name, 'Non Existing')
+            self.assertEqual(user_profile.realm.string_id, 'zulip')
+
+class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
         backend = ZulipLDAPUserPopulator()
         result = backend.authenticate(self.example_email("hamlet"), 'testing')  # type: ignore # complains that the function does not return any value!
         self.assertIs(result, None)
+
+    def perform_ldap_sync(self, user_profile: UserProfile) -> None:
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            result = sync_user_from_ldap(user_profile)
+            self.assertTrue(result)
+
+    def test_update_full_name(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['New Name', ],
+            }
+        }
+
+        self.perform_ldap_sync(self.example_user('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.assertEqual(hamlet.full_name, 'New Name')
+
+    def test_update_split_full_name(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'fn': ['Full', ],
+                'ln': ['Name', ],
+            }
+        }
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn',
+                                                    'last_name': 'ln'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.assertEqual(hamlet.full_name, 'Full Name')
+
+    def test_same_full_name(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+            }
+        }
+
+        with mock.patch('zerver.lib.actions.do_change_full_name') as fn:
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fn.assert_not_called()
+
+    def test_too_short_name(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['a', ],
+            }
+        }
+
+        with self.assertRaises(ZulipLDAPException):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+
+    def test_deactivate_user(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'userAccountControl': ['2', ],
+            }
+        }
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'userAccountControl': 'userAccountControl'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.assertFalse(hamlet.is_active)
+
+    def test_reactivate_user(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'userAccountControl': ['0', ],
+            }
+        }
+        do_deactivate_user(self.example_user('hamlet'))
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'userAccountControl': 'userAccountControl'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.assertTrue(hamlet.is_active)
+
+    def test_update_user_avatar(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'thumbnailPhoto': [open(os.path.join(settings.STATIC_ROOT, "images/team/tim.png"), "rb").read()]
+            }
+        }
+        with mock.patch('zerver.lib.upload.upload_avatar_image') as fn, \
+            self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                   'avatar': 'thumbnailPhoto'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+            fn.assert_called_once()
+            hamlet = self.example_user('hamlet')
+            self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+    def test_deactivate_non_matching_users(self) -> None:
+        self.mock_ldap.directory = {}
+
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com',
+                           AUTH_LDAP_BIND_PASSWORD='',
+                           AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
+                           LDAP_DEACTIVATE_NON_MATCHING_USERS=True):
+            result = sync_user_from_ldap(self.example_user('hamlet'))
+
+            self.assertFalse(result)
+            hamlet = self.example_user('hamlet')
+            self.assertFalse(hamlet.is_active)
 
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:

@@ -252,8 +252,8 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
             "stream",
             signup_notifications_stream.name,
             "signups",
-            "%s (%s) just signed up for Zulip. (total: %i)" % (
-                user_profile.full_name, user_profile.email, user_count
+            "_@**%s|%s** just signed up for Zulip. (total: %i)" % (
+                user_profile.full_name, user_profile.id, user_count
             )
         )
 
@@ -1990,6 +1990,12 @@ def check_schedule_message(sender: UserProfile, client: Client,
                             forwarder_user_profile=forwarder_user_profile)
     message['deliver_at'] = deliver_at
     message['delivery_type'] = delivery_type
+
+    recipient = message['message'].recipient
+    if (delivery_type == 'remind' and (recipient.type != Recipient.STREAM and
+                                       recipient.type_id != sender.id)):
+        raise JsonableError(_("Reminders can only be set for streams."))
+
     return do_schedule_messages([message])[0]
 
 def check_stream_name(stream_name: str) -> None:
@@ -3350,7 +3356,9 @@ def do_rename_stream(stream: Stream,
         sender,
         new_name,
         "welcome",
-        "@**%s** renamed stream **%s** to **%s**" % (user_profile.full_name, old_name, new_name)
+        "_@**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
+                                                         user_profile.id,
+                                                         old_name, new_name)
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
@@ -5126,6 +5134,22 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
                 "value": field_value.value,
                 "rendered_value": field_value.rendered_value,
                 "type": field_value.field.field_type})
+
+def check_remove_custom_profile_field_value(user_profile: UserProfile,
+                                            field_id: Union[int, str, List[int]]
+                                            ) -> None:
+    try:
+        field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
+        field_value.delete()
+        notify_user_update_custom_profile_data(user_profile, {'id': field_id,
+                                                              'value': None,
+                                                              'rendered_value': None,
+                                                              'type': field.field_type})
+    except CustomProfileField.DoesNotExist:
+        raise JsonableError(_('Field id {id} not found.').format(id=field_id))
+    except CustomProfileFieldValue.DoesNotExist:
+        pass
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
     event = dict(type="user_group",

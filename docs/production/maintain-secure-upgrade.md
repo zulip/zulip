@@ -436,18 +436,23 @@ running Zulip with larger teams (especially >1000 users).
   S3 backend for storing user-uploaded files and avatars and will want
   to make sure secrets are available on the hot spare.
 
-* Zulip does not support dividing traffic for a given Zulip realm
-  between multiple application servers.  There are two issues: you
-  need to share the memcached/Redis/RabbitMQ instance (these should
-  can be moved to a network service shared by multiple servers with a
-  bit of configuration) and the Tornado event system for pushing to
-  browsers currently has no mechanism for multiple frontend servers
-  (or event processes) talking to each other.  One can probably get a
-  factor of 10 in a single server's scalability by [supporting
-  multiple tornado processes on a single
-  server](https://github.com/zulip/zulip/issues/372), which is also
-  likely the first part of any project to support exchanging events
-  amongst multiple servers.
+* Zulip 2.0 and later supports running multiple Tornado servers
+  sharded by realm/organization, which is how we scale Zulip Cloud.
+
+* However, Zulip does not yet support dividing traffic for a single
+  Zulip realm between multiple application servers.  There are two
+  issues: you need to share the memcached/Redis/RabbitMQ instance
+  (these should can be moved to a network service shared by multiple
+  servers with a bit of configuration) and the Tornado event system
+  for pushing to browsers currently has no mechanism for multiple
+  frontend servers (or event processes) talking to each other.  One
+  can probably get a factor of 10 in a single server's scalability by
+  [supporting multiple tornado processes on a single server](https://github.com/zulip/zulip/issues/372),
+  which is also likely the first part of any project to support
+  exchanging events amongst multiple servers.  The work for changing
+  this is pretty far along, though, and thus while not generally
+  available yet, we can set it up for users with an enterprise support
+  contract.
 
 Questions, concerns, and bug reports about this area of Zulip are very
 welcome!  This is an area we are hoping to improve.
