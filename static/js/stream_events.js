@@ -159,7 +159,6 @@ exports.remove_deactivated_user_from_all_streams = function (user_id) {
     });
 };
 
-
 return exports;
 
 }());

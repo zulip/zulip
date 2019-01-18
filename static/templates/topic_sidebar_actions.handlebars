@@ -27,9 +27,17 @@
     <li>
         <a class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
-            {{#tr this}}Mark all messages in <b>__topic_name__</b> as read{{/tr}}
+            {{#tr this}}Mark all messages in topic <b>__topic_name__</b> as read{{/tr}}
         </a>
     </li>
 
+    {{#if is_admin}}
+    <li>
+        <a class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+            {{#tr this}}Delete all messages in <b>__topic_name__</b>{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 
 </ul>
