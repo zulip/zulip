@@ -259,7 +259,8 @@ class BugdownTest(ZulipTestCase):
         data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
         for test in data['regular_tests']:
-            test_fixtures[test['name']] = test
+            with self.subTest(i=test['name']):
+                test_fixtures[test['name']] = test
 
         return test_fixtures, data['linkify_tests']
 
@@ -267,9 +268,10 @@ class BugdownTest(ZulipTestCase):
         # We do not want any ignored tests to be committed and merged.
         format_tests, linkify_tests = self.load_bugdown_tests()
         for name, test in format_tests.items():
-            message = 'Test "%s" shouldn\'t be ignored.' % (name,)
-            is_ignored = test.get('ignore', False)
-            self.assertFalse(is_ignored, message)
+            with self.subTest(i=name):
+                message = 'Test "%s" shouldn\'t be ignored.' % (name,)
+                is_ignored = test.get('ignore', False)
+                self.assertFalse(is_ignored, message)
 
     @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self) -> None:
@@ -280,24 +282,25 @@ class BugdownTest(ZulipTestCase):
                           "translate_emoticons", "ignore"])
 
         for name, test in format_tests.items():
-            # Check that there aren't any unexpected keys as those are often typos
-            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+            with self.subTest(i=name):
+                # Check that there aren't any unexpected keys as those are often typos
+                self.assertEqual(len(set(test.keys()) - valid_keys), 0)
 
-            # Ignore tests if specified
-            if test.get('ignore', False):
-                continue  # nocoverage
+                # Ignore tests if specified
+                if test.get('ignore', False):
+                    continue  # nocoverage
 
-            if test.get('translate_emoticons', False):
-                # Create a userprofile and send message with it.
-                user_profile = self.example_user('othello')
-                do_set_user_display_setting(user_profile, 'translate_emoticons', True)
-                msg = Message(sender=user_profile, sending_client=get_client("test"))
-                converted = render_markdown(msg, test['input'])
-            else:
-                converted = bugdown_convert(test['input'])
+                if test.get('translate_emoticons', False):
+                    # Create a userprofile and send message with it.
+                    user_profile = self.example_user('othello')
+                    do_set_user_display_setting(user_profile, 'translate_emoticons', True)
+                    msg = Message(sender=user_profile, sending_client=get_client("test"))
+                    converted = render_markdown(msg, test['input'])
+                else:
+                    converted = bugdown_convert(test['input'])
 
-            print("Running Bugdown test %s" % (name,))
-            self.assertEqual(converted, test['expected_output'])
+                print("Running Bugdown test %s" % (name,))
+                self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload: str, url: str, phrase: str='') -> str:
             target = " target=\"_blank\""
@@ -313,12 +316,13 @@ class BugdownTest(ZulipTestCase):
         print("Running Bugdown Linkify tests")
         with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
             for inline_url, reference, url in linkify_tests:
-                try:
-                    match = replaced(reference, url, phrase=inline_url)
-                except TypeError:
-                    match = reference
-                converted = bugdown_convert(inline_url)
-                self.assertEqual(match, converted)
+                with self.subTest(i=inline_url):
+                    try:
+                        match = replaced(reference, url, phrase=inline_url)
+                    except TypeError:
+                        match = reference
+                    converted = bugdown_convert(inline_url)
+                    self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
         msg = 'Check out this file file:///Volumes/myserver/Users/Shared/pi.py'
@@ -1346,7 +1350,7 @@ class BugdownErrorTests(ZulipTestCase):
                 self.send_stream_message(self.example_email("othello"), "Denmark", message)
 
     def test_ultra_long_rendering(self) -> None:
-        """A rendered message with an ultra-long lenght (> 10 * MAX_MESSAGE_LENGTH)
+        """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
         throws an exception"""
         msg = u'mock rendered message\n' * MAX_MESSAGE_LENGTH
 
