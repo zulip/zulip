@@ -104,6 +104,45 @@ exports.set_up = function () {
             },
         });
     });
+    function open_linkifier_info_form_modal(filter){
+      var html = templates.render('linkifier-info-form-modal',{
+        pattern: filter[0],
+        url_format_string: filter[1],
+        filter_id: filter[2],
+      });
+      var linkifier_info_form_modal = $(html);
+      var modal_container = $('#user-info-form-modal-container');
+      modal_container.empty().append(linkifier_info_form_modal);
+      overlays.open_modal('linkifier-info-form-modal');
+
+      return linkifier_info_form_modal;
+    }
+
+    $(".admin_filters_table").on("click",".open-linkifier-form",function(e){
+      var filter_id = $(e.currentTarget).attr("data-filter-id");
+      var filter_pattern = $(e.currentTarget).attr("data-pattern");
+      var filter_url_format_string = $(e.currentTarget).attr("data-url-format-string");
+      var linkifier_info_form_modal = open_linkifier_info_form_modal([filter_pattern,filter_url_format_string,filter_id]);
+
+      linkifier_info_form_modal.find(".submit_linkifier_info_change").on("click", function (e){
+        e.preventDefault();
+        e.stopPropagation();
+        var new_pattern = $('#filter_pattern').val();
+        var new_url_format_string = $('#filter_url_format_string').val();
+
+        channel.patch({
+          url: "/json/realm/filters/update/"+ encodeURIComponent(filter_id),
+          data: {
+            pattern: JSON.stringify(new_pattern),
+            url_format_string: JSON.stringify(new_url_format_string)
+          },
+        });
+
+
+
+      });
+
+    });
 
 
 };
