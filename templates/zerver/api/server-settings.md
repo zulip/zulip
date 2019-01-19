@@ -56,6 +56,9 @@ curl {{ api_url }}/v1/server_settings \
 * `realm_logo`: the URI of the organization's logo as a horizontal
   format image (displayed in the top-left corner of the logged-in
   webapp).
+* `realm_night_logo`: the URI of the organization's logo in the night mode as a
+  horizontal format image (dispalyed in the top-left corner of the logged-in
+  webapp).
 * `realm_description`: HTML description of the organization, as configured by
   the [organization profile](/help/create-your-organization-profile).
 

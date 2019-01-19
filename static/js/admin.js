@@ -53,6 +53,8 @@ exports.build_page = function () {
         realm_icon_url: page_params.realm_icon_url,
         realm_logo_source: page_params.realm_logo_source,
         realm_logo_url: page_params.realm_logo_url,
+        realm_night_logo_source: page_params.realm_night_logo_source,
+        realm_night_logo_url: page_params.realm_night_logo_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:

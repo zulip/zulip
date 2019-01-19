@@ -1536,6 +1536,7 @@ class FetchAuthBackends(ZulipTestCase):
             ('realm_description', check_string),
             ('realm_icon', check_string),
             ('realm_logo', check_string),
+            ('realm_night_logo', check_string),
         ])
 
     def test_fetch_auth_backend_format(self) -> None:

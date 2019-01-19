@@ -116,10 +116,15 @@ var upload_widget = (function () {
     ) {
         // default value of max upladed file size
         max_file_upload_size = max_file_upload_size || default_max_file_size;
-
         function accept() {
             input_error.hide();
-            upload_function(get_file_input());
+            if (upload_button[0].id === "realm_night_logo_upload_button") {
+                upload_function(get_file_input(), true);
+            } else if (upload_button[0].id === "realm_logo_upload_button") {
+                upload_function(get_file_input(), false);
+            } else {
+                upload_function(get_file_input());
+            }
         }
 
         function clear() {

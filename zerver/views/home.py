@@ -288,6 +288,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_plans': show_plans,
                                'is_admin': user_profile.is_realm_admin,
                                'is_guest': user_profile.is_guest,
+                               'night_mode': user_profile.night_mode,
                                'show_webathena': user_profile.realm.webathena_enabled,
                                'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,

@@ -226,10 +226,11 @@ class ZulipUploadBackend:
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         raise NotImplementedError()
 
-    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
+                                night: bool) -> None:
         raise NotImplementedError()
 
-    def get_realm_logo_url(self, realm_id: int, version: int) -> str:
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         raise NotImplementedError()
 
     def upload_emoji_image(self, emoji_file: File, emoji_file_name: str, user_profile: UserProfile) -> None:
@@ -468,10 +469,15 @@ class S3UploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return "https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
 
-    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
+                                night: bool) -> None:
         content_type = guess_type(logo_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', 'logo')
+        if night:
+            temp = 'night_logo'
+        else:
+            temp = 'logo'
+        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', temp)
 
         image_data = logo_file.read()
         upload_image_to_s3(
@@ -493,10 +499,14 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
-    def get_realm_logo_url(self, realm_id: int, version: int) -> str:
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         # ?x=x allows templates to append additional parameters with &s
-        return "https://%s.s3.amazonaws.com/%s/realm/logo.png?version=%s" % (bucket, realm_id, version)
+        if not night:
+            file_name = 'logo.png'
+        else:
+            file_name = 'night_logo.png'
+        return "https://%s.s3.amazonaws.com/%s/realm/%s?version=%s" % (bucket, realm_id, file_name, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -672,21 +682,31 @@ class LocalUploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return "/user_avatars/%s/realm/icon.png?version=%s" % (realm_id, version)
 
-    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile) -> None:
+    def upload_realm_logo_image(self, logo_file: File, user_profile: UserProfile,
+                                night: bool) -> None:
         upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
-
+        if night:
+            original_file = 'night_logo.original'
+            resized_file = 'night_logo.png'
+        else:
+            original_file = 'logo.original'
+            resized_file = 'logo.png'
         image_data = logo_file.read()
         write_local_file(
             upload_path,
-            'logo.original',
+            original_file,
             image_data)
 
         resized_data = resize_logo(image_data)
-        write_local_file(upload_path, 'logo.png', resized_data)
+        write_local_file(upload_path, resized_file, resized_data)
 
-    def get_realm_logo_url(self, realm_id: int, version: int) -> str:
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         # ?x=x allows templates to append additional parameters with &s
-        return "/user_avatars/%s/realm/logo.png?version=%s" % (realm_id, version)
+        if night:
+            file_name = 'night_logo.png'
+        else:
+            file_name = 'logo.png'
+        return "/user_avatars/%s/realm/%s?version=%s" % (realm_id, file_name, version)
 
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         file_path = user_avatar_path(user_profile)
@@ -758,8 +778,8 @@ def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> Non
 def upload_icon_image(user_file: File, user_profile: UserProfile) -> None:
     upload_backend.upload_realm_icon_image(user_file, user_profile)
 
-def upload_logo_image(user_file: File, user_profile: UserProfile) -> None:
-    upload_backend.upload_realm_logo_image(user_file, user_profile)
+def upload_logo_image(user_file: File, user_profile: UserProfile, night: bool) -> None:
+    upload_backend.upload_realm_logo_image(user_file, user_profile, night)
 
 def upload_emoji_image(emoji_file: File, emoji_file_name: str, user_profile: UserProfile) -> None:
     upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)

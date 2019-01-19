@@ -1116,20 +1116,30 @@ exports.build_page = function () {
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
 
-    function upload_realm_logo(file_input) {
+    function upload_realm_logo(file_input, night) {
         var form_data = new FormData();
+        var spinner;
+        var error_field;
+        var button_text;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
             form_data.append('file-' + i, file);
         });
-
-        var error_field = $("#realm_logo_file_input_error");
+        if (night) {
+            error_field = $("#realm_night_logo_file_input_error");
+            spinner = $("#upload_night_logo_spinner");
+            button_text = $("#upload_night_logo_button_text");
+        } else {
+            error_field = $("#realm_logo_file_input_error");
+            spinner = $("#upload_logo_spinner");
+            button_text = $("#upload_logo_button_text");
+        }
+        spinner.expectOne();
         error_field.hide();
-        var spinner = $("#upload_logo_spinner").expectOne();
+        button_text.expectOne().hide();
         loading.make_indicator(spinner, {text: i18n.t("Uploading logo.")});
-        $("#upload_logo_button_text").expectOne().hide();
-
+        form_data.append('night', JSON.stringify(night));
         channel.post({
             url: '/json/realm/logo',
             data: form_data,
@@ -1137,17 +1147,18 @@ exports.build_page = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator($("#upload_logo_spinner"));
-                $("#upload_logo_button_text").expectOne().show();
+                loading.destroy_indicator(spinner);
+                button_text.expectOne().show();
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_logo_spinner"));
-                $("#upload_logo_button_text").expectOne().show();
+                loading.destroy_indicator(spinner);
+                button_text.expectOne().show();
                 ui_report.error("", xhr, error_field);
             },
         });
 
     }
+    realm_logo.build_realm_night_logo_widget(upload_realm_logo);
     realm_logo.build_realm_logo_widget(upload_realm_logo);
 
     $('#deactivate_realm_button').on('click', function (e) {

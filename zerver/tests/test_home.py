@@ -159,6 +159,8 @@ class HomeTest(ZulipTestCase):
             "realm_name",
             "realm_name_changes_disabled",
             "realm_name_in_notifications",
+            "realm_night_logo_source",
+            "realm_night_logo_url",
             "realm_non_active_users",
             "realm_notifications_stream_id",
             "realm_password_auth_enabled",

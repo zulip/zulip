@@ -55,6 +55,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_name = None
         realm_icon = None
         realm_logo = None
+        realm_night_logo = None
         realm_description = None
         realm_invite_required = False
         realm_plan_type = 0
@@ -62,7 +63,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_logo = get_realm_logo_url(realm)
+        realm_logo = get_realm_logo_url(realm, night = False)
+        realm_night_logo = get_realm_logo_url(realm, night = True)
         realm_description_raw = realm.description or "The coolest place in the universe."
         realm_description = bugdown_convert(realm_description_raw, message_realm=realm)
         realm_invite_required = realm.invite_required
@@ -118,6 +120,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_name': realm_name,
         'realm_icon': realm_icon,
         'realm_logo': realm_logo,
+        'realm_night_logo': realm_night_logo,
         'realm_description': realm_description,
         'realm_plan_type': realm_plan_type,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,

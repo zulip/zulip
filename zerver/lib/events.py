@@ -183,8 +183,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
-        state['realm_logo_url'] = realm_logo_url(realm)
+        state['realm_logo_url'] = realm_logo_url(realm, night = False)
         state['realm_logo_source'] = realm.logo_source
+        state['realm_night_logo_url'] = realm_logo_url(realm, night = True)
+        state['realm_night_logo_source'] = realm.night_logo_source
         state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
