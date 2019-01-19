@@ -235,8 +235,16 @@ exports.paste_handler = function (event) {
     if (clipboardData.getData) {
         var paste_html = clipboardData.getData('text/html');
         if (paste_html && page_params.development_environment) {
-            event.preventDefault();
             var text = exports.paste_handler_converter(paste_html);
+            var mdImageRegex = /^!\[.*\]\(.*\)$/;
+            if (text.match(mdImageRegex)) {
+                // This block catches cases where we are pasting an
+                // image into Zulip, which should be handled by the
+                // jQuery filedrop library, not this code path.
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
             compose_ui.insert_syntax_and_focus(text);
         }
     }
