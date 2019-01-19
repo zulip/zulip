@@ -164,22 +164,52 @@
       sendRawImageData(event, image);
     }
 
+    function dataIsImage(data) {
+      // Check if the clipboard data is actually an image or a thumbnail of the
+      // copied text.
+
+      var text = data.getData('text/html');
+
+      if (!text) {
+        // No html is present, when pasting from image viewers or a screenshot
+        return true;
+      }
+
+      try {
+        var html = $.parseHTML(text);
+      } catch(e) {
+        // This is really a problem with the software, where we copied the text
+        // from - but we just let the default browser behavior prevail
+        return false;
+      }
+
+      // Some software like MS Word adds an image thumbnail, when text is
+      // copied. We would like to paste the actual text, instead of the
+      // thumbnail image in this case.
+
+      // When an image copied in a (modern?) Browser, a 'text/html' item is
+      // present in the clipboard, which has an img tag for the copied image
+      // (along with may be a meta tag)
+
+      var allowedTags = ["META", "IMG"];
+      for (var i=0; i < html.length; i += 1){
+        if (allowedTags.indexOf(html[i].nodeName) < 0){
+          return false;
+        }
+      }
+      return true;
+    }
+
     function paste(event) {
       if (event.originalEvent.clipboardData === undefined ||
           event.originalEvent.clipboardData.items === undefined) {
         return;
       }
 
-      // Check if any of the items are strings, and if they are,
-      // then return, since we want the default browser behavior
-      // to deal with those.
-
-      var itemsLength = event.originalEvent.clipboardData.items.length;
-
-      for (var i = 0; i <  itemsLength; i++) {
-        if (event.originalEvent.clipboardData.items[i].kind === "string") {
-          return;
-        }
+      // Check if the data in the clipboard is really an image, or just a
+      // thumbnail of the copied text.
+      if (!dataIsImage(event.originalEvent.clipboardData)){
+        return;
       }
 
       // Take the first image pasted in the clipboard

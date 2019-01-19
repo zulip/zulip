@@ -1,8 +1,9 @@
 global.stub_out_jquery();
 
 set_global('page_params', {
-    development: true,
+    development_environment: true,
 });
+set_global('compose_ui', {});
 
 const { JSDOM } = require("jsdom");
 const { window } = new JSDOM('<!DOCTYPE html><p>Hello world</p>');
@@ -12,6 +13,25 @@ global.$ = require('jquery')(window);
 
 zrequire('toMarkdown', 'node_modules/to-markdown/dist/to-markdown.js');
 var copy_and_paste = zrequire('copy_and_paste');
+
+// Super stripped down version of the code in the drag-mock library
+// https://github.com/andywer/drag-mock/blob/6d46c7c0ffd6a4d685e6612a90cd58cda80f30fc/src/DataTransfer.js
+var DataTransfer = function () {
+    this.dataByFormat = {};
+};
+DataTransfer.prototype.getData = function (dataFormat) {
+    return this.dataByFormat[dataFormat];
+};
+DataTransfer.prototype.setData = function (dataFormat, data) {
+    this.dataByFormat[dataFormat] = data;
+};
+
+var createPasteEvent = function () {
+    var clipboardData = new DataTransfer();
+    var pasteEvent = new window.Event('paste');
+    pasteEvent.clipboardData = clipboardData;
+    return $.Event(pasteEvent);
+};
 
 run_test('paste_handler', () => {
 
@@ -50,4 +70,22 @@ run_test('paste_handler', () => {
     input = '<div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z ace-ltr focused-line" dir="auto" id="editor-3-ace-line-41"><span>Test List:</span></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-42"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 1</span></li></ul></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-43"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 2</span></li></ul></div>';
     assert.equal(copy_and_paste.paste_handler_converter(input),
                  'Test List:\n*   Item 1\n*   Item 2');
+
+    var data = '<p>text</p>';
+    var event = createPasteEvent();
+    event.originalEvent.clipboardData.setData('text/html', data);
+    var insert_syntax_and_focus_called = false;
+    compose_ui.insert_syntax_and_focus = function () {
+        insert_syntax_and_focus_called = true;
+    };
+    copy_and_paste.paste_handler(event);
+    assert(insert_syntax_and_focus_called);
+
+    data = '<meta http-equiv="content-type" content="text/html; charset=utf-8"><img src="http://localhost:9991/thumbnail?url=user_uploads%2F1%2Fe2%2FHPMCcGWOG9rS2M4ybHN8sEzh%2Fpasted_image.png&amp;size=full"/>';
+    event = createPasteEvent();
+    event.originalEvent.clipboardData.setData('text/html', data);
+    insert_syntax_and_focus_called = false;
+    copy_and_paste.paste_handler(event);
+    assert(!insert_syntax_and_focus_called);
+
 });
