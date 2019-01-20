@@ -544,9 +544,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_TO_PREVIEW = 3
     INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
 
-    def __init__(self, md: markdown.Markdown, bugdown: 'Bugdown') -> None:
+    def __init__(self, md: markdown.Markdown) -> None:
         # Passing in bugdown for access to config to check if realm is zulip.com
-        self.bugdown = bugdown
         markdown.treeprocessors.Treeprocessor.__init__(self, md)
 
     def get_actual_image_url(self, url: str) -> str:
@@ -1653,7 +1652,7 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
 DEFAULT_BUGDOWN_KEY = -1
 ZEPHYR_MIRROR_BUGDOWN_KEY = -2
 
-class Bugdown(markdown.Extension):
+class Bugdown(markdown.Markdown):
     def __init__(self, *args: Any, **kwargs: Union[bool, int, List[Any]]) -> None:
         # define default configs
         self.config = {
@@ -1665,156 +1664,134 @@ class Bugdown(markdown.Extension):
         }
 
         super().__init__(*args, **kwargs)
+        self.set_output_format('html')
 
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        del md.preprocessors['reference']
+    def build_parser(self) -> markdown.Markdown:
+        # Build the parser using selected default features from py-markdown.
+        # The complete list of all available processors can be found in the
+        # super().build_parser() function.
+        #
+        # Note: for any py-markdown updates, manually check if we want any
+        # of the new features added upstream or not; they wouldn't get
+        # included by default.
+        self.preprocessors = self.build_preprocessors()
+        self.parser = self.build_block_parser()
+        self.inlinePatterns = self.build_inlinepatterns()
+        self.treeprocessors = self.build_treeprocessors()
+        self.postprocessors = self.build_postprocessors()
+        self.handle_zephyr_mirror()
+        return self
 
-        if self.getConfig('code_block_processor_disabled'):
-            del md.parser.blockprocessors['code']
+    def build_preprocessors(self) -> markdown.util.Registry:
+        preprocessors = markdown.util.Registry()
+        preprocessors.register(AutoNumberOListPreprocessor(self), 'auto_number_olist', 40)
+        preprocessors.register(BugdownUListPreprocessor(self), 'hanging_ulists', 35)
+        preprocessors.register(markdown.preprocessors.NormalizeWhitespace(self), 'normalize_whitespace', 30)
+        preprocessors.register(fenced_code.FencedBlockPreprocessor(self), 'fenced_code_block', 25)
+        preprocessors.register(AlertWordsNotificationProcessor(self), 'custom_text_notifications', 20)
+        return preprocessors
 
-        for k in ('image_link', 'image_reference', 'automail',
-                  'autolink', 'link', 'reference', 'short_reference',
-                  'escape', 'strong_em', 'emphasis', 'emphasis2',
-                  'linebreak', 'strong', 'backtick', 'em_strong',
-                  'strong2'):
-            md.inlinePatterns.deregister(k)
+    def build_block_parser(self) -> markdown.util.Registry:
+        parser = markdown.blockprocessors.BlockParser(self)
+        parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
+        if not self.getConfig('code_block_processor_disabled'):
+            parser.blockprocessors.register(markdown.blockprocessors.CodeBlockProcessor(parser), 'code', 80)
+        # We get priority 75 from 'table' extension
+        parser.blockprocessors.register(markdown.blockprocessors.HRProcessor(parser), 'hr', 70)
+        parser.blockprocessors.register(UListProcessor(parser), 'ulist', 65)
+        parser.blockprocessors.register(ListIndentProcessor(parser), 'indent', 60)
+        parser.blockprocessors.register(BlockQuoteProcessor(parser), 'quote', 55)
+        parser.blockprocessors.register(markdown.blockprocessors.ParagraphProcessor(parser), 'paragraph', 50)
+        return parser
 
-        try:
-            # linebreak2 was removed upstream in version 3.2.1, so
-            # don't throw an error if it is not there
-            del md.inlinePatterns['linebreak2']
-        except Exception:
-            pass
-
-        # Having the extension operations split into a bunch of
-        # smaller functions both helps with organization and
-        # simplifies profiling of the markdown engine build time.
-        self.extend_alert_words(md)
-        self.extend_text_formatting(md)
-        self.extend_block_formatting(md)
-        self.extend_avatars(md)
-        self.extend_modal_links(md)
-        self.extend_mentions(md)
-        self.extend_stream_links(md)
-        self.extend_emojis(md)
-        self.extend_misc(md)
-
-    def extend_alert_words(self, md: markdown.Markdown) -> None:
-        md.preprocessors.add("custom_text_notifications", AlertWordsNotificationProcessor(md), "_end")
-
-    def extend_text_formatting(self, md: markdown.Markdown) -> None:
-        # Inline code block without whitespace stripping
-        md.inlinePatterns.add(
-            "backtick",
-            BacktickPattern(r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'),
-            "_begin")
-
-        md.inlinePatterns.add(
-            'strong_em',
-            markdown.inlinepatterns.DoubleTagPattern(
-                r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*', 'strong,em'),
-            '>backtick')
-
-        # Custom bold syntax: **foo** but not __foo__
-        md.inlinePatterns.add('strong',
-                              markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
-                              '>not_strong')
-
+    def build_inlinepatterns(self) -> markdown.util.Registry:
+        # Declare regexes for clean single line calls to .register().
+        NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
         # Custom strikethrough syntax: ~~foo~~
-        md.inlinePatterns.add('del',
-                              markdown.inlinepatterns.SimpleTagPattern(
-                                  r'(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)', 'del'), '>strong')
-
+        DEL_RE = r'(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)'
+        # Custom bold syntax: **foo** but not __foo__
         # str inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
-        md.inlinePatterns.add(
-            'emphasis',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
-            '>strong')
+        EMPHASIS_RE = r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*'
+        ENTITY_RE = markdown.inlinepatterns.ENTITY_RE
+        STRONG_EM_RE = r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*'
+        # Inline code block without whitespace stripping
+        BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
-    def extend_block_formatting(self, md: markdown.Markdown) -> None:
-        for k in ('hashheader', 'setextheader', 'olist', 'ulist', 'indent', 'quote'):
-            del md.parser.blockprocessors[k]
-
-        md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
-        md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
-        md.parser.blockprocessors.add('quote', BlockQuoteProcessor(md.parser), '<ulist')
-
-    def extend_avatars(self, md: markdown.Markdown) -> None:
+        # Add Inline Patterns
+        reg = markdown.util.Registry()
+        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 105)
+        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
+        reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
+        reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
+        reg.register(StreamPattern(verbose_compile(STREAM_LINK_REGEX), self), 'stream', 85)
+        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
+        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
         # Note that !gravatar syntax should be deprecated long term.
-        md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX, md), '>backtick')
-        md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX, md), '>backtick')
+        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
+        reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
+        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 60)
+        reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
+        # Reserve priority 45-54 for Realm Filters
+        reg = self.register_realm_filters(reg)
+        reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'), 'strong', 35)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, 'em'), 'emphasis', 30)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, 'del'), 'del', 25)
+        reg.register(markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), 'not_strong', 20)
+        reg.register(Emoji(EMOJI_REGEX, self), 'emoji', 15)
+        reg.register(EmoticonTranslation(emoticon_regex, self), 'translate_emoticons', 10)
+        # We get priority 5 from 'nl2br' extension
+        reg.register(UnicodeEmoji(unicode_emoji_regex), 'unicodeemoji', 0)
+        return reg
 
-    def extend_modal_links(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add(
-            'modal_link',
-            ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
-            '>avatar')
-
-    def extend_mentions(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions, md), '>backtick')
-        md.inlinePatterns.add('usergroupmention',
-                              UserGroupMentionPattern(mention.user_group_mentions, md),
-                              '>backtick')
-
-    def extend_stream_links(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('stream', StreamPattern(verbose_compile(STREAM_LINK_REGEX), md), '>backtick')
-
-    def extend_emojis(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add(
-            'tex',
-            Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
-            '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX, md), '<nl')
-        md.inlinePatterns.add('translate_emoticons', EmoticonTranslation(emoticon_regex, md), '>emoji')
-        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
-
-    def extend_misc(self, md: markdown.Markdown) -> None:
-        md.inlinePatterns.add('link', AtomicLinkPattern(get_link_re(), md), '>avatar')
-
+    def register_realm_filters(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
         for (pattern, format_string, id) in self.getConfig("realm_filters"):
-            md.inlinePatterns.add('realm_filters/%s' % (pattern,),
-                                  RealmFilterPattern(pattern, format_string, md), '>link')
+            inlinePatterns.register(RealmFilterPattern(pattern, format_string, self),
+                                    'realm_filters/%s' % (pattern), 45)
+        return inlinePatterns
 
-        md.inlinePatterns.add('autolink', AutoLink(get_web_link_regex(), md), '>link')
-
-        md.preprocessors.add('hanging_ulists',
-                             BugdownUListPreprocessor(md),
-                             "_begin")
-
-        md.preprocessors.add('auto_number_olist',
-                             AutoNumberOListPreprocessor(md),
-                             "_begin")
-
-        md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
-
+    def build_treeprocessors(self) -> markdown.util.Registry:
+        treeprocessors = markdown.util.Registry()
+        # We get priority 30 from 'hilite' extension
+        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), 'inline', 25)
+        treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), 'prettify', 20)
+        treeprocessors.register(InlineInterestingLinkProcessor(self), 'inline_interesting_links', 15)
         if settings.CAMO_URI:
-            md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
+            treeprocessors.register(InlineHttpsProcessor(self), 'rewrite_to_https', 10)
+        return treeprocessors
 
+    def build_postprocessors(self) -> markdown.util.Registry:
+        postprocessors = markdown.util.Registry()
+        postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), 'raw_html', 20)
+        postprocessors.register(markdown.postprocessors.AndSubstitutePostprocessor(), 'amp_substitute', 15)
+        postprocessors.register(markdown.postprocessors.UnescapePostprocessor(), 'unescape', 10)
+        return postprocessors
+
+    def getConfig(self, key: str, default: str='') -> Any:
+        """ Return a setting for the given key or an empty string. """
+        if key in self.config:
+            return self.config[key][0]
+        else:
+            return default
+
+    def handle_zephyr_mirror(self) -> None:
         if self.getConfig("realm") == ZEPHYR_MIRROR_BUGDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
             # not removed
-            md.inlinePatterns = get_sub_registry(md.inlinePatterns, ['autolink'])
-            md.treeprocessors = get_sub_registry(md.treeprocessors,
-                                                 ['inline_interesting_links',
-                                                  'rewrite_to_https'])
-            # insert new 'inline' processor because we have changed md.inlinePatterns
+            self.inlinePatterns = get_sub_registry(self.inlinePatterns, ['autolink'])
+            self.treeprocessors = get_sub_registry(self.treeprocessors, ['inline_interesting_links',
+                                                                         'rewrite_to_https'])
+            # insert new 'inline' processor because we have changed self.inlinePatterns
             # but InlineProcessor copies md as self.md in __init__.
-            md.treeprocessors.add('inline',
-                                  markdown.treeprocessors.InlineProcessor(md),
-                                  '>inline_interesting_links')
-            md.preprocessors = get_sub_registry(md.preprocessors, ['custom_text_notifications'])
-            md.parser.blockprocessors = get_sub_registry(md.parser.blockprocessors, ['paragraph'])
+            self.treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), 'inline', 25)
+            self.preprocessors = get_sub_registry(self.preprocessors, ['custom_text_notifications'])
+            self.parser.blockprocessors = get_sub_registry(self.parser.blockprocessors, ['paragraph'])
 
 md_engines = {}  # type: Dict[Tuple[int, bool], markdown.Markdown]
 realm_filter_data = {}  # type: Dict[int, List[Tuple[str, str, int]]]
-
-class EscapeHtml(markdown.Extension):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        del md.preprocessors['html_block']
-        del md.inlinePatterns['html']
 
 def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
     md_engine_key = (realm_filters_key, email_gateway)
@@ -1831,20 +1808,18 @@ def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
 def build_engine(realm_filters: List[Tuple[str, str, int]],
                  realm_filters_key: int,
                  email_gateway: bool) -> markdown.Markdown:
-    engine = markdown.Markdown(
-        output_format = 'html',
-        extensions    = [
+    engine = Bugdown(
+        realm_filters=realm_filters,
+        realm=realm_filters_key,
+        code_block_processor_disabled=email_gateway,
+        extensions = [
             nl2br.makeExtension(),
             tables.makeExtension(),
             codehilite.makeExtension(
                 linenums=False,
                 guess_lang=False
             ),
-            fenced_code.makeExtension(),
-            EscapeHtml(),
-            Bugdown(realm_filters=realm_filters,
-                    realm=realm_filters_key,
-                    code_block_processor_disabled=email_gateway)])
+        ])
     return engine
 
 def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
