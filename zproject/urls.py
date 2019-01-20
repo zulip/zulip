@@ -109,7 +109,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.realm_filters.list_filters',
          'POST': 'zerver.views.realm_filters.create_filter'}),
     url(r'^realm/filters/(?P<filter_id>\d+)$', rest_dispatch,
-        {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
+        {'DELETE': 'zerver.views.realm_filters.delete_filter',
+         'PATCH': 'zerver.views.realm_filters.update_filter'}),
 
     # realm/profile_fields -> zerver.views.custom_profile_fields
     url(r'^realm/profile_fields$', rest_dispatch,

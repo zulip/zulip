@@ -3,7 +3,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
+from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter, do_update_realm_filter
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
@@ -38,3 +38,19 @@ def delete_filter(request: HttpRequest, user_profile: UserProfile,
     except RealmFilter.DoesNotExist:
         return json_error(_('Filter not found'))
     return json_success()
+
+@require_realm_admin
+@has_request_variables
+def update_filter(request: HttpRequest, user_profile: UserProfile,
+                  filter_id: int, pattern: str=REQ(),
+                  url_format_string: str=REQ()) -> HttpResponse:
+    try:
+        filter_id = do_update_realm_filter(
+            realm=user_profile.realm,
+            pattern=pattern,
+            url_format_string=url_format_string,
+            id=filter_id
+        )
+        return json_success({'id': filter_id})
+    except ValidationError as e:
+        return json_error(e.messages[0], data={"errors": dict(e)})

@@ -86,6 +86,7 @@ from zerver.lib.actions import (
     do_update_message_flags,
     do_update_outgoing_webhook_service,
     do_update_pointer,
+    do_update_realm_filter,
     do_update_user_presence,
     do_update_user_status,
     get_typing_user_profiles,
@@ -1879,6 +1880,14 @@ class EventsRegisterTest(ZulipTestCase):
         self.do_test(lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+        filter_id = do_add_realm_filter(self.user_profile.realm, "#(?P<id>[123])",
+                                        "https://realm.com/my_realm_filter/%(id)s")
+        events = self.do_test(lambda: do_update_realm_filter(self.user_profile.realm, "#(?P<id>[1234])",
+                                                             "https://realm.com/my_realm_filter/%(id)s",
+                                                             filter_id))
+        self.assert_on_error(error)
+        do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[1234])")
 
     def test_realm_domain_events(self) -> None:
         schema_checker = self.check_events_dict([

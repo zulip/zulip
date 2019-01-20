@@ -99,6 +99,9 @@ exports.build_page = function () {
                 add_filter_button.removeAttr("disabled");
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
+                setTimeout(function () {
+                    $('#admin-filter-status').hide();
+                }, 2000);
             },
             error: function (xhr) {
                 var errors = JSON.parse(xhr.responseText).errors;
@@ -118,7 +121,73 @@ exports.build_page = function () {
             },
         });
     });
+    function open_form_modal(opts) {
+        var html = templates.render('linkifier-info-form-modal', {
+            pattern: opts.pattern,
+            url_format_string: opts.string,
+            filter_id: opts.id,
+        });
+        $("#linkifier-edit-error").hide();
+        var form_modal = $(html);
+        var modal_container = $('#linkifier-info-form-modal-container');
+        modal_container.empty().append(form_modal);
+        overlays.open_modal('linkifier-info-form-modal');
 
+        return form_modal;
+    }
+
+    $(".admin_filters_table").on("click", ".open-linkifier-form", function (e) {
+        var filter_id = $(e.currentTarget).attr("data-filter-id");
+        var filter_pattern = $(e.currentTarget).attr("data-pattern");
+        var filter_url_format_string = $(e.currentTarget).attr("data-url-format-string");
+        var form_modal = open_form_modal({
+            pattern: filter_pattern,
+            string: filter_url_format_string,
+            id: filter_id,
+        });
+
+        var edit_pattern_status = $('#edit-filter-pattern-status');
+        var edit_string_status = $('#edit-filter-string-status');
+        var edit_filter_status = $('#edit-filter-status');
+        var success_edit_status = $('#success-edit-status');
+
+        form_modal.find(".submit_linkifier_info_change").on("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var new_pattern = $('#filter_pattern').val();
+            var new_url_format_string = $('#filter_url_format_string').val();
+            channel.patch({
+                url: "/json/realm/filters/" + encodeURIComponent(filter_id),
+                data: {
+                    pattern: new_pattern,
+                    url_format_string: new_url_format_string,
+                },
+                success: function () {
+                    overlays.close_modal('linkifier-info-form-modal');
+                    ui_report.success(i18n.t("Linkifier updated successfully :)!"), success_edit_status);
+                    setTimeout(function () {
+                        $('#success-edit-status').hide();
+                    }, 2000);
+                },
+                error: function (xhr) {
+                    var errors = JSON.parse(xhr.responseText).errors;
+                    if (errors.pattern !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.pattern});
+                        ui_report.error(i18n.t("Failed"), xhr, edit_pattern_status);
+                    }
+                    if (errors.url_format_string !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                        ui_report.error(i18n.t("Failed"), xhr, edit_string_status);
+                    }
+                    if (errors.__all__ !== undefined) {
+                        xhr.responseText = JSON.stringify({msg: errors.__all__});
+                        ui_report.error(i18n.t("Failed"), xhr, edit_filter_status);
+                    }
+                },
+            });
+        });
+
+    });
 
 };
 
