@@ -9,8 +9,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.user_status import (
     get_away_user_ids,
-    revoke_away_status,
-    set_away_status,
+    update_user_status,
 )
 
 from zerver.models import (
@@ -34,8 +33,9 @@ class UserStatusTest(ZulipTestCase):
         client1 = get_client('web')
         client2 = get_client('ZT')
 
-        set_away_status(
+        update_user_status(
             user_profile_id=hamlet.id,
+            status=UserStatus.AWAY,
             client_id=client1.id,
         )
 
@@ -48,8 +48,9 @@ class UserStatusTest(ZulipTestCase):
         # clients; we only store the client for
         # reference and to maybe reconcile timeout
         # situations.
-        set_away_status(
+        update_user_status(
             user_profile_id=hamlet.id,
+            status=UserStatus.AWAY,
             client_id=client2.id,
         )
 
@@ -59,8 +60,10 @@ class UserStatusTest(ZulipTestCase):
         rec_count = UserStatus.objects.filter(user_profile_id=hamlet.id).count()
         self.assertEqual(rec_count, 1)
 
-        revoke_away_status(
+        update_user_status(
             user_profile_id=hamlet.id,
+            status=UserStatus.NORMAL,
+            client_id=client2.id,
         )
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)
@@ -68,16 +71,19 @@ class UserStatusTest(ZulipTestCase):
 
         # Now set away status for three different users across
         # two realms.
-        set_away_status(
+        update_user_status(
             user_profile_id=hamlet.id,
+            status=UserStatus.AWAY,
             client_id=client1.id,
         )
-        set_away_status(
+        update_user_status(
             user_profile_id=cordelia.id,
+            status=UserStatus.AWAY,
             client_id=client2.id,
         )
-        set_away_status(
+        update_user_status(
             user_profile_id=king_lear.id,
+            status=UserStatus.AWAY,
             client_id=client2.id,
         )
 
@@ -88,8 +94,10 @@ class UserStatusTest(ZulipTestCase):
         self.assertEqual(away_user_ids, {king_lear.id})
 
         # Revoke Hamlet again.
-        revoke_away_status(
+        update_user_status(
             user_profile_id=hamlet.id,
+            status=UserStatus.NORMAL,
+            client_id=client2.id,
         )
 
         away_user_ids = get_away_user_ids(realm_id=realm_id)

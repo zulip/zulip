@@ -79,15 +79,14 @@ from zerver.lib.users import (
     user_ids_to_users
 )
 from zerver.lib.user_status import (
-    revoke_away_status,
-    set_away_status,
+    update_user_status,
 )
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, Service, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
-    UserHotspot, MultiuseInvite, ScheduledMessage, \
+    UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
@@ -3771,29 +3770,26 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
     event = dict(type='pointer', pointer=pointer)
     send_event(user_profile.realm, event, [user_profile.id])
 
-def do_set_away_status(user_profile: UserProfile,
-                       client_id: int) -> None:
+def do_update_user_status(user_profile: UserProfile,
+                          client_id: int,
+                          away: bool) -> None:
+    if away:
+        status = UserStatus.AWAY
+    else:
+        status = UserStatus.NORMAL
+
     realm = user_profile.realm
-    set_away_status(
+
+    update_user_status(
         user_profile_id=user_profile.id,
+        status=status,
         client_id=client_id,
     )
-    event = dict(
-        type='user_status',
-        user_id=user_profile.id,
-        away=True,
-    )
-    send_event(realm, event, active_user_ids(realm.id))
 
-def do_revoke_away_status(user_profile: UserProfile) -> None:
-    realm = user_profile.realm
-    revoke_away_status(
-        user_profile_id=user_profile.id,
-    )
     event = dict(
         type='user_status',
         user_id=user_profile.id,
-        away=False,
+        away=away,
     )
     send_event(realm, event, active_user_ids(realm.id))
 
