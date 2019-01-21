@@ -575,6 +575,10 @@ exports.setup_page = function (callback) {
             },
         });
 
+        if (page_params.is_guest) {
+            exports.toggler.disable_tab('all-streams');
+        }
+
         if (should_list_all_streams()) {
             var toggler_elem = exports.toggler.get();
             $("#subscriptions_table .search-container").prepend(toggler_elem);
@@ -645,6 +649,10 @@ exports.change_state = function (section) {
     }
 
     if (section === "all") {
+        if (page_params.is_guest) {
+            exports.toggler.goto('subscribed');
+            return;
+        }
         exports.toggler.goto('all-streams');
         return;
     }
@@ -737,7 +745,11 @@ exports.toggle_view = function (event) {
     var active_data = get_active_data();
 
     if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
-        exports.toggler.goto('all-streams');
+        if (page_params.is_guest) {
+            exports.toggler.goto('subscribed');
+        } else {
+            exports.toggler.goto('all-streams');
+        }
     } else if (event === 'left_arrow' && active_data.tab.text() === 'All streams') {
         exports.toggler.goto('subscribed');
     }

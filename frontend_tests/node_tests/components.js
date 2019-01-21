@@ -1,5 +1,4 @@
 set_global('i18n', global.stub_i18n);
-set_global('page_params', {});
 
 zrequire('keydown_util');
 zrequire('components');
@@ -33,6 +32,11 @@ run_test('basics', () => {
         self.removeClass = function (c) {
             var tokens = self.class.trim().split(/ +/);
             self.class = _.without(tokens, c).join(' ');
+        };
+
+        self.hasClass = function (c) {
+            var tokens = self.class.trim().split(/ +/);
+            return tokens.includes(c);
         };
 
         self.data = function (name) {
@@ -198,4 +202,10 @@ run_test('basics', () => {
 
     click_f.call(tabs[1]);
     assert.equal(widget.value(), 'translated: Message formatting');
+
+    callback_args = undefined;
+    widget.disable_tab("search-operators");
+    assert.equal(tabs[2].class, "last disabled");
+    widget.goto("search-operators");
+    assert.equal(tabs[2].class, "last disabled");
 });

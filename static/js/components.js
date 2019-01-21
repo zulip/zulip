@@ -22,11 +22,6 @@ exports.toggle = function (opts) {
             // by text value which can be inconsistent.
             var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "' tabindex='0'>" + value.label + "</div>");
 
-            // disable 'all streams' tab for guest user
-            if (page_params.is_guest && value.label === "All streams") {
-                tab.addClass("disabled");
-            }
-
             // add proper classes for styling in CSS.
             if (i === 0) {
                 // this should be default selected unless otherwise specified.
@@ -47,9 +42,13 @@ exports.toggle = function (opts) {
     };
 
     function select_tab(idx) {
+        var elem = meta.$ind_tab.eq(idx);
+        if (elem.hasClass('disabled')) {
+            return;
+        }
+
         meta.$ind_tab.removeClass("selected");
 
-        var elem = meta.$ind_tab.eq(idx);
         elem.addClass("selected");
 
         meta.idx = idx;
@@ -102,6 +101,15 @@ exports.toggle = function (opts) {
     var prototype = {
         maybe_go_left: maybe_go_left,
         maybe_go_right: maybe_go_right,
+
+        disable_tab: function (name) {
+            var value = _.find(opts.values, function (o) {
+                return o.key === name;
+            });
+
+            var idx = opts.values.indexOf(value);
+            meta.$ind_tab.eq(idx).addClass('disabled');
+        },
 
         value: function () {
             if (meta.idx >= 0) {
