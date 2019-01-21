@@ -143,9 +143,7 @@ var shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     var message;
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? "Cmd" : "Ctrl";
-    if (key === 'C') {
-        message = exports.get_hotkey_deprecation_notice('C', 'x');
-    } else if (key === '*') {
+    if (key === '*') {
         message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);

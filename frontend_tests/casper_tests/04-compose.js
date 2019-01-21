@@ -63,6 +63,21 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
         common.pm_recipient.expect("");
+        // Cancel current message and re-try using alternative shortcut
+        common.keypress(27);
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible('#private-message', function () {
+        casper.test.assertNotVisible('#private-message', 'PM compose box closed');
+        casper.page.sendEvent('keypress', 'C');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#private_message_recipient', function () {
+        common.pm_recipient.expect("");
         casper.click('body');
         casper.page.sendEvent('keypress', 'c');
     });

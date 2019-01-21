@@ -107,7 +107,6 @@ run_test('mappings', () => {
     assert.equal(map_down(47), undefined);
     assert.equal(map_press(27), undefined);
     assert.equal(map_down(27, true), undefined);
-    assert.equal(map_down(67, false, true), undefined); // ctrl + c
     assert.equal(map_down(86, false, true), undefined); // ctrl + v
     assert.equal(map_down(90, false, true), undefined); // ctrl + z
     assert.equal(map_down(84, false, true), undefined); // ctrl + t
@@ -247,6 +246,7 @@ run_test('basic_chars', () => {
 
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('x', 'compose_actions.start');
+    assert_mapping('C', 'compose_actions.start'); // Private message
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
 
