@@ -3,7 +3,11 @@ set_global('page_params', {});
 zrequire('user_status');
 
 function initialize() {
-    page_params.away_user_ids = [1, 2, 3];
+    page_params.user_status = {
+        1: {away: true},
+        2: {away: true},
+        3: {away: true},
+    };
     user_status.initialize();
 }
 

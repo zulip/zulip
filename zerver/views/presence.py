@@ -3,7 +3,7 @@ import datetime
 import time
 
 from django.conf import settings
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -18,7 +18,7 @@ from zerver.lib.actions import (
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_capped_string
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_active_user_by_delivery_email
 
@@ -54,13 +54,22 @@ def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def update_user_status_backend(request: HttpRequest,
                                user_profile: UserProfile,
-                               away: bool=REQ(validator=check_bool),
+                               away: Optional[bool]=REQ(validator=check_bool, default=None),
+                               status_text: Optional[str]=REQ(str_validator=check_capped_string(60),
+                                                              default=None),
                                ) -> HttpResponse:
+
+    if status_text is not None:
+        status_text = status_text.strip()
+
+    if (away is None) and (status_text is None):
+        return json_error(_('Client did not pass any new values.'))
 
     do_update_user_status(
         user_profile=user_profile,
-        client_id=request.client.id,
         away=away,
+        status_text=status_text,
+        client_id=request.client.id,
     )
 
     return json_success()

@@ -1206,17 +1206,20 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('user_status')),
             ('user_id', check_int),
             ('away', check_bool),
+            ('status_text', check_string),
         ])
 
         client = get_client("website")
         events = self.do_test(lambda: do_update_user_status(user_profile=self.user_profile,
                                                             away=True,
+                                                            status_text='out to lunch',
                                                             client_id=client.id))
         error = checker('events[0]', events[0])
         self.assert_on_error(error)
 
         events = self.do_test(lambda: do_update_user_status(user_profile=self.user_profile,
                                                             away=False,
+                                                            status_text='',
                                                             client_id=client.id))
         error = checker('events[0]', events[0])
         self.assert_on_error(error)
