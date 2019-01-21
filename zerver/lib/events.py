@@ -44,7 +44,7 @@ from zerver.lib.actions import (
     get_available_notification_sounds,
 )
 from zerver.lib.user_groups import user_groups_in_realm_serialized
-from zerver.lib.user_status import get_away_user_ids
+from zerver.lib.user_status import get_user_info_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
     get_user_profile_by_id, \
@@ -303,7 +303,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['available_notification_sounds'] = get_available_notification_sounds()
 
     if want('user_status'):
-        state['away_user_ids'] = sorted(list(get_away_user_ids(realm_id=realm.id)))
+        state['user_status'] = get_user_info_dict(realm_id=realm.id)
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION
@@ -675,15 +675,30 @@ def apply_event(state: Dict[str, Any],
             state['realm_user_groups'] = [ug for ug in state['realm_user_groups']
                                           if ug['id'] != event['group_id']]
     elif event['type'] == 'user_status':
-        away_user_ids = set(state['away_user_ids'])
         user_id = event['user_id']
+        user_status = state['user_status']
+        away = event.get('away')
+        status_text = event.get('status_text')
 
-        if event['away']:
-            away_user_ids.add(user_id)
-        else:
-            away_user_ids.discard(user_id)
+        if user_id not in user_status:
+            user_status[user_id] = dict()
 
-        state['away_user_ids'] = sorted(list(away_user_ids))
+        if away is not None:
+            if away:
+                user_status[user_id]['away'] = True
+            else:
+                user_status[user_id].pop('away', None)
+
+        if status_text is not None:
+            if status_text == '':
+                user_status[user_id].pop('status_text', None)
+            else:
+                user_status[user_id]['status_text'] = status_text
+
+        if not user_status[user_id]:
+            user_status.pop(user_id, None)
+
+        state['user_status'] = user_status
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

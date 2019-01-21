@@ -33,11 +33,13 @@ exports.is_away = function (user_id) {
 };
 
 exports.initialize = function () {
-    _.each(page_params.away_user_ids, function (user_id) {
-        away_user_ids.set(user_id, true);
+    _.each(page_params.user_status, function (dct, user_id) {
+        if (dct.away) {
+            away_user_ids.set(user_id, true);
+        }
     });
 
-    delete page_params.away_user_ids;
+    delete page_params.user_status;
 };
 
 return exports;
