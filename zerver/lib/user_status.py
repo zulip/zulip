@@ -15,22 +15,20 @@ def get_away_user_ids(realm_id: int) -> Set[int]:
 
     return set(user_ids)
 
-def set_away_status(user_profile_id: int,
-                    client_id: int) -> None:
+def update_user_status(user_profile_id: int,
+                       status: int,
+                       client_id: int) -> None:
 
     timestamp = timezone_now()
-    status = UserStatus.AWAY
+
+    defaults = dict(
+        client_id=client_id,
+        timestamp=timestamp,
+    )
+
+    defaults['status'] = status
 
     UserStatus.objects.update_or_create(
         user_profile_id=user_profile_id,
-        defaults=dict(
-            client_id=client_id,
-            timestamp=timestamp,
-            status=status,
-        ),
+        defaults=defaults,
     )
-
-def revoke_away_status(user_profile_id: int) -> None:
-    UserStatus.objects.filter(
-        user_profile_id=user_profile_id,
-    ).delete()
