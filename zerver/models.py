@@ -2186,9 +2186,11 @@ class UserStatus(models.Model):
     timestamp = models.DateTimeField()  # type: datetime.datetime
     client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
+    NORMAL = 0
     AWAY = 1
 
-    status = models.PositiveSmallIntegerField(default=AWAY)  # type: int
+    status = models.PositiveSmallIntegerField(default=NORMAL)  # type: int
+    status_text = models.CharField(max_length=255, default='')  # type: str
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
