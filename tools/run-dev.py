@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 import traceback
+import redis
 
 from urllib.parse import urlunparse
 
@@ -155,6 +156,14 @@ cmds = [['./manage.py', 'runserver'] +
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
          '-p', '%s' % (thumbor_port,)]]
+
+#start redis-server if it is not already running
+try:
+    rs = redis.Redis("localhost")
+    rs.get(None)  # getting None returns None or throws an exception
+except (redis.exceptions.RedisError):
+    cmds.insert(0, ['redis-server'])
+
 if options.test:
     # We just need to compile handlebars templates and webpack assets
     # once at startup, not run a daemon, in test mode.  Additionally,
