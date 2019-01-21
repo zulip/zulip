@@ -16,7 +16,7 @@ from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser,
+    Attachment, PreregistrationUser, UserStatus,
 )
 
 from zerver.lib.actions import (
@@ -69,9 +69,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
-    do_revoke_away_status,
     do_revoke_user_invite,
-    do_set_away_status,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_property,
@@ -85,6 +83,7 @@ from zerver.lib.actions import (
     do_update_outgoing_webhook_service,
     do_update_pointer,
     do_update_user_presence,
+    do_update_user_status,
     get_typing_user_profiles,
     log_event,
     lookup_default_stream_groups,
@@ -1210,12 +1209,15 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         client = get_client("website")
-        events = self.do_test(lambda: do_set_away_status(user_profile=self.user_profile,
-                                                         client_id=client.id))
+        events = self.do_test(lambda: do_update_user_status(user_profile=self.user_profile,
+                                                            away=True,
+                                                            client_id=client.id))
         error = checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_revoke_away_status(user_profile=self.user_profile))
+        events = self.do_test(lambda: do_update_user_status(user_profile=self.user_profile,
+                                                            away=False,
+                                                            client_id=client.id))
         error = checker('events[0]', events[0])
         self.assert_on_error(error)
 
