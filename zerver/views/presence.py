@@ -11,8 +11,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import human_users_only
 from zerver.lib.actions import (
-    do_revoke_away_status,
-    do_set_away_status,
+    do_update_user_status,
     get_status_dict,
     update_user_presence,
 )
@@ -57,15 +56,12 @@ def update_user_status_backend(request: HttpRequest,
                                user_profile: UserProfile,
                                away: bool=REQ(validator=check_bool),
                                ) -> HttpResponse:
-    if away:
-        do_set_away_status(
-            user_profile=user_profile,
-            client_id=request.client.id,
-        )
-    else:
-        do_revoke_away_status(
-            user_profile=user_profile,
-        )
+
+    do_update_user_status(
+        user_profile=user_profile,
+        client_id=request.client.id,
+        away=away,
+    )
 
     return json_success()
 
