@@ -3771,8 +3771,9 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
     send_event(user_profile.realm, event, [user_profile.id])
 
 def do_update_user_status(user_profile: UserProfile,
-                          client_id: int,
-                          away: bool) -> None:
+                          away: Optional[bool],
+                          status_text: Optional[str],
+                          client_id: int) -> None:
     if away:
         status = UserStatus.AWAY
     else:
@@ -3783,14 +3784,21 @@ def do_update_user_status(user_profile: UserProfile,
     update_user_status(
         user_profile_id=user_profile.id,
         status=status,
+        status_text=status_text,
         client_id=client_id,
     )
 
     event = dict(
         type='user_status',
         user_id=user_profile.id,
-        away=away,
     )
+
+    if away is not None:
+        event['away'] = away
+
+    if status_text is not None:
+        event['status_text'] = status_text
+
     send_event(realm, event, active_user_ids(realm.id))
 
 def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
