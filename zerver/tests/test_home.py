@@ -51,7 +51,6 @@ class HomeTest(ZulipTestCase):
             "avatar_source",
             "avatar_url",
             "avatar_url_medium",
-            "away_user_ids",
             "bot_types",
             "can_create_streams",
             "can_subscribe_other_users",
@@ -196,6 +195,7 @@ class HomeTest(ZulipTestCase):
             "unsubscribed",
             "use_websockets",
             "user_id",
+            "user_status",
             "warn_no_email",
             "zulip_version",
         ]
