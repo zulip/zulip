@@ -92,58 +92,60 @@ LINK_REGEX = None  # type: Pattern
 def get_web_link_regex() -> str:
     # We create this one time, but not at startup.  So the
     # first message rendered in any process will have some
-    # extra costs.
+    # extra costs.  It's roughly 75ms to run this code, so
+    # caching the value in LINK_REGEX is super important here.
     global LINK_REGEX
-    if LINK_REGEX is None:
-        # NOTE: this is a very expensive step, it reads a file of tlds!
-        tlds = '|'.join(list_of_tlds())
+    if LINK_REGEX is not None:
+        return LINK_REGEX
 
-        # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
-        #
-        # We detect a url either by the `https?://` or by building around the TLD.
+    tlds = '|'.join(list_of_tlds())
 
-        # In lieu of having a recursive regex (which python doesn't support) to match
-        # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
-        # can match up to six
-        # The inner_paren_contents chunk matches the innermore non-parenthesis-holding text,
-        # and the paren_group matches text with, optionally, a matching set of parens
-        inner_paren_contents = r"[^\s()\"]*"
-        paren_group = r"""
-                        [^\s()\"]*?            # Containing characters that won't end the URL
-                        (?: \( %s \)           # and more characters in matched parens
-                            [^\s()\"]*?        # followed by more characters
-                        )*                     # zero-or-more sets of paired parens
-                       """
-        nested_paren_chunk = paren_group
-        for i in range(6):
-            nested_paren_chunk = nested_paren_chunk % (paren_group,)
-        nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
+    # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
+    #
+    # We detect a url either by the `https?://` or by building around the TLD.
 
-        file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
-        regex = r"""
-            (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
-                                 # (Double-negative lookbehind to allow start-of-string)
-            (?P<url>             # Main group
-                (?:(?:           # Domain part
-                    https?://[\w.:@-]+?   # If it has a protocol, anything goes.
-                   |(?:                   # Or, if not, be more strict to avoid false-positives
-                        (?:[\w-]+\.)+     # One or more domain components, separated by dots
-                        (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
-                    )
+    # In lieu of having a recursive regex (which python doesn't support) to match
+    # arbitrary numbers of nested matching parenthesis, we manually build a regexp that
+    # can match up to six
+    # The inner_paren_contents chunk matches the innermore non-parenthesis-holding text,
+    # and the paren_group matches text with, optionally, a matching set of parens
+    inner_paren_contents = r"[^\s()\"]*"
+    paren_group = r"""
+                    [^\s()\"]*?            # Containing characters that won't end the URL
+                    (?: \( %s \)           # and more characters in matched parens
+                        [^\s()\"]*?        # followed by more characters
+                    )*                     # zero-or-more sets of paired parens
+                   """
+    nested_paren_chunk = paren_group
+    for i in range(6):
+        nested_paren_chunk = nested_paren_chunk % (paren_group,)
+    nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
+
+    file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+    regex = r"""
+        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+                             # (Double-negative lookbehind to allow start-of-string)
+        (?P<url>             # Main group
+            (?:(?:           # Domain part
+                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+               |(?:                   # Or, if not, be more strict to avoid false-positives
+                    (?:[\w-]+\.)+     # One or more domain components, separated by dots
+                    (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
                 )
-                (?:/             # A path, beginning with /
-                    %s           # zero-to-6 sets of paired parens
-                )?)              # Path is optional
-                | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-                %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
-                | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
             )
-            (?=                            # URL must be followed by (not included in group)
-                [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
-                (?:\Z|\s)                  # followed by whitespace or end of string
-            )
-            """ % (tlds, nested_paren_chunk, file_links)
-        LINK_REGEX = verbose_compile(regex)
+            (?:/             # A path, beginning with /
+                %s           # zero-to-6 sets of paired parens
+            )?)              # Path is optional
+            | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
+            %s               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
+            | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{25,34})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
+        )
+        (?=                            # URL must be followed by (not included in group)
+            [!:;\?\),\.\'\"\>]*         # Optional punctuation characters
+            (?:\Z|\s)                  # followed by whitespace or end of string
+        )
+        """ % (tlds, nested_paren_chunk, file_links)
+    LINK_REGEX = verbose_compile(regex)
     return LINK_REGEX
 
 def clear_state_for_testing() -> None:
