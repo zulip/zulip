@@ -19,6 +19,11 @@ you can do in Zulip, you can do with Zulip's REST API.  To use this API:
 Most other details are covered in the documentation for the individual
 endpoints:
 
+!!! tip ""
+    You may use the `client.call_endpoint` method of our Python API
+    bindings to call an endpoint that isn't documented here. For an
+    example, see [Upload a custom emoji](/api/upload-custom-emoji).
+
 {!rest-endpoints.md!}
 
 Since Zulip is open source, you can also consult the
