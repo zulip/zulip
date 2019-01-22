@@ -1430,31 +1430,6 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
 
         return lines
 
-# Based on markdown.inlinepatterns.LinkPattern
-class LinkPattern(markdown.inlinepatterns.Pattern):
-    """ Return a link element from the given match. """
-
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        href = m.group(9)
-        if not href:
-            return None
-
-        if href[0] == "<":
-            href = href[1:-1]
-        href = sanitize_url(self.unescape(href.strip()))
-        if href is None:
-            return None
-
-        db_data = self.markdown.zulip_db_data
-        href = rewrite_local_links_to_relative(db_data, href)
-
-        el = markdown.util.etree.Element('a')
-        el.text = m.group(2)
-        el.set('href', href)
-        fixup_link(el, target_blank=(href[:1] != '#'))
-        return el
-
-
 # We need the following since upgrade from py-markdown 2.6.11 to 3.0.1
 # modifies the link handling significantly. The following is taken from
 # py-markdown 2.6.11 markdown/inlinepatterns.py.
@@ -1628,9 +1603,29 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # This prevents realm_filters from running on the content of a
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
-class AtomicLinkPattern(LinkPattern):
+class AtomicLinkPattern(markdown.inlinepatterns.Pattern):
+    def get_element(self, m: Match[str]) -> Optional[Element]:
+        href = m.group(9)
+        if not href:
+            return None
+
+        if href[0] == "<":
+            href = href[1:-1]
+        href = sanitize_url(self.unescape(href.strip()))
+        if href is None:
+            return None
+
+        db_data = self.markdown.zulip_db_data
+        href = rewrite_local_links_to_relative(db_data, href)
+
+        el = markdown.util.etree.Element('a')
+        el.text = m.group(2)
+        el.set('href', href)
+        fixup_link(el, target_blank=(href[:1] != '#'))
+        return el
+
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        ret = LinkPattern.handleMatch(self, m)
+        ret = self.get_element(m)
         if ret is None:
             return None
         if not isinstance(ret, str):
