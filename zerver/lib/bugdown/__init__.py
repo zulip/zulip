@@ -1271,7 +1271,7 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
     fixup_link(a, target_blank)
     return a
 
-class VerbosePattern(markdown.inlinepatterns.Pattern):
+class CompiledPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
         markdown.inlinepatterns.Pattern.__init__(self, ' ', md)
 
@@ -1280,7 +1280,7 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
 
         self.compiled_re = compiled_re
 
-class AutoLink(VerbosePattern):
+class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group('url')
         db_data = self.markdown.zulip_db_data
@@ -1565,7 +1565,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             return el
         return None
 
-class StreamPattern(VerbosePattern):
+class StreamPattern(CompiledPattern):
     def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
         db_data = self.markdown.zulip_db_data
         if db_data is None:
