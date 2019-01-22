@@ -739,7 +739,7 @@ exports.incr_recipient_count = function (user_id) {
 
 // Diacritic removal from:
 // https://stackoverflow.com/questions/18236208/perform-a-find-match-with-javascript-ignoring-special-language-characters-acce
-function remove_diacritics(s) {
+exports.remove_diacritics = function (s) {
     if (/^[a-z]+$/.test(s)) {
         return s;
     }
@@ -751,7 +751,7 @@ function remove_diacritics(s) {
         .replace(/[úùüû]/g, "u")
         .replace(/[ç]/g, "c")
         .replace(/[ñ]/g, "n");
-}
+};
 
 exports.person_matches_query = function (user, query) {
     var email = user.email.toLowerCase();
