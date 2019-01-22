@@ -140,6 +140,7 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
     return f
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
+               optional_keys: Iterable[Tuple[str, Validator]]=[],
                value_validator: Optional[Validator]=None,
                _allow_only_listed_keys: bool=False) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
@@ -155,6 +156,13 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
             if error:
                 return error
 
+        for k, sub_validator in optional_keys:
+            if k in val:
+                vname = '%s["%s"]' % (var_name, k)
+                error = sub_validator(vname, val[k])
+                if error:
+                    return error
+
         if value_validator:
             for key in val:
                 vname = '%s contains a value that' % (var_name,)
@@ -163,7 +171,9 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
                     return error
 
         if _allow_only_listed_keys:
-            delta_keys = set(val.keys()) - set(x[0] for x in required_keys)
+            required_keys_set = set(x[0] for x in required_keys)
+            optional_keys_set = set(x[0] for x in optional_keys)
+            delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
                 return _("Unexpected arguments: %s" % (", ".join(list(delta_keys))))
 
@@ -171,8 +181,9 @@ def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
 
     return f
 
-def check_dict_only(required_keys: Iterable[Tuple[str, Validator]]) -> Validator:
-    return check_dict(required_keys, _allow_only_listed_keys=True)
+def check_dict_only(required_keys: Iterable[Tuple[str, Validator]],
+                    optional_keys: Iterable[Tuple[str, Validator]]=[]) -> Validator:
+    return check_dict(required_keys, optional_keys, _allow_only_listed_keys=True)
 
 def check_variable_type(allowed_type_funcs: Iterable[Validator]) -> Validator:
     """

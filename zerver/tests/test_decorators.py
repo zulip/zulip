@@ -861,6 +861,35 @@ class ValidatorTestCase(TestCase):
         error = check_dict_only(keys)('x', x)
         self.assertEqual(error, 'Unexpected arguments: state')
 
+        # Test optional keys
+        optional_keys = [
+            ('food', check_list(check_string)),
+            ('year', check_int)
+        ]
+
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston',
+            'food': ['Lobster Spaghetti']
+        }
+
+        error = check_dict(keys)('x', x)
+        self.assertEqual(error, None)  # since _allow_only_listed_keys is False
+
+        error = check_dict_only(keys)('x', x)
+        self.assertEqual(error, 'Unexpected arguments: food')
+
+        error = check_dict_only(keys, optional_keys)('x', x)
+        self.assertEqual(error, None)
+
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston',
+            'food': 'Lobster Spaghetti'
+        }
+        error = check_dict_only(keys, optional_keys)('x', x)
+        self.assertEqual(error, 'x["food"] is not a list')
+
     def test_encapsulation(self) -> None:
         # There might be situations where we want deep
         # validation, but the error message should be customized.
