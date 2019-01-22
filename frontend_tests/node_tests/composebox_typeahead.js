@@ -197,12 +197,19 @@ var twin2 = {
     email: 'twin2@zulip.com',
 };
 
+var gael = {
+    full_name: 'Gaël Twin',
+    user_id: 107,
+    email: 'twin3@zulip.com',
+};
+
 global.people.add_in_realm(hamlet);
 global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
 global.people.add_in_realm(lear);
 global.people.add_in_realm(twin1);
 global.people.add_in_realm(twin2);
+global.people.add_in_realm(gael);
 global.people.add(deactivated_user);
 
 var hamletcharacters = {
@@ -529,7 +536,7 @@ run_test('initialize', () => {
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
         var expected_value = [hamlet, othello, cordelia, lear,
-                              twin1, twin2, hamletcharacters, backend];
+                              twin1, twin2, gael, hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
@@ -559,6 +566,9 @@ run_test('initialize', () => {
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
+
+        options.query = 'gael';
+        assert.equal(options.matcher(gael), true);
 
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
