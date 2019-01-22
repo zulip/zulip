@@ -194,3 +194,4 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
+        self.assertIn('_@**Cordelia Lear|%d** just signed up for Zulip.' % (new_user.id), message.content)

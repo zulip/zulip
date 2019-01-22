@@ -59,7 +59,7 @@ exports.apply_markdown = function (message) {
 
     // Our python-markdown processor appends two \n\n to input
     var options = {
-        userMentionHandler: function (name) {
+        userMentionHandler: function (name, silently) {
             var person = people.get_by_name(name);
 
             var id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
@@ -74,13 +74,17 @@ exports.apply_markdown = function (message) {
             }
 
             if (person !== undefined) {
-                if (people.is_my_user_id(person.user_id)) {
+                if (people.is_my_user_id(person.user_id) && !silently) {
                     message.mentioned = true;
                     message.mentioned_me_directly = true;
                 }
-                return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
-                       '@' + escape(person.full_name, true) +
-                       '</span>';
+                var str = '';
+                if (silently) {
+                    str += '<span class="user-mention silent" data-user-id="' + person.user_id + '">';
+                } else {
+                    str += '<span class="user-mention" data-user-id="' + person.user_id + '">';
+                }
+                return str + '@' + escape(person.full_name, true) + '</span>';
             } else if (name === 'all' || name === 'everyone' || name === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
@@ -100,6 +104,20 @@ exports.apply_markdown = function (message) {
                        '</span>';
             }
             return;
+        },
+        silencedMentionHandler: function (quote) {
+            // Silence quoted mentions.
+            var user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>/gm;
+            quote = quote.replace(user_mention_re, function (match) {
+                return match.replace(/"user-mention"/g, '"user-mention silent"');
+            });
+            // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
+            // mention yourself outside of the blockquote (and, above it). If that you do that, the
+            // following mentioned status is false; the backend rendering is authoritative and the
+            // only side effect is the lack red flash on immediately sending the message.
+            message.mentioned = false;
+            message.mentioned_me_directly = false;
+            return quote;
         },
     };
     message.content = marked(message.raw_content + '\n\n', options).trim();

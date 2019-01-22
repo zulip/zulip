@@ -68,7 +68,7 @@ class TestFollowupEmails(ZulipTestCase):
 
         mock_ldap.directory = {
             "uid=newuser@zulip.com,ou=users,dc=zulip,dc=com": {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['full_name'],
                 'sn': ['shortname'],
             }
@@ -100,7 +100,7 @@ class TestFollowupEmails(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['full_name'],
                 'sn': ['shortname'],
             }
@@ -133,7 +133,7 @@ class TestFollowupEmails(ZulipTestCase):
 
         mock_ldap.directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
-                'userPassword': 'testing',
+                'userPassword': ['testing', ],
                 'fn': ['full_name'],
                 'sn': ['shortname'],
                 'email': ['newuser_email@zulip.com'],

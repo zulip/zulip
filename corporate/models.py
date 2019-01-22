@@ -3,11 +3,12 @@ from decimal import Decimal
 from typing import Optional
 
 from django.db import models
+from django.db.models import CASCADE
 
 from zerver.models import Realm, RealmAuditLog
 
 class Customer(models.Model):
-    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)  # type: Realm
+    realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
     # Deprecated .. delete once everyone is migrated to new billing system
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
@@ -17,7 +18,8 @@ class Customer(models.Model):
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 
 class CustomerPlan(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)  # type: Customer
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
+    # Deprecated .. delete once everyone is migrated to new billing system
     licenses = models.IntegerField()  # type: int
     automanage_licenses = models.BooleanField(default=False)  # type: bool
     charge_automatically = models.BooleanField(default=False)  # type: bool
@@ -56,6 +58,17 @@ class CustomerPlan(models.Model):
 def get_active_plan(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).first()
 
+class LicenseLedger(models.Model):
+    plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)  # type: CustomerPlan
+    # Also True for the initial upgrade.
+    is_renewal = models.BooleanField(default=False)  # type: bool
+    event_time = models.DateTimeField()  # type: datetime.datetime
+    licenses = models.IntegerField()  # type: int
+    # None means the plan does not automatically renew.
+    # 0 means the plan has been explicitly downgraded.
+    # This cannot be None if plan.automanage_licenses.
+    licenses_at_next_renewal = models.IntegerField(null=True)  # type: Optional[int]
+
 # Everything below here is legacy
 
 class Plan(models.Model):
@@ -74,9 +87,9 @@ class Coupon(models.Model):
         return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
 
 class BillingProcessor(models.Model):
-    log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
+    log_row = models.ForeignKey(RealmAuditLog, on_delete=CASCADE)  # RealmAuditLog
     # Exactly one processor, the global processor, has realm=None.
-    realm = models.OneToOneField(Realm, null=True, on_delete=models.CASCADE)  # type: Realm
+    realm = models.OneToOneField(Realm, null=True, on_delete=CASCADE)  # type: Realm
 
     DONE = 'done'
     STARTED = 'started'
