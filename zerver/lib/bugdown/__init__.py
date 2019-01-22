@@ -111,6 +111,10 @@ STREAM_LINK_REGEX = r"""
                      \*\*                         # ends by double asterisks
                     """
 
+@one_time
+def get_compiled_stream_link_regex() -> Pattern:
+    return verbose_compile(STREAM_LINK_REGEX)
+
 LINK_REGEX = None  # type: Pattern
 
 def get_web_link_regex() -> str:
@@ -1752,7 +1756,7 @@ class Bugdown(markdown.Markdown):
         reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
         reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
         reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
-        reg.register(StreamPattern(verbose_compile(STREAM_LINK_REGEX), self), 'stream', 85)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
         reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
         # Note that !gravatar syntax should be deprecated long term.
