@@ -50,6 +50,8 @@ function query_matches_language(query, lang) {
 }
 
 function query_matches_string(query, source_str, split_char) {
+    source_str = people.remove_diacritics(source_str);
+    query = people.remove_diacritics(query);
     // When `abc ` with a space at the end is typed in a
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
