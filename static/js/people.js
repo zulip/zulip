@@ -770,7 +770,7 @@ exports.person_matches_query = function (user, query) {
         return _.any(names, function (name) {
             if (is_ascii) {
                 // Only ignore diacritics if the query is plain ascii
-                name = remove_diacritics(name);
+                name = exports.remove_diacritics(name);
             }
             if (name.indexOf(termlet) === 0) {
                 return true;
