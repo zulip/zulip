@@ -1274,12 +1274,11 @@ def url_to_a(db_data: Optional[DbData], url: str, text: Optional[str]=None) -> U
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
     def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
-        markdown.inlinepatterns.Pattern.__init__(self, ' ', md)
-
-        # HACK: we just had python-markdown compile an empty regex.
-        # Now replace with the real regex compiled with the flags we want.
-
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
         self.compiled_re = compiled_re
+        self.md = md
 
 class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
