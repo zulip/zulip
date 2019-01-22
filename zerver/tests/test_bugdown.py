@@ -1016,7 +1016,7 @@ class BugdownTest(ZulipTestCase):
                          '</p>' % (hamlet.id, othello.id, hamlet.id, cordelia.id))
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
 
-        # Both fenced quote and > quote should be identical
+        # Both fenced quote and > quote should be identical for both silent and regular syntax.
         expected = ('<blockquote>\n<p>'
                     '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
                     '</p>\n</blockquote>' % (hamlet.id))
@@ -1024,6 +1024,12 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
         content = "> @**King Hamlet**"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "```quote\n_@**King Hamlet**\n```"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "> _@**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
 
