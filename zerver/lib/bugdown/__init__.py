@@ -55,6 +55,24 @@ import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
 from zerver.lib.exceptions import BugdownRenderingException
 
+ReturnT = TypeVar('ReturnT')
+
+def one_time(method: Callable[[], ReturnT]) -> Callable[[], ReturnT]:
+    '''
+        Use this decorator with extreme caution.
+        The function you wrap should have no dependency
+        on any arguments (no args, no kwargs) nor should
+        it depend on any global state.
+    '''
+    val = None
+
+    def cache_wrapper() -> ReturnT:
+        nonlocal val
+        if val is None:
+            val = method()
+        return val
+    return cache_wrapper
+
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,
     'email': str,
@@ -78,6 +96,12 @@ def verbose_compile(pattern: str) -> Any:
     return re.compile(
         "^(.*?)%s(.*?)$" % pattern,
         re.DOTALL | re.UNICODE | re.VERBOSE
+    )
+
+def normal_compile(pattern: str) -> Any:
+    return re.compile(
+        r"^(.*?)%s(.*)$" % pattern,
+        re.DOTALL | re.UNICODE
     )
 
 STREAM_LINK_REGEX = r"""
@@ -1436,7 +1460,15 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
 # We need the following since upgrade from py-markdown 2.6.11 to 3.0.1
 # modifies the link handling significantly. The following is taken from
 # py-markdown 2.6.11 markdown/inlinepatterns.py.
+@one_time
 def get_link_re() -> str:
+    '''
+    Very important--if you need to change this code to depend on
+    any arguments, you must eliminate the "one_time" decorator
+    and consider performance implications.  We only want to compute
+    this value once.
+    '''
+
     NOBRACKET = r'[^\]\[]*'
     BRK = (
         r'\[(' +
@@ -1449,7 +1481,7 @@ def get_link_re() -> str:
     # [text](url) or [text](<url>) or [text](url "title")
     LINK_RE = NOIMG + BRK + \
         r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
-    return LINK_RE
+    return normal_compile(LINK_RE)
 
 def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter so it only matches after start-of-string,
@@ -1606,7 +1638,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # This prevents realm_filters from running on the content of a
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
-class AtomicLinkPattern(markdown.inlinepatterns.Pattern):
+class AtomicLinkPattern(CompiledPattern):
     def get_element(self, m: Match[str]) -> Optional[Element]:
         href = m.group(9)
         if not href:
