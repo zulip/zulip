@@ -4,7 +4,7 @@ zrequire('user_status');
 
 function initialize() {
     page_params.user_status = {
-        1: {away: true},
+        1: {away: true, status_text: 'in a meeting'},
         2: {away: true},
         3: {away: true},
     };
@@ -21,23 +21,38 @@ run_test('basics', () => {
     assert(user_status.is_away(4));
     user_status.revoke_away(4);
     assert(!user_status.is_away(4));
+
+    // use value from page_params
+    assert.equal(user_status.get_status_text(1), 'in a meeting');
+
+    user_status.set_status_text({
+        user_id: 2,
+        status_text: 'out to lunch',
+    });
+    assert.equal(user_status.get_status_text(2), 'out to lunch');
+
+    user_status.set_status_text({
+        user_id: 2,
+        status_text: '',
+    });
+    assert.equal(user_status.get_status_text(2), undefined);
 });
 
 run_test('server', () => {
     initialize();
 
-    var away_arg;
+    var sent_data;
 
     channel.post = (opts) => {
-        away_arg = opts.data.away;
+        sent_data = opts.data;
         assert.equal(opts.url, '/json/users/me/status');
     };
 
-    assert.equal(away_arg, undefined);
+    assert.equal(sent_data, undefined);
 
     user_status.server_set_away();
-    assert.equal(away_arg, true);
+    assert.deepEqual(sent_data, {away: true, status_text: undefined});
 
     user_status.server_revoke_away();
-    assert.equal(away_arg, false);
+    assert.deepEqual(sent_data, {away: false, status_text: undefined});
 });
