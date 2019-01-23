@@ -1410,7 +1410,7 @@ run_test('on_events', () => {
             called = true;
         };
 
-        var handler = $("#compose").get_on_handler("click", "#video_link");
+        var handler = $("body").get_on_handler("click", ".video_link");
         $('#compose-textarea').val('');
 
         handler(event);
