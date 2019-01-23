@@ -146,7 +146,7 @@ def get_web_link_regex() -> str:
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
-    regex = r"""
+    REGEX = r"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
@@ -169,7 +169,7 @@ def get_web_link_regex() -> str:
             (?:\Z|\s)                  # followed by whitespace or end of string
         )
         """ % (tlds, nested_paren_chunk, file_links)
-    LINK_REGEX = verbose_compile(regex)
+    LINK_REGEX = verbose_compile(REGEX)
     return LINK_REGEX
 
 def clear_state_for_testing() -> None:
@@ -1048,8 +1048,8 @@ class Avatar(markdown.inlinepatterns.Pattern):
 
 def possible_avatar_emails(content: str) -> Set[str]:
     emails = set()
-    for regex in [AVATAR_REGEX, GRAVATAR_REGEX]:
-        matches = re.findall(regex, content)
+    for REGEX in [AVATAR_REGEX, GRAVATAR_REGEX]:
+        matches = re.findall(REGEX, content)
         for email in matches:
             if email:
                 emails.add(email)
