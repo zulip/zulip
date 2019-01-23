@@ -71,6 +71,7 @@ curl {{ api_url }}/v1/users?client_gravatar=true \
     * `bot_owner`: If the user is a bot (i.e. `is_bot` is `True`), `bot_owner`
       is the email address of the user who created the bot.
     * `is_active`: A boolean specifying whether the user is active or not.
+    * `is_guest`: A boolean specifying whether the user is a guest user or not.
 
 #### Example response
 
