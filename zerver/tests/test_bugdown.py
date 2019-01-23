@@ -755,6 +755,25 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
+        def was_converted(content: str) -> bool:
+            converted = bugdown.convert(content, message_realm=realm, message=msg)
+            return 'trac.zulip.net' in converted
+
+        self.assertTrue(was_converted('Hello #123 World'))
+        self.assertTrue(not was_converted('Hello #123World'))
+        self.assertTrue(not was_converted('Hello#123 World'))
+        self.assertTrue(not was_converted('Hello#123World'))
+        self.assertTrue(was_converted('チケットは#123です'))
+        self.assertTrue(was_converted('チケットは #123です'))
+        self.assertTrue(was_converted('チケットは#123 です'))
+        self.assertTrue(was_converted('チケットは #123 です'))
+        self.assertTrue(was_converted('(#123)'))
+        self.assertTrue(was_converted('#123>'))
+        self.assertTrue(was_converted('"#123"'))
+        self.assertTrue(was_converted('#123@'))
+        self.assertTrue(not was_converted(')#123('))
+        self.assertTrue(not was_converted('##123'))
+
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
