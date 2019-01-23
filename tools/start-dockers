@@ -5,6 +5,6 @@ sudo service postgresql restart
 sudo service redis-server restart
 sudo service memcached restart
 # shellcheck source=/dev/null
-source /home/zulip/.bash_profile
+source /home/zulip/.bashrc
 /srv/zulip/scripts/setup/configure-rabbitmq
 /srv/zulip/tools/run-dev.py --interface=''

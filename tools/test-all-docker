@@ -5,5 +5,5 @@ sudo service postgresql restart
 sudo service redis-server restart
 sudo service memcached restart
 # shellcheck source=/dev/null
-source /home/zulip/.bash_profile
+source /home/zulip/.bashrc
 /srv/zulip/tools/test-all

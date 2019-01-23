@@ -395,7 +395,7 @@ def main(options):
     from tools.setup import setup_venvs
     setup_venvs.main()
 
-    setup_shell_profile('~/.bash_profile')
+    setup_shell_profile('~/.bashrc')
     setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
