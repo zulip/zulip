@@ -11,4 +11,4 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2018/11/07/zulip-1-9-relea
 # Typically, adding a dependency only requires a minor version bump, and
 # removing a dependency requires a major version bump.
 
-PROVISION_VERSION = '27.2'
+PROVISION_VERSION = '27.3'
