@@ -688,9 +688,9 @@ exports.needs_subscribe_warning = function (email) {
     return true;
 };
 
-function insert_video_call_url(url) {
+function insert_video_call_url(url, target_textarea) {
     var video_call_link_text = '[' + _('Click to join video call') + '](' + url + ')';
-    compose_ui.insert_syntax_and_focus(video_call_link_text);
+    compose_ui.insert_syntax_and_focus(video_call_link_text, target_textarea);
 }
 
 exports.initialize = function () {
@@ -933,8 +933,18 @@ exports.initialize = function () {
         }
     }
 
-    $('#compose').on('click', '#video_link', function (e) {
+    $('body').on('click', '.video_link', function (e) {
         e.preventDefault();
+
+        var target_textarea;
+        // The data-message-id atribute is only present in the video
+        // call icon present in the message edit form.  If present,
+        // the request is for the edit UI; otherwise, it's for the
+        // compose box.
+        var edit_message_id = $(e.target).attr('data-message-id');
+        if (edit_message_id !== undefined) {
+            target_textarea = $("#message_edit_content_" + edit_message_id);
+        }
 
         if (page_params.jitsi_server_url === null) {
             return;
@@ -944,17 +954,17 @@ exports.initialize = function () {
         var video_call_id = util.random_int(100000000000000, 999999999999999);
         if (page_params.realm_video_chat_provider === "Google Hangouts") {
             video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
-            insert_video_call_url(video_call_link);
+            insert_video_call_url(video_call_link, target_textarea);
         } else if (page_params.realm_video_chat_provider === "Zoom") {
             channel.get({
                 url: '/json/calls/create',
                 success: function (response) {
-                    insert_video_call_url(response.zoom_url);
+                    insert_video_call_url(response.zoom_url, target_textarea);
                 },
             });
         } else {
             video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
-            insert_video_call_url(video_call_link);
+            insert_video_call_url(video_call_link, target_textarea);
         }
     });
 

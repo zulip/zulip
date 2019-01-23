@@ -1421,19 +1421,24 @@ run_test('on_events', () => {
         var syntax_to_insert;
         var called = false;
 
+        var textarea = $.create('target-stub');
+
+        var ev = {
+            preventDefault: noop,
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
         compose_ui.insert_syntax_and_focus = function (syntax) {
             syntax_to_insert = syntax;
             called = true;
         };
 
-        var handler = $("#compose").get_on_handler("click", "#video_link");
+        var handler = $("body").get_on_handler("click", ".video_link");
         $('#compose-textarea').val('');
 
-        var event = {
-            preventDefault: noop,
-        };
-
-        handler(event);
+        handler(ev);
 
         // video link ids consist of 15 random digits
         var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
@@ -1442,7 +1447,7 @@ run_test('on_events', () => {
         page_params.realm_video_chat_provider = 'Google Hangouts';
         page_params.realm_google_hangouts_domain = 'zulip';
 
-        handler(event);
+        handler(ev);
 
         video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
@@ -1457,14 +1462,14 @@ run_test('on_events', () => {
             options.success({ zoom_url: 'example.zoom.com' });
         };
 
-        handler(event);
+        handler(ev);
         video_link_regex = /\[Click to join video call\]\(example\.zoom\.com\)/;
         assert(video_link_regex.test(syntax_to_insert));
 
         page_params.jitsi_server_url = null;
         called = false;
 
-        handler(event);
+        handler(ev);
         assert(!called);
     }());
 
