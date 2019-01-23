@@ -925,6 +925,7 @@ paths:
                                 "is_active": true,
                                 "is_admin": false,
                                 "is_bot": false,
+                                "is_guest": false,
                                 "user_id": 1
                             },
                             {
@@ -935,6 +936,7 @@ paths:
                                 "is_active": true,
                                 "is_admin": false,
                                 "is_bot": false,
+                                "is_guest": false,
                                 "user_id": 3
                             },
                             {
@@ -945,6 +947,7 @@ paths:
                                 "is_active": true,
                                 "is_admin": false,
                                 "is_bot": false,
+                                "is_guest": true,
                                 "user_id": 24
                             }
                         ],
