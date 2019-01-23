@@ -458,10 +458,19 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'user_status':
-        if (event.away) {
-            activity.on_set_away(event.user_id);
-        } else {
-            activity.on_revoke_away(event.user_id);
+        if (event.away !== undefined) {
+            if (event.away) {
+                activity.on_set_away(event.user_id);
+            } else {
+                activity.on_revoke_away(event.user_id);
+            }
+        }
+
+        if (event.info !== undefined) {
+            user_status.set_status_text({
+                user_id: event.user_id,
+                status_text: event.info,
+            });
         }
         break;
     }
