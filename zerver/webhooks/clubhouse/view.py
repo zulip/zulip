@@ -37,6 +37,10 @@ STORY_UPDATE_TYPE_TEMPLATE = ("The type of the story {name_template} was changed
                               " from **{old_type}** to **{new_type}**.")
 DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
 STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
+STORY_GITHUB_PR_TEMPLATE = ("New GitHub PR [#{name}]({url}) opened for story"
+                            " {name_template} ({old} -> {new}).")
+STORY_GITHUB_BRANCH_TEMPLATE = ("New GitHub branch [{name}]({url})"
+                                " associated with story {name_template} ({old} -> {new}).")
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -311,6 +315,42 @@ def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
 
     return STORY_ESTIMATE_TEMPLATE.format(**kwargs)
 
+def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
+    ref = {}  # type: Dict[str, Any]
+    for reference in payload['references']:
+        if reference['id'] == ref_id:
+            ref = reference
+
+    return ref
+
+def get_story(payload: Dict[str, Any]) -> Dict[str, Any]:
+    story = {}  # type: Dict[str, Any]
+    for a in payload['actions']:
+        if a['entity_type'] == 'story':
+            story = a
+
+    return story
+
+def get_story_create_github_entity_body(payload: Dict[str, Any],
+                                        entity: str) -> str:
+    action = get_action_with_primary_id(payload)
+    story = get_story(payload)
+    new_state_id = story['changes']['workflow_state_id']['new']
+    old_state_id = story['changes']['workflow_state_id']['old']
+    new_state = get_reference_by_id(payload, new_state_id)['name']
+    old_state = get_reference_by_id(payload, old_state_id)['name']
+
+    kwargs = {
+        'name_template': STORY_NAME_TEMPLATE.format(**story),
+        'name': action.get('number') if entity == 'pull-request' else action.get('name'),
+        'url': action['url'],
+        'new': new_state,
+        'old': old_state,
+    }
+
+    template = STORY_GITHUB_PR_TEMPLATE if entity == 'pull-request' else STORY_GITHUB_BRANCH_TEMPLATE
+    return template.format(**kwargs)
+
 def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
 
@@ -402,9 +442,10 @@ def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
 
 def get_entity_name(payload: Dict[str, Any], entity: Optional[str]=None) -> Optional[str]:
-    name = get_action_with_primary_id(payload).get("name")
+    action = get_action_with_primary_id(payload)
+    name = action.get("name")
 
-    if name is None:
+    if name is None or action['entity_type'] == 'branch':
         for action in payload["actions"]:
             if action["entity_type"] == entity:
                 name = action["name"]
@@ -424,6 +465,8 @@ def get_name_template(entity: str) -> str:
 EVENT_BODY_FUNCTION_MAPPER = {
     "story_update_archived": get_story_update_archived_body,
     "story_create": get_story_create_body,
+    "pull-request_create": partial(get_story_create_github_entity_body, entity='pull-request'),
+    "branch_create": partial(get_story_create_github_entity_body, entity='branch'),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
     "story-task_create": partial(get_story_task_body, action="added to"),
@@ -449,6 +492,8 @@ EVENT_BODY_FUNCTION_MAPPER = {
 
 EVENT_TOPIC_FUNCTION_MAPPER = {
     "story": partial(get_entity_name, entity='story'),
+    "pull-request": partial(get_entity_name, entity='story'),
+    "branch": partial(get_entity_name, entity='story'),
     "story-comment": partial(get_entity_name, entity='story'),
     "story-task": partial(get_entity_name, entity='story'),
     "epic": partial(get_entity_name, entity='epic'),
