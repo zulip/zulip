@@ -160,6 +160,14 @@ exports.poll_data_holder = function (is_my_poll, question) {
         }
     };
 
+    //function to check if comment already exists
+    self.is_comment_taken = function(data, latest_comment){
+        var found = data.some(function (el) {
+            return el.comment === latest_comment;
+          });
+          return found;
+    };
+
     return self;
 };
 
@@ -220,7 +228,6 @@ exports.activate = function (opts) {
         var poll_question_input = elem.find("input.poll-question");
         var new_question = poll_question_input.val().trim();
         var old_question = poll_data.get_question();
-
         // We should disable the button for blank questions,
         // so this is just defensive code.
         if (new_question.trim() === '') {
@@ -244,10 +251,15 @@ exports.activate = function (opts) {
     function submit_option() {
         var poll_comment_input = elem.find("input.poll-comment");
         var comment = poll_comment_input.val().trim();
+        var data = poll_data.get_widget_data().comments;
 
         if (comment === '') {
             return;
         }
+
+        if(poll_data.is_comment_taken(data, comment)){
+            return;
+        };
 
         poll_comment_input.val('').focus();
 
