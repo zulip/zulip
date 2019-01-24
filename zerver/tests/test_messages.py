@@ -3497,6 +3497,25 @@ class DeleteMessageTest(ZulipTestCase):
         result = test_delete_message_by_admin(msg_id=msg_id_2)
         self.assert_json_success(result)
 
+        # Test mulitple delete requests with no latency issues
+        msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_success(result)
+        result = test_delete_message_by_owner(msg_id=msg_id)
+        self.assert_json_error(result, "Invalid message(s)")
+
+        # Test handling of 500 error caused by mulitple delete requests due to latency.
+        # see issue #11219.
+        with mock.patch("zerver.views.messages.do_delete_messages") as m, \
+                mock.patch("zerver.views.messages.validate_can_delete_message", return_value=None), \
+                mock.patch("zerver.views.messages.access_message", return_value=(None, None)):
+            m.side_effect = IntegrityError()
+            result = test_delete_message_by_owner(msg_id=msg_id)
+            self.assert_json_error(result, "Message already deleted")
+            m.side_effect = Message.DoesNotExist()
+            result = test_delete_message_by_owner(msg_id=msg_id)
+            self.assert_json_error(result, "Message already deleted")
+
 class SoftDeactivationMessageTest(ZulipTestCase):
 
     def test_maybe_catch_up_soft_deactivated_user(self) -> None:
