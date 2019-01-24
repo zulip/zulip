@@ -2456,6 +2456,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 14px;
 }
 
+#do_delete_message_spinner {
+    display: none;
+    width: 0;
+    margin: 0 auto;
+}
+
 .modal {
     overflow: hidden;
     margin-top: 0;
