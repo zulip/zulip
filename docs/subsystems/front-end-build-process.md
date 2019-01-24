@@ -45,9 +45,15 @@ add it to the appropriate place under `static/`.
   `static/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package.  Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-  - Our own JavaScript lives under `static/js`; Typescript files live under
-  static/ts; CSS lives under `static/styles`. Portico JavaScript ("portico" means
-  for logged-out pages) lives under `static/js/portico`.
+- Our own JavaScript lives under `static/js`.
+- Typescript files live under `static/ts`.
+- CSS lives under `static/styles`.
+- Portico JavaScript ("portico" means for logged-out pages) lives under
+  `static/js/portico`.
+- Custom SVG graphics living under `static/assets/icons` are compiled into
+  custom icon webfonts that live under `static/generated/icons/fonts` by
+  `tools/setup/generate-custom-icon-webfont` according to the
+  `static/icons/fonts/template.hbs` template.
 
 After you add a new JavaScript file, it needs to be imported by
 another file or specified in the `entries` dictionary defined in
