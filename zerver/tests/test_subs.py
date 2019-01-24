@@ -2305,6 +2305,30 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [self.example_user("iago").id])
 
+    def test_subscibe_to_announce_only_stream(self) -> None:
+        """
+        Members can subscribe to streams where only admins can post
+        but not create those streams, only realm admins can
+        """
+        member = self.example_user("AARON")
+        result = self.common_subscribe_to_streams(member.email, ["announce"])
+        self.assert_json_success(result)
+
+        streams_raw = [{
+            'name': 'new_stream',
+            'is_announcement_only': True,
+        }]
+        with self.assertRaisesRegex(
+                JsonableError, "User cannot create a stream with these settings."):
+            list_to_streams(streams_raw, member, autocreate=True)
+
+        admin = self.example_user("iago")
+        result = list_to_streams(streams_raw, admin, autocreate=True)
+        self.assert_length(result[0], 0)
+        self.assert_length(result[1], 1)
+        self.assertEqual(result[1][0].name, 'new_stream')
+        self.assertEqual(result[1][0].is_announcement_only, True)
+
     def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""
         guest_user = self.example_user("polonius")
