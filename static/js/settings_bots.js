@@ -7,32 +7,6 @@ exports.hide_errors = function () {
     $('.bot_error').hide();
 };
 
-var focus_tab = {
-    add_a_new_bot_tab: function () {
-        $("#bots_lists_navbar .active").removeClass("active");
-        $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
-        $("#add-a-new-bot-form").show();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").hide();
-        exports.hide_errors();
-    },
-    active_bots_tab: function () {
-        $("#bots_lists_navbar .active").removeClass("active");
-        $("#bots_lists_navbar .active-bots-tab").addClass("active");
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").show();
-        $("#inactive_bots_list").hide();
-        exports.hide_errors();
-    },
-    inactive_bots_tab: function () {
-        $("#bots_lists_navbar .active").removeClass("active");
-        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").show();
-        exports.hide_errors();
-    },
-};
 
 exports.get_bot_info_div = function (bot_id) {
     var sel = '.bot_info[data-user-id="' + bot_id + '"]';
@@ -90,26 +64,16 @@ exports.render_bots = function () {
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     });
 
-    if (settings_bots.can_create_new_bots()) {
-        if (!user_owns_an_active_bot) {
-            focus_tab.add_a_new_bot_tab();
-            return;
-        }
-    }
+    // if (settings_bots.can_create_new_bots()) {
+    //     if (!user_owns_an_active_bot) {
+    //         focus_tab.add_a_new_bot_tab();
+    //         return;
+    //     }
+    // }
 
-    if ($("#bots_lists_navbar .add-a-new-bot-tab").hasClass("active")) {
-        $("#add-a-new-bot-form").show();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").hide();
-    } else if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").show();
-        $("#inactive_bots_list").hide();
-    } else {
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").show();
-    }
+    $("#add-a-new-bot-form").show();
+    $("#active_bots_list").show();
+    $("#inactive_bots_list").show();
 };
 
 exports.generate_zuliprc_uri = function (bot_id) {
@@ -194,14 +158,14 @@ exports.update_bot_permissions_ui = function () {
     exports.update_bot_settings_tip();
     exports.hide_errors();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-    if (!exports.can_create_new_bots()) {
-        $('#create_bot_form').hide();
-        $('.add-a-new-bot-tab').hide();
-        focus_tab.active_bots_tab();
-    } else {
-        $('#create_bot_form').show();
-        $('.add-a-new-bot-tab').show();
-    }
+    // if (!exports.can_create_new_bots()) {
+    //     $('#create_bot_form').hide();
+    //     $('.add-a-new-bot-tab').hide();
+    //     focus_tab.active_bots_tab();
+    // } else {
+    //     $('#create_bot_form').show();
+    //     $('.add-a-new-bot-tab').show();
+    // }
 };
 
 exports.set_up = function () {
@@ -495,23 +459,23 @@ exports.set_up = function () {
         },
     });
 
-    $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.add_a_new_bot_tab();
-    });
-
-    $("#bots_lists_navbar .active-bots-tab").click(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.active_bots_tab();
-    });
-
-    $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.inactive_bots_tab();
-    });
+    // $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     focus_tab.add_a_new_bot_tab();
+    // });
+    //
+    // $("#bots_lists_navbar .active-bots-tab").click(function (e) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     focus_tab.active_bots_tab();
+    // });
+    //
+    // $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     focus_tab.inactive_bots_tab();
+    // });
 
 };
 
