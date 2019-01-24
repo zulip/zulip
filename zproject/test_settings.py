@@ -30,7 +30,7 @@ DATABASES["default"] = {
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
     "SCHEMA": "zulip",
-    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "ENGINE": "django.db.backends.postgresql",
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
