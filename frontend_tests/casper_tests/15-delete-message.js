@@ -27,6 +27,10 @@ casper.then(function () {
         casper.click('#do_delete_message_button');
     });
 });
+casper.then(function () {
+    casper.test.assertVisible("#do_delete_message_spinner .loading_indicator_spinner");
+    casper.test.assertNotVisible("#do_delete_message_button");
+});
 
 casper.then(function () {
     casper.waitFor(function check_length() {
@@ -38,6 +42,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.assertDoesntExist(last_message_id);
+    casper.test.assertNotVisible("#do_delete_message_spinner .loading_indicator_spinner");
 });
 
 casper.run(function () {
