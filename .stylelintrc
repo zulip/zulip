@@ -62,5 +62,6 @@
         
         # Limit language features
         "color-no-hex": true,
+        "color-named": "never",
     }
 }

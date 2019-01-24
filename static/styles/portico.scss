@@ -496,7 +496,7 @@ img.screenshot {
 .integration {
     margin-top: 2em;
     padding-top: 1em;
-    border-top: 1px dashed black;
+    border-top: 1px dashed hsl(0, 0%, 0%);
 }
 
 .integration p {
@@ -1005,7 +1005,7 @@ a.bottom-signup-button {
 
 .team input:checked + label {
     border: 1px solid hsl(0, 0%, 93%);
-    border-top: 2px solid yellowgreen;
+    border-top: 2px solid hsl(80, 61%, 50%);
     border-bottom-color: hsl(0, 0%, 100%);
 }
 

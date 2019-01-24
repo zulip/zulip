@@ -85,8 +85,8 @@ tests with `tools/test-js-with-node markdown` and backend tests with
 
 First, you will likely find these third-party resources helpful:
 
-* **[Python-Markdown Extensions API](https://pypi.python.org/pypi/Markdown)**
-  is used by Zulip to make the above listed changes to markdown syntax.
+* **[Python-Markdown](https://pypi.python.org/pypi/Markdown)** is the markdown
+  library used by Zulip as a base to build our custom markdown syntax upon.
 * **[Python's XML ElementTree](https://docs.python.org/3/library/xml.etree.elementtree.html)**
   is the part of the Python standard library used by Python Markdown
   and any custom extensions to generate and modify the output HTML.
@@ -121,7 +121,7 @@ Important considerations for any changes are:
   and for that reason we currently should avoid making database
   queries inside the markdown processor.  This is a technical
   implementation detail that could be changed with a few days of work,
-  but is important detail to know about until we do that work.
+  but is an important detail to know about until we do that work.
 * Testing: Every new feature should have both positive and negative
   tests; they're easy to write and give us the flexibility to refactor
   frequently.
@@ -172,23 +172,23 @@ mistakes, you don't want to be doing that often.  There are basically
 2 types of error rates that are important for a product like Zulip:
 
 * What fraction of the time, if you pasted a short technical email
-that you wrote to your team and passed it through your Markdown
-implementation, would you need to change the text of your email for it
-to render in a reasonable way?  This is the "accidental Markdown
-syntax" problem, common with Markdown syntax like the italics syntax
-interacting with talking about `char *`s.
+  that you wrote to your team and passed it through your Markdown
+  implementation, would you need to change the text of your email for it
+  to render in a reasonable way?  This is the "accidental Markdown
+  syntax" problem, common with Markdown syntax like the italics syntax
+  interacting with talking about `char *`s.
 
 * What fraction of the time do users attempting to use a particular
-Markdown syntax actually succeed at doing so correctly?  Syntax like
-required a blank line between text and the start of a bulleted list
-raise this figure substantially.
+  Markdown syntax actually succeed at doing so correctly?  Syntax like
+  required a blank line between text and the start of a bulleted list
+  raise this figure substantially.
 
 Both of these are minor issues for most products using Markdown, but
 they are major problems in the instant messaging context, because one
-can't edit a message that has already been sent and users are
-generally writing quickly.  Zulip's Markdown strategy is based on the
-principles of giving users the power they need to express complicated
-ideas in a chat context while minimizing those two error rates.
+can't edit a message that has already been sent before others read it
+and users are generally writing quickly. Zulip's Markdown strategy is
+based on the principles of giving users the power they need to express
+complicated ideas in a chat context while minimizing those two error rates.
 
 ## Zulip's Changes to Markdown
 
