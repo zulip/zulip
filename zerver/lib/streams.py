@@ -242,10 +242,14 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     missing_stream_dicts = []  # type: List[Mapping[str, Any]]
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
+    member_creating_announcement_only_stream = False
+
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
+            if not user_profile.is_realm_admin and stream_dict.get("is_announcement_only", False):
+                member_creating_announcement_only_stream = True
             missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)
@@ -258,6 +262,8 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         # autocreate=True path starts here
         if not user_profile.can_create_streams():
             raise JsonableError(_('User cannot create streams.'))
+        elif member_creating_announcement_only_stream:
+            raise JsonableError(_('Members cannot create streams where only admins can post.'))
         elif not autocreate:
             raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(
                 stream_dict["name"] for stream_dict in missing_stream_dicts))
