@@ -160,6 +160,13 @@ exports.poll_data_holder = function (is_my_poll, question) {
         }
     };
 
+    // function to check whether comment already exists
+    self.is_comment_present = function (data, latest_comment) {
+        return _.any(data, function (el) {
+            return el.comment === latest_comment;
+        });
+    };
+
     return self;
 };
 
@@ -244,6 +251,11 @@ exports.activate = function (opts) {
     function submit_option() {
         var poll_comment_input = elem.find("input.poll-comment");
         var comment = poll_comment_input.val().trim();
+        var comments = poll_data.get_widget_data().comments;
+
+        if (poll_data.is_comment_present(comments, comment)) {
+            return;
+        }
 
         if (comment === '') {
             return;
