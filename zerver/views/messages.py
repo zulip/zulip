@@ -3,7 +3,7 @@ from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.db import connection
+from django.db import connection, IntegrityError
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, List, Set, Any, Callable, Iterable, \
     Optional, Tuple, Union, Sequence, cast
@@ -1479,7 +1479,10 @@ def delete_message_backend(request: HttpRequest, user_profile: UserProfile,
                            message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
     message, ignored_user_message = access_message(user_profile, message_id)
     validate_can_delete_message(user_profile, message)
-    do_delete_messages(user_profile, [message])
+    try:
+        do_delete_messages(user_profile, [message])
+    except (Message.DoesNotExist, IntegrityError):
+        raise JsonableError(_("Message already deleted"))
     return json_success()
 
 @has_request_variables
