@@ -242,10 +242,14 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
     missing_stream_dicts = []  # type: List[Mapping[str, Any]]
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
+    member_creating_announcement_only_stream = False
+
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
+            if stream_dict.get("is_announcement_only", False) and not user_profile.is_realm_admin:
+                member_creating_announcement_only_stream = True
             missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)
@@ -261,6 +265,8 @@ def list_to_streams(streams_raw: Iterable[Mapping[str, Any]],
         elif not autocreate:
             raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(
                 stream_dict["name"] for stream_dict in missing_stream_dicts))
+        elif member_creating_announcement_only_stream:
+            raise JsonableError(_('User cannot create a stream with these settings.'))
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
