@@ -26,6 +26,7 @@ from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
 from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.lib.parallel import run_parallel
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
@@ -532,7 +533,7 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads(import_dir: Path, processing_avatars: bool=False,
+def import_uploads(import_dir: Path, processes: int, processing_avatars: bool=False,
                    processing_emojis: bool=False) -> None:
     if processing_avatars and processing_emojis:
         raise AssertionError("Cannot import avatars and emojis at the same time!")
@@ -640,7 +641,8 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
         # avatar.  TODO: This implementation is hacky, both in that it
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
-        for record in records:
+
+        def process_avatars(record: Dict[Any, Any]) -> int:
             if record['s3_path'].endswith('.original'):
                 user_profile = get_user_profile_by_id(record['user_profile_id'])
                 if settings.LOCAL_UPLOADS_DIR is not None:
@@ -662,6 +664,16 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
                         user_profile.id))
                     # Delete the record of the avatar to avoid 404s.
                     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+            return 0
+
+        if processes == 1:
+            for record in records:
+                process_avatars(record)
+        else:
+            connection.close()
+            output = []
+            for (status, job) in run_parallel(process_avatars, records, processes):
+                output.append(job)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
@@ -681,7 +693,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
-def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
+def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm:
     logging.info("Importing realm dump %s" % (import_dir,))
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
@@ -922,14 +934,14 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
-    import_uploads(os.path.join(import_dir, "uploads"))
+    import_uploads(os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
+    import_uploads(os.path.join(import_dir, "uploads"), processes)
 
     # We need to have this check as the emoji files are only present in the data
     # importer from slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
-        import_uploads(os.path.join(import_dir, "emoji"), processing_emojis=True)
+        import_uploads(os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
 
     sender_map = {
         user['id']: user
