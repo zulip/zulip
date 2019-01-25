@@ -13,7 +13,7 @@ from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile
 
 GOOD_STATUSES = ['Passed', 'Fixed']
-BAD_STATUSES = ['Failed', 'Broken', 'Still Failing', 'Errored']
+BAD_STATUSES = ['Failed', 'Broken', 'Still Failing', 'Errored', 'Canceled']
 
 MESSAGE_TEMPLATE = (
     u'Author: {}\n'
