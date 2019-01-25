@@ -1,6 +1,7 @@
 var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
+var currently_deleting_messages = [];
 
 var editability_types = {
     NO: 1,
@@ -592,18 +593,46 @@ exports.show_history = function (message) {
     });
 };
 
+function hide_delete_btn_show_spinner(deleting) {
+    if (deleting) {
+        $('do_delete_message_button').attr('disabled', 'disabled');
+        $('#delete_message_modal > div.modal-footer > button').hide();
+        var delete_spinner = $("#do_delete_message_spinner");
+        loading.make_indicator(delete_spinner, { abs_positioned: true });
+    } else {
+        loading.destroy_indicator($("#do_delete_message_spinner"));
+        $("#do_delete_message_button").prop('disabled', false);
+        $('#delete_message_modal > div.modal-footer > button').show();
+    }
+}
+
 exports.delete_message = function (msg_id) {
     $("#delete-message-error").html('');
     $('#delete_message_modal').modal("show");
+    if (_.contains(currently_deleting_messages, msg_id)) {
+        hide_delete_btn_show_spinner(true);
+    } else {
+        hide_delete_btn_show_spinner(false);
+    }
     $('#do_delete_message_button').off().on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
+        currently_deleting_messages.push(msg_id);
+        hide_delete_btn_show_spinner(true);
         channel.del({
             url: "/json/messages/" + msg_id,
             success: function () {
                 $('#delete_message_modal').modal("hide");
+                currently_deleting_messages = _.reject(currently_deleting_messages, function (id) {
+                    return id === msg_id;
+                });
+                hide_delete_btn_show_spinner(false);
             },
             error: function (xhr) {
+                currently_deleting_messages = _.reject(currently_deleting_messages, function (id) {
+                    return id === msg_id;
+                });
+                hide_delete_btn_show_spinner(false);
                 ui_report.error(i18n.t("Error deleting message"), xhr,
                                 $("#delete-message-error"));
             },
