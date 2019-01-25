@@ -253,6 +253,7 @@ exports.paste_handler = function (event) {
 exports.initialize = function () {
     $(document).on('copy', copy_handler);
     $("#compose-textarea").bind('paste', exports.paste_handler);
+    $('body').on('paste', '#message_edit_form', exports.paste_handler);
 };
 
 return exports;
