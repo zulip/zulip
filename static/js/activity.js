@@ -202,7 +202,7 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-exports.insert_user_into_list = function (user_id) {
+exports.redraw_user = function (user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
@@ -388,18 +388,18 @@ exports.update_presence_info = function (email, info, server_time) {
     }
 
     presence.set_info_for_user(user_id, info, server_time);
-    exports.insert_user_into_list(user_id);
+    exports.redraw_user(user_id);
     exports.update_huddles();
 };
 
 exports.on_set_away = function (user_id) {
     user_status.set_away(user_id);
-    exports.insert_user_into_list(user_id);
+    exports.redraw_user(user_id);
 };
 
 exports.on_revoke_away = function (user_id) {
     user_status.revoke_away(user_id);
-    exports.insert_user_into_list(user_id);
+    exports.redraw_user(user_id);
 };
 
 exports.redraw = function () {
