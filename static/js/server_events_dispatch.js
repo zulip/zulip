@@ -469,7 +469,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.status_text !== undefined) {
             user_status.set_status_text({
                 user_id: event.user_id,
-                status_text: event.info,
+                status_text: event.status_text,
             });
         }
         break;
