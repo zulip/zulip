@@ -134,10 +134,33 @@ exports.my_user_status = function (user_id) {
     return i18n.t('(you)');
 };
 
+exports.user_title = function (user_id) {
+    var buddy_status = exports.buddy_status(user_id);
+    var type_desc = presence_descriptions[buddy_status];
+    var status_text = user_status.get_status_text(user_id);
+    var person = people.get_person_from_user_id(user_id);
+    var title;
+
+    if (status_text) {
+        // The user-set status, like "out to lunch",
+        // is more important than actual presence.
+        title = status_text;
+    } else {
+        title = person.full_name;
+        if (type_desc) {
+            // example: "Cordelia Lear is away"
+            title += ' ' + type_desc;
+        }
+    }
+
+    return title;
+};
+
 exports.info_for = function (user_id) {
     var buddy_status = exports.buddy_status(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
+    var title = exports.user_title(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -147,7 +170,7 @@ exports.info_for = function (user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         type: buddy_status,
-        type_desc: presence_descriptions[buddy_status],
+        title: title,
     };
 };
 
