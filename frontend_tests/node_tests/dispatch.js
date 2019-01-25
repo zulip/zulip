@@ -275,6 +275,16 @@ var event_fixtures = {
         },
     },
 
+    realm__update_dict__logo: {
+        type: 'realm',
+        op: 'update_dict',
+        property: 'logo',
+        data: {
+            logo_url: 'logo.png',
+            logo_source: 'U',
+        },
+    },
+
     realm__deactivated: {
         type: 'realm',
         op: 'deactivated',
@@ -894,6 +904,12 @@ with_overrides(function (override) {
     assert_same(called, true);
     assert_same(page_params.realm_icon_url, 'icon.png');
     assert_same(page_params.realm_icon_source, 'U');
+
+    event = event_fixtures.realm__update_dict__logo;
+    override('realm_logo.rerender', noop);
+    dispatch(event);
+    assert_same(page_params.realm_logo_url, 'logo.png');
+    assert_same(page_params.realm_logo_source, 'U');
 
     event = event_fixtures.realm__deactivated;
     window.location = {};
