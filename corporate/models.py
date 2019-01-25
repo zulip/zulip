@@ -12,6 +12,7 @@ class Customer(models.Model):
     stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
     # Deprecated .. delete once everyone is migrated to new billing system
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
+    # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)  # type: Optional[Decimal]
 
     def __str__(self) -> str:
@@ -30,7 +31,7 @@ class CustomerPlan(models.Model):
     price_per_license = models.IntegerField(null=True)  # type: Optional[int]
     fixed_price = models.IntegerField(null=True)  # type: Optional[int]
 
-    # A percentage, like 85
+    # Discount that was applied. For display purposes only.
     discount = models.DecimalField(decimal_places=4, max_digits=6, null=True)  # type: Optional[Decimal]
 
     billing_cycle_anchor = models.DateTimeField()  # type: datetime.datetime
