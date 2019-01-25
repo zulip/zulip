@@ -95,11 +95,9 @@ def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QueryS
     return query.filter(message__subject__iexact=topic_name)
 
 def messages_for_topic(stream_id: int, topic_name: str) -> QuerySet:
-    # It might be the case that we really want subject__contains
-    # here.  This code is used for the archive.
     return Message.objects.filter(
         recipient__type_id=stream_id,
-        subject=topic_name,
+        subject__iexact=topic_name,
     )
 
 def save_message_for_edit_use_case(message: Message) -> None:
