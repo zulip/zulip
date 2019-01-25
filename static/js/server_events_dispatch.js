@@ -472,6 +472,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 user_id: event.user_id,
                 status_text: event.status_text,
             });
+            activity.redraw_user(event.user_id);
         }
         break;
     }
