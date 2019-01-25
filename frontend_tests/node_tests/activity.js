@@ -537,8 +537,8 @@ run_test('first/prev/next', () => {
 
     buddy_list.container.append = () => {};
 
-    activity.insert_user_into_list(alice.user_id);
-    activity.insert_user_into_list(fred.user_id);
+    activity.redraw_user(alice.user_id);
+    activity.redraw_user(fred.user_id);
 
     assert.equal(buddy_list.first_key(), alice.user_id);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
@@ -604,7 +604,7 @@ run_test('insert_one_user_into_empty_list', () => {
     };
 
     clear_buddy_list();
-    activity.insert_user_into_list(alice.user_id);
+    activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
 });
@@ -619,11 +619,11 @@ run_test('insert_alice_then_fred', () => {
         appended_html = html;
     };
 
-    activity.insert_user_into_list(alice.user_id);
+    activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
 
-    activity.insert_user_into_list(fred.user_id);
+    activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
 });
@@ -638,7 +638,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
         appended_html = html;
     };
 
-    activity.insert_user_into_list(fred.user_id);
+    activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
 
@@ -650,7 +650,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
         inserted_html = html;
     };
 
-    activity.insert_user_into_list(alice.user_id);
+    activity.redraw_user(alice.user_id);
     assert(inserted_html.indexOf('data-user-id="1"') > 0);
     assert(inserted_html.indexOf('user_active') > 0);
 
@@ -669,7 +669,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
         inserted_html = html;
     };
 
-    activity.insert_user_into_list(fred_with_new_name.user_id);
+    activity.redraw_user(fred_with_new_name.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
@@ -685,14 +685,14 @@ run_test('insert_unfiltered_user_with_filter', () => {
     // match the search filter.
     const user_filter = $('.user-list-filter');
     user_filter.val('do-not-match-filter');
-    activity.insert_user_into_list(fred.user_id);
+    activity.redraw_user(fred.user_id);
 });
 
 run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
     unread.suppress_unread_counts = false;
 
-    activity.insert_user_into_list();
+    activity.redraw_user();
     activity.build_user_sidebar();
 
     real_update_huddles();
