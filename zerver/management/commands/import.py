@@ -7,7 +7,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.lib.import_realm import do_import_realm, do_import_system_bots
 from zerver.forms import check_subdomain_available
@@ -37,6 +37,11 @@ import a database dump from one or more JSON files."""
         parser.add_argument('export_paths', nargs='+',
                             metavar='<export path>',
                             help="list of export directories to import")
+        parser.add_argument('--processes',
+                            dest='processes',
+                            action="store",
+                            default=6,
+                            help='Number of processes to use for uploading Avatars to S3 in parallel')
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
@@ -44,6 +49,10 @@ import a database dump from one or more JSON files."""
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
     def handle(self, *args: Any, **options: Any) -> None:
+        num_processes = int(options['processes'])
+        if num_processes < 1:
+            raise CommandError('You must have at least one process.')
+
         subdomain = options['subdomain']
 
         if options["destroy_rebuild_database"]:
@@ -68,6 +77,6 @@ import a database dump from one or more JSON files."""
 
         for path in paths:
             print("Processing dump: %s ..." % (path,))
-            realm = do_import_realm(path, subdomain)
+            realm = do_import_realm(path, subdomain, num_processes)
             print("Checking the system bots.")
             do_import_system_bots(realm)
