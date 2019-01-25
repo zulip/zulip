@@ -84,13 +84,21 @@ set_global('starred_messages', {
     add: noop,
 });
 
+zrequire('people');
 zrequire('server_events_dispatch');
-var sed = server_events_dispatch;
 
 function dispatch(ev) {
-    sed.dispatch_normal_event(ev);
+    server_events_dispatch.dispatch_normal_event(ev);
 }
 
+var test_user = {
+    email: 'test@example.com',
+    user_id: 101,
+    full_name: 'Test User',
+};
+
+people.init();
+people.add(test_user);
 
 // TODO: These events are not guaranteed to be perfectly
 //       representative of what the server sends.  For
@@ -318,7 +326,7 @@ var event_fixtures = {
             email: 'the-bot@example.com',
             user_id: 4321,
             full_name: 'The Bot Has A New Name',
-            owner_id: 42,
+            owner_id: test_user.user_id,
         },
     },
 
@@ -366,9 +374,9 @@ var event_fixtures = {
         type: 'realm_user',
         op: 'add',
         person: {
-            email: 'alice@example.com',
-            full_name: 'Alice User',
-            // etc.
+            email: 'added@example.com',
+            full_name: 'Added Person',
+            user_id: 1001,
         },
     },
 
@@ -376,9 +384,8 @@ var event_fixtures = {
         type: 'realm_user',
         op: 'remove',
         person: {
-            email: 'alice@example.com',
-            full_name: 'Alice User',
-            // etc.
+            email: 'added@example.com',
+            user_id: 1001,
         },
     },
 
@@ -956,11 +963,6 @@ with_overrides(function (override) {
     event = event_fixtures.realm_bot__update_owner;
     override('bot_data.update', noop);
     override('settings_users.update_user_data', noop);
-    override('people.get_person_from_user_id', function (id) {
-        assert_same(id, 42);
-        return {email: 'test@example.com'};
-    });
-
     dispatch(event);
     assert_same(event.bot.owner, 'test@example.com');
 });
@@ -1010,21 +1012,19 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // realm_user
     var event = event_fixtures.realm_user__add;
-    global.with_stub(function (stub) {
-        override('people.add_in_realm', stub.f);
-        dispatch(event);
-        var args = stub.get_args('person');
-        assert_same(args.person, event.person);
-    });
+    dispatch(event);
+    var added_person = people.get_person_from_user_id(event.person.user_id);
+    assert.equal(added_person.full_name, 'Added Person');
+    assert(people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__remove;
-    global.with_stub(function (stub) {
-        override('people.deactivate', stub.f);
-        override('stream_events.remove_deactivated_user_from_all_streams', noop);
-        dispatch(event);
-        var args = stub.get_args('person');
-        assert_same(args.person, event.person);
-    });
+    override('stream_events.remove_deactivated_user_from_all_streams', noop);
+    dispatch(event);
+
+    // We don't actually remove the person, we just deactivate them.
+    var removed_person = people.get_person_from_user_id(event.person.user_id);
+    assert.equal(removed_person.full_name, 'Added Person');
+    assert(!people.is_active_user_for_popover(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     global.with_stub(function (stub) {
