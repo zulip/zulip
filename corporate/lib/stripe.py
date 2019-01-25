@@ -94,17 +94,12 @@ def next_renewal_date(plan: CustomerPlan) -> datetime:
 
 def renewal_amount(plan: CustomerPlan) -> Optional[int]:  # nocoverage: TODO
     if plan.fixed_price is not None:
-        basis = plan.fixed_price
-    else:
-        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
-        if last_ledger_entry.licenses_at_next_renewal is None:
-            return None
-        assert(plan.price_per_license is not None)  # for mypy
-        basis = plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
-    if plan.discount is None:
-        return basis
-    # TODO: figure out right thing to do with Decimal
-    return int(float(basis * (100 - plan.discount) / 100) + .00001)
+        return plan.fixed_price
+    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
+    if last_ledger_entry.licenses_at_next_renewal is None:
+        return None
+    assert(plan.price_per_license is not None)  # for mypy
+    return plan.price_per_license * last_ledger_entry.licenses_at_next_renewal
 
 class BillingError(Exception):
     # error messages
@@ -313,13 +308,10 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             realm=realm, acting_user=user, event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
             extra_data=ujson.dumps(plan_params))
-    description = 'Zulip Standard'
-    if customer.default_discount is not None:  # nocoverage: TODO
-        description += ' (%s%% off)' % (customer.default_discount,)
     stripe.InvoiceItem.create(
         currency='usd',
         customer=customer.stripe_customer_id,
-        description=description,
+        description='Zulip Standard',
         discountable=False,
         period = {'start': datetime_to_timestamp(billing_cycle_anchor),
                   'end': datetime_to_timestamp(period_end)},
