@@ -91,6 +91,15 @@ run_test('buddy_status', () => {
     assert.equal(buddy_data.buddy_status(me.user_id), 'active');
 });
 
+run_test('user_title', () => {
+    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself is active');
+    user_status.set_status_text({
+        user_id: me.user_id,
+        status_text: 'out to lunch',
+    });
+    assert.equal(buddy_data.user_title(me.user_id), 'out to lunch');
+});
+
 run_test('simple search', () => {
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids('sel');
 
