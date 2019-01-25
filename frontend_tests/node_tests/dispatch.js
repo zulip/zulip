@@ -574,6 +574,12 @@ var event_fixtures = {
         setting: false,
     },
 
+    update_display_settings__starred_message_counts: {
+        type: 'update_display_settings',
+        setting_name: 'starred_message_counts',
+        setting: true,
+    },
+
     update_display_settings__translate_emoticons: {
         type: 'update_display_settings',
         setting_name: 'translate_emoticons',
@@ -1328,6 +1334,12 @@ with_overrides(function (override) {
         assert_same(called, true);
         assert_same(page_params.emojiset, 'google');
     });
+
+    override('starred_messages.rerender_ui', noop);
+    event = event_fixtures.update_display_settings__starred_message_counts;
+    page_params.starred_message_counts = false;
+    dispatch(event);
+    assert_same(page_params.starred_message_counts, true);
 });
 
 with_overrides(function (override) {
