@@ -89,6 +89,7 @@ zrequire('message_store');
 zrequire('people');
 zrequire('starred_messages');
 zrequire('util');
+zrequire('user_status');
 zrequire('server_events_dispatch');
 
 function dispatch(ev) {
@@ -1459,5 +1460,15 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('user_id');
         assert_same(args.user_id, 63);
+    });
+
+    event = event_fixtures.user_status__set_status_text;
+    global.with_stub(function (stub) {
+        override('activity.redraw_user', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, test_user.user_id);
+        var status_text = user_status.get_status_text(test_user.user_id);
+        assert.equal(status_text, 'out to lunch');
     });
 });
