@@ -792,6 +792,15 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.update_status_text', function (e) {
+        popovers.hide_all();
+
+        user_status_ui.open_overlay();
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 

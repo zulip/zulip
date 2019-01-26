@@ -204,6 +204,7 @@
         "user_pill": false,
         "user_search": false,
         "user_status": false,
+        "user_status_ui": false,
         "util": false,
         "poll_widget": false,
         "widgetize": false,
