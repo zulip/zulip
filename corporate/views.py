@@ -168,11 +168,12 @@ def billing_home(request: HttpRequest) -> HttpResponse:
             CustomerPlan.STANDARD: 'Zulip Standard',
             CustomerPlan.PLUS: 'Zulip Plus',
         }[plan.tier]
-        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
+        now = timezone_now()
+        last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, now)
         # TODO: this is not really correct; need to give the situation as of the "fillstate"
         licenses = last_ledger_entry.licenses
         # Should do this in javascript, using the user's timezone
-        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan))
+        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan, now))
         renewal_cents = renewal_amount(plan)
         # TODO: this is the case where the plan doesn't automatically renew
         if renewal_cents is None:  # nocoverage

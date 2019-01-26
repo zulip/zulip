@@ -403,7 +403,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/billing/', response.url)
 
         # Check /billing has the correct information
-        response = self.client_get("/billing/")
+        with patch('corporate.views.timezone_now', return_value=self.now):
+            response = self.client_get("/billing/")
         self.assert_not_in_success_response(['Pay annually'], response)
         for substring in [
                 'Zulip Standard', str(self.seat_count),
@@ -485,7 +486,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/billing/', response.url)
 
         # Check /billing has the correct information
-        response = self.client_get("/billing/")
+        with patch('corporate.views.timezone_now', return_value=self.now):
+            response = self.client_get("/billing/")
         self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
         for substring in [
                 'Zulip Standard', str(123),
@@ -950,12 +952,11 @@ class LicenseLedgerTest(ZulipTestCase):
         self.assertEqual(LicenseLedger.objects.count(), 1)
         plan = CustomerPlan.objects.get()
         # Plan hasn't renewed yet
-        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year)
+        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year - timedelta(days=1))
         self.assertEqual(LicenseLedger.objects.count(), 1)
         # Plan needs to renew
         # TODO: do_deactivate_user for a user, so that licenses_at_next_renewal != licenses
-        ledger_entry = add_plan_renewal_to_license_ledger_if_needed(
-            plan, self.next_year + timedelta(seconds=1))
+        ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year)
         self.assertEqual(LicenseLedger.objects.count(), 2)
         ledger_params = {
             'plan': plan, 'is_renewal': True, 'event_time': self.next_year,
@@ -963,7 +964,7 @@ class LicenseLedgerTest(ZulipTestCase):
         for key, value in ledger_params.items():
             self.assertEqual(getattr(ledger_entry, key), value)
         # Plan needs to renew, but we already added the plan_renewal ledger entry
-        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year + timedelta(seconds=1))
+        add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year + timedelta(days=1))
         self.assertEqual(LicenseLedger.objects.count(), 2)
 
     def test_update_license_ledger_if_needed(self) -> None:

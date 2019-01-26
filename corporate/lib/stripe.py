@@ -79,14 +79,14 @@ def next_month(billing_cycle_anchor: datetime, dt: datetime) -> datetime:
                          'billing_cycle_anchor: %s, dt: %s' % (billing_cycle_anchor, dt))
 
 # TODO take downgrade into account
-def next_renewal_date(plan: CustomerPlan) -> datetime:
+def next_renewal_date(plan: CustomerPlan, event_time: datetime) -> datetime:
     months_per_period = {
         CustomerPlan.ANNUAL: 12,
         CustomerPlan.MONTHLY: 1,
     }[plan.billing_schedule]
     periods = 1
     dt = plan.billing_cycle_anchor
-    while dt <= plan.billed_through:
+    while dt <= event_time:
         dt = add_months(plan.billing_cycle_anchor, months_per_period * periods)
         periods += 1
     return dt
@@ -191,14 +191,14 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
 # TODO handle downgrade
 def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time: datetime) -> LicenseLedger:
     last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-id').first()
-    plan_renewal_date = next_renewal_date(plan)
-    if plan_renewal_date < event_time:
-        if not LicenseLedger.objects.filter(
-                plan=plan, event_time=plan_renewal_date, is_renewal=True).exists():
-            return LicenseLedger.objects.create(
-                plan=plan, is_renewal=True, event_time=plan_renewal_date,
-                licenses=last_ledger_entry.licenses_at_next_renewal,
-                licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal)
+    last_renewal = LicenseLedger.objects.filter(plan=plan, is_renewal=True) \
+                                        .order_by('-id').first().event_time
+    plan_renewal_date = next_renewal_date(plan, last_renewal)
+    if plan_renewal_date <= event_time:
+        return LicenseLedger.objects.create(
+            plan=plan, is_renewal=True, event_time=plan_renewal_date,
+            licenses=last_ledger_entry.licenses_at_next_renewal,
+            licenses_at_next_renewal=last_ledger_entry.licenses_at_next_renewal)
     return last_ledger_entry
 
 # Returns Customer instead of stripe_customer so that we don't make a Stripe
