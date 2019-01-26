@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
@@ -16,6 +16,7 @@ import os
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.pgp import pgp_sign_and_encrypt
 from confirmation.models import generate_key
 
 ## Logging setup ##
@@ -38,15 +39,15 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
                 language: Optional[str]=None, context: Optional[Dict[str, Any]]=None
-                ) -> EmailMultiAlternatives:
+                ) -> List[EmailMultiAlternatives]:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
+
+    to_users = None
     if to_user_ids is not None:
         to_users = [get_user_profile_by_id(to_user_id) for to_user_id in to_user_ids]
-        # Change to formataddr((to_user.full_name, to_user.email)) once
-        # https://github.com/zulip/zulip/issues/4676 is resolved
-        to_emails = [to_user.delivery_email for to_user in to_users]
-
+        if language is None:
+            language = to_users[0].default_language
     if context is None:
         context = {}
 
@@ -72,8 +73,6 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
             html_message = loader.render_to_string(compiled_template_prefix + '.html', context)
         return (html_message, message, email_subject)
 
-    if not language and to_user_ids is not None:
-        language = to_users[0].default_language
     if language:
         with override_language(language):
             # Make sure that we render the email using the target's native language
@@ -99,10 +98,32 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     mail = EmailMultiAlternatives(email_subject, message, from_email, to_emails, reply_to=reply_to)
     if html_message is not None:
         mail.attach_alternative(html_message, 'text/html')
-    return mail
+
+    if to_users is None:
+        return [mail]
+
+    # TODO: The requirement to send everything as a single message
+    # is for the sake of having all addressees in the To: header.
+    # To satisfy this requirement, we may end up needing to send
+    # the message unencrypted. It would be good to find a way around
+    # this issue.
+    return pgp_sign_and_encrypt(mail, to_users, force_single_message=True)
 
 class EmailNotDeliveredException(Exception):
     pass
+
+def send_and_log(emails: List[EmailMultiAlternatives], template: str) -> int:
+    logger.info("Sending %s email to %s" % (template, [mail.to for mail in emails]))
+    with get_connection() as connection:
+        num_sent = 0
+        for mail in emails:
+            mail.connection = connection
+            if mail.send():
+                num_sent += 1
+            else:
+                logger.error("Error sending %s email to %s" % (template, mail.to))
+
+    return num_sent
 
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
@@ -110,14 +131,11 @@ def send_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
                language: Optional[str]=None, context: Dict[str, Any]={}) -> None:
-    mail = build_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails,
-                       from_name=from_name, from_address=from_address,
-                       reply_to_email=reply_to_email, language=language, context=context)
+    emails = build_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails,
+                         from_name=from_name, from_address=from_address,
+                         reply_to_email=reply_to_email, language=language, context=context)
     template = template_prefix.split("/")[-1]
-    logger.info("Sending %s email to %s" % (template, mail.to))
-
-    if mail.send() == 0:
-        logger.error("Error sending %s email to %s" % (template, mail.to))
+    if send_and_log(emails, template) < len(emails):
         raise EmailNotDeliveredException
 
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
