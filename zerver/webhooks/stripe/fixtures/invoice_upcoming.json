@@ -1,22 +1,22 @@
 {
   "created": 1326853478,
   "livemode": false,
-  "id": "invoice.payment_00000000000000",
-  "type": "invoice.payment_failed",
+  "id": "invoice.upcoming_00000000000000",
+  "type": "invoice.upcoming",
   "object": "event",
   "request": null,
   "pending_webhooks": 1,
   "api_version": "2018-11-08",
   "data": {
     "object": {
-      "id": "in_00000000000000",
+      "id": null,
       "object": "invoice",
       "amount_due": 1000,
       "amount_paid": 0,
       "amount_remaining": 1000,
       "application_fee": null,
       "attempt_count": 0,
-      "attempted": true,
+      "attempted": false,
       "auto_advance": true,
       "billing": "send_invoice",
       "billing_reason": "manual",
@@ -41,14 +41,14 @@
             "object": "line_item",
             "amount": 999,
             "currency": "usd",
-            "description": "1 × Diamond Essentials (at $9.99 / month)",
+            "description": "1 × Titanium Corporate (at $9.99 / month)",
             "discountable": true,
             "livemode": false,
             "metadata": {
             },
             "period": {
-              "end": 1551072969,
-              "start": 1548394569
+              "end": 1551113860,
+              "start": 1548435460
             },
             "plan": {
               "id": "plan_00000000000000",
@@ -57,7 +57,7 @@
               "aggregate_usage": null,
               "amount": 999,
               "billing_scheme": "per_unit",
-              "created": 1548385214,
+              "created": 1548434720,
               "currency": "usd",
               "interval": "month",
               "interval_count": 1,
@@ -100,8 +100,7 @@
       "tax": 0,
       "tax_percent": null,
       "total": 1000,
-      "webhooks_delivered_at": null,
-      "closed": false
+      "webhooks_delivered_at": null
     }
   }
 }
