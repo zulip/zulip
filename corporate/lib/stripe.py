@@ -17,7 +17,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
-from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from corporate.models import Customer, CustomerPlan, LicenseLedger, \
     get_active_plan
@@ -191,7 +190,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
 # event_times in the past or future
 # TODO handle downgrade
 def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time: datetime) -> LicenseLedger:
-    last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-event_time').first()
+    last_ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by('-id').first()
     plan_renewal_date = next_renewal_date(plan)
     if plan_renewal_date < event_time:
         if not LicenseLedger.objects.filter(
@@ -332,7 +331,29 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
         statement_descriptor='Zulip Standard')
     stripe.Invoice.finalize_invoice(stripe_invoice)
 
+    from zerver.lib.actions import do_change_plan_type
     do_change_plan_type(realm, Realm.STANDARD)
+
+def update_license_ledger_for_automanaged_plan(realm: Realm, plan: CustomerPlan,
+                                               event_time: datetime) -> None:
+    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
+    # todo: handle downgrade, where licenses_at_next_renewal should be 0
+    licenses_at_next_renewal = get_seat_count(realm)
+    licenses = max(licenses_at_next_renewal, last_ledger_entry.licenses)
+    LicenseLedger.objects.create(
+        plan=plan, event_time=event_time, licenses=licenses,
+        licenses_at_next_renewal=licenses_at_next_renewal)
+
+def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
+    customer = Customer.objects.filter(realm=realm).first()
+    if customer is None:
+        return
+    plan = get_active_plan(customer)
+    if plan is None:
+        return
+    if not plan.automanage_licenses:
+        return
+    update_license_ledger_for_automanaged_plan(realm, plan, event_time)
 
 def attach_discount_to_realm(user: UserProfile, discount: Decimal) -> None:
     customer = Customer.objects.filter(realm=user.realm).first()
