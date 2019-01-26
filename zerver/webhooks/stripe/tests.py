@@ -112,12 +112,6 @@ Billing method: send invoice"""
         self.send_and_test_stream_message('customer_discount_created', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_invoice_payment_failed(self) -> None:
-        expected_topic = u"cus_00000000000000"
-        expected_message = u"[Invoice](https://dashboard.stripe.com/invoices/in_00000000000000) payment failed"
-        self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
     def test_payout_canceled(self) -> None:
         expected_topic = u"Payout po_00000000000000"
         expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been canceled."
@@ -151,4 +145,63 @@ Billing method: send invoice"""
         expected_message = u"**[Payout](https://dashboard.stripe.com/payout/po_00000000000000)** for amount **$11.00** has been updated."
 
         self.send_and_test_stream_message('payout_updated', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_created(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been created."
+        self.send_and_test_stream_message('invoice_created', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_deleted(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been deleted."
+        self.send_and_test_stream_message('invoice_deleted', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_finalized(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been finalized."
+        self.send_and_test_stream_message('invoice_finalized', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_marked_uncollectible(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been marked as uncollectible."
+        self.send_and_test_stream_message('invoice_marked_uncollectible', expected_topic, expected_message, content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_payment_failed(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has failed."
+        self.send_and_test_stream_message('invoice_payment_failed', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_payment_succeeded(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has succeeded."
+        self.send_and_test_stream_message('invoice_payment_succeeded', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_sent(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been sent."
+        self.send_and_test_stream_message('invoice_sent', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_upcoming(self) -> None:
+        expected_topic = u"invoice None"
+        expected_message = u"An upcoming **[invoice](https://dashboard.stripe.com/invoices/None)** for the payment of amount **$10.00** has been created."
+        self.send_and_test_stream_message('invoice_upcoming', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_updated(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been updated."
+        self.send_and_test_stream_message('invoice_updated', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def test_invoice_voided(self) -> None:
+        expected_topic = u"invoice in_00000000000000"
+        expected_message = u"An  **[invoice](https://dashboard.stripe.com/invoices/in_00000000000000)** for the payment of amount **$10.00** has been voided."
+        self.send_and_test_stream_message('invoice_voided', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
