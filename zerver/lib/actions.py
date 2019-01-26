@@ -2119,6 +2119,19 @@ def validate_sender_can_write_to_stream(sender: UserProfile,
     # All other cases are an error.
     raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
 
+def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
+                                              sender: UserProfile) -> Stream:
+    stream_name = stream_name.strip()
+    check_stream_name(stream_name)
+
+    try:
+        stream = get_stream(stream_name, realm)
+        send_pm_if_empty_stream(sender, stream, stream_name, realm)
+    except Stream.DoesNotExist:
+        send_pm_if_empty_stream(sender, None, stream_name, realm)
+        raise StreamDoesNotExistError(escape(stream_name))
+
+    return stream
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
@@ -2147,22 +2160,11 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         realm = sender.realm
 
     if addressee.is_stream():
-        stream_name = addressee.stream_name()
-
-        stream_name = stream_name.strip()
-        check_stream_name(stream_name)
-
         topic_name = addressee.topic()
         topic_name = truncate_topic(topic_name)
 
-        try:
-            stream = get_stream(stream_name, realm)
-
-            send_pm_if_empty_stream(sender, stream, stream_name, realm)
-
-        except Stream.DoesNotExist:
-            send_pm_if_empty_stream(sender, None, stream_name, realm)
-            raise StreamDoesNotExistError(escape(stream_name))
+        stream_name = addressee.stream_name()
+        stream = validate_stream_name_with_pm_notification(stream_name, realm, sender)
         recipient = get_stream_recipient(stream.id)
 
         # This will raise JsonableError if there are problems.
