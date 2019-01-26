@@ -105,7 +105,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         tr = """
 <tr>
   <td><code>{argument}</code></td>
-  <td><code>{example}</code></td>
+  <td class="json-api-example"><code>{example}</code></td>
   <td>{required}</td>
   <td>{description}</td>
 </tr>
