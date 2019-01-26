@@ -429,6 +429,22 @@ class TestAddressee(ZulipTestCase):
 
         self.assertEqual(set(result_user_ids), set(user_ids))
 
+    def test_addressee_legacy_build_for_stream_id(self) -> None:
+        realm = get_realm('zulip')
+        self.login(self.example_email('iago'))
+        sender = self.example_user('iago')
+        self.subscribe(sender, "Denmark")
+        stream = get_stream('Denmark', realm)
+
+        result = Addressee.legacy_build(
+            sender=sender, message_type_name='stream',
+            message_to=[stream.id], topic_name='random_topic',
+            realm=realm
+        )
+
+        stream_id = result.stream_id()
+        self.assertEqual(stream.id, stream_id)
+
 class InternalPrepTest(ZulipTestCase):
 
     def test_returns_for_internal_sends(self) -> None:

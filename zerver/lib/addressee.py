@@ -66,11 +66,13 @@ class Addressee:
     def __init__(self, msg_type: str,
                  user_profiles: Optional[Sequence[UserProfile]]=None,
                  stream_name: Optional[str]=None,
+                 stream_id: Optional[int]=None,
                  topic: Optional[str]=None) -> None:
         assert(msg_type in ['stream', 'private'])
         self._msg_type = msg_type
         self._user_profiles = user_profiles
         self._stream_name = stream_name
+        self._stream_id = stream_id
         self._topic = topic
 
     def is_stream(self) -> bool:
@@ -87,6 +89,10 @@ class Addressee:
         assert(self.is_stream())
         assert(self._stream_name is not None)
         return self._stream_name
+
+    def stream_id(self) -> Optional[int]:
+        assert(self.is_stream())
+        return self._stream_id
 
     def topic(self) -> str:
         assert(self.is_stream())
@@ -111,17 +117,22 @@ class Addressee:
                 raise JsonableError(_("Cannot send to multiple streams"))
 
             if message_to:
-                stream_name = cast(str, message_to[0])
+                stream_name_or_id = message_to[0]
             else:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
                 # callpath).
                 if sender.default_sending_stream:
                     # Use the users default stream
-                    stream_name = sender.default_sending_stream.name
+                    stream_name_or_id = sender.default_sending_stream.name
                 else:
                     raise JsonableError(_('Missing stream'))
 
+            if isinstance(stream_name_or_id, int):
+                stream_id = cast(int, stream_name_or_id)
+                return Addressee.for_stream_id(stream_id, topic_name)
+
+            stream_name = cast(str, stream_name_or_id)
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
             if not message_to:
@@ -142,6 +153,15 @@ class Addressee:
         return Addressee(
             msg_type='stream',
             stream_name=stream_name,
+            topic=topic,
+        )
+
+    @staticmethod
+    def for_stream_id(stream_id: int, topic: str) -> 'Addressee':
+        topic = validate_topic(topic)
+        return Addressee(
+            msg_type='stream',
+            stream_id=stream_id,
             topic=topic,
         )
 
