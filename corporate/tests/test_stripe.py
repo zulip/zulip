@@ -29,7 +29,8 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_customer, \
     add_months, next_month, next_renewal_date, renewal_amount, \
     compute_plan_parameters, update_or_create_stripe_customer, \
-    process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed
+    process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
+    update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from corporate.views import payment_method_string
 import corporate.urls
@@ -964,3 +965,70 @@ class LicenseLedgerTest(ZulipTestCase):
         # Plan needs to renew, but we already added the plan_renewal ledger entry
         add_plan_renewal_to_license_ledger_if_needed(plan, self.next_year + timedelta(seconds=1))
         self.assertEqual(LicenseLedger.objects.count(), 2)
+
+    def test_update_license_ledger_if_needed(self) -> None:
+        realm = get_realm('zulip')
+        # Test no Customer
+        update_license_ledger_if_needed(realm, self.now)
+        self.assertFalse(LicenseLedger.objects.exists())
+        # Test plan not automanaged
+        self.local_upgrade(self.seat_count + 1, False, CustomerPlan.ANNUAL, 'token')
+        self.assertEqual(LicenseLedger.objects.count(), 1)
+        update_license_ledger_if_needed(realm, self.now)
+        self.assertEqual(LicenseLedger.objects.count(), 1)
+        # Test no active plan
+        plan = CustomerPlan.objects.get()
+        plan.automanage_licenses = True
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=['automanage_licenses', 'status'])
+        update_license_ledger_if_needed(realm, self.now)
+        self.assertEqual(LicenseLedger.objects.count(), 1)
+        # Test update needed
+        plan.status = CustomerPlan.ACTIVE
+        plan.save(update_fields=['status'])
+        update_license_ledger_if_needed(realm, self.now)
+        self.assertEqual(LicenseLedger.objects.count(), 2)
+
+    def test_update_license_ledger_for_automanaged_plan(self) -> None:
+        realm = get_realm('zulip')
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        plan = CustomerPlan.objects.first()
+        # Simple increase
+        with patch('corporate.lib.stripe.get_seat_count', return_value=23):
+            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        # Decrease
+        with patch('corporate.lib.stripe.get_seat_count', return_value=20):
+            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        # Increase, but not past high watermark
+        with patch('corporate.lib.stripe.get_seat_count', return_value=21):
+            update_license_ledger_for_automanaged_plan(realm, plan, self.now)
+        # Increase, but after renewal date, and below last year's high watermark
+        with patch('corporate.lib.stripe.get_seat_count', return_value=22):
+            update_license_ledger_for_automanaged_plan(realm, plan, self.next_year + timedelta(seconds=1))
+
+        ledger_entries = list(LicenseLedger.objects.values_list(
+            'is_renewal', 'event_time', 'licenses', 'licenses_at_next_renewal').order_by('id'))
+        self.assertEqual(ledger_entries,
+                         [(True, self.now, self.seat_count, self.seat_count),
+                          (False, self.now, 23, 23),
+                          (False, self.now, 23, 20),
+                          (False, self.now, 23, 21),
+                          (True, self.next_year, 21, 21),
+                          (False, self.next_year + timedelta(seconds=1), 22, 22)])
+
+    def test_user_changes(self) -> None:
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        user = do_create_user('email', 'password', get_realm('zulip'), 'name', 'name')
+        do_deactivate_user(user)
+        do_reactivate_user(user)
+        # Not a proper use of do_activate_user, but fine for this test
+        do_activate_user(user)
+        ledger_entries = list(LicenseLedger.objects.values_list(
+            'is_renewal', 'licenses', 'licenses_at_next_renewal').order_by('id'))
+        self.assertEqual(ledger_entries,
+                         [(True, self.seat_count, self.seat_count),
+                          (False, self.seat_count + 1, self.seat_count + 1),
+                          (False, self.seat_count + 1, self.seat_count),
+                          (False, self.seat_count + 1, self.seat_count + 1),
+                          (False, self.seat_count + 1, self.seat_count + 1)])
