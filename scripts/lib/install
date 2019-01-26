@@ -110,7 +110,10 @@ if [ "$os_id" = Ubuntu ] && ! apt-cache policy |
     cat <<'EOF'
 
 You must enable the Ubuntu Universe repository before installing
-Zulip.  You can do this with: `add-apt-repository universe`.
+Zulip.  You can do this with:
+
+    sudo add-apt-repository universe
+    sudo apt update
 
 For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html
