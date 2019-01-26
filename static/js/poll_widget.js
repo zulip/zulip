@@ -162,7 +162,7 @@ exports.poll_data_holder = function (is_my_poll, question) {
 
     // function to check whether comment already exists
     self.is_comment_taken = function (data, latest_comment) {
-        var found = data.some(function (el) {
+        var found = _.any(data, function (el) {
             return el.comment === latest_comment;
         });
         if (found) {
