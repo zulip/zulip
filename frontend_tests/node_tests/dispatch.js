@@ -84,6 +84,15 @@ set_global('starred_messages', {
     add: noop,
 });
 
+// notify_server_message_read requires message_store and these dependencies.
+zrequire('unread');
+zrequire('topic_data');
+zrequire('stream_list');
+zrequire("message_flags");
+set_global('message_store', {
+    get: function () {return {};},
+});
+
 zrequire('people');
 zrequire('server_events_dispatch');
 
@@ -1366,16 +1375,6 @@ with_overrides(function (override) {
     });
 });
 
-// notify_server_message_read requires message_store and these dependencies.
-zrequire('unread_ops');
-zrequire('unread');
-zrequire('topic_data');
-zrequire('stream_list');
-zrequire("message_flags");
-set_global('message_store', {
-    get: function () {return {};},
-});
-
 with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
@@ -1394,6 +1393,7 @@ with_overrides(function (override) {
 
     override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
+        override('unread_ops.process_read_messages_event', noop);
         override('ui.remove_message', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id');
