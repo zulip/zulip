@@ -94,6 +94,12 @@ exports.make_menu = function (opts) {
     };
 
     main_elem.on("click", "li[data-section]", function (e) {
+        // This code will hide the Change user info and roles form
+        // when navigating to new tab in case the form is visible.
+        if ($('#user-info-form-modal').attr('aria-hidden')) {
+            overlays.close_modal('user-info-form-modal');
+        }
+
         var section = $(this).attr('data-section');
 
         self.activate_section(section);
