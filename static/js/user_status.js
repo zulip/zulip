@@ -13,6 +13,11 @@ exports.server_update = function (opts) {
             status_text: opts.status_text,
         },
         idempotent: true,
+        success: function () {
+            if (opts.success) {
+                opts.success();
+            }
+        },
     });
 };
 

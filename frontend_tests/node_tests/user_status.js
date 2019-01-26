@@ -42,10 +42,12 @@ run_test('server', () => {
     initialize();
 
     var sent_data;
+    var success;
 
     channel.post = (opts) => {
         sent_data = opts.data;
         assert.equal(opts.url, '/json/users/me/status');
+        success = opts.success;
     };
 
     assert.equal(sent_data, undefined);
@@ -55,4 +57,16 @@ run_test('server', () => {
 
     user_status.server_revoke_away();
     assert.deepEqual(sent_data, {away: false, status_text: undefined});
+
+    var called;
+
+    user_status.server_update({
+        status_text: 'out to lunch',
+        success: () => {
+            called = true;
+        },
+    });
+
+    success();
+    assert(called);
 });

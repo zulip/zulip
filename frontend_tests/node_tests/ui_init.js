@@ -118,6 +118,7 @@ zrequire('typing');
 zrequire('top_left_corner');
 zrequire('starred_messages');
 zrequire('user_status');
+zrequire('user_status_ui');
 zrequire('ui_init');
 
 set_global('$', global.make_zjquery());
