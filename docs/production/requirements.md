@@ -37,8 +37,12 @@ upgrading.
 
 If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
-[enabled][enable-universe], which is usually just `sudo
-add-apt-repository universe`.
+[enabled][enable-universe], which is usually just:
+
+```
+sudo add-apt-repository universe
+sudo apt update
+```
 
 [ubuntu-repositories]:
 https://help.ubuntu.com/community/Repositories/Ubuntu
