@@ -1,0 +1,28 @@
+.user_status_overlay .overlay-content {
+    width: 320px;
+    margin: 0 auto;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 30px;
+    padding-top: 10px;
+    position: relative;
+    top: calc((30vh - 50px) / 2);
+    border-radius: 4px;
+    overflow: hidden;
+
+    background-color: hsl(0, 0%, 100%);
+}
+
+.user_status_overlay .user_status_change_title {
+    font-size: 130%;
+    font-weight: 600;
+    padding: 5px;
+}
+
+.user_status_overlay input.user_status {
+    width: 170px;
+};
+
+.user_status_overlay button:focus {
+    font-weight: 650;
+};

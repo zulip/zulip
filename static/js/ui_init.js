@@ -335,6 +335,7 @@ exports.initialize_everything = function () {
     panels.initialize();
     typing.initialize();
     starred_messages.initialize();
+    user_status_ui.initialize();
 };
 
 $(function () {
