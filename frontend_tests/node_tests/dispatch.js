@@ -88,12 +88,10 @@ set_global('starred_messages', {
 zrequire('unread');
 zrequire('topic_data');
 zrequire('stream_list');
-zrequire("message_flags");
-set_global('message_store', {
-    get: function () {return {};},
-});
-
+zrequire('message_flags');
+zrequire('message_store');
 zrequire('people');
+zrequire('util');
 zrequire('server_events_dispatch');
 
 function dispatch(ev) {
@@ -108,6 +106,12 @@ var test_user = {
 
 people.init();
 people.add(test_user);
+
+var test_message = {
+    sender_id: test_user.user_id,
+    id: 99,
+};
+message_store.add_message_metadata(test_message);
 
 // TODO: These events are not guaranteed to be perfectly
 //       representative of what the server sends.  For
@@ -618,7 +622,7 @@ var event_fixtures = {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'starred',
-        messages: [99],
+        messages: [test_message.id],
     },
 
     delete_message: {
@@ -1382,8 +1386,10 @@ with_overrides(function (override) {
         override('ui.update_starred_view', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id', 'new_value');
-        assert_same(args.message_id, 99);
+        assert_same(args.message_id, test_message.id);
         assert_same(args.new_value, true); // for 'add'
+        var msg = message_store.get(test_message.id);
+        assert.equal(msg.starred, true);
     });
 });
 
