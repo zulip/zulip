@@ -2,7 +2,7 @@
   "created": 1326853478,
   "livemode": false,
   "id": "invoice.payment_00000000000000",
-  "type": "invoice.payment_failed",
+  "type": "invoice.payment_succeeded",
   "object": "event",
   "request": null,
   "pending_webhooks": 1,
@@ -20,7 +20,7 @@
       "auto_advance": true,
       "billing": "send_invoice",
       "billing_reason": "manual",
-      "charge": null,
+      "charge": "_00000000000000",
       "currency": "usd",
       "custom_fields": null,
       "customer": "cus_00000000000000",
@@ -47,8 +47,8 @@
             "metadata": {
             },
             "period": {
-              "end": 1551072969,
-              "start": 1548394569
+              "end": 1551073031,
+              "start": 1548394631
             },
             "plan": {
               "id": "plan_00000000000000",
@@ -88,7 +88,7 @@
       },
       "next_payment_attempt": null,
       "number": "7DBE74C-0001",
-      "paid": false,
+      "paid": true,
       "period_end": 1546862399,
       "period_start": 1546862399,
       "receipt_number": null,
@@ -101,7 +101,7 @@
       "tax_percent": null,
       "total": 1000,
       "webhooks_delivered_at": null,
-      "closed": false
+      "closed": true
     }
   }
 }

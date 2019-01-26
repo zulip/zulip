@@ -14,6 +14,19 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
+INVOICE_INFO = {
+    "created": "has been created",
+    "deleted": "has been deleted",
+    "finalized": "has been finalized",
+    "marked_uncollectible": "has been marked as uncollectible",
+    "payment_failed": "has failed",
+    "payment_succeeded": "has succeeded",
+    "sent": "has been sent",
+    "upcoming": "has been created",
+    "updated": "has been updated",
+    "voided": "has been voided"
+}
+
 class SuppressedEvent(Exception):
     pass
 
@@ -148,18 +161,6 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
         topic = 'files'
         body = default_body() + ' ({purpose}). \nTitle: {title}'.format(
             purpose=object_['purpose'].replace('_', ' '), title=object_['title'])
-    if category == 'invoice':
-        if event == 'upcoming':  # nocoverage
-            body = 'Upcoming invoice created'
-        else:
-            body = default_body(update_blacklist=['lines', 'description', 'number', 'finalized_at'])
-        if event == 'created':  # nocoverage
-            # Could potentially add link to invoice PDF here
-            body += ' ({reason})\nBilling method: {method}\nTotal: {total}\nAmount due: {due}'.format(
-                reason=object_['billing_reason'].replace('_', ' '),
-                method=object_['billing'].replace('_', ' '),
-                total=amount_string(object_['total'], object_['currency']),
-                due=amount_string(object_['amount_due'], object_['currency']))
     if category == 'invoiceitem':  # nocoverage
         body = default_body(update_blacklist=['description'])
         if event == 'created':
@@ -198,6 +199,28 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
             amount=amount,
             end=end
         )
+
+    if category.startswith('invoice'):
+        object_id = object_['id']
+        link = "https://dashboard.stripe.com/invoices/{}".format(object_id)
+        amount = amount_string(object_["amount_due"], object_["currency"])
+        body_t = "An {invoice_type} **[invoice]({link})** for the payment of amount **{amount}** {end}."
+
+        end = INVOICE_INFO.get(event)  # type: ignore # expression has type Optional[str]
+
+        if event == "upcoming":
+            invoice_type = "upcoming"
+        else:
+            invoice_type = ""
+
+        topic = "invoice {}".format(object_id)
+        body = body_t.format(
+            invoice_type = invoice_type,
+            link=link,
+            amount=amount,
+            end=end
+        )
+
     if category in ['payment_intent', 'plan', 'product', 'recipient',
                     'reporting', 'review', 'sigma', 'sku', 'source', 'subscription_schedule',
                     'topup', 'transfer']:  # nocoverage
