@@ -1390,6 +1390,10 @@ EMAIL_HOST_PASSWORD = get_secret('email_password')
 EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password', '')
 
+# Keep these disabled until the features are implemented
+ENABLE_EMAIL_ENCRYPTION = False
+ENABLE_EMAIL_SIGNATURES = False
+
 # Set the sender email address for Django traceback error reporting
 if SERVER_EMAIL is None:
     SERVER_EMAIL = ZULIP_ADMINISTRATOR
