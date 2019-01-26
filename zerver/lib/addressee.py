@@ -42,6 +42,15 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         user_profiles.append(user_profile)
     return user_profiles
 
+def validate_topic(topic: str) -> str:
+    if topic is None:
+        raise JsonableError(_("Missing topic"))
+    topic = topic.strip()
+    if topic == "":
+        raise JsonableError(_("Topic can't be empty"))
+
+    return topic
+
 class Addressee:
     # This is really just a holder for vars that tended to be passed
     # around in a non-type-safe way before this class was introduced.
@@ -129,11 +138,7 @@ class Addressee:
 
     @staticmethod
     def for_stream(stream_name: str, topic: str) -> 'Addressee':
-        if topic is None:
-            raise JsonableError(_("Missing topic"))
-        topic = topic.strip()
-        if topic == "":
-            raise JsonableError(_("Topic can't be empty"))
+        topic = validate_topic(topic)
         return Addressee(
             msg_type='stream',
             stream_name=stream_name,
