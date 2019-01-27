@@ -24,7 +24,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
     get_starred_message_ids,
 )
-from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
@@ -288,6 +288,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('default_stream_groups'):
         state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
             get_default_stream_groups(realm))
+
+    if want('stop_words'):
+        state['stop_words'] = read_stop_words()
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:

@@ -180,6 +180,7 @@ class HomeTest(ZulipTestCase):
             "server_inline_url_embed_preview",
             "starred_message_counts",
             "starred_messages",
+            "stop_words",
             "stream_description_max_length",
             "stream_name_max_length",
             "subscriptions",
