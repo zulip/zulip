@@ -80,20 +80,16 @@ set_global('blueslip', {
     },
 });
 
-set_global('starred_messages', {
-    add: noop,
-});
-
 // notify_server_message_read requires message_store and these dependencies.
 zrequire('unread');
 zrequire('topic_data');
 zrequire('stream_list');
-zrequire("message_flags");
-set_global('message_store', {
-    get: function () {return {};},
-});
-
+zrequire('message_flags');
+zrequire('message_store');
 zrequire('people');
+zrequire('starred_messages');
+zrequire('util');
+zrequire('user_status');
 zrequire('server_events_dispatch');
 
 function dispatch(ev) {
@@ -108,6 +104,12 @@ var test_user = {
 
 people.init();
 people.add(test_user);
+
+var test_message = {
+    sender_id: test_user.user_id,
+    id: 99,
+};
+message_store.add_message_metadata(test_message);
 
 // TODO: These events are not guaranteed to be perfectly
 //       representative of what the server sends.  For
@@ -614,11 +616,18 @@ var event_fixtures = {
         messages: [999],
     },
 
-    update_message_flags__starred: {
+    update_message_flags__starred_add: {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'starred',
-        messages: [99],
+        messages: [test_message.id],
+    },
+
+    update_message_flags__starred_remove: {
+        type: 'update_message_flags',
+        operation: 'remove',
+        flag: 'starred',
+        messages: [test_message.id],
     },
 
     delete_message: {
@@ -676,12 +685,17 @@ var event_fixtures = {
         user_id: 55,
         away: true,
     },
+    user_status__set_status_text: {
+        type: 'user_status',
+        user_id: test_user.user_id,
+        status_text: 'out to lunch',
+    },
 };
 
 function assert_same(actual, expected) {
     // This helper prevents us from getting false positives
     // where actual and expected are both undefined.
-    assert(expected);
+    assert(expected !== undefined);
     assert.deepEqual(actual, expected);
 }
 
@@ -1377,13 +1391,29 @@ with_overrides(function (override) {
 
 with_overrides(function (override) {
     // update_message_flags__starred
-    var event = event_fixtures.update_message_flags__starred;
+
+    override('starred_messages.rerender_ui', noop);
+
+    var event = event_fixtures.update_message_flags__starred_add;
     global.with_stub(function (stub) {
         override('ui.update_starred_view', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id', 'new_value');
-        assert_same(args.message_id, 99);
+        assert_same(args.message_id, test_message.id);
         assert_same(args.new_value, true); // for 'add'
+        var msg = message_store.get(test_message.id);
+        assert.equal(msg.starred, true);
+    });
+
+    event = event_fixtures.update_message_flags__starred_remove;
+    global.with_stub(function (stub) {
+        override('ui.update_starred_view', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_id', 'new_value');
+        assert_same(args.message_id, test_message.id);
+        assert_same(args.new_value, false);
+        var msg = message_store.get(test_message.id);
+        assert.equal(msg.starred, false);
     });
 });
 
@@ -1430,5 +1460,15 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('user_id');
         assert_same(args.user_id, 63);
+    });
+
+    event = event_fixtures.user_status__set_status_text;
+    global.with_stub(function (stub) {
+        override('activity.redraw_user', stub.f);
+        dispatch(event);
+        var args = stub.get_args('user_id');
+        assert_same(args.user_id, test_user.user_id);
+        var status_text = user_status.get_status_text(test_user.user_id);
+        assert.equal(status_text, 'out to lunch');
     });
 });
