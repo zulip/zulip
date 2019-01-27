@@ -66,6 +66,27 @@
             </div>
         </div>
 
+        <h3>{{t "Organization logo for night mode" }}</h3>
+        <p>{{t "Like Organization Logo, but for the night theme." }}</p>
+
+        <div class="realm-logo-section realm-night-logo-section">
+            <div class="block realm-logo-block">
+                <img id="realm-settings-night-logo" src="{{ realm_night_logo_url }}">
+                <input type="file" name="realm_night_logo_file_input" class="notvisible"
+                  id="realm_night_logo_file_input" value="{{t 'Upload logo' }}"/>
+            </div>
+            <div class="block avatar-controls">
+                <div id="realm_night_logo_file_input_error" class="alert text-error"></div>
+                <button class="button rounded sea-green w-200 block input-size"
+                  id="realm_night_logo_upload_button">
+                    <span id="upload_night_logo_button_text">{{t 'Upload new logo' }}</span>
+                    <span id="upload_night_logo_spinner"></span>
+                </button>
+                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
+                  id="realm_night_logo_delete_button">{{t 'Delete logo' }}</button>
+            </div>
+        </div>
+
         <h3 class="light">{{t "Deactivate organization" }}</h3>
         <div class="deactivate-realm-section">
             <div class="input-group">

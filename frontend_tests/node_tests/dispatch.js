@@ -296,6 +296,16 @@ var event_fixtures = {
         },
     },
 
+    realm__update_dict__night_logo: {
+        type: 'realm',
+        op: 'update_dict',
+        property: 'night_logo',
+        data: {
+            night_logo_url: 'night_logo.png',
+            night_logo_source: 'U',
+        },
+    },
+
     realm__deactivated: {
         type: 'realm',
         op: 'deactivated',
@@ -940,6 +950,12 @@ with_overrides(function (override) {
     assert_same(page_params.realm_logo_url, 'logo.png');
     assert_same(page_params.realm_logo_source, 'U');
 
+    event = event_fixtures.realm__update_dict__night_logo;
+    override('realm_logo.rerender', noop);
+    dispatch(event);
+    assert_same(page_params.realm_night_logo_url, 'night_logo.png');
+    assert_same(page_params.realm_night_logo_source, 'U');
+
     event = event_fixtures.realm__deactivated;
     window.location = {};
     dispatch(event);
@@ -1336,6 +1352,7 @@ with_overrides(function (override) {
         event = event_fixtures.update_display_settings__night_mode;
         page_params.night_mode = false;
         override('night_mode.enable', stub.f); // automatically checks if called
+        override('realm_logo.rerender', noop);
         dispatch(event);
         assert_same(page_params.night_mode, true);
     });

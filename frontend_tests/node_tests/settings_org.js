@@ -57,6 +57,7 @@ const _ui_report = {
 
 const _realm_logo = {
     build_realm_logo_widget: noop,
+    build_realm_night_logo_widget: noop,
 };
 
 set_global('channel', _channel);

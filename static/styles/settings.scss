@@ -970,7 +970,8 @@ input[type=checkbox].inline-block {
 
 #upload_avatar_spinner,
 #upload_logo_spinner,
-#upload_icon_spinner {
+#upload_icon_spinner,
+#upload_night_logo_spinner {
     font-size: 14px;
     margin: auto;
 }
@@ -1113,7 +1114,8 @@ input[type=checkbox].inline-block {
     height: 100px;
 }
 
-#realm-settings-logo {
+#realm-settings-logo,
+#realm-settings-night-logo {
     border-radius: 5px;
     box-shadow: 0px 0px 10px hsla(0, 0%, 0%, 0.2);
     /* We allow actual images up to 800x100 in the main display, but the
@@ -1690,7 +1692,8 @@ input[type=text]#settings_search {
 }
 
 @media (max-width: 1023px) {
-    #realm-settings-logo {
+    #realm-settings-logo,
+    #realm-settings-night-logo {
         max-width: 600px;
         height: 75px;
     }
@@ -1716,7 +1719,8 @@ input[type=text]#settings_search {
         margin: 5px 0 0 0;
     }
 
-    #realm-settings-logo {
+    #realm-settings-logo,
+    #realm-settings-night-logo {
         max-width: 400px;
         height: 50px;
     }

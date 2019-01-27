@@ -165,6 +165,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_logo_url = event.data.logo_url;
             page_params.realm_logo_source = event.data.logo_source;
             realm_logo.rerender();
+        } else if (event.op === 'update_dict' && event.property === 'night_logo') {
+            page_params.realm_night_logo_url = event.data.night_logo_url;
+            page_params.realm_night_logo_source = event.data.night_logo_source;
+            realm_logo.rerender();
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }
@@ -392,8 +396,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             setTimeout(function () {
                 if (event.setting === true) {
                     night_mode.enable();
+                    realm_logo.rerender();
                 } else {
                     night_mode.disable();
+                    realm_logo.rerender();
                 }
                 $("body").fadeIn(300);
             }, 300);

@@ -316,6 +316,10 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
+    night_logo_source = models.CharField(default=LOGO_DEFAULT, choices=LOGO_SOURCES,
+                                         max_length=1)  # type: str
+    night_logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
+
     BOT_CREATION_POLICY_TYPES = [
         BOT_CREATION_EVERYONE,
         BOT_CREATION_LIMIT_GENERIC_BOTS,

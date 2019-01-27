@@ -40,6 +40,7 @@ from zerver.lib.users import get_api_key
 from zerver.views.upload import upload_file_backend
 
 import urllib
+import ujson
 from PIL import Image
 
 from io import StringIO
@@ -799,8 +800,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                          "/user_avatars/hash-medium.png?x=x")
         self.assertEqual(backend.get_realm_icon_url(15, 1),
                          "/user_avatars/15/realm/icon.png?version=1")
-        self.assertEqual(backend.get_realm_logo_url(15, 1),
+        self.assertEqual(backend.get_realm_logo_url(15, 1, False),
                          "/user_avatars/15/realm/logo.png?version=1")
+        self.assertEqual(backend.get_realm_logo_url(15, 1, True),
+                         "/user_avatars/15/realm/night_logo.png?version=1")
 
         with self.settings(S3_AVATAR_BUCKET="bucket"):
             backend = S3UploadBackend()
@@ -810,8 +813,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                              "https://bucket.s3.amazonaws.com/hash-medium.png?x=x")
             self.assertEqual(backend.get_realm_icon_url(15, 1),
                              "https://bucket.s3.amazonaws.com/15/realm/icon.png?version=1")
-            self.assertEqual(backend.get_realm_logo_url(15, 1),
+            self.assertEqual(backend.get_realm_logo_url(15, 1, False),
                              "https://bucket.s3.amazonaws.com/15/realm/logo.png?version=1")
+            self.assertEqual(backend.get_realm_logo_url(15, 1, True),
+                             "https://bucket.s3.amazonaws.com/15/realm/night_logo.png?version=1")
 
     def test_multiple_upload_failure(self) -> None:
         """
@@ -1250,6 +1255,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
 
 class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
+    night = False
 
     def test_multiple_upload_failure(self) -> None:
         """
@@ -1259,7 +1265,8 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("iago"))
         with get_test_image_file('img.png') as fp1, \
                 get_test_image_file('img.png') as fp2:
-            result = self.client_post("/json/realm/logo", {'f1': fp1, 'f2': fp2})
+            result = self.client_post("/json/realm/logo", {'f1': fp1, 'f2': fp2,
+                                                           'night': ujson.dumps(self.night)})
         self.assert_json_error(result, "You must upload exactly one logo.")
 
     def test_no_file_upload_failure(self) -> None:
@@ -1268,7 +1275,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login(self.example_email("iago"))
 
-        result = self.client_post("/json/realm/logo")
+        result = self.client_post("/json/realm/logo", {'night': ujson.dumps(self.night)})
         self.assert_json_error(result, "You must upload exactly one logo.")
 
     correct_files = [
@@ -1283,7 +1290,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_no_admin_user_upload(self) -> None:
         self.login(self.example_email("hamlet"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            result = self.client_post("/json/realm/logo", {'file': fp})
+            result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
         self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_upload_limited_plan_type(self) -> None:
@@ -1291,45 +1298,53 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         do_change_plan_type(user_profile.realm, Realm.LIMITED)
         self.login(user_profile.email)
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            result = self.client_post("/json/realm/logo", {'file': fp})
+            result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
         self.assert_json_error(result, 'Feature unavailable on your current plan.')
 
     def test_get_default_logo(self) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_DEFAULT
+        realm.night_logo_source = Realm.LOGO_DEFAULT
         realm.save()
-
-        response = self.client_get("/json/realm/logo?foo=bar")
+        response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
-        self.assertEqual(redirect_url, realm_logo_url(realm) + '&foo=bar')
+        self.assertEqual(redirect_url, realm_logo_url(realm, self.night) +
+                         '&night=%s' % (str(self.night).lower()))
 
     def test_get_realm_logo(self) -> None:
         self.login(self.example_email("hamlet"))
-
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_UPLOADED
+        realm.night_logo_source = Realm.LOGO_UPLOADED
         realm.save()
-        response = self.client_get("/json/realm/logo?foo=bar")
+        response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(realm_logo_url(realm) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(realm_logo_url(realm, self.night) +
+                                              '&night=%s' % (str(self.night).lower())))
 
     def test_valid_logos(self) -> None:
         """
         A PUT request to /json/realm/logo with a valid file should return a url
         and actually create an realm logo.
         """
+        if self.night:
+            field_name = 'night_logo_url'
+            file_name = 'night_logo.png'
+        else:
+            field_name = 'logo_url'
+            file_name = 'logo.png'
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
             realm = get_realm('zulip')
             self.assert_json_success(result)
-            self.assertIn("logo_url", result.json())
-            base = '/user_avatars/%s/realm/logo.png' % (realm.id,)
-            url = result.json()['logo_url']
+            self.assertIn(field_name, result.json())
+            base = '/user_avatars/%s/realm/%s' % (realm.id, file_name)
+            url = result.json()[field_name]
             self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
@@ -1339,7 +1354,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                 # while trying to fit in a 800 x 100 box without losing part of the image
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
-    def test_invalid_logos(self) -> None:
+    def test_invalid_logo_upload(self) -> None:
         """
         A PUT request to /json/realm/logo with an invalid file should fail.
         """
@@ -1347,7 +1362,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
 
             self.assert_json_error(result, "Could not decode image; did you upload an image file?")
 
@@ -1355,38 +1370,56 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/realm/logo should delete the realm logo and return gravatar URL
         """
+        if self.night:
+            field_name = 'night_logo_url'
+        else:
+            field_name = 'logo_url'
+
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_UPLOADED
+        realm.night_logo_source = Realm.LOGO_UPLOADED
         realm.save()
-
-        result = self.client_delete("/json/realm/logo")
-
+        result = self.client_delete("/json/realm/logo", {'night': ujson.dumps(self.night)})
         self.assert_json_success(result)
-        self.assertIn("logo_url", result.json())
+        self.assertIn(field_name, result.json())
         realm = get_realm('zulip')
-        self.assertEqual(result.json()["logo_url"], realm_logo_url(realm))
-        self.assertEqual(realm.logo_source, Realm.LOGO_DEFAULT)
+        self.assertEqual(result.json()[field_name], realm_logo_url(realm, self.night))
+        if self.night:
+            self.assertEqual(realm.night_logo_source, Realm.LOGO_DEFAULT)
+        else:
+            self.assertEqual(realm.logo_source, Realm.LOGO_DEFAULT)
 
-    def test_realm_logo_version(self) -> None:
+    def test_logo_version(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        logo_version = realm.logo_version
-        self.assertEqual(logo_version, 1)
+        if self.night:
+            version = realm.night_logo_version
+        else:
+            version = realm.logo_version
+        self.assertEqual(version, 1)
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            self.client_post("/json/realm/logo", {'file': fp})
+            self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
         realm = get_realm('zulip')
-        self.assertEqual(realm.logo_version, logo_version + 1)
+        if self.night:
+            self.assertEqual(realm.night_logo_version, version + 1)
+        else:
+            self.assertEqual(realm.logo_version, version + 1)
 
-    def test_realm_logo_upload_file_size_error(self) -> None:
+    def test_logo_upload_file_size_error(self) -> None:
         self.login(self.example_email("iago"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_LOGO_FILE_SIZE=0):
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night':
+                                                               ujson.dumps(self.night)})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
     def tearDown(self) -> None:
         destroy_uploads()
+
+class RealmNightLogoTest(RealmLogoTest):
+    # Run the same tests as for RealmLogoTest, just with night mode enabled
+    night = True
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
@@ -1662,22 +1695,28 @@ class S3Test(ZulipTestCase):
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
 
     @use_s3_backend
-    def test_upload_realm_logo_image(self) -> None:
+    def _test_upload_logo_image(self, night: bool, file_name: str) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
-        zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile)
+        zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
-        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "logo.original")
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name))
+        print(original_path_id)
         original_key = bucket.get_key(original_path_id)
+        print(original_key)
         image_file.seek(0)
         self.assertEqual(image_file.read(), original_key.get_contents_as_string())
 
-        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "logo.png")
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name))
         resized_data = bucket.get_key(resized_path_id).read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+
+    def test_upload_realm_logo_image(self) -> None:
+        self._test_upload_logo_image(night = False, file_name = 'logo')
+        self._test_upload_logo_image(night = True, file_name = 'night_logo')
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
@@ -1802,5 +1841,8 @@ class DecompressionBombTests(ZulipTestCase):
         with get_test_image_file("bomb.png") as fp:
             for url, error_string in self.test_urls.items():
                 fp.seek(0, 0)
-                result = self.client_post(url, {'f1': fp})
+                if (url == "/json/realm/logo"):
+                    result = self.client_post(url, {'f1': fp, 'night': ujson.dumps(False)})
+                else:
+                    result = self.client_post(url, {'f1': fp})
                 self.assert_json_error(result, error_string)

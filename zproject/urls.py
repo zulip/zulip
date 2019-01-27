@@ -98,7 +98,7 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
          'GET': 'zerver.views.realm_icon.get_icon_backend'}),
 
-    # realm/logo -> zerver.views.realm_logo_
+    # realm/logo -> zerver.views.realm_logo
     url(r'^realm/logo$', rest_dispatch,
         {'POST': 'zerver.views.realm_logo.upload_logo',
          'DELETE': 'zerver.views.realm_logo.delete_logo_backend',
