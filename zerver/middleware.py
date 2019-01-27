@@ -21,7 +21,8 @@ from django.utils.translation import ugettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 
 from zerver.lib.bugdown import get_bugdown_requests, get_bugdown_time
-from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
+from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time, \
+    cache_with_key, desc_cache_key, desc_cache_key_id
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.db import reset_queries
 from zerver.lib.exceptions import ErrorCode, JsonableError, RateLimited
@@ -448,7 +449,8 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
 class FinalizeOpenGraphDescription(MiddlewareMixin):
     def process_response(self, request: HttpRequest,
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
-        def alter_content(content: bytes) -> bytes:
+        @cache_with_key(desc_cache_key, timeout=3600*24)
+        def get_content_description(content: bytes, request: HttpRequest) -> bytes:
             str_content = content.decode("utf-8")
             bs = BeautifulSoup(str_content, features='lxml')
             # Skip any admonition (warning) blocks, since they're
@@ -462,6 +464,9 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             first_paragraph_text = bs.find('p').text.replace('\n', ' ')
             return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
                                    first_paragraph_text.encode("utf-8"))
+
+        def alter_content(content: bytes) -> bytes:
+            return get_content_description(content, request)
 
         def wrap_streaming_content(content: Iterable[bytes]) -> Iterable[bytes]:
             for chunk in content:
