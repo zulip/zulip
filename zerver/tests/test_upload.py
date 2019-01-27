@@ -1381,7 +1381,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_valid_logos(self) -> None:
         self._test_valid_logo_upload(night = False, field_name = 'logo_url', file_name = 'logo.png')
 
-    def test_invalid_logos(self) -> None:
+    def _test_invalid_logo_upload(self, night: bool) -> None:
         """
         A PUT request to /json/realm/logo with an invalid file should fail.
         """
@@ -1389,9 +1389,12 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
 
             self.assert_json_error(result, "Could not decode image; did you upload an image file?")
+
+    def test_invalid_logos(self) -> None:
+        self._test_invalid_logo_upload(night = False)
 
     def test_delete_logo(self) -> None:
         """
