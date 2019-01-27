@@ -169,14 +169,14 @@ exports.update_private_messages = function () {
         exports.rebuild_recent("");
         $("#global_filters li[data-name='private']").addClass('active-filter');
     }
-    var number_of_containers = $('#pm')[0]['children'].length - 1;
-    var container = $($('#pm')[0]['children'][number_of_containers]);
+    var number_of_containers = $('#private_li')[0]['children'].length - 1;
+    var container = $($('#private_li')[0]['children'][number_of_containers]);
     var key = 1;
     while (key < number_of_containers - 1) {
-        $($('#pm')[0]['children'][key]).remove();
+        $($('#private_li')[0]['children'][key]).remove();
         key += 1;
     }
-    $($('#pm')[0]['children'][1]).remove();
+    $($('#private_li')[0]['children'][1]).remove();
     ui.set_up_scrollbar(container);
 };
 
