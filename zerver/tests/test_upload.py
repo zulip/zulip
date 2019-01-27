@@ -1353,7 +1353,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_realm_logo(self) -> None:
         self._test_get_realm_logo(night = False)
 
-    def test_valid_logos(self) -> None:
+    def _test_valid_logo_upload(self, night: bool, field_name: str, file_name: str) -> None:
         """
         A PUT request to /json/realm/logo with a valid file should return a url
         and actually create an realm logo.
@@ -1363,12 +1363,12 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             # with self.subTest(fname=fname):
             self.login(self.example_email("iago"))
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
             realm = get_realm('zulip')
             self.assert_json_success(result)
-            self.assertIn("logo_url", result.json())
-            base = '/user_avatars/%s/realm/logo.png' % (realm.id,)
-            url = result.json()['logo_url']
+            self.assertIn(field_name, result.json())
+            base = '/user_avatars/%s/realm/%s' % (realm.id, file_name)
+            url = result.json()[field_name]
             self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
@@ -1377,6 +1377,9 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                 # size should be 100 x 100 because thumbnail keeps aspect ratio
                 # while trying to fit in a 800 x 100 box without losing part of the image
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
+
+    def test_valid_logos(self) -> None:
+        self._test_valid_logo_upload(night = False, field_name = 'logo_url', file_name = 'logo.png')
 
     def test_invalid_logos(self) -> None:
         """
