@@ -1728,22 +1728,28 @@ class S3Test(ZulipTestCase):
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
 
     @use_s3_backend
-    def test_upload_realm_logo_image(self) -> None:
+    def _test_upload_logo_image(self, night: bool, file_name: str) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
-        zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile)
+        zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
-        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "logo.original")
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name))
+        print(original_path_id)
         original_key = bucket.get_key(original_path_id)
+        print(original_key)
         image_file.seek(0)
         self.assertEqual(image_file.read(), original_key.get_contents_as_string())
 
-        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "logo.png")
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.png" % (file_name))
         resized_data = bucket.get_key(resized_path_id).read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+
+    @use_s3_backend
+    def test_upload_realm_logo_image(self) -> None:
+        self._test_upload_logo_image(night = False, file_name = 'logo')
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
