@@ -158,6 +158,7 @@ exports.update_private_messages = function () {
     if (!narrow_state.active()) {
         return;
     }
+    
     var is_pm_filter = _.contains(narrow_state.filter().operands('is'), "private");
     var conversation = narrow_state.filter().operands('pm-with');
     if (conversation.length === 1) {
