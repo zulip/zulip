@@ -301,7 +301,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
         else:
             raise AssertionError("Could not identify bot type")
         return slack_bot_name.replace("Bot", "").replace(" ", "") + "-bot@%s" % (domain_name,)
-    if get_user_full_name(user) == "slackbot":
+    if get_user_full_name(user).lower() == "slackbot":
         return "imported-slackbot-bot@%s" % (domain_name,)
     raise AssertionError("Could not find email address for Slack user %s" % (user,))
 
