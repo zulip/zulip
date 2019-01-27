@@ -1,16 +1,12 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 
+from zerver.lib.email_helpers import format_to
 from zerver.lib.logging_util import log_to_file
 from zerver.models import UserProfile, UserPGP
 
 from copy import deepcopy
 from typing import Dict, Optional, List, DefaultDict, Callable
-
-def format_to(to_user: UserProfile) -> str:
-    # Change to formataddr((to_user.full_name, to_user.email)) once
-    # https://github.com/zulip/zulip/issues/4676 is resolved
-    return to_user.delivery_email
 
 class PGPKeyNotFound(Exception):
     pass
