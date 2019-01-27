@@ -7,6 +7,8 @@ from django.core.cache import caches
 from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
+from django.http import HttpRequest
+from django import template
 
 from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Tuple
 
@@ -453,6 +455,9 @@ def to_dict_cache_key_id(message_id: int) -> str:
 
 def to_dict_cache_key(message: 'Message') -> str:
     return to_dict_cache_key_id(message.id)
+
+def open_graph_description_cache_key(content: Any, request: HttpRequest) -> str:
+    return 'open_graph_description_path:%s' % (make_safe_digest(request.META['PATH_INFO']))
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']
