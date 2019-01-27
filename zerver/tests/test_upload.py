@@ -1418,15 +1418,28 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_delete_realm_logo(self) -> None:
         self._test_delete_logo(night = False, field_name = 'logo_url')
 
-    def test_realm_logo_version(self) -> None:
+    def test_delete_realm_night_logo(self) -> None:
+        realm = get_realm('zulip')
+        realm.night_logo_source = Realm.NIGHT_LOGO_UPLOADED
+        realm.save()
+        field_name = 'night_logo_url'
+        night = True
+        self._test_delete_logo(night, field_name, realm_night_logo_url)
+        realm = get_realm('zulip')
+        self.assertEqual(realm.night_logo_source, Realm.NIGHT_LOGO_DEFAULT)
+
+    def _test_logo_version(self, night: bool) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        logo_version = realm.logo_version
-        self.assertEqual(logo_version, 1)
+        version = realm.logo_version
+        self.assertEqual(version, 1)
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            self.client_post("/json/realm/logo", {'file': fp})
-        realm = get_realm('zulip')
-        self.assertEqual(realm.logo_version, logo_version + 1)
+            self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
+         realm = get_realm('zulip')
+        self.assertEqual(realm.logo_version, version + 1)
+
+    def test_realm_logo_version(self) -> None:
+        self._test_logo_version(night = False)
 
     def test_realm_logo_upload_file_size_error(self) -> None:
         self.login(self.example_email("iago"))
