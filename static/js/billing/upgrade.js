@@ -43,11 +43,11 @@ exports.initialize = () => {
     prices.annual = page_params.annual_price * (1 - page_params.percent_off / 100);
     prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
 
-    $('input[type=radio][name=license_management]').change(function () {
+    $('input[type=radio][name=license_management]').on("change", function () {
         helpers.show_license_section($(this).val());
     });
 
-    $('input[type=radio][name=schedule]').change(function () {
+    $('input[type=radio][name=schedule]').on("change", function () {
         helpers.update_charged_amount(prices, $(this).val());
     });
 
