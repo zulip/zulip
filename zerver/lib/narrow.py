@@ -1,11 +1,23 @@
+import os
+
 from zerver.lib.request import JsonableError
 from zerver.lib.topic import (
     get_topic_from_message_info,
 )
+from django.conf import settings
 from django.utils.translation import ugettext as _
 
-from typing import Any, Callable, Dict, Iterable, Mapping, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
 
+stop_words_list = None  # type: Optional[List[str]]
+def read_stop_words() -> List[str]:
+    global stop_words_list
+    if stop_words_list is None:
+        file_path = os.path.join(settings.DEPLOY_ROOT, "puppet/zulip/files/postgresql/zulip_english.stop")
+        with open(file_path, 'r') as f:
+            stop_words_list = f.read().splitlines()
+
+    return stop_words_list
 
 def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> None:
     for element in narrow:

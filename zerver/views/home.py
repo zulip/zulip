@@ -172,6 +172,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(

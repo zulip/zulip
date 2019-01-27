@@ -3218,6 +3218,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             starred_messages=1,
             stream=2,
+            stop_words=0,
             subscription=6,
             update_display_settings=0,
             update_global_notifications=0,
