@@ -1874,5 +1874,8 @@ class DecompressionBombTests(ZulipTestCase):
         with get_test_image_file("bomb.png") as fp:
             for url, error_string in self.test_urls.items():
                 fp.seek(0, 0)
-                result = self.client_post(url, {'f1': fp})
+                if (url == "/json/realm/logo"):
+                    result = self.client_post(url, {'f1': fp, 'night': ujson.dumps(False)})
+                else:
+                    result = self.client_post(url, {'f1': fp})
                 self.assert_json_error(result, error_string)
