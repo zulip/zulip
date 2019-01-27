@@ -44,6 +44,7 @@ from zerver.lib.users import get_api_key
 from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
+import ujson
 from PIL import Image
 
 from boto.s3.key import Key
@@ -1262,7 +1263,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
 class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
-    def test_multiple_upload_failure(self) -> None:
+    def _test_multiple_upload_failure(self, night: bool) -> None:
         """
         Attempting to upload two files should fail.
         """
@@ -1270,8 +1271,11 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("iago"))
         with get_test_image_file('img.png') as fp1, \
                 get_test_image_file('img.png') as fp2:
-            result = self.client_post("/json/realm/logo", {'f1': fp1, 'f2': fp2})
+            result = self.client_post("/json/realm/logo", {'f1': fp1, 'f2': fp2, 'night': ujson.dumps(night)})
         self.assert_json_error(result, "You must upload exactly one logo.")
+
+    def test_multiple_logo_upload_failure(self) -> None:
+        self._test_multiple_upload_failure(night = False)
 
     def test_no_file_upload_failure(self) -> None:
         """
