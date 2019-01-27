@@ -8,8 +8,10 @@ var private_messages_open = false;
 // way to zoom back out other than re-narrowing out and in of the
 // PM list.
 var zoomed_in = false;
+
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
+
 function get_filter_li() {
     return $("#global_filters > li[data-name='private']");
 }
