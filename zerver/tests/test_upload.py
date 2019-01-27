@@ -1441,12 +1441,15 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_realm_logo_version(self) -> None:
         self._test_logo_version(night = False)
 
-    def test_realm_logo_upload_file_size_error(self) -> None:
+    def _test_logo_upload_file_size_error(self, night: bool) -> None:
         self.login(self.example_email("iago"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             with self.settings(MAX_LOGO_FILE_SIZE=0):
-                result = self.client_post("/json/realm/logo", {'file': fp})
+                result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+
+    def test_realm_logo_upload_file_size_error(self) -> None:
+        self._test_logo_upload_file_size_error(night = False)
 
     def tearDown(self) -> None:
         destroy_uploads()
