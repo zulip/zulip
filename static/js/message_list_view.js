@@ -503,7 +503,45 @@ MessageListView.prototype = {
             }
         });
 
+        // function build_stream_link_popover(e)  {
+            
+        //     var elt = e.target; 
+        //     var stream_id = $(elt).attr('data-stream-id');
+        //     var stream  = stream_data.get_sub_by_id(stream_id);
+        //     var trimmed_description = stream.description.substr(0, 120);
+        //     trimmed_description = trimmed_description.substr(0, Math.min(trimmed_description.length, trimmed_description.lastIndexOf(" ")))
+
+        //     //either we'd use style 1 or style 2
+
+        //     // style 1
+        //     var content = templates.render(
+        //         'stream_description',{
+        //             stream: stream,
+        //             trimmed_description: trimmed_description
+        //         }
+        //     );
+        //     $(elt).popover({
+        //         content: content,
+        //         trigger: "manual",
+        //         fixed: true,
+        //     });
+        //     $(elt).popover("show");
+        //     e.stopPropagation();
+            
+        //     // style 2
+        //     $(elt).attr('data-toggle','tooltip');
+        //     $(elt).attr('title',trimmed_description);
+        // }
+        
+        // function remove_popovers(e) {
+        //     $(this).popover("destroy");
+        // }
+
         content.find('a.stream').each(function () {
+            
+            // $(this).on("mouseenter",build_stream_link_popover);
+            // $(this).on("mouseleave",remove_popovers);
+
             var stream_id = $(this).attr('data-stream-id');
             if (stream_id && !$(this).find(".highlight").length) {
                 // Display the current name for stream if it is not
