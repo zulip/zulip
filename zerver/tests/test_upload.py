@@ -1277,14 +1277,17 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_multiple_logo_upload_failure(self) -> None:
         self._test_multiple_upload_failure(night = False)
 
-    def test_no_file_upload_failure(self) -> None:
+    def _test_no_file_upload_failure(self, night: bool) -> None:
         """
         Calling this endpoint with no files should fail.
         """
         self.login(self.example_email("iago"))
 
-        result = self.client_post("/json/realm/logo")
+        result = self.client_post("/json/realm/logo", {'night': ujson.dumps(night)})
         self.assert_json_error(result, "You must upload exactly one logo.")
+
+    def test_no_logo_file_upload_failure(self) -> None:
+        self._test_no_file_upload_failure(night = False)
 
     correct_files = [
         ('img.png', 'png_resized.png'),
