@@ -1307,13 +1307,16 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_no_admin_user_logo_upload(self) -> None:
         self._test_no_admin_user_upload(night = False)
 
-    def test_upload_limited_plan_type(self) -> None:
+    def _test_upload_limited_plan_type(self, night: bool) -> None:
         user_profile = self.example_user("iago")
         do_change_plan_type(user_profile.realm, Realm.LIMITED)
         self.login(user_profile.email)
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            result = self.client_post("/json/realm/logo", {'file': fp})
+            result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
         self.assert_json_error(result, 'Feature unavailable on your current plan.')
+
+    def test_upload_logo_limited_plan_type(self) -> None:
+        self._test_upload_limited_plan_type(night = False)
 
     def test_get_default_logo(self) -> None:
         self.login(self.example_email("hamlet"))
