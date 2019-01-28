@@ -7,6 +7,9 @@ zrequire('stream_data');
 zrequire('util');
 zrequire('Filter', 'js/filter');
 set_global('i18n', global.stub_i18n);
+set_global('page_params', {
+    stop_words: ['what', 'about'],
+});
 
 zrequire('narrow');
 
@@ -153,9 +156,36 @@ run_test('show_empty_narrow_message', () => {
     narrow.show_empty_narrow_message();
     assert($('#non_existing_user').visible());
 
+    var display = $("#empty_search_stop_words_string");
+
+    var items = [];
+    display.append = (html) => {
+        items.push(html);
+    };
+
     set_filter([['search', 'grail']]);
     narrow.show_empty_narrow_message();
     assert($('#empty_search_narrow_message').visible());
+
+    assert.equal(items.length, 2);
+    assert.equal(items[0], ' ');
+    assert.equal(items[1].text(), 'grail');
+
+    items = [];
+    display.append = (html) => {
+        if (html.text) {
+            items.push(html.selector + html.text());
+        }
+    };
+
+    set_filter([['search', 'what about grail']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+
+    assert.equal(items.length, 3);
+    assert.equal(items[0], '<del>what');
+    assert.equal(items[1], '<del>about');
+    assert.equal(items[2], '<span>grail');
 });
 
 run_test('narrow_to_compose_target', () => {

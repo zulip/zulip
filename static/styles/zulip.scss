@@ -2079,6 +2079,16 @@ nav a .no-style {
     }
 }
 
+.empty_search_text {
+    span {
+        color: hsl(200, 100%, 40%);
+    }
+    del {
+        color: hsl(200, 100%, 40%);
+    }
+    font-weight: bold;
+}
+
 div.floating_recipient {
     border-collapse: separate;
     width: 100%;
