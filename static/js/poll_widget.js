@@ -138,7 +138,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 var option = key_to_option[key];
 
                 if (option === undefined) {
-                    blueslip.error('unknown key for poll: ' + key);
+                    blueslip.warn('unknown key for poll: ' + key);
                     return;
                 }
 
