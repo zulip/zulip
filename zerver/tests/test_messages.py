@@ -1308,6 +1308,48 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "topic": "Test topic"})
         self.assert_json_success(result)
 
+    def test_message_to_stream_with_nonexistent_id(self) -> None:
+        cordelia = self.example_user('cordelia')
+        bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+        result = self.api_post(
+            bot.email, "/api/v1/messages",
+            {
+                "type": "stream",
+                "to": ujson.dumps([99999]),
+                "client": "test suite",
+                "content": "Stream message by ID.",
+                "topic": "Test topic for stream ID message"
+            }
+        )
+        self.assert_json_error(result, "Stream with ID '99999' does not exist")
+
+        msg = self.get_last_message()
+        expected = ("Hi there! We thought you'd like to know that your bot **{sender}** just "
+                    "tried to send a message to stream {stream_info}, but that stream does not "
+                    "yet exist. To create it, click the gear in the left-side stream list.")
+        expected = expected.format(sender=bot.full_name, stream_info='with ID 99999')
+        self.assertEqual(msg.content, expected)
+
+    def test_message_to_stream_by_id(self) -> None:
+        """
+        Sending a message to a stream (by stream ID) to which you are
+        subscribed is successful.
+        """
+        self.login(self.example_email("hamlet"))
+        realm = get_realm('zulip')
+        stream = get_stream('Verona', realm)
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": ujson.dumps([stream.id]),
+                                                     "client": "test suite",
+                                                     "content": "Stream message by ID.",
+                                                     "topic": "Test topic for stream ID message"})
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(sent_message.content, "Stream message by ID.")
+
     def test_message_to_announce(self) -> None:
         """
         Sending a message to an announcement_only stream by a realm admin
