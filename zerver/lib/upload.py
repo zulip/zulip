@@ -36,6 +36,12 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
+# These sizes were selected based on looking at the maximum common
+# sizes in a library of animated custom emoji, balanced against the
+# network cost of very large emoji images.
+MAX_EMOJI_GIF_SIZE = 128
+MAX_EMOJI_GIF_FILE_SIZE_BYTES = 128 * 1024 * 1024  # 128 kb
+
 # Performance Note:
 #
 # For writing files to S3, the file could either be stored in RAM
@@ -154,12 +160,22 @@ def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
                    loop=loop)
     return out.getvalue()
 
+
 def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
         if image_format == "GIF":
-            return resize_gif(im, size)
+            # There are a number of bugs in Pillow.GifImagePlugin which cause
+            # results in resized gifs being broken. To work around this we
+            # only resize under certain conditions to minimize the chance of
+            # creating ugly gifs.
+            should_resize = any((
+                im.size[0] != im.size[1],                            # not square
+                im.size[0] > MAX_EMOJI_GIF_SIZE,                     # dimensions too large
+                len(image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES,     # filesize too large
+            ))
+            return resize_gif(im, size) if should_resize else image_data
         else:
             im = exif_rotate(im)
             im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
