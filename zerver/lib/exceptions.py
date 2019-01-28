@@ -142,6 +142,17 @@ class StreamDoesNotExistError(JsonableError):
     def msg_format() -> str:
         return _("Stream '{stream}' does not exist")
 
+class StreamWithIDDoesNotExistError(JsonableError):
+    code = ErrorCode.STREAM_DOES_NOT_EXIST
+    data_fields = ['stream_id']
+
+    def __init__(self, stream_id: int) -> None:
+        self.stream_id = stream_id
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Stream with ID '{stream_id}' does not exist")
+
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
     data_fields = ['is_last_admin', 'entity']

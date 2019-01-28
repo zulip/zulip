@@ -85,9 +85,8 @@ class Addressee:
         assert(self.is_private())
         return self._user_profiles  # type: ignore # assertion protects us
 
-    def stream_name(self) -> str:
+    def stream_name(self) -> Optional[str]:
         assert(self.is_stream())
-        assert(self._stream_name is not None)
         return self._stream_name
 
     def stream_id(self) -> Optional[int]:
