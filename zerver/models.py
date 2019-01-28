@@ -1279,6 +1279,9 @@ def get_stream(stream_name: str, realm: Realm) -> Stream:
     '''
     return get_realm_stream(stream_name, realm.id)
 
+def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
+    return Stream.objects.select_related().get(id=stream_id, realm=realm)
+
 def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
 
     def fetch_streams_by_name(stream_names: List[str]) -> Sequence[Stream]:

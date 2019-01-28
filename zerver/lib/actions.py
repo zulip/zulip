@@ -35,7 +35,8 @@ from zerver.lib.cache import (
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
-from zerver.lib.exceptions import StreamDoesNotExistError
+from zerver.lib.exceptions import StreamDoesNotExistError, \
+    StreamWithIDDoesNotExistError
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -104,7 +105,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
     DisposableEmailError, EmailContainsPlusError, \
-    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm
+    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, \
+    get_stream_by_id_in_realm
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -2066,7 +2068,8 @@ def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
 def send_pm_if_empty_stream(sender: UserProfile,
                             stream: Optional[Stream],
                             stream_name: str,
-                            realm: Realm) -> None:
+                            realm: Realm,
+                            stream_id: Optional[int]=None) -> None:
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
@@ -2084,10 +2087,17 @@ def send_pm_if_empty_stream(sender: UserProfile,
         # num_subscribers == 0
         error_msg = "there are no subscribers to that stream. To join it, "
 
-    content = ("Hi there! We thought you'd like to know that your bot **%s** just "
-               "tried to send a message to stream `%s`, but %s"
-               "click the gear in the left-side stream list." %
-               (sender.full_name, stream_name, error_msg))
+    if stream_id is not None:
+        stream_info = "with ID {stream_id}".format(stream_id=stream_id)
+    else:
+        stream_info = "`{stream_name}`".format(stream_name=stream_name)
+
+    content = ("Hi there! We thought you'd like to know that your bot **{sender}** just "
+               "tried to send a message to stream {stream_info}, but {error_msg}"
+               "click the gear in the left-side stream list.")
+    content = content.format(sender=sender.full_name,
+                             stream_info=stream_info,
+                             error_msg=error_msg)
 
     send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
@@ -2144,6 +2154,17 @@ def validate_stream_name_with_pm_notification(stream_name: str, realm: Realm,
 
     return stream
 
+def validate_stream_id_with_pm_notification(stream_id: int, realm: Realm,
+                                            sender: UserProfile) -> Stream:
+    try:
+        stream = get_stream_by_id_in_realm(stream_id, realm)
+        send_pm_if_empty_stream(sender, stream, stream.name, realm)
+    except Stream.DoesNotExist:
+        send_pm_if_empty_stream(sender, None, "", realm, stream_id=stream_id)
+        raise StreamWithIDDoesNotExistError(stream_id)
+
+    return stream
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender: UserProfile, client: Client, addressee: Addressee,
@@ -2175,7 +2196,13 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         topic_name = truncate_topic(topic_name)
 
         stream_name = addressee.stream_name()
-        stream = validate_stream_name_with_pm_notification(stream_name, realm, sender)
+        stream_id = addressee.stream_id()
+
+        if stream_name is not None:
+            stream = validate_stream_name_with_pm_notification(stream_name, realm, sender)
+        else:
+            stream = validate_stream_id_with_pm_notification(stream_id, realm, sender)
+
         recipient = get_stream_recipient(stream.id)
 
         # This will raise JsonableError if there are problems.
