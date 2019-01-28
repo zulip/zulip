@@ -200,6 +200,27 @@ def get_all_api_keys(user_profile: UserProfile) -> List[str]:
     # Users can only have one API key for now
     return [user_profile.api_key]
 
+def validate_user_custom_profile_field(realm_id: int, field: CustomProfileField,
+                                       value: Union[int, str, List[int]]) -> Optional[str]:
+    validators = CustomProfileField.FIELD_VALIDATORS
+    field_type = field.field_type
+    var_name = '{}'.format(field.name)
+    if field_type in validators:
+        validator = validators[field_type]
+        result = validator(var_name, value)
+    elif field_type == CustomProfileField.CHOICE:
+        choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
+        field_data = field.field_data
+        # Put an assertion so that mypy doesn't complain.
+        assert field_data is not None
+        result = choice_field_validator(var_name, field_data, value)
+    elif field_type == CustomProfileField.USER:
+        user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
+        result = user_field_validator(realm_id, cast(List[int], value), False)
+    else:
+        raise AssertionError("Invalid field type")
+    return result
+
 def validate_user_custom_profile_data(realm_id: int,
                                       profile_data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
     # This function validate all custom field values according to their field type.
@@ -210,23 +231,6 @@ def validate_user_custom_profile_data(realm_id: int,
         except CustomProfileField.DoesNotExist:
             raise JsonableError(_('Field id {id} not found.').format(id=field_id))
 
-        validators = CustomProfileField.FIELD_VALIDATORS
-        field_type = field.field_type
-        var_name = '{}'.format(field.name)
-        value = item['value']
-        if field_type in validators:
-            validator = validators[field_type]
-            result = validator(var_name, value)
-        elif field_type == CustomProfileField.CHOICE:
-            choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
-            field_data = field.field_data
-            result = choice_field_validator(var_name, field_data, value)
-        elif field_type == CustomProfileField.USER:
-            user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-            result = user_field_validator(realm_id, cast(List[int], value),
-                                          False)
-        else:
-            raise AssertionError("Invalid field type")
-
+        result = validate_user_custom_profile_field(realm_id, field, item['value'])
         if result is not None:
             raise JsonableError(result)
