@@ -1,0 +1,22 @@
+{
+  "amount": -64000,
+  "currency": "usd",
+  "customer": "cus_EQUd48LphR5ahk",
+  "date": 1548695525,
+  "description": "Payment (Card ending in 4242)",
+  "discountable": false,
+  "id": "ii_1DxdeTGh0CmXqmnwDYYlalDE",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "period": {
+    "end": 1548695525,
+    "start": 1548695525
+  },
+  "plan": null,
+  "proration": false,
+  "quantity": 1,
+  "subscription": null,
+  "unit_amount": -64000
+}

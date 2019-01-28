@@ -1,0 +1,39 @@
+{
+  "account_balance": 0,
+  "created": 1000000000,
+  "currency": null,
+  "default_source": null,
+  "delinquent": false,
+  "description": "zulip (Zulip Dev)",
+  "discount": null,
+  "email": "hamlet@zulip.com",
+  "id": "cus_NORMALIZED0001",
+  "invoice_prefix": "NORMA01",
+  "invoice_settings": {
+    "custom_fields": null,
+    "footer": null
+  },
+  "livemode": false,
+  "metadata": {
+    "realm_id": "1",
+    "realm_str": "zulip"
+  },
+  "object": "customer",
+  "shipping": null,
+  "sources": {
+    "data": [],
+    "has_more": false,
+    "object": "list",
+    "total_count": 0,
+    "url": "/v1/customers/cus_NORMALIZED0001/sources"
+  },
+  "subscriptions": {
+    "data": [],
+    "has_more": false,
+    "object": "list",
+    "total_count": 0,
+    "url": "/v1/customers/cus_NORMALIZED0001/subscriptions"
+  },
+  "tax_info": null,
+  "tax_info_verification": null
+}

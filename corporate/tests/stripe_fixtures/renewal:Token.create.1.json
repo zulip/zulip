@@ -1,0 +1,33 @@
+{
+  "card": {
+    "address_city": "Pacific",
+    "address_country": "United States",
+    "address_line1": "Under the sea,",
+    "address_line1_check": "unchecked",
+    "address_line2": null,
+    "address_state": null,
+    "address_zip": "33333",
+    "address_zip_check": "unchecked",
+    "brand": "Visa",
+    "country": "US",
+    "cvc_check": "unchecked",
+    "dynamic_last4": null,
+    "exp_month": 3,
+    "exp_year": 2033,
+    "fingerprint": "6dAXT9VZvwro65EK",
+    "funding": "credit",
+    "id": "card_1DxdeRGh0CmXqmnwu3BibWtM",
+    "last4": "4242",
+    "metadata": {},
+    "name": "Ada Starr",
+    "object": "card",
+    "tokenization_method": null
+  },
+  "client_ip": "107.202.144.213",
+  "created": 1548695523,
+  "id": "tok_1DxdeRGh0CmXqmnw5X6CeYnC",
+  "livemode": false,
+  "object": "token",
+  "type": "card",
+  "used": false
+}
