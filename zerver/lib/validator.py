@@ -249,7 +249,7 @@ def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
 
     return None
 
-def validate_choice_field(var_name: str, field_data: str, value: object) -> None:
+def validate_choice_field(var_name: str, field_data: str, value: object) -> Optional[str]:
     """
     This function is used to validate the value selected by the user against a
     choice field. This is not used to validate admin data.
@@ -258,6 +258,7 @@ def validate_choice_field(var_name: str, field_data: str, value: object) -> None
     if value not in field_data_dict:
         msg = _("'{value}' is not a valid choice for '{field_name}'.")
         return msg.format(value=value, field_name=var_name)
+    return None
 
 def check_widget_content(widget_content: object) -> Optional[str]:
     if not isinstance(widget_content, dict):
