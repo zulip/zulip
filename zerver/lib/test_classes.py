@@ -631,11 +631,22 @@ class ZulipTestCase(TestCase):
         if stream_name is not None:
             self.subscribe(user_profile, stream_name)
 
+        prior_msg = self.get_last_message()
+
         result = self.client_post(url, payload, **post_params)
         self.assert_json_success(result)
 
         # Check the correct message was sent
         msg = self.get_last_message()
+
+        if msg.id == prior_msg.id:
+            raise Exception('''
+                Your test code called an endpoint that did
+                not write any new messages.  It is probably
+                broken (but still returns 200 due to exception
+                handling).
+                ''')  # nocoverage
+
         self.assertEqual(msg.sender.email, user_profile.email)
         if stream_name is not None:
             self.assertEqual(get_display_recipient(msg.recipient), stream_name)
