@@ -1137,6 +1137,7 @@ class Stream(models.Model):
 
     # Whether only organization administrators can send messages to this stream
     is_announcement_only = models.BooleanField(default=False)  # type: bool
+    sending_restricted = models.BooleanField(default=False)  # type: bool
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -1187,6 +1188,7 @@ post_delete.connect(flush_stream, sender=Stream)
 class StreamUserGroupAccess(models.Model):
     user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
+
 
     class Meta:
         unique_together = (('user_group', 'stream'),)
