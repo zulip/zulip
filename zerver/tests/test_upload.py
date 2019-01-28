@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.test import TestCase
 from unittest import skip
+from unittest.mock import patch
 
 from zerver.lib.avatar import (
     avatar_url,
@@ -1096,16 +1097,31 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         im = Image.open(io.BytesIO(resized_img_data))
         self.assertEqual((50, 50), im.size)
 
-        # Test for large animated image (128x128)
-        animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
-        resized_img_data = resize_emoji(animated_large_img_data, size=50)
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
-
         # Test corrupt image exception
         corrupted_img_data = get_test_image_file('corrupt.gif').read()
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
+
+        # Test an image larger than max is resized
+        with patch('zerver.lib.upload.MAX_EMOJI_GIF_SIZE', 128):
+            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((50, 50), im.size)
+
+        # Test an image file larger than max is resized
+        with patch('zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES', 3 * 1024 * 1024):
+            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((50, 50), im.size)
+
+        # Test an image smaller than max and smaller than file size max is not resized
+        with patch('zerver.lib.upload.MAX_EMOJI_GIF_SIZE', 512):
+            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((256, 256), im.size)
 
     def tearDown(self) -> None:
         destroy_uploads()
