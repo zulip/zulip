@@ -182,7 +182,9 @@ class WidgetContentTestCase(ZulipTestCase):
     def test_poll_command_extra_data(self) -> None:
         sender_email = self.example_email('cordelia')
         stream_name = 'Verona'
-        content = '/poll What is your favorite color?'
+        # We test for both trailing and leading spaces, along with blank lines
+        # for the poll options.
+        content = '/poll What is your favorite color?\n\nRed\nGreen  \n\n   Blue\n - Yellow'
 
         payload = dict(
             type="stream",
@@ -201,6 +203,7 @@ class WidgetContentTestCase(ZulipTestCase):
         expected_submessage_content = dict(
             widget_type="poll",
             extra_data=dict(
+                options=['Red', 'Green', 'Blue', 'Yellow'],
                 question="What is your favorite color?",
             ),
         )
@@ -219,7 +222,8 @@ class WidgetContentTestCase(ZulipTestCase):
         expected_submessage_content = dict(
             widget_type="poll",
             extra_data=dict(
-                question="",
+                options=[],
+                question='',
             ),
         )
 
