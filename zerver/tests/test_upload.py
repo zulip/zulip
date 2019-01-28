@@ -1091,21 +1091,35 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
-        resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
-        im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
+        with patch('zerver.lib.upload.MAX_EMOJI_GIF_SIZE', 3 * 1024 * 1024):
+            animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
+            resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((50, 50), im.size)
 
-        # Test for large animated image (128x128)
+            # Test for large animated image (128x128)
+            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((50, 50), im.size)
+
+            # Test corrupt image exception
+            corrupted_img_data = get_test_image_file('corrupt.gif').read()
+            with self.assertRaises(BadImageError):
+                resize_emoji(corrupted_img_data)
+
+            # Test a small enough image is not resized
+            animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
+            resized_img_data = resize_emoji(animated_large_img_data, size=50)
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((128, 128), im.size)
+
+        # Test a small enough file is not resized
         animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
         resized_img_data = resize_emoji(animated_large_img_data, size=50)
         im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((50, 50), im.size)
+        self.assertEqual((128, 128), im.size)
 
-        # Test corrupt image exception
-        corrupted_img_data = get_test_image_file('corrupt.gif').read()
-        with self.assertRaises(BadImageError):
-            resize_emoji(corrupted_img_data)
 
     def tearDown(self) -> None:
         destroy_uploads()
