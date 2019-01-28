@@ -2,7 +2,7 @@ var poll_widget = (function () {
 
 var exports = {};
 
-exports.poll_data_holder = function (is_my_poll, question) {
+exports.poll_data_holder = function (is_my_poll, question, options) {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
@@ -167,6 +167,14 @@ exports.poll_data_holder = function (is_my_poll, question) {
         });
     };
 
+    // function to add all comments added along with the /poll command
+    _.each(options, function (option, i) {
+        self.handle.new_comment.inbound('canned', {
+            idx: i,
+            comment: option,
+        });
+    });
+
     return self;
 };
 
@@ -175,12 +183,14 @@ exports.activate = function (opts) {
     var callback = opts.callback;
 
     var question = '';
+    var options = [];
     if (opts.extra_data) {
         question = opts.extra_data.question || '';
+        options = opts.extra_data.options || [];
     }
 
     var is_my_poll = people.is_my_user_id(opts.message.sender_id);
-    var poll_data = exports.poll_data_holder(is_my_poll, question);
+    var poll_data = exports.poll_data_holder(is_my_poll, question, options);
 
     function update_edit_controls() {
         var has_question = elem.find('input.poll-question').val().trim() !== '';
