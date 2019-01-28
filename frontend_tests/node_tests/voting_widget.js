@@ -23,7 +23,7 @@ run_test('poll_data_holder my question', () => {
     let data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        comments: [],
+        options: [],
         question: 'Favorite color?',
     });
 
@@ -36,25 +36,25 @@ run_test('poll_data_holder my question', () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        comments: [],
+        options: [],
         question: 'best plan?',
     });
 
-    const comment_event = {
-        type: 'new_comment',
+    const option_event = {
+        type: 'new_option',
         idx: 1,
-        comment: 'release now',
+        option: 'release now',
     };
 
     people.safe_full_names = () => '';
 
-    data_holder.handle_event(sender_id, comment_event);
+    data_holder.handle_event(sender_id, option_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        comments: [
+        options: [
             {
-                comment: 'release now',
+                option: 'release now',
                 names: '',
                 count: 0,
                 key: '99,1',
@@ -73,9 +73,9 @@ run_test('poll_data_holder my question', () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        comments: [
+        options: [
             {
-                comment: 'release now',
+                option: 'release now',
                 names: '',
                 count: 1,
                 key: '99,1',
@@ -96,11 +96,11 @@ run_test('poll_data_holder my question', () => {
     data_holder.handle_event(sender_id, invalid_vote_event);
     data = data_holder.get_widget_data();
 
-    const comment_outbound_event = data_holder.handle.new_comment.outbound('new comment');
-    assert.deepEqual(comment_outbound_event, {
-        type: 'new_comment',
+    const option_outbound_event = data_holder.handle.new_option.outbound('new option');
+    assert.deepEqual(option_outbound_event, {
+        type: 'new_option',
         idx: 2,
-        comment: 'new comment',
+        option: 'new option',
     });
 
     const new_question = 'Any new plan?';
@@ -123,9 +123,9 @@ run_test('poll_data_holder my question', () => {
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
-        comments: [
+        options: [
             {
-                comment: 'release now',
+                option: 'release now',
                 names: '',
                 count: 0,
                 key: '99,1',
@@ -170,15 +170,15 @@ run_test('activate another person poll', () => {
         return elem;
     };
 
-    const poll_comment = set_widget_find_result('button.poll-comment');
-    const poll_comment_input = set_widget_find_result('input.poll-comment');
-    const widget_comment_container = set_widget_find_result('ul.poll-widget');
+    const poll_option = set_widget_find_result('button.poll-option');
+    const poll_option_input = set_widget_find_result('input.poll-option');
+    const widget_option_container = set_widget_find_result('ul.poll-widget');
 
     const poll_question_submit = set_widget_find_result('button.poll-question-check');
     const poll_edit_question = set_widget_find_result('.poll-edit-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
-    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
+    const poll_option_container = set_widget_find_result('.poll-option-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
     const poll_please_wait = set_widget_find_result('.poll-please-wait');
@@ -187,12 +187,12 @@ run_test('activate another person poll', () => {
     set_widget_find_result('button.poll-question-remove');
     set_widget_find_result('input.poll-question');
 
-    let comment_button_callback;
+    let option_button_callback;
     let vote_button_callback;
 
-    poll_comment.on = (event, func) => {
+    poll_option.on = (event, func) => {
         assert.equal(event, 'click');
-        comment_button_callback = func;
+        option_button_callback = func;
     };
 
     poll_vote_button.on = (event, func) => {
@@ -217,7 +217,7 @@ run_test('activate another person poll', () => {
         assert(!show);
     };
 
-    poll_comment_container.toggle = (show) => {
+    poll_option_container.toggle = (show) => {
         assert.equal(show, true);
     };
 
@@ -232,7 +232,7 @@ run_test('activate another person poll', () => {
     poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
-    assert.equal(widget_comment_container.html(), 'poll-widget-results');
+    assert.equal(widget_option_container.html(), 'poll-widget-results');
     assert.equal(poll_question_header.text(), 'What do you want?');
 
     const e = {
@@ -240,15 +240,15 @@ run_test('activate another person poll', () => {
     };
 
     {
-        /* Testing data sent to server on adding comment */
-        poll_comment_input.val('cool choice');
+        /* Testing data sent to server on adding option */
+        poll_option_input.val('cool choice');
         out_data = undefined;
-        comment_button_callback(e);
-        assert.deepEqual(out_data,  { type: 'new_comment', idx: 1, comment: 'cool choice' });
+        option_button_callback(e);
+        assert.deepEqual(out_data,  { type: 'new_option', idx: 1, option: 'cool choice' });
 
-        poll_comment_input.val('');
+        poll_option_input.val('');
         out_data = undefined;
-        comment_button_callback(e);
+        option_button_callback(e);
         assert.deepEqual(out_data, undefined);
     }
 
@@ -256,9 +256,9 @@ run_test('activate another person poll', () => {
         {
             sender_id: 100,
             data: {
-                type: 'new_comment',
+                type: 'new_option',
                 idx: 1,
-                comment: 'release now',
+                option: 'release now',
             },
         },
         {
@@ -333,16 +333,16 @@ run_test('activate own poll', () => {
         return elem;
     };
 
-    const poll_comment = set_widget_find_result('button.poll-comment');
-    const poll_comment_input = set_widget_find_result('input.poll-comment');
-    const widget_comment_container = set_widget_find_result('ul.poll-widget');
+    const poll_option = set_widget_find_result('button.poll-option');
+    const poll_option_input = set_widget_find_result('input.poll-option');
+    const widget_option_container = set_widget_find_result('ul.poll-widget');
 
     const poll_question_submit = set_widget_find_result('button.poll-question-check');
     const poll_edit_question = set_widget_find_result('.poll-edit-question');
     const poll_question_input = set_widget_find_result('input.poll-question');
     const poll_question_header = set_widget_find_result('.poll-question-header');
     const poll_question_container = set_widget_find_result('.poll-question-bar');
-    const poll_comment_container = set_widget_find_result('.poll-comment-bar');
+    const poll_option_container = set_widget_find_result('.poll-option-bar');
 
     const poll_vote_button = set_widget_find_result('button.poll-vote');
     const poll_please_wait = set_widget_find_result('.poll-please-wait');
@@ -359,7 +359,7 @@ run_test('activate own poll', () => {
 
     // Following event handler are already tested and doesn't make sense
     // to test them again
-    poll_comment.on = noop;
+    poll_option.on = noop;
     poll_vote_button.on = noop;
 
     poll_question_header.toggle = (show) => {
@@ -379,7 +379,7 @@ run_test('activate own poll', () => {
         assert(!show);
     };
 
-    poll_comment_container.toggle = (show) => {
+    poll_option_container.toggle = (show) => {
         assert(show);
     };
 
@@ -394,7 +394,7 @@ run_test('activate own poll', () => {
     poll_widget.activate(opts);
 
     assert.equal(widget_elem.html(), 'poll-widget');
-    assert.equal(widget_comment_container.html(), 'poll-widget-results');
+    assert.equal(widget_option_container.html(), 'poll-widget-results');
     assert.equal(poll_question_header.text(), 'Where to go?');
 
     {
@@ -409,7 +409,7 @@ run_test('activate own poll', () => {
         question_button_callback(e);
         assert.deepEqual(out_data,  { type: 'question', question: 'Is it new?' });
 
-        poll_comment_input.val('');
+        poll_option_input.val('');
         out_data = undefined;
         question_button_callback(e);
         assert.deepEqual(out_data, undefined);
