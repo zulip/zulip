@@ -1,0 +1,22 @@
+{
+  "amount": 17442,
+  "currency": "usd",
+  "customer": "cus_EQUd48LphR5ahk",
+  "date": 1548695527,
+  "description": "Additional license (Apr 11, 2012 - Jan 2, 2013)",
+  "discountable": false,
+  "id": "ii_1DxdeVGh0CmXqmnwf6cLlEA7",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "period": {
+    "end": 1357095845,
+    "start": 1334113445
+  },
+  "plan": null,
+  "proration": false,
+  "quantity": 3,
+  "subscription": null,
+  "unit_amount": 5814
+}
