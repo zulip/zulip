@@ -1,0 +1,22 @@
+{
+  "amount": 64000,
+  "currency": "usd",
+  "customer": "cus_EQUd48LphR5ahk",
+  "date": 1548695525,
+  "description": "Zulip Standard",
+  "discountable": false,
+  "id": "ii_1DxdeTGh0CmXqmnw7MfZoBVx",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "plan": null,
+  "proration": false,
+  "quantity": 8,
+  "subscription": null,
+  "unit_amount": 8000
+}

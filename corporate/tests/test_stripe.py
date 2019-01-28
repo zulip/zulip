@@ -30,7 +30,8 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     add_months, next_month, next_renewal_date, renewal_amount, \
     compute_plan_parameters, update_or_create_stripe_customer, \
     process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
-    update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan
+    update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
+    invoice_plan, invoice_plans_as_needed
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from corporate.views import payment_method_string
 import corporate.urls
@@ -1027,3 +1028,127 @@ class LicenseLedgerTest(StripeTestCase):
                           (False, self.seat_count + 1, self.seat_count),
                           (False, self.seat_count + 1, self.seat_count + 1),
                           (False, self.seat_count + 1, self.seat_count + 1)])
+
+class InvoiceTest(StripeTestCase):
+    def test_invoicing_status_is_started(self) -> None:
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        plan = CustomerPlan.objects.first()
+        plan.invoicing_status = CustomerPlan.STARTED
+        plan.save(update_fields=['invoicing_status'])
+        with self.assertRaises(NotImplementedError):
+            invoice_plan(CustomerPlan.objects.first(), self.now)
+
+    @mock_stripe()
+    def test_invoice_plan(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            self.upgrade()
+        # Increase
+        with patch('corporate.lib.stripe.get_seat_count', return_value=self.seat_count + 3):
+            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=100))
+        # Decrease
+        with patch('corporate.lib.stripe.get_seat_count', return_value=self.seat_count):
+            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=200))
+        # Increase, but not past high watermark
+        with patch('corporate.lib.stripe.get_seat_count', return_value=self.seat_count + 1):
+            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=300))
+        # Increase, but after renewal date, and below last year's high watermark
+        with patch('corporate.lib.stripe.get_seat_count', return_value=self.seat_count + 2):
+            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=400))
+        # Increase, but after event_time
+        with patch('corporate.lib.stripe.get_seat_count', return_value=self.seat_count + 3):
+            update_license_ledger_if_needed(get_realm('zulip'), self.now + timedelta(days=500))
+        plan = CustomerPlan.objects.first()
+        invoice_plan(plan, self.now + timedelta(days=400))
+
+        stripe_invoices = [invoice for invoice in stripe.Invoice.list(
+            customer=plan.customer.stripe_customer_id)]
+        self.assertEqual(len(stripe_invoices), 2)
+        self.assertIsNotNone(stripe_invoices[0].finalized_at)
+        stripe_line_items = [item for item in stripe_invoices[0].lines]
+        self.assertEqual(len(stripe_line_items), 3)
+        line_item_params = {
+            'amount': int(8000 * (1 - ((400-366) / 365)) + .5),
+            'description': 'Additional license (Feb 5, 2013 - Jan 2, 2014)',
+            'discountable': False,
+            'period': {
+                'start': datetime_to_timestamp(self.now + timedelta(days=400)),
+                'end': datetime_to_timestamp(self.now + timedelta(days=2*365 + 1))},
+            'quantity': 1}
+        for key, value in line_item_params.items():
+            self.assertEqual(stripe_line_items[0].get(key), value)
+        line_item_params = {
+            'amount': 8000 * (self.seat_count + 1),
+            'description': 'Zulip Standard - renewal',
+            'discountable': False,
+            'period': {
+                'start': datetime_to_timestamp(self.now + timedelta(days=366)),
+                'end': datetime_to_timestamp(self.now + timedelta(days=2*365 + 1))},
+            'quantity': (self.seat_count + 1)}
+        for key, value in line_item_params.items():
+            self.assertEqual(stripe_line_items[1].get(key), value)
+        line_item_params = {
+            'amount': 3 * int(8000 * (366-100) / 366 + .5),
+            'description': 'Additional license (Apr 11, 2012 - Jan 2, 2013)',
+            'discountable': False,
+            'period': {
+                'start': datetime_to_timestamp(self.now + timedelta(days=100)),
+                'end': datetime_to_timestamp(self.now + timedelta(days=366))},
+            'quantity': 3}
+        for key, value in line_item_params.items():
+            self.assertEqual(stripe_line_items[2].get(key), value)
+
+    @mock_stripe()
+    def test_fixed_price_plans(self, *mocks: Mock) -> None:
+        # Also tests charge_automatically=False
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            self.upgrade(invoice=True)
+        plan = CustomerPlan.objects.first()
+        plan.fixed_price = 100
+        plan.price_per_license = 0
+        plan.save(update_fields=['fixed_price', 'price_per_license'])
+        invoice_plan(plan, self.next_year)
+        stripe_invoices = [invoice for invoice in stripe.Invoice.list(
+            customer=plan.customer.stripe_customer_id)]
+        self.assertEqual(len(stripe_invoices), 2)
+        self.assertEqual(stripe_invoices[0].billing, 'send_invoice')
+        stripe_line_items = [item for item in stripe_invoices[0].lines]
+        self.assertEqual(len(stripe_line_items), 1)
+        line_item_params = {
+            'amount': 100,
+            'description': 'Zulip Standard - renewal',
+            'discountable': False,
+            'period': {
+                'start': datetime_to_timestamp(self.next_year),
+                'end': datetime_to_timestamp(self.next_year + timedelta(days=365))},
+            'quantity': 1}
+        for key, value in line_item_params.items():
+            self.assertEqual(stripe_line_items[0].get(key), value)
+
+    def test_no_invoice_needed(self) -> None:
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        plan = CustomerPlan.objects.first()
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+        # Test this doesn't make any calls to stripe.Invoice or stripe.InvoiceItem
+        invoice_plan(plan, self.next_month)
+        plan = CustomerPlan.objects.first()
+        # Test that we still update next_invoice_date
+        self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
+
+    def test_invoice_plans_as_needed(self) -> None:
+        with patch('corporate.lib.stripe.timezone_now', return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        plan = CustomerPlan.objects.first()
+        self.assertEqual(plan.next_invoice_date, self.next_month)
+        # Test nothing needed to be done
+        with patch('corporate.lib.stripe.invoice_plan') as mocked:
+            invoice_plans_as_needed(self.next_month - timedelta(days=1))
+        mocked.assert_not_called()
+        # Test something needing to be done
+        invoice_plans_as_needed(self.next_month)
+        plan = CustomerPlan.objects.first()
+        self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))

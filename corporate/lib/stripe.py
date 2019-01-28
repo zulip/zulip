@@ -91,6 +91,21 @@ def next_renewal_date(plan: CustomerPlan, event_time: datetime) -> datetime:
         periods += 1
     return dt
 
+# TODO take downgrade into account
+def next_invoice_date(plan: CustomerPlan) -> datetime:
+    months_per_period = {
+        CustomerPlan.ANNUAL: 12,
+        CustomerPlan.MONTHLY: 1,
+    }[plan.billing_schedule]
+    if plan.automanage_licenses:
+        months_per_period = 1
+    periods = 1
+    dt = plan.billing_cycle_anchor
+    while dt <= plan.next_invoice_date:
+        dt = add_months(plan.billing_cycle_anchor, months_per_period * periods)
+        periods += 1
+    return dt
+
 def renewal_amount(plan: CustomerPlan) -> Optional[int]:  # nocoverage: TODO
     if plan.fixed_price is not None:
         return plan.fixed_price
@@ -355,6 +370,77 @@ def update_license_ledger_if_needed(realm: Realm, event_time: datetime) -> None:
     if not plan.automanage_licenses:
         return
     update_license_ledger_for_automanaged_plan(realm, plan, event_time)
+
+def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
+    if plan.invoicing_status == CustomerPlan.STARTED:
+        raise NotImplementedError('Plan with invoicing_status==STARTED needs manual resolution.')
+    add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
+    assert(plan.invoiced_through is not None)
+    licenses_base = plan.invoiced_through.licenses
+    invoice_item_created = False
+    for ledger_entry in LicenseLedger.objects.filter(plan=plan, id__gt=plan.invoiced_through.id,
+                                                     event_time__lte=event_time).order_by('id'):
+        price_args = {}  # type: Dict[str, int]
+        if ledger_entry.is_renewal:
+            if plan.fixed_price is not None:
+                price_args = {'amount': plan.fixed_price}
+            else:
+                assert(plan.price_per_license is not None)  # needed for mypy
+                price_args = {'unit_amount': plan.price_per_license,
+                              'quantity': ledger_entry.licenses}
+            description = "Zulip Standard - renewal"
+        elif ledger_entry.licenses != licenses_base:
+            assert(plan.price_per_license)
+            last_renewal = LicenseLedger.objects.filter(
+                plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time) \
+                .order_by('-id').first().event_time
+            period_end = next_renewal_date(plan, ledger_entry.event_time)
+            proration_fraction = (period_end - ledger_entry.event_time) / (period_end - last_renewal)
+            price_args = {'unit_amount': int(plan.price_per_license * proration_fraction + .5),
+                          'quantity': ledger_entry.licenses - licenses_base}
+            description = "Additional license ({} - {})".format(
+                ledger_entry.event_time.strftime('%b %-d, %Y'), period_end.strftime('%b %-d, %Y'))
+
+        if price_args:
+            plan.invoiced_through = ledger_entry
+            plan.invoicing_status = CustomerPlan.STARTED
+            plan.save(update_fields=['invoicing_status', 'invoiced_through'])
+            stripe.InvoiceItem.create(
+                currency='usd',
+                customer=plan.customer.stripe_customer_id,
+                description=description,
+                discountable=False,
+                period = {'start': datetime_to_timestamp(ledger_entry.event_time),
+                          'end': datetime_to_timestamp(next_renewal_date(plan, ledger_entry.event_time))},
+                idempotency_key='ledger_entry:{}'.format(ledger_entry.id),
+                **price_args)
+            invoice_item_created = True
+        plan.invoiced_through = ledger_entry
+        plan.invoicing_status = CustomerPlan.DONE
+        plan.save(update_fields=['invoicing_status', 'invoiced_through'])
+        licenses_base = ledger_entry.licenses
+
+    if invoice_item_created:
+        if plan.charge_automatically:
+            billing_method = 'charge_automatically'
+            days_until_due = None
+        else:
+            billing_method = 'send_invoice'
+            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+        stripe_invoice = stripe.Invoice.create(
+            auto_advance=True,
+            billing=billing_method,
+            customer=plan.customer.stripe_customer_id,
+            days_until_due=days_until_due,
+            statement_descriptor='Zulip Standard')
+        stripe.Invoice.finalize_invoice(stripe_invoice)
+
+    plan.next_invoice_date = next_invoice_date(plan)
+    plan.save(update_fields=['next_invoice_date'])
+
+def invoice_plans_as_needed(event_time: datetime) -> None:
+    for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
+        invoice_plan(plan, event_time)
 
 def attach_discount_to_realm(user: UserProfile, discount: Decimal) -> None:
     customer = Customer.objects.filter(realm=user.realm).first()
