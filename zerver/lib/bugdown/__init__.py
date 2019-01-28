@@ -1710,6 +1710,10 @@ class Bugdown(markdown.Markdown):
         return self
 
     def build_preprocessors(self) -> markdown.util.Registry:
+        # We disable the following preprocessors from upstream:
+        #
+        # html_block - insecure
+        # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry()
         preprocessors.register(AutoNumberOListPreprocessor(self), 'auto_number_olist', 40)
         preprocessors.register(BugdownUListPreprocessor(self), 'hanging_ulists', 35)
@@ -1719,6 +1723,14 @@ class Bugdown(markdown.Markdown):
         return preprocessors
 
     def build_block_parser(self) -> markdown.util.Registry:
+        # We disable the following blockparsers from upstream:
+        #
+        # indent - replaced by ours
+        # hashheader - disabled, since headers look bad and don't make sense in a chat context.
+        # setextheader - disabled, since headers look bad and don't make sense in a chat context.
+        # olist - replaced by ours
+        # ulist - replaced by ours
+        # quote - replaced by ours
         parser = markdown.blockprocessors.BlockParser(self)
         parser.blockprocessors.register(markdown.blockprocessors.EmptyBlockProcessor(parser), 'empty', 85)
         if not self.getConfig('code_block_processor_disabled'):
@@ -1732,6 +1744,24 @@ class Bugdown(markdown.Markdown):
         return parser
 
     def build_inlinepatterns(self) -> markdown.util.Registry:
+        # We disable the following upstream inline patterns:
+        #
+        # backtick -        replaced by ours
+        # escape -          probably will re-add at some point.
+        # link -            replaced by ours
+        # image_link -      replaced by ours
+        # autolink -        replaced by ours
+        # automail -        replaced by ours
+        # linebreak -       we use nl2br and consider that good enough
+        # html -            insecure
+        # reference -       references not useful
+        # image_reference - references not useful
+        # short_reference - references not useful
+        # ---------------------------------------------------
+        # strong_em -       for these three patterns,
+        # strong2 -         we have our own versions where
+        # emphasis2 -       we disable _ for bold and emphasis
+
         # Declare regexes for clean single line calls to .register().
         NOT_STRONG_RE = markdown.inlinepatterns.NOT_STRONG_RE
         # Custom strikethrough syntax: ~~foo~~
@@ -1745,7 +1775,9 @@ class Bugdown(markdown.Markdown):
         # Inline code block without whitespace stripping
         BACKTICK_RE = r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'
 
-        # Add Inline Patterns
+        # Add Inline Patterns.  We use a custom numbering of the
+        # rules, that preserves the order from upstream but leaves
+        # space for us to add our own.
         reg = markdown.util.Registry()
         reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 105)
         reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
@@ -1779,6 +1811,7 @@ class Bugdown(markdown.Markdown):
         return inlinePatterns
 
     def build_treeprocessors(self) -> markdown.util.Registry:
+        # Here we build all the processors from upstream, plus a few of our own.
         treeprocessors = markdown.util.Registry()
         # We get priority 30 from 'hilite' extension
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), 'inline', 25)
@@ -1789,6 +1822,7 @@ class Bugdown(markdown.Markdown):
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:
+        # These are the default python-markdown processors, unmodified.
         postprocessors = markdown.util.Registry()
         postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), 'raw_html', 20)
         postprocessors.register(markdown.postprocessors.AndSubstitutePostprocessor(), 'amp_substitute', 15)
