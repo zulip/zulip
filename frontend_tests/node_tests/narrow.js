@@ -1,3 +1,4 @@
+set_global('$', global.make_zjquery());
 zrequire('hash_util');
 zrequire('hashchange');
 zrequire('narrow_state');
@@ -91,92 +92,70 @@ run_test('uris', () => {
 });
 
 run_test('show_empty_narrow_message', () => {
-
-    var hide_id;
-    var show_id;
-    var attr_id;
-    set_global('$', (id) => {
-        return {
-            hide: () => {hide_id = id;},
-            show: () => {show_id = id;},
-            attr: () => {attr_id = id;},
-        };
-    });
-
     narrow_state.reset_current_filter();
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_message');
-    assert.equal(attr_id, '#left_bar_compose_reply_button_big');
+    assert.equal($('.empty_feed_notice').visible(), false);
+    assert($('#empty_narrow_message').visible());
+    assert.equal(
+        $('#left_bar_compose_reply_button_big').attr('title'),
+        'translated: There are no messages to reply to.'
+    );
 
     // for non-existent or private stream
     set_filter([['stream', 'Foo']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#nonsubbed_private_nonexistent_stream_narrow_message');
+    assert($('#nonsubbed_private_nonexistent_stream_narrow_message').visible());
 
     // for non sub public stream
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
     set_filter([['stream', 'Rome']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#nonsubbed_stream_narrow_message');
+    assert($('#nonsubbed_stream_narrow_message').visible());
 
     set_filter([['is', 'starred']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_star_narrow_message');
+    assert($('#empty_star_narrow_message').visible());
 
     set_filter([['is', 'mentioned']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_all_mentioned');
+    assert($('#empty_narrow_all_mentioned').visible());
 
     set_filter([['is', 'private']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_all_private_message');
+    assert($('#empty_narrow_all_private_message').visible());
 
     set_filter([['is', 'unread']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#no_unread_narrow_message');
+    assert($('#no_unread_narrow_message').visible());
 
     set_filter([['pm-with', ['Yo']]]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#non_existing_user');
+    assert($('#non_existing_user').visible());
 
     people.add_in_realm(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#non_existing_users');
+    assert($('#non_existing_users').visible());
 
     set_filter([['pm-with', 'alice@example.com']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_private_message');
+    assert($('#empty_narrow_private_message').visible());
 
     set_filter([['group-pm-with', 'alice@example.com']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_group_private_message');
+    assert($('#empty_narrow_group_private_message').visible());
 
     set_filter([['sender', 'ray@example.com']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#silent_user');
+    assert($('#silent_user').visible());
 
     set_filter([['sender', 'sinwar@example.com']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#non_existing_user');
+    assert($('#non_existing_user').visible());
 
     set_filter([['search', 'grail']]);
     narrow.show_empty_narrow_message();
-    assert.equal(hide_id, '.empty_feed_notice');
-    assert.equal(show_id, '#empty_search_narrow_message');
+    assert($('#empty_search_narrow_message').visible());
 });
 
 run_test('narrow_to_compose_target', () => {
