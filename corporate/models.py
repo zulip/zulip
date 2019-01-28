@@ -39,9 +39,12 @@ class CustomerPlan(models.Model):
     MONTHLY = 2
     billing_schedule = models.SmallIntegerField()  # type: int
 
-    # This is like analytic's FillState, but for billing
-    billed_through = models.DateTimeField()  # type: datetime.datetime
-    next_billing_date = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    next_invoice_date = models.DateTimeField(db_index=True)  # type: datetime.datetime
+    invoiced_through = models.ForeignKey(
+        'LicenseLedger', null=True, on_delete=CASCADE, related_name='+')  # type: Optional[LicenseLedger]
+    DONE = 1
+    STARTED = 2
+    invoicing_status = models.SmallIntegerField(default=DONE)  # type: int
 
     STANDARD = 1
     PLUS = 2  # not available through self-serve signup

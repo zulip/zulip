@@ -231,10 +231,10 @@ def compute_plan_parameters(
     if discount is not None:
         # There are no fractional cents in Stripe, so round down to nearest integer.
         price_per_license = int(float(price_per_license * (1 - discount / 100)) + .00001)
-    next_billing_date = period_end
+    next_invoice_date = period_end
     if automanage_licenses:
-        next_billing_date = add_months(billing_cycle_anchor, 1)
-    return billing_cycle_anchor, next_billing_date, period_end, price_per_license
+        next_invoice_date = add_months(billing_cycle_anchor, 1)
+    return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 # Only used for cloud signups
 @catch_stripe_errors
@@ -251,7 +251,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             "Customer {} trying to upgrade, but has an active subscription".format(customer))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
 
-    billing_cycle_anchor, next_billing_date, period_end, price_per_license = compute_plan_parameters(
+    billing_cycle_anchor, next_invoice_date, period_end, price_per_license = compute_plan_parameters(
         automanage_licenses, billing_schedule, customer.default_discount)
     # The main design constraint in this function is that if you upgrade with a credit card, and the
     # charge fails, everything should be rolled back as if nothing had happened. This is because we
@@ -294,15 +294,16 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             customer=customer,
             # Deprecated, remove
             licenses=-1,
-            billed_through=billing_cycle_anchor,
-            next_billing_date=next_billing_date,
+            next_invoice_date=next_invoice_date,
             **plan_params)
-        LicenseLedger.objects.create(
+        ledger_entry = LicenseLedger.objects.create(
             plan=plan,
             is_renewal=True,
             event_time=billing_cycle_anchor,
             licenses=billed_licenses,
             licenses_at_next_renewal=billed_licenses)
+        plan.invoiced_through = ledger_entry
+        plan.save(update_fields=['invoiced_through'])
         RealmAuditLog.objects.create(
             realm=realm, acting_user=user, event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,

@@ -392,8 +392,8 @@ class StripeTest(StripeTestCase):
         plan = CustomerPlan.objects.get(
             customer=customer, automanage_licenses=True,
             price_per_license=8000, fixed_price=None, discount=None, billing_cycle_anchor=self.now,
-            billing_schedule=CustomerPlan.ANNUAL, billed_through=self.now,
-            next_billing_date=self.next_month, tier=CustomerPlan.STANDARD,
+            billing_schedule=CustomerPlan.ANNUAL, invoiced_through=LicenseLedger.objects.first(),
+            next_invoice_date=self.next_month, tier=CustomerPlan.STANDARD,
             status=CustomerPlan.ACTIVE)
         LicenseLedger.objects.get(
             plan=plan, is_renewal=True, event_time=self.now, licenses=self.seat_count,
@@ -477,8 +477,8 @@ class StripeTest(StripeTestCase):
         plan = CustomerPlan.objects.get(
             customer=customer, automanage_licenses=False, charge_automatically=False,
             price_per_license=8000, fixed_price=None, discount=None, billing_cycle_anchor=self.now,
-            billing_schedule=CustomerPlan.ANNUAL, billed_through=self.now,
-            next_billing_date=self.next_year, tier=CustomerPlan.STANDARD,
+            billing_schedule=CustomerPlan.ANNUAL, invoiced_through=LicenseLedger.objects.first(),
+            next_invoice_date=self.next_year, tier=CustomerPlan.STANDARD,
             status=CustomerPlan.ACTIVE)
         LicenseLedger.objects.get(
             plan=plan, is_renewal=True, event_time=self.now, licenses=123, licenses_at_next_renewal=123)
