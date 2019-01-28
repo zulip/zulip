@@ -4,7 +4,7 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 set_global('people', {});
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('templates', {});
 
 const noop = () => {};
@@ -90,11 +90,11 @@ run_test('poll_data_holder my question', () => {
         vote: 1,
     };
 
-    blueslip.error = (msg) => {
-        assert.equal(msg, `unknown key for poll: ${invalid_vote_event.key}`);
-    };
+    blueslip.set_test_data('warn', `unknown key for poll: ${invalid_vote_event.key}`);
     data_holder.handle_event(sender_id, invalid_vote_event);
     data = data_holder.get_widget_data();
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 
     const option_outbound_event = data_holder.handle.new_option.outbound('new option');
     assert.deepEqual(option_outbound_event, {
