@@ -1184,6 +1184,13 @@ class Stream(models.Model):
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
+class StreamUserGroupAccess(models.Model):
+    user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+
+    class Meta:
+        unique_together = (('user_group', 'stream'),)
+
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
 # type_id, type). We have 3 types of recipients: Huddles (for group
