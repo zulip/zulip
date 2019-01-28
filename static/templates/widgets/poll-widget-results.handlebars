@@ -1,9 +1,9 @@
-{{#each comments}}
+{{#each options}}
 <li>
     <button class="poll-vote" data-key="{{ key }}">
         {{ count }}
     </button>
-    <span class="poll-option">{{ comment }}</span>
+    <span class="poll-option">{{ option }}</span>
     {{#if names}}
     <span class="poll-names">({{ names }})</span>
     {{/if}}

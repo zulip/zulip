@@ -78,8 +78,8 @@ img.task-completed {
 
 input.add-task,
 button.add-task,
-input.poll-comment,
-button.poll-comment,
+input.poll-option,
+button.poll-option,
 input.poll-question,
 button.poll-question {
     padding: 4px 6px;
@@ -87,7 +87,7 @@ button.poll-question {
 }
 
 button.add-task,
-button.poll-comment,
+button.poll-option,
 button.poll-question {
     border-radius: 3px;
     border: 1px solid hsl(0, 0%, 80%);
@@ -96,7 +96,7 @@ button.poll-question {
 }
 
 button.add-task:hover,
-button.poll-comment:hover,
+button.poll-option:hover,
 button.poll-question:hover {
     border-color: hsl(0, 0%, 60%);
 }

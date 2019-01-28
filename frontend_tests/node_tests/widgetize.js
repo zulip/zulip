@@ -29,25 +29,25 @@ run_test('activate', () => {
     const events = [
         {
             data: {
-                comment: "First option",
+                option: "First option",
                 idx: 1,
-                type: "new_comment",
+                type: "new_option",
             },
             sender_id: 101,
         },
         {
             data: {
-                comment: "Second option",
+                option: "Second option",
                 idx: 1,
-                type: "new_comment",
+                type: "new_option",
             },
             sender_id: 102,
         },
         {
             data: {
-                comment: "Third option",
+                option: "Third option",
                 idx: 1,
-                type: "new_comment",
+                type: "new_option",
             },
             sender_id: 102,
         },
@@ -145,7 +145,7 @@ run_test('activate', () => {
     const post_activate_event = {
         data: {
             idx: 1,
-            type: "new_comment",
+            type: "new_option",
         },
         message_id: 2001,
         sender_id: 102,

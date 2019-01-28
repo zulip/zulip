@@ -11,7 +11,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
     var me = people.my_current_user_id();
     var poll_question = question;
-    var key_to_comment = {};
+    var key_to_option = {};
     var my_idx = 1;
 
     var input_mode = is_my_poll; // for now
@@ -42,13 +42,13 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     }
 
     self.get_widget_data = function () {
-        var comments = [];
+        var options = [];
 
-        _.each(key_to_comment, function (obj, key) {
+        _.each(key_to_option, function (obj, key) {
             var voters = _.keys(obj.votes);
 
-            comments.push({
-                comment: obj.comment,
+            options.push({
+                option: obj.option,
                 names: people.safe_full_names(voters),
                 count: voters.length,
                 key: key,
@@ -57,7 +57,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
 
         var widget_data = {
-            comments: comments,
+            options: options,
             question: poll_question,
         };
 
@@ -65,12 +65,12 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
     };
 
     self.handle = {
-        new_comment: {
-            outbound: function (comment) {
+        new_option: {
+            outbound: function (option) {
                 var event = {
-                    type: 'new_comment',
+                    type: 'new_option',
                     idx: my_idx,
-                    comment: comment,
+                    option: option,
                 };
 
                 my_idx += 1;
@@ -81,11 +81,11 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             inbound: function (sender_id, data) {
                 var idx = data.idx;
                 var key = sender_id + ',' + idx;
-                var comment = data.comment;
+                var option = data.option;
                 var votes = {};
 
-                key_to_comment[key] = {
-                    comment: comment,
+                key_to_option[key] = {
+                    option: option,
                     user_id: sender_id,
                     votes: votes,
                 };
@@ -119,7 +119,7 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
                 var vote = 1;
 
                 // toggle
-                if (key_to_comment[key].votes[me]) {
+                if (key_to_option[key].votes[me]) {
                     vote = -1;
                 }
 
@@ -135,14 +135,14 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
             inbound: function (sender_id, data) {
                 var key = data.key;
                 var vote = data.vote;
-                var comment = key_to_comment[key];
+                var option = key_to_option[key];
 
-                if (comment === undefined) {
+                if (option === undefined) {
                     blueslip.error('unknown key for poll: ' + key);
                     return;
                 }
 
-                var votes = comment.votes;
+                var votes = option.votes;
 
                 if (vote === 1) {
                     votes[sender_id] = 1;
@@ -160,18 +160,18 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
         }
     };
 
-    // function to check whether comment already exists
-    self.is_comment_present = function (data, latest_comment) {
+    // function to check whether option already exists
+    self.is_option_present = function (data, latest_option) {
         return _.any(data, function (el) {
-            return el.comment === latest_comment;
+            return el.option === latest_option;
         });
     };
 
-    // function to add all comments added along with the /poll command
+    // function to add all options added along with the /poll command
     _.each(options, function (option, i) {
-        self.handle.new_comment.inbound('canned', {
+        self.handle.new_option.inbound('canned', {
             idx: i,
-            comment: option,
+            option: option,
         });
     });
 
@@ -212,7 +212,7 @@ exports.activate = function (opts) {
         update_edit_controls();
 
         elem.find('.poll-question-bar').toggle(input_mode);
-        elem.find('.poll-comment-bar').toggle(can_vote);
+        elem.find('.poll-option-bar').toggle(can_vote);
 
         elem.find('.poll-please-wait').toggle(waiting);
 
@@ -259,21 +259,21 @@ exports.activate = function (opts) {
     }
 
     function submit_option() {
-        var poll_comment_input = elem.find("input.poll-comment");
-        var comment = poll_comment_input.val().trim();
-        var comments = poll_data.get_widget_data().comments;
+        var poll_option_input = elem.find("input.poll-option");
+        var option = poll_option_input.val().trim();
+        var options = poll_data.get_widget_data().options;
 
-        if (poll_data.is_comment_present(comments, comment)) {
+        if (poll_data.is_option_present(options, option)) {
             return;
         }
 
-        if (comment === '') {
+        if (option === '') {
             return;
         }
 
-        poll_comment_input.val('').focus();
+        poll_option_input.val('').focus();
 
-        var data = poll_data.handle.new_comment.outbound(comment);
+        var data = poll_data.handle.new_option.outbound(option);
         callback(data);
     }
 
@@ -320,12 +320,12 @@ exports.activate = function (opts) {
             abort_edit();
         });
 
-        elem.find("button.poll-comment").on('click', function (e) {
+        elem.find("button.poll-option").on('click', function (e) {
             e.stopPropagation();
             submit_option();
         });
 
-        elem.find('input.poll-comment').on('keydown', function (e) {
+        elem.find('input.poll-option').on('keydown', function (e) {
             e.stopPropagation();
 
             if (e.keyCode === 13) {
@@ -334,7 +334,7 @@ exports.activate = function (opts) {
             }
 
             if (e.keyCode === 27) {
-                $('input.poll-comment').val('');
+                $('input.poll-option').val('');
                 return;
             }
         });
