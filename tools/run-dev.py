@@ -417,7 +417,12 @@ print("".join((WARNING,
 
 try:
     app = Application(enable_logging=options.enable_tornado_logging)
-    app.listen(proxy_port, address=options.interface)
+    try:
+        app.listen(proxy_port, address=options.interface)
+    except OSError as e:
+        if e.errno == 98:
+            print('\n\nERROR: You probably have another server running!!!\n\n')
+        raise
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
