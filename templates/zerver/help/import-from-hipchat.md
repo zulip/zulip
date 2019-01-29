@@ -1,6 +1,6 @@
-# Import from HipChat (beta)
+# Import from HipChat/Stride
 
-Starting with Zulip 1.9, Zulip supports importing data from HipChat,
+Starting with Zulip 1.9, Zulip supports importing data from HipChat and Stride,
 including users, rooms, messages, avatars, and custom emoji.
 
 This tool has been used to import HipChat teams with thousands of
@@ -9,13 +9,13 @@ planning on doing an import much larger than that, or run into
 performance issues when importing, email us at support@zulipchat.com
 for help.
 
-**Note:** You can only import a HipChat group as a new Zulip
+**Note:** You can only import a HipChat or Stride group as a new Zulip
 organization. In particular, you cannot use this tool to import data
-from HipChat into an existing Zulip organization.
+into an existing Zulip organization.
 
-## Import from HipChat
+## Import from HipChat or Stride
 
-First, export your data from HipChat.
+First, export your data.
 
 {start_tabs}
 {tab|cloud}
@@ -56,6 +56,20 @@ download the file.
     you can do a command line export with `hipchat export --export`.  See
     HipChat's [command line export docs][cli-export] for more information.
 
+{tab|stride}
+
+1. Log in at `yourdomain.atlassian.net/admin/`.
+
+1. Click on **Stride** in the bottom left in Application Settings.
+
+1. Click **Create export**.
+
+1. Select the data to export.
+
+1. Set a **Password** to encrypt your export.
+
+1. Click **Export**.
+
 {end_tabs}
 
 !!! warn ""
@@ -65,7 +79,7 @@ download the file.
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with exported HipChat archive and your desired
+Email support@zulipchat.com with your exported archive and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
 
