@@ -289,9 +289,11 @@ class ZulipTestCase(TestCase):
                           **kwargs: Any) -> HttpResponse:
         if password is None:
             password = initial_password(email)
-        return self.client_post('/accounts/login/',
-                                {'username': email, 'password': password},
-                                **kwargs)
+        result = self.client_post('/accounts/login/',
+                                  {'username': email, 'password': password},
+                                  **kwargs)
+        self.assertNotEqual(result.status_code, 500)
+        return result
 
     def login(self, email: str, password: Optional[str]=None, fails: bool=False,
               realm: Optional[Realm]=None) -> HttpResponse:
