@@ -42,7 +42,7 @@ def check_upgrade_parameters(
         raise BillingError('unknown billing_modality')
     if schedule not in ['annual', 'monthly']:
         raise BillingError('unknown schedule')
-    if license_management not in ['automatic', 'manual', 'mix']:
+    if license_management not in ['automatic', 'manual']:
         raise BillingError('unknown license_management')
 
     if billing_modality == 'charge_automatically':
@@ -91,7 +91,7 @@ def upgrade(request: HttpRequest, user: UserProfile,
         check_upgrade_parameters(
             billing_modality, schedule, license_management, licenses,
             stripe_token is not None, seat_count)
-        automanage_licenses = license_management in ['automatic', 'mix']
+        automanage_licenses = license_management == 'automatic'
 
         billing_schedule = {'annual': CustomerPlan.ANNUAL,
                             'monthly': CustomerPlan.MONTHLY}[schedule]
