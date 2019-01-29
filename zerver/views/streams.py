@@ -29,7 +29,7 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.topic import get_topic_history_for_stream
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color
+    check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
     get_system_bot, get_active_user
@@ -279,8 +279,12 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
         streams_raw: Iterable[Mapping[str, str]]=REQ(
-            "subscriptions", validator=check_list(check_dict(
-                [('name', check_string)], optional_keys=[('color', check_color)]))),
+            "subscriptions", validator=check_list(check_dict_only(
+                [('name', check_string)], optional_keys=[
+                    ('color', check_color),
+                    ('description', check_capped_string(Stream.MAX_DESCRIPTION_LENGTH)),
+                ])
+            )),
         invite_only: bool=REQ(validator=check_bool, default=False),
         is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
