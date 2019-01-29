@@ -27,9 +27,9 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
-    get_realm, get_user, get_stream_recipient, get_realm_stream,
-    PreregistrationUser, Realm, Recipient, Message,
-    ScheduledEmail, UserProfile, UserMessage,
+    get_realm, get_user, get_realm_stream, get_stream_recipient,
+    CustomProfileField, CustomProfileFieldValue, PreregistrationUser,
+    Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
 )
 from zerver.lib.actions import (
@@ -2606,13 +2606,20 @@ class UserSignUpTest(InviteUserBase):
         email = "newuser@zulip.com"
         subdomain = "zulip"
 
-        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+        ldap_user_attr_map = {
+            'full_name': 'fn',
+            'short_name': 'sn',
+            'custom_profile_field__phone_number': 'phoneNumber',
+            'custom_profile_field__birthday': 'birthDate',
+        }
         full_name = 'New LDAP fullname'
         mock_directory = {
             'uid=newuser,ou=users,dc=zulip,dc=com': {
                 'userPassword': ['testing', ],
                 'fn': [full_name],
                 'sn': ['shortname'],
+                'phoneNumber': ['a-new-number', ],
+                'birthDate': ['1990-12-19', ],
             }
         }
         init_fakeldap(mock_directory)
@@ -2630,6 +2637,17 @@ class UserSignUpTest(InviteUserBase):
             user_profile = UserProfile.objects.get(email=email)
             # Name comes from form which was set by LDAP.
             self.assertEqual(user_profile.full_name, full_name)
+            self.assertEqual(user_profile.short_name, 'shortname')
+
+            # Test custom profile fields are properly synced.
+            birthday_field = CustomProfileField.objects.get(realm=user_profile.realm, name='Birthday')
+            phone_number_field = CustomProfileField.objects.get(realm=user_profile.realm, name='Phone number')
+            birthday_field_value = CustomProfileFieldValue.objects.get(user_profile=user_profile,
+                                                                       field=birthday_field)
+            phone_number_field_value = CustomProfileFieldValue.objects.get(user_profile=user_profile,
+                                                                           field=phone_number_field)
+            self.assertEqual(birthday_field_value.value, '1990-12-19')
+            self.assertEqual(phone_number_field_value.value, 'a-new-number')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))
