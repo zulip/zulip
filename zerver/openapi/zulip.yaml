@@ -1131,13 +1131,14 @@ paths:
         in: query
         description: "A list of dictionaries, where each dictionary contains
           key/value pairs specifying a particular stream to subscribe to.
+          You can specify an initial description here when creating a new stream.
           **Note**: This argument is called `streams` and not `subscriptions`
           in our Python API."
         schema:
           type: array
           items:
             type: object
-        example: [{"name": "Verona"}]
+        example: [{"name": "Verona", "description": "Italian City"}]
         required: true
       - name: invite_only
         in: query
