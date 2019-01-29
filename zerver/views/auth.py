@@ -397,7 +397,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
     access_token = resp.json()['access_token']
 
     resp = requests.get(
-        'https://www.googleapis.com/plus/v1/people/me',
+        'https://www.googleapis.com/oauth2/v3/userinfo',
         params={'access_token': access_token}
     )
     if resp.status_code == 400:
@@ -408,21 +408,13 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=400)
     body = resp.json()
 
-    try:
-        full_name = body['name']['formatted']
-    except KeyError:
-        # Only google+ users have a formatted name. I am ignoring i18n here.
-        full_name = '{} {}'.format(
-            body['name']['givenName'], body['name']['familyName']
-        )
-    for email in body['emails']:
-        if email['type'] == 'account':
-            break
-    else:
-        logging.error('Google oauth2 account email not found: %s' % (body,))
+    if not body['email_verified']:
+        logging.error('Google oauth2 account email not verified.')
         return HttpResponse(status=400)
 
-    email_address = email['value']
+    # Extract the user info from the Google response
+    full_name = body['name']
+    email_address = body['email']
 
     try:
         realm = Realm.objects.get(string_id=subdomain)
