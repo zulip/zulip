@@ -1807,6 +1807,12 @@ nav ul li.active::after {
     background-color: transparent;
 }
 
+.portico-landing.hello .testimonials .company-box .company.infinispan {
+    background-image: url(/static/images/landing-page/logos/infinispan.png);
+    background-color: transparent;
+    height: 50px;
+}
+
 .portico-landing.hello .testimonials .company-box .company.hail {
     background-image: url(/static/images/landing-page/logos/hail.png);
     background-color: transparent;
