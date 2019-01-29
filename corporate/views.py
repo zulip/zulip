@@ -170,8 +170,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         }[plan.tier]
         now = timezone_now()
         last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, now)
-        # TODO: this is not really correct; need to give the situation as of the "fillstate"
         licenses = last_ledger_entry.licenses
+        licenses_used = get_seat_count(user.realm)
         # Should do this in javascript, using the user's timezone
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan, now))
         renewal_cents = renewal_amount(plan, now)
@@ -196,6 +196,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context.update({
         'plan_name': plan_name,
         'licenses': licenses,
+        'licenses_used': licenses_used,
         'renewal_date': renewal_date,
         'renewal_amount': '{:,.2f}'.format(renewal_cents / 100.),
         'payment_method': payment_method,
