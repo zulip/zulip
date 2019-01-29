@@ -123,11 +123,12 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     } else {
         zoom_class = "zoomed-out";
     }
-
-    var recipients_dom = templates.render('sidebar_private_message_list',
-                                          {messages: display_messages,
-                                           zoom_class: zoom_class,
-                                           want_show_more_messages_links: hiding_messages});
+    var recipients_dom = '<div id="private-container" class="scrolling_list">';
+    recipients_dom += templates.render('sidebar_private_message_list',
+                                       {messages: display_messages,
+                                        zoom_class: zoom_class,
+                                        want_show_more_messages_links: hiding_messages});
+    recipients_dom += '</div>';
     return recipients_dom;
 };
 
@@ -169,6 +170,15 @@ exports.update_private_messages = function () {
         exports.rebuild_recent("");
         $("#global_filters li[data-name='private']").addClass('active-filter');
     }
+    var number_of_containers = $('#private_li')[0].children.length - 1;
+    var container = $($('#private_li')[0].children[number_of_containers]);
+    var key = 1;
+    while (key < number_of_containers - 1) {
+        $($('#private_li')[0].children[key]).remove();
+        key += 1;
+    }
+    $($('#private_li')[0].children[1]).remove();
+    ui.set_up_scrollbar(container);
 };
 
 exports.set_click_handlers = function () {
