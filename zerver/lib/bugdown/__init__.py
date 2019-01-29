@@ -2139,6 +2139,11 @@ def do_convert(content: str,
     else:
         realm_filters_key = message_realm.id
 
+    if message and hasattr(message, 'id') and message.id:
+        logging_message_id = 'id# ' + str(message.id)
+    else:
+        logging_message_id = 'unknown'
+
     if message is not None and message_realm is not None:
         if message_realm.is_zephyr_mirror_realm:
             if message.sending_client.name == "zephyr_mirror":
@@ -2213,16 +2218,16 @@ def do_convert(content: str,
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
-            raise BugdownRenderingException('Rendered content exceeds %s characters' %
-                                            (MAX_MESSAGE_LENGTH * 10,))
+            raise BugdownRenderingException('Rendered content exceeds %s characters (message %s)' %
+                                            (MAX_MESSAGE_LENGTH * 10, logging_message_id))
         return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
         # NOTE: Don't change this message without also changing the
         # logic in logging_handlers.py or we can create recursive
         # exceptions.
-        exception_message = ('Exception in Markdown parser: %sInput (sanitized) was: %s'
-                             % (traceback.format_exc(), cleaned))
+        exception_message = ('Exception in Markdown parser: %sInput (sanitized) was: %s\n (message %s)'
+                             % (traceback.format_exc(), cleaned, logging_message_id))
         bugdown_logger.exception(exception_message)
 
         raise BugdownRenderingException()
