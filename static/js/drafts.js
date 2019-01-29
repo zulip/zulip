@@ -265,6 +265,19 @@ exports.format_draft = function (draft) {
     return formatted;
 };
 
+function remove_draft(draft_row) {
+    // Deletes the draft and removes it from the list
+    var draft_id = draft_row.data("draft-id");
+
+    drafts.draft_model.deleteDraft(draft_id);
+
+    draft_row.remove();
+
+    if ($("#drafts_table .draft-row").length === 0) {
+        $('#drafts_table .no-drafts').show();
+    }
+}
+
 // Exporting for testing purpose
 exports.remove_old_drafts = remove_old_drafts;
 
@@ -308,14 +321,8 @@ exports.launch = function () {
 
         $(".draft_controls .delete-draft").on("click", function () {
             var draft_row = $(this).closest(".draft-row");
-            var draft_id = draft_row.data("draft-id");
 
-            exports.draft_model.deleteDraft(draft_id);
-            draft_row.remove();
-
-            if ($("#drafts_table .draft-row").length === 0) {
-                $('#drafts_table .no-drafts').show();
-            }
+            remove_draft(draft_row);
         });
     }
 
@@ -419,23 +426,25 @@ exports.drafts_handle_events = function (e, event_key) {
     if (event_key === "backspace" || event_key === "delete") {
         if (elt.parentElement.hasAttribute("data-draft-id")) {
             var focus_draft_back_row = $(elt)[0].parentElement;
-            var backnext_focus_draft_row = $(focus_draft_back_row).next();
-            var backprev_focus_draft_row = $(focus_draft_back_row).prev();
+            var draft_row = $(focus_draft_back_row);
+            var backnext_focus_draft_row = draft_row.next();
+            var backprev_focus_draft_row = draft_row.prev();
             var delete_id;
+
+            // Try to get the next draft in the list and 'focus' it
+            // Use previous draft as a fallback
             if (backnext_focus_draft_row[0] !== undefined) {
                 delete_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
             } else if (backprev_focus_draft_row[0] !== undefined) {
                 delete_id = backprev_focus_draft_row[0].getAttribute("data-draft-id");
             }
-            drafts.draft_model.deleteDraft(focused_draft);
-            document.activeElement.parentElement.remove();
+
             var new_focus_element = document.querySelectorAll('[data-draft-id="' + delete_id + '"]');
             if (new_focus_element[0] !== undefined) {
                 activate_element(new_focus_element[0].children[0]);
             }
-            if ($("#drafts_table .draft-row").length === 0) {
-                $('#drafts_table .no-drafts').show();
-            }
+
+            remove_draft(draft_row);
         }
     }
 
