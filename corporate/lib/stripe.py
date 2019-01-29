@@ -106,10 +106,10 @@ def next_invoice_date(plan: CustomerPlan) -> datetime:
         periods += 1
     return dt
 
-def renewal_amount(plan: CustomerPlan) -> Optional[int]:  # nocoverage: TODO
+def renewal_amount(plan: CustomerPlan, event_time: datetime) -> Optional[int]:  # nocoverage: TODO
     if plan.fixed_price is not None:
         return plan.fixed_price
-    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, timezone_now())
+    last_ledger_entry = add_plan_renewal_to_license_ledger_if_needed(plan, event_time)
     if last_ledger_entry.licenses_at_next_renewal is None:
         return None
     assert(plan.price_per_license is not None)  # for mypy
@@ -454,7 +454,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
             status=CustomerPlan.ACTIVE).select_related('customer__realm'):
         # TODO: figure out what to do for plans that don't automatically
         # renew, but which probably will renew
-        renewal_cents = renewal_amount(plan) or 0
+        renewal_cents = renewal_amount(plan, timezone_now()) or 0
         if plan.billing_schedule == CustomerPlan.MONTHLY:
             renewal_cents *= 12
         # TODO: Decimal stuff

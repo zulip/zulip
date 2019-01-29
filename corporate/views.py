@@ -174,7 +174,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         licenses = last_ledger_entry.licenses
         # Should do this in javascript, using the user's timezone
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(dt=next_renewal_date(plan, now))
-        renewal_cents = renewal_amount(plan)
+        renewal_cents = renewal_amount(plan, now)
         # TODO: this is the case where the plan doesn't automatically renew
         if renewal_cents is None:  # nocoverage
             renewal_cents = 0
