@@ -685,7 +685,6 @@ class StripeTest(StripeTestCase):
         check_success(False, self.seat_count)
         # Autopay
         check_success(False, self.seat_count, {'license_management': 'manual'})
-        check_success(False, self.seat_count + 10, {'license_management': 'mix'})
         # Invoice
         check_success(True, self.seat_count + MIN_INVOICED_LICENSES)
 
