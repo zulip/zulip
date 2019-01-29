@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
@@ -16,13 +16,14 @@ from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
-from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
+from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
+    do_update_user_custom_profile_data
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
-from zerver.lib.users import check_full_name
-from zerver.models import PreregistrationUser, UserProfile, Realm, get_default_stream_groups, \
-    get_user_profile_by_id, remote_user_to_email, email_to_username, get_realm, \
-    get_user_by_delivery_email
+from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.models import CustomProfileField, PreregistrationUser, UserProfile, Realm, \
+    custom_profile_fields_for_realm, get_default_stream_groups, get_user_profile_by_id, \
+    remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
 
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
@@ -339,11 +340,50 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 raise ZulipLDAPException(e.msg)
             do_change_full_name(user_profile, full_name, None)
 
+    def sync_custom_profile_fields_from_ldap(self, user_profile: UserProfile,
+                                             ldap_user: _LDAPUser) -> None:
+        values_by_var_name = {}   # type: Dict[str, Union[int, str, List[int]]]
+        for attr, ldap_attr in settings.AUTH_LDAP_USER_ATTR_MAP.items():
+            if not attr.startswith('custom_profile_field__'):
+                continue
+            var_name = attr.split('custom_profile_field__')[1]
+            value = ldap_user.attrs[ldap_attr][0]
+            values_by_var_name[var_name] = value
+
+        fields_by_var_name = {}   # type: Dict[str, CustomProfileField]
+        custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+        for field in custom_profile_fields:
+            var_name = '_'.join(field.name.lower().split(' '))
+            fields_by_var_name[var_name] = field
+
+        existing_values = {}
+        for data in user_profile.profile_data:
+            var_name = '_'.join(data['name'].lower().split(' '))    # type: ignore # data field values can also be int
+            existing_values[var_name] = data['value']
+
+        profile_data = []   # type: List[Dict[str, Union[int, str, List[int]]]]
+        for var_name, value in values_by_var_name.items():
+            try:
+                field = fields_by_var_name[var_name]
+            except KeyError:
+                raise ZulipLDAPException('Custom profile field with name %s not found.' % (var_name,))
+            if existing_values.get(var_name) == value:
+                continue
+            result = validate_user_custom_profile_field(user_profile.realm.id, field, value)
+            if result is not None:
+                raise ZulipLDAPException('Invalid data for %s field: %s' % (var_name, result))
+            profile_data.append({
+                'id': field.id,
+                'value': value,
+            })
+        do_update_user_custom_profile_data(user_profile, profile_data)
+
     def get_or_build_user(self, username: str,
                           ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
         (user, built) = super().get_or_build_user(username, ldap_user)
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
+        self.sync_custom_profile_fields_from_ldap(user, ldap_user)
         if 'userAccountControl' in settings.AUTH_LDAP_USER_ATTR_MAP:
             user_disabled_in_ldap = self.is_account_control_disabled_user(ldap_user)
             if user_disabled_in_ldap and user.is_active:
@@ -439,6 +479,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         user_profile = do_create_user(username, None, self._realm, full_name, short_name, **opts)
         self.sync_avatar_from_ldap(user_profile, ldap_user)
+        self.sync_custom_profile_fields_from_ldap(user_profile, ldap_user)
 
         return user_profile, True
 
