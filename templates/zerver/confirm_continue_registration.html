@@ -32,6 +32,9 @@
                                 <button class="outline">
                                     {{ _("Continue to registration") }}
                                 </button>
+                                {% if full_name %}
+                                <input type="hidden" name="full_name" value="{{ full_name }}">
+                                {% endif %}
                             </form>
                         </div>
                     </div>
