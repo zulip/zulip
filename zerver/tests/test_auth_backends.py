@@ -2125,23 +2125,24 @@ class TestLDAP(ZulipLDAPTestCase):
         ldap_dir = generate_dev_ldap_dir('A', 10)
         self.assertEqual(len(ldap_dir), 10)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)')
+        common_attrs = ['cn', 'userPassword', 'phoneNumber', 'birthDate']
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'thumbnailPhoto', 'userAccountControl'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['thumbnailPhoto', 'userAccountControl'])
 
         ldap_dir = generate_dev_ldap_dir('b', 9)
         self.assertEqual(len(ldap_dir), 9)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'jpegPhoto'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['jpegPhoto'])
 
         ldap_dir = generate_dev_ldap_dir('c', 8)
         self.assertEqual(len(ldap_dir), 8)
         regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
-            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'email'])
+            self.assertCountEqual(list(value.keys()), common_attrs + ['email'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_dev_ldap_fail_login(self) -> None:
