@@ -51,7 +51,10 @@ import os
 import ujson
 
 import urllib
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
+from typing import cast, Any, AnyStr, Dict, List, Optional, Set, Tuple
+
+class FakeMessage:
+    pass
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
@@ -166,8 +169,15 @@ class FencedBlockPreprocessorTest(TestCase):
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
 
-def bugdown_convert(text: str) -> str:
-    return bugdown.convert(text, message_realm=get_realm('zulip'))
+def bugdown_convert(content: str) -> str:
+    message = cast(Message, FakeMessage())
+    message.content = content
+    message.id = 999
+    return bugdown.convert(
+        content=content,
+        message_realm=get_realm('zulip'),
+        message=message,
+    )
 
 class BugdownMiscTest(ZulipTestCase):
     def test_diffs_work_as_expected(self) -> None:
