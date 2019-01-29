@@ -27,10 +27,6 @@ def process_submessage(request: HttpRequest,
                        ) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
-    if not settings.ALLOW_SUB_MESSAGES:  # nocoverage
-        msg = 'Feature not enabled'
-        return json_error(msg)
-
     try:
         ujson.loads(content)
     except Exception:

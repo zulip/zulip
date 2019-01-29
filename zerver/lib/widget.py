@@ -46,11 +46,9 @@ def get_extra_data_from_widget_type(content: str,
 
 def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
     '''
-    This is experimental code that only works with the
-    webapp for now.
+    This code works with the webapp; mobile and other
+    clients should also start supporting this soon.
     '''
-    if not settings.ALLOW_SUB_MESSAGES:
-        return
     content = message['message'].content
     sender_id = message['message'].sender_id
     message_id = message['message'].id
