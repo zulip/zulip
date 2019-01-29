@@ -34,7 +34,6 @@ messages).
 Here are some code entities used in the above
 features:
 
-- `ALLOW_SUB_MESSAGES` setting
 - `SubMessage` database table
 - `/json/zcommand` API endpoint
 - `/json/submessage` API endpoint
@@ -109,13 +108,10 @@ launch widgets by sending one of the following messages:
 - /todo
 - /tictactoe
 
-These widgets are only turned on if you set the `ALLOW_SUB_MESSAGES`
-boolean to `True` in the appropriate `settings.py`.
-Currently the setting is only enabled for dev and
-our main community realm (chat.zulip.org).  Also,
-only the webapp client provides the "widget experience".
-Other clients just show raw messages like "/poll"
-or "/ticactoe".
+The webapp client provides the "widget experience" by
+default. Other clients just show raw messages like
+"/poll" or "/ticactoe", and should be adding support
+for widgets soon.
 
 Our customers have long requested a poll/survey widget.
 See [this issue](https://github.com/zulip/zulip/issues/9736).
@@ -301,8 +297,7 @@ and grades the answer using ordinary chat-bot coding.
 The beautiful thing is that any thrid party developer
 can enhance bots that are similar to the **trivia_quiz**
 bot without touching any Zulip code, because **zforms**
-are completely generic.  (The only caveat is that
-the server must turn on `ALLOW_SUB_MESSAGES`.)
+are completely generic.
 
 ## Data flow
 

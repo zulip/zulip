@@ -232,12 +232,3 @@ class WidgetContentTestCase(ZulipTestCase):
         submessage = SubMessage.objects.get(message_id=message.id)
         self.assertEqual(submessage.msg_type, 'widget')
         self.assertEqual(ujson.loads(submessage.content), expected_submessage_content)
-
-        # Now test the feature flag.
-        with self.settings(ALLOW_SUB_MESSAGES=False):
-            result = self.api_post(sender_email, "/api/v1/messages", payload)
-        self.assert_json_success(result)
-
-        message = self.get_last_message()
-        self.assertEqual(message.content, content)
-        self.assertFalse(SubMessage.objects.filter(message_id=message.id).exists())
