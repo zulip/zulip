@@ -26,7 +26,7 @@ from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
     get_seat_count, sign_string, unsign_string, \
     BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_customer, \
+    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_stripe_customer, \
     add_months, next_month, next_renewal_date, renewal_amount, \
     compute_plan_parameters, update_or_create_stripe_customer, \
     process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
@@ -747,7 +747,7 @@ class StripeTest(StripeTestCase):
         # If you pay by invoice, your payment method should be
         # "Billed by invoice", even if you have a card on file
         # user = self.example_user("hamlet")
-        # do_create_customer(user, stripe_create_token().id)
+        # do_create_stripe_customer(user, stripe_create_token().id)
         # self.login(user.email)
         # self.upgrade(invoice=True)
         # stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
@@ -761,18 +761,32 @@ class StripeTest(StripeTestCase):
     def test_attach_discount_to_realm(self, *mocks: Mock) -> None:
         # Attach discount before Stripe customer exists
         user = self.example_user('hamlet')
-        attach_discount_to_realm(user, Decimal(85))
+        attach_discount_to_realm(user.realm, Decimal(85))
         self.login(user.email)
         # Check that the discount appears in page_params
         self.assert_in_success_response(['85'], self.client_get("/upgrade/"))
         # Check that the customer was charged the discounted amount
-        # TODO
-        # Check upcoming invoice reflects the discount
-        # TODO
+        self.upgrade()
+        stripe_customer_id = Customer.objects.values_list('stripe_customer_id', flat=True).first()
+        self.assertEqual(1200 * self.seat_count,
+                         [charge for charge in stripe.Charge.list(customer=stripe_customer_id)][0].amount)
+        stripe_invoice = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer_id)][0]
+        self.assertEqual([1200 * self.seat_count, -1200 * self.seat_count],
+                         [item.amount for item in stripe_invoice.lines])
+        # Check CustomerPlan reflects the discount
+        plan = CustomerPlan.objects.get(price_per_license=1200, discount=Decimal(85))
+
         # Attach discount to existing Stripe customer
-        attach_discount_to_realm(user, Decimal(25))
-        # Check upcoming invoice reflects the new discount
-        # TODO
+        plan.status = CustomerPlan.ENDED
+        plan.save(update_fields=['status'])
+        attach_discount_to_realm(user.realm, Decimal(25))
+        process_initial_upgrade(user, self.seat_count, True, CustomerPlan.ANNUAL, stripe_create_token().id)
+        self.assertEqual(6000 * self.seat_count,
+                         [charge for charge in stripe.Charge.list(customer=stripe_customer_id)][0].amount)
+        stripe_invoice = [invoice for invoice in stripe.Invoice.list(customer=stripe_customer_id)][0]
+        self.assertEqual([6000 * self.seat_count, -6000 * self.seat_count],
+                         [item.amount for item in stripe_invoice.lines])
+        plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
 
     @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
@@ -923,7 +937,7 @@ class BillingHelpersTest(ZulipTestCase):
     def test_update_or_create_stripe_customer_logic(self) -> None:
         user = self.example_user('hamlet')
         # No existing Customer object
-        with patch('corporate.lib.stripe.do_create_customer', return_value='returned') as mocked1:
+        with patch('corporate.lib.stripe.do_create_stripe_customer', return_value='returned') as mocked1:
             returned = update_or_create_stripe_customer(user, stripe_token='token')
         mocked1.assert_called()
         self.assertEqual(returned, 'returned')
