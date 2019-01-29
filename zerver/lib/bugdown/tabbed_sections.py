@@ -50,6 +50,7 @@ TAB_DISPLAY_NAMES = {
 
     'cloud': 'HipChat Cloud',
     'server': 'HipChat Server or Data Center',
+    'stride': 'Stride',
 }
 
 class TabbedSectionsGenerator(Extension):
