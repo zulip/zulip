@@ -246,10 +246,6 @@ DEFAULT_SETTINGS = {
     # In-development search pills feature.
     'SEARCH_PILLS_ENABLED': False,
 
-    # We use SubMessage for now-experimental features like
-    # slash commands.
-    'ALLOW_SUB_MESSAGES': DEVELOPMENT,
-
     # We log emails in development environment for accessing
     # them easily through /emails page
     'DEVELOPMENT_LOG_EMAILS': DEVELOPMENT,
