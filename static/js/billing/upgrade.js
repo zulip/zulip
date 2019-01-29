@@ -15,7 +15,7 @@ exports.initialize = () => {
 
     $('#add-card-button').on('click', function (e) {
         var license_management = $('input[type=radio][name=license_management]:checked').val();
-        if ($("#" + license_management + "_license_count")[0].checkValidity() === false) {
+        if (helpers.is_valid_input($("#" + license_management + "_license_count")) === false) {
             return;
         }
         add_card_handler.open({
@@ -32,7 +32,7 @@ exports.initialize = () => {
     });
 
     $("#invoice-button").on("click", function (e) {
-        if ($("#invoiced_licenses")[0].checkValidity() === false) {
+        if (helpers.is_valid_input($("#invoiced_licenses")) === false) {
             return;
         }
         e.preventDefault();

@@ -103,6 +103,10 @@ exports.set_tab = function (page) {
     });
 };
 
+exports.is_valid_input = function (elem) {
+    return elem[0].checkValidity();
+};
+
 return exports;
 }());
 
