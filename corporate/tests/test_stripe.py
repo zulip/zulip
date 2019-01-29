@@ -427,6 +427,7 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually'], response)
         for substring in [
                 'Zulip Standard', str(self.seat_count),
+                'You are using', '%s of %s licenses' % (self.seat_count, self.seat_count),
                 'Your plan will renew on', 'January 2, 2013', '$%s.00' % (80 * self.seat_count,),
                 'Visa ending in 4242',
                 'Update card']:
@@ -510,6 +511,7 @@ class StripeTest(StripeTestCase):
         self.assert_not_in_success_response(['Pay annually', 'Update card'], response)
         for substring in [
                 'Zulip Standard', str(123),
+                'You are using', '%s of %s licenses' % (self.seat_count, 123),
                 'Your plan will renew on', 'January 2, 2013', '$9,840.00',  # 9840 = 80 * 123
                 'Billed by invoice']:
             self.assert_in_response(substring, response)
