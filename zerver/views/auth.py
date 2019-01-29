@@ -107,17 +107,14 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             if streams_to_subscribe is not None:
                 prereg_user.streams.set(streams_to_subscribe)
 
-        confirmation_link = "".join((
-            create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
-            '?full_name=',
-            # urllib does not handle Unicode, so coerece to encoded byte string
-            # Explanation: http://stackoverflow.com/a/5605354/90777
-            urllib.parse.quote_plus(full_name.encode('utf8'))))
+        confirmation_link = create_confirmation_link(prereg_user, request.get_host(),
+                                                     Confirmation.USER_REGISTRATION)
         if is_signup:
             return redirect(confirmation_link)
 
         context = {'email': email,
-                   'continue_link': confirmation_link}
+                   'continue_link': confirmation_link,
+                   'full_name': full_name}
         return render(request,
                       'zerver/confirm_continue_registration.html',
                       context=context)
