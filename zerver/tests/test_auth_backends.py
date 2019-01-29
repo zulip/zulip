@@ -41,8 +41,8 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import \
-    get_realm, email_to_username, UserProfile, \
-    PreregistrationUser, Realm, get_user, MultiuseInvite
+    get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
+    UserProfile, PreregistrationUser, Realm, get_user, MultiuseInvite
 from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -2586,6 +2586,105 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.assertFalse(result)
             hamlet = self.example_user('hamlet')
             self.assertFalse(hamlet.is_active)
+
+    def test_update_custom_profile_field(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'phoneNumber': ['123456789', ],
+                'birthDate': ['1900-09-08', ],
+            }
+        }
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__phone_number': 'phoneNumber',
+                                                    'custom_profile_field__birthday': 'birthDate'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+        hamlet = self.example_user('hamlet')
+        test_data = [
+            {
+                'field_name': 'Phone number',
+                'expected_value': '123456789',
+            },
+            {
+                'field_name': 'Birthday',
+                'expected_value': '1900-09-08',
+            },
+        ]
+        for test_case in test_data:
+            field = CustomProfileField.objects.get(realm=hamlet.realm, name=test_case['field_name'])
+            field_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=field).value
+            self.assertEqual(field_value, test_case['expected_value'])
+
+    def test_update_non_existent_profile_field(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'phoneNumber': ['123456789', ],
+            }
+        }
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__non_existent': 'phoneNumber'}):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Custom profile field with name non_existent not found'):
+                self.perform_ldap_sync(self.example_user('hamlet'))
+
+    def test_update_custom_profile_field_invalid_data(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'birthDate': ['123456789', ],
+            }
+        }
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__birthday': 'birthDate'}):
+            with self.assertRaisesRegex(ZulipLDAPException, 'Invalid data for birthday field'):
+                self.perform_ldap_sync(self.example_user('hamlet'))
+
+    def test_update_custom_profile_field_no_mapping(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'birthDate': ['1990-01-01', ],
+            }
+        }
+        hamlet = self.example_user('hamlet')
+        no_op_field = CustomProfileField.objects.get(realm=hamlet.realm, name='Phone number')
+        expected_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__birthday': 'birthDate'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+
+        actual_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
+        self.assertEqual(actual_value, expected_value)
+
+    def test_update_custom_profile_field_no_update(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+                'phoneNumber': ['new-number', ],
+                'birthDate': ['1990-01-01', ],
+            }
+        }
+        hamlet = self.example_user('hamlet')
+        phone_number_field = CustomProfileField.objects.get(realm=hamlet.realm, name='Phone number')
+        birthday_field = CustomProfileField.objects.get(realm=hamlet.realm, name='Birthday')
+        phone_number_field_value = CustomProfileFieldValue.objects.get(user_profile=hamlet,
+                                                                       field=phone_number_field)
+        phone_number_field_value.value = 'new-number'
+        phone_number_field_value.save(update_fields=['value'])
+        expected_call_args = [hamlet, [
+            {
+                'id': birthday_field.id,
+                'value': '1990-01-01',
+            },
+        ]]
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__birthday': 'birthDate',
+                                                    'custom_profile_field__phone_number': 'phoneNumber'}):
+            with mock.patch('zproject.backends.do_update_user_custom_profile_data') as f:
+                self.perform_ldap_sync(self.example_user('hamlet'))
+                f.assert_called_once_with(*expected_call_args)
 
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:
