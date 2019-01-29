@@ -874,9 +874,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
     def test_google_oauth2_success(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=self.example_email("hamlet"))
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response,
                                          subdomain='zulip', next='/user_uploads/image')
@@ -892,24 +892,15 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
-    def test_google_oauth2_no_fullname(self) -> None:
+    def test_user_cannot_log_without_verified_email(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(givenName="Test", familyName="User"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
+        account_data = dict(name="Full Name",
+                            email_verified=False,
+                            email=self.example_email("hamlet"))
         account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
-
-        data = load_subdomain_token(result)
-        self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Test User')
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '')
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+        result = self.google_oauth2_test(token_response, account_response,
+                                         subdomain='zulip')
+        self.assertEqual(result.status_code, 400)
 
     def test_google_oauth2_mobile_success(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -917,9 +908,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.user_profile.save()
         mobile_flow_otp = '1234abcd' * 8
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.user_profile.email)])
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=self.user_profile.email)
         account_response = ResponseMock(200, account_data)
         self.assertEqual(len(mail.outbox), 0)
 
@@ -1137,9 +1128,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=self.example_email("hamlet"))
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response,
                                          subdomain='nonexistent')
@@ -1148,9 +1139,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=self.example_email("hamlet"))
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response,
                                          subdomain='zephyr')
@@ -1175,9 +1166,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         email = "newuser@zulip.com"
         realm = get_realm("zulip")
         token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=email)])
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=email)
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
                                          is_signup='1')
@@ -1266,17 +1257,6 @@ class GoogleLoginTest(GoogleOAuthTest):
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          "Google login failed making API call: Response text")
-
-    def test_google_oauth2_account_response_no_email(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[])
-        account_response = ResponseMock(200, account_data)
-        with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, account_response,
-                                             subdomain="zulip")
-        self.assertEqual(result.status_code, 400)
-        self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
     def test_google_oauth2_error_access_denied(self) -> None:
         result = self.client_get("/accounts/login/google/done/?error=access_denied")
