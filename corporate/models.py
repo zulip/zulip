@@ -9,7 +9,7 @@ from zerver.models import Realm, RealmAuditLog
 
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
-    stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
+    stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)  # type: str
     # Deprecated .. delete once everyone is migrated to new billing system
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
     # A percentage, like 85.

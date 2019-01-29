@@ -163,7 +163,7 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
 
 @catch_stripe_errors
-def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
+def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
     realm = user.realm
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
@@ -183,7 +183,8 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> C
             RealmAuditLog.objects.create(
                 realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_CHANGED,
                 event_time=event_time)
-        customer = Customer.objects.create(realm=realm, stripe_customer_id=stripe_customer.id)
+        customer, created = Customer.objects.update_or_create(realm=realm, defaults={
+            'stripe_customer_id': stripe_customer.id})
         user.is_billing_admin = True
         user.save(update_fields=["is_billing_admin"])
     return customer
@@ -221,8 +222,8 @@ def add_plan_renewal_to_license_ledger_if_needed(plan: CustomerPlan, event_time:
 def update_or_create_stripe_customer(user: UserProfile, stripe_token: Optional[str]=None) -> Customer:
     realm = user.realm
     customer = Customer.objects.filter(realm=realm).first()
-    if customer is None:
-        return do_create_customer(user, stripe_token=stripe_token)
+    if customer is None or customer.stripe_customer_id is None:
+        return do_create_stripe_customer(user, stripe_token=stripe_token)
     if stripe_token is not None:
         do_replace_payment_source(user, stripe_token)
     return customer
@@ -442,12 +443,8 @@ def invoice_plans_as_needed(event_time: datetime) -> None:
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         invoice_plan(plan, event_time)
 
-def attach_discount_to_realm(user: UserProfile, discount: Decimal) -> None:
-    customer = Customer.objects.filter(realm=user.realm).first()
-    if customer is None:
-        customer = do_create_customer(user)
-    customer.default_discount = discount
-    customer.save()
+def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
+    Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
 
 def process_downgrade(user: UserProfile) -> None:  # nocoverage
     pass
