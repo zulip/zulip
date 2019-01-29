@@ -80,12 +80,14 @@
                                         <input type="radio" name="license_management" value="automatic" checked />
                                         <div class="box">
                                             <div class="management-type">{{ _("Automatic") }}</div>
+                                            <div class="management-type-text">{{ _("Most convenient") }}</div>
                                         </div>
                                     </label>
                                     <label>
                                         <input type="radio" name="license_management" value="manual" />
                                         <div class="box">
                                             <div class="management-type">{{ _("Manual") }}</div>
+                                            <div class="management-type-text">{{ _("Most control") }}</div>
                                         </div>
                                     </label>
                                 </div>
@@ -161,7 +163,7 @@
                                     We'll email you an invoice in 1-2 hours. Invoices can be paid by
                                     ACH transfer or credit card.
                                 </p>
-                                <h4>Number of users (minimum {{ min_invoiced_licenses }})</h4>
+                                <h4>Number of licenses (minimum {{ min_invoiced_licenses }})</h4>
                                 <input type="number" min="{{ min_invoiced_licenses }}" autocomplete="off"
                                 id="invoiced_licenses" name="licenses" required/><br>
                                 <button type="submit" id="invoice-button" class="stripe-button-el invoice-button">Buy Standard</button>
