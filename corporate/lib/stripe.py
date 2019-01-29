@@ -258,8 +258,7 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
                             billing_schedule: int, stripe_token: Optional[str]) -> None:
     realm = user.realm
     customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
-    # TODO write a test for this
-    if CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).exists():  # nocoverage
+    if CustomerPlan.objects.filter(customer=customer, status=CustomerPlan.ACTIVE).exists():
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having
         # a check here reduces the likelihood.

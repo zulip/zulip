@@ -628,6 +628,15 @@ class StripeTest(StripeTestCase):
         self.assert_json_error_contains(response, "Something went wrong. Please contact")
         self.assertEqual(ujson.loads(response.content)['error_description'], 'tampered seat count')
 
+    def test_upgrade_race_condition(self) -> None:
+        self.login(self.example_email("hamlet"))
+        self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        with patch("corporate.lib.stripe.billing_logger.warning") as mock_billing_logger:
+            with self.assertRaises(BillingError) as context:
+                self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, 'token')
+        self.assertEqual('subscribing with existing subscription', context.exception.description)
+        mock_billing_logger.assert_called()
+
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
         def check_error(error_description: str, upgrade_params: Dict[str, Any],
