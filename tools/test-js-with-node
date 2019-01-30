@@ -90,6 +90,7 @@ enforce_fully_covered = {
     'static/js/widgetize.js',
     'static/js/search_pill.js',
     'static/js/billing/billing.js',
+    'static/js/billing/upgrade.js',
 }
 
 parser = argparse.ArgumentParser(USAGE)
