@@ -735,6 +735,21 @@ class StripeTest(StripeTestCase):
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(realm), initial_count)
 
+        # Test guests
+        # Adding a guest to a realm with a lot of members shouldn't change anything
+        UserProfile.objects.create(realm=realm, email='user3@zulip.com', pointer=-1, is_guest=True)
+        self.assertEqual(get_seat_count(realm), initial_count)
+        # Test 1 member and 5 guests
+        realm = Realm.objects.create(string_id='second', name='second')
+        UserProfile.objects.create(realm=realm, email='member@second.com', pointer=-1)
+        for i in range(5):
+            UserProfile.objects.create(realm=realm, email='guest{}@second.com'.format(i),
+                                       pointer=-1, is_guest=True)
+        self.assertEqual(get_seat_count(realm), 1)
+        # Test 1 member and 6 guests
+        UserProfile.objects.create(realm=realm, email='guest5@second.com', pointer=-1, is_guest=True)
+        self.assertEqual(get_seat_count(realm), 2)
+
     def test_sign_string(self) -> None:
         string = "abc"
         signed_string, salt = sign_string(string)
