@@ -101,7 +101,7 @@ mypy-extensions==0.4.1
 mypy==0.650
 ndg-httpsclient==0.5.1
 oauth2client==4.1.3
-oauthlib==2.1.0
+oauthlib==3.0.1
 packaging==19.0           # via sphinx
 parsel==1.5.1             # via scrapy
 parso==0.3.2              # via jedi
