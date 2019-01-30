@@ -1,13 +1,16 @@
 import requests
 import ujson
 import urllib
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from django.conf import settings
+from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
 
+from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.export import floatify_datetime_fields
 
 class PushNotificationBouncerException(Exception):
     pass
@@ -85,3 +88,41 @@ def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, A
         ujson.dumps(post_data),
         extra_headers={"Content-type": "application/json"},
     )
+
+def build_analytics_data(realm_count_query: Any,
+                         installation_count_query: Any) -> Tuple[List[Dict[str, Any]],
+                                                                 List[Dict[str, Any]]]:
+    data = {}
+    data['analytics_realmcount'] = [
+        model_to_dict(realm_count) for realm_count in realm_count_query.order_by("id")
+    ]
+    data['analytics_installationcount'] = [
+        model_to_dict(count) for count in installation_count_query.order_by("id")
+    ]
+
+    floatify_datetime_fields(data, 'analytics_realmcount')
+    floatify_datetime_fields(data, 'analytics_installationcount')
+    return (data['analytics_realmcount'], data['analytics_installationcount'])
+
+def send_analytics_to_remote_server() -> None:
+    # first, check what's latest
+    result = send_to_push_bouncer("GET", "server/analytics/status", {})
+    last_acked_realm_count_id = result['last_realm_count_id']
+    last_acked_installation_count_id = result['last_installation_count_id']
+
+    (realm_count_data, installation_count_data) = build_analytics_data(
+        realm_count_query=RealmCount.objects.filter(
+            id__gt=last_acked_realm_count_id),
+        installation_count_query=InstallationCount.objects.filter(
+            id__gt=last_acked_installation_count_id))
+
+    if len(realm_count_data) == 0 and len(installation_count_data) == 0:
+        return
+
+    request = {
+        'realm_counts': ujson.dumps(realm_count_data),
+        'installation_counts': ujson.dumps(installation_count_data),
+    }
+
+    # Gather only entries with an ID greater than last_realm_count_id
+    send_to_push_bouncer("POST", "server/analytics", request)
