@@ -2,11 +2,6 @@ var top_left_corner = (function () {
 
 var exports = {};
 
-exports.get_global_filter_li = function (filter_name) {
-    var selector = "#global_filters li[data-name='" + filter_name + "']";
-    return $(selector);
-};
-
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
@@ -21,13 +16,17 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
     value_span.text(count);
 };
 
+exports.update_starred_count = function (count) {
+    var starred_li = $('.top_left_starred_messages');
+    exports.update_count_in_dom(starred_li, count);
+};
 
 exports.update_dom_with_unread_counts = function (counts) {
     // Note that "Private messages" counts are handled in pm_list.js.
 
     // mentioned/home have simple integer counts
-    var mentioned_li = exports.get_global_filter_li('mentioned');
-    var home_li = exports.get_global_filter_li('home');
+    var mentioned_li = $('.top_left_mentions');
+    var home_li = $('.top_left_all_messages');
 
     exports.update_count_in_dom(mentioned_li, counts.mentioned_message_count);
     exports.update_count_in_dom(home_li, counts.home_unread_messages);
@@ -37,15 +36,14 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 function deselect_top_left_corner_items() {
-    function remove(name) {
-        var li = exports.get_global_filter_li(name);
-        li.removeClass('active-filter active-sub-filter');
+    function remove(elem) {
+        elem.removeClass('active-filter active-sub-filter');
     }
 
-    remove('home');
-    remove('private');
-    remove('starred');
-    remove('mentioned');
+    remove($('.top_left_all_messages'));
+    remove($('.top_left_private_messages'));
+    remove($('.top_left_starred_messages'));
+    remove($('.top_left_mentions'));
 }
 
 exports.handle_narrow_activated = function (filter) {
@@ -60,15 +58,18 @@ exports.handle_narrow_activated = function (filter) {
     if (ops.length >= 1) {
         filter_name = ops[0];
         if (filter_name === 'home') {
-            filter_li = exports.get_global_filter_li(filter_name);
+            filter_li = $('.top_left_all_messages');
             filter_li.addClass('active-filter');
         }
     }
     ops = filter.operands('is');
     if (ops.length >= 1) {
         filter_name = ops[0];
-        if (filter_name === 'starred' || filter_name === 'mentioned') {
-            filter_li = exports.get_global_filter_li(filter_name);
+        if (filter_name === 'starred') {
+            filter_li = $('.top_left_starred_messages');
+            filter_li.addClass('active-filter');
+        } else if (filter_name === 'mentioned') {
+            filter_li = $('.top_left_mentions');
             filter_li.addClass('active-filter');
         }
     }
@@ -106,7 +107,7 @@ exports.handle_narrow_deactivated = function () {
     deselect_top_left_corner_items();
     pm_list.close();
 
-    var filter_li = exports.get_global_filter_li('home');
+    var filter_li = $('.top_left_all_messages');
     filter_li.addClass('active-filter');
 };
 

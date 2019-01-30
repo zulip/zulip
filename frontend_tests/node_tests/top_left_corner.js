@@ -64,23 +64,29 @@ run_test('narrowing', () => {
         {operator: 'is', operand: 'mentioned'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(top_left_corner.get_global_filter_li('mentioned').hasClass('active-filter'));
+    assert($('.top_left_mentions').hasClass('active-filter'));
+
+    filter = new Filter([
+        {operator: 'is', operand: 'starred'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert($('.top_left_starred_messages').hasClass('active-filter'));
 
     filter = new Filter([
         {operator: 'in', operand: 'home'},
     ]);
     top_left_corner.handle_narrow_activated(filter);
-    assert(top_left_corner.get_global_filter_li('home').hasClass('active-filter'));
+    assert($('.top_left_all_messages').hasClass('active-filter'));
 
     // deactivating narrow
 
     pm_closed = false;
     top_left_corner.handle_narrow_deactivated();
 
-    assert(top_left_corner.get_global_filter_li('home').hasClass('active-filter'));
-    assert(!top_left_corner.get_global_filter_li('mentioned').hasClass('active-filter'));
-    assert(!top_left_corner.get_global_filter_li('private').hasClass('active-filter'));
-    assert(!top_left_corner.get_global_filter_li('starred').hasClass('active-filter'));
+    assert($('.top_left_all_messages').hasClass('active-filter'));
+    assert(!$('.top_left_mentions').hasClass('active-filter'));
+    assert(!$('.top_left_private_messages').hasClass('active-filter'));
+    assert(!$('.top_left_starred_messages').hasClass('active-filter'));
     assert(pm_closed);
 });
 
@@ -101,26 +107,36 @@ run_test('update_count_in_dom', () => {
     };
 
     make_elem(
-        $("#global_filters li[data-name='mentioned']"),
+        $(".top_left_mentions"),
         '<mentioned-count>',
         '<mentioned-value>'
     );
 
     make_elem(
-        $("#global_filters li[data-name='home']"),
+        $(".top_left_all_messages"),
         '<home-count>',
         '<home-value>'
     );
 
+    make_elem(
+        $(".top_left_starred_messages"),
+        '<starred-count>',
+        '<starred-value>'
+    );
+
 
     top_left_corner.update_dom_with_unread_counts(counts);
+    top_left_corner.update_starred_count(444);
 
     assert.equal($('<mentioned-value>').text(), '222');
     assert.equal($('<home-value>').text(), '333');
+    assert.equal($('<starred-value>').text(), '444');
 
     counts.mentioned_message_count = 0;
     top_left_corner.update_dom_with_unread_counts(counts);
+    top_left_corner.update_starred_count(0);
 
     assert(!$('<mentioned-count>').visible());
     assert.equal($('<mentioned-value>').text(), '');
+    assert.equal($('<starred-value>').text(), '');
 });

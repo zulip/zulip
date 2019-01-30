@@ -290,13 +290,13 @@ expect_stream();
 
 casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
 
-casper.thenClick('#global_filters [data-name="home"] a');
+casper.thenClick('.top_left_all_messages a');
 
 expect_home();
 
 casper.then(check_narrow_title('home - Zulip Dev - Zulip'));
 
-casper.thenClick('#global_filters [data-name="private"] a');
+casper.thenClick('.top_left_private_messages a');
 
 expect_all_pm();
 
