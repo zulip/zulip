@@ -2,6 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import wraps
 import logging
+import math
 import os
 from typing import Any, Callable, Dict, Optional, TypeVar, Tuple, cast
 import ujson
@@ -39,7 +40,11 @@ MIN_INVOICED_LICENSES = 30
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
 
 def get_seat_count(realm: Realm) -> int:
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
+    non_guests = UserProfile.objects.filter(
+        realm=realm, is_active=True, is_bot=False, is_guest=False).count()
+    guests = UserProfile.objects.filter(
+        realm=realm, is_active=True, is_bot=False, is_guest=True).count()
+    return max(non_guests, math.ceil(guests / 5))
 
 def sign_string(string: str) -> Tuple[str, str]:
     salt = generate_random_token(64)
