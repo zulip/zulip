@@ -29,7 +29,7 @@ cchardet==2.1.4
 certifi==2018.11.29
 cffi==1.11.5
 chardet==3.0.4
-cryptography==2.4.2
+cryptography==2.5
 cssselect==1.0.3          # via premailer
 cssutils==1.0.2           # via premailer
 decorator==4.3.2          # via ipython, traitlets
@@ -58,7 +58,7 @@ httplib2==0.12.0
 hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
-idna==2.8                 # via cryptography, requests
+idna==2.8                 # via requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0

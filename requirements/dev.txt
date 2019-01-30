@@ -40,7 +40,7 @@ click==6.6                # via gitlint, pip-tools
 commonmark==0.5.4
 constantly==15.1.0        # via twisted
 coverage==4.5.2
-cryptography==2.4.2
+cryptography==2.5
 cssselect==1.0.3          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.3.2          # via ipython, traitlets
@@ -78,7 +78,7 @@ hypchat==0.21
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==18.0.0         # via twisted
-idna==2.8                 # via cryptography, hyperlink, requests
+idna==2.8                 # via hyperlink, requests
 ijson==2.3
 imagesize==1.1.0
 incremental==17.5.0       # via twisted
