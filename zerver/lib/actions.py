@@ -2254,6 +2254,12 @@ def _internal_prep_message(realm: Realm,
         raise RuntimeError("None is not a valid realm for internal_prep_message!")
 
     if addressee.is_stream():
+        # It makes sense to create a stream by name here, but if we
+        # have a stream ID and the stream doesn't exist, that's a code
+        # bug, since the caller should have known that the stream didn't exist.
+        if addressee.stream_name() is None:
+            raise RuntimeError("Internal message send triggered with invalid stream %s" % (
+                addressee.stream_id()))
         ensure_stream(realm, addressee.stream_name())
 
     try:
