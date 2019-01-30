@@ -26,13 +26,14 @@ from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
+from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer, \
+    PushNotificationBouncerException
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     UserMessage, get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, receives_stream_notifications, get_user_profile_by_id, \
     ArchivedMessage
-from version import ZULIP_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -274,82 +275,6 @@ def send_notifications_to_bouncer(user_profile_id: int,
     }
     # Calls zilencer.views.remote_server_notify_push
     send_json_to_push_bouncer('POST', 'notify', post_data)
-
-def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
-    send_to_push_bouncer(
-        method,
-        endpoint,
-        ujson.dumps(post_data),
-        extra_headers={"Content-type": "application/json"},
-    )
-
-class PushNotificationBouncerException(Exception):
-    pass
-
-def send_to_push_bouncer(method: str,
-                         endpoint: str,
-                         post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Optional[Dict[str, Any]]=None) -> None:
-    """While it does actually send the notice, this function has a lot of
-    code and comments around error handling for the push notifications
-    bouncer.  There are several classes of failures, each with its own
-    potential solution:
-
-    * Network errors with requests.request.  We let those happen normally.
-
-    * 500 errors from the push bouncer or other unexpected responses;
-      we don't try to parse the response, but do make clear the cause.
-
-    * 400 errors from the push bouncer.  Here there are 2 categories:
-      Our server failed to connect to the push bouncer (should throw)
-      vs. client-side errors like and invalid token.
-
-    """
-    url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
-                               '/api/v1/remotes/push/' + endpoint)
-    api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
-                                           settings.ZULIP_ORG_KEY)
-
-    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
-    if extra_headers is not None:
-        headers.update(extra_headers)
-
-    res = requests.request(method,
-                           url,
-                           data=post_data,
-                           auth=api_auth,
-                           timeout=30,
-                           verify=True,
-                           headers=headers)
-
-    if res.status_code >= 500:
-        # 500s should be resolved by the people who run the push
-        # notification bouncer service, since they'll get an email
-        # too.  For now we email the server admin, but we'll likely
-        # want to do some sort of retry logic eventually.
-        raise PushNotificationBouncerException(
-            _("Received 500 from push notification bouncer"))
-    elif res.status_code >= 400:
-        # If JSON parsing errors, just let that exception happen
-        result_dict = ujson.loads(res.content)
-        msg = result_dict['msg']
-        if 'code' in result_dict and result_dict['code'] == 'INVALID_ZULIP_SERVER':
-            # Invalid Zulip server credentials should email this server's admins
-            raise PushNotificationBouncerException(
-                _("Push notifications bouncer error: %s") % (msg,))
-        else:
-            # But most other errors coming from the push bouncer
-            # server are client errors (e.g. never-registered token)
-            # and should be handled as such.
-            raise JsonableError(msg)
-    elif res.status_code != 200:
-        # Anything else is unexpected and likely suggests a bug in
-        # this version of Zulip, so we throw an exception that will
-        # email the server admins.
-        raise PushNotificationBouncerException(
-            "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
-
-    # If we don't throw an exception, it's a successful bounce!
 
 #
 # Managing device tokens
