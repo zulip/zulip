@@ -120,7 +120,7 @@ def normalize_fixture_data(decorated_function: CallableT,
     id_lengths = [
         ('cus', 14), ('sub', 14), ('si', 14), ('sli', 14), ('req', 14), ('tok', 24), ('card', 24),
         ('txn', 24), ('ch', 24), ('in', 24), ('ii', 24), ('test', 12), ('src_client_secret', 24),
-        ('src', 24), ('invst', 26)]
+        ('src', 24), ('invst', 26), ('acct', 16), ('rcpt', 31)]
     # We'll replace cus_D7OT2jf5YAtZQ2 with something like cus_NORMALIZED0001
     pattern_translations = {
         "%s_[A-Za-z0-9]{%d}" % (prefix, length): "%s_NORMALIZED%%0%dd" % (prefix, length - 10)
@@ -214,22 +214,19 @@ class Kandra(object):  # nocoverage: TODO
 
 class StripeTestCase(ZulipTestCase):
     def setUp(self, *mocks: Mock) -> None:
-        # TODO
-        # Unfortunately this test suite is likely not robust to users being
-        # added in populate_db. A quick hack for now to ensure get_seat_count is 8
-        # for these tests (8, since that's what it was when the tests were written).
+        # This test suite is not robust to users being added in populate_db. The following
+        # hack ensures get_seat_count is fixed, even as populate_db changes.
         realm = get_realm('zulip')
-        seat_count = get_seat_count(get_realm('zulip'))
-        assert(seat_count >= 8)
-        if seat_count > 8:  # nocoverage
-            for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False) \
-                                           .exclude(email__in=[
-                                               self.example_email('hamlet'),
-                                               self.example_email('iago')])[6:]:
-                user.is_active = False
-                user.save(update_fields=['is_active'])
-        self.assertEqual(get_seat_count(get_realm('zulip')), 8)
-        self.seat_count = 8
+        seat_count = get_seat_count(realm)
+        assert(seat_count >= 6)
+        for user in UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False, is_guest=False) \
+                                       .exclude(email__in=[
+                                           self.example_email('hamlet'),
+                                           self.example_email('iago')])[:seat_count-6]:
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+        self.assertEqual(get_seat_count(realm), 6)
+        self.seat_count = 6
         self.signed_seat_count, self.salt = sign_string(str(self.seat_count))
         # Choosing dates with corresponding timestamps below 1500000000 so that they are
         # not caught by our timestamp normalization regex in normalize_fixture_data

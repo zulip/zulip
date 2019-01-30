@@ -1,11 +1,11 @@
 {
-  "amount": 72000,
+  "amount": 56000,
   "currency": "usd",
-  "customer": "cus_EQUrCdXCP2oqIF",
-  "date": 1548696361,
+  "customer": "cus_NORMALIZED0001",
+  "date": 1000000000,
   "description": "Zulip Standard - renewal",
   "discountable": false,
-  "id": "ii_1DxdrxGh0CmXqmnw183j11lw",
+  "id": "ii_NORMALIZED00000000000004",
   "invoice": null,
   "livemode": false,
   "metadata": {},
@@ -16,7 +16,7 @@
   },
   "plan": null,
   "proration": false,
-  "quantity": 9,
+  "quantity": 7,
   "subscription": null,
   "unit_amount": 8000
 }
