@@ -3,6 +3,7 @@
   "amount_refunded": 0,
   "application": null,
   "application_fee": null,
+  "application_fee_amount": null,
   "balance_transaction": "txn_NORMALIZED00000000000001",
   "captured": true,
   "created": 1000000000,
@@ -33,6 +34,7 @@
   "payment_intent": null,
   "receipt_email": "hamlet@zulip.com",
   "receipt_number": null,
+  "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000002/rcpt_NORMALIZED000000000000000000001",
   "refunded": false,
   "refunds": {
     "data": [],
@@ -71,5 +73,6 @@
   "source_transfer": null,
   "statement_descriptor": "Zulip Standard",
   "status": "succeeded",
+  "transfer_data": null,
   "transfer_group": null
 }

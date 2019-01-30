@@ -1,7 +1,7 @@
 {
-  "amount_due": 120000,
+  "amount_due": 136000,
   "amount_paid": 0,
-  "amount_remaining": 120000,
+  "amount_remaining": 136000,
   "application_fee": null,
   "attempt_count": 0,
   "attempted": false,
@@ -10,17 +10,19 @@
   "billing_reason": "manual",
   "charge": null,
   "currency": "usd",
-  "customer": "cus_EAy6kkzDX4Fbrg",
-  "date": 1545114880,
+  "custom_fields": null,
+  "customer": "cus_NORMALIZED0001",
+  "date": 1000000000,
   "default_source": null,
   "description": "",
   "discount": null,
-  "due_date": 1547706881,
+  "due_date": 1000000000,
   "ending_balance": 0,
-  "finalized_at": 1545114881,
-  "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_1porn68AVPRdxT19RtTE3iEDQv",
-  "id": "in_1DicA8Gh0CmXqmnwX4YFyVkR",
-  "invoice_pdf": "https://pay.stripe.com/invoice/invst_1porn68AVPRdxT19RtTE3iEDQv/pdf",
+  "finalized_at": 1000000000,
+  "footer": null,
+  "hosted_invoice_url": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000001",
+  "id": "in_NORMALIZED00000000000001",
+  "invoice_pdf": "https://pay.stripe.com/invoice/invst_NORMALIZED0000000000000001/pdf",
   "lines": {
     "data": [
       {
@@ -28,14 +30,14 @@
         "currency": "usd",
         "description": "Zulip Standard",
         "discountable": false,
-        "id": "ii_1DicA8Gh0CmXqmnwTGTKsCq2",
-        "invoice_item": "ii_1DicA8Gh0CmXqmnwTGTKsCq2",
+        "id": "ii_NORMALIZED00000000000001",
+        "invoice_item": "ii_NORMALIZED00000000000001",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1576650878,
-          "start": 1545114878
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": null,
         "proration": false,
@@ -44,18 +46,18 @@
         "type": "invoiceitem"
       },
       {
-        "amount": -64000,
+        "amount": -48000,
         "currency": "usd",
         "description": "Payment (Card ending in 4242)",
         "discountable": false,
-        "id": "ii_1DicA7Gh0CmXqmnwjg3JpXff",
-        "invoice_item": "ii_1DicA7Gh0CmXqmnwjg3JpXff",
+        "id": "ii_NORMALIZED00000000000002",
+        "invoice_item": "ii_NORMALIZED00000000000002",
         "livemode": false,
         "metadata": {},
         "object": "line_item",
         "period": {
-          "end": 1545114879,
-          "start": 1545114879
+          "end": 1000000000,
+          "start": 1000000000
         },
         "plan": null,
         "proration": false,
@@ -67,24 +69,24 @@
     "has_more": false,
     "object": "list",
     "total_count": 2,
-    "url": "/v1/invoices/in_1DicA8Gh0CmXqmnwX4YFyVkR/lines"
+    "url": "/v1/invoices/in_NORMALIZED00000000000001/lines"
   },
   "livemode": false,
   "metadata": {},
-  "next_payment_attempt": 1545118480,
-  "number": "52AE018-0001",
+  "next_payment_attempt": 1000000000,
+  "number": "NORMALI-0001",
   "object": "invoice",
   "paid": false,
-  "period_end": 1545114880,
-  "period_start": 1545114880,
+  "period_end": 1000000000,
+  "period_start": 1000000000,
   "receipt_number": null,
   "starting_balance": 0,
   "statement_descriptor": "Zulip Standard",
   "status": "open",
   "subscription": null,
-  "subtotal": 120000,
+  "subtotal": 136000,
   "tax": 0,
   "tax_percent": null,
-  "total": 120000,
-  "webhooks_delivered_at": 1545114880
+  "total": 136000,
+  "webhooks_delivered_at": 1000000000
 }

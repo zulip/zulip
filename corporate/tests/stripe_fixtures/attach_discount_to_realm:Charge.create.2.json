@@ -1,5 +1,5 @@
 {
-  "amount": 48000,
+  "amount": 36000,
   "amount_refunded": 0,
   "application": null,
   "application_fee": null,
@@ -9,7 +9,7 @@
   "created": 1000000000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
-  "description": "Upgrade to Zulip Standard, $60.0 x 8",
+  "description": "Upgrade to Zulip Standard, $60.0 x 6",
   "destination": null,
   "dispute": null,
   "failure_code": null,
@@ -34,7 +34,7 @@
   "payment_intent": null,
   "receipt_email": "hamlet@zulip.com",
   "receipt_number": null,
-  "receipt_url": "https://pay.stripe.com/receipts/acct_1BWYgHGh0CmXqmnw/ch_NORMALIZED00000000000002/rcpt_EQgVM96beHYpelgRpViGBLHNKKVKotW",
+  "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000002/rcpt_NORMALIZED000000000000000000002",
   "refunded": false,
   "refunds": {
     "data": [],

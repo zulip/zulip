@@ -1,5 +1,5 @@
 {
-  "amount": 48000,
+  "amount": 36000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "date": 1000000000,
@@ -16,7 +16,7 @@
   },
   "plan": null,
   "proration": false,
-  "quantity": 8,
+  "quantity": 6,
   "subscription": null,
   "unit_amount": 6000
 }
