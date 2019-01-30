@@ -1,6 +1,6 @@
 {
     "CommonMark": {
-        "issue": "https://github.com/zulip/zulip/issues/10800",
+        "issue": "https://github.com/zulip/zulip/issues/10800"
     },
     "tornado": {
         "issue": "https://github.com/zulip/zulip/issues/8913"
