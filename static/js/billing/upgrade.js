@@ -44,11 +44,11 @@ exports.initialize = () => {
     prices.monthly = page_params.monthly_price * (1 - page_params.percent_off / 100);
 
     $('input[type=radio][name=license_management]').on("change", function () {
-        helpers.show_license_section($(this).val());
+        helpers.show_license_section(this.value);
     });
 
     $('input[type=radio][name=schedule]').on("change", function () {
-        helpers.update_charged_amount(prices, $(this).val());
+        helpers.update_charged_amount(prices, this.value);
     });
 
     $("#autopay_annual_price").text(helpers.format_money(prices.annual));
