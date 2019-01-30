@@ -7,6 +7,21 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 1.9.2 -- 2019-01-29
+
+This release migrates Zulip off a deprecated Google+ API (necessary
+for Google Authentication to continue working past March 7), and
+contains a few bug fixes for the installer and Slack import.  It has
+minimal changes for existing servers not using Google authentication.
+
+- Updated the Google Auth integration to stop using a deprecated and
+  soon-to-be-removed Google+ authentication API.
+- Improved installer error messages for common configuration problems.
+- Fixed several bugs in Slack, Gitter, and HipChat import tools.
+- Fixed a subtle bug in garbage-collection of the node_modules cache.
+- Optimized performance of Slack import for organizations with
+  thousands of users.
+
 ### 1.9.1 -- 2018-11-30
 
 This release is primarily intended to improve the experience for new

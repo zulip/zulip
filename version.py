@@ -1,4 +1,4 @@
-ZULIP_VERSION = "1.9.1"
+ZULIP_VERSION = "1.9.2"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
