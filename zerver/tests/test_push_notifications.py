@@ -1,5 +1,6 @@
 
 from contextlib import contextmanager
+import datetime
 import itertools
 import requests
 import mock
@@ -18,7 +19,11 @@ from django.test import TestCase, override_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.crypto import get_random_string
+from django.utils.timezone import now as timezone_now
+from django.utils.timezone import utc as timezone_utc
 
+from analytics.lib.counts import CountStat, LoggingCountStat
+from analytics.models import InstallationCount, RealmCount
 from zerver.models import (
     PushDeviceToken,
     UserProfile,
@@ -39,12 +44,16 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
     DeviceToken, PushNotificationBouncerException, get_apns_client
+from zerver.lib.remote_server import send_analytics_to_remote_server, \
+    build_analytics_data
+from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
-from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
+from zilencer.models import RemoteZulipServer, RemotePushDeviceToken, \
+    RemoteRealmCount, RemoteInstallationCount
 from django.utils.timezone import now
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -74,6 +83,11 @@ class BouncerTestCase(ZulipTestCase):
                                    local_url,
                                    kwargs['data'],
                                    subdomain="")
+        elif args[0] == "GET":
+            result = self.api_get(self.server_uuid,
+                                  local_url,
+                                  kwargs['data'],
+                                  subdomain="")
         else:
             raise AssertionError("Unsupported method for bounce_request")
         return result
@@ -277,6 +291,90 @@ class PushBouncerNotificationTest(BouncerTestCase):
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
                                                                server=server))
             self.assertEqual(len(tokens), 0)
+
+class AnalyticsBouncerTest(BouncerTestCase):
+    TIME_ZERO = datetime.datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_analytics_api(self, mock: Any) -> None:
+        """This is a variant of the below test_push_api, but using the full
+        push notification bouncer flow
+        """
+        mock.side_effect = self.bounce_request
+        user = self.example_user('hamlet')
+        end_time = self.TIME_ZERO
+
+        realm_stat = LoggingCountStat('invites_sent::day', RealmCount, CountStat.DAY)
+        RealmCount.objects.create(
+            realm=user.realm, property=realm_stat.property, end_time=end_time, value=5)
+        InstallationCount.objects.create(
+            property=realm_stat.property, end_time=end_time, value=5)
+
+        self.assertEqual(RealmCount.objects.count(), 1)
+        self.assertEqual(InstallationCount.objects.count(), 1)
+
+        self.assertEqual(RemoteRealmCount.objects.count(), 0)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 0)
+        send_analytics_to_remote_server()
+        self.assertEqual(mock.call_count, 2)
+        self.assertEqual(RemoteRealmCount.objects.count(), 1)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
+        send_analytics_to_remote_server()
+        self.assertEqual(mock.call_count, 3)
+        self.assertEqual(RemoteRealmCount.objects.count(), 1)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
+
+        RealmCount.objects.create(
+            realm=user.realm, property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6)
+        RealmCount.objects.create(
+            realm=user.realm, property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
+        self.assertEqual(RemoteRealmCount.objects.count(), 1)
+        self.assertEqual(mock.call_count, 3)
+        send_analytics_to_remote_server()
+        self.assertEqual(mock.call_count, 5)
+        self.assertEqual(RemoteRealmCount.objects.count(), 3)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 1)
+
+        InstallationCount.objects.create(
+            property=realm_stat.property, end_time=end_time + datetime.timedelta(days=1), value=6)
+        InstallationCount.objects.create(
+            property=realm_stat.property, end_time=end_time + datetime.timedelta(days=2), value=9)
+        send_analytics_to_remote_server()
+        self.assertEqual(mock.call_count, 7)
+        self.assertEqual(RemoteRealmCount.objects.count(), 3)
+        self.assertEqual(RemoteInstallationCount.objects.count(), 3)
+
+        (realm_count_data,
+         installation_count_data) = build_analytics_data(RealmCount.objects.all(),
+                                                         InstallationCount.objects.all())
+        result = self.api_post(self.server_uuid,
+                               '/api/v1/remotes/server/analytics',
+                               {'realm_counts': ujson.dumps(realm_count_data),
+                                'installation_counts': ujson.dumps(installation_count_data)},
+                               subdomain="")
+        self.assert_json_error(result, "Data is out of order.")
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_analytics_api_invalid(self, mock: Any) -> None:
+        """This is a variant of the below test_push_api, but using the full
+        push notification bouncer flow
+        """
+        mock.side_effect = self.bounce_request
+        user = self.example_user('hamlet')
+        end_time = self.TIME_ZERO
+
+        realm_stat = LoggingCountStat('invalid count stat', RealmCount, CountStat.DAY)
+        RealmCount.objects.create(
+            realm=user.realm, property=realm_stat.property, end_time=end_time, value=5)
+
+        self.assertEqual(RealmCount.objects.count(), 1)
+
+        self.assertEqual(RemoteRealmCount.objects.count(), 0)
+        with self.assertRaises(JsonableError):
+            send_analytics_to_remote_server()
+        self.assertEqual(RemoteRealmCount.objects.count(), 0)
 
 class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:

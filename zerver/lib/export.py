@@ -214,6 +214,7 @@ DATE_FIELDS = {
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
     'zerver_userhotspot': ['timestamp'],
+    'analytics_installationcount': ['end_time'],
     'analytics_realmcount': ['end_time'],
     'analytics_usercount': ['end_time'],
     'analytics_streamcount': ['end_time'],
