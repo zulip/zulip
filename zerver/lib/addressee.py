@@ -123,7 +123,7 @@ class Addressee:
                 # callpath).
                 if sender.default_sending_stream:
                     # Use the users default stream
-                    stream_name_or_id = sender.default_sending_stream.name
+                    stream_name_or_id = sender.default_sending_stream.id
                 else:
                     raise JsonableError(_('Missing stream'))
 
