@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
+import datetime
 import logging
 
 from django.core.exceptions import ValidationError
@@ -6,9 +7,11 @@ from django.core.validators import validate_email, URLValidator
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from django.utils.translation import ugettext as _, ugettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
+from analytics.lib.counts import COUNT_STATS
 from zerver.decorator import require_post, InvalidZulipServerKeyError
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
@@ -16,10 +19,12 @@ from zerver.lib.push_notifications import send_android_push_notification, \
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int, check_string, \
-    check_capped_string, check_string_fixed_length
+    check_capped_string, check_string_fixed_length, check_float, check_none_or, \
+    check_dict, check_dict_only, check_list
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
-from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
+from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
+    RemoteRealmCount, RemoteInstallationCount
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
@@ -144,3 +149,91 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
         send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
 
     return json_success()
+
+def validate_count_stats(server: RemoteZulipServer, model: Any,
+                         counts: List[Dict[str, Any]]) -> None:
+    last_id = get_last_id_from_server(server, model)
+    for item in counts:
+        if item['property'] not in COUNT_STATS:
+            raise JsonableError(_("Invalid property %s" % item['property']))
+        if item['id'] <= last_id:
+            raise JsonableError(_("Data is out of order."))
+        last_id = item['id']
+
+@has_request_variables
+def remote_server_post_analytics(request: HttpRequest,
+                                 entity: Union[UserProfile, RemoteZulipServer],
+                                 realm_counts: List[Dict[str, Any]]=REQ(
+                                     validator=check_list(check_dict_only([
+                                         ('property', check_string),
+                                         ('realm', check_int),
+                                         ('id', check_int),
+                                         ('end_time', check_float),
+                                         ('subgroup', check_none_or(check_string)),
+                                         ('value', check_int),
+                                     ]))),
+                                 installation_counts: List[Dict[str, Any]]=REQ(
+                                     validator=check_list(check_dict_only([
+                                         ('property', check_string),
+                                         ('id', check_int),
+                                         ('end_time', check_float),
+                                         ('subgroup', check_none_or(check_string)),
+                                         ('value', check_int),
+                                     ])))) -> HttpResponse:
+    validate_entity(entity)
+    server = cast(RemoteZulipServer, entity)
+
+    validate_count_stats(server, RemoteRealmCount, realm_counts)
+    validate_count_stats(server, RemoteInstallationCount, realm_counts)
+
+    BATCH_SIZE = 1000
+    while len(realm_counts) > 0:
+        batch = realm_counts[0:BATCH_SIZE]
+        realm_counts = realm_counts[BATCH_SIZE:]
+
+        objects_to_create = []
+        for item in batch:
+            objects_to_create.append(RemoteRealmCount(
+                property=item['property'],
+                realm_id=item['realm'],
+                remote_id=item['id'],
+                server=server,
+                end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
+                subgroup=item['subgroup'],
+                value=item['value']))
+        RemoteRealmCount.objects.bulk_create(objects_to_create)
+
+    while len(installation_counts) > 0:
+        batch = installation_counts[0:BATCH_SIZE]
+        installation_counts = installation_counts[BATCH_SIZE:]
+
+        objects_to_create = []
+        for item in batch:
+            objects_to_create.append(RemoteInstallationCount(
+                property=item['property'],
+                remote_id=item['id'],
+                server=server,
+                end_time=datetime.datetime.fromtimestamp(item['end_time'], tz=timezone_utc),
+                subgroup=item['subgroup'],
+                value=item['value']))
+        RemoteInstallationCount.objects.bulk_create(objects_to_create)
+    return json_success()
+
+def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
+    last_count = model.objects.filter(server=server).order_by("remote_id").last()
+    if last_count is not None:
+        return last_count.remote_id
+    return 0
+
+@has_request_variables
+def remote_server_check_analytics(request: HttpRequest,
+                                  entity: Union[UserProfile, RemoteZulipServer]) -> HttpResponse:
+    validate_entity(entity)
+    server = cast(RemoteZulipServer, entity)
+
+    result = {
+        'last_realm_count_id': get_last_id_from_server(server, RemoteRealmCount),
+        'last_installation_count_id': get_last_id_from_server(
+            server, RemoteInstallationCount),
+    }
+    return json_success(result)
