@@ -173,7 +173,7 @@ class InvoiceItem:
     @staticmethod
     def create(amount: int=..., currency: str=..., customer: str=..., description: str=...,
                discountable: bool=..., period: Dict[str, int]=..., quantity: int=...,
-               unit_amount: int=..., idempotency_key: str=...) -> InvoiceItem:
+               unit_amount: int=..., idempotency_key: Optional[str]=...) -> InvoiceItem:
         ...
 
     @staticmethod

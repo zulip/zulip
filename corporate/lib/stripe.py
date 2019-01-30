@@ -405,6 +405,9 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
             plan.invoiced_through = ledger_entry
             plan.invoicing_status = CustomerPlan.STARTED
             plan.save(update_fields=['invoicing_status', 'invoiced_through'])
+            idempotency_key = 'ledger_entry:{}'.format(ledger_entry.id)  # type: Optional[str]
+            if settings.TEST_SUITE:
+                idempotency_key = None
             stripe.InvoiceItem.create(
                 currency='usd',
                 customer=plan.customer.stripe_customer_id,
@@ -412,7 +415,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
                 discountable=False,
                 period = {'start': datetime_to_timestamp(ledger_entry.event_time),
                           'end': datetime_to_timestamp(next_renewal_date(plan, ledger_entry.event_time))},
-                idempotency_key='ledger_entry:{}'.format(ledger_entry.id),
+                idempotency_key=idempotency_key,
                 **price_args)
             invoice_item_created = True
         plan.invoiced_through = ledger_entry
