@@ -32,7 +32,7 @@ argon2-cffi==19.1.0
 backports-abc==0.5
 
 # Needed for Tornado 4 compatibility
-backports.ssl-match-hostname==3.5.0.1
+backports.ssl-match-hostname==3.7.0.1
 
 # Needed for S3 file uploads
 boto==2.49.0

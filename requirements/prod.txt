@@ -21,7 +21,7 @@ asn1crypto==0.24.0        # via cryptography
 babel==2.6.0              # via django-phonenumber-field
 backcall==0.1.0           # via ipython
 backports-abc==0.5
-backports.ssl-match-hostname==3.5.0.1
+backports.ssl-match-hostname==3.7.0.1
 beautifulsoup4==4.7.1
 boto==2.49.0
 cachetools==3.1.0         # via google-auth
