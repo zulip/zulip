@@ -38,7 +38,7 @@ class AlertWordTests(ZulipTestCase):
         self.assert_json_success(result)
         user = self.example_user(user_name)
         words = user_alert_words(user)
-        self.assertEqual(words, ['milk', 'cookies'])
+        self.assertCountEqual(words, ['milk', 'cookies'])
 
     def test_default_no_words(self) -> None:
         """
@@ -46,7 +46,7 @@ class AlertWordTests(ZulipTestCase):
         """
         user = self.example_user('cordelia')
         words = user_alert_words(user)
-        self.assertEqual(words, [])
+        self.assertCountEqual(words, [])
 
     def test_add_word(self) -> None:
         """
@@ -58,7 +58,7 @@ class AlertWordTests(ZulipTestCase):
         add_user_alert_words(user, self.interesting_alert_word_list)
 
         words = user_alert_words(user)
-        self.assertEqual(words, self.interesting_alert_word_list)
+        self.assertCountEqual(words, self.interesting_alert_word_list)
 
     def test_remove_word(self) -> None:
         """
@@ -75,8 +75,8 @@ class AlertWordTests(ZulipTestCase):
             remove_user_alert_words(user, alert_word)
             theoretical_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
-            self.assertEqual(actual_remaining_alerts,
-                             theoretical_remaining_alerts)
+            self.assertCountEqual(actual_remaining_alerts,
+                                  theoretical_remaining_alerts)
 
     def test_realm_words(self) -> None:
         """
@@ -94,9 +94,9 @@ class AlertWordTests(ZulipTestCase):
         realm_words = alert_words_in_realm(user2.realm)
         self.assertEqual(len(realm_words), 2)
         self.assertEqual(list(realm_words.keys()), [user1.id, user2.id])
-        self.assertEqual(realm_words[user1.id],
-                         self.interesting_alert_word_list)
-        self.assertEqual(realm_words[user2.id], ['another'])
+        self.assertCountEqual(realm_words[user1.id],
+                              self.interesting_alert_word_list)
+        self.assertCountEqual(realm_words[user2.id], ['another'])
 
     def test_json_list_default(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -112,25 +112,25 @@ class AlertWordTests(ZulipTestCase):
         self.login(self.example_email('hamlet'))
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertCountEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
     def test_json_list_add(self) -> None:
         self.login(self.example_email("hamlet"))
 
         result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertCountEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
     def test_json_list_remove(self) -> None:
         self.login(self.example_email("hamlet"))
 
         result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertCountEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
         result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['two', 'three'])
+        self.assertCountEqual(result.json()['alert_words'], ['two', 'three'])
 
     def message_does_alert(self, user_profile: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so Hamlet is notified"""
@@ -144,7 +144,7 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
-        self.assertEqual(result.json()['alert_words'], ['one', 'two', 'three'])
+        self.assertCountEqual(result.json()['alert_words'], ['one', 'two', 'three'])
 
         # Alerts in the middle of messages work.
         self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
