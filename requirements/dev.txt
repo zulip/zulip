@@ -185,7 +185,7 @@ typing==3.6.6
 typing_extensions==3.6.6
 uritemplate==3.0.0
 urllib3==1.24.1           # via botocore, requests, transifex-client
-virtualenv-clone==0.4.0
+virtualenv-clone==0.5.1
 w3lib==1.20.0             # via parsel, scrapy
 wcwidth==0.1.7            # via prompt-toolkit
 websocket-client==0.54.0  # via docker
