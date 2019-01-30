@@ -10,6 +10,7 @@
   "billing_reason": "manual",
   "charge": null,
   "currency": "usd",
+  "custom_fields": null,
   "customer": "cus_NORMALIZED0001",
   "date": 1000000000,
   "default_source": null,
@@ -18,13 +19,14 @@
   "due_date": null,
   "ending_balance": null,
   "finalized_at": null,
+  "footer": null,
   "hosted_invoice_url": null,
   "id": "in_NORMALIZED00000000000001",
   "invoice_pdf": null,
   "lines": {
     "data": [
       {
-        "amount": 64000,
+        "amount": 48000,
         "currency": "usd",
         "description": "Zulip Standard",
         "discountable": false,
@@ -39,12 +41,12 @@
         },
         "plan": null,
         "proration": false,
-        "quantity": 8,
+        "quantity": 6,
         "subscription": null,
         "type": "invoiceitem"
       },
       {
-        "amount": -64000,
+        "amount": -48000,
         "currency": "usd",
         "description": "Payment (Card ending in 4242)",
         "discountable": false,

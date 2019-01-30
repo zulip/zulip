@@ -28,7 +28,7 @@
       "lines": {
         "data": [
           {
-            "amount": 48000,
+            "amount": 36000,
             "currency": "usd",
             "description": "Zulip Standard",
             "discountable": false,
@@ -43,12 +43,12 @@
             },
             "plan": null,
             "proration": false,
-            "quantity": 8,
+            "quantity": 6,
             "subscription": null,
             "type": "invoiceitem"
           },
           {
-            "amount": -48000,
+            "amount": -36000,
             "currency": "usd",
             "description": "Payment (Card ending in 4242)",
             "discountable": false,
@@ -120,7 +120,7 @@
       "lines": {
         "data": [
           {
-            "amount": 9600,
+            "amount": 7200,
             "currency": "usd",
             "description": "Zulip Standard",
             "discountable": false,
@@ -135,12 +135,12 @@
             },
             "plan": null,
             "proration": false,
-            "quantity": 8,
+            "quantity": 6,
             "subscription": null,
             "type": "invoiceitem"
           },
           {
-            "amount": -9600,
+            "amount": -7200,
             "currency": "usd",
             "description": "Payment (Card ending in 4242)",
             "discountable": false,

@@ -1,18 +1,18 @@
 {
   "amount": 184000,
   "currency": "usd",
-  "customer": "cus_EAy6kkzDX4Fbrg",
-  "date": 1545114880,
+  "customer": "cus_NORMALIZED0001",
+  "date": 1000000000,
   "description": "Zulip Standard",
   "discountable": false,
-  "id": "ii_1DicA8Gh0CmXqmnwTGTKsCq2",
+  "id": "ii_NORMALIZED00000000000001",
   "invoice": null,
   "livemode": false,
   "metadata": {},
   "object": "invoiceitem",
   "period": {
-    "end": 1576650878,
-    "start": 1545114878
+    "end": 1000000000,
+    "start": 1000000000
   },
   "plan": null,
   "proration": false,
