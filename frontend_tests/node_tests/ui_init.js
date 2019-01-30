@@ -157,7 +157,7 @@ $("#search_query").typeahead = () => {};
 const value_stub = $.create('value');
 const count_stub = $.create('count');
 count_stub.set_find_results('.value', value_stub);
-$("#global_filters li[data-name='starred']").set_find_results('.count', count_stub);
+$(".top_left_starred_messages").set_find_results('.count', count_stub);
 
 
 run_test('initialize_everything', () => {

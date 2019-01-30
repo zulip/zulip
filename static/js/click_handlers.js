@@ -375,8 +375,7 @@ exports.initialize = function () {
 
     // HOME
 
-    // Capture both the left-sidebar All Messages click and the tab breadcrumb All Messages
-    $(document).on('click', ".home-link[data-name='home']", function (e) {
+    $(document).on('click', ".top_left_all_messages", function (e) {
         ui_util.change_tab_to('#home');
         narrow.deactivate();
         search.update_button_visibility();

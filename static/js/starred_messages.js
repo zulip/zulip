@@ -40,8 +40,7 @@ exports.rerender_ui = function () {
         count = 0;
     }
 
-    var starred_li = top_left_corner.get_global_filter_li('starred');
-    top_left_corner.update_count_in_dom(starred_li, count);
+    top_left_corner.update_starred_count(count);
 };
 
 return exports;
