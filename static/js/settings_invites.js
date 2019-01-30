@@ -26,7 +26,7 @@ exports.invited_as_values = {
     },
     guest_user: {
         value: 3,
-        description: i18n.t("Guest user"),
+        description: i18n.t("Guest"),
     },
 };
 
