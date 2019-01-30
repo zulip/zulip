@@ -198,7 +198,7 @@ stripe==2.17.0
 django-sendfile==0.3.11
 
 # For checking whether email of the user is from a disposable email provider.
-disposable-email-domains==0.0.39
+disposable-email-domains==0.0.43
 
 # Needed for parsing YAML with JSON references from the REST API spec files
 yamole==2.1.6
