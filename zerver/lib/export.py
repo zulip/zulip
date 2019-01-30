@@ -201,6 +201,13 @@ MESSAGE_TABLES = {
     'zerver_reaction',
 }
 
+ANALYTICS_TABLES = {
+    # These get their own file as analytics data can be quite large
+    'analytics_realmcount',
+    'analytics_streamcount',
+    'analytics_usercount',
+}
+
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'pub_date'],
@@ -245,12 +252,14 @@ def sanity_check_output(data: TableData) -> None:
     assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES)
     assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES)
     assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES)
+    assert ANALYTICS_TABLES.issubset(ALL_ZULIP_TABLES)
 
     tables = set(ALL_ZULIP_TABLES)
     tables -= NON_EXPORTED_TABLES
     tables -= IMPLICIT_TABLES
     tables -= MESSAGE_TABLES
     tables -= ATTACHMENT_TABLES
+    tables -= ANALYTICS_TABLES
 
     for table in tables:
         if table not in data:
@@ -724,28 +733,6 @@ def get_realm_config() -> Config:
             '_stream_subscription',
             '_huddle_subscription',
         ]
-    )
-
-    # Analytics tables
-    Config(
-        table='analytics_realmcount',
-        model=RealmCount,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
-    )
-
-    Config(
-        table='analytics_usercount',
-        model=UserCount,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
-    )
-
-    Config(
-        table='analytics_streamcount',
-        model=StreamCount,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
     )
 
     return realm_config
@@ -1311,8 +1298,9 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
     attachment_file = os.path.join(output_dir, 'attachment.json')
+    analytics_file = os.path.join(output_dir, 'analytics.json')
     message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
-    fns = sorted([attachment_file] + message_files + [realm_file])
+    fns = sorted([analytics_file] + [attachment_file] + message_files + [realm_file])
 
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
@@ -1382,6 +1370,9 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
     logging.info('Writing realm data to %s' % (export_file,))
+
+    # Write analytics data
+    export_analytics_tables(realm=realm, output_dir=output_dir)
 
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
@@ -1524,3 +1515,46 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
         write_message_export(message_filename, message_output)
         min_id = max(user_message_ids)
         dump_file_id += 1
+
+def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
+    response = {}  # type: TableData
+
+    export_file = os.path.join(output_dir, "analytics.json")
+    logging.info("Writing analytics table data to %s", (export_file))
+    config = get_analytics_config()
+    export_from_config(
+        response=response,
+        config=config,
+        seed_object=realm,
+    )
+    write_data_to_file(output_file=export_file, data=response)
+
+def get_analytics_config() -> Config:
+
+    analytics_config = Config(
+        table='zerver_analytics',
+        is_seeded=True,
+    )
+
+    Config(
+        table='analytics_realmcount',
+        model=RealmCount,
+        normal_parent=analytics_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_usercount',
+        model=UserCount,
+        normal_parent=analytics_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='analytics_streamcount',
+        model=StreamCount,
+        normal_parent=analytics_config,
+        parent_key='realm_id__in',
+    )
+
+    return analytics_config
