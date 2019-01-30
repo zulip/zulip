@@ -1107,7 +1107,7 @@ class TestGetGCMPayload(PushNotificationTest):
 
 
 class TestSendNotificationsToBouncer(ZulipTestCase):
-    @mock.patch('zerver.lib.push_notifications.send_to_push_bouncer')
+    @mock.patch('zerver.lib.remote_server.send_to_push_bouncer')
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
         apn.send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True})
         post_data = {
