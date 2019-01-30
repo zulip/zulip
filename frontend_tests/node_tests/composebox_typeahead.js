@@ -570,6 +570,12 @@ run_test('initialize', () => {
         options.query = 'gael';
         assert.equal(options.matcher(gael), true);
 
+        options.query = 'Gaël';
+        assert.equal(options.matcher(gael), true);
+
+        options.query = 'gaël';
+        assert.equal(options.matcher(gael), true);
+
         // Don't make suggestions if the last name only has whitespaces
         // (we're between typing names).
         options.query = 'othello@zulip.com,     ';
