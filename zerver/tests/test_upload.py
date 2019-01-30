@@ -811,8 +811,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                          "/user_avatars/hash-medium.png?x=x")
         self.assertEqual(backend.get_realm_icon_url(15, 1),
                          "/user_avatars/15/realm/icon.png?version=1")
-        self.assertEqual(backend.get_realm_logo_url(15, 1),
+        self.assertEqual(backend.get_realm_logo_url(15, 1, False),
                          "/user_avatars/15/realm/logo.png?version=1")
+        self.assertEqual(backend.get_realm_logo_url(15, 1, True),
+                         "/user_avatars/15/realm/night_logo.png?version=1")
 
         with self.settings(S3_AVATAR_BUCKET="bucket"):
             backend = S3UploadBackend()
@@ -822,8 +824,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                              "https://bucket.s3.amazonaws.com/hash-medium.png?x=x")
             self.assertEqual(backend.get_realm_icon_url(15, 1),
                              "https://bucket.s3.amazonaws.com/15/realm/icon.png?version=1")
-            self.assertEqual(backend.get_realm_logo_url(15, 1),
+            self.assertEqual(backend.get_realm_logo_url(15, 1, False),
                              "https://bucket.s3.amazonaws.com/15/realm/logo.png?version=1")
+            self.assertEqual(backend.get_realm_logo_url(15, 1, True),
+                             "https://bucket.s3.amazonaws.com/15/realm/night_logo.png?version=1")
 
     def test_multiple_upload_failure(self) -> None:
         """
@@ -1276,6 +1280,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_multiple_logo_upload_failure(self) -> None:
         self._test_multiple_upload_failure(night = False)
+        self._test_multiple_upload_failure(night = True)
 
     def _test_no_file_upload_failure(self, night: bool) -> None:
         """
@@ -1288,6 +1293,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_no_logo_file_upload_failure(self) -> None:
         self._test_no_file_upload_failure(night = False)
+        self._test_no_file_upload_failure(night = True)
 
     correct_files = [
         ('img.png', 'png_resized.png'),
@@ -1306,6 +1312,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_no_admin_user_logo_upload(self) -> None:
         self._test_no_admin_user_upload(night = False)
+        self._test_no_admin_user_upload(night = True)
 
     def _test_upload_limited_plan_type(self, night: bool) -> None:
         user_profile = self.example_user("iago")
@@ -1317,15 +1324,13 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_logo_limited_plan_type(self) -> None:
         self._test_upload_limited_plan_type(night = False)
-
-    def test_upload_night_logo_limited_plan_type(self) -> None:
-        night = True
-        self._test_upload_limited_plan_type(night)
+        self._test_upload_limited_plan_type(night = True)
 
     def _test_get_default_logo(self, night: bool) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_DEFAULT
+        realm.night_logo_source = Realm.LOGO_DEFAULT
         realm.save()
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(night)})
         redirect_url = response['Location']
@@ -1333,25 +1338,21 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_default_logo(self) -> None:
         self._test_get_default_logo(night = False)
-
-    def test_get_default_night_logo(self) -> None:
-        realm = get_realm('zulip')
-        realm.night_logo_source = Realm.NIGHT_LOGO_DEFAULT
-        realm.save()
-        night = True
-        self._test_get_default_logo(realm, night, realm_night_logo_url)
+        self._test_get_default_logo(night = True)
 
     def _test_get_realm_logo(self, night: bool) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_UPLOADED
+        realm.night_logo_source = Realm.LOGO_UPLOADED
         realm.save()
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(night)})
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(realm_logo_url(realm) + '&night=%s' % (str(night).lower())))
+        self.assertTrue(redirect_url.endswith(realm_logo_url(realm, night) + '&night=%s' % (str(night).lower())))
 
     def test_get_realm_logo(self) -> None:
         self._test_get_realm_logo(night = False)
+        self._test_get_realm_logo(night = True)
 
     def _test_valid_logo_upload(self, night: bool, field_name: str, file_name: str) -> None:
         """
@@ -1380,6 +1381,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_valid_logos(self) -> None:
         self._test_valid_logo_upload(night = False, field_name = 'logo_url', file_name = 'logo.png')
+        self._test_valid_logo_upload(night = True, field_name = 'night_logo_url', file_name = 'night_logo.png')
 
     def _test_invalid_logo_upload(self, night: bool) -> None:
         """
@@ -1395,10 +1397,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_invalid_logos(self) -> None:
         self._test_invalid_logo_upload(night = False)
-
-    def test_invalid_night_logos(self) -> None:
-        night = True
-        self._test_invalid_logo_upload(night)
+        self._test_invalid_logo_upload(night = True)
 
     def _test_delete_logo(self, night: bool, field_name: str) -> None:
         """
@@ -1407,39 +1406,41 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         realm.logo_source = Realm.LOGO_UPLOADED
+        realm.night_logo_source = Realm.LOGO_UPLOADED
         realm.save()
         result = self.client_delete("/json/realm/logo", {'night': ujson.dumps(night)})
         self.assert_json_success(result)
         self.assertIn(field_name, result.json())
         realm = get_realm('zulip')
         self.assertEqual(result.json()[field_name], realm_logo_url(realm, night))
-        self.assertEqual(realm.logo_source, Realm.LOGO_DEFAULT)
+        if night:
+            self.assertEqual(realm.night_logo_source, Realm.LOGO_DEFAULT)
+        else:
+            self.assertEqual(realm.logo_source, Realm.LOGO_DEFAULT)
 
     def test_delete_realm_logo(self) -> None:
         self._test_delete_logo(night = False, field_name = 'logo_url')
-
-    def test_delete_realm_night_logo(self) -> None:
-        realm = get_realm('zulip')
-        realm.night_logo_source = Realm.NIGHT_LOGO_UPLOADED
-        realm.save()
-        field_name = 'night_logo_url'
-        night = True
-        self._test_delete_logo(night, field_name, realm_night_logo_url)
-        realm = get_realm('zulip')
-        self.assertEqual(realm.night_logo_source, Realm.NIGHT_LOGO_DEFAULT)
+        self._test_delete_logo(night = True, field_name = 'night_logo_url')
 
     def _test_logo_version(self, night: bool) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        version = realm.logo_version
+        if night:
+            version = realm.night_logo_version
+        else:
+            version = realm.logo_version
         self.assertEqual(version, 1)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(night)})
-         realm = get_realm('zulip')
-        self.assertEqual(realm.logo_version, version + 1)
+        realm = get_realm('zulip')
+        if night:
+            self.assertEqual(realm.night_logo_version, version + 1)
+        else:
+            self.assertEqual(realm.logo_version, version + 1)
 
     def test_realm_logo_version(self) -> None:
         self._test_logo_version(night = False)
+        self._test_logo_version(night = True)
 
     def _test_logo_upload_file_size_error(self, night: bool) -> None:
         self.login(self.example_email("iago"))
@@ -1450,6 +1451,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_realm_logo_upload_file_size_error(self) -> None:
         self._test_logo_upload_file_size_error(night = False)
+        self._test_logo_upload_file_size_error(night = True)
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1750,6 +1752,7 @@ class S3Test(ZulipTestCase):
     @use_s3_backend
     def test_upload_realm_logo_image(self) -> None:
         self._test_upload_logo_image(night = False, file_name = 'logo')
+        self._test_upload_logo_image(night = True, file_name = 'night_logo')
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
