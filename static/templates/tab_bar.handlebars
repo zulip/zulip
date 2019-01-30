@@ -6,18 +6,13 @@
         {{/if}}
         {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
         {{#if hash}}
-            {{#if home}}
-            <a href="{{hash}}" title="{{t 'All messages' }} (Esc)"><i class="fa fa-home" aria-hidden="true"></i></a>
-            {{else}}
             <a href="{{hash}}">{{title}}</a>
-            {{/if}}
         {{else}}
             {{#if home}}
             <i class="fa fa-home" aria-hidden="true"></i>
-            {{/if}}
-            {{#unless home}}
+            {{else}}
             {{title}}
-            {{/unless}}
+            {{/if}}
         {{/if}}
     </li>
     {{/each}}
