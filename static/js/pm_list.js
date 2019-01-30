@@ -13,7 +13,7 @@ var zoomed_in = false;
 // left corner of the app.  This was split out from stream_list.js.
 
 function get_filter_li() {
-    return $("#global_filters > li[data-name='private']");
+    return $(".top_left_private_messages");
 }
 
 function update_count_in_dom(count_span, value_span, count) {
@@ -167,12 +167,12 @@ exports.update_private_messages = function () {
         exports.rebuild_recent("");
     } else if (is_pm_filter) {
         exports.rebuild_recent("");
-        $("#global_filters li[data-name='private']").addClass('active-filter');
+        $(".top_left_private_messages").addClass('active-filter');
     }
 };
 
 exports.set_click_handlers = function () {
-    $('#global_filters').on('click', '.show-more-private-messages', function (e) {
+    $('.top_left_private_messages').on('click', '.show-more-private-messages', function (e) {
         popovers.hide_all();
         zoom_in();
         e.preventDefault();

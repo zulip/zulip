@@ -105,7 +105,7 @@ run_test('build_private_messages_list', () => {
     expected_data.want_show_more_messages_links = true;
     assert.deepEqual(template_data, expected_data);
 
-    $('#global_filters').on = function (action, selector, f) {
+    $('.top_left_private_messages').on = function (action, selector, f) {
         var e = { preventDefault: function () {}, stopPropagation: function () {}};
         f(e);
     };
@@ -127,7 +127,7 @@ run_test('expand_and_update_private_messages', () => {
         return 'fake-dom-for-pm-list';
     };
 
-    var private_li = $("#global_filters > li[data-name='private']");
+    var private_li = $(".top_left_private_messages");
     var alice_li = $.create('alice-li-stub');
     var bob_li = $.create('bob-li-stub');
 
@@ -221,7 +221,7 @@ run_test('expand_and_update_private_messages', () => {
 run_test('update_dom_with_unread_counts', () => {
     var total_value = $.create('total-value-stub');
     var total_count = $.create('total-count-stub');
-    var private_li = $("#global_filters > li[data-name='private']");
+    var private_li = $(".top_left_private_messages");
     private_li.set_find_results('.count', total_count);
     total_count.set_find_results('.value', total_value);
 
