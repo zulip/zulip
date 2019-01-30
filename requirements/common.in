@@ -26,7 +26,7 @@ Pillow==5.4.1
 SQLAlchemy==1.2.15
 
 # Needed for password hashing
-argon2-cffi==18.3.0
+argon2-cffi==19.1.0
 
 # Needed for Tornado >3.2 compatibility
 backports-abc==0.5
