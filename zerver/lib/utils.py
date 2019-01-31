@@ -36,13 +36,13 @@ class StatsDWrapper:
     # as our statsd server supports them but supporting
     # pystatsd is not released yet
     def _our_gauge(self, stat: str, value: float, rate: float=1, delta: bool=False) -> None:
-            """Set a gauge value."""
-            from django_statsd.clients import statsd
-            if delta:
-                value_str = '%+g|g' % (value,)
-            else:
-                value_str = '%g|g' % (value,)
-            statsd._send(stat, value_str, rate)
+        """Set a gauge value."""
+        from django_statsd.clients import statsd
+        if delta:
+            value_str = '%+g|g' % (value,)
+        else:
+            value_str = '%g|g' % (value,)
+        statsd._send(stat, value_str, rate)
 
     def __getattr__(self, name: str) -> Any:
         # Hand off to statsd if we have it enabled

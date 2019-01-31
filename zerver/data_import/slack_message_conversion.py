@@ -120,11 +120,11 @@ def get_user_mentions(token: str, users: List[ZerverFieldsT],
     for user in users:
         if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
            (user['id'] == slack_id and short_name is None):
-                full_name = get_user_full_name(user)
-                user_id = added_users[slack_id]
-                mention = "@**" + full_name + "**"
-                token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
-                return token, user_id
+            full_name = get_user_full_name(user)
+            user_id = added_users[slack_id]
+            mention = "@**" + full_name + "**"
+            token = re.sub(SLACK_USERMENTION_REGEX, mention, token, flags=re.VERBOSE)
+            return token, user_id
     return token, None
 
 # Map italic, bold and strikethrough markdown

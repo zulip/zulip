@@ -50,7 +50,7 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
 
-    def test_notify_bot_owner_on_invalid_json(self)-> None:
+    def test_notify_bot_owner_on_invalid_json(self) -> None:
         @api_key_only_webhook_view('ClientName', notify_bot_owner_on_invalid_json=False)
         def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> None:
             raise InvalidJSONError("Malformed JSON")
