@@ -712,9 +712,8 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
-        # Customer, but no billing relationship; check that we are still redirected to /upgrade
-        Customer.objects.create(
-            realm=user.realm, stripe_customer_id='cus_123', has_billing_relationship=False)
+        # Customer, but no CustomerPlan; check that we are still redirected to /upgrade
+        Customer.objects.create(realm=user.realm, stripe_customer_id='cus_123')
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)

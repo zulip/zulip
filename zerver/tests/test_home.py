@@ -7,6 +7,7 @@ import ujson
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from mock import MagicMock, patch
 import urllib
 from typing import Any, Dict, List
@@ -23,7 +24,7 @@ from zerver.models import (
     flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
-from corporate.models import Customer
+from corporate.models import Customer, CustomerPlan
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -643,28 +644,28 @@ class HomeTest(ZulipTestCase):
     def test_show_billing(self) -> None:
         customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
 
-        # realm admin, but no billing relationship -> no billing link
+        # realm admin, but no CustomerPlan -> no billing link
         user = self.example_user('iago')
         self.login(user.email)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
 
-        # realm admin, with billing relationship -> show billing link
-        customer.has_billing_relationship = True
-        customer.save()
+        # realm admin, with inactive CustomerPlan -> show billing link
+        CustomerPlan.objects.create(customer=customer, licenses=-1, billing_cycle_anchor=timezone_now(),
+                                    billing_schedule=CustomerPlan.ANNUAL, next_invoice_date=timezone_now(),
+                                    tier=CustomerPlan.STANDARD, status=CustomerPlan.ENDED)
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
 
-        # billing admin, with billing relationship -> show billing link
+        # billing admin, with CustomerPlan -> show billing link
         user.is_realm_admin = False
         user.is_billing_admin = True
         user.save(update_fields=['is_realm_admin', 'is_billing_admin'])
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertIn('Billing', result_html)
 
-        # billing admin, but no billing relationship -> no billing link
-        customer.has_billing_relationship = False
-        customer.save()
+        # billing admin, but no CustomerPlan -> no billing link
+        CustomerPlan.objects.all().delete()
         result_html = self._get_home_page().content.decode('utf-8')
         self.assertNotIn('Billing', result_html)
 
