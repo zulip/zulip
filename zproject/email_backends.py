@@ -29,7 +29,7 @@ def set_forward_address(forward_address: str) -> None:
     config.set("DEV_EMAIL", "forward_address", forward_address)
 
     with open(settings.FORWARD_ADDRESS_CONFIG_FILE, "w") as cfgfile:
-            config.write(cfgfile)
+        config.write(cfgfile)
 
 class EmailLogBackEnd(BaseEmailBackend):
     def send_email_smtp(self, email: EmailMultiAlternatives) -> None:

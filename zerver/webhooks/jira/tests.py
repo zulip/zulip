@@ -75,12 +75,12 @@ class JiraHookTests(WebhookTestCase):
         self.send_and_test_stream_message('created_v1', expected_topic, expected_message)
 
     def test_created_with_unicode(self) -> None:
-            expected_topic = u"BUG-15: New bug with à hook"
-            expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+        expected_topic = u"BUG-15: New bug with à hook"
+        expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
 
 > New bug with à hook"""
-            self.send_and_test_stream_message('created_with_unicode_v1', expected_topic, expected_message)
-            self.send_and_test_stream_message('created_with_unicode_v2', expected_topic, expected_message)
+        self.send_and_test_stream_message('created_with_unicode_v1', expected_topic, expected_message)
+        self.send_and_test_stream_message('created_with_unicode_v2', expected_topic, expected_message)
 
     def test_created_assignee(self) -> None:
         expected_topic = "TEST-4: Test Created Assignee"
@@ -108,12 +108,12 @@ Leaving a comment here! :)"""
         self.send_and_test_stream_message('comment_created', expected_topic, expected_message)
 
     def test_comment_edited(self) -> None:
-            expected_topic = "BUG-15: New bug with hook"
-            expected_message = """Leo Franchi **edited comment on** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_topic = "BUG-15: New bug with hook"
+        expected_message = """Leo Franchi **edited comment on** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
 Adding a comment. Oh, what a comment it is!"""
-            self.send_and_test_stream_message('comment_edited_v2', expected_topic, expected_message)
+        self.send_and_test_stream_message('comment_edited_v2', expected_topic, expected_message)
 
     def test_comment_deleted(self) -> None:
         expected_topic = "TOM-1: New Issue"
@@ -149,12 +149,12 @@ Adding a comment. Oh, what a comment it is!"""
         self.send_and_test_stream_message('updated_priority_v2', expected_topic, expected_message)
 
     def test_status_changed(self) -> None:
-            expected_topic = "TEST-1: Fix That"
-            expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1):
+        expected_topic = "TEST-1: Fix That"
+        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
-            self.send_and_test_stream_message('change_status_v1', expected_topic, expected_message)
-            self.send_and_test_stream_message('change_status_v2', expected_topic, expected_message)
+        self.send_and_test_stream_message('change_status_v1', expected_topic, expected_message)
+        self.send_and_test_stream_message('change_status_v2', expected_topic, expected_message)
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('jira', fixture_name)

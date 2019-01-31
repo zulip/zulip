@@ -44,11 +44,11 @@ def rm_tree(path: str) -> None:
 
 def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, slack_data_dir: str,
-                             custom_emoji_list: ZerverFieldsT)-> Tuple[ZerverFieldsT, AddedUsersT,
-                                                                       AddedRecipientsT,
-                                                                       AddedChannelsT,
-                                                                       List[ZerverFieldsT],
-                                                                       ZerverFieldsT]:
+                             custom_emoji_list: ZerverFieldsT) -> Tuple[ZerverFieldsT, AddedUsersT,
+                                                                        AddedRecipientsT,
+                                                                        AddedChannelsT,
+                                                                        List[ZerverFieldsT],
+                                                                        ZerverFieldsT]:
     """
     Returns:
     1. realm, Converted Realm data
