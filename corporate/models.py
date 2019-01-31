@@ -10,8 +10,6 @@ from zerver.models import Realm, RealmAuditLog
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)  # type: str
-    # Deprecated .. delete once everyone is migrated to new billing system
-    has_billing_relationship = models.BooleanField(default=False)  # type: bool
     # A percentage, like 85.
     default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)  # type: Optional[Decimal]
 
@@ -20,8 +18,6 @@ class Customer(models.Model):
 
 class CustomerPlan(models.Model):
     customer = models.ForeignKey(Customer, on_delete=CASCADE)  # type: Customer
-    # Deprecated .. delete once everyone is migrated to new billing system
-    licenses = models.IntegerField()  # type: int
     automanage_licenses = models.BooleanField(default=False)  # type: bool
     charge_automatically = models.BooleanField(default=False)  # type: bool
 
@@ -72,36 +68,3 @@ class LicenseLedger(models.Model):
     # 0 means the plan has been explicitly downgraded.
     # This cannot be None if plan.automanage_licenses.
     licenses_at_next_renewal = models.IntegerField(null=True)  # type: Optional[int]
-
-# Everything below here is legacy
-
-class Plan(models.Model):
-    # The two possible values for nickname
-    CLOUD_MONTHLY = 'monthly'
-    CLOUD_ANNUAL = 'annual'
-    nickname = models.CharField(max_length=40, unique=True)  # type: str
-
-    stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
-
-class Coupon(models.Model):
-    percent_off = models.SmallIntegerField(unique=True)  # type: int
-    stripe_coupon_id = models.CharField(max_length=255, unique=True)  # type: str
-
-    def __str__(self) -> str:
-        return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
-
-class BillingProcessor(models.Model):
-    log_row = models.ForeignKey(RealmAuditLog, on_delete=CASCADE)  # RealmAuditLog
-    # Exactly one processor, the global processor, has realm=None.
-    realm = models.OneToOneField(Realm, null=True, on_delete=CASCADE)  # type: Realm
-
-    DONE = 'done'
-    STARTED = 'started'
-    SKIPPED = 'skipped'  # global processor only
-    STALLED = 'stalled'  # realm processors only
-    state = models.CharField(max_length=20)  # type: str
-
-    last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
-
-    def __str__(self) -> str:
-        return '<BillingProcessor: %s %s %s>' % (self.realm, self.log_row, self.id)

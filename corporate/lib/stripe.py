@@ -312,8 +312,6 @@ def process_initial_upgrade(user: UserProfile, licenses: int, automanage_license
             'tier': CustomerPlan.STANDARD}
         plan = CustomerPlan.objects.create(
             customer=customer,
-            # Deprecated, remove
-            licenses=-1,
             next_invoice_date=next_invoice_date,
             **plan_params)
         ledger_entry = LicenseLedger.objects.create(
