@@ -274,7 +274,7 @@ def send_notifications_to_bouncer(user_profile_id: int,
         'gcm_payload': gcm_payload,
     }
     # Calls zilencer.views.remote_server_notify_push
-    send_json_to_push_bouncer('POST', 'notify', post_data)
+    send_json_to_push_bouncer('POST', 'push/notify', post_data)
 
 #
 # Managing device tokens
@@ -308,7 +308,7 @@ def add_push_device_token(user_profile: UserProfile,
 
         logger.info("Sending new push device to bouncer: %r", post_data)
         # Calls zilencer.views.register_remote_push_device
-        send_to_push_bouncer('POST', 'register', post_data)
+        send_to_push_bouncer('POST', 'push/register', post_data)
         return
 
     try:
@@ -336,7 +336,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
             'token_kind': kind,
         }
         # Calls zilencer.views.unregister_remote_push_device
-        send_to_push_bouncer("POST", "unregister", post_data)
+        send_to_push_bouncer("POST", "push/unregister", post_data)
         return
 
     try:
