@@ -25,20 +25,28 @@ class Command(BaseCommand):
             realms = Realm.objects.all()
 
         for realm in realms:
-            print(realm.string_id)
-            print("------------")
-            print("%25s %15s %10s" % ("stream", "subscribers", "messages"))
             streams = Stream.objects.filter(realm=realm).exclude(Q(name__istartswith="tutorial-"))
-            invite_only_count = 0
+            # private stream count
+            private_count = 0
+            # public stream count
+            public_count = 0
             for stream in streams:
                 if stream.invite_only:
-                    invite_only_count += 1
-                    continue
+                    private_count += 1
+                else:
+                    public_count += 1
+            print("------------")
+            print(realm.string_id, end=' ')
+            print("%10s %d public streams and" % ("(", public_count), end=' ')
+            print("%d private streams )" % (private_count,))
+            print("------------")
+            print("%25s %15s %10s" % ("stream", "subscribers", "messages"))
+
+            for stream in streams:
                 print("%25s" % (stream.name,), end=' ')
                 recipient = Recipient.objects.filter(type=Recipient.STREAM, type_id=stream.id)
                 print("%10d" % (len(Subscription.objects.filter(recipient=recipient,
                                                                 active=True)),), end=' ')
                 num_messages = len(Message.objects.filter(recipient=recipient))
                 print("%12d" % (num_messages,))
-            print("%d private streams" % (invite_only_count,))
             print("")
