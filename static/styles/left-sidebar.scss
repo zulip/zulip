@@ -167,20 +167,45 @@ li.active-sub-filter {
     font-size: 13px;
 }
 
-#global_filters .count,
+/* We are mostly consistent in how we style
+   unread counts, except for starred messages.
+   This is the common section.
+*/
+.top_left_all_messages .count,
+.top_left_private_messages .count,
+.top_left_starred_messages .count,
+.top_left_mentions .count,
 #stream_filters .count,
 .topic-unread-count,
 .private_message_count {
     float: right;
-    background-color: hsl(105, 2%, 50%);
     padding: 0 4px;
     height: 16px;
     line-height: 16px;
-    color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
+}
+
+/* Starred messaged counts aren't really unread
+   counts, so we style them differently.
+*/
+.top_left_starred_messages {
+    background-color: transparent;
+    border-width: 0;
+    color: inherit;
+}
+
+/* These are true "unread" counts. */
+.top_left_all_messages .count,
+.top_left_private_messages .count,
+.top_left_mentions .count,
+#stream_filters .count,
+.topic-unread-count,
+.private_message_count {
+    background-color: hsl(105, 2%, 50%);
+    color: hsl(0, 0%, 100%);
 }
 
 #global_filters .count {
