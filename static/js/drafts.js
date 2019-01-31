@@ -265,6 +265,21 @@ exports.format_draft = function (draft) {
     return formatted;
 };
 
+function row_with_focus() {
+    var focused_draft = $(".draft-info-box:focus")[0];
+    return $(focused_draft).parent(".draft-row");
+}
+
+function row_before_focus() {
+    var focused_row = row_with_focus();
+    return focused_row.prev(".draft-row:visible");
+}
+
+function row_after_focus() {
+    var focused_row = row_with_focus();
+    return focused_row.next(".draft-row:visible");
+}
+
 function remove_draft(draft_row) {
     // Deletes the draft and removes it from the list
     var draft_id = draft_row.data("draft-id");
@@ -407,36 +422,30 @@ exports.drafts_handle_events = function (e, event_key) {
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "up_arrow") {
-        var focus_draft_up_row = $(".draft-info-box:focus")[0].parentElement;
-        var prev_focus_draft_row = $(focus_draft_up_row).prev();
-        drafts_scroll(prev_focus_draft_row);
+        drafts_scroll(row_before_focus());
     }
 
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "down_arrow") {
-        var focus_draft_down_row = $(".draft-info-box:focus")[0].parentElement;
-        var next_focus_draft_row = $(focus_draft_down_row).next();
-        drafts_scroll(next_focus_draft_row);
+        drafts_scroll(row_after_focus());
     }
 
-    var elt = document.activeElement;
-    var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
+    var focused_draft_id = row_with_focus().data("draft-id");
     // Allows user to delete drafts with backspace
     if (event_key === "backspace" || event_key === "delete") {
-        if (elt.parentElement.hasAttribute("data-draft-id")) {
-            var focus_draft_back_row = $(elt)[0].parentElement;
-            var draft_row = $(focus_draft_back_row);
-            var backnext_focus_draft_row = draft_row.next();
-            var backprev_focus_draft_row = draft_row.prev();
+        if (focused_draft_id !== undefined) {
+            var draft_row = row_with_focus();
+            var next_draft_row = row_after_focus();
+            var prev_draft_row = row_before_focus();
             var draft_to_be_focused_id;
 
             // Try to get the next draft in the list and 'focus' it
             // Use previous draft as a fallback
-            if (backnext_focus_draft_row[0] !== undefined) {
-                draft_to_be_focused_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
-            } else if (backprev_focus_draft_row[0] !== undefined) {
-                draft_to_be_focused_id = backprev_focus_draft_row[0].getAttribute("data-draft-id");
+            if (next_draft_row[0] !== undefined) {
+                draft_to_be_focused_id = next_draft_row.data("draft-id");
+            } else if (prev_draft_row[0] !== undefined) {
+                draft_to_be_focused_id = prev_draft_row.data("draft-id");
             }
 
             var new_focus_element = document.querySelectorAll('[data-draft-id="' + draft_to_be_focused_id + '"]');
@@ -452,7 +461,7 @@ exports.drafts_handle_events = function (e, event_key) {
     // It restores draft that is focused.
     if (event_key === "enter") {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
-            exports.restore_draft(focused_draft);
+            exports.restore_draft(focused_draft_id);
         } else {
             var first_draft = draft_id_arrow[draft_id_arrow.length - 1];
             exports.restore_draft(first_draft);
