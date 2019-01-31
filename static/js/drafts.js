@@ -429,17 +429,17 @@ exports.drafts_handle_events = function (e, event_key) {
             var draft_row = $(focus_draft_back_row);
             var backnext_focus_draft_row = draft_row.next();
             var backprev_focus_draft_row = draft_row.prev();
-            var delete_id;
+            var draft_to_be_focused_id;
 
             // Try to get the next draft in the list and 'focus' it
             // Use previous draft as a fallback
             if (backnext_focus_draft_row[0] !== undefined) {
-                delete_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
+                draft_to_be_focused_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
             } else if (backprev_focus_draft_row[0] !== undefined) {
-                delete_id = backprev_focus_draft_row[0].getAttribute("data-draft-id");
+                draft_to_be_focused_id = backprev_focus_draft_row[0].getAttribute("data-draft-id");
             }
 
-            var new_focus_element = document.querySelectorAll('[data-draft-id="' + delete_id + '"]');
+            var new_focus_element = document.querySelectorAll('[data-draft-id="' + draft_to_be_focused_id + '"]');
             if (new_focus_element[0] !== undefined) {
                 activate_element(new_focus_element[0].children[0]);
             }
