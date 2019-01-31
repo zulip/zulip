@@ -1,0 +1,198 @@
+/* POSITIONING, MOSTLY */
+
+.unread_view {
+    display: none;
+}
+
+.unread_list_container ul {
+    list-style-type: none;
+    margin-left: 0px;
+    margin-bottom: 22px;
+}
+
+.unread_list_container {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    z-index: 0;
+    width: 100%;
+}
+
+.unread_list_container ul {
+    overflow-y: visible;
+}
+
+.unread_list_avatar {
+    height: 15px;
+    margin-right: 5px;
+    margin-top: 2px;
+}
+
+.unread_stream_hashtag {
+    top: 2px;
+}
+
+.unread_stream_icon {
+    margin-right: 9px;
+}
+
+.unread_list_pm .fa-users {
+    margin-right: 4px;
+    margin-top: 2px;
+}
+
+.unread_list_pm .count,
+.unread_list_stream .count,
+.unread_list_topic .count {
+    padding-left: 4px;
+    padding-right: 4px;
+    height: 16px;
+}
+
+.unread_pm_name,
+.unread_stream_name,
+.unread_topic_name {
+    width: calc(100% - 5px);
+    display: block;
+};
+
+.unread_stream_name {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-right: 2px;
+}
+
+.unread_list_pm,
+.unread_list_stream,
+.unread_list_topic {
+    display: flex;
+}
+
+.unread_list_pm .ws_left,
+.unread_list_stream .unread_stream_pin,
+.unread_list_stream .ws_left,
+.unread_list_topic .ws_left {
+    min-width: 16px;
+}
+
+.unread_list_stream .unread_stream_pin i {
+    padding-left: 3px;
+}
+
+.unread_list_pm .ws_right,
+.unread_stream_sidebar_arrow,
+.unread_topic_sidebar_arrow {
+    min-width: 27px;
+}
+
+.unread_list_pm,
+.unread_list_stream,
+.unread_list_topic {
+    padding-bottom: 1px;
+}
+
+.unread_topic_indent {
+    min-width: 35px;
+}
+
+.unread_stream_sidebar_arrow i,
+.unread_topic_sidebar_arrow i {
+    padding-left: 4px;
+    display: none;
+    justify-content: flex-center;
+}
+
+.unread_stream_sidebar_arrow:hover i,
+.unread_topic_sidebar_arrow:hover i {
+    display: inline-block;
+}
+
+/* COLOR/BORDER STUFF */
+.unread_muted {
+    opacity: 0.25;
+}
+
+.unread_list_container a {
+    color: inherit;
+}
+
+.unread_list_container li:hover {
+    background-color: hsl(93, 19%, 88%);
+}
+
+.unread_list_pm.unread_current,
+.unread_list_stream.unread_current,
+.unread_list_topic.unread_current {
+    background-color: hsl(202, 56%, 91%);
+}
+
+.unread_list_pm .count,
+.unread_list_topic .count,
+.unread_list_stream .count {
+    border-radius: 2px;
+}
+
+.unread_list_pm .count.unread_nonzero {
+    background-color: hsl(138, 47%, 64%);
+}
+
+.unread_list_pm .fa-users {
+    color: hsl(138, 47%, 64%);
+}
+
+.unread_list_stream .unread_stream_pin i {
+    color: hsl(270, 47%, 64%);
+}
+
+.unread_list_stream .unread_stream_pin i:hover {
+    color: hsl(0, 47%, 64%);
+}
+
+/* FONT/TEXT STUFF */
+
+.unread_list_pm.unread_current,
+.unread_list_stream.unread_current,
+.unread_list_topic.unread_current {
+    font-weight: 600;
+}
+
+.unread_stream_hashtag:empty::after {
+    content: "#";
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 0;
+}
+
+.unread_list_stream .fa-lock,
+.unread_stream_hashtag {
+    font-size: 15px;
+}
+
+.unread_list_pm .count,
+.unread_list_stream .count,
+.unread_list_topic .count {
+    letter-spacing: 0.6px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.unread_pm_name,
+.unread_stream_name,
+.unread_topic_name {
+    font-size: 15px;
+}
+
+.unread_pm_name,
+.unread_stream_name,
+.unread_topic_name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    justify-content: flex-start;
+}
+
+.unread_list_container li a:hover {
+    text-decoration: none;
+}

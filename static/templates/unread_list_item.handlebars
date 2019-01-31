@@ -1,0 +1,79 @@
+{{#if is_pm}}
+<div class="unread_list_pm {{#if current}}unread_current{{/if}}">
+    <span class="ws_left"></span>
+
+    {{#if is_single_pm}}
+    <img src="{{small_avatar_url}}" alt="" class="unread_list_avatar no-drag"/>
+    {{/if}}
+
+    {{#if is_group_pm}}
+    <i class="fa fa-users"></i>
+    {{/if}}
+
+    <a href="{{uri}}" class="unread_pm_name" title="{{name}}">
+        {{name}}
+    </a>
+
+    <div class="count {{#if count}}unread_nonzero{{/if}}">
+        <div class="value">{{count}}</div>
+    </div>
+
+    <span class="ws_right"></span>
+</div>
+{{/if}}
+
+{{#if is_stream}}
+<div class="unread_list_stream {{#if muted}}unread_muted{{/if}} {{#if current}}unread_current{{/if}}" data-stream-id="{{stream_id}}">
+
+    {{#if show_pin}}
+    <div class="unread_stream_pin">
+        <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+    </div>
+    {{ else }}
+    <span class="ws_left"></span>
+    {{/if}}
+
+    <span class="unread_stream_icon" style="color: {{color}}">
+        {{#if invite_only}}
+        <i class="fa fa-lock" aria-hidden="true"></i>
+        {{ else }}
+        <span class="unread_stream_hashtag"></span>
+        {{/if}}
+    </span>
+
+    <a href="{{uri}}" class="unread_stream_name" title="{{name}}">
+        {{name}}
+    </a>
+
+    <div class="count {{text_class}}" {{#if count}}style="background-color: {{color}}"{{/if}}>
+        <div class="value">{{count}}</div>
+    </div>
+
+    <span class="arrow unread_stream_sidebar_arrow">
+        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+    </span>
+
+</div>
+{{/if}}
+
+{{#if is_topic}}
+<div class="unread_list_topic {{#if muted}}unread_muted{{/if}} {{#if current}}unread_current{{/if}}" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
+
+    <span class="ws_left"></span>
+
+    <span class="unread_topic_indent"></span>
+
+    <a href="{{uri}}" class="unread_topic_name" title="{{topic}}">
+        {{topic}}
+    </a>
+
+    <div class="count {{text_class}}" {{#if count}}style="background-color: {{color}}"{{/if}}>
+        <div class="value">{{count}}</div>
+    </div>
+
+    <span class="arrow unread_topic_sidebar_arrow">
+        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+    </span>
+
+</div>
+{{/if}}

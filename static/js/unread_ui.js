@@ -63,6 +63,7 @@ exports.update_unread_counts = function () {
     pm_list.update_dom_with_unread_counts(res);
     notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
+    unread_list.rebuild();
 
     exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
                                     res.home_unread_messages);

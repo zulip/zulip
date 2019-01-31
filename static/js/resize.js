@@ -63,6 +63,12 @@ function get_new_heights() {
         - $("#global_filters").safeOuterHeight(true)
         - $("#streams_header").safeOuterHeight(true);
 
+    res.unread_container_max_height = viewport_height
+        - parseInt($("#left-sidebar").css("marginTop"), 10)
+        - parseInt($(".narrows_panel").css("marginTop"), 10)
+        - parseInt($(".narrows_panel").css("marginBottom"), 10)
+        - $(".unread_go_back").safeOuterHeight(true);
+
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
@@ -240,6 +246,9 @@ exports.resize_page_components = function () {
     exports.resize_bottom_whitespace(h);
     $("#buddy_list_wrapper").css('max-height', h.buddy_list_wrapper_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
+
+    $(".unread_list_container").css('max-height', h.unread_container_max_height);
+    ui.update_scrollbar($(".unread_list_container"));
 
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
     ui.update_scrollbar($("#stream-filters-container"));

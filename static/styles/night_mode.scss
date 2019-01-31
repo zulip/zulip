@@ -26,6 +26,8 @@ body.night-mode {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .unread_list_pm .count,
+    .light_background,
     .dark .message_label_clickable.stream_label,
     .dark .stream_label,
     .stream_label {
@@ -290,11 +292,15 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: inherit;
     }
 
+    .unread_list_pm.unread_current,
+    .unread_list_stream.unread_current,
+    .unread_list_topic.unread_current,
     li.active-filter,
     li.active-sub-filter {
         background-color: hsla(199, 33%, 46%, 0.2);
     }
 
+    .unread_list_container li:hover,
     #global_filters li:hover,
     #stream_filters li:hover,
     #stream_filters li.highlighted_stream,

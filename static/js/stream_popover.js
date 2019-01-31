@@ -230,6 +230,32 @@ exports.register_click_handlers = function () {
         });
     });
 
+    $('.unread_view').on('click', '.unread_stream_sidebar_arrow', function (e) {
+        e.stopPropagation();
+
+        var elt = e.target;
+        var stream_id = $(elt).closest('.unread_list_stream').attr('data-stream-id');
+
+        build_stream_popover({
+            elt: elt,
+            stream_id: stream_id,
+        });
+    });
+
+    $('.unread_view').on('click', '.unread_topic_sidebar_arrow', function (e) {
+        e.stopPropagation();
+
+        var elt = $(e.target).closest('.unread_topic_sidebar_arrow').expectOne()[0];
+        var stream_id = $(elt).closest('.unread_list_topic').expectOne().attr('data-stream-id');
+        var topic_name = $(elt).closest('.unread_list_topic').expectOne().attr('data-topic-name');
+
+        build_topic_popover({
+            elt: elt,
+            stream_id: stream_id,
+            topic_name: topic_name,
+        });
+    });
+
     $('#global_filters').on('click', '.all-messages-arrow', build_all_messages_popover);
 
     exports.register_stream_handlers();

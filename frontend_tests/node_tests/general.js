@@ -408,6 +408,7 @@ set_global('resize', {});
 set_global('stream_list', {});
 set_global('unread_ops', {});
 set_global('unread_ui', {});
+set_global('unread_list', {});
 
 zrequire('message_events');
 
@@ -427,6 +428,7 @@ run_test('insert_message', () => {
     helper.redirect('notifications', 'received_messages');
     helper.redirect('resize', 'resize_page_components');
     helper.redirect('stream_list', 'update_streams_sidebar');
+    helper.redirect('unread_list', 'rebuild');
     helper.redirect('unread_ops', 'process_visible');
     helper.redirect('unread_ui', 'update_unread_counts');
 
@@ -447,6 +449,7 @@ run_test('insert_message', () => {
         'unread_ops.process_visible',
         'notifications.received_messages',
         'stream_list.update_streams_sidebar',
+        'unread_list.rebuild',
     ]);
 
     // Despite all of our stubbing/mocking, the call to

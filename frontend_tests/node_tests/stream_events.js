@@ -10,6 +10,10 @@ set_global('colorspace', {
     },
 });
 
+set_global('unread_list', {
+    rebuild: noop,
+});
+
 zrequire('people');
 zrequire('stream_data');
 zrequire('stream_events');

@@ -287,7 +287,7 @@ def build_custom_checkers(by_lang):
          'exclude': ['frontend_tests/'],
          'description': '.includes() is incompatible with Internet Explorer. Use .indexOf() !== -1 instead.'},
         {'pattern': '[.]html[(]',
-         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',
+         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|list_ul|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',
          'exclude': ['static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
                      'static/js/confirm_dialog.js',
                      'frontend_tests/'],
@@ -840,6 +840,9 @@ def build_custom_checkers(by_lang):
              'templates/analytics/realm_summary_table.html',
              'templates/corporate/zephyr.html',
              'templates/corporate/zephyr-mirror.html',
+
+             # Border colors (TODO: fix regex).
+             'static/templates/unread_list_item.handlebars',
          ]),
          'good_lines': ['#my-style {color: blue;}', 'style="display: none"', "style='display: none"],
          'bad_lines': ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"']},

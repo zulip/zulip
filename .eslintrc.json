@@ -195,6 +195,7 @@
         "ui_report": false,
         "ui_util": false,
         "unread": false,
+        "unread_list": false,
         "unread_ops": false,
         "unread_ui": false,
         "upgrade": false,

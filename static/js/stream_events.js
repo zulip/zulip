@@ -45,9 +45,11 @@ exports.update_property = function (stream_id, property, value, rendered_descrip
     switch (property) {
     case 'color':
         stream_color.update_stream_color(sub, value, {update_historical: true});
+        unread_list.rebuild();
         break;
     case 'in_home_view':
         stream_muting.update_in_home_view(sub, value);
+        unread_list.rebuild();
         break;
     case 'desktop_notifications':
         update_stream_desktop_notifications(sub, value);
@@ -63,6 +65,7 @@ exports.update_property = function (stream_id, property, value, rendered_descrip
         break;
     case 'name':
         subs.update_stream_name(sub, value);
+        unread_list.rebuild();
         break;
     case 'description':
         subs.update_stream_description(sub, value, rendered_description);
@@ -73,6 +76,7 @@ exports.update_property = function (stream_id, property, value, rendered_descrip
     case 'pin_to_top':
         update_stream_pin(sub, value);
         stream_list.refresh_pinned_or_unpinned_stream(sub);
+        unread_list.rebuild();
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,

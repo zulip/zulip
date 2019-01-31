@@ -49,6 +49,7 @@ exports.update_in_home_view = function (sub, value) {
     }, 0);
 
     stream_list.set_in_home_view(sub.stream_id, sub.in_home_view);
+    unread_list.rebuild();
 
     var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);

@@ -1,4 +1,23 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
+    <div class="unread_view" aria-hidden="true">
+        <div class="unread_go_back">
+            {# No translation, this is temporary!!!! #}
+            This is our beta left sidebar view!
+            <br>
+            Use the key <b>L</b> to go back to the other left
+            sidebar view.
+            Discuss on
+            <a target="_blank" href="https://chat.zulip.org/#narrow/stream/6-frontend/topic/unread.20list">
+                #frontend
+            </a>
+            <hr>
+        </div>
+        <div class="unread_caught_up">
+            {{ _('You have no unread messages.') }}
+        </div>
+        <div class="unread_list_container">
+        </div>
+    </div>
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
             {# Special-case this link so we don't actually go to page top. #}

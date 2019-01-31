@@ -60,6 +60,7 @@ const ignore_modules = [
     'subs',
     'timerender',
     'ui',
+    'unread_list',
     'unread_ui',
 ];
 

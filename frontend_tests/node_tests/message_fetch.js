@@ -36,10 +36,12 @@ set_global('server_events', {});
 set_global('stream_list', {
     maybe_scroll_narrow_into_view: () => {},
 });
+set_global('unread_list', {});
 
 muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;
 server_events.home_view_loaded = noop;
+unread_list.rebuild = noop;
 
 function stub_message_view(list) {
     list.view.append = noop;
