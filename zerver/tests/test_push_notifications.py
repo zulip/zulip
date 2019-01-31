@@ -1116,7 +1116,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             'gcm_payload': {'gcm': True},
         }
         mock_send.assert_called_with('POST',
-                                     'notify',
+                                     'push/notify',
                                      ujson.dumps(post_data),
                                      extra_headers={'Content-type':
                                                     'application/json'})

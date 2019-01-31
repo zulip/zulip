@@ -32,7 +32,7 @@ def send_to_push_bouncer(method: str,
 
     """
     url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
-                               '/api/v1/remotes/push/' + endpoint)
+                               '/api/v1/remotes/' + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
                                            settings.ZULIP_ORG_KEY)
 
