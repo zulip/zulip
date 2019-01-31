@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 from django.conf import settings
 import pika
+import pika.adapters.tornado_connection
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
 from tornado import ioloop
@@ -161,10 +162,10 @@ class SimpleQueueClient:
     def stop_consuming(self) -> None:
         self.channel.stop_consuming()
 
-# Patch pika.adapters.TornadoConnection so that a socket error doesn't
+# Patch pika.adapters.tornado_connection.TornadoConnection so that a socket error doesn't
 # throw an exception and disconnect the tornado process from the rabbitmq
 # queue. Instead, just re-connect as usual
-class ExceptionFreeTornadoConnection(pika.adapters.TornadoConnection):
+class ExceptionFreeTornadoConnection(pika.adapters.tornado_connection.TornadoConnection):
     def _adapter_disconnect(self) -> None:
         try:
             super()._adapter_disconnect()
