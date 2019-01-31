@@ -70,6 +70,11 @@
     -webkit-font-smoothing: antialiased;
 }
 
+.drafts-list .toggle-show-drafts {
+    display: block;
+    text-align: center;
+}
+
 .draft-row {
     padding: 5px 10px;
 }

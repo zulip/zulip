@@ -187,6 +187,7 @@ exports.restore_draft = function (draft_id) {
 };
 
 var DRAFT_LIFETIME = 30;
+var NUM_DRAFT_LIMIT = 4;
 
 function remove_old_drafts() {
     var old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
@@ -265,6 +266,60 @@ exports.format_draft = function (draft) {
     return formatted;
 };
 
+function show_all_drafts() {
+    _.each($("#drafts_table .draft-row"), function (elem) {
+        $(elem).show();
+    });
+}
+
+function show_limited_drafts() {
+    _.each($("#drafts_table .draft-row"), function (elem, i) {
+        if (i < NUM_DRAFT_LIMIT) {
+            $(elem).show();
+        } else {
+            $(elem).hide();
+        }
+    });
+}
+
+function show_more_drafts() {
+    var link = $("#toggle-show-drafts");
+    link.text(i18n.t("Show Less"));
+    link.removeClass("show-more");
+    link.addClass("show-less");
+    show_all_drafts();
+}
+
+function show_less_drafts() {
+    var link = $("#toggle-show-drafts");
+    link.text(i18n.t("Show More"));
+    link.removeClass("show-less");
+    link.addClass("show-more");
+    show_limited_drafts();
+}
+
+function toggle_show_drafts() {
+    if ($("#toggle-show-drafts").hasClass("show-more")) {
+        show_more_drafts();
+    } else {
+        show_less_drafts();
+    }
+}
+
+function render_drafts_list() {
+    if ($("#drafts_table .draft-row").length > NUM_DRAFT_LIMIT) {
+        $("#drafts_table .toggle-show-drafts").show();
+        if ($("#toggle-show-drafts").hasClass("show-less")) {
+            show_more_drafts();
+        } else {
+            show_less_drafts();
+        }
+    } else {
+        $("#drafts_table .toggle-show-drafts").hide();
+        show_all_drafts();
+    }
+}
+
 function row_with_focus() {
     var focused_draft = $(".draft-info-box:focus")[0];
     return $(focused_draft).parent(".draft-row");
@@ -323,6 +378,7 @@ exports.launch = function () {
         if ($("#drafts_table .draft-row").length > 0) {
             $('#drafts_table .no-drafts').hide();
         }
+        render_drafts_list();
     }
 
     function setup_event_handlers() {
@@ -338,6 +394,13 @@ exports.launch = function () {
             var draft_row = $(this).closest(".draft-row");
 
             remove_draft(draft_row);
+            render_drafts_list();
+        });
+
+        $("#toggle-show-drafts").on("click", function (e) {
+            e.preventDefault();
+
+            toggle_show_drafts();
         });
     }
 
@@ -454,13 +517,16 @@ exports.drafts_handle_events = function (e, event_key) {
             }
 
             remove_draft(draft_row);
+            render_drafts_list();
         }
     }
 
     // This handles when pressing enter while looking at drafts.
     // It restores draft that is focused.
     if (event_key === "enter") {
-        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
+        if (document.activeElement.id === "toggle-show-drafts") {
+            toggle_show_drafts();
+        } else if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
             exports.restore_draft(focused_draft_id);
         } else {
             var first_draft = draft_id_arrow[draft_id_arrow.length - 1];

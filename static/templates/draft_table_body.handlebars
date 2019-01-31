@@ -7,7 +7,8 @@
                     <span class="exit-sign">&times;</span>
                 </div>
                 <div class="removed-drafts">
-                    {{#tr this}} Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed. {{/tr}}
+                    {{#tr this}} Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed.
+                    {{/tr}}
                 </div>
                 <div class="draft-hotkey-reminder">
                     {{t "Pro tip: You can use 'd' to open your drafts."}}
@@ -21,6 +22,10 @@
                 {{#each drafts}}
                 {{partial "draft"}}
                 {{/each}}
+
+                <div class="toggle-show-drafts">
+                    <a id="toggle-show-drafts" href="#drafts"></a>
+                </div>
             </div>
         </div>
     </div>
