@@ -651,7 +651,7 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn('Billing', result_html)
 
         # realm admin, with inactive CustomerPlan -> show billing link
-        CustomerPlan.objects.create(customer=customer, licenses=-1, billing_cycle_anchor=timezone_now(),
+        CustomerPlan.objects.create(customer=customer, billing_cycle_anchor=timezone_now(),
                                     billing_schedule=CustomerPlan.ANNUAL, next_invoice_date=timezone_now(),
                                     tier=CustomerPlan.STANDARD, status=CustomerPlan.ENDED)
         result_html = self._get_home_page().content.decode('utf-8')
