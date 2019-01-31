@@ -246,6 +246,8 @@ exports.build_user_sidebar = function () {
 };
 
 function do_update_users_for_search() {
+    // Hide user detail popover when the user is searching.
+    popovers.hide_all();
     exports.build_user_sidebar();
     exports.user_cursor.reset();
 }
