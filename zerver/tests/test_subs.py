@@ -2531,11 +2531,11 @@ class SubscriptionAPITest(ZulipTestCase):
             self.make_stream(stream_name)
 
         with queries_captured() as queries:
-                self.common_subscribe_to_streams(
-                    self.test_email,
-                    streams,
-                    dict(principals=ujson.dumps([self.test_email])),
-                )
+            self.common_subscribe_to_streams(
+                self.test_email,
+                streams,
+                dict(principals=ujson.dumps([self.test_email])),
+            )
         # Make sure we don't make O(streams) queries
         self.assert_length(queries, 21)
 

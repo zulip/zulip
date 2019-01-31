@@ -26,7 +26,7 @@ httpretty==0.9.6
 isort==4.3.4
 
 # for pep8 linter
-pycodestyle==2.4.0
+pycodestyle==2.5.0
 
 # Needed to run pyflakes linter
 pyflakes==2.0.0

@@ -1820,7 +1820,7 @@ class MessagePOSTTest(ZulipTestCase):
         # to ANY stream, even one she is not unsubscribed to, and
         # she can do it for herself or on behalf of a mirrored user.
 
-        def test_with(sender_email: str, client: str, forged: bool) ->None:
+        def test_with(sender_email: str, client: str, forged: bool) -> None:
             payload = dict(
                 type="stream",
                 to=stream_name,

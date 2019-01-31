@@ -565,7 +565,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 continue
             try:
                 if hasattr(bot_handler, 'initialize'):
-                        bot_handler.initialize(self.get_bot_api_client(user_profile))
+                    bot_handler.initialize(self.get_bot_api_client(user_profile))
                 if event['trigger'] == 'mention':
                     message['content'] = extract_query_without_mention(
                         message=message,

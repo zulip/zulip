@@ -344,8 +344,8 @@ class WorkerTest(ZulipTestCase):
                     self.settings(MAILCHIMP_API_KEY='one-two',
                                   PRODUCTION=True,
                                   ZULIP_FRIENDS_LIST_ID='id'):
-                    worker.start()
-                    fake_response.raise_for_status.assert_called_once()
+                worker.start()
+                fake_response.raise_for_status.assert_called_once()
 
     def test_invites_worker(self) -> None:
         fake_client = self.FakeClient()
