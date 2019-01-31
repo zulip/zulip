@@ -591,7 +591,10 @@ def process_message_file(realm_id: int,
                 return None
 
             if is_pm_data:
-                if int(sender_id) != int(fn_id):
+                # We need to compare with str() on both sides here.
+                # In Stride, user IDs are strings, but in HipChat,
+                # they are integers, and fn_id is always a string.
+                if str(sender_id) != str(fn_id):
                     # PMs are in multiple places in the Hipchat export,
                     # and we only use the copy from the sender
                     return None
