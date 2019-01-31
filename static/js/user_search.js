@@ -50,6 +50,8 @@ var user_search = function (opts) {
     };
 
     self.show_widget = function () {
+        // Hide user detail popover when the user wants to search.
+        popovers.hide_all();
         $widget.removeClass('notdisplayed');
     };
 
