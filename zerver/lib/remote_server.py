@@ -15,7 +15,7 @@ class PushNotificationBouncerException(Exception):
 def send_to_push_bouncer(method: str,
                          endpoint: str,
                          post_data: Union[str, Dict[str, Any]],
-                         extra_headers: Optional[Dict[str, Any]]=None) -> None:
+                         extra_headers: Optional[Dict[str, Any]]=None) -> Dict[str, Any]:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
     bouncer.  There are several classes of failures, each with its own
@@ -76,6 +76,7 @@ def send_to_push_bouncer(method: str,
             "Push notification bouncer returned unexpected status code %s" % (res.status_code,))
 
     # If we don't throw an exception, it's a successful bounce!
+    return ujson.loads(res.content)
 
 def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
     send_to_push_bouncer(
