@@ -620,7 +620,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
             process_message(incoming_valid_message)
             message = most_recent_message(user_profile)
 
-            if subject['stripped_subject'] is not "":
+            if subject['stripped_subject'] != "":
                 expected_topic = subject['stripped_subject']
             else:
                 expected_topic = "(no topic)"

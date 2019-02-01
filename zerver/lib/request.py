@@ -12,6 +12,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.exceptions import JsonableError, ErrorCode, \
     InvalidJSONError
+from zerver.lib.types import ViewFuncT
 
 from django.http import HttpRequest, HttpResponse
 
@@ -125,8 +126,7 @@ class REQ:
 # Note that this can't be used in helper functions which are not
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
-def has_request_variables(view_func):
-    # type: (Callable[[HttpRequest, Any, Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
+def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount
     if view_func.__defaults__ is None:
         num_default_params = 0
