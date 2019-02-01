@@ -20,8 +20,16 @@ def api_zapier_webhook(request: HttpRequest, user_profile: UserProfile,
     user_agent = validate_extract_webhook_http_header(
         request, 'USER_AGENT', 'Zapier', fatal=False)
     if user_agent == 'ZapierZulipApp':
-        if payload.get('type') == 'auth':
+        event_type = payload.get('type')
+        if event_type == 'auth':
             return json_success()
+        elif event_type == 'stream':
+            check_send_webhook_message(
+                request, user_profile,
+                payload['topic'], payload['content']
+            )
+
+        return json_success()
 
     topic = payload.get('topic')
     content = payload.get('content')
