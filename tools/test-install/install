@@ -16,7 +16,7 @@ while true; do
         *) usage;;
     esac
 done
-INSTALLER="$1"; shift
+INSTALLER="$1"; shift || usage
 INSTALLER_ARGS=("$@"); set --
 
 if [ -z "$RELEASE" ] || [ -z "$INSTALLER" ]; then
