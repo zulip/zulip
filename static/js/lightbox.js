@@ -104,7 +104,6 @@ exports.open = function (image, options) {
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
     } else {
         var $parent = $image.parent();
-        var $message = $parent.closest("[zid]");
         var $type;
         var $source;
         if (is_youtube_video) {
@@ -122,13 +121,16 @@ exports.open = function (image, options) {
                 $source = $image.attr("src");
             }
         }
+        var sender_full_name;
+        var $message = $parent.closest("[zid]");
         var message = message_store.get($message.attr("zid"));
         if (message === undefined) {
             blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
         }
+        sender_full_name = message.sender_full_name;    
         payload = {
-            user: message.sender_full_name,
-            title: $image.parent().attr("title"),
+            user: sender_full_name,
+            title: $parent.attr("title"),
             type: $type,
             preview: $image.attr("src"),
             source: $source,
@@ -217,13 +219,11 @@ exports.next = function () {
 // this is a block of events that are required for the lightbox to work.
 exports.initialize = function () {
     $("#main_div").on("click", ".message_inline_image a", function (e) {
-        var $img = $(this).find("img");
-
         // prevent the link from opening in a new page.
         e.preventDefault();
         // prevent the message compose dialog from happening.
         e.stopPropagation();
-
+        var $img = $(this).find("img");
         exports.open($img);
     });
 
