@@ -68,7 +68,7 @@ exports.update_button = function () {
     if (new_status_text === '') {
         button.text(i18n.t('Clear'));
     } else {
-        button.text(i18n.t('Change'));
+        button.text(i18n.t('Save'));
     }
 };
 
