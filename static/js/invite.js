@@ -14,21 +14,26 @@ function reset_error_messages() {
     }
 }
 
+function get_common_invitation_data() {
+    var invite_as = parseInt($('#invite_as').val(), 10);
+    var streams = [];
+    $("#invite-stream-checkboxes input:checked").each(function () {
+        streams.push($(this).val());
+    });
+    var data = {
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
+        invite_as: invite_as,
+        stream: streams,
+    };
+    return data;
+}
+
 function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
-    var invite_as = parseInt($('#invite_as').val(), 10);
-    var data = {
-        invitee_emails: $("#invitee_emails").val(),
-        invite_as: invite_as,
-        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
-    };
-    var streams = [];
-    $.each($("#invite-stream-checkboxes input:checked"), function () {
-        streams.push($(this).val());
-    });
-    data.stream = streams;
+    var data = get_common_invitation_data();
+    data.invitee_emails = $("#invitee_emails").val();
 
     channel.post({
         url: "/json/invites",
