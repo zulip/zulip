@@ -6,6 +6,7 @@ zrequire('narrow');
 zrequire('narrow_state');
 zrequire('people');
 zrequire('presence');
+zrequire('user_status');
 
 var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
@@ -102,6 +103,11 @@ run_test('sender_hover', () => {
         sender_id: alice.user_id,
     };
 
+    user_status.set_status_text({
+        user_id: alice.user_id,
+        status_text: 'on the beach',
+    });
+
     var target = $.create('click target');
 
     target.offset = () => {
@@ -160,6 +166,7 @@ run_test('sender_hover', () => {
                 is_active: true,
                 is_bot: undefined,
                 is_sender_popover: true,
+                status_text: 'on the beach',
             });
             return 'content-html';
 

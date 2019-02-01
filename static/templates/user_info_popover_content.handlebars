@@ -24,6 +24,12 @@
         <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
+        {{#if status_text}}
+        <li class="user_info_status_text">
+            {{status_text}}
+        </li>
+        {{/if}}
+
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
