@@ -48,4 +48,3 @@ cached_venv_path = setup_virtualenv(
 
 current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
 overwrite_symlink(venv_name, current_venv_path)
-# Now the virtualenv has been activated
