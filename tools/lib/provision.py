@@ -390,10 +390,11 @@ def main(options):
     # Install shellcheck.
     run(["sudo", "scripts/lib/install-shellcheck"])
 
-    # Import tools/setup_venv.py instead of running it so that we get an
-    # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
     setup_venvs.main()
+
+    activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
