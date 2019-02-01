@@ -126,7 +126,10 @@ class REQ:
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
 def has_request_variables(view_func):
-    # type: (Callable[[HttpRequest, Any, Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
+    '''
+    type: (Callable[[HttpRequest, Any, Any], HttpResponse]) ->
+    Callable[[HttpRequest, *Any, **Any], HttpResponse]
+    '''
     num_params = view_func.__code__.co_argcount
     if view_func.__defaults__ is None:
         num_default_params = 0
