@@ -136,7 +136,7 @@ class ChangeSettingsTest(ZulipTestCase):
             # doesn't work for it.
             #
             # TODO: Make this work more like do_test_realm_update_api
-            if notification_setting is not 'notification_sound':
+            if notification_setting != 'notification_sound':
                 self.check_for_toggle_param_patch("/json/settings/notifications",
                                                   notification_setting)
 
