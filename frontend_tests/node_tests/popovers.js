@@ -6,6 +6,7 @@ zrequire('narrow');
 zrequire('narrow_state');
 zrequire('people');
 zrequire('presence');
+zrequire('buddy_data');
 zrequire('user_status');
 
 var noop =  function () {};
@@ -156,7 +157,7 @@ run_test('sender_hover', () => {
                 user_id: 42,
                 user_time: undefined,
                 user_type: i18n.t('Member'),
-                presence_status: 'offline',
+                type: 'offline',
                 user_last_seen_time_status: 'translated: More than 2 weeks ago',
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
