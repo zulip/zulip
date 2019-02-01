@@ -137,7 +137,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         is_me: is_me,
         is_sender_popover: is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
-        presence_status: presence.get_status(user.user_id),
+        type: buddy_data.buddy_status(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
