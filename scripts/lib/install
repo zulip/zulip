@@ -4,7 +4,7 @@ set -e
 usage() {
     cat <<EOF
 Usage:
-  install --hostname=zulip.example.com --email=admin@example.com [options...]
+  install --hostname=zulip.example.com --email=zulip-admin@example.com [options...]
   install --help
 
 Other options:
@@ -17,7 +17,6 @@ The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
 
 EOF
-    exit 0
 };
 
 # Shell option parsing.  Over time, we'll want to move some of the
@@ -26,7 +25,7 @@ args="$(getopt -o '' --long help,no-init-db,self-signed-cert,certbot,hostname:,e
 eval "set -- $args"
 while true; do
     case "$1" in
-        --help) usage;;
+        --help) usage; exit 0;;
         --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
         --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
         --certbot) USE_CERTBOT=1; shift;;
@@ -38,7 +37,8 @@ while true; do
 done
 
 if [ "$#" -gt 0 ]; then
-    usage
+    usage >&2
+    exit 1
 fi
 
 ## Options from environment variables.
@@ -59,13 +59,25 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
     echo "error: --self-signed-cert and --certbot are incompatible" >&2
     echo >&2
-    usage
+    usage >&2
+    exit 1
 fi
 
 if [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; then
     if [ -n "$USE_CERTBOT" ] || [ -z "$NO_INIT_DB" ]; then
-        usage
+        usage >&2
+        exit 1
     fi
+fi
+
+if [ "$EXTERNAL_HOST" = zulip.example.com ] ||
+   [ "$ZULIP_ADMINISTRATOR" = zulip-admin@example.com ]; then
+    # These example values are specifically checked for and would fail
+    # later; see check_config in zerver/lib/management.py.
+    echo 'error: The example hostname and email must be replaced with real values.' >&2
+    echo >&2
+    usage >&2
+    exit 1
 fi
 
 # Do set -x after option parsing is complete
