@@ -147,6 +147,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_last_seen_time_status: user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        status_text: user_status.get_status_text(user.user_id),
     };
 
     popover_element.popover({
