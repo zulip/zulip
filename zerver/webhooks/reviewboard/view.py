@@ -168,6 +168,7 @@ def api_reviewboard_webhook(
 ) -> HttpResponse:
     event_type = validate_extract_webhook_http_header(
         request, 'X_REVIEWBOARD_EVENT', 'ReviewBoard')
+    assert event_type is not None
 
     body_function = RB_MESSAGE_FUNCTIONS.get(event_type)
     if body_function is not None:

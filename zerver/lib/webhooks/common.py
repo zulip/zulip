@@ -98,9 +98,10 @@ def check_send_webhook_message(
             pass
 
 def validate_extract_webhook_http_header(request: HttpRequest, header: str,
-                                         integration_name: str) -> str:
+                                         integration_name: str,
+                                         fatal: Optional[bool]=True) -> Optional[str]:
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
-    if extracted_header is None:
+    if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(
             bot_name=request.user.full_name,
             request_path=request.path,
