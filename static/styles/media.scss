@@ -323,6 +323,11 @@
     .message_content {
         padding-right: 50px;
     }
+
+    .selected_message .message_content,
+    .message_hovered .message_content {
+        margin-top: 20px;
+    }
 }
 
 @media (max-width: 370px) {
