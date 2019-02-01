@@ -6,13 +6,23 @@ from zerver.lib.logging_util import log_to_file
 from zerver.models import UserProfile, UserPGP
 
 from copy import deepcopy
-from typing import Dict, Optional, List, DefaultDict, Callable
+from typing import Dict, Optional, List, DefaultDict, Callable, Any
 
 class PGPKeyNotFound(Exception):
     pass
 
-def pgp_sign_and_encrypt(message: EmailMultiAlternatives, to_users: List[UserProfile],
-                         force_single_message: bool=False) -> List[EmailMultiAlternatives]:
+class PGPEmailMessage(EmailMultiAlternatives):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+    def sign(self) -> None:
+        raise NotImplementedError()
+
+    def encrypt(self, public_keys: List[str], sign: bool=False) -> None:
+        raise NotImplementedError()
+
+def pgp_sign_and_encrypt(message: PGPEmailMessage, to_users: List[UserProfile],
+                         force_single_message: bool=False) -> List[PGPEmailMessage]:
     public_keys = {}  # type: Dict[str, str]
     want_signatures = []  # type: List[str]
 
@@ -31,9 +41,9 @@ def pgp_sign_and_encrypt(message: EmailMultiAlternatives, to_users: List[UserPro
     return _sign_and_encrypt(message, to_emails, public_keys, want_signatures,
                              force_single_message)
 
-def _sign_and_encrypt(message: EmailMultiAlternatives, to_emails: List[str],
+def _sign_and_encrypt(message: PGPEmailMessage, to_emails: List[str],
                       public_keys: Dict[str, str], want_signatures: List[str],
-                      force_single_message: bool=False) -> List[EmailMultiAlternatives]:
+                      force_single_message: bool=False) -> List[PGPEmailMessage]:
     # Addressees who don't want encryption nor signatures
     basic_addressees = [to for to in to_emails if to not in public_keys
                         and to not in want_signatures]
@@ -52,7 +62,7 @@ def _sign_and_encrypt(message: EmailMultiAlternatives, to_emails: List[str],
             # TODO: all or any?
             sign = all(to in want_signatures for to in encrypt_addressees)
             encrypted_message.to = to_emails
-            encrypt_message(encrypted_message, list(public_keys.values()), sign)
+            encrypted_message.encrypt(list(public_keys.values()), sign)
             return [encrypted_message]
         else:
             # We can't encrypt
@@ -60,7 +70,7 @@ def _sign_and_encrypt(message: EmailMultiAlternatives, to_emails: List[str],
             if all(to in want_signatures for to in to_emails):
                 signed_message = deepcopy(message)
                 signed_message.to = to_emails
-                sign_message(signed_message)
+                signed_message.sign()
                 return [signed_message]
             else:
                 basic_message.to = to_emails
@@ -71,20 +81,13 @@ def _sign_and_encrypt(message: EmailMultiAlternatives, to_emails: List[str],
     if signature_addressees:
         signed_message = deepcopy(message)
         signed_message.to = signature_addressees
-        sign_message(signed_message)
+        signed_message.sign()
         prepared_messages.append(signed_message)
 
     for to in encrypt_addressees:
         encrypted_message = deepcopy(basic_message)
         encrypted_message.to = [to]
-        encrypt_message(encrypted_message, [public_keys[to]], to in want_signatures)
+        encrypted_message.encrypt([public_keys[to]], to in want_signatures)
         prepared_messages.append(encrypted_message)
 
     return prepared_messages
-
-def sign_message(message: EmailMultiAlternatives) -> None:
-    raise NotImplementedError()
-
-def encrypt_message(message: EmailMultiAlternatives, public_keys: List[str],
-                    sign: bool=False) -> None:
-    raise NotImplementedError()

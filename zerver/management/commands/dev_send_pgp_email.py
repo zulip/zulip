@@ -2,7 +2,7 @@ from email import message_from_binary_file
 from email.message import Message
 from email.mime.text import MIMEText
 
-from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail import get_connection
 from django.core.management.base import CommandParser
 from django.conf import settings
 
@@ -10,7 +10,7 @@ from zerver.lib.create_user import create_user_profile
 from zerver.lib.email_helpers import get_message_part_by_type
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserPGP, UserProfile, get_realm, get_user
-from zerver.lib.pgp import pgp_sign_and_encrypt
+from zerver.lib.pgp import pgp_sign_and_encrypt, PGPEmailMessage
 
 from typing import Optional
 
@@ -95,7 +95,7 @@ Example:
         message = self._parse_email_fixture(full_fixture_path)
         email = self.convert_email_to_django_email(message)
         if email is None:
-            print("Failed to convert to EmailMultiAlternatives. Unsupported format.")
+            print("Failed to convert to PGPEmailMessage. Unsupported format.")
             exit(1)
 
         dummy_user = create_user_profile(realm, options['recipient'],
@@ -129,8 +129,8 @@ Example:
                 else:
                     print("Failed to send email to %s." % (mail.to))
 
-    def convert_email_to_django_email(self, message: Optional[Message]) -> Optional[EmailMultiAlternatives]:
-        # Convert email.message.Message object to Django's EmailMultiAlternatives
+    def convert_email_to_django_email(self, message: Optional[Message]) -> Optional[PGPEmailMessage]:
+        # Convert email.message.Message object to PGPEmailMessage
         if message is None:
             return None
 
@@ -138,7 +138,7 @@ Example:
         if plain_body is None:
             return None
 
-        email = EmailMultiAlternatives(subject=message['Subject'], body=plain_body)
+        email = PGPEmailMessage(subject=message['Subject'], body=plain_body)
         html_body = get_message_part_by_type(message, "text/html")
         if html_body is not None:
             email.attach_alternative(html_body, "text/html")

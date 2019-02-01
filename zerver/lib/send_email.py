@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail import get_connection
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
@@ -16,7 +16,7 @@ import os
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.pgp import pgp_sign_and_encrypt
+from zerver.lib.pgp import pgp_sign_and_encrypt, PGPEmailMessage
 from confirmation.models import generate_key
 
 ## Logging setup ##
@@ -39,7 +39,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
                 to_emails: Optional[List[str]]=None, from_name: Optional[str]=None,
                 from_address: Optional[str]=None, reply_to_email: Optional[str]=None,
                 language: Optional[str]=None, context: Optional[Dict[str, Any]]=None
-                ) -> List[EmailMultiAlternatives]:
+                ) -> List[PGPEmailMessage]:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
 
@@ -95,7 +95,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
     elif from_address == FromAddress.NOREPLY:
         reply_to = [FromAddress.NOREPLY]
 
-    mail = EmailMultiAlternatives(email_subject, message, from_email, to_emails, reply_to=reply_to)
+    mail = PGPEmailMessage(email_subject, message, from_email, to_emails, reply_to=reply_to)
     if html_message is not None:
         mail.attach_alternative(html_message, 'text/html')
 
@@ -112,7 +112,7 @@ def build_email(template_prefix: str, to_user_ids: Optional[List[int]]=None,
 class EmailNotDeliveredException(Exception):
     pass
 
-def send_and_log(emails: List[EmailMultiAlternatives], template: str) -> int:
+def send_and_log(emails: List[PGPEmailMessage], template: str) -> int:
     logger.info("Sending %s email to %s" % (template, [mail.to for mail in emails]))
     with get_connection() as connection:
         num_sent = 0
