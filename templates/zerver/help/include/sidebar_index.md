@@ -104,6 +104,7 @@
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
 * [Manage who can join](/help/manage-who-can-join-and-invite)
+* [Roles and permissions](/help/roles-and-permissions)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
 * [Moderating open organizations](/help/moderating-open-organizations)
