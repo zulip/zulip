@@ -852,12 +852,10 @@ input[type=checkbox].inline-block {
     position: relative;
     display: inline-block;
     width: calc(50% - 10px);
-    max-height: 220px;
+    max-height: 240px;
     margin: 5px;
-
     border-radius: 4px;
     box-sizing: border-box;
-
     overflow: auto;
 }
 
@@ -1245,6 +1243,11 @@ input[type=checkbox].inline-block {
 #settings_page .sidebar .tab-container {
     padding: 6px;
     border-bottom: 1px solid hsl(0, 0%, 87%);
+}
+
+.tab-content {
+    padding: 1rem;
+    padding-top: 2rem;
 }
 
 #settings_page .sidebar .normal-settings-list,
@@ -1805,10 +1808,6 @@ thead .actions {
 
 .required-text.thick:empty::after {
     width: 100%;
-}
-
-#payload_url_inputbox input[type=text] {
-    width: 340px;
 }
 
 #service_name_list input[type=text] {

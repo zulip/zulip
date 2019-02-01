@@ -187,7 +187,7 @@ function build_all_messages_popover(e) {
     $(elt).popover({
         content: content,
         trigger: "manual",
-        html:true,
+        html: true,
         fixed: true,
     });
 
