@@ -100,11 +100,11 @@ YUM_THUMBOR_VENV_DEPENDENCIES = [
     "gifsicle",
 ]
 
-def install_venv_deps(requirements_file):
-    # type: (str) -> None
+def install_venv_deps(pip, requirements_file):
+    # type: (str, str) -> None
     pip_requirements = os.path.join(ZULIP_PATH, "requirements", "pip.txt")
-    run(["pip", "install", "-U", "--requirement", pip_requirements])
-    run(["pip", "install", "--no-deps", "--requirement", requirements_file])
+    run([pip, "install", "-U", "--requirement", pip_requirements])
+    run([pip, "install", "--no-deps", "--requirement", requirements_file])
 
 def get_index_filename(venv_path):
     # type: (str) -> str
@@ -294,8 +294,6 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
         run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
         if patch_activate_script:
             do_patch_activate_script(target_venv_path)
-    activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
 
 def add_cert_to_pipconf():
@@ -321,9 +319,8 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
 
     create_requirements_index_file(venv_path, requirements_file)
-    # Switch current Python context to the virtualenv.
-    activate_this = os.path.join(venv_path, "bin", "activate_this.py")
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
+
+    pip = os.path.join(venv_path, "bin", "pip")
 
     # use custom certificate if needed
     if os.environ.get('CUSTOM_CA_CERTIFICATES'):
@@ -343,15 +340,15 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     if os.path.exists("/etc/redhat-release"):
         pycurl_env = os.environ.copy()
         pycurl_env["PYCURL_SSL_LIBRARY"] = "nss"
-        run(["pip", "install", "pycurl==7.43.0.2", "--compile", "--no-cache-dir"],
+        run([pip, "install", "pycurl==7.43.0.2", "--compile", "--no-cache-dir"],
             env=pycurl_env)
 
     try:
-        install_venv_deps(requirements_file)
+        install_venv_deps(pip, requirements_file)
     except subprocess.CalledProcessError:
         # Might be a failure due to network connection issues. Retrying...
         print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(requirements_file)
+        install_venv_deps(pip, requirements_file)
 
     # The typing module has been included in stdlib since 3.5.
     # Installing a pypi version of it has been harmless until a bug
@@ -361,6 +358,6 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Remove this once 3.4 is no longer supported.
     at_least_35 = (sys.version_info.major == 3) and (sys.version_info.minor >= 5)
     if at_least_35 and ('python2.7' not in virtualenv_args):
-        run(["pip", "uninstall", "-y", "typing"])
+        run([pip, "uninstall", "-y", "typing"])
 
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
