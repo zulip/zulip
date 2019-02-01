@@ -22,7 +22,8 @@ class ZapierHookTests(WebhookTestCase):
         self.send_and_test_stream_message('weather_update', expected_topic, expected_message)
 
 class ZapierZulipAppTests(WebhookTestCase):
-    URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}"
+    STREAM_NAME = 'zapier'
+    URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'zapier'
 
     def test_auth(self) -> None:
@@ -32,3 +33,10 @@ class ZapierZulipAppTests(WebhookTestCase):
                                   content_type='application/json',
                                   **headers)
         self.assert_json_success(result)
+
+    def test_stream(self) -> None:
+        expected_topic = u"Sample message from Zapier!"
+        expected_message = u"Hi! I am a new sample message from Zapier!"
+        self.send_and_test_stream_message('zapier_zulip_app_stream',
+                                          expected_topic, expected_message,
+                                          HTTP_USER_AGENT='ZapierZulipApp')
