@@ -3,7 +3,6 @@
 import subprocess
 from datetime import datetime, timedelta
 
-import sys
 import dateutil.parser
 import pytz
 
