@@ -1,6 +1,6 @@
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import ujson
 from django.apps import apps
@@ -10,14 +10,14 @@ from django.test import TestCase
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
 
-from analytics.lib.counts import COUNT_STATS, CountStat, DataCollector, \
+from analytics.lib.counts import COUNT_STATS, CountStat, \
     DependentCountStat, LoggingCountStat, do_aggregate_to_summary_table, \
     do_drop_all_analytics_tables, do_drop_single_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, \
     process_count_stat, sql_data_collector
 from analytics.models import BaseCount, \
     FillState, InstallationCount, RealmCount, StreamCount, \
-    UserCount, installation_epoch, last_successful_fill
+    UserCount, installation_epoch
 from zerver.lib.actions import do_activate_user, do_create_user, \
     do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
     do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \

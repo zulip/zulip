@@ -16,12 +16,11 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite, \
     UserProfile, Realm
 from random import SystemRandom
 import string
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Union
 
 class ConfirmationKeyException(Exception):
     WRONG_LENGTH = 1

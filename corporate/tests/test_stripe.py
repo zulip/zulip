@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
-from functools import partial, wraps
+from functools import wraps
 from mock import Mock, patch
 import operator
 import os
@@ -11,7 +11,6 @@ import ujson
 import json
 
 from django.core import signing
-from django.core.management import call_command
 from django.core.urlresolvers import get_resolver
 from django.http import HttpResponse
 from django.utils.timezone import utc as timezone_utc
@@ -19,22 +18,20 @@ from django.utils.timezone import utc as timezone_utc
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
-    do_activate_user, do_reactivate_user, do_create_realm
+    do_activate_user, do_reactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, \
     get_seat_count, sign_string, unsign_string, \
-    BillingError, StripeCardError, StripeConnectionError, stripe_get_customer, \
-    DEFAULT_INVOICE_DAYS_UNTIL_DUE, MIN_INVOICED_LICENSES, do_create_stripe_customer, \
-    add_months, next_month, next_renewal_date, renewal_amount, \
+    BillingError, StripeCardError, stripe_get_customer, \
+    MIN_INVOICED_LICENSES, \
+    add_months, next_month, \
     compute_plan_parameters, update_or_create_stripe_customer, \
     process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
     invoice_plan, invoice_plans_as_needed
 from corporate.models import Customer, CustomerPlan, LicenseLedger
-from corporate.views import payment_method_string
-import corporate.urls
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
