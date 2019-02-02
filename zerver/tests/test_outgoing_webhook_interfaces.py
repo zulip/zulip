@@ -11,7 +11,7 @@ from zerver.lib.outgoing_webhook import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import Service, get_realm, get_user, SLACK_INTERFACE
+from zerver.models import get_realm, get_user, SLACK_INTERFACE
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
@@ -95,8 +95,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         success_response = self.handler.process_success(response, self.event)
         self.assertEqual(success_response, None)
 
-mock_service = Service()
-
 class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
@@ -156,10 +154,8 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[9][1], "mention")  # trigger_word
         self.assertEqual(request_data[10][1], 12)  # user_profile_id
 
-    @mock.patch('zerver.lib.outgoing_webhook.get_service_profile', return_value=mock_service)
     @mock.patch('zerver.lib.outgoing_webhook.fail_with_message')
-    def test_build_bot_request_private_message(self, mock_fail_with_message: mock.Mock,
-                                               mock_get_service_profile: mock.Mock) -> None:
+    def test_build_bot_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
 
         request_data = self.handler.build_bot_request(self.private_message_event)
         self.assertIsNone(request_data)
