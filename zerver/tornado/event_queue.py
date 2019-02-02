@@ -31,7 +31,7 @@ from zerver.lib.request import JsonableError
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.sharding import get_tornado_uri, get_tornado_port, \
-    notify_tornado_queue_name, tornado_return_queue_name
+    notify_tornado_queue_name
 import copy
 
 requests_client = requests.Session()
