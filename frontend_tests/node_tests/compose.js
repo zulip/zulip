@@ -1330,10 +1330,6 @@ run_test('on_events', () => {
         assert(!$("#compose-send-status").visible());
     }());
 
-    var event = {
-        preventDefault: noop,
-    };
-
     (function test_stream_name_completed_triggered() {
         var handler = $(document).get_on_handler('streamname_completed.zulip');
         stream_data.add_sub(compose_state.stream_name(), {
@@ -1410,6 +1406,11 @@ run_test('on_events', () => {
             assert.equal(ev_name, 'click');
             compose_file_input_clicked = true;
         };
+
+        var event = {
+            preventDefault: noop,
+        };
+
         handler(event);
         assert(compose_file_input_clicked);
     }());
@@ -1427,6 +1428,10 @@ run_test('on_events', () => {
 
         var handler = $("#compose").get_on_handler("click", "#video_link");
         $('#compose-textarea').val('');
+
+        var event = {
+            preventDefault: noop,
+        };
 
         handler(event);
 
@@ -1541,6 +1546,10 @@ run_test('on_events', () => {
         $("#compose-textarea").val('');
         setup_visibilities();
 
+        var event = {
+            preventDefault: noop,
+        };
+
         handler(event);
 
         assert.equal($("#preview_content").html(),
@@ -1591,6 +1600,10 @@ run_test('on_events', () => {
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
         $("#markdown_preview").hide();
+
+        var event = {
+            preventDefault: noop,
+        };
 
         handler(event);
 
