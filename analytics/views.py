@@ -1,6 +1,5 @@
 
 import itertools
-import json
 import logging
 import re
 import time
@@ -13,17 +12,15 @@ import pytz
 from django.conf import settings
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Sum
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
-from django.template import RequestContext, loader
+from django.template import loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
-import stripe
 
-from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
+from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
     RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
@@ -33,11 +30,9 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import ceiling_to_day, \
-    ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
+from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
-from zproject.settings import get_secret
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
