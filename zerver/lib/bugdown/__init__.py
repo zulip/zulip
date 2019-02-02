@@ -13,18 +13,16 @@ import re
 import regex
 import os
 import html
-import platform
 import time
 import functools
 import ujson
 import xml.etree.cElementTree as etree
-from xml.etree.cElementTree import Element, SubElement
+from xml.etree.cElementTree import Element
 
 from collections import deque, defaultdict
 
 import requests
 
-from django.core import mail
 from django.conf import settings
 from django.db.models import Q
 
@@ -46,7 +44,6 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
     Realm,
-    RealmFilter,
     realm_filters_for_realm,
     UserProfile,
     UserGroup,
