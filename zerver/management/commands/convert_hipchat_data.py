@@ -1,8 +1,5 @@
 import argparse
 import os
-import subprocess
-import tempfile
-import shutil
 from typing import Any
 
 '''
@@ -24,7 +21,7 @@ spec:
     exporting-from-hipchat-server-or-data-center-for-data-portability-950821555.html
 '''
 
-from django.core.management.base import BaseCommand, CommandParser, CommandError
+from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.data_import.hipchat import do_convert_data
 

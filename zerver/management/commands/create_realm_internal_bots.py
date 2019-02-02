@@ -1,12 +1,8 @@
+from typing import Any
 
-from typing import Any, Iterable, Tuple
-
-from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import Count
 
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
-from zerver.models import Realm, UserProfile
 
 class Command(BaseCommand):
     help = """\

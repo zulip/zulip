@@ -1,12 +1,7 @@
-
-import sys
 from argparse import ArgumentParser
 from typing import Any
 
-from django.core.management.base import CommandError
-
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import get_realm
 
 class Command(ZulipBaseCommand):
     help = """Show the admins in a realm."""

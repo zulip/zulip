@@ -26,7 +26,7 @@ import email
 import logging
 from email.message import Message
 from imaplib import IMAP4_SSL
-from typing import Any, Generator, List
+from typing import Any, Generator
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
