@@ -24,7 +24,6 @@
 import sys
 import os
 import argparse
-import time
 import json
 usage = """Export all messages on a given stream to a JSON dump.
 

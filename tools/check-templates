@@ -11,7 +11,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from zulint import lister
-from typing import cast, Callable, Dict, Iterable, List
+from typing import cast, Dict, Iterable, List
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
