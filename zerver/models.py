@@ -1,11 +1,10 @@
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, \
-    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable, Iterable
+    Union, Optional, Sequence, AbstractSet, Callable, Iterable
 from typing.re import Match
 
 from django.db import models
-from django.db.models.query import QuerySet, F
-from django.db.models import Manager, CASCADE, Sum
-from django.db.models.functions import Length
+from django.db.models.query import QuerySet
+from django.db.models import Manager, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
@@ -30,15 +29,13 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
-from zerver.lib.validator import check_int, check_float, \
+from zerver.lib.validator import check_int, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
     check_url, check_list
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
-    ProfileDataElement, ProfileData, FieldTypeData, FieldElement, \
+    ProfileDataElement, ProfileData, FieldTypeData, \
     RealmUserValidator
-
-from django.utils.encoding import force_text
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -46,11 +43,9 @@ from collections import defaultdict, OrderedDict
 from datetime import timedelta
 import pylibmc
 import re
-import logging
 import sre_constants
 import time
 import datetime
-import sys
 
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000

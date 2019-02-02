@@ -1,7 +1,6 @@
 import os
 import subprocess
 import logging
-import difflib
 
 class DiffException(Exception):
     pass

@@ -8,9 +8,8 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 from django.http import HttpRequest
-from django import template
 
-from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import time

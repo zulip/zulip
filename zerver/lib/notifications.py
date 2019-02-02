@@ -1,11 +1,9 @@
 
-from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from confirmation.models import Confirmation, one_click_unsubscribe_link
+from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
-from django.template import loader
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
 from django.contrib.auth import get_backends
 from django_auth_ldap.backend import LDAPBackend
 
@@ -22,21 +20,18 @@ from zerver.models import (
     Stream,
     get_display_recipient,
     UserProfile,
-    get_user,
     get_user_profile_by_id,
     receives_offline_email_notifications,
     get_context_for_message,
     Message,
-    Realm,
 )
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 from email.utils import formataddr
 from lxml.cssselect import CSSSelector
 import lxml.html
 import re
 import subprocess
-import ujson
 from collections import defaultdict
 import pytz
 
@@ -529,7 +524,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> Non
     else:
         context['getting_started_link'] = "https://zulipchat.com"
 
-    from zproject.backends import email_belongs_to_ldap, require_email_format_usernames
+    from zproject.backends import email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.email):
         context["ldap"] = True

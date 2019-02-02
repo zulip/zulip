@@ -1,6 +1,6 @@
 from typing import (
-    AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
-    Optional, Sequence, Set, Tuple, TypeVar, Union, cast
+    AbstractSet, Any, Callable, Dict, Iterable, List, Mapping, MutableMapping,
+    Optional, Sequence, Set, Tuple, Union, cast
 )
 from mypy_extensions import TypedDict
 
@@ -77,7 +77,6 @@ from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,
     get_api_key,
-    user_ids_to_users
 )
 from zerver.lib.user_status import (
     update_user_status,
@@ -88,10 +87,10 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     RealmDomain, Service, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
-    Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
+    Client, DefaultStream, DefaultStreamGroup, UserPresence, \
     ScheduledEmail, MAX_TOPIC_NAME_LENGTH, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, get_huddle, \
-    get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_personal_recipient, \
+    get_user_profile_by_id, PreregistrationUser, \
     get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_by_delivery_email, get_stream_cache_key, active_non_guest_user_ids, \
@@ -101,7 +100,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
-    get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
+    query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
     DisposableEmailError, EmailContainsPlusError, \
@@ -130,23 +129,21 @@ from zerver.lib.utils import generate_api_key
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
-    user_profile_by_email_cache_key, user_profile_cache_key, \
+    user_profile_by_email_cache_key, \
     cache_set_many, cache_delete, cache_delete_many
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import log_statsd_event, statsd
-from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.i18n import get_language_name
-from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
+from zerver.lib.alert_words import add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.notifications import clear_scheduled_emails, \
     clear_scheduled_invitation_emails, enqueue_welcome_emails
-from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image, delete_avatar_image
 from zerver.lib.video_calls import request_zoom_video_call_url
-from zerver.tornado.event_queue import request_event_queue, send_event
+from zerver.tornado.event_queue import send_event
 from zerver.lib.types import ProfileFieldData
 
 from analytics.models import StreamCount

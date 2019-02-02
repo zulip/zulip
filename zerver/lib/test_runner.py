@@ -2,8 +2,8 @@
 from functools import partial
 import random
 
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Type, cast, Union, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
+    Type, cast, TypeVar
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -21,15 +21,12 @@ from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.test_classes import flush_caches_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
-    get_all_templates, write_instrumentation_reports,
+    write_instrumentation_reports,
     append_instrumentation_data
 )
 
 import os
-import subprocess
-import sys
 import time
-import traceback
 import unittest
 
 from multiprocessing.sharedctypes import Synchronized

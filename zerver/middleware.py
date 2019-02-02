@@ -3,7 +3,7 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, \
+from typing import Any, AnyStr, Dict, \
     Iterable, List, MutableMapping, Optional
 
 from bs4 import BeautifulSoup
@@ -13,7 +13,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import DisallowedHost, SuspiciousOperation
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, StreamingHttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.http import cookie_date

@@ -1,27 +1,18 @@
 import json
-import logging
 import os
-import signal
-import sys
-import time
-import re
 import importlib
 from zerver.lib.actions import internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message
 from zerver.models import UserProfile, get_active_user
 from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
-    is_key_in_bot_storage, get_bot_storage_size, remove_bot_storage
+    is_key_in_bot_storage, remove_bot_storage
 from zerver.lib.bot_config import get_bot_config, ConfigError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
 
 from django.utils.translation import ugettext as _
 
-import configparser
-
-from mypy_extensions import NoReturn
-from typing import Any, Optional, List, Dict
-from types import ModuleType
+from typing import Any, Dict
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 

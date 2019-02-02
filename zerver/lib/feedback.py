@@ -6,8 +6,7 @@ from typing import Any, Mapping, Optional
 from zerver.lib.actions import internal_send_message
 from zerver.lib.send_email import FromAddress
 from zerver.lib.redis_utils import get_redis_client
-from zerver.models import get_realm, get_system_bot, \
-    UserProfile, Realm
+from zerver.models import get_system_bot
 
 import time
 

@@ -2,14 +2,13 @@ from typing import Dict, List, Optional, Union, cast
 
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm, \
+    get_user_profile_by_id_in_realm, \
     CustomProfileField
 
 from zulip_bots.custom_exceptions import ConfigValidationError

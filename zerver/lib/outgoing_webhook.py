@@ -1,24 +1,18 @@
-from typing import Any, AnyStr, Iterable, Dict, Tuple, Callable, Mapping, Optional
+from typing import Any, AnyStr, Dict, Optional
 
 import requests
 import json
-import sys
-import inspect
 import logging
-import re
-import urllib
-from functools import reduce
 from requests import Response
 
 from django.utils.translation import ugettext as _
 
-from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
+from zerver.models import UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
-from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 
 from version import ZULIP_VERSION
