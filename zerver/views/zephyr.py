@@ -1,11 +1,9 @@
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
-
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest
 from django.utils.translation import ugettext as _
 from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
-from zerver.lib.request import has_request_variables, REQ, JsonableError
+from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.users import get_api_key
 from zerver.models import UserProfile

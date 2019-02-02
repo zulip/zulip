@@ -3,12 +3,10 @@
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
-from django.conf import settings
 from typing import Optional
 from zerver.models import UserProfile, validate_attachment_request
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.thumbnail import generate_thumbnail_url
-import urllib
 
 def validate_thumbnail_request(user_profile: UserProfile, path: str) -> Optional[bool]:
     # path here does not have a leading / as it is parsed from request hitting the

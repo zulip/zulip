@@ -2,7 +2,6 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_GET
-from django.views.decorators.csrf import csrf_exempt
 
 from zerver.models import (
     get_realm, get_user_by_delivery_email, get_realm_stream, Realm,
@@ -19,8 +18,6 @@ import urllib
 from confirmation.models import Confirmation, confirmation_url
 
 import os
-from typing import List, Dict, Any, Optional
-import datetime
 import subprocess
 import ujson
 

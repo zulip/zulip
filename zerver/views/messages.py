@@ -5,7 +5,7 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection, IntegrityError
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, List, Set, Any, Callable, Iterable, \
+from typing import Dict, List, Set, Any, Iterable, \
     Optional, Tuple, Union, Sequence, cast
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.html_diff import highlight_html_differences
@@ -54,7 +54,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable, Select, ColumnElement, table
+    or_, not_, union_all, alias, Selectable, ColumnElement, table
 
 from dateutil.parser import parse as dateparser
 import re

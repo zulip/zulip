@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.template import loader
 from zerver.lib.streams import get_stream_by_id
 
-from zerver.models import Message, UserProfile, get_stream_recipient
+from zerver.models import Message, get_stream_recipient
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp

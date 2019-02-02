@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Iterator
+from typing import List, Dict, Optional
 
 from django.conf import settings
 from django.urls import reverse
@@ -6,20 +6,18 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
-from itertools import zip_longest
 
 from zerver.context_processors import get_realm_from_request
-from zerver.decorator import zulip_login_required, process_client, \
+from zerver.decorator import zulip_login_required, \
     redirect_to_login
 from zerver.forms import ToSForm
-from zerver.lib.realm_icon import realm_icon_url
-from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
-    Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
-    RealmFilter, PreregistrationUser, UserActivity, \
-    UserPresence, get_stream_recipient, name_changes_disabled, email_to_username, \
-    get_realm_domains, get_usermessage_by_message_id
+from zerver.models import Message, UserProfile, \
+    Realm, UserMessage, \
+    PreregistrationUser, \
+    get_stream_recipient, \
+    get_usermessage_by_message_id
 from zerver.lib.events import do_events_register
-from zerver.lib.actions import update_user_presence, do_change_tos_version, \
+from zerver.lib.actions import do_change_tos_version, \
     realm_user_count
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
@@ -32,10 +30,8 @@ from zerver.lib.utils import statsd, generate_random_token
 from two_factor.utils import default_device
 
 import calendar
-import datetime
 import logging
 import os
-import re
 import time
 
 @zulip_login_required

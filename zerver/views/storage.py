@@ -1,11 +1,9 @@
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 from zerver.lib.bot_storage import (
     get_bot_storage,
     set_bot_storage,
     remove_bot_storage,
     get_keys_in_bot_storage,
-    is_key_in_bot_storage,
     StateError,
 )
 from zerver.decorator import has_request_variables, REQ

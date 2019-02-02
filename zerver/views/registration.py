@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import Any, List, Dict, Mapping, Optional
+from typing import List, Dict, Optional
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
+from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
-from django.template import RequestContext, loader
-from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
 from zerver.context_processors import get_realm_from_request
@@ -18,19 +16,17 @@ from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError, \
     PreregistrationUser
 from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.events import do_events_register
-from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
+from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
-    email_not_system_bot, validate_email_for_realm, \
+    validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm, RealmRedirectForm
+    FindMyTeamForm, RealmRedirectForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, REQ, do_login
+from zerver.decorator import require_post, \
+    do_login
 from zerver.lib.onboarding import setup_initial_streams, \
     send_initial_realm_messages, setup_realm_internal_bots
-from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
@@ -38,7 +34,7 @@ from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.views.auth import create_preregistration_user, redirect_and_log_into_subdomain, \
     redirect_to_deactivation_notice, get_safe_redirect_to
 
-from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend, \
+from zproject.backends import ldap_auth_enabled, password_auth_enabled, \
     ZulipLDAPExceptionOutsideDomain, email_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
@@ -46,9 +42,7 @@ from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyE
     render_confirmation_key_error
 
 import logging
-import requests
 import smtplib
-import ujson
 
 import urllib
 

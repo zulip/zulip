@@ -2,8 +2,6 @@
 from django.http import HttpResponse, HttpRequest
 from typing import Optional
 
-import ujson
-
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import do_mute_topic, do_unmute_topic
 from zerver.lib.request import has_request_variables, REQ
@@ -17,7 +15,7 @@ from zerver.lib.streams import (
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.validator import check_int
-from zerver.models import get_stream, Stream, UserProfile
+from zerver.models import UserProfile
 
 def mute_topic(user_profile: UserProfile,
                stream_id: Optional[int],

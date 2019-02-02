@@ -1,7 +1,7 @@
 
 from django.http import HttpResponse, HttpRequest
 import re
-from typing import Any, List, Dict, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from django.utils.translation import ugettext as _
 

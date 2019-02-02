@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, FileResponse, \
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, \
     HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 
-from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, get_realm_for_filename, check_upload_within_quota
-from zerver.lib.validator import check_bool
+    get_signed_upload_url, check_upload_within_quota
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 from sendfile import sendfile
