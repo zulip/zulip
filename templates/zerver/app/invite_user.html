@@ -14,6 +14,17 @@
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                     </div>
                 </div>
+                <h3 id="invite-method-choice">{{_('Or')}}</h3>
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="checkbox display-block" for="generate_multiuse_invite">
+                            <input type="checkbox" name="generate_multiuse_invite" id="generate_multiuse_invite"/>
+                            <span></span>
+                            {{ _('Generate invite link') }}
+                        </label>
+                    </div>
+                </div>
+                <hr>
                 <div class="control-group">
                     <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
                     <div class="controls">
