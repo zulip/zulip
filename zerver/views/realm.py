@@ -1,9 +1,7 @@
-
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_GET
 

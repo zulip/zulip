@@ -1,16 +1,13 @@
 from django.forms import Form
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import authenticate
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.contrib.auth.views import password_reset as django_password_reset
 from django.urls import reverse
-from zerver.decorator import authenticated_json_post_view, require_post, \
+from zerver.decorator import require_post, \
     process_client, do_login, log_view_func
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
-    HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import SimpleTemplateResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect, render
@@ -48,7 +45,6 @@ import jwt
 import logging
 import requests
 import time
-import ujson
 
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView

@@ -4,7 +4,6 @@ from django.utils.translation import ugettext as _
 from typing import List
 
 from zerver.decorator import require_non_guest_human_user
-from zerver.context_processors import get_realm_from_request
 from zerver.lib.actions import check_add_user_group, do_update_user_group_name, \
     do_update_user_group_description, bulk_add_members_to_user_group, \
     remove_members_from_user_group, check_delete_user_group
@@ -12,11 +11,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.users import user_ids_to_users
-from zerver.lib.validator import check_list, check_string, check_int, \
-    check_short_string
+from zerver.lib.validator import check_list, check_int
 from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_users, \
     get_user_group_members, user_groups_in_realm_serialized
-from zerver.models import UserProfile, UserGroup, UserGroupMembership
+from zerver.models import UserProfile
 from zerver.views.streams import compose_views, FuncKwargPair
 
 @require_non_guest_human_user

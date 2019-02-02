@@ -4,15 +4,14 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.shortcuts import render
 
 from zerver.decorator import has_request_variables, \
-    zulip_login_required, REQ, human_users_only
+    REQ, human_users_only
 from zerver.lib.actions import do_change_password, do_change_notification_settings, \
     do_change_enter_sends, do_regenerate_api_key, do_change_avatar_fields, \
     do_set_user_display_setting, validate_email, do_change_user_delivery_email, \
-    do_start_email_change_process, check_change_full_name, do_change_user_delivery_email, \
+    do_start_email_change_process, check_change_full_name, \
     get_available_notification_sounds
 from zerver.lib.avatar import avatar_url
 from zerver.lib.send_email import send_email, FromAddress
@@ -22,8 +21,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
-from zerver.models import UserProfile, Realm, name_changes_disabled, \
-    EmailChangeStatus
+from zerver.models import UserProfile, name_changes_disabled
 from confirmation.models import get_object_from_key, render_confirmation_key_error, \
     ConfirmationKeyException, Confirmation
 from zproject.backends import email_belongs_to_ldap

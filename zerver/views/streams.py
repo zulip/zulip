@@ -5,7 +5,6 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
-from django.utils.timezone import now as timezone_now
 
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.request import REQ, has_request_variables
@@ -14,7 +13,7 @@ from zerver.decorator import authenticated_json_post_view, \
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_private_message, \
     internal_prep_stream_message, \
-    gather_subscriptions, subscribed_to_stream, \
+    gather_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
@@ -24,15 +23,15 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
     prep_stream_welcome_message, do_change_stream_announcement_only, \
     do_delete_messages
-from zerver.lib.response import json_success, json_error, json_response
+from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.topic import get_topic_history_for_stream, messages_for_topic
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string, check_color, check_dict_only
-from zerver.models import UserProfile, Stream, Realm, Subscription, \
-    Recipient, Message, UserMessage, get_recipient, get_stream, \
+from zerver.models import UserProfile, Stream, \
+    UserMessage, \
     get_system_bot, get_active_user
 
 from collections import defaultdict

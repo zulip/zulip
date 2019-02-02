@@ -1,10 +1,7 @@
-
-from typing import Union, List, Dict, Optional, cast
-import logging
+from typing import Union, List, Dict
 import ujson
 
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -15,14 +12,13 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
                                 do_update_user_custom_profile_data,
                                 try_reorder_realm_custom_profile_fields,
-                                check_remove_custom_profile_field_value,
-                                notify_user_update_custom_profile_data)
+                                check_remove_custom_profile_field_value)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (check_dict, check_list, check_int,
                                   validate_field_data, check_capped_string)
 
-from zerver.models import (custom_profile_fields_for_realm, UserProfile, CustomProfileFieldValue,
+from zerver.models import (UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.users import validate_user_custom_profile_data

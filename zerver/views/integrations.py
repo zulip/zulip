@@ -1,18 +1,14 @@
-from typing import Optional, Any, Dict, Tuple
+from typing import Any, Dict, Tuple
 from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.template import loader
-from django.shortcuts import render
 
-import lxml
 import os
 import random
 import re
-import ujson
 
-from zerver.lib import bugdown
 from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, \
     WebhookIntegration, EmailIntegration
 from zerver.lib.request import has_request_variables, REQ

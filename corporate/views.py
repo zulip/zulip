@@ -1,12 +1,12 @@
 import logging
 import stripe
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, Dict, cast
 
 from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _, ugettext as err_
-from django.shortcuts import redirect, render
+from django.utils.translation import ugettext as _
+from django.shortcuts import render
 from django.urls import reverse
 from django.conf import settings
 
@@ -14,9 +14,8 @@ from zerver.decorator import zulip_login_required, require_billing_access
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_string, check_int, check_bool
-from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import UserProfile, Realm
+from zerver.lib.validator import check_string, check_int
+from zerver.models import UserProfile
 from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     stripe_get_customer, get_seat_count, \
     process_initial_upgrade, sign_string, \
@@ -24,7 +23,7 @@ from corporate.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     MIN_INVOICED_LICENSES, DEFAULT_INVOICE_DAYS_UNTIL_DUE, \
     next_renewal_date, renewal_amount, \
     add_plan_renewal_to_license_ledger_if_needed
-from corporate.models import Customer, CustomerPlan, LicenseLedger, \
+from corporate.models import Customer, CustomerPlan, \
     get_active_plan
 
 billing_logger = logging.getLogger('corporate.stripe')

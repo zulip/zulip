@@ -1,9 +1,7 @@
-import logging
 import ujson
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from zerver.decorator import (
     has_request_variables,
