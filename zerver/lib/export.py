@@ -3,10 +3,8 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key  # for mypy
 from django.apps import apps
 from django.conf import settings
-from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils.timezone import make_aware as timezone_make_aware
-from django.utils.timezone import utc as timezone_utc
 from django.utils.timezone import is_naive as timezone_is_naive
 import glob
 import logging
@@ -27,7 +25,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Iterable, Union
+    Union
 
 # Custom mypy types follow:
 Record = Dict[str, Any]

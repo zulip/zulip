@@ -1,4 +1,4 @@
-from typing import Any, Dict, Set
+from typing import Dict, Set
 
 class SubscriberHandler:
     def __init__(self) -> None:
