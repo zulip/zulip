@@ -8,10 +8,8 @@ import traceback
 from typing import Any, Dict, Optional
 
 from django.conf import settings
-from django.core import mail
 from django.http import HttpRequest
-from django.utils.log import AdminEmailHandler
-from django.views.debug import ExceptionReporter, get_exception_reporter_filter
+from django.views.debug import get_exception_reporter_filter
 
 from zerver.lib.logging_util import find_log_caller_module
 from zerver.lib.queue import queue_json_publish
@@ -113,7 +111,6 @@ class AdminNotifyHandler(logging.Handler):
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))
                 message = str(record.exc_info[1])
-                from zerver.lib.exceptions import BugdownRenderingException
                 is_bugdown_rendering_exception = record.msg.startswith('Exception in Markdown parser')
             else:
                 stack_trace = 'No stack trace available'

@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from zerver.lib.avatar_hash import gravatar_hash, user_avatar_hash
+from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.upload import upload_backend
 from zerver.models import Realm
 

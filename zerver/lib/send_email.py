@@ -13,7 +13,7 @@ import logging
 import ujson
 
 import os
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from zerver.lib.logging_util import log_to_file
 from confirmation.models import generate_key

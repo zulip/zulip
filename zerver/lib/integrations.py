@@ -1,16 +1,12 @@
 import os
 import pathlib
 
-from typing import Dict, List, Optional, TypeVar, Any
+from typing import Dict, List, Optional, Any
 from django.conf import settings
 from django.conf.urls import url
 from django.urls.resolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
-from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from django.template import loader
-
-from zerver.templatetags.app_filters import render_markdown_path
 
 
 """This module declares all of the (documented) integrations available

@@ -2,20 +2,18 @@
 # high-level documentation on how this system works.
 
 import copy
-import ujson
 
 from collections import defaultdict
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
 from typing import (
-    cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
+    Any, Callable, Dict, Iterable, Optional, Sequence, Set
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
-from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.hotspots import get_next_hotspots
@@ -35,7 +33,6 @@ from zerver.lib.request import JsonableError
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.actions import (
-    validate_user_access_to_subscribers_helper,
     do_get_streams, get_default_streams_for_realm,
     gather_subscriptions_helper, get_cross_realm_dicts,
     get_status_dict, streams_to_dicts_sorted,

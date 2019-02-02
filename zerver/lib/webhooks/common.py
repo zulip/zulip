@@ -1,6 +1,5 @@
 from urllib.parse import unquote
 
-from django.conf import settings
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
 from typing import Optional
@@ -11,7 +10,7 @@ from zerver.lib.exceptions import StreamDoesNotExistError, JsonableError, \
     ErrorCode
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
-from zerver.models import UserProfile, get_system_bot
+from zerver.models import UserProfile
 
 
 MISSING_EVENT_HEADER_MESSAGE = """

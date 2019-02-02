@@ -14,8 +14,8 @@ from django.db import connection
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
-    get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile, \
+    get_client, get_system_bot, PreregistrationUser, \
+    get_user_profile_by_id, Message, Realm, UserMessage, UserProfile, \
     Client
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
@@ -27,7 +27,7 @@ from zerver.lib.push_notifications import handle_push_notification, handle_remov
     initialize_push_notifications
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, check_send_message, extract_recipients, \
+    internal_send_message, \
     render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
@@ -35,7 +35,6 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.streams import access_stream_by_id
-from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
@@ -56,8 +55,6 @@ import datetime
 import logging
 import requests
 from io import StringIO
-import re
-import importlib
 
 logger = logging.getLogger(__name__)
 

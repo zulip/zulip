@@ -1,6 +1,5 @@
 # Library code for use in management commands
 
-import sys
 import time
 
 from argparse import ArgumentParser, RawTextHelpFormatter

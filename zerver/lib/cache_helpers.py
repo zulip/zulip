@@ -13,7 +13,7 @@ from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
-from zerver.lib.cache import cache_with_key, cache_set, \
+from zerver.lib.cache import \
     user_profile_by_api_key_cache_key, \
     user_profile_cache_key, get_remote_cache_time, get_remote_cache_requests, \
     cache_set_many, to_dict_cache_key_id

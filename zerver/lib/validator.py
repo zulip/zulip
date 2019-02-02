@@ -30,8 +30,7 @@ import ujson
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, cast, \
-    Dict
+from typing import Iterable, Optional, Tuple, cast
 
 from datetime import datetime
 from zerver.lib.request import JsonableError

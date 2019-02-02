@@ -1,28 +1,23 @@
 from contextlib import contextmanager
 from typing import (
-    cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Set, Sized, Tuple, Union, IO, TypeVar
+    Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
+    Optional, Tuple, Union, IO, TypeVar
 )
 
 from django.core import signing
 from django.urls.resolvers import LocaleRegexURLResolver
 from django.conf import settings
-from django.test import TestCase, override_settings
-from django.test.client import (
-    BOUNDARY, MULTIPART_CONTENT, encode_multipart,
-)
+from django.test import override_settings
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
-from django.db.utils import IntegrityError
 from django.db.migrations.state import StateApps
-from boto.s3.connection import Location, S3Connection
+from boto.s3.connection import S3Connection
 from boto.s3.bucket import Bucket
 
 import zerver.lib.upload
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
-from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib import cache
 from zerver.tornado import event_queue
@@ -30,40 +25,29 @@ from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
     get_stream_recipient,
 )
 
 from zerver.models import (
-    get_recipient,
     get_stream,
-    get_user,
     Client,
     Message,
-    Realm,
-    Recipient,
-    Stream,
     Subscription,
     UserMessage,
     UserProfile,
 )
-
-from zerver.lib.request import JsonableError
 
 if False:
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections
-import base64
 import mock
 import os
 import re
 import sys
 import time
 import ujson
-import unittest
-import urllib
 from moto import mock_s3_deprecated
 
 import fakeldap
@@ -581,9 +565,6 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
             'zerver.lib.test_helpers',
             Client=Client,
             Message=Message,
-            Realm=Realm,
-            Recipient=Recipient,
-            Stream=Stream,
             Subscription=Subscription,
             UserMessage=UserMessage,
             UserProfile=UserProfile,
@@ -595,7 +576,6 @@ def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
             Message=Message,
             Realm=Realm,
             Recipient=Recipient,
-            Service=Service,
             Stream=Stream,
             Subscription=Subscription,
             UserProfile=UserProfile,

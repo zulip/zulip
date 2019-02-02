@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, Optional
 
 import logging
 import re
@@ -21,8 +21,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.send_email import FromAddress
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
-    Message, Realm, UserProfile, get_system_bot, get_user, MAX_TOPIC_NAME_LENGTH, \
-    MAX_MESSAGE_LENGTH
+    Message, Realm, UserProfile, get_system_bot, get_user
 
 logger = logging.getLogger(__name__)
 

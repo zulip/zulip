@@ -2,13 +2,11 @@
 
 from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple
 import base64
-import errno
 import hashlib
 import heapq
 import itertools
 import os
 import string
-import sys
 from time import sleep
 from itertools import zip_longest
 

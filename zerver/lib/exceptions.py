@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Type
 from mypy_extensions import NoReturn
 
 from django.core.exceptions import PermissionDenied

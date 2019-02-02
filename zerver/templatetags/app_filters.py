@@ -1,4 +1,3 @@
-import os
 from html import unescape
 from typing import Any, Dict, List, Optional
 
@@ -7,8 +6,7 @@ import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.extra
 import markdown.extensions.toc
-from django.conf import settings
-from django.template import Library, engines, loader
+from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
@@ -21,7 +19,6 @@ import zerver.lib.bugdown.help_settings_links
 import zerver.lib.bugdown.help_relative_links
 import zerver.lib.bugdown.help_emoticon_translations_table
 import zerver.lib.bugdown.include
-from zerver.context_processors import zulip_default_context
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()

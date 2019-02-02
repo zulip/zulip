@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing import DefaultDict, List, Union, Any
 
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
-    Subscription, Message, Recipient, UserActivity, Realm
+    Subscription, Message, Recipient, UserActivity
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)

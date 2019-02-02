@@ -1,4 +1,4 @@
-from typing import (Dict, List, Set)
+from typing import Set
 from django.db.models.query import QuerySet
 
 from zerver.lib.stream_subscription import (

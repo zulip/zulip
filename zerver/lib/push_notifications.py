@@ -2,15 +2,12 @@
 
 import base64
 import binascii
-from functools import partial
 import logging
 import lxml.html
-import os
 import re
 import time
-import random
 
-from typing import Any, Dict, List, Optional, SupportsInt, Tuple, Type, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
@@ -18,21 +15,17 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from gcm import GCM
 import requests
-import urllib
-import ujson
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
-from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
-from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer, \
-    PushNotificationBouncerException
-from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import generate_random_token
+from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
-    UserMessage, get_display_recipient, receives_offline_push_notifications, \
-    receives_online_notifications, receives_stream_notifications, get_user_profile_by_id, \
+    get_display_recipient, receives_offline_push_notifications, \
+    receives_online_notifications, get_user_profile_by_id, \
     ArchivedMessage
 
 logger = logging.getLogger(__name__)

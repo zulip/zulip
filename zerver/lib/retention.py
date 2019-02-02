@@ -2,7 +2,6 @@
 from datetime import timedelta
 
 from django.db import connection, transaction
-from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from zerver.models import Realm, Message, UserMessage, ArchivedMessage, ArchivedUserMessage, \
     Attachment, ArchivedAttachment

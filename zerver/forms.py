@@ -7,10 +7,8 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.core.validators import validate_email
-from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -22,7 +20,7 @@ from zerver.lib.actions import do_change_password, email_not_system_bot, \
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
-from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user_by_delivery_email, UserProfile, get_realm, \
     email_to_domain, \
@@ -34,7 +32,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, Callable, List, Optional, Dict
+from typing import Any, List, Optional, Dict
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
