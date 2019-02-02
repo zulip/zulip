@@ -6,7 +6,7 @@ from typing import Any, Mapping, List
 from django.core.exceptions import ValidationError
 
 from zerver.lib.actions import recipient_for_user_ids
-from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
+from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
