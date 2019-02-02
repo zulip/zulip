@@ -43,9 +43,9 @@ from zerver.lib.actions import do_delete_messages
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib import push_notifications as apn
 from zerver.lib.push_notifications import get_mobile_push_content, \
-    DeviceToken, PushNotificationBouncerException, get_apns_client
+    DeviceToken, get_apns_client
 from zerver.lib.remote_server import send_analytics_to_remote_server, \
-    build_analytics_data
+    build_analytics_data, PushNotificationBouncerException
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
