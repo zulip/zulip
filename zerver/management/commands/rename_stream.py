@@ -1,5 +1,3 @@
-
-import sys
 from argparse import ArgumentParser
 from typing import Any
 

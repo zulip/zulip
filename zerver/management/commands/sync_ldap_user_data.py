@@ -6,7 +6,6 @@ from typing import Any, List
 
 
 from django.conf import settings
-from django.db.utils import IntegrityError
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import ZulipBaseCommand

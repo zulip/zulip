@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from typing import Any, Dict
 from datetime import timedelta
@@ -13,7 +12,6 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
 from zerver.models import ScheduledMessage, Message, get_user_by_delivery_email
 from zerver.lib.actions import do_send_messages
-from zerver.lib.addressee import Addressee
 
 ## Setup ##
 logger = logging.getLogger(__name__)

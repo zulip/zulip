@@ -1,7 +1,7 @@
 
 import sys
 from argparse import ArgumentParser
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from django.conf import settings
 

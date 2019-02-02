@@ -8,16 +8,12 @@ from email.mime.text import MIMEText
 
 from django.conf import settings
 from django.core.management.base import CommandParser
-from django.core.mail import send_mail
 
 from zerver.lib.actions import encode_email_address
-from zerver.lib.email_mirror import logger, process_message
-from zerver.lib.send_email import FromAddress
+from zerver.lib.email_mirror import process_message
 from zerver.lib.management import ZulipBaseCommand
 
 from zerver.models import Realm, get_stream, get_realm
-
-from typing import Any, Dict
 
 # This command loads an email from a specified file and sends it
 # to the email mirror. Simple emails can be passed in a JSON file,

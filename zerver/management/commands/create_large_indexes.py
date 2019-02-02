@@ -1,5 +1,4 @@
-
-from typing import Any, Callable, Dict, List, Set
+from typing import Any
 
 from django.db import connection
 
