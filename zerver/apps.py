@@ -1,6 +1,6 @@
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -16,7 +16,5 @@ class ZerverConfig(AppConfig):
     name = "zerver"  # type: str
 
     def ready(self) -> None:
-        import zerver.signals
-
         if settings.POST_MIGRATION_CACHE_FLUSHING:
             post_migrate.connect(flush_cache, sender=self)
