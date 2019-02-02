@@ -47,7 +47,6 @@ import sys
 import logging
 import logging.handlers
 import subprocess
-import re
 
 import sys
 
