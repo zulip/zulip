@@ -32,17 +32,17 @@ Here are the full procedures for dev:
   services" > "Credentials".  Create a "Project" which will correspond
   to your dev environment.
 
-* Navigate to "APIs & services" > "Library", and find the "Google+
-  API".  Choose "Enable".
+* Navigate to "APIs & services" > "Library", and find the "Identity
+  Toolkit API".  Choose "Enable".
 
 * Return to "Credentials", and select "Create credentials".  Choose
   "OAuth client ID", and follow prompts to create a consent screen, etc.
   For "Authorized redirect URIs", fill in
-  `https://zulipdev.com:9991/accounts/login/google/done/` .
+  `http://zulipdev.com:9991/complete/google/` .
 
 * You should get a client ID and a client secret. Copy them. In
-  `dev-secrets.conf`, set `google_auth2_client_id` to the client ID
-  and `google_oauth2_client_secret` to the client secret.
+  `dev-secrets.conf`, set `social_auth_google_key` to the client ID
+  and `social_auth_google_secret` to the client secret.
 
 ### GitHub
 

@@ -112,7 +112,7 @@ EXTERNAL_HOST = 'zulip.example.com'
 # initial realm and user.
 AUTHENTICATION_BACKENDS = (
     'zproject.backends.EmailAuthBackend',  # Email and password; just requires SMTP setup
-    # 'zproject.backends.GoogleMobileOauth2Backend',  # Google Apps, setup below
+    # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
@@ -129,7 +129,7 @@ AUTHENTICATION_BACKENDS = (
 # correspond to your Zulip instance.
 #
 # (2) Navigate to "APIs & services" > "Library", and find the
-# "Google+ API".  Choose "Enable".
+# "Identity Toolkit API".  Choose "Enable".
 #
 # (3) Return to "Credentials", and select "Create credentials".
 # Choose "OAuth client ID", and follow prompts to create a consent
@@ -138,9 +138,9 @@ AUTHENTICATION_BACKENDS = (
 # based on your value for EXTERNAL_HOST.
 #
 # (4) You should get a client ID and a client secret. Copy them.
-# Use the client ID as `GOOGLE_OAUTH2_CLIENT_ID` here, and put the
-# client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
-#GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
+# Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
+# client secret in zulip-secrets.conf as `social_auth_google_secret`.
+#SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
 
 ########
 # GitHub OAuth.

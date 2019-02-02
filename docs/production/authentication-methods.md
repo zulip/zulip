@@ -26,7 +26,7 @@ creating the initial realm and user.  You can disable it after that.
 With just a few lines of configuration, your Zulip server can
 authenticate users with any of several single-sign-on (SSO)
 authentication providers:
-* Google accounts, with `GoogleMobileOauth2Backend`
+* Google accounts, with `GoogleAuthBackend`
 * GitHub accounts, with `GitHubAuthBackend`
 * Microsoft Azure Active Directory, with `AzureADAuthBackend`
 

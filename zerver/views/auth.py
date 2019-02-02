@@ -9,7 +9,6 @@ from zerver.decorator import require_post, \
     process_client, do_login, log_view_func
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.response import SimpleTemplateResponse
-from django.middleware.csrf import get_token
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
@@ -41,12 +40,8 @@ from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     AUTH_BACKEND_NAME_MAP, auth_enabled_helper
 from version import ZULIP_VERSION
 
-import hashlib
-import hmac
 import jwt
 import logging
-import requests
-import time
 
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -319,16 +314,6 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
 
     return login_or_register_remote_user(request, email, user_profile, remote_user)
 
-def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
-    # In Django 1.10, get_token returns a salted token which changes
-    # every time get_token is called.
-    from django.middleware.csrf import _unsalt_cipher_token
-    token = _unsalt_cipher_token(get_token(request))
-    return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
-
-def reverse_on_root(viewname: str, *args: str, **kwargs: str) -> str:
-    return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
-
 def oauth_redirect_to_root(request: HttpRequest, url: str,
                            sso_type: str, is_signup: bool=False) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
@@ -359,20 +344,14 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
 
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
-def start_google_oauth2(request: HttpRequest) -> HttpResponse:
-    url = reverse('zerver.views.auth.send_oauth_request_to_google')
-
-    if not (settings.GOOGLE_OAUTH2_CLIENT_ID and settings.GOOGLE_OAUTH2_CLIENT_SECRET):
-        return redirect_to_config_error("google")
-
-    is_signup = bool(request.GET.get('is_signup'))
-    return oauth_redirect_to_root(request, url, 'google', is_signup=is_signup)
-
 def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
+    if (backend == "google") and not (settings.SOCIAL_AUTH_GOOGLE_KEY and
+                                      settings.SOCIAL_AUTH_GOOGLE_SECRET):
+        return redirect_to_config_error("google")
     # TODO: Add a similar block of AzureAD.
 
     return oauth_redirect_to_root(request, backend_url, 'social')
@@ -380,114 +359,6 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
 def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True)
-
-def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
-    subdomain = request.GET.get('subdomain', '')
-    is_signup = request.GET.get('is_signup', '')
-    next = request.GET.get('next', '')
-    mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
-    multiuse_object_key = request.GET.get('multiuse_object_key', '')
-
-    if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
-            not Realm.objects.filter(string_id=subdomain).exists()):
-        return redirect_to_subdomain_login_url()
-
-    google_uri = 'https://accounts.google.com/o/oauth2/auth?'
-    cur_time = str(int(time.time()))
-    csrf_state = '%s:%s:%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup,
-                                        next, multiuse_object_key)
-    # Now compute the CSRF hash with the other parameters as an input
-    csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
-
-    params = {
-        'response_type': 'code',
-        'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-        'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
-        'scope': 'profile email',
-        'state': csrf_state,
-        'prompt': 'select_account',
-    }
-    return redirect(google_uri + urllib.parse.urlencode(params))
-
-@log_view_func
-def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
-    error = request.GET.get('error')
-    if error == 'access_denied':
-        return redirect('/')
-    elif error is not None:
-        logging.warning('Error from google oauth2 login: %s' % (request.GET.get("error"),))
-        return HttpResponse(status=400)
-
-    csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 7:
-        logging.warning('Missing Google oauth2 CSRF state')
-        return HttpResponse(status=400)
-
-    (csrf_data, hmac_value) = csrf_state.rsplit(':', 1)
-    if hmac_value != google_oauth2_csrf(request, csrf_data):
-        logging.warning('Google oauth2 CSRF error')
-        return HttpResponse(status=400)
-    cur_time, subdomain, mobile_flow_otp, is_signup, next, multiuse_object_key = csrf_data.split(':')
-    if mobile_flow_otp == '0':
-        mobile_flow_otp = None
-
-    is_signup = bool(is_signup == '1')
-
-    resp = requests.post(
-        'https://www.googleapis.com/oauth2/v3/token',
-        data={
-            'code': request.GET.get('code'),
-            'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-            'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-            'redirect_uri': reverse_on_root('zerver.views.auth.finish_google_oauth2'),
-            'grant_type': 'authorization_code',
-        },
-    )
-    if resp.status_code == 400:
-        logging.warning('User error converting Google oauth2 login to token: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    elif resp.status_code != 200:
-        logging.error('Could not convert google oauth2 code to access_token: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    access_token = resp.json()['access_token']
-
-    resp = requests.get(
-        'https://www.googleapis.com/oauth2/v3/userinfo',
-        params={'access_token': access_token}
-    )
-    if resp.status_code == 400:
-        logging.warning('Google login failed making info API call: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    elif resp.status_code != 200:
-        logging.error('Google login failed making API call: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    body = resp.json()
-
-    if not body['email_verified']:
-        logging.error('Google oauth2 account email not verified.')
-        return HttpResponse(status=400)
-
-    # Extract the user info from the Google response
-    full_name = body['name']
-    email_address = body['email']
-
-    try:
-        realm = Realm.objects.get(string_id=subdomain)
-    except Realm.DoesNotExist:  # nocoverage
-        return redirect_to_subdomain_login_url()
-
-    if mobile_flow_otp is not None:
-        # When request was not initiated from subdomain.
-        user_profile = authenticate_remote_user(realm, email_address)
-        return login_or_register_remote_user(request, email_address, user_profile,
-                                             full_name,
-                                             mobile_flow_otp=mobile_flow_otp,
-                                             is_signup=is_signup,
-                                             redirect_to=next)
-
-    return redirect_and_log_into_subdomain(
-        realm, full_name, email_address, is_signup=is_signup,
-        redirect_to=next, multiuse_object_key=multiuse_object_key)
 
 def authenticate_remote_user(realm: Realm, email_address: str) -> UserProfile:
     if email_address is None:
@@ -847,21 +718,14 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     return_data = {}  # type: Dict[str, bool]
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
-    if username == "google-oauth2-token":
-        # This code path is auth for the legacy Android app
-        user_profile = authenticate(google_oauth2_token=password,
-                                    realm=realm,
-                                    return_data=return_data)
-    else:
-        if not ldap_auth_enabled(realm=get_realm_from_request(request)):
-            # In case we don't authenticate against LDAP, check for a valid
-            # email. LDAP backend can authenticate against a non-email.
-            validate_login_email(username)
-
-        user_profile = authenticate(username=username,
-                                    password=password,
-                                    realm=realm,
-                                    return_data=return_data)
+    if not ldap_auth_enabled(realm=get_realm_from_request(request)):
+        # In case we don't authenticate against LDAP, check for a valid
+        # email. LDAP backend can authenticate against a non-email.
+        validate_login_email(username)
+    user_profile = authenticate(username=username,
+                                password=password,
+                                realm=realm,
+                                return_data=return_data)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
@@ -872,11 +736,6 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
         return json_error(_("Password auth is disabled in your team."),
                           data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
-        if return_data.get("valid_attestation"):
-            # We can leak that the user is unregistered iff
-            # they present a valid authentication string for the user.
-            return json_error(_("This user is not registered; do so from a browser."),
-                              data={"reason": "unregistered"}, status=403)
         return json_error(_("Your username or password is incorrect."),
                           data={"reason": "incorrect_creds"}, status=403)
 

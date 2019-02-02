@@ -73,18 +73,6 @@ page can be easily identified in it's respective JavaScript file -->
                             {% endif %}
                         {% endif %}
 
-                        {% if google_auth_enabled %}
-                        <div class="login-social">
-                            <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
-                                <input type='hidden' name='is_signup' value='1' />
-                                <input type='hidden' name='multiuse_object_key' value='{{ multiuse_object_key }}' />
-                                <button class="login-social-button login-google-button full-width">
-                                    {{ _('Sign up with %(identity_provider)s', identity_provider="Google") }}
-                                </button>
-                            </form>
-                        </div>
-                        {% endif %}
-
                         {% for backend in social_backends %}
                         <div class="login-social">
                             <form class="form-inline {{ backend.name }}-wrapper" action="{{ backend.signup_url }}" method="get">
