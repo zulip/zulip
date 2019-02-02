@@ -941,8 +941,8 @@ exports.initialize = function () {
         // call icon present in the message edit form.  If present,
         // the request is for the edit UI; otherwise, it's for the
         // compose box.
-        if ($(e).attr("data-message-id") !== undefined) {
-            var edit_message_id = $(e).attr("data-message-id");
+        var edit_message_id = $(e.target).attr('data-message-id');
+        if (edit_message_id !== undefined) {
             target_textarea = $("#message_edit_content_" + edit_message_id);
         }
 
