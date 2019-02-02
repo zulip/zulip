@@ -92,12 +92,16 @@ def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, A
 def build_analytics_data(realm_count_query: Any,
                          installation_count_query: Any) -> Tuple[List[Dict[str, Any]],
                                                                  List[Dict[str, Any]]]:
+    # We limit the batch size on the client side to avoid OOM kills timeouts, etc.
+    MAX_CLIENT_BATCH_SIZE = 10000
     data = {}
     data['analytics_realmcount'] = [
-        model_to_dict(realm_count) for realm_count in realm_count_query.order_by("id")
+        model_to_dict(realm_count) for realm_count in
+        realm_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
     data['analytics_installationcount'] = [
-        model_to_dict(count) for count in installation_count_query.order_by("id")
+        model_to_dict(count) for count in
+        installation_count_query.order_by("id")[0:MAX_CLIENT_BATCH_SIZE]
     ]
 
     floatify_datetime_fields(data, 'analytics_realmcount')
