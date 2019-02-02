@@ -10,8 +10,6 @@ from zerver.lib.send_email import FromAddress
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
-import ujson
-
 MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """
 Hi there! Your bot {bot_name} just received a Zabbix payload that is missing
 some data that Zulip requires. This usually indicates a configuration issue

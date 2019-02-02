@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Any, Dict, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 from .exceptions import UnknownUpdateCardAction
 

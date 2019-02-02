@@ -1,7 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.decorator import has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Dropbox', notify_bot_owner_on_invalid_json=False)

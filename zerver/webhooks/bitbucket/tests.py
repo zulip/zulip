@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, Optional, Union
+from typing import Dict, Union
 
 from mock import MagicMock, patch
 
