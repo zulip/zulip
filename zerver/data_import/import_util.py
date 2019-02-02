@@ -14,7 +14,7 @@ from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.parallel import run_parallel, JobData
+from zerver.lib.parallel import run_parallel
 
 # stubs
 ZerverFieldsT = Dict[str, Any]

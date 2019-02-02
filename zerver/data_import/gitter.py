@@ -1,9 +1,6 @@
 import os
 import dateutil.parser
-import random
-import requests
 import logging
-import shutil
 import subprocess
 import ujson
 
@@ -12,7 +9,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Set, Tuple
 
-from zerver.models import Realm, UserProfile, Recipient
+from zerver.models import UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \

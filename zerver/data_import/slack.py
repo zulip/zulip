@@ -1,11 +1,7 @@
 import os
 import ujson
-import hashlib
-import sys
-import argparse
 import shutil
 import subprocess
-import re
 import logging
 import random
 import requests
@@ -13,12 +9,10 @@ import requests
 from collections import defaultdict
 
 from django.conf import settings
-from django.db import connection
 from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple, Set, Iterator
-from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient, \
+from zerver.models import Reaction, RealmEmoji, UserProfile, Recipient, \
     CustomProfileField, CustomProfileFieldValue
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
@@ -28,7 +22,6 @@ from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     process_emojis, build_realm, build_stream, build_message, \
     create_converted_data_files, make_subscriber_map
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
