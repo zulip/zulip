@@ -764,7 +764,8 @@ def sent_messages_report(realm: str) -> str:
     return make_table(title, cols, rows)
 
 def ad_hoc_queries() -> List[Dict[str, str]]:
-    def get_page(query: str, cols: List[str], title: str) -> Dict[str, str]:
+    def get_page(query: str, cols: List[str], title: str,
+                 totals_columns: List[int]=[]) -> Dict[str, str]:
         cursor = connection.cursor()
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -776,11 +777,24 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
             for row in rows:
                 row[i] = fixup_func(row[i])
 
+        total_row = []
         for i, col in enumerate(cols):
             if col == 'Realm':
                 fix_rows(i, realm_activity_link)
             elif col in ['Last time', 'Last visit']:
                 fix_rows(i, format_date_for_activity_reports)
+            elif col == 'Hostname':
+                for row in rows:
+                    row[i] = remote_installation_stats_link(row[0], row[i])
+            if len(totals_columns) > 0:
+                if i == 0:
+                    total_row.append("Total")
+                elif i in totals_columns:
+                    total_row.append(str(sum(row[i] for row in rows if row[i] is not None)))
+                else:
+                    total_row.append('')
+        if len(totals_columns) > 0:
+            rows.insert(0, total_row)
 
         content = make_table(title, cols, rows)
 
@@ -930,6 +944,49 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
     pages.append(get_page(query, cols, title))
 
+    title = 'Remote Zulip servers'
+
+    query = '''
+        with icount as (
+            select
+                server_id,
+                max(value) as max_value,
+                max(end_time) as max_end_time
+            from zilencer_remoteinstallationcount
+            where
+                property='active_users:is_bot:day'
+                and subgroup='false'
+            group by server_id
+            ),
+        remote_push_devices as (
+            select server_id, count(distinct(user_id)) as push_user_count from zilencer_remotepushdevicetoken
+            group by server_id
+        )
+        select
+            rserver.id,
+            rserver.hostname,
+            rserver.contact_email,
+            max_value,
+            push_user_count,
+            max_end_time
+        from zilencer_remotezulipserver rserver
+        left join icount on icount.server_id = rserver.id
+        left join remote_push_devices on remote_push_devices.server_id = rserver.id
+        order by max_value DESC NULLS LAST, push_user_count DESC NULLS LAST
+    '''
+
+    cols = [
+        'ID',
+        'Hostname',
+        'Contact email',
+        'Analytics users',
+        'Mobile users',
+        'Last update time',
+    ]
+
+    pages.append(get_page(query, cols, title,
+                          totals_columns=[3, 4]))
+
     return pages
 
 @require_server_admin
@@ -1078,6 +1135,12 @@ def realm_stats_link(realm_str: str) -> mark_safe:
     url_name = 'analytics.views.stats_for_realm'
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
     stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i></a>'.format(url, realm_str)
+    return mark_safe(stats_link)
+
+def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
+    url_name = 'analytics.views.stats_for_remote_installation'
+    url = reverse(url_name, kwargs=dict(remote_server_id=server_id))
+    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i>{}</a>'.format(url, hostname)
     return mark_safe(stats_link)
 
 def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
