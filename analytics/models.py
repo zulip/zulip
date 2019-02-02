@@ -34,13 +34,6 @@ def last_successful_fill(property: str) -> Optional[datetime.datetime]:
         return fillstate.end_time
     return fillstate.end_time - datetime.timedelta(hours=1)
 
-# would only ever make entries here by hand
-class Anomaly(models.Model):
-    info = models.CharField(max_length=1000)  # type: str
-
-    def __str__(self) -> str:
-        return "<Anomaly: %s... %s>" % (self.info, self.id)
-
 class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
@@ -49,7 +42,6 @@ class BaseCount(models.Model):
     subgroup = models.CharField(max_length=16, null=True)  # type: Optional[str]
     end_time = models.DateTimeField()  # type: datetime.datetime
     value = models.BigIntegerField()  # type: int
-    anomaly = models.ForeignKey(Anomaly, on_delete=models.SET_NULL, null=True)  # type: Optional[Anomaly]
 
     class Meta:
         abstract = True
