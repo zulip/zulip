@@ -3952,7 +3952,14 @@ def do_update_message_flags(user_profile: UserProfile,
     assert messages is not None
     msgs = UserMessage.objects.filter(user_profile=user_profile,
                                       message__id__in=messages)
-    # Hack to let you star any message
+    # This next block allows you to star any message, even those you
+    # didn't receive (e.g. because you're looking at a public stream
+    # you're not subscribed to, etc.).  The problem is that starring
+    # is a flag boolean on UserMessage, and UserMessage rows are
+    # normally created only when you receive a message to support
+    # searching your personal history.  So we need to create one.  We
+    # add UserMessage.flags.historical, so that features that need
+    # "messages you actually received" can exclude these UserMessages.
     if msgs.count() == 0:
         if not len(messages) == 1:
             raise JsonableError(_("Invalid message(s)"))
