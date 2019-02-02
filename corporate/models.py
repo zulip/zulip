@@ -5,7 +5,7 @@ from typing import Optional
 from django.db import models
 from django.db.models import CASCADE
 
-from zerver.models import Realm, RealmAuditLog
+from zerver.models import Realm
 
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)  # type: Realm

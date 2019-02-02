@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import mock
 from django.utils.timezone import utc
@@ -8,8 +8,8 @@ from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
 from analytics.models import FillState, \
     RealmCount, UserCount, last_successful_fill
-from analytics.views import get_chart_data, rewrite_client_arrays, \
-    sort_by_totals, sort_client_labels, stats
+from analytics.views import rewrite_client_arrays, \
+    sort_by_totals, sort_client_labels
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, datetime_to_timestamp

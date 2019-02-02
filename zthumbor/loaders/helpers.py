@@ -4,12 +4,7 @@ from __future__ import absolute_import
 import os
 import re
 import sys
-from six.moves.urllib.parse import urlparse
 from typing import Any, Text, Tuple, Optional
-
-if False:
-    # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from thumbor.context import Context
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath('__file__'))))
 sys.path.append(ZULIP_PATH)

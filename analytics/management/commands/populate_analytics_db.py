@@ -1,6 +1,6 @@
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Mapping, Optional, Type, Union
+from typing import Any, Dict, List, Mapping, Optional, Type
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
@@ -13,7 +13,7 @@ from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
     StreamCount, InstallationCount
 from zerver.lib.actions import do_change_is_admin
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, UserProfile, Stream, Message, Client, \
+from zerver.models import Realm, UserProfile, Stream, Client, \
     RealmAuditLog, Recipient
 
 class Command(BaseCommand):

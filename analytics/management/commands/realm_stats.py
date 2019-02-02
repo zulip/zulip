@@ -2,7 +2,6 @@ import datetime
 from argparse import ArgumentParser
 from typing import Any, List
 
-import pytz
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 from django.utils.timezone import now as timezone_now

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional, Sequence
+from typing import Any, Dict, List, Set, Tuple, Optional
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
@@ -14,15 +14,11 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
-from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
-from social_django.models import DjangoStorage
-from social_django.strategy import DjangoStrategy
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
-from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import PreregistrationUser, UserProfile, Realm, get_default_stream_groups, \
     get_user_profile_by_id, remote_user_to_email, email_to_username, get_realm, \

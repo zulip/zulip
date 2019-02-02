@@ -2,11 +2,11 @@ import time
 from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 import logging
-from typing import Any, Callable, Dict, List, \
+from typing import Callable, Dict, List, \
     Optional, Tuple, Type, Union
 
 from django.conf import settings
-from django.db import connection, models
+from django.db import connection
 from django.db.models import F
 
 from analytics.models import BaseCount, \
