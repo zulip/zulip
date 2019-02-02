@@ -4,13 +4,12 @@ var exports = {};
 
 function reset_error_messages() {
     var invite_status = $('#invite_status');
-    var invitee_emails = $("#invitee_emails");
-    var invitee_emails_group = invitee_emails.closest('.control-group');
+    var invitee_emails_group = $("#invitee_emails").closest('.control-group');
 
-    invite_status.hide().text('').removeClass('alert-error alert-warning alert-success');
+    invite_status.hide().text('').removeClass(common.status_classes);
     invitee_emails_group.removeClass('warning error');
     if (page_params.development_environment) {
-        $('#dev_env_msg').hide().text('').removeClass('alert-error alert-warning alert-success');
+        $('#dev_env_msg').hide().text('').removeClass(common.status_classes);
     }
 }
 
@@ -29,6 +28,17 @@ function get_common_invitation_data() {
     return data;
 }
 
+function beforeSend() {
+    reset_error_messages();
+    // TODO: You could alternatively parse the textarea here, and return errors to
+    // the user if they don't match certain constraints (i.e. not real email addresses,
+    // aren't in the right domain, etc.)
+    //
+    // OR, you could just let the server do it. Probably my temptation.
+    $('#submit-invitation').button('loading');
+    return true;
+}
+
 function submit_invitation_form() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
@@ -39,18 +49,8 @@ function submit_invitation_form() {
     channel.post({
         url: "/json/invites",
         data: data,
-        beforeSend: function () {
-            reset_error_messages();
-            // TODO: You could alternatively parse the textarea here, and return errors to
-            // the user if they don't match certain constraints (i.e. not real email addresses,
-            // aren't in the right domain, etc.)
-            //
-            // OR, you could just let the server do it. Probably my temptation.
-            $('#submit-invitation').button('loading');
-            return true;
-        },
+        beforeSend: beforeSend,
         success: function () {
-            $('#submit-invitation').button('reset');
             ui_report.success(i18n.t('User(s) invited successfully.'), invite_status);
             invitee_emails_group.removeClass('warning');
             invitee_emails.val('');
@@ -62,7 +62,6 @@ function submit_invitation_form() {
 
         },
         error: function (xhr) {
-            $('#submit-invitation').button('reset');
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
@@ -86,9 +85,30 @@ function submit_invitation_form() {
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join('\n'));
                 }
-
             }
+        },
+        complete: function () {
+            $('#submit-invitation').button('reset');
+        },
+    });
+}
 
+function generate_multiuse_invite() {
+    var invite_status = $('#invite_status');
+    var data = get_common_invitation_data();
+    channel.post({
+        url: "/json/invites/multiuse",
+        data: data,
+        beforeSend: beforeSend,
+        success: function (data) {
+            ui_report.success(i18n.t('Invitation link: <a href="__link__">__link__</a>',
+                                     {link: data.invite_link}), invite_status);
+        },
+        error: function (xhr) {
+            ui_report.error("", xhr, invite_status);
+        },
+        complete: function () {
+            $('#submit-invitation').button('reset');
         },
     });
 }
@@ -144,7 +164,27 @@ exports.initialize = function () {
         e.preventDefault();
     });
 
-    $("#submit-invitation").on("click", submit_invitation_form);
+    $("#submit-invitation").on("click", function () {
+        var is_generate_invite_link = $('#generate_multiuse_invite').prop('checked');
+        if (is_generate_invite_link) {
+            generate_multiuse_invite();
+        } else {
+            submit_invitation_form();
+        }
+    });
+
+    $('#invite-user').on('change', '#generate_multiuse_invite', function () {
+        var generate_multiuse_invite_link = $(this).prop('checked');
+        $('#invitee_emails').prop('disabled', generate_multiuse_invite_link);
+        var submit_invitation_button = $('#submit-invitation');
+        if (generate_multiuse_invite_link) {
+            submit_invitation_button.text(i18n.t('Generate invite link'));
+            submit_invitation_button.data('loading-text', i18n.t('Generating link...'));
+        } else {
+            submit_invitation_button.text(i18n.t('Invite'));
+            submit_invitation_button.data('loading-text', i18n.t('Inviting...'));
+        }
+    });
 };
 
 return exports;
