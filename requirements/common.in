@@ -46,9 +46,6 @@ django-statsd-mozilla==0.4.0
 # Needed for Android push notifications
 python-gcm==0.4
 
-# Needed for Google Apps mobile auth
-google-api-python-client==1.7.4
-
 # Needed for the email mirror
 html2text==2018.1.9
 httplib2==0.12.3
@@ -71,8 +68,6 @@ markdown-include==0.5.1
 
 # Needed for mock objects in decorators
 mock==2.0.0
-
-oauth2client==4.1.3
 
 # Needed to access rabbitmq
 # See #8466 for why we're not using the latest version.

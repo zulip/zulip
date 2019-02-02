@@ -7,7 +7,6 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-from oauth2client.crypt import AppIdentityError
 from django.core import signing
 from django.urls import reverse
 
@@ -51,9 +50,9 @@ from zerver.signals import JUST_CREATED_THRESHOLD
 from confirmation.models import Confirmation, create_confirmation_link
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
-    GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
+    GoogleAuthBackend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
+    dev_auth_enabled, password_auth_enabled, github_auth_enabled, google_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError, ZulipLDAPExceptionOutsideDomain, \
     ZulipLDAPException, query_ldap, sync_user_from_ldap, SocialAuthMixin
@@ -251,7 +250,7 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get('/register/')
         self.assert_in_success_response(["No authentication backends are enabled"], result)
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleAuthBackend',))
     def test_any_backend_enabled(self) -> None:
 
         # testing to avoid false error messages.
@@ -260,46 +259,6 @@ class AuthBackendTest(ZulipTestCase):
 
         result = self.client_get('/register/')
         self.assert_not_in_success_response(["No authentication backends are enabled"], result)
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
-    def test_google_backend(self) -> None:
-        user_profile = self.example_user('hamlet')
-        email = user_profile.email
-        backend = GoogleMobileOauth2Backend()
-        payload = dict(email_verified=True,
-                       email=email)
-
-        with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
-            self.verify_backend(backend,
-                                good_kwargs=dict(google_oauth2_token="",
-                                                 realm=get_realm("zulip")),
-                                bad_kwargs=dict(google_oauth2_token="",
-                                                realm=get_realm("zephyr")))
-
-        # Verify valid_attestation parameter is set correctly
-        unverified_payload = dict(email_verified=False)
-        with mock.patch('apiclient.sample_tools.client.verify_id_token',
-                        return_value=unverified_payload):
-            ret = dict()  # type: Dict[str, str]
-            result = backend.authenticate(
-                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
-            self.assertIsNone(result)
-            self.assertFalse(ret["valid_attestation"])
-
-        nonexistent_user_payload = dict(email_verified=True, email="invalid@zulip.com")
-        with mock.patch('apiclient.sample_tools.client.verify_id_token',
-                        return_value=nonexistent_user_payload):
-            ret = dict()
-            result = backend.authenticate(
-                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
-            self.assertIsNone(result)
-            self.assertTrue(ret["valid_attestation"])
-        with mock.patch('apiclient.sample_tools.client.verify_id_token',
-                        side_effect=AppIdentityError):
-            ret = dict()
-            result = backend.authenticate(
-                google_oauth2_token="", realm=get_realm("zulip"), return_data=ret)
-            self.assertIsNone(result)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_backend(self) -> None:
@@ -373,7 +332,8 @@ class AuthBackendTest(ZulipTestCase):
                             bad_kwargs=dict(remote_user=username,
                                             realm=get_realm('zephyr')))
 
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',
+                                                'zproject.backends.GoogleAuthBackend'))
     def test_social_auth_backends(self) -> None:
         user = self.example_user('hamlet')
         token_data_dict = {
@@ -389,7 +349,27 @@ class AuthBackendTest(ZulipTestCase):
             dict(email="ignored@example.com",
                  verified=False),
         ]
+        google_email_data = dict(email=user.email,
+                                 name=user.full_name,
+                                 email_verified=True)
         backends_to_test = {
+            'google': {
+                'urls': [
+                    {
+                        'url': "https://accounts.google.com/o/oauth2/token",
+                        'method': httpretty.POST,
+                        'status': 200,
+                        'body': json.dumps(token_data_dict),
+                    },
+                    {
+                        'url': "https://www.googleapis.com/oauth2/v3/userinfo",
+                        'method': httpretty.GET,
+                        'status': 200,
+                        'body': json.dumps(google_email_data),
+                    },
+                ],
+                'backend': GoogleAuthBackend,
+            },
             'github': {
                 'urls': [
                     {
@@ -435,6 +415,9 @@ class AuthBackendTest(ZulipTestCase):
             result = orig_authenticate(backend, **kwargs)
             return result
 
+        def patched_get_verified_emails(*args: Any, **kwargs: Any) -> Any:
+            return google_email_data['email']
+
         for backend_name in backends_to_test:
             httpretty.enable(allow_net_connect=False)
             urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
@@ -447,8 +430,13 @@ class AuthBackendTest(ZulipTestCase):
             backend_class = backends_to_test[backend_name]['backend']
             backend = backend_class()
             backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+
             orig_authenticate = backend_class.authenticate
             backend.authenticate = patched_authenticate
+            orig_get_verified_emails = backend_class.get_verified_emails
+            if backend_name == "google":
+                backend.get_verified_emails = patched_get_verified_emails
+
             good_kwargs = dict(backend=backend, strategy=backend.strategy,
                                storage=backend.strategy.storage,
                                response=token_data_dict,
@@ -464,20 +452,9 @@ class AuthBackendTest(ZulipTestCase):
                                     good_kwargs=good_kwargs,
                                     bad_kwargs=bad_kwargs)
             backend.authenticate = orig_authenticate
+            backend.get_verified_emails = orig_get_verified_emails
             httpretty.disable()
             httpretty.reset()
-
-class ResponseMock:
-    def __init__(self, status_code: int, data: Any) -> None:
-        self.status_code = status_code
-        self.data = data
-
-    def json(self) -> str:
-        return self.data
-
-    @property
-    def text(self) -> str:
-        return "Response text"
 
 class SocialAuthBase(ZulipTestCase):
     """This is a base class for testing social-auth backends. These
@@ -508,6 +485,11 @@ class SocialAuthBase(ZulipTestCase):
         # for details.
         from social_core.backends.utils import load_backends
         load_backends(settings.AUTHENTICATION_BACKENDS, force_load=True)
+
+    def register_extra_endpoints(self,
+                                 account_data_dict: Dict[str, str],
+                                 **extra_data: Any) -> None:
+        pass
 
     def social_auth_test(self, account_data_dict: Dict[str, str],
                          *, subdomain: Optional[str]=None,
@@ -1170,123 +1152,35 @@ class GitHubAuthBackendTest(SocialAuthBase):
             mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
                                                  " emails associated with the account")
 
-class GoogleOAuthTest(ZulipTestCase):
-    def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
-                           *, subdomain: Optional[str]=None,
-                           mobile_flow_otp: Optional[str]=None,
-                           is_signup: Optional[str]=None,
-                           next: str='',
-                           multiuse_object_key: str='') -> HttpResponse:
-        url = "/accounts/login/google/"
-        params = {}
-        headers = {}
-        if subdomain is not None:
-            headers['HTTP_HOST'] = subdomain + ".testserver"
-        if mobile_flow_otp is not None:
-            params['mobile_flow_otp'] = mobile_flow_otp
-            headers['HTTP_USER_AGENT'] = "ZulipAndroid"
-        if is_signup is not None:
-            params['is_signup'] = is_signup
-        params['next'] = next
-        params['multiuse_object_key'] = multiuse_object_key
-        if len(params) > 0:
-            url += "?%s" % (urllib.parse.urlencode(params),)
+class GoogleAuthBackendTest(SocialAuthBase):
+    __unittest_skip__ = False
 
-        result = self.client_get(url, **headers)
-        if result.status_code != 302 or '/accounts/login/google/send/' not in result.url:
-            return result
+    BACKEND_CLASS = GoogleAuthBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_GOOGLE_KEY"
+    LOGIN_URL = "/accounts/login/social/google"
+    SIGNUP_URL = "/accounts/register/social/google"
+    AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
+    ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
+    USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+    AUTH_FINISH_URL = "/complete/google/"
+    CONFIG_ERROR_URL = "/config-error/google"
 
-        # Now do the /google/send/ request
-        result = self.client_get(result.url, **headers)
-        self.assertEqual(result.status_code, 302)
-        if 'google' not in result.url:
-            return result
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(email=email, name=name, email_verified=True)
 
-        self.client.cookies = result.cookies
-        # Now extract the CSRF token from the redirect URL
-        parsed_url = urllib.parse.urlparse(result.url)
-        csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
+    def test_social_auth_email_not_verified(self) -> None:
+        account_data_dict = dict(email=self.email, name=self.name)
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.social_auth_test(account_data_dict,
+                                           subdomain='zulip')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (Google) failed "
+                                                 "because user has no verified emails")
 
-        with mock.patch("requests.post", return_value=token_response), (
-                mock.patch("requests.get", return_value=account_response)):
-            result = self.client_get("/accounts/login/google/done/",
-                                     dict(state=csrf_state), **headers)
-        return result
-
-class GoogleSubdomainLoginTest(GoogleOAuthTest):
-    def test_google_oauth2_start(self) -> None:
-        result = self.client_get('/accounts/login/google/', subdomain="zulip")
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        subdomain = urllib.parse.parse_qs(parsed_url.query)['subdomain']
-        self.assertEqual(subdomain, ['zulip'])
-
-    def test_google_oauth2_success(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=self.example_email("hamlet"))
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response,
-                                         subdomain='zulip', next='/user_uploads/image')
-
-        data = load_subdomain_token(result)
-        self.assertEqual(data['email'], self.example_email("hamlet"))
-        self.assertEqual(data['name'], 'Full Name')
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['next'], '/user_uploads/image')
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-    def test_user_cannot_log_without_verified_email(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=False,
-                            email=self.example_email("hamlet"))
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response,
-                                         subdomain='zulip')
-        self.assertEqual(result.status_code, 400)
-
-    def test_google_oauth2_mobile_success(self) -> None:
-        self.user_profile = self.example_user('hamlet')
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
-        self.user_profile.save()
-        mobile_flow_otp = '1234abcd' * 8
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=self.user_profile.email)
-        account_response = ResponseMock(200, account_data)
-        self.assertEqual(len(mail.outbox), 0)
-
-        with self.settings(SEND_LOGIN_EMAILS=True):
-            # Verify that the right thing happens with an invalid-format OTP
-            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                             mobile_flow_otp="1234")
-            self.assert_json_error(result, "Invalid OTP")
-            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                             mobile_flow_otp="invalido" * 8)
-            self.assert_json_error(result, "Invalid OTP")
-
-            # Now do it correctly
-            result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                             mobile_flow_otp=mobile_flow_otp)
-        self.assertEqual(result.status_code, 302)
-        redirect_url = result['Location']
-        parsed_url = urllib.parse.urlparse(redirect_url)
-        query_params = urllib.parse.parse_qs(parsed_url.query)
-        self.assertEqual(parsed_url.scheme, 'zulip')
-        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [self.user_profile.email])
-        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.user_profile)
-        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Zulip on Android', mail.outbox[0].body)
+    def test_google_auth_enabled(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleAuthBackend',)):
+            self.assertTrue(google_auth_enabled())
 
     def get_log_into_subdomain(self, data: Dict[str, Any], *, key: Optional[str]=None, subdomain: str='zulip') -> HttpResponse:
         token = signing.dumps(data, salt=_subdomain_token_salt, key=key)
@@ -1474,33 +1368,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             result = self.get_log_into_subdomain(data)
             self.assert_in_success_response(["You need an invitation to join this organization."], result)
 
-    def test_user_cannot_log_into_nonexisting_realm(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=self.example_email("hamlet"))
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response,
-                                         subdomain='nonexistent')
-        self.assert_in_response("There is no Zulip organization hosted at this subdomain.",
-                                result)
-        self.assertEqual(result.status_code, 404)
-
-    def test_user_cannot_log_into_wrong_subdomain(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=self.example_email("hamlet"))
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response,
-                                         subdomain='zephyr')
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith("http://zephyr.testserver/accounts/login/subdomain/"))
-        result = self.client_get(result.url.replace('http://zephyr.testserver', ''),
-                                 subdomain="zephyr")
-        self.assert_in_success_response(['Your email address, hamlet@zulip.com, is not in one of the domains ',
-                                         'that are allowed to register for accounts in this organization.'], result)
-
     def test_user_cannot_log_into_wrong_subdomain_with_cookie(self) -> None:
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
@@ -1509,216 +1376,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             result = self.get_log_into_subdomain(data)
             mock_warning.assert_called_with("Login attempt on invalid subdomain")
         self.assertEqual(result.status_code, 400)
-
-    def test_google_oauth2_registration(self) -> None:
-        """If the user doesn't exist yet, Google auth can be used to register an account"""
-        email = "newuser@zulip.com"
-        realm = get_realm("zulip")
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=email)
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                         is_signup='1')
-
-        data = load_subdomain_token(result)
-        name = 'Full Name'
-        self.assertEqual(data['email'], email)
-        self.assertEqual(data['name'], name)
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-        result = self.client_get(result.url)
-        self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().first()
-        confirmation_key = confirmation.confirmation_key
-        self.assertIn('do_confirm/' + confirmation_key, result.url)
-        result = self.client_get(result.url)
-        self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "full_name": name,
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
-
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
-
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
-
-        self.assertEqual(result.status_code, 302)
-        user_profile = get_user(email, realm)
-        self.assert_logged_in_user_id(user_profile.id)
-
-    def test_google_oauth2_registration_using_multiuse_invite(self) -> None:
-        """If the user doesn't exist yet, Google auth can be used to register an account"""
-        email = "newuser@zulip.com"
-        realm = get_realm("zulip")
-        realm.invite_required = True
-        realm.save()
-
-        stream_names = ["new_stream_1", "new_stream_2"]
-        streams = []
-        for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
-            streams.append(stream)
-
-        referrer = self.example_user("hamlet")
-        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
-        multiuse_obj.streams.set(streams)
-        link = create_confirmation_link(multiuse_obj, realm.host, Confirmation.MULTIUSE_INVITE)
-        multiuse_confirmation = Confirmation.objects.all().last()
-        multiuse_object_key = multiuse_confirmation.confirmation_key
-
-        input_element = "name=\'multiuse_object_key\' value=\'{}\' /".format(multiuse_object_key)
-        response = self.client_get(link)
-        self.assert_in_success_response([input_element], response)
-
-        # First, try to signup for closed realm without using an invitation
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name="Full Name",
-                            email_verified=True,
-                            email=email)
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                         is_signup='1', multiuse_object_key="")
-        result = self.client_get(result.url)
-        # Verify that we're unable to signup, since this is a closed realm
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Sign up"], result)
-
-        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
-                                         is_signup='1', multiuse_object_key=multiuse_object_key)
-        data = load_subdomain_token(result)
-        name = 'Full Name'
-        self.assertEqual(data['name'], name)
-        self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEqual(data['multiuse_object_key'], multiuse_object_key)
-        self.assertEqual(result.status_code, 302)
-        parsed_url = urllib.parse.urlparse(result.url)
-        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
-                                 parsed_url.path)
-        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-        result = self.client_get(result.url)
-        self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().last()
-        confirmation_key = confirmation.confirmation_key
-        self.assertIn('do_confirm/' + confirmation_key, result.url)
-        result = self.client_get(result.url)
-        self.assert_in_response('action="/accounts/register/"', result)
-        data = {"from_confirmation": "1",
-                "full_name": name,
-                "key": confirmation_key}
-        result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("We just need you to do one last thing", result)
-
-        # Verify that the user is asked for name but not password
-        self.assert_not_in_success_response(['id_password'], result)
-        self.assert_in_success_response(['id_full_name'], result)
-
-        # Click confirm registration button.
-        result = self.client_post(
-            '/accounts/register/',
-            {'full_name': name,
-             'key': confirmation_key,
-             'terms': True})
-
-        self.assertEqual(result.status_code, 302)
-        user_profile = get_user(email, realm)
-        self.assert_logged_in_user_id(user_profile.id)
-        self.assertEqual(sorted(self.get_streams(email, realm)), stream_names)
-
-class GoogleLoginTest(GoogleOAuthTest):
-    @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
-    def test_google_oauth2_subdomains_homepage(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_data = dict(name=dict(formatted="Full Name"),
-                            emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
-        account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain="")
-        self.assertEqual(result.status_code, 302)
-        self.assertIn('subdomain=1', result.url)
-
-    def test_google_oauth2_400_token_response(self) -> None:
-        token_response = ResponseMock(400, {})
-        with mock.patch("logging.warning") as m:
-            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         "User error converting Google oauth2 login to token: Response text")
-
-    def test_google_oauth2_500_token_response(self) -> None:
-        token_response = ResponseMock(500, {})
-        with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, ResponseMock(500, {}))
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         "Could not convert google oauth2 code to access_token: Response text")
-
-    def test_google_oauth2_400_account_response(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_response = ResponseMock(400, {})
-        with mock.patch("logging.warning") as m:
-            result = self.google_oauth2_test(token_response, account_response)
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         "Google login failed making info API call: Response text")
-
-    def test_google_oauth2_500_account_response(self) -> None:
-        token_response = ResponseMock(200, {'access_token': "unique_token"})
-        account_response = ResponseMock(500, {})
-        with mock.patch("logging.error") as m:
-            result = self.google_oauth2_test(token_response, account_response)
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         "Google login failed making API call: Response text")
-
-    def test_google_oauth2_error_access_denied(self) -> None:
-        result = self.client_get("/accounts/login/google/done/?error=access_denied")
-        self.assertEqual(result.status_code, 302)
-        path = urllib.parse.urlparse(result.url).path
-        self.assertEqual(path, "/")
-
-    def test_google_oauth2_error_other(self) -> None:
-        with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?error=some_other_error")
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         "Error from google oauth2 login: some_other_error")
-
-    def test_google_oauth2_missing_csrf(self) -> None:
-        with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/")
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         'Missing Google oauth2 CSRF state')
-
-    def test_google_oauth2_csrf_malformed(self) -> None:
-        with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate")
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         'Missing Google oauth2 CSRF state')
-
-    def test_google_oauth2_csrf_badstate(self) -> None:
-        with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more::::")
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(m.call_args_list[0][0][0],
-                         'Google oauth2 CSRF error')
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -1768,49 +1425,6 @@ class FetchAPIKeyTest(ZulipTestCase):
                                   dict(username=self.email,
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',),
-                       SEND_LOGIN_EMAILS=True)
-    def test_google_oauth2_token_success(self) -> None:
-        self.assertEqual(len(mail.outbox), 0)
-        self.user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
-        self.user_profile.save()
-        with mock.patch(
-                'apiclient.sample_tools.client.verify_id_token',
-                return_value={
-                    "email_verified": True,
-                    "email": self.example_email("hamlet"),
-                }):
-            result = self.client_post("/api/v1/fetch_api_key",
-                                      dict(username="google-oauth2-token",
-                                           password="token"))
-        self.assert_json_success(result)
-        self.assertEqual(len(mail.outbox), 1)
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
-    def test_google_oauth2_token_failure(self) -> None:
-        payload = dict(email_verified=False)
-        with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
-            result = self.client_post("/api/v1/fetch_api_key",
-                                      dict(username="google-oauth2-token",
-                                           password="token"))
-            self.assert_json_error(result, "Your username or password is incorrect.", 403)
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
-    def test_google_oauth2_token_unregistered(self) -> None:
-        with mock.patch(
-                'apiclient.sample_tools.client.verify_id_token',
-                return_value={
-                    "email_verified": True,
-                    "email": "nobody@zulip.com",
-                }):
-            result = self.client_post("/api/v1/fetch_api_key",
-                                      dict(username="google-oauth2-token",
-                                           password="token"))
-        self.assert_json_error(
-            result,
-            "This user is not registered; do so from a browser.",
-            403)
 
     def test_password_auth_disabled(self) -> None:
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
@@ -1984,7 +1598,7 @@ class FetchAuthBackends(ZulipTestCase):
                 result[backend_name] = backend_name in expected_backends
             return result
 
-        backends = [GoogleMobileOauth2Backend(), DevAuthBackend()]
+        backends = [GoogleAuthBackend(), DevAuthBackend()]
         with mock.patch('django.contrib.auth.get_backends', return_value=backends):
             result = self.client_get("/api/v1/get_auth_backends")
             self.assert_json_success(result)

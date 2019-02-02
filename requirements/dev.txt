@@ -29,7 +29,7 @@ beautifulsoup4==4.7.1
 boto3==1.9.183            # via moto
 boto==2.49.0
 botocore==1.12.183        # via boto3, moto, s3transfer
-cachetools==3.1.1         # via google-auth, premailer
+cachetools==3.1.1         # via premailer
 cchardet==2.1.4
 certifi==2019.3.9         # via requests
 cffi==1.12.3              # via argon2-cffi, cryptography
@@ -62,9 +62,6 @@ ecdsa==0.13.2             # via python-jose
 fakeldap==0.6.1
 first==2.0.2              # via pip-tools
 gitlint==0.11.0
-google-api-python-client==1.7.4
-google-auth-httplib2==0.0.3  # via google-api-python-client
-google-auth==1.6.3        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
@@ -95,7 +92,6 @@ mock==2.0.0
 moto==1.3.7
 mypy-extensions==0.4.1
 mypy==0.670
-oauth2client==4.1.3
 oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 packaging==19.0           # via sphinx
 parsel==1.5.1             # via scrapy
@@ -115,8 +111,8 @@ ptyprocess==0.6.0         # via pexpect
 py3dns==3.2.0
 pyahocorasick==1.4.0
 pyaml==19.4.1             # via moto
-pyasn1-modules==0.2.5     # via google-auth, oauth2client, python-ldap, service-identity
-pyasn1==0.4.5             # via oauth2client, pyasn1-modules, python-ldap, rsa, service-identity
+pyasn1-modules==0.2.5     # via python-ldap, service-identity
+pyasn1==0.4.5             # via pyasn1-modules, python-ldap, service-identity
 pycodestyle==2.5.0
 pycparser==2.19           # via cffi
 pycryptodome==3.8.2       # via python-jose
@@ -150,7 +146,6 @@ regex==2019.6.8
 requests-oauthlib==1.0.0  # via python-twitter, social-auth-core
 requests[security]==2.22.0  # via aws-xray-sdk, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.6         # via moto
-rsa==4.0                  # via google-auth, oauth2client
 s3transfer==0.2.1         # via boto3
 scrapy==1.6.0
 service-identity==18.1.0  # via scrapy
@@ -178,7 +173,6 @@ twilio==6.26.2
 twisted==19.2.1
 typed-ast==1.3.5          # via mypy
 typing==3.6.6
-uritemplate==3.0.0        # via google-api-python-client
 urllib3==1.25.3           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.3
 w3lib==1.20.0             # via parsel, scrapy

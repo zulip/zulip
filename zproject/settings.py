@@ -154,11 +154,13 @@ DEFAULT_SETTINGS = {
     # Social auth; we support providing values for some of these
     # settings in zulip-secrets.conf instead of settings.py in development.
     'SOCIAL_AUTH_GITHUB_KEY': get_secret('social_auth_github_key', development_only=True),
-    'GOOGLE_OAUTH2_CLIENT_ID': get_secret('google_oauth2_client_id', development_only=True),
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
     'SOCIAL_AUTH_SUBDOMAIN': None,
     'SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET': get_secret('azure_oauth2_secret'),
+    'SOCIAL_AUTH_GOOGLE_KEY': get_secret('social_auth_google_key', development_only=True),
+    # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
+    'GOOGLE_OAUTH2_CLIENT_ID': None,
 
     # Other auth
     'SSO_APPEND_DOMAIN': None,
@@ -769,8 +771,6 @@ if LOCAL_UPLOADS_DIR is not None:
 # https://cloud.google.com/console/project/apps~zulip-android/apiui/credential
 ANDROID_GCM_API_KEY = get_secret("android_gcm_api_key")
 
-GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
-
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
@@ -1347,6 +1347,14 @@ SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
+
+SOCIAL_AUTH_GOOGLE_SECRET = get_secret('social_auth_google_secret')
+# Fallback to google-oauth settings in case social auth settings for
+# google are missing; this is for backwards-compatibility with older
+# Zulip versions where /etc/zulip/settings.py has not been migrated yet.
+GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
+SOCIAL_AUTH_GOOGLE_KEY = SOCIAL_AUTH_GOOGLE_KEY or GOOGLE_OAUTH2_CLIENT_ID
+SOCIAL_AUTH_GOOGLE_SECRET = SOCIAL_AUTH_GOOGLE_SECRET or GOOGLE_OAUTH2_CLIENT_SECRET
 
 SOCIAL_AUTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',

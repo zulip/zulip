@@ -31,6 +31,7 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
     GithubTeamOAuth2
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.google import GoogleOAuth2
 from social_core.backends.oauth import BaseOAuth2
 from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -193,45 +194,6 @@ class EmailAuthBackend(ZulipAuthMixin):
         if user_profile.check_password(password):
             return user_profile
         return None
-
-class GoogleMobileOauth2Backend(ZulipAuthMixin):
-    """
-    Google Apps authentication for the legacy Android app.
-    DummyAuthBackend is what's actually used for our modern Google auth,
-    both for web and mobile (the latter via the mobile_flow_otp feature).
-
-    Allows a user to sign in using a Google-issued OAuth2 token.
-
-    Ref:
-        https://developers.google.com/+/mobile/android/sign-in#server-side_access_for_your_app
-        https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
-    """
-
-    def authenticate(self, *, google_oauth2_token: str, realm: Realm,
-                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
-        # We lazily import apiclient as part of optimizing the base
-        # import time for a Zulip management command, since it's only
-        # used in this one code path and takes 30-50ms to import.
-        from apiclient.sample_tools import client as googleapiclient
-        from oauth2client.crypt import AppIdentityError
-        if return_data is None:
-            return_data = {}
-
-        if not google_auth_enabled(realm=realm):
-            return_data["google_auth_disabled"] = True
-            return None
-
-        try:
-            token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
-        except AppIdentityError:
-            return None
-
-        if token_payload["email_verified"] not in (True, "true"):
-            return_data["valid_attestation"] = False
-            return None
-
-        return_data["valid_attestation"] = True
-        return common_get_active_user(token_payload["email"], realm, return_data)
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     """Authentication backend that reads the Apache REMOTE_USER variable.
@@ -966,14 +928,26 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     auth_backend_name = "AzureAD"
 
+class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
+    sort_order = 150
+    auth_backend_name = "Google"
+    name = "google"
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+        verified_emails = []    # type: List[str]
+        details = kwargs["response"]
+        email_verified = details.get("email_verified")
+        if email_verified:
+            verified_emails.append(details["email"])
+        return verified_emails
+
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
-    'Google': GoogleMobileOauth2Backend,
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
-OAUTH_BACKEND_NAMES = ["Google"]  # type: List[str]
+OAUTH_BACKEND_NAMES = []  # type: List[str]
 SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 
 # Authomatically add all of our social auth backends to relevant data structures.
@@ -982,3 +956,7 @@ for social_auth_subclass in SocialAuthMixin.__subclasses__():
     if issubclass(social_auth_subclass, BaseOAuth2):
         OAUTH_BACKEND_NAMES.append(social_auth_subclass.auth_backend_name)
         SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
+
+# Provide this alternative name for backwards compatibility with
+# installations that had the old backend enabled.
+GoogleMobileOauth2Backend = GoogleAuthBackend

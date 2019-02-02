@@ -1649,7 +1649,7 @@ class EventsRegisterTest(ZulipTestCase):
                 'zproject.backends.DevAuthBackend',
                 'zproject.backends.EmailAuthBackend',
                 'zproject.backends.GitHubAuthBackend',
-                'zproject.backends.GoogleMobileOauth2Backend',
+                'zproject.backends.GoogleAuthBackend',
                 'zproject.backends.ZulipLDAPAuthBackend',
             )
             return self.settings(AUTHENTICATION_BACKENDS=backends)

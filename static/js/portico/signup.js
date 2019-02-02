@@ -118,8 +118,7 @@ $(function () {
             https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
             var email_formaction = $("#login_form").attr('action');
             $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
-            $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
-            $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
+            $(".social_login_form input[name='next']").attr('value', '/' + window.location.hash);
 
             var sso_address = $("#sso-login").attr('href');
             $("#sso-login").attr('href', sso_address + window.location.hash);
