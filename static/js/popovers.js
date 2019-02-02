@@ -802,7 +802,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('#user_presences').on('click', 'span.arrow', function (e) {
+    $('#user_presences').on('click', ' .current-user.selectable_sidebar_block, span.arrow', function (e) {
         e.stopPropagation();
 
         // use email of currently selected user, rather than some elem comparison,

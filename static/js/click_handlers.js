@@ -380,7 +380,7 @@ exports.initialize = function () {
         }
     });
 
-    $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
+    $('#user_presences').expectOne().on('click', '.selectable_sidebar_block:not(.current-user)', function (e) {
         var li = $(e.target).parents('li');
 
         activity.narrow_for_user({li: li});

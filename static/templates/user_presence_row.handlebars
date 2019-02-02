@@ -1,8 +1,8 @@
 <li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}} user-with-count {{/if}} narrow-filter user_{{type}} {{#if faded}} user-fade {{/if}}">
-    <div class="selectable_sidebar_block">
+    <div class="selectable_sidebar_block {{#if is_current_user}} current-user {{/if}} ">
         <span class="user-status-indicator"></span>
         <a class="user-presence-link"
-          href="{{href}}"
+          {{#unless is_current_user}} href="{{href}}" {{/unless}}
           data-user-id="{{user_id}}"
           data-name="{{name}}"
           title="{{title}}">
