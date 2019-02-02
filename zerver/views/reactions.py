@@ -2,7 +2,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import \
-    has_request_variables, REQ, to_non_negative_int
+    has_request_variables, REQ
 from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy, \
     do_remove_reaction, do_remove_reaction_legacy
 from zerver.lib.emoji import check_emoji_request, check_valid_emoji, \

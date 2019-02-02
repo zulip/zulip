@@ -1,13 +1,12 @@
 from typing import Any, Dict, List, Optional, Union, cast
 import datetime
-import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.utils.timezone import utc as timezone_utc, now as timezone_now
+from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _, ugettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
@@ -20,7 +19,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int, check_string, \
     check_capped_string, check_string_fixed_length, check_float, check_none_or, \
-    check_dict, check_dict_only, check_list
+    check_dict_only, check_list
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \

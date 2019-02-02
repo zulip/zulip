@@ -1,10 +1,9 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.models import RealmEmoji, UserProfile
-from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name, check_valid_emoji
+from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
