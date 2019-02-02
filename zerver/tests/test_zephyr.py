@@ -3,7 +3,7 @@ import ujson
 
 from django.http import HttpResponse
 from mock import patch
-from typing import Any, Dict
+from typing import Any
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.users import get_api_key

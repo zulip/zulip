@@ -10,7 +10,7 @@ from zerver.lib.soft_deactivation import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    Client, UserProfile, UserActivity, get_realm, Recipient
+    Client, UserProfile, UserActivity, get_realm,
 )
 
 class UserSoftDeactivationTests(ZulipTestCase):

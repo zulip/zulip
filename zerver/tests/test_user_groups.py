@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Any, List, Optional
-
 import ujson
-import django
 import mock
 
 from zerver.lib.actions import (
@@ -22,7 +19,7 @@ from zerver.lib.user_groups import (
     get_memberships_of_users,
     user_groups_in_realm_serialized,
 )
-from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
+from zerver.models import UserGroup, get_realm, Realm, \
     UserGroupMembership
 
 class UserGroupTestCase(ZulipTestCase):

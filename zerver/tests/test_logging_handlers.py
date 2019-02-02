@@ -5,21 +5,18 @@ import sys
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest, HttpResponse
-from django.test import RequestFactory, TestCase
+from django.http import HttpRequest
+from django.test import TestCase
 from django.utils.log import AdminEmailHandler
 from functools import wraps
 from mock import MagicMock, patch
 from mypy_extensions import NoReturn
-from typing import Any, Callable, Dict, Mapping, Optional, Iterator, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Iterator, Optional, Tuple, Type
 from types import TracebackType
 
-from zerver.lib.request import JsonableError
 from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
-from zerver.middleware import JsonErrorHandler
-from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None  # type: Tuple[Optional[Type[BaseException]], Optional[BaseException], Optional[TracebackType]]

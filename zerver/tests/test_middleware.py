@@ -1,6 +1,5 @@
 import time
 
-from django.http import HttpResponse
 from django.test import override_settings
 from unittest.mock import Mock, patch
 from zerver.lib.test_classes import ZulipTestCase

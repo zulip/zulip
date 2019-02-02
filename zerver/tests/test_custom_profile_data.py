@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from typing import Union, List, Dict, Any
-from mock import patch
 
 from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field, \

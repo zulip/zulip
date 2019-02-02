@@ -5,9 +5,7 @@ import re
 from typing import Any, Dict, Iterable
 import logging
 
-from django.conf import settings
 from django.test import override_settings
-from django.template import Template, Context
 from django.template.loader import get_template
 from django.test.client import RequestFactory
 
@@ -17,7 +15,6 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
-from zerver.context_processors import common_context
 
 
 class get_form_value:

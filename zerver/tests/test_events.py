@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import os
 import shutil
 import sys
@@ -13,10 +13,10 @@ from django.utils.timezone import now as timezone_now
 from io import StringIO
 
 from zerver.models import (
-    get_client, get_realm, get_stream_recipient, get_stream, get_user,
+    get_client, get_realm, get_stream_recipient, get_stream,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, UserStatus,
+    Attachment, PreregistrationUser,
 )
 
 from zerver.lib.actions import (
@@ -87,7 +87,6 @@ from zerver.lib.actions import (
     get_typing_user_profiles,
     log_event,
     lookup_default_stream_groups,
-    notify_attachment_update,
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
@@ -125,7 +124,6 @@ from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator, check_url
 )
-from zerver.lib.upload import upload_backend, attachment_url_to_path_id
 from zerver.lib.users import get_api_key
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
@@ -139,7 +137,6 @@ from zerver.tornado.event_queue import (
 )
 from zerver.tornado.views import get_events
 
-from collections import OrderedDict
 import mock
 import time
 import ujson

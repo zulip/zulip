@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set
+from typing import Any, Dict, List, Mapping, Optional, Set
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib import cache
@@ -42,7 +41,7 @@ from zerver.lib.test_runner import (
 )
 
 from zerver.models import (
-    get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
+    Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
     get_client, get_user
@@ -53,7 +52,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    set_default_streams, check_stream_name, do_get_streams,
+    set_default_streams, do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -64,7 +63,6 @@ from zerver.lib.actions import (
     do_remove_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    do_rename_stream,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
     validate_user_access_to_subscribers_helper,
@@ -81,12 +79,10 @@ from zerver.lib.message import (
 )
 from zerver.lib.stream_recipient import StreamRecipientMap
 
-from django.http import HttpResponse
 from datetime import timedelta
 import mock
 import random
 import ujson
-import urllib
 
 class TestMiscStuff(ZulipTestCase):
     def test_empty_results(self) -> None:

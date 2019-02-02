@@ -1,5 +1,3 @@
-
-import os
 import random
 import re
 import ujson
@@ -7,29 +5,24 @@ import ldap
 
 from django.conf import settings
 from django.core import mail
-from django.http import HttpResponse
 from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
 from email.utils import formataddr
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from zerver.lib.notifications import fix_emojis, handle_missedmessage_emails, \
     enqueue_welcome_emails, relative_to_full_url
-from zerver.lib.actions import do_update_message, do_change_notification_settings
-from zerver.lib.message import access_message
+from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import MockLDAP
 from zerver.models import (
     get_realm,
     get_stream,
-    Recipient,
-    UserMessage,
     UserProfile,
     ScheduledEmail
 )
-from zerver.lib.test_helpers import get_test_image_file
 
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:

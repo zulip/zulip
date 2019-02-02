@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.db import IntegrityError
-from django.db.models import Q, Max
+from django.db.models import Q
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import utc as timezone_utc
 
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.lib.cache import get_stream_cache_key, cache_delete
-from zerver.lib.message import estimate_recent_messages
 
 from zerver.lib.addressee import Addressee
 
@@ -96,11 +94,10 @@ from zerver.lib.url_encoding import near_message_url
 
 from zerver.views.messages import create_mirrored_message_users
 
-from analytics.lib.counts import CountStat, LoggingCountStat, COUNT_STATS
+from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 
 import datetime
-import DNS
 import mock
 import time
 import ujson

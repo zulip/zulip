@@ -5,9 +5,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.slack import (
     rm_tree,
     get_slack_api_data,
-    get_user_email,
-    build_avatar_url,
-    build_avatar,
     get_admin,
     get_user_timezone,
     users_to_zerver_userprofile,
@@ -18,7 +15,6 @@ from zerver.data_import.slack import (
     channel_message_to_zerver_message,
     convert_slack_workspace_messages,
     do_convert_data,
-    process_avatars,
     process_message_files,
     AddedChannelsT,
     ZerverFieldsT,
@@ -36,9 +32,6 @@ from zerver.data_import.sequencer import (
 from zerver.lib.import_realm import (
     do_import_realm,
 )
-from zerver.lib.avatar_hash import (
-    user_avatar_path_from_ids,
-)
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -51,16 +44,13 @@ from zerver.models import (
     RealmAuditLog,
     Recipient,
 )
-from zerver.lib import mdiff
 
 import ujson
-import json
 import logging
 import shutil
-import requests
 import os
 import mock
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Iterator
+from typing import Any, Dict, List, Set, Tuple, Iterator
 
 def remove_folder(path: str) -> None:
     if os.path.exists(path):

@@ -4,7 +4,6 @@ import os
 import ujson
 
 from django.core import mail
-from django.http import HttpResponse
 from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Mapping
@@ -12,7 +11,7 @@ from typing import Any, Dict, List, Mapping
 from zerver.lib.actions import do_change_stream_invite_only, do_deactivate_user
 from zerver.lib.bot_config import get_bot_config
 from zerver.models import get_realm, get_stream, \
-    Realm, Stream, UserProfile, get_user, get_bot_services, Service, \
+    Realm, UserProfile, get_user, get_bot_services, Service, \
     is_cross_realm_bot_email
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (

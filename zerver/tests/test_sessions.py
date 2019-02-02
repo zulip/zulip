@@ -10,7 +10,7 @@ from zerver.lib.sessions import (
 )
 
 from zerver.models import (
-    UserProfile, get_user_profile_by_id, get_realm, Realm
+    get_realm, Realm
 )
 
 from zerver.lib.test_classes import ZulipTestCase

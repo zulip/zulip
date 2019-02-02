@@ -3,29 +3,23 @@
 from typing import (Any, Dict, Iterable, List, Mapping,
                     Optional, TypeVar, Union)
 
-from django.http import HttpResponse
-from django.test import TestCase
-
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     tornado_redirected_to_list, get_subscription,
-    most_recent_message, make_client, avatar_disk_path,
-    get_test_image_file
+    most_recent_message,
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
-    Realm, RealmDomain, UserActivity, UserHotspot, \
-    get_user, get_realm, get_client, get_stream, get_stream_recipient, \
-    get_source_profile, Message, get_context_for_message, \
-    ScheduledEmail, check_valid_user_ids, get_user, \
+    RealmDomain, UserHotspot, \
+    get_user, get_realm, get_stream, get_stream_recipient, \
+    get_source_profile, \
+    ScheduledEmail, check_valid_user_ids, \
     get_user_by_id_in_realm_including_cross_realm, CustomProfileField
 
 from zerver.lib.avatar import avatar_url
-from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.send_email import send_future_email
 from zerver.lib.actions import (
@@ -34,7 +28,6 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_reactivate_user,
     do_change_is_admin,
-    do_change_is_guest,
     do_create_user,
 )
 from zerver.lib.create_user import copy_user_settings
@@ -43,13 +36,8 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.users import user_ids_to_users, access_user_by_id, \
     get_accounts_for_email
 
-from django.conf import settings
-
 import datetime
 import mock
-import os
-import sys
-import time
 import ujson
 
 K = TypeVar('K')

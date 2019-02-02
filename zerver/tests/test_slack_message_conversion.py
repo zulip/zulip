@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name
@@ -13,7 +11,7 @@ from zerver.lib import mdiff
 import ujson
 
 import os
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Tuple
 
 class SlackMessageConversion(ZulipTestCase):
     def assertEqual(self, first: Any, second: Any, msg: str="") -> None:
