@@ -2,7 +2,6 @@
 import argparse
 import os
 import subprocess
-import tarfile
 from typing import Any
 
 from django.conf import settings

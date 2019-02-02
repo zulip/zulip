@@ -2,7 +2,6 @@
 from argparse import ArgumentParser
 
 from zerver.lib.management import ZulipBaseCommand, CommandError
-from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_send_realm_reactivation_email
 
 from typing import Any

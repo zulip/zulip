@@ -1,9 +1,7 @@
 from argparse import ArgumentParser
 import json
-import os
 import requests
 import subprocess
-import sys
 from typing import Any
 
 from django.conf import settings

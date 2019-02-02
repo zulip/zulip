@@ -1,7 +1,5 @@
-
-import logging
 from argparse import ArgumentParser
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 from django.contrib.auth.tokens import default_token_generator
 
