@@ -1,5 +1,4 @@
-
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 if False:
     from zerver.tornado.event_queue import ClientDescriptor

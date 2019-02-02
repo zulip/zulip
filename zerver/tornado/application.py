@@ -3,7 +3,6 @@ import atexit
 
 import tornado.web
 from django.conf import settings
-from tornado import ioloop
 from zerver.tornado import autoreload
 
 from zerver.lib.queue import get_queue_client
