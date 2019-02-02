@@ -1,11 +1,7 @@
-from typing import Dict, Optional
-
-import ujson
 from mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.models import Message
 
 class GithubWebhookTest(WebhookTestCase):
     STREAM_NAME = 'github'

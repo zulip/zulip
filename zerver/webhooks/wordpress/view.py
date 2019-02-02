@@ -6,7 +6,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile
 
 PUBLISH_POST_OR_PAGE_TEMPLATE = 'New {type} published.\n[{title}]({url})'
 USER_REGISTER_TEMPLATE = 'New blog user registered.\nName: {name}\nemail: {email}'

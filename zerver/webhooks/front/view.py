@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

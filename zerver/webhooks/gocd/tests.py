@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import urllib
-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_realm, get_user
 
 class GocdHookTests(WebhookTestCase):
     STREAM_NAME = 'gocd'

@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import ujson
 from django.conf import settings

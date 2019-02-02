@@ -1,10 +1,9 @@
 # Webhooks for external integrations.
 import ujson
 from typing import Mapping, Any, Tuple, Optional
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view, return_success_on_head_request
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType

@@ -1,6 +1,5 @@
 """Webhooks for external integrations."""
 
-import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -10,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType

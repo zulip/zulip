@@ -1,14 +1,11 @@
 from typing import Any, Dict
 
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile
-
-import ujson
 
 APPVEYOR_TOPIC_TEMPLATE = '{project_name}'
 APPVEYOR_MESSAGE_TEMPLATE = ('[Build {project_name} {build_version} {status}]({build_url})\n'

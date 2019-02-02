@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import urllib
-
 from zerver.lib.test_classes import WebhookTestCase
 
 class SolanoHookTests(WebhookTestCase):

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_system_bot
 
 class NetlifyHookTests(WebhookTestCase):
     STREAM_NAME = 'netlify'
