@@ -1,0 +1,8 @@
+{
+    "type": "private",
+    "content": "Sample content for private huddle message",
+    "to": [
+        "iago@zulip.com",
+        "cordelia@zulip.com"
+    ]
+}
