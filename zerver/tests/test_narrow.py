@@ -2,7 +2,7 @@
 
 
 from django.db import connection
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from sqlalchemy.sql import (
     and_, select, column, table, literal, join, literal_column,
 )
@@ -25,7 +25,6 @@ from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     POSTRequestMock,
-    TestCase,
     get_user_messages, queries_captured,
 )
 from zerver.lib.test_classes import (
