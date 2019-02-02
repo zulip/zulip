@@ -1139,35 +1139,42 @@ run_test('on_events', () => {
         assert(looked_for_existing);
     }());
 
-    var event;
-    var container;
-    var target;
-    var container_removed;
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        container = $.create('fake ' + container_sel);
-        container_removed = false;
+        var container = $.create('fake ' + container_sel);
+        var container_removed = false;
 
         container.remove = function () {
             container_removed = true;
         };
 
-        target = $.create('fake click target (' + target_sel + ')');
+        var target = $.create('fake click target (' + target_sel + ')');
 
         target.set_parents_result(parent, container);
 
-        event = {
+        var event = {
             preventDefault: noop,
             target: target,
         };
+
+        var helper = {
+            event: event,
+            container: container,
+            target: target,
+            container_was_removed: () => container_removed,
+        };
+
+        return helper;
     }
 
     (function test_compose_all_everyone_confirm_clicked() {
         var handler = $("#compose-all-everyone")
             .get_on_handler('click', '.compose-all-everyone-confirm');
 
-        setup_parents_and_mock_remove('compose-all-everyone',
-                                      'compose-all-everyone',
-                                      '.compose-all-everyone');
+        var helper = setup_parents_and_mock_remove(
+            'compose-all-everyone',
+            'compose-all-everyone',
+            '.compose-all-everyone'
+        );
 
         $("#compose-all-everyone").show();
         $("#compose-send-status").show();
@@ -1177,9 +1184,9 @@ run_test('on_events', () => {
             compose_finish_checked = true;
         };
 
-        handler(event);
+        handler(helper.event);
 
-        assert(container_removed);
+        assert(helper.container_was_removed());
         assert(compose_finish_checked);
         assert(!$("#compose-all-everyone").visible());
         assert(!$("#compose-send-status").visible());
@@ -1201,30 +1208,32 @@ run_test('on_events', () => {
             success();  // This will check success callback path.
         };
 
-        setup_parents_and_mock_remove('compose_invite_users',
-                                      'compose_invite_link',
-                                      '.compose_invite_user');
+        var helper = setup_parents_and_mock_remove(
+            'compose_invite_users',
+            'compose_invite_link',
+            '.compose_invite_user'
+        );
 
         // .data in zjquery is a noop by default, so handler should just return
-        handler(event);
+        handler(helper.event);
 
         assert(!invite_user_to_stream_called);
-        assert(!container_removed);
+        assert(!helper.container_was_removed());
 
         // !sub will result false here and we check the failure code path.
         blueslip.set_test_data('warn', 'Stream no longer exists: no-stream');
         $('#stream_message_recipient_stream').val('no-stream');
-        container.data = function (field) {
+        helper.container.data = function (field) {
             assert.equal(field, 'useremail');
             return 'foo@bar.com';
         };
         $("#compose-textarea").select(noop);
-        target.prop('disabled', false);
+        helper.target.prop('disabled', false);
 
-        handler(event);
-        assert(target.attr('disabled'));
+        handler(helper.event);
+        assert(helper.target.attr('disabled'));
         assert(!invite_user_to_stream_called);
-        assert(!container_removed);
+        assert(!helper.container_was_removed());
         assert(!$("#compose_invite_users").visible());
         assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
         assert.equal(blueslip.get_test_logs('warn').length, 1);
@@ -1240,9 +1249,9 @@ run_test('on_events', () => {
         };
         $("#compose_invite_users").show();
 
-        handler(event);
+        handler(helper.event);
 
-        assert(container_removed);
+        assert(helper.container_was_removed());
         assert(!$("#compose_invite_users").visible());
         assert(invite_user_to_stream_called);
         assert(all_invite_children_called);
@@ -1252,9 +1261,11 @@ run_test('on_events', () => {
         var handler = $("#compose_invite_users")
             .get_on_handler('click', '.compose_invite_close');
 
-        setup_parents_and_mock_remove('compose_invite_users_close',
-                                      'compose_invite_close',
-                                      '.compose_invite_user');
+        var helper = setup_parents_and_mock_remove(
+            'compose_invite_users_close',
+            'compose_invite_close',
+            '.compose_invite_user'
+        );
 
         var all_invite_children_called = false;
         $("#compose_invite_users").children = function () {
@@ -1263,9 +1274,9 @@ run_test('on_events', () => {
         };
         $("#compose_invite_users").show();
 
-        handler(event);
+        handler(helper.event);
 
-        assert(container_removed);
+        assert(helper.container_was_removed());
         assert(all_invite_children_called);
         assert(!$("#compose_invite_users").visible());
     }());
@@ -1283,11 +1294,13 @@ run_test('on_events', () => {
             compose_not_subscribed_called = true;
         };
 
-        setup_parents_and_mock_remove('compose-send-status',
-                                      'sub_unsub_button',
-                                      '.compose_not_subscribed');
+        var helper = setup_parents_and_mock_remove(
+            'compose-send-status',
+            'sub_unsub_button',
+            '.compose_not_subscribed'
+        );
 
-        handler(event);
+        handler(helper.event);
 
         assert(compose_not_subscribed_called);
 
@@ -1295,7 +1308,7 @@ run_test('on_events', () => {
         $('#stream_message_recipient_stream').val('test');
         $("#compose-send-status").show();
 
-        handler(event);
+        handler(helper.event);
 
         assert(!$("#compose-send-status").visible());
     }());
@@ -1304,18 +1317,20 @@ run_test('on_events', () => {
         var handler = $("#compose-send-status")
             .get_on_handler('click', '#compose_not_subscribed_close');
 
-        setup_parents_and_mock_remove('compose_user_not_subscribed_close',
-                                      'compose_not_subscribed_close',
-                                      '.compose_not_subscribed');
+        var helper = setup_parents_and_mock_remove(
+            'compose_user_not_subscribed_close',
+            'compose_not_subscribed_close',
+            '.compose_not_subscribed'
+        );
 
         $("#compose-send-status").show();
 
-        handler(event);
+        handler(helper.event);
 
         assert(!$("#compose-send-status").visible());
     }());
 
-    event = {
+    var event = {
         preventDefault: noop,
     };
 
