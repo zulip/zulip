@@ -184,7 +184,7 @@ def remote_server_post_analytics(request: HttpRequest,
     server = cast(RemoteZulipServer, entity)
 
     validate_count_stats(server, RemoteRealmCount, realm_counts)
-    validate_count_stats(server, RemoteInstallationCount, realm_counts)
+    validate_count_stats(server, RemoteInstallationCount, installation_counts)
 
     BATCH_SIZE = 1000
     while len(realm_counts) > 0:
