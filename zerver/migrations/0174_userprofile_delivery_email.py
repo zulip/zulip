@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-from django.apps import apps
 from django.db.models import F
 
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor

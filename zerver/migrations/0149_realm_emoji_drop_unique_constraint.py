@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-import tempfile
 
 from boto.s3.connection import S3Connection
 from django.conf import settings

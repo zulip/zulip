@@ -4,12 +4,8 @@
 import os
 from typing import Text
 
-import requests
-from boto.s3.bucket import Bucket
 from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 from django.conf import settings
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps

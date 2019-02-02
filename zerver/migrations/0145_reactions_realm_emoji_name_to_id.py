@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import ujson
-
 from collections import defaultdict
-from django.conf import settings
-from django.db import migrations, models
+from django.db import migrations
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from typing import Any, Dict
