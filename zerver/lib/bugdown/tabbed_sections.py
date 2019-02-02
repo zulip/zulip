@@ -2,7 +2,7 @@ import re
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
-from typing import Any, Dict, Optional, List, Tuple
+from typing import Any, Dict, Optional, List
 import markdown
 
 START_TABBED_SECTION_REGEX = re.compile(r'^\{start_tabs\}$')
