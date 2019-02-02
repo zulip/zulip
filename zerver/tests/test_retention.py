@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import now as timezone_now
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.upload import create_attachment
-from zerver.models import Message, Realm, Recipient, UserProfile, UserMessage, ArchivedUserMessage, \
+from zerver.models import Message, Realm, UserMessage, ArchivedUserMessage, \
     ArchivedMessage, Attachment, ArchivedAttachment
 from zerver.lib.retention import get_expired_messages, move_messages_to_archive
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import mock
 from typing import Any, Union, Mapping, Callable
 
@@ -18,7 +17,6 @@ from zerver.lib.bot_config import set_bot_config, ConfigError, load_bot_config_t
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     get_realm,
-    BotStorageData,
     UserProfile,
     Recipient,
 )

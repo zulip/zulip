@@ -1,13 +1,11 @@
 import mock
-import os
 from typing import Any, Dict
-import ujson
 
 from django.test import override_settings
 from pika.exceptions import ConnectionClosed, AMQPConnectionError
 
 from zerver.lib.queue import TornadoQueueClient, queue_json_publish, \
-    get_queue_client, SimpleQueueClient
+    get_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 
 class TestTornadoQueueClient(ZulipTestCase):

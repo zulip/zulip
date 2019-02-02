@@ -7,10 +7,8 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_remove_realm_emoji,
     do_set_alert_words,
-    get_realm,
 )
 from zerver.lib.alert_words import alert_words_in_realm
-from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import BugdownRenderingException
@@ -40,7 +38,6 @@ from zerver.models import (
     Realm,
     RealmEmoji,
     RealmFilter,
-    Recipient,
     UserProfile,
     UserGroup,
 )
@@ -50,8 +47,7 @@ import mock
 import os
 import ujson
 
-import urllib
-from typing import cast, Any, AnyStr, Dict, List, Optional, Set, Tuple
+from typing import cast, Any, Dict, List, Optional, Set, Tuple
 
 class FakeMessage:
     pass

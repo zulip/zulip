@@ -7,10 +7,9 @@ from unittest import mock
 
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.request import JsonableError
-from zerver.lib.test_helpers import tornado_redirected_to_list, \
-    get_test_image_file
+from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_realm, Message, Reaction, RealmEmoji, Recipient, UserMessage
+from zerver.models import get_realm, Message, Reaction, RealmEmoji, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self) -> None:

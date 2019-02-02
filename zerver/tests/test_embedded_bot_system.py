@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from unittest import mock
 from mock import patch
-from typing import Any, Dict, Tuple, Optional
 
-from zerver.lib.bot_lib import EmbeddedBotQuitException, EmbeddedBotHandler
+from zerver.lib.bot_lib import EmbeddedBotQuitException
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
-    UserProfile, Recipient, get_display_recipient,
+    UserProfile, get_display_recipient,
     get_service_profile, get_user, get_realm
 )
 

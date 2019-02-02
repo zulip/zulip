@@ -1,16 +1,13 @@
 
 import datetime
-import os
 import re
 import ujson
 
-from django.conf import settings
 from django.http import HttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from mock import MagicMock, patch
 import urllib
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from zerver.lib.actions import do_create_user
 from zerver.lib.test_classes import ZulipTestCase
@@ -20,7 +17,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_runner import slow
 from zerver.models import (
-    get_realm, get_stream, get_user, UserProfile, UserMessage, Recipient,
+    get_realm, get_stream, get_user, UserProfile,
     flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds

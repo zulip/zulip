@@ -4,17 +4,14 @@ from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
-from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
-from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
 from django.urls import reverse
 import httpretty
 import os
-import sys
 
 import jwt
 import mock
@@ -22,7 +19,6 @@ import re
 import time
 import datetime
 
-from zerver.forms import HomepageForm
 from zerver.lib.actions import (
     do_deactivate_realm,
     do_deactivate_user,
@@ -44,13 +40,12 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.test_helpers import POSTRequestMock, HostRequestMock
 from zerver.models import \
     get_realm, email_to_username, UserProfile, \
     PreregistrationUser, Realm, get_user, MultiuseInvite
 from zerver.signals import JUST_CREATED_THRESHOLD
 
-from confirmation.models import Confirmation, confirmation_url, create_confirmation_link
+from confirmation.models import Confirmation, create_confirmation_link
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
@@ -61,19 +56,15 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPException, sync_user_from_ldap
 
 from zerver.views.auth import (maybe_send_to_registration,
-                               login_or_register_remote_user,
                                _subdomain_token_salt)
 from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
-from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
-    GithubOAuth2
 
 import json
 import urllib
-from http.cookies import SimpleCookie
 import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 

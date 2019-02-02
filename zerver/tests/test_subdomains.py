@@ -2,7 +2,7 @@
 import mock
 from typing import Any, Dict, List
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm

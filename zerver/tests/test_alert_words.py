@@ -17,7 +17,6 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    Recipient,
     UserProfile,
 )
 

@@ -6,7 +6,7 @@ from typing import Any
 from requests.exceptions import ConnectionError
 from django.test import override_settings
 
-from zerver.models import Recipient, Message
+from zerver.models import Message
 from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse

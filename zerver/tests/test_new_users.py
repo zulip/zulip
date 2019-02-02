@@ -1,7 +1,6 @@
 import datetime
 from django.conf import settings
 from django.core import mail
-from django.contrib.auth.signals import user_logged_in
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase

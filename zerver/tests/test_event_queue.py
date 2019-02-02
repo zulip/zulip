@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
-    allocate_client_descriptor, process_message_event, \
+    allocate_client_descriptor, \
     get_client_descriptor, missedmessage_hook, persistent_queue_filename
 from zerver.tornado.views import get_events
 

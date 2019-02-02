@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.test import TestCase
-from unittest import skip
 from unittest.mock import patch
 
 from zerver.lib.avatar import (
@@ -16,12 +15,10 @@ from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,
-    POSTRequestMock,
     use_s3_backend,
     create_s3_buckets,
     queries_captured,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
@@ -30,7 +27,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     exif_rotate
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
-    get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
+    Message, UserProfile, Realm, \
     RealmDomain, RealmEmoji, get_realm, get_system_bot, \
     validate_attachment_request
 from zerver.lib.actions import (
@@ -39,14 +36,12 @@ from zerver.lib.actions import (
     internal_send_private_message,
 )
 from zerver.lib.create_user import copy_user_settings
-from zerver.lib.request import JsonableError
 from zerver.lib.users import get_api_key
-from zerver.views.upload import upload_file_backend, serve_local
+from zerver.views.upload import upload_file_backend
 
 import urllib
 from PIL import Image
 
-from boto.s3.key import Key
 from io import StringIO
 import mock
 import os
@@ -54,14 +49,8 @@ import io
 import shutil
 import re
 import datetime
-import requests
-import base64
-from datetime import timedelta
-from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 from sendfile import _get_sendfile
-
-from typing import Any, Callable
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
