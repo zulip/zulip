@@ -16,7 +16,7 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key,
     to_dict_cache_key_id,
-    cache_get, cache_set,
+    cache_set,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
