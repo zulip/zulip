@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db.models import Sum
 from django.db.models.query import F
 from django.db.models.functions import Length
-from zerver.models import BotStorageData, UserProfile, Length
+from zerver.models import BotStorageData, UserProfile
 
 from typing import Optional, List, Tuple
 
