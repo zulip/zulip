@@ -10,7 +10,7 @@ import subprocess
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Any, Dict, Optional, Union
+    from typing import Dict
 
 states = {
     0: "OK",
@@ -49,7 +49,6 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 consumers = defaultdict(int)  # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-from scripts.lib.zulip_tools import su_to_zulip
 queues = {
     'deferred_work'
     'digest_emails',

@@ -5,7 +5,7 @@ import json
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Optional, List, IO, Tuple, Any
+    from typing import Optional, List, IO, Any
 
 from scripts.lib.zulip_tools import subprocess_text_output, run
 

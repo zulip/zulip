@@ -11,7 +11,7 @@ TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, ENDC, \
     su_to_zulip, get_deployment_lock, release_deployment_lock, assert_running_as_root, \
     get_config_file, get_deploy_options
 

@@ -11,7 +11,7 @@ if False:
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments, \
-    may_be_perform_purging, TIMESTAMP_FORMAT
+    may_be_perform_purging
 
 def parse_args():
     # type: () -> argparse.Namespace
