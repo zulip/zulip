@@ -16,6 +16,12 @@ i18n_urlpatterns = [
         name='analytics.views.stats_for_realm'),
     url(r'^stats/installation$', analytics.views.stats_for_installation,
         name='analytics.views.stats_for_installation'),
+    url(r'^stats/remote/(?P<remote_server_id>[\S]+)/installation$',
+        analytics.views.stats_for_remote_installation,
+        name='analytics.views.stats_for_remote_installation'),
+    url(r'^stats/remote/(?P<remote_server_id>[\S]+)/realm/(?P<remote_realm_id>[\S]+)/$',
+        analytics.views.stats_for_remote_realm,
+        name='analytics.views.stats_for_remote_realm'),
 
     # User-visible stats page
     url(r'^stats$', analytics.views.stats,
@@ -38,6 +44,11 @@ v1_api_and_json_patterns = [
         {'GET': 'analytics.views.get_chart_data_for_realm'}),
     url(r'^analytics/chart_data/installation$', rest_dispatch,
         {'GET': 'analytics.views.get_chart_data_for_installation'}),
+    url(r'^analytics/chart_data/remote/(?P<remote_server_id>[\S]+)/installation$', rest_dispatch,
+        {'GET': 'analytics.views.get_chart_data_for_remote_installation'}),
+    url(r'^analytics/chart_data/remote/(?P<remote_server_id>[\S]+)/realm/(?P<remote_realm_id>[\S]+)$',
+        rest_dispatch,
+        {'GET': 'analytics.views.get_chart_data_for_remote_realm'}),
 ]
 
 i18n_urlpatterns += [
