@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Iterator
 
 # Taken from
 # https://github.com/simplejson/simplejson/blob/8edc82afcf6f7512b05fba32baa536fe756bd273/simplejson/encoder.py#L378-L402

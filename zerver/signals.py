@@ -1,10 +1,8 @@
-
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.dispatch import receiver
-from django.template import loader
 from django.utils.timezone import \
     get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now

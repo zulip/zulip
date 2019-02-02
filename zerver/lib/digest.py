@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
+from typing import Any, Dict, List, Set, Tuple, Union
 
 from collections import defaultdict
 import datetime
@@ -6,7 +6,6 @@ import logging
 import pytz
 
 from django.db.models import Q, QuerySet
-from django.template import loader
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -14,7 +13,7 @@ from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.notifications import build_message_list
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.url_encoding import encode_stream
-from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
+from zerver.models import UserProfile, UserMessage, Recipient, \
     Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
     Realm, Message
 from zerver.context_processors import common_context

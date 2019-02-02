@@ -6,10 +6,7 @@ from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
 
-import base64
 import ujson
-import os
-import string
 
 from typing import Optional
 

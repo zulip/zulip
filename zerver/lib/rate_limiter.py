@@ -1,7 +1,7 @@
 
 import os
 
-from typing import Any, Iterator, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
@@ -10,7 +10,6 @@ from zerver.models import UserProfile
 
 import redis
 import time
-import logging
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/

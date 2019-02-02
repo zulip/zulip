@@ -1,8 +1,6 @@
-from django.db.models.query import QuerySet
 from psycopg2.extensions import cursor
-from typing import Any, Callable, Dict, List, Tuple, TypeVar
+from typing import List, TypeVar
 
-import re
 import time
 
 CursorObj = TypeVar('CursorObj', bound=cursor)

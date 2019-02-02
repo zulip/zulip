@@ -1,8 +1,7 @@
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.template.defaultfilters import slugify
 from django.core.files import File
 from django.http import HttpRequest
 from django.db.models import Sum
@@ -17,7 +16,7 @@ from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
-from zerver.models import get_user_profile_by_id, RealmEmoji
+from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 

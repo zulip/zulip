@@ -1,5 +1,4 @@
-from typing import MutableMapping, Any, Optional, List, Tuple
-from django.conf import settings
+from typing import MutableMapping, Any, Optional, Tuple
 
 import re
 import json

@@ -1,6 +1,6 @@
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
-                    Sized, Tuple, Union)
+from typing import (cast, Any, Dict, Iterable, Iterator, List, Optional,
+                    Tuple, Union)
 
 from django.apps import apps
 from django.db.migrations.state import StateApps
@@ -24,7 +24,7 @@ from zerver.lib.users import get_api_key
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions, do_create_user,
+    bulk_remove_subscriptions,
     check_send_stream_message, gather_subscriptions,
     get_default_value_for_history_public_to_subscribers,
 )
@@ -40,13 +40,13 @@ from zerver.lib.test_helpers import (
 from zerver.models import (
     get_stream,
     get_client,
+    get_display_recipient,
     get_user,
     get_realm,
     Client,
     Message,
     Realm,
     Recipient,
-    Service,
     Stream,
     Subscription,
     UserProfile,

@@ -2,7 +2,6 @@
 import django_otp
 from two_factor.utils import default_device
 from django_otp import user_has_device, _user_is_authenticated
-from django_otp.conf import settings as otp_settings
 
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
 from django.contrib.auth.models import AnonymousUser
@@ -29,8 +28,7 @@ from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser, RateLimiterLockingException
-from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
-from django.core.handlers import base
+from zerver.lib.request import REQ, has_request_variables, RequestVariableMissingError
 
 from functools import wraps
 import base64
@@ -40,7 +38,7 @@ import logging
 from io import BytesIO
 import urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Tuple, cast
+from typing import Union, Any, Callable, Dict, Optional, TypeVar, Tuple
 from zerver.lib.logging_util import log_to_file
 
 # This is a hack to ensure that RemoteZulipServer always exists even

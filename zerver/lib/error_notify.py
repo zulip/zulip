@@ -1,13 +1,11 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
-import logging
-
 from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import cast, Any, Dict, Optional
+from typing import Any, Dict, Optional
 
 from zerver.filters import clean_data_from_query_parameters
 from zerver.models import get_system_bot

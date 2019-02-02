@@ -1,7 +1,6 @@
 
 from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional
 
-from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import check_stream_name, create_streams_if_needed
