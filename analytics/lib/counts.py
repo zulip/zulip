@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
 
-from analytics.models import Anomaly, BaseCount, \
+from analytics.models import BaseCount, \
     FillState, InstallationCount, RealmCount, StreamCount, \
     UserCount, installation_epoch, last_successful_fill
 from zerver.lib.logging_util import log_to_file
@@ -226,7 +226,6 @@ def do_drop_all_analytics_tables() -> None:
     RealmCount.objects.all().delete()
     InstallationCount.objects.all().delete()
     FillState.objects.all().delete()
-    Anomaly.objects.all().delete()
 
 def do_drop_single_stat(property: str) -> None:
     UserCount.objects.filter(property=property).delete()
