@@ -11,7 +11,7 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP
 from zerver.lib.users import get_all_api_keys
-from zerver.models import get_realm, get_user, UserProfile, \
+from zerver.models import get_realm, UserProfile, \
     get_user_profile_by_api_key
 
 class ChangeSettingsTest(ZulipTestCase):

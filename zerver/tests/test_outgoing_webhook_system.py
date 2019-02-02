@@ -5,10 +5,7 @@ import logging
 import mock
 import requests
 
-from builtins import object
-from django.test import override_settings
-from requests import Response
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Optional
 
 from zerver.lib.outgoing_webhook import (
     do_rest_call,

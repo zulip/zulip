@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-AA
 
-from typing import Any, Dict, List, Mapping
+from typing import Any, List, Mapping
 
 from django.db import connection
 from django.test import override_settings
@@ -10,8 +10,6 @@ from zerver.models import (
     get_stream,
     get_stream_recipient,
     get_user,
-    Recipient,
-    Stream,
     Subscription,
     UserMessage,
     UserProfile,

@@ -3,9 +3,7 @@
 import glob
 import os
 import re
-import email
 from datetime import timedelta
-from email.mime.text import MIMEText
 from email.utils import parseaddr
 from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
@@ -13,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from zerver.lib.actions import do_create_user, do_deactivate_realm, do_reactivate_realm
+from zerver.lib.actions import do_create_user
 from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed

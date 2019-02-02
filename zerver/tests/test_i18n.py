@@ -2,7 +2,6 @@
 
 from typing import Any
 
-import django
 import mock
 import ujson
 from django.test import TestCase
@@ -18,8 +17,6 @@ from zerver.lib.test_classes import (
 )
 from zerver.management.commands import makemessages
 from zerver.lib.notifications import enqueue_welcome_emails
-
-from django.utils.timezone import now as timezone_now
 
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:

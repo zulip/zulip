@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import mock
 import os
 import subprocess
 import ujson
@@ -19,7 +18,6 @@ from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
 from zerver.views.integrations import (
     add_api_uri_context,
-    add_integrations_context,
 )
 
 class DocPageTest(ZulipTestCase):

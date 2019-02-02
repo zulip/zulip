@@ -4,18 +4,17 @@
 from django.db import connection
 from django.test import TestCase, override_settings
 from sqlalchemy.sql import (
-    and_, select, column, table, literal, join, literal_column,
+    and_, select, column, table,
 )
 from sqlalchemy.sql import compiler
 
 from zerver.models import (
-    Realm, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_personal_recipient, get_realm, get_stream, get_user,
-    Reaction, UserMessage, get_stream_recipient, Message
+    Realm, Subscription,
+    get_display_recipient, get_personal_recipient, get_realm, get_stream,
+    UserMessage, get_stream_recipient, Message
 )
 from zerver.lib.message import (
     MessageDict,
-    get_first_visible_message_id,
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
@@ -46,7 +45,7 @@ from zerver.views.messages import (
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional
+from typing import Dict, List, Sequence, Tuple, Union, Any, Optional
 import mock
 import os
 import re

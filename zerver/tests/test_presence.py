@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from django.http import HttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 import mock
 

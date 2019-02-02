@@ -5,16 +5,13 @@ from django.conf import settings
 import os
 import shutil
 import ujson
-import io
-from PIL import Image
 
-from mock import patch, MagicMock
+from mock import patch
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
 
 from zerver.lib.export import (
     do_export_realm,
-    export_files_from_s3,
     export_usermessages_batch,
     do_export_user,
 )

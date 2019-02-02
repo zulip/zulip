@@ -3,10 +3,10 @@ from django.utils.timezone import utc as timezone_utc
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import floor_to_hour, floor_to_day, ceiling_to_hour, \
-    ceiling_to_day, timestamp_to_datetime, datetime_to_timestamp, \
+    timestamp_to_datetime, datetime_to_timestamp, \
     TimezoneNotUTCException, convert_to_UTC
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from dateutil import parser
 import pytz
 

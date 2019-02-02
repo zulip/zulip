@@ -5,28 +5,24 @@ import itertools
 import requests
 import mock
 from mock import call
-import time
-from typing import Any, Dict, List, Optional, Union, SupportsInt
+from typing import Any, Dict, List, Optional
 
 import base64
 import gcm
-import json
 import os
 import ujson
 import uuid
 
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.crypto import get_random_string
-from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from zerver.models import (
     PushDeviceToken,
-    UserProfile,
     Message,
     UserMessage,
     receives_offline_email_notifications,
@@ -47,7 +43,6 @@ from zerver.lib.push_notifications import get_mobile_push_content, \
 from zerver.lib.remote_server import send_analytics_to_remote_server, \
     build_analytics_data, PushNotificationBouncerException
 from zerver.lib.request import JsonableError
-from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -877,7 +872,6 @@ class TestAPNs(PushNotificationTest):
                     self.user_profile.id, device.token)
 
     def test_http_retry_pipefail(self) -> None:
-        import hyper
         with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(

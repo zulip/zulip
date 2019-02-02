@@ -10,7 +10,6 @@ from zerver.lib.utils import statsd
 
 import mock
 import ujson
-import os
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their

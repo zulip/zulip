@@ -6,11 +6,9 @@ import os
 from collections import defaultdict
 
 from typing import Any, Dict, Iterable, List, Optional, Tuple
-from django_otp.conf import settings as otp_settings
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.http import HttpResponse, HttpRequest
-from django.test.client import RequestFactory
 from django.conf import settings
 
 from zerver.forms import OurAuthenticationForm
@@ -23,7 +21,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
-    WebhookTestCase,
 )
 from zerver.lib.response import json_response, json_success
 from zerver.lib.users import get_api_key
@@ -39,7 +36,7 @@ from zerver.decorator import (
     authenticated_uploads_api_view,
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
-    rate_limit, validate_api_key, logged_in_and_active,
+    rate_limit, validate_api_key,
     return_success_on_head_request, to_not_negative_int_or_none,
     zulip_login_required
 )
@@ -50,7 +47,7 @@ from zerver.lib.validator import (
     check_string_fixed_length, check_capped_string, check_color
 )
 from zerver.models import \
-    get_realm, get_user, UserProfile, Client, Realm, Recipient
+    get_realm, get_user, UserProfile, Realm
 
 import ujson
 

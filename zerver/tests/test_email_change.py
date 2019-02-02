@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from typing import Any
-from email.utils import parseaddr, formataddr
+from email.utils import parseaddr
 import re
 
-import django
-import mock
-from django.conf import settings
 from django.core import mail
-from django.http import HttpResponse
-from django.urls import reverse
 from django.utils.timezone import now
 
 from confirmation.models import Confirmation, generate_key, confirmation_url
@@ -18,9 +12,7 @@ from zerver.lib.actions import do_start_email_change_process, do_set_realm_prope
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.send_email import FromAddress
-from zerver.models import get_user_by_delivery_email, EmailChangeStatus, Realm, get_realm, \
-    get_user_profile_by_id, get_user, UserProfile
+from zerver.models import get_user_by_delivery_email, EmailChangeStatus, get_realm
 
 
 class EmailChangeTestCase(ZulipTestCase):

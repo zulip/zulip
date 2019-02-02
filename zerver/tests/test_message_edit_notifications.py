@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, Generator, Mapping, Union
+from typing import Any, Dict, Mapping, Union
 
 import mock
 
@@ -16,7 +16,6 @@ from zerver.lib.test_classes import (
 
 from zerver.models import (
     get_stream_recipient,
-    Recipient,
     Subscription,
     UserPresence,
 )

@@ -6,10 +6,7 @@ import mock
 from email.utils import parseaddr
 
 from django.conf import settings
-from django.http import HttpResponse
-from django.conf import settings
-from mock import patch
-from typing import Any, Dict, List, Union, Mapping
+from typing import Any, Dict, List, Mapping
 
 from zerver.lib.actions import (
     do_change_is_admin,

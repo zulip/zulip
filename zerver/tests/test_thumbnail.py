@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     use_s3_backend,
     create_s3_buckets,

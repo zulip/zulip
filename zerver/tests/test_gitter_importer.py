@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.conf import settings
-from django.utils.timezone import now as timezone_now
-
 from zerver.lib.import_realm import (
     do_import_realm,
 )
@@ -11,11 +8,7 @@ from zerver.lib.test_classes import (
 from zerver.tests.test_import_export import (
     rm_tree,
 )
-from zerver.lib.test_helpers import (
-    get_test_image_file,
-)
 from zerver.models import (
-    Realm,
     get_realm,
     UserProfile,
     Message,
@@ -26,12 +19,10 @@ from zerver.data_import.gitter import (
 )
 
 import ujson
-import json
 import logging
-import shutil
 import os
 import mock
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set
 
 class GitterImporter(ZulipTestCase):
     logger = logging.getLogger()

@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from zerver.lib.test_helpers import (
     most_recent_message,
     most_recent_usermessage,
-    POSTRequestMock)
+)
 
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -32,21 +32,14 @@ from zerver.lib.email_mirror import (
 )
 
 from zerver.lib.send_email import FromAddress
-from zerver.lib.notifications import (
-    handle_missedmessage_emails,
-)
-from zerver.management.commands import email_mirror
 
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 
-import re
 import ujson
 import mock
 import os
-import sys
-from io import StringIO
 from django.conf import settings
 
 from typing import Any, Callable, Dict, Mapping, Union, Optional

@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 import datetime
 from email.utils import parseaddr
-import re
 
-import django_otp
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
-from two_factor.utils import default_device
 
 from mock import patch, MagicMock
-from zerver.lib.test_helpers import MockLDAP, get_test_image_file, avatar_disk_path
+from zerver.lib.test_helpers import get_test_image_file, avatar_disk_path
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException, \
@@ -21,19 +18,17 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
 from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
-from zerver.lib.actions import do_change_password, get_default_streams_for_realm
-from zerver.lib.exceptions import CannotDeactivateLastUserError
+from zerver.lib.actions import get_default_streams_for_realm
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.decorator import do_two_factor_login
-from zerver.views.auth import login_or_register_remote_user, \
+from zerver.views.auth import \
     redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import send_confirm_registration_email
 from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
     get_realm, get_user, get_stream_recipient, get_realm_stream,
-    PreregistrationUser, Realm, RealmDomain, Recipient, Message,
+    PreregistrationUser, Realm, Recipient, Message,
     ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
 )
@@ -41,7 +36,6 @@ from zerver.lib.actions import (
     set_default_streams,
     do_change_is_admin,
     get_stream,
-    do_create_realm,
     do_create_default_stream_group,
     do_add_default_stream,
 )
@@ -53,7 +47,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     add_new_user_history,
 )
-from zerver.lib.avatar import avatar_url
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
@@ -65,20 +58,17 @@ from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.test_runner import slow
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.context_processors import common_context
 
-from collections import defaultdict
 import re
 import smtplib
 import ujson
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 import urllib
-import os
 import pytz
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
