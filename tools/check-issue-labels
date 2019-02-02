@@ -7,7 +7,7 @@ import sys
 import os
 
 import ConfigParser
-from typing import Any, Dict, MutableMapping, Optional
+from typing import Any, Dict, Optional
 
 # Scans zulip repositary for issues that don't have any `area` labels.
 # GitHub API token is required as GitHub limits unauthenticated

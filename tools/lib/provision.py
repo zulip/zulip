@@ -7,17 +7,16 @@ import platform
 import subprocess
 import glob
 import hashlib
-import traceback
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
+from scripts.lib.zulip_tools import run, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
-    setup_virtualenv, VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
+    VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
     FEDORA_VENV_DEPENDENCIES
 )

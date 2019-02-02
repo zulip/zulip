@@ -11,7 +11,7 @@ import sys
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Any, Callable, Dict, List, Optional
+    from typing import Any, Callable, Dict, List
 
 from zulint.printer import print_err, colors
 

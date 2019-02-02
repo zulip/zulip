@@ -6,7 +6,7 @@ import subprocess
 
 from zulint.printer import print_err, colors
 
-from typing import Any, Dict, List
+from typing import List
 
 suppress_patterns = [
     (b'', b'imported but unused'),

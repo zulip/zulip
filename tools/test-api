@@ -16,9 +16,7 @@ from zulip import Client
 
 from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
-from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
-    test_update_message_edit_permission_error, \
-    test_user_not_authorized_error, test_authorization_errors_fatal
+from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()

@@ -3,7 +3,6 @@ from typing import Any, Dict, List
 
 from .template_parser import (
     tokenize,
-    Token,
     is_django_block_tag,
 )
 import subprocess

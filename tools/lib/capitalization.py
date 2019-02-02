@@ -1,5 +1,5 @@
 
-from typing import List, Tuple, Set, Pattern, Match
+from typing import List, Tuple, Match
 import re
 
 from bs4 import BeautifulSoup

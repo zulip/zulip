@@ -6,7 +6,7 @@ import time
 
 from contextlib import contextmanager
 
-from typing import (Any, Iterator, Optional)
+from typing import Iterator, Optional
 
 # Verify the Zulip venv is available.
 from tools.lib import sanity_check

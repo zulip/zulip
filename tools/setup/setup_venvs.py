@@ -8,7 +8,7 @@ if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
 from scripts.lib.setup_venv import setup_virtualenv
-from scripts.lib.zulip_tools import run, subprocess_text_output
+from scripts.lib.zulip_tools import subprocess_text_output
 
 VENV_PATH = "/srv/zulip-py3-venv"
 

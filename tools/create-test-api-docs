@@ -5,12 +5,11 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Set
+from typing import Any, Dict, List, Set
 
 import cgi
 import os
 import pprint
-import re
 import ujson
 
 Call = Dict[str, Any]

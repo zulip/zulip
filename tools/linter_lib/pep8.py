@@ -1,8 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import subprocess
-
 from zulint.linters import run_pycodestyle
 
 from typing import List

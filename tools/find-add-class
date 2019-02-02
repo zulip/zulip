@@ -3,7 +3,6 @@
 from lib.find_add_class import display, find
 import glob
 import argparse
-import sys
 
 # check for the venv
 from lib import sanity_check
