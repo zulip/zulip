@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import sys
 import bitfield.models
-from django.db import migrations, transaction
+from django.db import migrations
 from zerver.lib.migrate import create_index_if_not_exist  # nolint
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps

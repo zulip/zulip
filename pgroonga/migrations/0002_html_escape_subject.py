@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.db import models, migrations, connection
-from django.contrib.postgres import operations
+from django.db import migrations, connection
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from zerver.lib.migrate import do_batch_update
