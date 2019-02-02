@@ -13,7 +13,7 @@ from requests import Response
 from django.utils.translation import ugettext as _
 
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
-    GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
+    GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain
 from zerver.lib.actions import check_send_message
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
