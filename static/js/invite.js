@@ -39,7 +39,7 @@ function submit_invitation_form() {
     channel.post({
         url: "/json/invites",
         data: data,
-        beforeSubmit: function () {
+        beforeSend: function () {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,

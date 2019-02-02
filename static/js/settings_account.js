@@ -329,7 +329,7 @@ exports.set_up = function () {
         channel.patch({
             url: "/json/settings",
             data: data,
-            beforeSubmit: function () {
+            beforeSend: function () {
                 if (page_params.realm_password_auth_enabled !== false) {
                     // FIXME: Check that the two password fields match
                     // FIXME: Use the same jQuery validation plugin as the signup form?
