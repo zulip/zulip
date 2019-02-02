@@ -15,7 +15,7 @@ from analytics.lib.counts import COUNT_STATS, CountStat, DataCollector, \
     do_drop_all_analytics_tables, do_drop_single_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, \
     process_count_stat, sql_data_collector
-from analytics.models import Anomaly, BaseCount, \
+from analytics.models import BaseCount, \
     FillState, InstallationCount, RealmCount, StreamCount, \
     UserCount, installation_epoch, last_successful_fill
 from zerver.lib.actions import do_activate_user, do_create_user, \
@@ -846,7 +846,6 @@ class TestDeleteStats(AnalyticsTestCase):
         RealmCount.objects.create(realm=user.realm, **count_args)
         InstallationCount.objects.create(**count_args)
         FillState.objects.create(property='test', end_time=self.TIME_ZERO, state=FillState.DONE)
-        Anomaly.objects.create(info='test anomaly')
 
         analytics = apps.get_app_config('analytics')
         for table in list(analytics.models.values()):
@@ -869,7 +868,6 @@ class TestDeleteStats(AnalyticsTestCase):
             InstallationCount.objects.create(**count_args)
         FillState.objects.create(property='to_delete', end_time=self.TIME_ZERO, state=FillState.DONE)
         FillState.objects.create(property='to_save', end_time=self.TIME_ZERO, state=FillState.DONE)
-        Anomaly.objects.create(info='test anomaly')
 
         analytics = apps.get_app_config('analytics')
         for table in list(analytics.models.values()):
@@ -877,11 +875,8 @@ class TestDeleteStats(AnalyticsTestCase):
 
         do_drop_single_stat('to_delete')
         for table in list(analytics.models.values()):
-            if table._meta.db_table == 'analytics_anomaly':
-                self.assertTrue(table.objects.exists())
-            else:
-                self.assertFalse(table.objects.filter(property='to_delete').exists())
-                self.assertTrue(table.objects.filter(property='to_save').exists())
+            self.assertFalse(table.objects.filter(property='to_delete').exists())
+            self.assertTrue(table.objects.filter(property='to_save').exists())
 
 class TestActiveUsersAudit(AnalyticsTestCase):
     def setUp(self) -> None:

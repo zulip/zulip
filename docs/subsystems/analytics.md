@@ -51,8 +51,6 @@ set of database tables. Each of these tables has the following fields:
   "messages_sent:client:day" in the UserCount table, this is the number of
   messages sent by a particular user, from a particular client, on the day
   ending at end_time.
-- anomaly: Currently unused, but a key into the Anomaly table allowing
-  someone to indicate a data irregularity.
 
 There are four tables: UserCount, StreamCount, RealmCount, and
 InstallationCount. Every CountStat is initially collected into UserCount,

@@ -57,7 +57,6 @@ MessageOutput = Dict[str, Union[List[Record], List[int], int]]
 MESSAGE_BATCH_CHUNK_SIZE = 1000
 
 ALL_ZULIP_TABLES = {
-    'analytics_anomaly',
     'analytics_fillstate',
     'analytics_installationcount',
     'analytics_realmcount',
@@ -174,8 +173,6 @@ NON_EXPORTED_TABLES = {
 
     # Fillstate will require some cleverness to do the right partial export.
     'analytics_fillstate',
-    # This table isn't yet used for anything.
-    'analytics_anomaly',
 
     # These are for unfinished features; we'll want to add them ot the
     # export before they reach full production status.
