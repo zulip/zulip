@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Optional
 from inspect import signature
 import re
 

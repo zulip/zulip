@@ -2,7 +2,6 @@
 
 from typing import Dict
 
-import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view

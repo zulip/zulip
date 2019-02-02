@@ -2,7 +2,7 @@
 
 import base64
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -12,7 +12,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.validator import check_dict
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile
 from zerver.webhooks.github_legacy.view import build_message_from_gitlog
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url

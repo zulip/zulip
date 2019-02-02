@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_realm, get_user
 
 class WordPressHookTests(WebhookTestCase):
     STREAM_NAME = 'wordpress'

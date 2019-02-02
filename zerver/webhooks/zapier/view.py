@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

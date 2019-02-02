@@ -3,7 +3,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-import ujson
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
@@ -12,7 +11,7 @@ from zerver.lib.actions import check_send_private_message, \
     send_rate_limited_pm_notification_to_bot_owner
 from zerver.lib.send_email import FromAddress
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 

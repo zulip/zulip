@@ -1,9 +1,8 @@
 """Webhooks for external integrations."""
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
-import ujson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -12,7 +11,7 @@ from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile
 
 class TicketDict(Dict[str, Any]):
     """
