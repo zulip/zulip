@@ -40,3 +40,15 @@ class ZapierZulipAppTests(WebhookTestCase):
         self.send_and_test_stream_message('zapier_zulip_app_stream',
                                           expected_topic, expected_message,
                                           HTTP_USER_AGENT='ZapierZulipApp')
+
+    def test_private(self) -> None:
+        payload = self.get_body('zapier_zulip_app_private')
+        headers = {'HTTP_USER_AGENT': 'ZapierZulipApp'}
+        result = self.client_post(self.url, payload,
+                                  content_type='application/json',
+                                  **headers)
+        self.assert_json_success(result)
+
+        expected_message = "Sample content for private huddle message"
+        msg = self.get_last_message()
+        self.assertEqual(msg.content, expected_message)
