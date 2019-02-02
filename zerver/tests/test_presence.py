@@ -61,7 +61,7 @@ class ActivityTest(ZulipTestCase):
             result = self.client_get('/activity')
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 14)
+        self.assert_length(queries, 15)
 
         flush_per_request_caches()
         with queries_captured() as queries:
