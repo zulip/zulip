@@ -12,7 +12,6 @@ import ujson
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from django.conf import settings
-from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.utils import (
@@ -22,7 +21,6 @@ from zerver.lib.utils import (
 from zerver.models import (
     RealmEmoji,
     Recipient,
-    UserProfile,
 )
 
 from zerver.data_import.import_util import (
