@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import datetime
-import errno
 import hashlib
 import logging
 import os
@@ -19,7 +18,7 @@ import configparser
 
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts
-    from typing import Sequence, Set, Any, Dict, List, Optional
+    from typing import Sequence, Set, Any, Dict, List
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")

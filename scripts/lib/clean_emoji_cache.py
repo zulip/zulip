@@ -9,8 +9,8 @@ if False:
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import generate_sha1sum_emoji, \
-    get_caches_to_be_purged, get_environment, get_recent_deployments, \
+from scripts.lib.zulip_tools import \
+    get_environment, get_recent_deployments, \
     parse_cache_script_args, purge_unused_caches
 
 ENV = get_environment()
