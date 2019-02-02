@@ -7,7 +7,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, \
-    Optional, Set, Tuple, Type, Union
+    Optional, Set, Tuple, Type, Union, cast
 
 import pytz
 from django.conf import settings
@@ -37,13 +37,16 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
+from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
+    RemoteZulipServer
 from zproject.settings import get_secret
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
-                 for_installation: bool=False) -> HttpRequest:
+                 for_installation: bool=False, remote: bool=False) -> HttpRequest:
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
+        remote=remote,
         debug_mode=False,
     )
     return render(request,
@@ -69,6 +72,14 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
 
     return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
 
+@require_server_admin
+@has_request_variables
+def stats_for_remote_realm(request: HttpRequest, remote_server_id: str,
+                           remote_realm_id: str) -> HttpResponse:
+    server = RemoteZulipServer.objects.get(id=remote_server_id)
+    return render_stats(request, '/remote/%s/realm/%s' % (server.id, remote_realm_id),
+                        "Realm %s on server %s" % (remote_realm_id, server.hostname))
+
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
@@ -79,9 +90,24 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
 
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
 
+@require_server_admin_api
+@has_request_variables
+def get_chart_data_for_remote_realm(
+        request: HttpRequest, user_profile: UserProfile, remote_server_id: str,
+        remote_realm_id: str, **kwargs: Any) -> HttpResponse:
+    server = RemoteZulipServer.objects.get(id=remote_server_id)
+    return get_chart_data(request=request, user_profile=user_profile, server=server,
+                          remote=True, remote_realm_id=int(remote_realm_id), **kwargs)
+
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
     return render_stats(request, '/installation', 'Installation', True)
+
+@require_server_admin
+def stats_for_remote_installation(request: HttpRequest, remote_server_id: str) -> HttpResponse:
+    server = RemoteZulipServer.objects.get(id=remote_server_id)
+    return render_stats(request, '/remote/%s/installation' % (server.id,),
+                        'remote Installation %s' % (server.hostname), True, True)
 
 @require_server_admin_api
 @has_request_variables
@@ -89,16 +115,40 @@ def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProf
                                     chart_name: str=REQ(), **kwargs: Any) -> HttpResponse:
     return get_chart_data(request=request, user_profile=user_profile, for_installation=True, **kwargs)
 
+@require_server_admin_api
+@has_request_variables
+def get_chart_data_for_remote_installation(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        remote_server_id: str,
+        chart_name: str=REQ(),
+        **kwargs: Any) -> HttpResponse:
+    server = RemoteZulipServer.objects.get(id=remote_server_id)
+    return get_chart_data(request=request, user_profile=user_profile, for_installation=True,
+                          remote=True, server=server, **kwargs)
+
 @require_non_guest_user
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: str=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                    start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
                    end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
-                   realm: Optional[Realm]=None, for_installation: bool=False) -> HttpResponse:
-    aggregate_table = RealmCount
+                   realm: Optional[Realm]=None, for_installation: bool=False,
+                   remote: bool=False, remote_realm_id: Optional[int]=None,
+                   server: Optional[RemoteZulipServer]=None) -> HttpResponse:
     if for_installation:
-        aggregate_table = InstallationCount
+        if remote:
+            aggregate_table = RemoteInstallationCount
+            assert server is not None
+        else:
+            aggregate_table = InstallationCount
+    else:
+        if remote:
+            aggregate_table = RemoteRealmCount
+            assert server is not None
+            assert remote_realm_id is not None
+        else:
+            aggregate_table = RealmCount
 
     if chart_name == 'number_of_humans':
         stats = [
@@ -149,29 +199,60 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                             {'start': start, 'end': end})
 
     if realm is None:
+        # Note that this value is invalid for Remote tables; be
+        # careful not to access it in those code paths.
         realm = user_profile.realm
-    if start is None:
-        if for_installation:
-            start = installation_epoch()
-        else:
-            start = realm.date_created
-    if end is None:
-        end = max(last_successful_fill(stat.property) or
-                  datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
-    if end is None or start > end:
-        logging.warning("User from realm %s attempted to access /stats, but the computed "
-                        "start time: %s (creation of realm or installation) is later than the computed "
-                        "end time: %s (last successful analytics update). Is the "
-                        "analytics cron job running?" % (realm.string_id, start, end))
-        raise JsonableError(_("No analytics data available. Please contact your server administrator."))
+
+    if remote:
+        # For remote servers, we don't have fillstate data, and thus
+        # should simply use the first and last data points for the
+        # table.
+        assert server is not None
+        if not aggregate_table.objects.filter(server=server).exists():
+            raise JsonableError(_("No analytics data available. Please contact your server administrator."))
+        if start is None:
+            start = aggregate_table.objects.filter(server=server).first().end_time
+        if end is None:
+            end = aggregate_table.objects.filter(server=server).last().end_time
+    else:
+        # Otherwise, we can use tables on the current server to
+        # determine a nice range, and some additional validation.
+        if start is None:
+            if for_installation:
+                start = installation_epoch()
+            else:
+                start = realm.date_created
+        if end is None:
+            end = max(last_successful_fill(stat.property) or
+                      datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
+        if end is None or start > end:
+            logging.warning("User from realm %s attempted to access /stats, but the computed "
+                            "start time: %s (creation of realm or installation) is later than the computed "
+                            "end time: %s (last successful analytics update). Is the "
+                            "analytics cron job running?" % (realm.string_id, start, end))
+            raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     assert len(set([stat.frequency for stat in stats])) == 1
     end_times = time_range(start, end, stats[0].frequency, min_length)
     data = {'end_times': end_times, 'frequency': stats[0].frequency}  # type: Dict[str, Any]
 
-    aggregation_level = {InstallationCount: 'everyone', RealmCount: 'everyone', UserCount: 'user'}
+    aggregation_level = {
+        InstallationCount: 'everyone',
+        RealmCount: 'everyone',
+        RemoteInstallationCount: 'everyone',
+        RemoteRealmCount: 'everyone',
+        UserCount: 'user',
+    }
     # -1 is a placeholder value, since there is no relevant filtering on InstallationCount
-    id_value = {InstallationCount: -1, RealmCount: realm.id, UserCount: user_profile.id}
+    id_value = {
+        InstallationCount: -1,
+        RealmCount: realm.id,
+        RemoteInstallationCount: cast(RemoteZulipServer, server).id if server is not None else None,
+        # TODO: RemoteRealmCount logic doesn't correctly handle
+        # filtering by server_id as well.
+        RemoteRealmCount: remote_realm_id,
+        UserCount: user_profile.id,
+    }
     for table in tables:
         data[aggregation_level[table]] = {}
         for stat in stats:
@@ -215,6 +296,10 @@ def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
         return StreamCount.objects.filter(stream_id=key_id)
     elif table == InstallationCount:
         return InstallationCount.objects.all()
+    elif table == RemoteInstallationCount:
+        return RemoteInstallationCount.objects.filter(server_id=key_id)
+    elif table == RemoteRealmCount:
+        return RemoteRealmCount.objects.filter(realm_id=key_id)
     else:
         raise AssertionError("Unknown table: %s" % (table,))
 
