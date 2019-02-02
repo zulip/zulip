@@ -12,7 +12,7 @@ sanity_check.check_venv(__file__)
 
 from zulint import lister
 from zulint.command import add_default_linter_arguments, LinterConfig
-from typing import cast, Callable, Dict, Iterator, List
+from typing import cast, Dict, List
 import random
 
 def run():

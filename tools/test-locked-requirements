@@ -10,7 +10,7 @@ import sys
 import tempfile
 import ujson
 
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ZULIP_PATH = os.path.dirname(TOOLS_DIR)

@@ -7,7 +7,7 @@ from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.utils.url import url_has_any_extension
 
-from typing import Any, Generator, List, Optional, Tuple
+from typing import Any, Generator, List, Optional
 
 EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally

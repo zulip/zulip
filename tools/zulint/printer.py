@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import sys
-import os
 from itertools import cycle
 if False:
     # See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-in-production-scripts

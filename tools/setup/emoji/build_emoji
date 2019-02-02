@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
-    EMOJISETS, EMOTICON_CONVERSIONS, REMAPPED_EMOJIS
+    EMOTICON_CONVERSIONS, REMAPPED_EMOJIS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
