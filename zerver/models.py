@@ -2316,7 +2316,6 @@ class RealmAuditLog(models.Model):
     # If True, event_time is an overestimate of the true time. Can be used
     # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False)  # type: bool
-    requires_billing_update = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
     STRIPE_CUSTOMER_CREATED = 'stripe_customer_created'
