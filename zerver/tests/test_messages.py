@@ -4132,7 +4132,6 @@ class MessageVisibilityTest(ZulipTestCase):
 
         RealmCount.objects.create(realm=realm, property=stat.property,
                                   end_time=end_time, value=5)
-        with mock.patch('zerver.lib.message.cache_get', return_value=True), \
-                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_called_once_with(realm)
