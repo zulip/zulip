@@ -31,8 +31,10 @@ class TestPGP(ZulipTestCase):
         user_profile.want_encrypted_emails = False
 
         msg = PGPEmailMessage(subject='Subject', body='Email body')
+        emails = pgp_sign_and_encrypt(msg, [user_profile])
+        self.assertEqual(len(emails), 1)
         with self.assertRaises(NotImplementedError):
-            pgp_sign_and_encrypt(msg, [user_profile])
+            emails[0].send()
 
     @override_settings(ENABLE_EMAIL_ENCRYPTION=True)
     @override_settings(ENABLE_EMAIL_SIGNATURES=True)
@@ -45,5 +47,7 @@ class TestPGP(ZulipTestCase):
         user_pgp.save()
 
         msg = PGPEmailMessage(subject='Subject', body='Email body')
+        emails = pgp_sign_and_encrypt(msg, [user_profile])
+        self.assertEqual(len(emails), 1)
         with self.assertRaises(NotImplementedError):
-            pgp_sign_and_encrypt(msg, [user_profile])
+            emails[0].send()

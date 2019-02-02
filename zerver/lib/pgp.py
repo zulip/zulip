@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, SafeMIMEMultipart
 
 from zerver.lib.email_helpers import format_to
 from zerver.lib.logging_util import log_to_file
@@ -11,15 +11,35 @@ from typing import Dict, Optional, List, DefaultDict, Callable, Any
 class PGPKeyNotFound(Exception):
     pass
 
+# To have the email correctly formatted according to PGP/MIME (RFC3156),
+# we need full control over the various MIME parts and headers,
+# that we don't have through EmailMultiAlternatives.
+# When sending an email, Django invokes the .message() method of EmailMessage
+# which converts it and returns an object of type used by the python "email"
+# library. This is the stage at which we have the desired level of control.
+# (See django.core.mail.message for details.)
+# Thus, encryption and signing need to happen by overriding .message().
 class PGPEmailMessage(EmailMultiAlternatives):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        self._encrypted = False
+        self._signed = False
+        self.public_keys = []  # type: List[str]
 
     def sign(self) -> None:
-        raise NotImplementedError()
+        self._signed = True
 
     def encrypt(self, public_keys: List[str], sign: bool=False) -> None:
-        raise NotImplementedError()
+        self._encrypted = True
+        self._signed = sign
+        self.public_keys = public_keys
+
+    def message(self) -> SafeMIMEMultipart:
+        original = super().message()
+        if self._encrypted or self._signed:
+            raise NotImplementedError()
+
+        return original
 
 def pgp_sign_and_encrypt(message: PGPEmailMessage, to_users: List[UserProfile],
                          force_single_message: bool=False) -> List[PGPEmailMessage]:
