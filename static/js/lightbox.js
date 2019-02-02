@@ -95,6 +95,8 @@ exports.open = function (image, options) {
     var is_youtube_video = !!$image.closest(".youtube-video").length;
     var is_vimeo_video = !!$image.closest(".vimeo-video").length;
 
+    // check if image is descendent of #preview_content
+    var is_message_preview_img = $image.closest("#preview_content").length === 1;
     var payload;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
@@ -122,12 +124,16 @@ exports.open = function (image, options) {
             }
         }
         var sender_full_name;
-        var $message = $parent.closest("[zid]");
-        var message = message_store.get($message.attr("zid"));
-        if (message === undefined) {
-            blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
+        if (is_message_preview_img) {
+            sender_full_name = people.my_full_name();
+        } else {
+            var $message = $parent.closest("[zid]");
+            var message = message_store.get($message.attr("zid"));
+            if (message === undefined) {
+                blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
+            }
+            sender_full_name = message.sender_full_name;
         }
-        sender_full_name = message.sender_full_name;    
         payload = {
             user: sender_full_name,
             title: $parent.attr("title"),
@@ -218,7 +224,7 @@ exports.next = function () {
 
 // this is a block of events that are required for the lightbox to work.
 exports.initialize = function () {
-    $("#main_div").on("click", ".message_inline_image a", function (e) {
+    $("#main_div, #preview_content").on("click", ".message_inline_image a", function (e) {
         // prevent the link from opening in a new page.
         e.preventDefault();
         // prevent the message compose dialog from happening.
