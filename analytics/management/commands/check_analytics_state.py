@@ -1,10 +1,9 @@
-from argparse import ArgumentParser
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
-from analytics.models import InstallationCount, installation_epoch, \
+from analytics.models import installation_epoch, \
     last_successful_fill
 from analytics.lib.counts import COUNT_STATS, CountStat
 from zerver.lib.timestamp import floor_to_hour, floor_to_day, verify_UTC, \
@@ -12,7 +11,6 @@ from zerver.lib.timestamp import floor_to_hour, floor_to_day, verify_UTC, \
 from zerver.models import Realm
 
 import os
-import sys
 import time
 from typing import Any, Dict
 

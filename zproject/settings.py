@@ -12,7 +12,6 @@
 ########################################################################
 from copy import deepcopy
 import os
-import platform
 import time
 import sys
 from typing import Any, Optional

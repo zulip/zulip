@@ -14,7 +14,6 @@ from django.utils.timezone import now as timezone_now
 from django.core.signing import Signer
 import stripe
 
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
