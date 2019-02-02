@@ -19,6 +19,7 @@ from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead
     'comment_deleted',  # we handle issue_update event instead
+    'issuelink_created',
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
