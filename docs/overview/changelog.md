@@ -8,23 +8,38 @@ This section lists notable unreleased changes; it is generally updated
 in bursts.
 
 **Highlights:**
-- Added support for synchronizing user avatars and disabled status
-from LDAP/active directory.
+- Added automation for synchronizing user avatars, custom profile
+  fields, disabled status, and more from LDAP/active directory.
 - Added support for CentOS 7 in the development environment
   provisioning process.  This is an important step towards production
   CentOS/RHEL 7 support.
-- Added experimental support for not making email addresses available
-  to all other users.
+- Added support for explicitly setting oneself as "away" and "user
+  status" messages.
+- Added a built-in /poll slash command for lightweight polls.
+- Added support for using Zoom as the video chat provider.  We now
+  support Jitsi, Google Hangouts, and Zoom.
+- Added support for branding the top-right corner of the logged in app
+  with an organization's logo.
+- Zulip's "Guest users" feature is no longer experimental.
+- The HipChat/Stride data import tool is no longer experimental.
+  Our HipChat and Slack import tools are now well-tested with millions
+  of messages, 10,000s of users, and 100,000s of uploaded files.
 
 **Full feature changelog:**
+- Added a new Azure Active Directory authentication integration.
+  New authentication backends supported by python-social-auth can now be
+  added with just a few dozen lines of code.
 - Added API documentation for user groups and custom emoji.
-- Added support for using Zoom as the video chat provider.
+- Administrators can now easily delete all messages in a topic.
 - Added display of a user's role (administrator, guest, etc.) in
   various relevant places.
 - Added support for sending "topic" rather than the legacy "subject"
   for the topic in most API endpoints.
 - Added helpful notifications for some common webhook
   misconfigurations.
+- Added organization setting to control whether users are allowed to
+  include message content in missed-message emails (for compliance).
+- Added an automated notification when streams are renamed.
 - Added support for changing the default notification sound.
 - Added Ctrl+. shortcut for narrowing to current compose recipient.
 - Added icons to indicate which "organization settings" tabs are
@@ -33,20 +48,40 @@ from LDAP/active directory.
 - Added support for copying avatar and other profile data when
   creating a second account on a Zulip server with a given email address.
 - Added /digest endpoint for viewing the current digest email on the web.
-- Added alert for when a user sends a message when scrolled up.
+- Added alert for when a user sends a message when scrolled too far up.
+- Added internationalization for outgoing emails.
+- Added a ReviewBoard integration, and improved numerous existing integrations.
+- Added support for multi-line messages for the /me feature.
+- Added markdown rendering of text when displaying custom profile fields.
+- Added "silent mentions" syntax (_@**Tim Abbott**), which show
+  visually, but don't trigger a notification for the target user.
+- Suppressed notifications when quoting a message mentioning yourself.
+- Message editing now has the compose widgets for emoji, video calls, etc.
+- Message editing now uses same "enter-sends" behavior as compose.
+- Organization administrators can now edit users' custom profile fields.
 - Optimized performance of data import from Slack, HipChat, etc.
 - Improved "new user" emails to clearly indicator login details.
+- Improved the UI for "drafts" and "message edit history".
+- Improved linkifier handling of languages with character alphabets.
+- Improved accessibility of emoji rendering in messages bodies.
 - Eliminated UI lag when using "Quote and reply".
+- Expanded production documentation for more unusual deployment options.
 - Expanded set of characters allowed in custom Linkifiers.
 - Optimized development provisioning; now takes 2s in the no-op case.
+- Zulip's Help Center now has nicely generated open graph tags.
 - Fixed missing API authentication headers for mobile file access.
 - Fixed various select and copy-paste issues.
 - Fixed various back button bugs in settings UI.
+- Fixed unnecessary resizing of animated custom emoji.
 - Fixed some performance issues for organizations with 1000s of streams.
 - Fixed various error handling bugs sending push notifications.
+- Fixed handling of diacritics in user-mention typeahead.
 - Fixed several bugs with importing data into Zulip's S3 backend.
 - Fixed display of full recipients list in "private messages" hover.
 - Fixed bugs involving muting and renamed streams.
+- Fixed soft-deactivation performance issues with many thousands of users.
+- Countless behind-the-scenes improvements to Zulip's codebase,
+  tooling, automated tests, error handling, and APIs.
 
 ### 1.9.2 -- 2019-01-29
 
