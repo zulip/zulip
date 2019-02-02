@@ -15,14 +15,13 @@ from django.http import HttpRequest, HttpResponse
 from django.db import close_old_connections
 from django.core import signals
 from django.test import override_settings
-from tornado.gen import Return
 from tornado.httpclient import HTTPRequest, HTTPResponse
 
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 
-from zerver.models import UserProfile, get_client
+from zerver.models import UserProfile
 
 from tornado import gen
 from tornado.testing import AsyncHTTPTestCase, gen_test
@@ -32,7 +31,7 @@ from tornado.websocket import websocket_connect
 from zerver.tornado.application import create_tornado_application
 from zerver.tornado import event_queue
 from zerver.tornado.event_queue import fetch_events, \
-    allocate_client_descriptor, process_event
+    process_event
 from zerver.tornado.views import get_events
 
 from http.cookies import SimpleCookie
