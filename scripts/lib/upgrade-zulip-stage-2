@@ -21,7 +21,7 @@ os.environ["LANG"] = "en_US.UTF-8"
 os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip, assert_running_as_root
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, su_to_zulip, assert_running_as_root
 
 assert_running_as_root()
 
