@@ -37,9 +37,16 @@ from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, convert_to_UTC, timestamp_to_datetime
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
-from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
-    RemoteZulipServer
 from zproject.settings import get_secret
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteInstallationCount, RemoteRealmCount, \
+        RemoteZulipServer
+else:
+    from mock import Mock
+    RemoteInstallationCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    RemoteRealmCount = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
                  for_installation: bool=False, remote: bool=False) -> HttpRequest:
