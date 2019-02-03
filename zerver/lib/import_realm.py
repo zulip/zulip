@@ -892,24 +892,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     update_model_ids(UserPresence, data, 'user_presence')
     bulk_import_model(data, UserPresence)
 
-    if 'analytics_realmcount' in data:
-        fix_datetime_fields(data, 'analytics_realmcount')
-        re_map_foreign_keys(data, 'analytics_realmcount', 'realm', related_table="realm")
-        update_model_ids(RealmCount, data, 'analytics_realmcount')
-        bulk_import_model(data, RealmCount)
-
-        fix_datetime_fields(data, 'analytics_usercount')
-        re_map_foreign_keys(data, 'analytics_usercount', 'realm', related_table="realm")
-        re_map_foreign_keys(data, 'analytics_usercount', 'user', related_table="user_profile")
-        update_model_ids(UserCount, data, 'analytics_usercount')
-        bulk_import_model(data, UserCount)
-
-        fix_datetime_fields(data, 'analytics_streamcount')
-        re_map_foreign_keys(data, 'analytics_streamcount', 'realm', related_table="realm")
-        re_map_foreign_keys(data, 'analytics_streamcount', 'stream', related_table="stream")
-        update_model_ids(StreamCount, data, 'analytics_streamcount')
-        bulk_import_model(data, StreamCount)
-
     fix_datetime_fields(data, 'zerver_useractivity')
     re_map_foreign_keys(data, 'zerver_useractivity', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_useractivity', 'client', related_table='client')
@@ -993,6 +975,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
         data = ujson.load(f)
 
     import_attachments(data)
+
+    # Import the analytics file.
+    import_analytics_data(realm=realm, import_dir=import_dir)
 
     if settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED)
@@ -1215,3 +1200,28 @@ def import_attachments(data: TableData) -> None:
         cursor.executemany(sql_template, tups)
 
     logging.info('Successfully imported M2M table %s' % (m2m_table_name,))
+
+def import_analytics_data(realm: Realm, import_dir: Path) -> None:
+    analytics_filename = os.path.join(import_dir, "analytics.json")
+    if os.path.exists(analytics_filename):
+        logging.info("Importing analytics data from %s" % (analytics_filename,))
+        with open(analytics_filename) as f:
+            data = ujson.load(f)
+
+        # Process the data through the fixer functions.
+        fix_datetime_fields(data, 'analytics_realmcount')
+        re_map_foreign_keys(data, 'analytics_realmcount', 'realm', related_table="realm")
+        update_model_ids(RealmCount, data, 'analytics_realmcount')
+        bulk_import_model(data, RealmCount)
+
+        fix_datetime_fields(data, 'analytics_usercount')
+        re_map_foreign_keys(data, 'analytics_usercount', 'realm', related_table="realm")
+        re_map_foreign_keys(data, 'analytics_usercount', 'user', related_table="user_profile")
+        update_model_ids(UserCount, data, 'analytics_usercount')
+        bulk_import_model(data, UserCount)
+
+        fix_datetime_fields(data, 'analytics_streamcount')
+        re_map_foreign_keys(data, 'analytics_streamcount', 'realm', related_table="realm")
+        re_map_foreign_keys(data, 'analytics_streamcount', 'stream', related_table="stream")
+        update_model_ids(StreamCount, data, 'analytics_streamcount')
+        bulk_import_model(data, StreamCount)
