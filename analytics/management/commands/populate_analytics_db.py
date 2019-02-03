@@ -11,10 +11,10 @@ from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
     StreamCount, InstallationCount
-from zerver.lib.actions import do_change_is_admin
+from zerver.lib.actions import do_change_is_admin, STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Client, \
-    RealmAuditLog, Recipient
+    RealmAuditLog, Recipient, Subscription
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
@@ -72,7 +72,16 @@ class Command(BaseCommand):
         do_change_is_admin(shylock, True)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
-        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+
+        # Subscribe shylock to the stream to avoid invariant failures.
+        # TODO: This should use subscribe_users_to_streams from populate_db.
+        subs = [
+            Subscription(recipient=recipient,
+                         user_profile=shylock,
+                         color=STREAM_ASSIGNMENT_COLORS[0]),
+        ]
+        Subscription.objects.bulk_create(subs)
 
         def insert_fixture_data(stat: CountStat,
                                 fixture_data: Mapping[Optional[str], List[int]],
