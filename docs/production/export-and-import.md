@@ -13,12 +13,14 @@ time to time.
 
 If you want to move hardware for a self-hosted Zulip installation, we
 recommend Zulip's
-[database-level backup and restoration process][backups].  Zulip's
-backup process is structurally very unlikely to ever develop bugs, and
-will restore your Zulip server to the exact state it was left in.  The
-big thing it can't do is support a migration to a server hosting a
-different set of organizations than the original one (because doing so
-generally requires renumbering all the users/messages/etc.).
+[database-level backup and restoration process][backups] for a better
+experience.  Zulip's database-level backup process is faster,
+structurally very unlikely to ever develop bugs, and will restore your
+Zulip server to the exact state it was left in.  The big thing it
+can't do is support a migration to a server hosting a different set of
+organizations than the original one, e.g. migrations between
+self-hosting and Zulip Cloud (because doing so in the general case
+requires renumbering all the users/messages/etc.).
 
 Zulip's export/import tools (documented on this page) have full
 support for such a renumbering process.  While these tools are
@@ -64,6 +66,13 @@ branch, using [upgrade-zulip-from-git][upgrade-zulip-from-git].
 First [install a new Zulip server](../production/install.html),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
+
+If your new Zulip server is meant to fully replace a previous Zulip
+server, you may want to copy the contents of `/etc/zulip` to your new
+server at this point to reuse the server-level configuration and
+secret keys from your old server.  See our
+[documentation on backups][backups] for details on the contents of
+this directory.
 
 Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands, replacing the filename with the path to your data
