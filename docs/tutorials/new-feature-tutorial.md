@@ -34,7 +34,7 @@ This tutorial will walk through adding a new feature to a Realm (an
 organization in Zulip). The following files are involved in the process:
 
 **Backend**
-- `zerver/model.py`: Defines the database model.
+- `zerver/models.py`: Defines the database model.
 - `zerver/views/realm.py`: The view function that implements the API endpoint
   for editing realm objects.
 - `zerver/lib/actions.py`: Contains code for updating and interacting with the database.
