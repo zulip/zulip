@@ -45,6 +45,7 @@ run_test('topic_list_build_widget', () => {
     templates.render = function (name, info) {
         assert.equal(name, 'topic_list_item');
         var expected = {
+            stream_id: devel.stream_id,
             topic_name: 'coding',
             unread: 3,
             is_zero: false,

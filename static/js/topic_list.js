@@ -81,6 +81,7 @@ exports.widget = function (parent_elem, my_stream_id) {
             }
 
             var topic_info = {
+                stream_id: my_stream_id,
                 topic_name: topic_name,
                 unread: num_unread,
                 is_zero: num_unread === 0,
