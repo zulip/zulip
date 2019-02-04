@@ -356,14 +356,7 @@ Lexer.prototype.token = function(src, top, bq) {
     }
 
     // def
-    if ((!bq && top) && (cap = this.rules.def.exec(src))) {
-      src = src.substring(cap[0].length);
-      this.tokens.links[cap[1].toLowerCase()] = {
-        href: cap[2],
-        title: cap[3]
-      };
-      continue;
-    }
+    // We disable definition style links in Zulip.
 
     // table (gfm)
     if (top && (cap = this.rules.table.exec(src))) {
