@@ -89,6 +89,7 @@ ElementStringNone = Union[Element, Optional[str]]
 AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
+SHORTCUT_REGEX = r'(?:^|\s)(::)(\w*)'
 
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
@@ -1694,6 +1695,22 @@ class AtomicLinkPattern(CompiledPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+class ShortcutExpansion(markdown.inlinepatterns.InlineProcessor):
+    SHORTCUTS = {"afk": "I'm not home",
+                 "afaik": "I have no clue about it"}
+
+    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[Element, str, None],
+                                                             Union[int, None],
+                                                             Union[int, None]]:
+        el = etree.Element('p')
+        shortcut_key = m.group(2)
+
+        if shortcut_key in self.SHORTCUTS:
+            el.text = self.SHORTCUTS[shortcut_key]
+            return self.SHORTCUTS[shortcut_key], m.start(1), m.end(0)
+        else:
+            return None, None, None
+
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
     # Registry is a new class added by py-markdown to replace Ordered List.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -1829,6 +1846,7 @@ class Bugdown(markdown.Markdown):
         reg.register(markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), 'not_strong', 20)
         reg.register(Emoji(EMOJI_REGEX, self), 'emoji', 15)
         reg.register(EmoticonTranslation(emoticon_regex, self), 'translate_emoticons', 10)
+        reg.register(ShortcutExpansion(SHORTCUT_REGEX), 'message_shortcut', 7)
         # We get priority 5 from 'nl2br' extension
         reg.register(UnicodeEmoji(unicode_emoji_regex), 'unicodeemoji', 0)
         return reg

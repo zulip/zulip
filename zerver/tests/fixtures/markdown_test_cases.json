@@ -707,6 +707,36 @@
       "input": "$$\\<script type='text/javascript'>alert('xss');</script>$$\n\n~~~math\n\\<script type='text/javascript'>alert('xss');</script>\n~~~",
       "expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span></p>",
       "marked_expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;$$</span></p>\n<span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span>"
+    },
+    {
+      "name": "start_of_line_shortcut",
+      "input": "::afk",
+      "expected_output": "<p>I'm not home</p>"
+    },
+    {
+      "name": "midline_shortcut",
+      "input": "Sorry, ::afk",
+      "expected_output": "<p>Sorry, I'm not home</p>"
+    },
+    {
+      "name": "shortcut_at_word_end",
+      "input": "Hello::afk",
+      "expected_output": "<p>Hello::afk</p>"
+    },
+    {
+      "name": "unknown_shortcut",
+      "input": "Hello ::notashortcut",
+      "expected_output": "<p>Hello ::notashortcut</p>"
+    },
+    {
+      "name": "two_shortcuts",
+      "input": "::afk ::afk",
+      "expected_output": "<p>I'm not home I'm not home</p>"
+    },
+    {
+      "name": "consecutive_shortcuts",
+      "input": "::afk::afk",
+      "expected_output": "<p>I'm not home::afk</p>"
     }
   ],
   "linkify_tests": [
