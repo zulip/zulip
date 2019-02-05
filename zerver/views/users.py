@@ -36,7 +36,7 @@ from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_by_delivery_email, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm
+    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm, Realm
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -399,6 +399,11 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
     '''
 
     realm = user_profile.realm
+
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        # If email addresses are only available to administrators,
+        # clients cannot compute gravatars, so we force-set it to false.
+        client_gravatar = False
 
     query = UserProfile.objects.filter(
         realm_id=realm.id

@@ -12,8 +12,8 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
-from zerver.models import UserProfile, Recipient, \
-    RealmDomain, UserHotspot, \
+from zerver.models import UserProfile, Recipient, Realm, \
+    RealmDomain, UserHotspot, get_client, \
     get_user, get_realm, get_stream, get_stream_recipient, \
     get_source_profile, \
     ScheduledEmail, check_valid_user_ids, \
@@ -30,8 +30,10 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_change_is_admin,
     do_create_user,
+    do_set_realm_property,
 )
 from zerver.lib.create_user import copy_user_settings
+from zerver.lib.events import do_events_register
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.users import user_ids_to_users, access_user_by_id, \
@@ -146,6 +148,64 @@ class PermissionTest(ZulipTestCase):
         self.login(self.example_email("othello"))
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, 'Insufficient permission')
+
+    def test_admin_api_hide_emails(self) -> None:
+        user = self.example_user('hamlet')
+        admin = self.example_user('iago')
+        self.login(user.email)
+
+        # First, verify client_gravatar works normally
+        result = self.client_get('/json/users?client_gravatar=true')
+        self.assert_json_success(result)
+        members = result.json()['members']
+        hamlet = find_dict(members, 'user_id', user.id)
+        self.assertEqual(hamlet['email'], user.email)
+        self.assertIsNone(hamlet['avatar_url'])
+
+        # Also verify the /events code path.  This is a bit hacky, but
+        # we need to verify client_gravatar is not being overridden.
+        with mock.patch('zerver.lib.events.request_event_queue',
+                        return_value=None) as mock_request_event_queue:
+            with self.assertRaises(JsonableError):
+                result = do_events_register(user, get_client("website"),
+                                            client_gravatar=True)
+            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3],
+                             True)
+
+        #############################################################
+        # Now, switch email address visibility, check client_gravatar
+        # is automatically disabled for the user.
+        do_set_realm_property(user.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        result = self.client_get('/json/users?client_gravatar=true')
+        self.assert_json_success(result)
+        members = result.json()['members']
+        hamlet = find_dict(members, 'user_id', user.id)
+        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
+
+        # Also verify the /events code path.  This is a bit hacky, but
+        # basically we want to verify client_gravatar is being
+        # overridden.
+        with mock.patch('zerver.lib.events.request_event_queue',
+                        return_value=None) as mock_request_event_queue:
+            with self.assertRaises(JsonableError):
+                result = do_events_register(user, get_client("website"),
+                                            client_gravatar=True)
+            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3],
+                             False)
+
+        # It's still turned off for admins.  In theory, it doesn't
+        # need to be, but client-side changes would be required in
+        # apps like the mobile apps.
+        admin.refresh_from_db()
+        self.login(admin.delivery_email)
+        result = self.client_get('/json/users?client_gravatar=true')
+        self.assert_json_success(result)
+        members = result.json()['members']
+        hamlet = find_dict(members, 'user_id', user.id)
+        self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
+        self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
 
     def test_user_cannot_promote_to_admin(self) -> None:
         self.login(self.example_email("hamlet"))
