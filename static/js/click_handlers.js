@@ -283,6 +283,38 @@ exports.initialize = function () {
         $("#message_edit_file_input_" + row_id).trigger("click");
     });
 
+    $("body").on("click", "#message_edit_form [id^='markdown_preview_']", function (e) {
+        e.preventDefault();
+
+        var row_id = rows.id($(this).closest(".message_row"));
+        function $_(selector) {
+            return $(selector + "_" + row_id);
+        }
+
+        var content = $_("#message_edit_content").val();
+        $_("#message_edit_content").hide();
+        $_("#markdown_preview").hide();
+        $_("#undo_markdown_preview").show();
+        $_("#preview_message_area").show();
+
+        compose.render_and_show_preview($_("#markdown_preview_spinner"), $_("#preview_content"), content);
+    });
+
+    $("body").on("click", "#message_edit_form [id^='undo_markdown_preview_']", function (e) {
+        e.preventDefault();
+
+        var row_id = rows.id($(this).closest(".message_row"));
+        function $_(selector) {
+            return $(selector + "_" + row_id);
+        }
+
+        $_("#message_edit_content").show();
+        $_("#undo_markdown_preview").hide();
+        $_("#preview_message_area").hide();
+        $_("#preview_content").empty();
+        $_("#markdown_preview").show();
+    });
+
     // MUTING
 
     $('body').on('click', '.on_hover_topic_mute', function (e) {
