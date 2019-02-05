@@ -32,7 +32,7 @@ function update_stream_pin(sub, value) {
     sub.pin_to_top = value;
 }
 
-exports.update_property = function (stream_id, property, value) {
+exports.update_property = function (stream_id, property, value, rendered_description) {
     var sub = stream_data.get_sub_by_id(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
@@ -65,7 +65,7 @@ exports.update_property = function (stream_id, property, value) {
         subs.update_stream_name(sub, value);
         break;
     case 'description':
-        subs.update_stream_description(sub, value);
+        subs.update_stream_description(sub, value, rendered_description);
         break;
     case 'email_address':
         sub.email_address = value;
