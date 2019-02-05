@@ -101,6 +101,7 @@ IGNORED_PHRASES = [
     r"organization administrator",
     r"user",
     r"an unknown operating system",
+    r"Go to Settings",
 
     # SPECIAL CASES
     # Enter is usually capitalized
