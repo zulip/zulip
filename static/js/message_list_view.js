@@ -873,7 +873,24 @@ MessageListView.prototype = {
             // still end up being visible, so we do some arithmetic.)
             scroll_amount = scroll_limit;
             var offset = message_viewport.offset_from_bottom(last_visible);
-            need_user_to_scroll = offset > scroll_amount;
+
+            // For determining whether we need to show the user a "you
+            // need to scroll down" notification, the obvious check
+            // would be `offset > scroll_amount`, and that is indeed
+            // correct with a 1-line message in the compose box.
+            // However, the compose box is open with the content of
+            // the message just sent when this code runs, and
+            // `offset_from_bottom` if an offset from the top of the
+            // compose box, which is about to be reset to empty.  So
+            // to compute the offset at the time the user might see
+            // this notification, we need to adjust by the amount that
+            // the current compose is bigger than the empty, open
+            // compose box.
+            var compose_textarea_default_height = 42;
+            var compose_textarea_current_height = $("#compose-textarea").height();
+            var expected_change = compose_textarea_current_height - compose_textarea_default_height;
+            var expected_offset = offset - expected_change;
+            need_user_to_scroll = expected_offset > scroll_amount;
         }
 
         // Ok, we are finally ready to actually scroll.
