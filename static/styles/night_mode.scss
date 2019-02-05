@@ -177,7 +177,7 @@ on a dark background, and don't change the dark labels dark either. */
     .message_list .recipient_row,
     .message_row,
     .draft-row .draft-info-box,
-    #preview_message_area {
+    .preview_message_area {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
@@ -484,7 +484,7 @@ on a dark background, and don't change the dark labels dark either. */
     #feedback_container,
     .message_content code,
     .message_edit_content code,
-    #preview_content code,
+    .preview_content code,
     #settings_page code,
     .typeahead.dropdown-menu {
         background-color: hsl(212, 25%, 15%);
