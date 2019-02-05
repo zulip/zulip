@@ -38,8 +38,9 @@ def get_link_embed_data(url: str,
     try:
         data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
     except requests.exceptions.RequestException:
-        msg = 'Unable to fetch information from url {0}, traceback: {1}'
-        logging.error(msg.format(url, traceback.format_exc()))
+        # This is what happens if the target URL cannot be fetched; in
+        # that case, there's nothing to do here, and this URL has no
+        # open graph data.
         return None
     data = data or {}
     response = requests.get(url)
