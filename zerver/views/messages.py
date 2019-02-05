@@ -719,8 +719,13 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         return json_error(_("Too many messages requested (maximum %s).")
                           % (MAX_MESSAGES_PER_FETCH,))
-    include_history = ok_to_include_history(narrow, user_profile)
 
+    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        # If email addresses are only available to administrators,
+        # clients cannot compute gravatars, so we force-set it to false.
+        client_gravatar = False
+
+    include_history = ok_to_include_history(narrow, user_profile)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!

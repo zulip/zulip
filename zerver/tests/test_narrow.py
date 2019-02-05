@@ -13,6 +13,7 @@ from zerver.models import (
     get_display_recipient, get_personal_recipient, get_realm, get_stream,
     UserMessage, get_stream_recipient, Message
 )
+from zerver.lib.actions import do_set_realm_property
 from zerver.lib.message import (
     MessageDict,
 )
@@ -1052,6 +1053,13 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
         message = result['messages'][0]
         self.assertEqual(message['avatar_url'], None)
+
+        # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
+        do_set_realm_property(hamlet.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        result = self.get_and_check_messages(dict(client_gravatar=ujson.dumps(True)))
+        message = result['messages'][0]
+        self.assertIn('gravatar.com', message['avatar_url'])
 
     def test_get_messages_with_narrow_pm_with(self) -> None:
         """
