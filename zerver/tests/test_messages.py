@@ -3448,7 +3448,7 @@ class CheckMessageTest(ZulipTestCase):
         self.make_stream(stream_name)
         topic_name = 'issue'
         message_content = 'whatever'
-        addressee = Addressee.for_stream(stream_name, topic_name)
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.email, self.example_email("othello"))
 
@@ -3471,7 +3471,7 @@ class CheckMessageTest(ZulipTestCase):
         client = make_client(name="test suite")
         stream_name = u'Россия'
         topic_name = 'issue'
-        addressee = Addressee.for_stream(stream_name, topic_name)
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
         message_content = 'whatever'
         old_count = message_stream_count(parent)
 
