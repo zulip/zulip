@@ -348,9 +348,7 @@ class PreviewTestCase(ZulipTestCase):
             'message_content': url}
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):
-                with mock.patch('logging.error') as error_mock:
-                    FetchLinksEmbedData().consume(event)
-        self.assertEqual(error_mock.call_count, 1)
+                FetchLinksEmbedData().consume(event)
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(
             '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>',
