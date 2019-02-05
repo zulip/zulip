@@ -140,6 +140,17 @@ synchronize users' `full_name`.
 We recommend running this command in a **regular cron job**, to pick
 up name changes made on your LDAP server.
 
+All of these data synchronization options have the same model:
+* New users will be populated automatically with the
+  name/avatar/etc. from LDAP (as configured) on account creation.
+* The `manage.py sync_ldap_user_data` cron job will automatically
+  update existing users with any changes that were made in LDAP.
+* You can easily test your configuration using `manage.py query_ldap`.
+  Once you're happy with the configuration, remember to restart the
+  Zulip server with
+  `/home/zulip/deployments/current/scripts/restart-server` so that
+  your configuration changes take effect.
+
 When using this feature, you may also want to
 [prevent users from changing their display name in the Zulip UI][restrict-name-changes],
 since any such changes would be automatically overwritten on the sync
@@ -152,24 +163,22 @@ run of `manage.py sync_ldap_user_data`.
 Starting with Zulip 2.0, Zulip supports syncing LDAP / Active
 Directory profile pictures (usually available in the `thumbnailPhoto`
 or `jpegPhoto` attribute in LDAP) by configuring the `avatar` key in
-`AUTH_LDAP_USER_ATTR_MAP`.  This uses the same mechanism as populating
-names: Users will automatically receive the appropriate avatar on
-account creation, and `manage.py sync_ldap_user_data` will
-automatically update their avatar from the data in LDAP.
+`AUTH_LDAP_USER_ATTR_MAP`.
 
 #### Synchronizing custom profile fields
 
-Starting with Zulip 2.0, Zulip supports syncing custom profile
-fields data from LDAP/Active Directory.  To configure this you
-need to just define the mapping from the custom profile fields
-to be synced to the corresponding LDAP attributes. For example,
+Starting with Zulip 2.0, Zulip supports syncing
+[custom profile fields][custom-profile-fields] from LDAP / Active
+Directory.  To configure this, you first need to
+[configure some custom profile fields][custom-profile-fields] for your
+Zulip organization.  Then, define a mapping from the fields you'd like
+to sync from LDAP to the corresponding LDAP attributes.  For example,
 if you have a custom profile field `LinkedIn Profile` and the
-corresponding LDAP attribute is `linkedinProfile` then you just
-need to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
-to the `AUTH_LDAP_USER_ATTR_MAP`.  New users will automatically have
-the appropriate data populated and `manage.py sync_ldap_user_data`
-will automatically pick up changes for old users when it is run
-next time.
+corresponding LDAP attribute is `linkedinProfile` then you just need
+to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
+to the `AUTH_LDAP_USER_ATTR_MAP`.
+
+[custom-profile-fields]: https://zulipchat.com/help/add-custom-profile-fields
 
 #### Automatically deactivating users with Active Directory
 
