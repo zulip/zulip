@@ -16,7 +16,7 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
 from zerver.models import Realm, get_realm
-from zerver.views.integrations import (
+from zerver.views.documentation import (
     add_api_uri_context,
 )
 
