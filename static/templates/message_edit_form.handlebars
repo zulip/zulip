@@ -25,6 +25,10 @@
                 </svg>
             </button>
             <textarea class="message_edit_content" maxlength="10000" id="message_edit_content_{{message_id}}">{{content}}</textarea>
+            <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
+                <div id="markdown_preview_spinner_{{message_id}}"></div>
+                <div id="preview_content_{{message_id}}" class="preview_content"></div>
+            </div>
         </div>
     </div>
     <div class="control-group action-buttons">
@@ -42,6 +46,8 @@
                 <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
                 <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
                 <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" data-message-id="{{message_id}}" title="{{t 'Add emoji'  }}"></a>
+                <a id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{t 'Write' }}"></a>
+                <a id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-hidden="true" title="{{t 'Preview' }}"></a>
             </div>
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
