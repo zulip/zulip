@@ -52,12 +52,12 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
-    user_dicts = get_realm_user_dicts(realm_id)
+def get_raw_user_data(realm: Realm, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
+    user_dicts = get_realm_user_dicts(realm.id)
 
     # TODO: Consider optimizing this query away with caching.
     custom_profile_field_values = CustomProfileFieldValue.objects.select_related(
-        "field").filter(user_profile__realm_id=realm_id)
+        "field").filter(user_profile__realm_id=realm.id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
@@ -74,7 +74,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
             user_id=row['id'],
-            realm_id= realm_id,
+            realm_id=realm.id,
             email=row['email'],
             avatar_source=row['avatar_source'],
             avatar_version=row['avatar_version'],
@@ -230,7 +230,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(
-            realm_id=realm.id,
+            realm=realm,
             client_gravatar=client_gravatar,
         )
 
