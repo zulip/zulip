@@ -156,7 +156,7 @@ def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
                 method=object_['billing'].replace('_', ' '),
                 total=amount_string(object_['total'], object_['currency']),
                 due=amount_string(object_['amount_due'], object_['currency']))
-    if category == 'invoiceitem':  # nocoverage
+    if category == 'invoiceitem':
         body = default_body(update_blacklist=['description'])
         if event == 'created':
             body += ' for {amount}'.format(amount=amount_string(object_['amount'], object_['currency']))
