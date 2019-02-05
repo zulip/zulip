@@ -78,6 +78,7 @@ function show_box(msg_type, opts) {
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
     $('#compose').css({visibility: "visible"});
+    // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
 
     exports.set_focus(msg_type, opts);
