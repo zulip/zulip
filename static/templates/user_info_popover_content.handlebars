@@ -24,18 +24,48 @@
         <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
-        {{#if status_text}}
-        <li class="user_info_status_text">
-            {{status_text}}
-        </li>
-        {{/if}}
-
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
 
         <li>{{ user_type }}</li>
     </div>
+
+    {{#if is_me}}
+        <hr />
+        {{#if can_set_away}}
+        <li>
+            <a href="#" class="set_away_status">
+                <i class="fa fa-sign-out" aria-hidden="true"></i> {{#tr this}}Set yourself to away{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if can_revoke_away}}
+        <li>
+            <a href="#" class="revoke_away_status">
+                <i class="fa fa-sign-out" aria-hidden="true"></i> {{#tr this}}Set yourself to active{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        <li>
+            <a href="#" class="update_status_text">
+                <i class="fa fa-comments" aria-hidden="true"></i>
+                {{#if status_text}}
+                    {{#tr this}}Edit status message{{/tr}}
+                {{else}}
+                    {{#tr this}}Set a status message{{/tr}}
+                {{/if}}
+            </a>
+        </li>
+    {{/if}}
+
+    {{#if status_text}}
+        {{#unless is_me}}<hr />{{/unless}}
+        <li class="user_info_status_text">
+            {{status_text}}
+        </li>
+    {{/if}}
+
     <hr />
     {{#if show_user_profile}}
     <li>
@@ -87,30 +117,4 @@
             <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
-    {{#if can_set_away}}
-    <li>
-        <a href="#" class="set_away_status">
-            <i class="fa fa-sign-out" aria-hidden="true"></i> {{#tr this}}Set yourself to away{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-    {{#if can_revoke_away}}
-    <li>
-        <a href="#" class="revoke_away_status">
-            <i class="fa fa-sign-out" aria-hidden="true"></i> {{#tr this}}Set yourself to active{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-    {{#if is_me}}
-    <li>
-        <a href="#" class="update_status_text">
-            <i class="fa fa-comments" aria-hidden="true"></i>
-            {{#if status_text}}
-                {{#tr this}}Edit status message{{/tr}}
-            {{else}}
-                {{#tr this}}Set a status message{{/tr}}
-            {{/if}}
-        </a>
-    </li>
-    {{/if}}
 </ul>
