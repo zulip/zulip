@@ -453,22 +453,25 @@ a.message-control-button:hover {
     margin-left: 5px;
 }
 
-#preview_message_area {
+.preview_message_area {
     /* minus 5px padding. */
     width: calc(100% - 12px);
     padding: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
     /* the minimum height the textarea collapses to. */
-    min-height: 42px;
+    min-height: 36px;
     overflow: auto;
-
-    margin-top: 5px;
 
     border: 1px solid hsl(0, 0%, 67%);
     border-radius: 4px;
     background-color: hsla(0, 0%, 0%, 0.02);
     cursor: not-allowed;
+}
+
+#preview_message_area {
+    margin-top: 5px;
+    min-height: 42px;
 }
 
 a#markdown_preview,
