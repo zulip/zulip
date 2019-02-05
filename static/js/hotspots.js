@@ -7,6 +7,7 @@ var TOP = 'top';
 var LEFT = 'left';
 var RIGHT = 'right';
 var BOTTOM = 'bottom';
+var LEFT_BOTTOM = 'left_bottom';
 var VIEWPORT_CENTER = 'viewport_center';
 
 // popover orientation can optionally be fixed here (property: popover),
@@ -27,6 +28,12 @@ var HOTSPOT_LOCATIONS = {
         element: '.topic-name',
         offset_x: 0.8,
         offset_y: 0.39,
+    },
+    intro_gear: {
+        element: '#settings-dropdown',
+        offset_x: -0.4,
+        offset_y: 1.2,
+        popover: LEFT_BOTTOM,
     },
     intro_compose: {
         element: '#left_bar_compose_stream_button_big',
@@ -124,6 +131,14 @@ function place_popover(hotspot) {
             left: el_width + arrow_offset,
         };
         arrow_placement = 'left';
+        break;
+
+    case LEFT_BOTTOM:
+        popover_offset = {
+            top: 0,
+            left: -(popover_width + arrow_offset / 2),
+        };
+        arrow_placement = '';
         break;
 
     case VIEWPORT_CENTER:
