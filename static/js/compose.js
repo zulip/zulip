@@ -693,6 +693,68 @@ function insert_video_call_url(url, target_textarea) {
     compose_ui.insert_syntax_and_focus(video_call_link_text, target_textarea);
 }
 
+exports.render_and_show_preview = function (preview_spinner, preview_content_box, content) {
+
+    function show_preview(rendered_content, raw_content) {
+        // content is passed to check for status messages ("/me ...")
+        // and will be undefined in case of errors
+        var rendered_preview_html;
+        if (raw_content !== undefined &&
+            markdown.is_status_message(raw_content, rendered_content)) {
+            // Handle previews of /me messages
+            rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
+        } else {
+            rendered_preview_html = rendered_content;
+        }
+
+        preview_content_box.html(rendered_preview_html);
+        if (page_params.emojiset === "text") {
+            preview_content_box.find(".emoji").replaceWith(function () {
+                var text = $(this).attr("title");
+                return ":" + text + ":";
+            });
+        }
+    }
+
+    if (content.length === 0) {
+        show_preview(i18n.t("Nothing to preview"));
+    } else {
+        if (markdown.contains_backend_only_syntax(content))  {
+            var spinner = preview_spinner.expectOne();
+            loading.make_indicator(spinner);
+        } else {
+            // For messages that don't appear to contain
+            // bugdown-specific syntax not present in our
+            // marked.js frontend processor, we render using the
+            // frontend markdown processor message (but still
+            // render server-side to ensure the preview is
+            // accurate; if the `markdown.contains_backend_only_syntax` logic is
+            // incorrect wrong, users will see a brief flicker).
+            var message_obj = {
+                raw_content: content,
+            };
+            markdown.apply_markdown(message_obj);
+        }
+        channel.post({
+            url: '/json/messages/render',
+            idempotent: true,
+            data: {content: content},
+            success: function (response_data) {
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator(preview_spinner);
+                }
+                show_preview(response_data.rendered, content);
+            },
+            error: function () {
+                if (markdown.contains_backend_only_syntax(content)) {
+                    loading.destroy_indicator(preview_spinner);
+                }
+                show_preview(i18n.t("Failed to generate preview"));
+            },
+        });
+    }
+};
+
 exports.initialize = function () {
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
@@ -913,26 +975,6 @@ exports.initialize = function () {
         $("#compose #file_input").trigger("click");
     });
 
-    // content is passed to check for status messages ("/me ...")
-    // and will be undefined in case of errors
-    function show_preview(rendered_content, content) {
-        var rendered_preview_html;
-        if (content !== undefined && markdown.is_status_message(content, rendered_content)) {
-            // Handle previews of /me messages
-            rendered_preview_html = "<p><strong>" + page_params.full_name + "</strong>" + rendered_content.slice("<p>/me".length);
-        } else {
-            rendered_preview_html = rendered_content;
-        }
-
-        $("#preview_content").html(rendered_preview_html);
-        if (page_params.emojiset === "text") {
-            $("#preview_content").find(".emoji").replaceWith(function () {
-                var text = $(this).attr("title");
-                return ":" + text + ":";
-            });
-        }
-    }
-
     $('body').on('click', '.video_link', function (e) {
         e.preventDefault();
 
@@ -976,43 +1018,7 @@ exports.initialize = function () {
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
-        if (content.length === 0) {
-            show_preview(i18n.t("Nothing to preview"));
-        } else {
-            if (markdown.contains_backend_only_syntax(content))  {
-                var spinner = $("#markdown_preview_spinner").expectOne();
-                loading.make_indicator(spinner);
-            } else {
-                // For messages that don't appear to contain
-                // bugdown-specific syntax not present in our
-                // marked.js frontend processor, we render using the
-                // frontend markdown processor message (but still
-                // render server-side to ensure the preview is
-                // accurate; if the `markdown.contains_backend_only_syntax` logic is
-                // incorrect wrong, users will see a brief flicker).
-                var message_obj = {
-                    raw_content: content,
-                };
-                markdown.apply_markdown(message_obj);
-            }
-            channel.post({
-                url: '/json/messages/render',
-                idempotent: true,
-                data: {content: content},
-                success: function (response_data) {
-                    if (markdown.contains_backend_only_syntax(content)) {
-                        loading.destroy_indicator($("#markdown_preview_spinner"));
-                    }
-                    show_preview(response_data.rendered, content);
-                },
-                error: function () {
-                    if (markdown.contains_backend_only_syntax(content)) {
-                        loading.destroy_indicator($("#markdown_preview_spinner"));
-                    }
-                    show_preview(i18n.t("Failed to generate preview"));
-                },
-            });
-        }
+        exports.render_and_show_preview($("#markdown_preview_spinner"), $("#preview_content"), content);
     });
 
     $("#compose").on("click", "#undo_markdown_preview", function (e) {
