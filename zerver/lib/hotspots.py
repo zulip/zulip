@@ -21,6 +21,11 @@ ALL_HOTSPOTS = {
                          'easy to follow, and make it easy to reply to conversations that start '
                          'while you are offline.'),
     },
+    'intro_gear': {
+        'title': _('Settings'),
+        'description': _('Go to Settings to configure your '
+                         'notifications and display settings.'),
+    },
     'intro_compose': {
         'title': _('Compose'),
         'description': _('Click here to start a new conversation. Pick a topic '
@@ -44,7 +49,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
         return []
 
     seen_hotspots = frozenset(UserHotspot.objects.filter(user=user).values_list('hotspot', flat=True))
-    for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_compose']:
+    for hotspot in ['intro_reply', 'intro_streams', 'intro_topics', 'intro_gear', 'intro_compose']:
         if hotspot not in seen_hotspots:
             return [{
                 'name': hotspot,
