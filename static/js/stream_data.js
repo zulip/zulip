@@ -242,12 +242,6 @@ exports.get_subscriber_count = function (stream_name) {
     return sub.subscribers.num_items();
 };
 
-exports.render_stream_description = function (sub) {
-    if (sub.description !== undefined) {
-        sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
-    }
-};
-
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
     // Admin can change any stream's name & description either stream is public or
@@ -268,7 +262,9 @@ exports.update_calculated_fields = function (sub) {
                                  !sub.invite_only;
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.can_add_subscribers = !page_params.is_guest && (!sub.invite_only || sub.subscribed);
-    exports.render_stream_description(sub);
+    if (sub.rendered_description !== undefined) {
+        sub.rendered_description = sub.rendered_description.replace('<p>', '').replace('</p>', '');
+    }
     exports.update_subscribers_count(sub);
 };
 
@@ -499,6 +495,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
         description: '',
+        rendered_description: '',
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);

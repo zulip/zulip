@@ -570,19 +570,6 @@ run_test('remove_default_stream', () => {
     assert.equal(page_params.realm_default_streams.length, 0);
 });
 
-run_test('render_stream_description', () => {
-    var desc = {
-        name: 'no_desc',
-        stream_id: 1002,
-        description: '<p>rendered desc</p>',
-    };
-
-    stream_data.add_sub('desc', desc);
-    var sub = stream_data.get_sub_by_name('desc');
-    stream_data.render_stream_description(sub);
-    assert.deepStrictEqual(sub.rendered_description, "rendered desc");
-});
-
 run_test('canonicalized_name', () => {
     assert.deepStrictEqual(
         stream_data.canonicalized_name('Stream_Bar'),
