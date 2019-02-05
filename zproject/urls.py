@@ -8,7 +8,7 @@ import os
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, MarkdownDirectoryView
+from zerver.views.documentation import IntegrationView, MarkdownDirectoryView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.webhooks import github_dispatcher
 
@@ -28,7 +28,7 @@ import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
-import zerver.views.integrations
+import zerver.views.documentation
 import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
@@ -508,8 +508,8 @@ i18n_urls = [
 
     # API and integrations documentation
     url(r'^integrations/doc-html/(?P<integration_name>[^/]*)$',
-        zerver.views.integrations.integration_doc,
-        name="zerver.views.integrations.integration_doc"),
+        zerver.views.documentation.integration_doc,
+        name="zerver.views.documentation.integration_doc"),
     url(r'^integrations/(.*)', IntegrationView.as_view()),
     url(r'^team/$', zerver.views.users.team_view),
     url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
