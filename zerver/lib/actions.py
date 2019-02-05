@@ -1962,7 +1962,7 @@ def extract_emails(emails: Iterable[str]) -> List[str]:
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
                               topic: str, body: str) -> int:
-    addressee = Addressee.for_stream(stream_name, topic)
+    addressee = Addressee.for_stream_name(stream_name, topic)
     message = check_message(sender, client, addressee, body)
 
     return do_send_messages([message])[0]
@@ -2326,7 +2326,7 @@ def internal_prep_stream_message(realm: Realm, sender: UserProfile,
     """
     See _internal_prep_message for details of how this works.
     """
-    addressee = Addressee.for_stream(stream_name, topic)
+    addressee = Addressee.for_stream_name(stream_name, topic)
 
     return _internal_prep_message(
         realm=realm,

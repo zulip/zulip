@@ -130,7 +130,7 @@ class Addressee:
                 return Addressee.for_stream_id(stream_id, topic_name)
 
             stream_name = cast(str, stream_name_or_id)
-            return Addressee.for_stream(stream_name, topic_name)
+            return Addressee.for_stream_name(stream_name, topic_name)
         elif message_type_name == 'private':
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
@@ -145,7 +145,7 @@ class Addressee:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream_name: str, topic: str) -> 'Addressee':
+    def for_stream_name(stream_name: str, topic: str) -> 'Addressee':
         topic = validate_topic(topic)
         return Addressee(
             msg_type='stream',
