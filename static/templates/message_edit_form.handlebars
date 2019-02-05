@@ -42,10 +42,10 @@
             {{#if has_been_editable}}
             <div class="message-edit-feature-group">
                 <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
-                <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
+                <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
                 <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
                 <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
-                <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" data-message-id="{{message_id}}" title="{{t 'Add emoji'  }}"></a>
+                <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
                 <a id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{t 'Write' }}"></a>
                 <a id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-hidden="true" title="{{t 'Preview' }}"></a>
             </div>
