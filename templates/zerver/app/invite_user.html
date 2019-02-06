@@ -12,16 +12,16 @@
                     <label class="control-label" for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
                     <div class="controls">
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
-                    </div>
-                </div>
-                <h3 id="invite-method-choice">{{_('Or')}}</h3>
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox display-block" for="generate_multiuse_invite">
-                            <input type="checkbox" name="generate_multiuse_invite" id="generate_multiuse_invite"/>
-                            <span></span>
-                            {{ _('Generate invite link') }}
-                        </label>
+                        <div id="invite-method-choice">
+                            {{ _('or') }} <a id="generate_multiuse_invite_button">{{ _('Generate invite link') }}</a>
+                        </div>
+                        <div id="multiuse_radio_section">
+                            <label class="checkbox display-block" for="generate_multiuse_invite_radio">
+                                <input type="checkbox" name="generate_multiuse_invite_radio" id="generate_multiuse_invite_radio"/>
+                                <span></span>
+                                {{ _('Generate invite link') }}
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <hr>
