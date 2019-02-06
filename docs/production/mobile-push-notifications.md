@@ -35,8 +35,8 @@ follows:
     ```
    This command will print the registration data it would send to the
    mobile push notifications service, ask you to accept the terms of
-   service, and if you accept, register your server.  Otherwise, see
-   the [legacy signup instructions](#legacy-signup).
+   service, and if you accept, register your server. If you have trouble,
+   email support@zulipchat.com with the output of this command.
 
 1. If you or your users have already set up the Zulip mobile app,
    you'll each need to log out and log back in again in order to start
@@ -132,8 +132,8 @@ support@zulipchat.com.
 
 ## Legacy signup
 
-Here are the legacy instructions for signing a server up for push
-notifications:
+Here are legacy instructions for signing a server up for push
+notifications, for Zulip 1.8 and older.
 
 1. First, contact support@zulipchat.com with the `zulip_org_id` and
    `zulip_org_key` values from your `/etc/zulip/zulip-secrets.conf` file, as
@@ -142,6 +142,7 @@ notifications:
 
 2. We'll enable push notifications for your server on our end. Look for a
    reply from Zulipchat support within 24 hours.
+
 ## Sending push notifications directly from your server
 
 As we discussed above, it is impossible for a single app in their
