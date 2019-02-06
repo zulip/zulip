@@ -300,12 +300,12 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     something to look at in your home view once you finish the
     tutorial."""
     """Give you the last 80 messages on your public streams"""
-    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
+    # one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
 
     stream_ids = [stream.id for stream in streams if not stream.invite_only]
     recipients = get_stream_recipients(stream_ids)
     recent_messages = Message.objects.filter(recipient_id__in=recipients).order_by("-id")
-    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))#change 1000 to 80
+    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:1000]))  #change 1000 to 80
     if len(message_ids_to_use) == 0:
         return
 
@@ -315,7 +315,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
                                                  user_profile=user_profile).values_list("message_id",
                                                                                         flat=True))
 
-    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id)#flags=UserMessage.flags.read
+    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id)  #flags=UserMessage.flags.read
                      for message_id in message_ids_to_use
                      if message_id not in already_ids][-80:]
     UserMessage.objects.bulk_create(ums_to_create)
