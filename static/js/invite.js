@@ -3,11 +3,11 @@ var invite = (function () {
 var exports = {};
 
 function reset_error_messages() {
-    var invite_status = $('#invite_status');
-    var invitee_emails_group = $("#invitee_emails").closest('.control-group');
+    $('#invite_status').hide().text('').removeClass(common.status_classes);
+    $('#multiuse_invite_status').hide().text('').removeClass(common.status_classes);
 
-    invite_status.hide().text('').removeClass(common.status_classes);
-    invitee_emails_group.removeClass('warning error');
+    $("#invitee_emails").closest('.control-group').removeClass('warning error');
+
     if (page_params.development_environment) {
         $('#dev_env_msg').hide().text('').removeClass(common.status_classes);
     }
@@ -94,7 +94,7 @@ function submit_invitation_form() {
 }
 
 function generate_multiuse_invite() {
-    var invite_status = $('#invite_status');
+    var invite_status = $('#multiuse_invite_status');
     var data = get_common_invitation_data();
     channel.post({
         url: "/json/invites/multiuse",
