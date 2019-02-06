@@ -357,6 +357,7 @@ usually one needs to think about making changes in 3 places:
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 [virtualenv-clone]: https://github.com/edwardgeorge/virtualenv-clone/
 [yarn]: https://yarnpkg.com/
+[npm]: https://npmjs.com/
 [ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip
 [iamcal]: https://github.com/iamcal/emoji-data
 [pygments]: http://pygments.org/
