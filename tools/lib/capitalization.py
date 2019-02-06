@@ -141,6 +141,8 @@ IGNORED_PHRASES = [
     r"leafy green vegetable",
     # Subdomain placeholder
     r"your-organization-url",
+    # Used in invite modal
+    r"or",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

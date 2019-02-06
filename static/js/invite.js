@@ -165,7 +165,7 @@ exports.initialize = function () {
     });
 
     $("#submit-invitation").on("click", function () {
-        var is_generate_invite_link = $('#generate_multiuse_invite').prop('checked');
+        var is_generate_invite_link = $('#generate_multiuse_invite_radio').prop('checked');
         if (is_generate_invite_link) {
             generate_multiuse_invite();
         } else {
@@ -173,17 +173,23 @@ exports.initialize = function () {
         }
     });
 
-    $('#invite-user').on('change', '#generate_multiuse_invite', function () {
-        var generate_multiuse_invite_link = $(this).prop('checked');
-        $('#invitee_emails').prop('disabled', generate_multiuse_invite_link);
-        var submit_invitation_button = $('#submit-invitation');
-        if (generate_multiuse_invite_link) {
-            submit_invitation_button.text(i18n.t('Generate invite link'));
-            submit_invitation_button.data('loading-text', i18n.t('Generating link...'));
-        } else {
-            submit_invitation_button.text(i18n.t('Invite'));
-            submit_invitation_button.data('loading-text', i18n.t('Inviting...'));
-        }
+    $("#generate_multiuse_invite_button").on("click", function () {
+        $("#generate_multiuse_invite_radio").prop("checked", true);
+        $("#multiuse_radio_section").show();
+        $("#invite-method-choice").hide();
+        $('#invitee_emails').prop('disabled', true);
+        $('#submit-invitation').text(i18n.t('Generate invite link'));
+        $('#submit-invitation').data('loading-text', i18n.t('Generating link...'));
+        reset_error_messages();
+    });
+
+    $('#invite-user').on('change', '#generate_multiuse_invite_radio', function () {
+        $('#invitee_emails').prop('disabled', false);
+        $('#submit-invitation').text(i18n.t('Invite'));
+        $('#submit-invitation').data('loading-text', i18n.t('Inviting...'));
+        $("#multiuse_radio_section").hide();
+        $("#invite-method-choice").show();
+        reset_error_messages();
     });
 };
 

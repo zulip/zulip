@@ -2531,12 +2531,26 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: none;
 }
 
-#invite-user-label,
-#invite-method-choice {
+#invite-user-label {
     font-size: 1em;
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
+}
+
+#invite-method-choice {
+    margin-top: 2px;
+}
+
+#multiuse_radio_section {
+    margin-top: 4px;
+    margin-bottom: -2px;
+    display: none;
+}
+
+#generate_multiuse_invite_button {
+    position: relative;
+    top: 1px;
 }
 
 #invite-user .invite-stream-controls {
