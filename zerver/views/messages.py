@@ -1036,6 +1036,8 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     count = do_mark_all_as_read(user_profile, request.client)
+    print("get_messages")
+    print(count)
 
     log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
@@ -1220,7 +1222,10 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          defer_until: Optional[str]=REQ('deliver_at', default=None),
                          tz_guess: Optional[str]=REQ('tz_guess', default=None)) -> HttpResponse:
     client = request.client
+    print(client)
+    print(user_profile)
     is_super_user = request.user.is_api_super_user
+    print(is_super_user)
     if forged and not is_super_user:
         return json_error(_("User not authorized for this query"))
 
