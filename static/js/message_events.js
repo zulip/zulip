@@ -93,36 +93,10 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     unread_ui.update_unread_counts();
     resize.resize_page_components();
 
-    exports.maybe_advance_to_recently_sent_message(messages);
     unread_ops.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-};
-
-exports.maybe_advance_to_recently_sent_message = function (messages) {
-    if (narrow_state.narrowed_by_reply()) {
-        // If you send a message when narrowed to a recipient, move the
-        // pointer to it.
-
-        var i;
-        var selected_id = current_msg_list.selected_id();
-
-        // Iterate backwards to find the last message sent_by_me, stopping at
-        // the pointer position.
-        for (i = messages.length - 1; i >= 0; i -= 1) {
-            var id = messages[i].id;
-            if (id <= selected_id) {
-                break;
-            }
-            if (messages[i].sent_by_me && current_msg_list.get(id) !== undefined) {
-                // If this is a reply we just sent, advance the pointer to it.
-                current_msg_list.select_id(messages[i].id, {then_scroll: true,
-                                                            from_scroll: true});
-                break;
-            }
-        }
-    }
 };
 
 exports.update_messages = function update_messages(events) {
