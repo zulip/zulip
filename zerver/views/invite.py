@@ -102,9 +102,10 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
 
 @require_realm_admin
 @has_request_variables
-def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserProfile,
-                                     stream_ids: List[int]=REQ(validator=check_list(check_int),
-                                                               default=[])) -> HttpResponse:
+def generate_multiuse_invite_backend(
+        request: HttpRequest, user_profile: UserProfile,
+        invite_as: int=REQ(validator=check_int, default=PreregistrationUser.INVITE_AS['MEMBER']),
+        stream_ids: List[int]=REQ(validator=check_list(check_int), default=[])) -> HttpResponse:
     streams = []
     for stream_id in stream_ids:
         try:
@@ -113,5 +114,5 @@ def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserPro
             return json_error(_("Invalid stream id {}. No invites were sent.".format(stream_id)))
         streams.append(stream)
 
-    invite_link = do_create_multiuse_invite_link(user_profile, streams)
+    invite_link = do_create_multiuse_invite_link(user_profile, invite_as, streams)
     return json_success({'invite_link': invite_link})

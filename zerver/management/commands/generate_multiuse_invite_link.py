@@ -4,7 +4,7 @@ from typing import Any, List
 
 from zerver.lib.actions import ensure_stream, do_create_multiuse_invite_link
 from zerver.lib.management import ZulipBaseCommand
-from zerver.models import Stream
+from zerver.models import Stream, PreregistrationUser
 
 class Command(ZulipBaseCommand):
     help = "Generates invite link that can be used for inviting multiple users"
@@ -38,5 +38,6 @@ class Command(ZulipBaseCommand):
                 streams.append(stream)
 
         referred_by = self.get_user(options['referred_by'], realm)
-        invite_link = do_create_multiuse_invite_link(referred_by, streams)
+        invite_as = PreregistrationUser.INVITE_AS['MEMBER']
+        invite_link = do_create_multiuse_invite_link(referred_by, invite_as, streams)
         print("You can use %s to invite as many number of people to the organization." % (invite_link,))
