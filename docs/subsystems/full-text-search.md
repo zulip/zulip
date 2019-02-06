@@ -63,14 +63,13 @@ And then run as root:
 
     /home/zulip/deployments/current/scripts/zulip-puppet-apply
 
-Then, add `USING_PGROONGA = true` in `/etc/zulip/settings.py`:
+Then, add `USING_PGROONGA = True` in `/etc/zulip/settings.py`:
 
     USING_PGROONGA = True
 
 And apply the PGroonga migrations:
 
-    cd /srv/zulip
-    ./manage.py migrate pgroonga
+    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
 
 Note that the migration may take a long time, and you can't send new
 messages until the migration finishes.
@@ -92,7 +91,7 @@ can be sent while it is running).  If you intend to re-enable PGroonga
 later, you can skip this step (at the cost of your Message table being
 slightly larger than it would be otherwise).
 
-    /home/zulip/deployments/current/manage.py migrate pgroonga zero
+    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
 
 Then, set `USING_PGROONGA = False` in `/etc/zulip/settings.py`:
 
