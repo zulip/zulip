@@ -4867,12 +4867,14 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
 
     return invites
 
-def do_create_multiuse_invite_link(referred_by: UserProfile, streams: Optional[List[Stream]]=[]) -> str:
+def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
+                                   streams: Optional[List[Stream]]=[]) -> str:
     realm = referred_by.realm
     invite = MultiuseInvite.objects.create(realm=realm, referred_by=referred_by)
     if streams:
         invite.streams.set(streams)
-
+    invite.invited_as = invited_as
+    invite.save()
     return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:

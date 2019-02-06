@@ -75,11 +75,13 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     multiuse_obj = None
     streams_to_subscribe = None
     multiuse_object_key = request.session.get("multiuse_object_key", None)
+    invited_as = PreregistrationUser.INVITE_AS['MEMBER']
     if multiuse_object_key is not None:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
         realm = multiuse_obj.realm
         streams_to_subscribe = multiuse_obj.streams.all()
+        invited_as = multiuse_obj.invited_as
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     if form.is_valid():
@@ -102,6 +104,8 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             request.session.modified = True
             if streams_to_subscribe is not None:
                 prereg_user.streams.set(streams_to_subscribe)
+            prereg_user.invited_as = invited_as
+            prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, request.get_host(),
                                                      Confirmation.USER_REGISTRATION)
