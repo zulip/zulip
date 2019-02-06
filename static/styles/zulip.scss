@@ -2538,6 +2538,17 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-transform: uppercase;
 }
 
+#multiuse_invite_status {
+    display: none;
+    margin-top: 7px;
+    margin-bottom: -5px;
+    text-align: left;
+}
+
+#invite-stream-checkboxes {
+    padding-bottom: 26px;
+}
+
 #invite-method-choice {
     margin-top: 2px;
 }
