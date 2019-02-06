@@ -186,7 +186,7 @@ class TestMissedMessages(ZulipTestCase):
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t,) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
-        else:
+        else:  # nocoverage: TODO
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
         from_email = formataddr(("Zulip missed messages", FromAddress.NOREPLY))
@@ -327,21 +327,6 @@ class TestMissedMessages(ZulipTestCase):
             'Extremely personal message!',
         )
         body = 'Reply to this email directly, or view it in Zulip'
-        email_subject = 'PMs with Othello, the Moor of Venice'
-        self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
-
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool,
-                                                          mock_random_token: MagicMock) -> None:
-        tokens = self._get_tokens()
-        mock_random_token.side_effect = tokens
-
-        msg_id = self.send_personal_message(
-            self.example_email('othello'),
-            self.example_email('hamlet'),
-            'Extremely personal message!',
-        )
-        body = 'Please do not reply to this automated message.'
         email_subject = 'PMs with Othello, the Moor of Venice'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user)
 
@@ -526,10 +511,6 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages_email_notify(self) -> None:
         self._extra_context_in_missed_stream_messages_email_notify(False)
-
-    @override_settings(EMAIL_GATEWAY_PATTERN="")
-    def test_reply_warning_in_personal_missed_stream_messages(self) -> None:
-        self._reply_warning_in_personal_missed_stream_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_personal_missed_stream_messages_as_user(self) -> None:

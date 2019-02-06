@@ -307,12 +307,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     # ensure to display warning in the template.
     if settings.EMAIL_GATEWAY_PATTERN:
         context.update({
-            'reply_warning': False,
             'reply_to_zulip': True,
         })
     else:
         context.update({
-            'reply_warning': True,
             'reply_to_zulip': False,
         })
 
@@ -387,7 +385,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         sender = senders[0]
         from_name, from_address = (sender.full_name, sender.email)
         context.update({
-            'reply_warning': False,
             'reply_to_zulip': False,
         })
 
