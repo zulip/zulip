@@ -106,6 +106,7 @@ expert teaching other users how to use Zulip.
 - [Add custom emoji](/help/add-custom-emoji), at the very least for
   your organization's logo.
 - Link to your Zulip instance with a [nice badge](/help/join-zulip-chat-badge).
+- [Delete](/help/delete-a-topic) embarrassing test messages before sending invites.
 - Send feedback to the Zulip development community!  We love hearing
   about problems (however minor) and feature ideas that could make
   Zulip even better.

@@ -67,6 +67,7 @@
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [Rename a topic](/help/rename-a-topic)
+* [Delete a topic](/help/delete-a-topic)
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
