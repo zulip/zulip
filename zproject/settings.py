@@ -24,7 +24,7 @@ import zerver.lib.logging_util
 # INITIAL SETTINGS
 ########################################################################
 
-DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
+DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
@@ -502,7 +502,6 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
-DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
