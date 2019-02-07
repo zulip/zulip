@@ -80,6 +80,13 @@ def parse_cache_script_args(description):
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
     return args
 
+def get_deploy_root() -> str:
+    # This calls realpath twice to handle both symlinks and users
+    # running our scripts with relative paths from a current working
+    # directory of `scripts/`.
+    return os.path.realpath(os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.realpath(__file__)))))
+
 def get_deployment_version(extract_path):
     # type: (str) -> str
     version = '0.0.0'
@@ -122,8 +129,7 @@ if __name__ == '__main__':
 
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
-    zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(
-        os.path.dirname(os.path.realpath(__file__)))))
+    zulip_path = get_deploy_root()
     uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
     if os.path.exists(uuid_path):
         with open(uuid_path) as f:
