@@ -4,12 +4,13 @@
         <h3 id="delete_topic_modal_label">{{t "Delete topic" }} </h3>
     </div>
     <div class="modal-body">
-        <p>{{#tr this}}Delete all messages in topic <b>__topic_name__</b>?{{/tr}}</p>
+        <p>{{#tr this}}Are you sure you want to delete all messages in <b>__topic_name__</b>?{{/tr}}</p>
+        <p>{{t "We recommend against deleting topics unless needed for security reasons or managing abuse. Deleted messages can be confusing for users who may later visit the topic via notifications." }}</p>
     </div>
     <div class="modal-footer">
         <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>
         <button class="button btn-danger rounded" id="do_delete_topic_button">
-            {{t "Delete" }}
+            {{t "Delete messages" }}
         </button>
     </div>
 </div>
