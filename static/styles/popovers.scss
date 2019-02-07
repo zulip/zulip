@@ -260,7 +260,8 @@ ul.remind_me_popover .remind_icon {
 }
 
 @media (max-width: 768px) {
-    .message-info-popover {
+    .message-info-popover,
+    .user_popover {
         display: flex !important;
         justify-content: center;
         align-items: center;
@@ -278,12 +279,11 @@ ul.remind_me_popover .remind_icon {
 
         pointer-events: none;
     }
-
-    .message-info-popover .popover-inner {
+    .message-info-popover .popover-inner,
+    .user_popover .popover-inner {
         background-color: hsl(0, 0%, 100%);
         pointer-events: all;
     }
-
     .popover-flex {
         position: absolute;
         top: 0 !important;
