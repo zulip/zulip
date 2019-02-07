@@ -110,12 +110,20 @@ def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
     return subprocess.check_output(args, universal_newlines=True).strip()
 
+def get_zulip_uid() -> int:
+    return os.stat(get_deploy_root()).st_uid
+
 def su_to_zulip():
     # type: () -> None
-    pwent = pwd.getpwnam("zulip")
+    """Warning: su_to_zulip assumes that the zulip checkout is owned by
+    the zulip user (or whatever normal user is running the Zulip
+    installation).  It should never be run from the installer or other
+    production contexts before /home/zulip/deployments/current is
+    created."""
+    pwent = pwd.getpwuid(get_zulip_uid())
     os.setgid(pwent.pw_gid)
     os.setuid(pwent.pw_uid)
-    os.environ['HOME'] = os.path.abspath(os.path.join(DEPLOYMENTS_DIR, '..'))
+    os.environ['HOME'] = pwent.pw_dir
 
 def make_deploy_path():
     # type: () -> str
@@ -411,11 +419,13 @@ def is_root() -> bool:
 def assert_not_running_as_root() -> None:
     script_name = os.path.abspath(sys.argv[0])
     if is_root():
-        msg = ("{shortname} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
-               "user before rerunning this, or use \n  su zulip -c '{name} ...'\n"
+        pwent = pwd.getpwuid(get_zulip_uid())
+        msg = ("{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
+               "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
                "to switch users and run this as a single command.").format(
             name=script_name,
-            shortname=os.path.basename(script_name))
+            shortname=os.path.basename(script_name),
+            user=pwent.pw_name)
         print(msg)
         sys.exit(1)
 
