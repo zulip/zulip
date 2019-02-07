@@ -149,6 +149,7 @@ function get_stream_id(target) {
     return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
 }
 
+
 function get_sub_for_target(target) {
     var stream_id = get_stream_id(target);
     if (!stream_id) {
@@ -457,6 +458,16 @@ exports.change_stream_name = function (e) {
             ui.update_scrollbar($("#subscription_overlay .settings"));
         },
     });
+};
+
+exports.set_raw_description = function (target, destination) {
+    var sub_settings = $(target).closest('.subscription_settings');
+    var sub = get_sub_for_target(sub_settings);
+    if (!sub) {
+        blueslip.error('set_raw_description() fails');
+        return;
+    }
+    destination.text(sub.description);
 };
 
 exports.change_stream_description = function (e) {
