@@ -75,7 +75,6 @@ exports.initialize = function () {
         $(this).detach();
     });
     $('.message_table').prepend(message_groups_html);
-    $('.messagebox').css('box-shadow', 'inset 2px 0px 0px 0px ' + recipient_color);
     $('#display_recipient').remove();
 
     // Fixing include_sender after rendering groups.

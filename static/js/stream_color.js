@@ -19,7 +19,6 @@ function update_table_stream_color(table, stream_name, color) {
         var $label = $(label);
         if ($.trim($label.text()) === stream_name) {
             var messages = $label.closest(".recipient_row").children(".message_row");
-            messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
             $label.css({background: style});
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
