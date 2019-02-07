@@ -187,8 +187,13 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
     height: 40px;
+    padding-bottom: 10px;
+    background-color: inherit;
+}
+
+#top_navbar {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
 #panels {
