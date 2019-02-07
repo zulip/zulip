@@ -1,9 +1,12 @@
-# @-mention a team member
+# @-mention a user
 
 You can @-mention a team member to call their attention to a
 message. @-mentions follow the same
 [notification settings](/help/pm-mention-alert-notifications) as private
 messages and alert words.
+
+Note that an @-mention inside quoted text will not mention the user. So feel
+free to quote and reply without worrying about spurious mentions.
 
 ## From the compose box
 
