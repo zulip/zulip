@@ -3,6 +3,7 @@
     <div class="tip">Only group members and organization administrators can modify a group.</div>
     {{/unless}}
     {{#unless is_guest}}
+    <p>{{#tr this}}Add members of your organization to mentionable user groups.{{/tr}}</p>
     <form class="form-horizontal admin-user-group-form">
         <div class="add-new-user-group-box grey-box">
             <div class="new-user-group-form">
@@ -24,6 +25,5 @@
     </form>
     {{/unless}}
 
-    <p>{{#tr this}}Add members of your organization to mentionable user groups.{{/tr}}</p>
     <div id="user-groups" class="new-style"></div>
 </div>
