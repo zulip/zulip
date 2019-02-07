@@ -63,6 +63,95 @@
             </div>
         </div>
 
+        <div id="org-notifications" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Notifications" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_send_welcome_emails"
+                  "prefix" "id_"
+                  "is_checked" realm_send_welcome_emails
+                  "label" admin_settings_label.realm_send_welcome_emails}}
+
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_message_content_allowed_in_email_notifications"
+                  "prefix" "id_"
+                  "is_checked" realm_message_content_allowed_in_email_notifications
+                  "label" admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
+                  title="{{t 'The stream to which new stream notifications go to.' }}">
+                    {{t "New stream notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
+                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block"
+                  title="{{t 'The stream which new user signup notifications go to.' }}">
+                    {{t "New user notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
+                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_signup_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="signup-notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+        </div>
+
+        <div id="org-user-defaults" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Default user settings" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
+            </div>
+            <p>{{t "Default settings for new users joining this organization." }}</p>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
+                    <select name="realm_default_language" id="id_realm_default_language">
+                        {{#each language_list}}
+                        <option value='{{this.code}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_default_twenty_four_hour_time"
+                  "prefix" "id_"
+                  "is_checked" realm_default_twenty_four_hour_time
+                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
+            </div>
+        </div>
+
         <div id="org-msg-feed" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message feed" }}</h3>
@@ -142,95 +231,6 @@
                           class="admin-realm-zoom-field"/>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div id="org-user-defaults" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Default user settings" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
-            </div>
-            <p>{{t "Default settings for new users joining this organization." }}</p>
-            <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
-                    <select name="realm_default_language" id="id_realm_default_language">
-                        {{#each language_list}}
-                        <option value='{{this.code}}'>{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                </div>
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_default_twenty_four_hour_time"
-                  "prefix" "id_"
-                  "is_checked" realm_default_twenty_four_hour_time
-                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
-            </div>
-        </div>
-
-        <div id="org-notifications" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Notifications" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
-            </div>
-            <div class="inline-block organization-settings-parent">
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_send_welcome_emails"
-                  "prefix" "id_"
-                  "is_checked" realm_send_welcome_emails
-                  "label" admin_settings_label.realm_send_welcome_emails}}
-
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_message_content_allowed_in_email_notifications"
-                  "prefix" "id_"
-                  "is_checked" realm_message_content_allowed_in_email_notifications
-                  "label" admin_settings_label.realm_message_content_allowed_in_email_notifications}}
-            </div>
-
-            <div class="input-group">
-                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
-                  title="{{t 'The stream to which new stream notifications go to.' }}">
-                    {{t "New stream notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
-                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body"></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
-                {{/if}}
-            </div>
-
-            <div class="input-group">
-                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block"
-                  title="{{t 'The stream which new user signup notifications go to.' }}">
-                    {{t "New user notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
-                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_signup_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body"></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="signup-notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
-                {{/if}}
             </div>
         </div>
     </form>
