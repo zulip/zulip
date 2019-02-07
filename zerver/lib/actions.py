@@ -1688,9 +1688,10 @@ def prep_stream_welcome_message(stream: Stream) -> Optional[Dict[str, Any]]:
     message = internal_prep_stream_message(
         realm=realm,
         sender=sender,
-        stream_name=stream.name,
         topic=topic,
-        content=content)
+        content=content,
+        stream=stream
+    )
 
     return message
 
@@ -2224,8 +2225,10 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
         if stream_name is not None:
             stream = validate_stream_name_with_pm_notification(stream_name, realm, sender)
-        else:
+        elif stream_id is not None:
             stream = validate_stream_id_with_pm_notification(stream_id, realm, sender)
+        else:
+            stream = addressee.stream()
 
         recipient = get_stream_recipient(stream.id)
 
@@ -2320,13 +2323,20 @@ def _internal_prep_message(realm: Realm,
 
     return None
 
-def internal_prep_stream_message(realm: Realm, sender: UserProfile,
-                                 stream_name: str, topic: str,
-                                 content: str) -> Optional[Dict[str, Any]]:
+def internal_prep_stream_message(
+        realm: Realm, sender: UserProfile,
+        topic: str, content: str,
+        stream_name: Optional[str]=None,
+        stream: Optional[Stream]=None
+) -> Optional[Dict[str, Any]]:
     """
     See _internal_prep_message for details of how this works.
     """
-    addressee = Addressee.for_stream_name(stream_name, topic)
+    assert stream_name is not None or stream is not None
+    if stream is not None:
+        addressee = Addressee.for_stream(stream, topic)
+    else:
+        addressee = Addressee.for_stream_name(stream_name, topic)
 
     return _internal_prep_message(
         realm=realm,
@@ -2392,7 +2402,8 @@ def internal_send_private_message(realm: Realm,
 
 def internal_send_stream_message(realm: Realm, sender: UserProfile, stream_name: str,
                                  topic: str, content: str) -> None:
-    message = internal_prep_stream_message(realm, sender, stream_name, topic, content)
+    message = internal_prep_stream_message(realm, sender, topic,
+                                           content, stream_name=stream_name)
     if message is None:
         return
     do_send_messages([message])
