@@ -149,7 +149,8 @@ function get_stream_id(target) {
     return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
 }
 
-function get_sub_for_target(target) {
+
+exports.get_sub_for_target = function (target) {
     var stream_id = get_stream_id(target);
     if (!stream_id) {
         blueslip.error('Cannot find stream id for target');
@@ -162,7 +163,7 @@ function get_sub_for_target(target) {
         return;
     }
     return sub;
-}
+};
 
 exports.sort_but_pin_current_user_on_top = function (emails) {
     if (emails === undefined) {
@@ -269,7 +270,7 @@ exports.show_settings_for = function (node) {
 };
 
 function stream_home_view_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error('stream_home_view_clicked() fails');
         return;
@@ -403,31 +404,31 @@ function change_stream_privacy(e) {
 }
 
 function stream_desktop_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     sub.desktop_notifications = !sub.desktop_notifications;
     exports.set_stream_property(sub, 'desktop_notifications', sub.desktop_notifications);
 }
 
 function stream_audible_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     sub.audible_notifications = !sub.audible_notifications;
     exports.set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
 function stream_push_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     sub.push_notifications = !sub.push_notifications;
     exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
 }
 
 function stream_email_notifications_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     sub.email_notifications = !sub.email_notifications;
     exports.set_stream_property(sub, 'email_notifications', sub.email_notifications);
 }
 
 function stream_pin_clicked(e) {
-    var sub = get_sub_for_target(e.target);
+    var sub = exports.get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error('stream_pin_clicked() fails');
         return;
@@ -463,7 +464,7 @@ exports.change_stream_description = function (e) {
     e.preventDefault();
 
     var sub_settings = $(e.target).closest('.subscription_settings');
-    var sub = get_sub_for_target(sub_settings);
+    var sub = exports.get_sub_for_target(sub_settings);
     if (!sub) {
         blueslip.error('change_stream_description() fails');
         return;
@@ -560,7 +561,7 @@ exports.initialize = function () {
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         var settings_row = $(e.target).closest('.subscription_settings');
-        var sub = get_sub_for_target(settings_row);
+        var sub = exports.get_sub_for_target(settings_row);
         if (!sub) {
             blueslip.error('.subscriber_list_add form submit fails');
             return;
@@ -599,7 +600,7 @@ exports.initialize = function () {
         var principal = list_entry.children(".subscriber-email").text();
         var settings_row = $(e.target).closest('.subscription_settings');
 
-        var sub = get_sub_for_target(settings_row);
+        var sub = exports.get_sub_for_target(settings_row);
         if (!sub) {
             blueslip.error('.subscriber_list_remove form submit fails');
             return;
@@ -632,7 +633,7 @@ exports.initialize = function () {
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var sub = get_sub_for_target(e.target);
+        var sub = exports.get_sub_for_target(e.target);
         var stream_row = $(this).parent();
         subs.sub_or_unsub(sub);
         var sub_settings = settings_for_sub(sub);

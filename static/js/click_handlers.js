@@ -626,6 +626,11 @@ exports.initialize = function () {
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
+                if (selector === ".stream-description-editable") {
+                    var sub = stream_edit.get_sub_for_target(this);
+                    edit_area.text(sub.description);
+                }
+
                 ui_util.place_caret_at_end(edit_area[0]);
 
                 $(this).html("&times;");
