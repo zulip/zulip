@@ -831,6 +831,14 @@ exports.register_click_handlers = function () {
         current_user_sidebar_popover = target.data('popover');
     });
 
+    // hiding user popover when the user list side bar is
+    // expanded/expandable in small screen
+    $('body').on('click', '.right-sidebar', function (e) {
+        popovers.hide_user_sidebar_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('body').on("mouseenter", ".user_popover_email", function () {
         var tooltip_holder = $(this).find('div');
 
