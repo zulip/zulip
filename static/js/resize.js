@@ -56,15 +56,16 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height - top_navbar_height;
+    res.bottom_sidebar_height = viewport_height
+                                - parseInt($("#left-sidebar").css("marginTop"), 10)
+                                - parseInt($(".bottom_sidebar").css("marginTop"), 10);
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
     res.stream_filters_max_height =
         res.bottom_sidebar_height
         - $("#global_filters").safeOuterHeight(true)
-        - $("#streams_header").safeOuterHeight(true)
-        - 10; // stream_filters margin-bottom
+        - $("#streams_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
