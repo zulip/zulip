@@ -1188,6 +1188,9 @@ td.pointer {
 
 .message_failed {
     opacity: 1 !important;
+    display: inline-flex;
+    justify-content: space-between;
+    width: 27.86px;
     font-weight: bold;
     color: hsl(0, 100%, 50%);
     position: relative;
