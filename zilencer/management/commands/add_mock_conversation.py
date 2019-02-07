@@ -78,7 +78,9 @@ From image editing program:
         ]  # type: List[Dict[str, Any]]
 
         messages = [internal_prep_stream_message(
-            realm, message['sender'], stream.name, 'message formatting', message['content']
+            realm, message['sender'],
+            'message formatting', message['content'],
+            stream=stream
         ) for message in staged_messages]
 
         message_ids = do_send_messages(messages)

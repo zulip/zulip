@@ -109,7 +109,9 @@ def send_initial_realm_messages(realm: Realm) -> None:
     ]  # type: List[Dict[str, str]]
     messages = [internal_prep_stream_message(
         realm, welcome_bot,
-        message['stream'], message['topic'], message['content']) for message in welcome_messages]
+        message['topic'], message['content'],
+        stream_name=message['stream']
+    ) for message in welcome_messages]
     message_ids = do_send_messages(messages)
 
     # We find the one of our just-sent messages with turtle.png in it,
