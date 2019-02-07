@@ -203,7 +203,17 @@ on a dark background, and don't change the dark labels dark either. */
     .popover-content {
         background-color: hsl(212, 32%, 14%);
     }
-
+    @media (max-width: 768px) {
+        .message-info-popover,
+        .user_popover {
+            background-color: hsla(0, 0%, 0%, 0.7);
+        }
+        .message-info-popover .popover-inner,
+        .user_popover .popover-inner {
+            background-color: hsl(212, 32%, 14%);
+            pointer-events: all;
+        }
+    }
     .dropdown-menu a {
         color: inherit;
     }
