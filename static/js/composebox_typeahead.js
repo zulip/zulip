@@ -331,6 +331,7 @@ exports.tokenize_compose_str = function (s) {
         case '#':
         case '@':
         case ':':
+        case '_':
             if (i === 0) {
                 return s.slice(i);
             } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
@@ -448,6 +449,18 @@ exports.compose_content_begins_typeahead = function (query) {
         return get_mention_candidates_data();
     }
 
+    if (this.options.completions.silent_mention && current_token.startsWith('_@')) {
+        // Ideally, we'd figure out a way to deduplicate this with the main mentions block.
+        current_token = current_token.substring(2);
+        current_token = filter_mention_name(current_token);
+        if (!current_token) {
+            return false;
+        }
+        this.completing = 'silent_mention';
+        this.token = current_token;
+        return get_mention_candidates_data();
+    }
+
     if (this.options.completions.stream && current_token[0] === '#') {
         if (current_token.length === 1) {
             return false;
@@ -473,7 +486,7 @@ exports.compose_content_begins_typeahead = function (query) {
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
         return typeahead_helper.render_emoji(item);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.render_person_or_user_group(item);
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(item);
@@ -498,7 +511,7 @@ exports.content_typeahead_selected = function (item) {
         } else {
             beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
         }
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
         if (beginning.endsWith('@*')) {
             beginning = beginning.substring(0, beginning.length - 2);
@@ -550,7 +563,7 @@ exports.content_typeahead_selected = function (item) {
 exports.compose_content_matcher = function (item) {
     if (this.completing === 'emoji') {
         return query_matches_emoji(this.token, item);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return query_matches_person_or_user_group(this.token, item);
     } else if (this.completing === 'stream') {
         return query_matches_user_group_or_stream(this.token, item);
@@ -562,7 +575,7 @@ exports.compose_content_matcher = function (item) {
 exports.compose_matches_sorter = function (matches) {
     if (this.completing === 'emoji') {
         return typeahead_helper.sort_emojis(matches, this.token);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.sort_people_and_user_groups(this.token, matches);
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
@@ -575,6 +588,7 @@ exports.initialize_compose_typeahead = function (selector) {
     var completions = {
         mention: true,
         emoji: true,
+        silent_mention: true,
         stream: true,
         syntax: true,
     };
