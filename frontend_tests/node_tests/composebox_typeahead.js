@@ -338,6 +338,33 @@ run_test('content_typeahead_selected', () => {
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
 
+    // silent mention
+    fake_this.completing = 'silent_mention';
+    var document_stub_trigger3_called = false;
+    $('document-stub').trigger = function (event, params) {
+        assert.equal(event, 'usermention_completed.zulip');
+        assert.deepEqual(params, { mentioned: hamlet });
+        document_stub_trigger3_called = true;
+    };
+
+    fake_this.query = '_@kin';
+    fake_this.token = 'kin';
+    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    expected_value = '_@**King Hamlet** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '_@*kin';
+    fake_this.token = 'kin';
+    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    expected_value = '_@**King Hamlet** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query =  '_@**kin';
+    fake_this.token = 'kin';
+    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    expected_value = '_@**King Hamlet** ';
+    assert.equal(actual_value, expected_value);
+
     // user group mention
     var document_stub_group_trigger_called = false;
     $('document-stub').trigger = function (event, params) {
@@ -418,6 +445,7 @@ run_test('content_typeahead_selected', () => {
     assert(document_stub_trigger1_called);
     assert(document_stub_group_trigger_called);
     assert(document_stub_trigger2_called);
+    assert(document_stub_trigger3_called);
 });
 
 function sorted_names_from(subs) {
@@ -1031,7 +1059,12 @@ run_test('initialize', () => {
 run_test('begins_typeahead', () => {
 
     var begin_typehead_this = {options: {completions: {
-        emoji: true, mention: true, stream: true, syntax: true}}};
+        emoji: true,
+        mention: true,
+        silent_mention: true,
+        stream: true,
+        syntax: true,
+    }}};
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
@@ -1095,22 +1128,39 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
     assert_typeahead_equals("@", false);
+    assert_typeahead_equals("_@", false);
     assert_typeahead_equals(" @", false);
+    assert_typeahead_equals(" _@", false);
     assert_typeahead_equals("test @**o", all_mentions);
+    assert_typeahead_equals("test _@**o", all_mentions);
     assert_typeahead_equals("test @*o", all_mentions);
+    assert_typeahead_equals("test _@*k", all_mentions);
     assert_typeahead_equals("test @*h", all_mentions);
+    assert_typeahead_equals("test _@*h", all_mentions);
     assert_typeahead_equals("test @", false);
+    assert_typeahead_equals("test _@", false);
     assert_typeahead_equals("test no@o", false);
+    assert_typeahead_equals("test no_@k", false);
     assert_typeahead_equals("@ ", false);
+    assert_typeahead_equals("_@ ", false);
     assert_typeahead_equals("@* ", false);
+    assert_typeahead_equals("_@* ", false);
     assert_typeahead_equals("@** ", false);
+    assert_typeahead_equals("_@** ", false);
     assert_typeahead_equals("test\n@i", all_mentions);
+    assert_typeahead_equals("test\n_@i", all_mentions);
     assert_typeahead_equals("test\n @l", all_mentions);
+    assert_typeahead_equals("test\n _@l", all_mentions);
     assert_typeahead_equals("@zuli", all_mentions);
+    assert_typeahead_equals("_@zuli", all_mentions);
     assert_typeahead_equals("@ zuli", false);
+    assert_typeahead_equals("_@ zuli", false);
     assert_typeahead_equals(" @zuli", all_mentions);
+    assert_typeahead_equals(" _@zuli", all_mentions);
     assert_typeahead_equals("test @o", all_mentions);
+    assert_typeahead_equals("test _@k", all_mentions);
     assert_typeahead_equals("test @z", all_mentions);
+    assert_typeahead_equals("test _@z", all_mentions);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
