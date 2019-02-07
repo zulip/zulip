@@ -1365,7 +1365,7 @@ run_test('delete_topic_modal', () => {
     var html = render('delete_topic_modal', args);
 
     var modal_body = $(html).find('.modal-body');
-    assert.equal(modal_body.text().trim(), 'translated: Delete all messages in topic lunch?');
+    assert(modal_body.text().indexOf('delete all messages in lunch?') > 0);
 });
 
 run_test('typeahead_list_item', () => {
