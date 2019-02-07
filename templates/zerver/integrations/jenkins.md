@@ -7,8 +7,7 @@
 Install the "Zulip" plugin by going to
 **Manage Jenkins > Manage Plugins > Available**,
 typing in **Zulip**, and clicking **Install without
-restart**. (For historical reasons, the plugin might be named
-"Humbug Plugin" in some places)
+restart**.
 
 ![](/static/images/integrations/jenkins/001.png)
 
@@ -52,7 +51,7 @@ When your builds fail or succeed, you'll see a message as shown below.
 
 Besides the **Zulip Notification** post-build action, this plugin
 also supports the **Zulip Send** action.
-To learn more, see the [plugin's README](https://github.com/zulip/zulip-jenkins-plugin).
+To learn more, see the [plugin's README](https://github.com/jenkinsci/zulip-plugin).
 
 ### Troubleshooting
 
@@ -64,7 +63,7 @@ To learn more, see the [plugin's README](https://github.com/zulip/zulip-jenkins-
 1. Are your API key and email address correct? Test them
    using [our curl API](/api).
 
-1. Configure a Jenkins log recorder for **hudson.plugins.humbug**
+1. Configure a Jenkins log recorder for **jenkins.plugins.zulip**
    and check why your messages fail to send.
 
 1. Still stuck? Email [zulip-devel@googlegroups.com][mail].
