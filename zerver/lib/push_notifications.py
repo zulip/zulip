@@ -210,8 +210,6 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
 
-    reg_ids = [device.token for device in devices]
-
     if options:
         # We're strict about the API; there is no use case for a newer Zulip
         # server talking to an older bouncer, so we only need to provide
@@ -219,13 +217,11 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         raise JsonableError(_("Invalid GCM options to bouncer: %s")
                             % (ujson.dumps(options),))
 
-    if remote:
-        DeviceTokenClass = RemotePushDeviceToken
-    else:
-        DeviceTokenClass = PushDeviceToken
-
+    reg_ids = [device.token for device in devices]
     try:
-        res = gcm.json_request(registration_ids=reg_ids, data=data, retries=10)
+        res = gcm.json_request(registration_ids=reg_ids,
+                               data=data,
+                               retries=10)
     except IOError as e:
         logger.warning(str(e))
         return
@@ -233,6 +229,11 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     if res and 'success' in res:
         for reg_id, msg_id in res['success'].items():
             logger.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+
+    if remote:
+        DeviceTokenClass = RemotePushDeviceToken
+    else:
+        DeviceTokenClass = PushDeviceToken
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
