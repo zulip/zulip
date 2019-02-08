@@ -1,3 +1,5 @@
+var Dict = require('../ts/dict').Dict;
+
 var people = (function () {
 
 var exports = {};
