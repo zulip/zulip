@@ -37,9 +37,27 @@ from zerver.models import (
 )
 from zerver.lib.actions import do_delete_messages
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
-from zerver.lib import push_notifications as apn
-from zerver.lib.push_notifications import get_mobile_push_content, \
-    DeviceToken, get_apns_client
+from zerver.lib.push_notifications import (
+    absolute_avatar_url,
+    b64_to_hex,
+    datetime_to_timestamp,
+    DeviceToken,
+    get_apns_client,
+    get_apns_payload,
+    get_display_recipient,
+    get_gcm_payload,
+    get_mobile_push_content,
+    handle_push_notification,
+    handle_remove_push_notification,
+    hex_to_b64,
+    modernize_apns_payload,
+    num_push_devices_for_user,
+    parse_gcm_options,
+    send_android_push_notification_to_user,
+    send_apple_push_notification,
+    send_notifications_to_bouncer,
+    send_to_push_bouncer,
+)
 from zerver.lib.remote_server import send_analytics_to_remote_server, \
     build_analytics_data, PushNotificationBouncerException
 from zerver.lib.request import JsonableError
@@ -379,7 +397,7 @@ class PushNotificationTest(BouncerTestCase):
         for token in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user=self.user_profile,
                 ios_app_id=settings.ZULIP_IOS_APP_ID)
 
@@ -387,7 +405,7 @@ class PushNotificationTest(BouncerTestCase):
         for token in self.remote_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user_id=self.user_profile.id,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
@@ -444,7 +462,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         for token in remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user_id=self.user_profile.id,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
@@ -467,19 +485,19 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock.patch('zerver.lib.push_notifications.logger.info') as mock_info, \
                 mock.patch('zerver.lib.push_notifications.logger.warning'):
             apns_devices = [
-                (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
+                (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
                     kind=PushDeviceToken.APNS)
             ]
             gcm_devices = [
-                (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
+                (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
                     kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {
                 'success': {gcm_devices[0][2]: message.id}}
             mock_apns.get_notification_result.return_value = 'Success'
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
                     "APNs: Success sending for user %d to device %s",
@@ -490,7 +508,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
             # Now test the unregistered case
             mock_apns.get_notification_result.return_value = ('Unregistered', 1234567)
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
                     "APNs: Removing invalid/expired token %s (%s)" %
@@ -502,7 +520,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         for token in remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user_id=self.user_profile.id,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
@@ -514,7 +532,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         def retry(queue_name: Any, event: Any, processor: Any) -> None:
-            apn.handle_push_notification(event['user_profile_id'], event)
+            handle_push_notification(event['user_profile_id'], event)
 
         missed_message = {
             'user_profile_id': self.user_profile.id,
@@ -531,13 +549,13 @@ class HandlePushNotificationTest(PushNotificationTest):
                            side_effect=retry) as mock_retry, \
                 mock.patch('zerver.lib.push_notifications.logger.warning') as mock_warn:
             gcm_devices = [
-                (apn.b64_to_hex(device.token), device.ios_app_id, device.token)
+                (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(
                     kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {
                 'success': {gcm_devices[0][2]: message.id}}
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(mock_retry.call_count, 3)
             mock_warn.assert_called_with("Maximum retries exceeded for "
                                          "trigger:%s event:"
@@ -552,7 +570,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         user_profile.enable_offline_push_notifications = False
         user_profile.enable_stream_push_notifications = False
         user_profile.save()
-        apn.handle_push_notification(user_profile.id, {})
+        handle_push_notification(user_profile.id, {})
         mock_push_notifications.assert_called()
 
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True)
@@ -569,7 +587,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             'message_id': message.id,
             'trigger': 'private_message',
         }
-        apn.handle_push_notification(user_profile.id, missed_message)
+        handle_push_notification(user_profile.id, missed_message)
         mock_push_notifications.assert_called_once()
 
     def test_deleted_message(self) -> None:
@@ -591,7 +609,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
-            apn.handle_push_notification(user_profile.id, missed_message)
+            handle_push_notification(user_profile.id, missed_message)
             mock_push_notifications.assert_called_once()
             # Check we didn't proceed through and didn't log anything.
             mock_check.assert_not_called()
@@ -617,7 +635,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with mock.patch('zerver.lib.push_notifications.uses_notification_bouncer') as mock_check, \
                 mock.patch('logging.error') as mock_logging_error, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
-            apn.handle_push_notification(user_profile.id, missed_message)
+            handle_push_notification(user_profile.id, missed_message)
             mock_push_notifications.assert_called_once()
             # Check we didn't proceed through.
             mock_check.assert_not_called()
@@ -642,7 +660,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            return_value={'gcm': True}), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_notifications_to_bouncer') as mock_send:
-            apn.handle_push_notification(user_profile.id, missed_message)
+            handle_push_notification(user_profile.id, missed_message)
             mock_send.assert_called_with(user_profile.id,
                                          {'apns': True},
                                          {'gcm': True},
@@ -659,7 +677,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         for token in [u'dddd']:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user=self.user_profile)
 
         android_devices = list(
@@ -684,7 +702,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            '.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
 
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
                                                {'apns': True})
@@ -705,7 +723,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            '.send_notifications_to_bouncer') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_common_payload',
                            return_value={'gcm': True}):
-            apn.handle_remove_push_notification(user_profile.id, message.id)
+            handle_remove_push_notification(user_profile.id, message.id)
             mock_send_android.assert_called_with(user_profile.id, {},
                                                  {'gcm': True,
                                                   'event': 'remove',
@@ -723,7 +741,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         for token in [u'dddd']:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user=self.user_profile)
 
         android_devices = list(
@@ -734,7 +752,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                         '.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_common_payload',
                            return_value={'gcm': True}):
-            apn.handle_remove_push_notification(self.user_profile.id, message.id)
+            handle_remove_push_notification(self.user_profile.id, message.id)
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True,
                                                   'event': 'remove',
@@ -750,7 +768,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {'message_id': message_id}
         with mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_called_with("Could not find UserMessage with "
                                            "message_id %s and user_id %s" %
                                            (message_id, self.user_profile.id,))
@@ -773,7 +791,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         for token in [u'dddd']:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user=self.user_profile)
 
         android_devices = list(
@@ -794,7 +812,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                            '.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.logger.error') as mock_logger, \
                 mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value = True) as mock_push_notifications:
-            apn.handle_push_notification(self.user_profile.id, missed_message)
+            handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_not_called()
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
@@ -811,7 +829,7 @@ class TestAPNs(PushNotificationTest):
              payload_data: Dict[str, Any]={}) -> None:
         if devices is None:
             devices = self.devices()
-        apn.send_apple_push_notification(
+        send_apple_push_notification(
             self.user_profile.id, devices, payload_data)
 
     def test_get_apns_client(self) -> None:
@@ -911,12 +929,12 @@ class TestAPNs(PushNotificationTest):
                    'badge': 0,
                    'custom': {'zulip': {'message_ids': [3]}}}
         self.assertEqual(
-            apn.modernize_apns_payload(
+            modernize_apns_payload(
                 {'alert': 'Message from Hamlet',
                  'message_ids': [3]}),
             payload)
         self.assertEqual(
-            apn.modernize_apns_payload(payload),
+            modernize_apns_payload(payload),
             payload)
 
 class TestGetAPNsPayload(PushNotificationTest):
@@ -929,7 +947,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = apn.get_apns_payload(user_profile, message)
+        payload = get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': 'King Hamlet',
@@ -960,7 +978,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             [self.example_email('othello'), self.example_email('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = apn.get_apns_payload(user_profile, message)
+        payload = get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
@@ -995,7 +1013,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'push_stream_notify'
         message.stream_name = 'Verona'
-        payload = apn.get_apns_payload(user_profile, message)
+        payload = get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1010,7 +1028,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'recipient_type': 'stream',
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
-                    "stream": apn.get_display_recipient(message.recipient),
+                    "stream": get_display_recipient(message.recipient),
                     "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
@@ -1027,7 +1045,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = 'mentioned'
         message.stream_name = 'Verona'
-        payload = apn.get_apns_payload(user_profile, message)
+        payload = get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': '#Verona > Test Topic',
@@ -1042,7 +1060,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'recipient_type': 'stream',
                     'sender_email': 'hamlet@zulip.com',
                     'sender_id': 4,
-                    "stream": apn.get_display_recipient(message.recipient),
+                    "stream": get_display_recipient(message.recipient),
                     "topic": message.topic_name(),
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
@@ -1060,7 +1078,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             [self.example_email('othello'), self.example_email('cordelia')])
         message = Message.objects.get(id=message_id)
         message.trigger = 'private_message'
-        payload = apn.get_apns_payload(user_profile, message)
+        payload = get_apns_payload(user_profile, message)
         expected = {
             'alert': {
                 'title': 'Cordelia Lear, King Hamlet, Othello, the Moor of Venice',
@@ -1097,13 +1115,13 @@ class TestGetGCMPayload(PushNotificationTest):
         message.trigger = 'mentioned'
 
         user_profile = self.example_user('hamlet')
-        payload = apn.get_gcm_payload(user_profile, message)
+        payload = get_gcm_payload(user_profile, message)
         expected = {
             "user": user_profile.email,
             "event": "message",
             "alert": "New mention from King Hamlet",
             "zulip_message_id": message.id,
-            "time": apn.datetime_to_timestamp(message.pub_date),
+            "time": datetime_to_timestamp(message.pub_date),
             "content": 'a' * 200 + '…',
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
@@ -1112,9 +1130,9 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
-            "stream": apn.get_display_recipient(message.recipient),
+            "stream": get_display_recipient(message.recipient),
             "topic": message.topic_name(),
         }
         self.assertDictEqual(payload, expected)
@@ -1123,13 +1141,13 @@ class TestGetGCMPayload(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, 1)
         message.trigger = 'private_message'
         user_profile = self.example_user('hamlet')
-        payload = apn.get_gcm_payload(user_profile, message)
+        payload = get_gcm_payload(user_profile, message)
         expected = {
             "user": user_profile.email,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
-            "time": apn.datetime_to_timestamp(message.pub_date),
+            "time": datetime_to_timestamp(message.pub_date),
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
@@ -1138,7 +1156,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "private",
         }
         self.assertDictEqual(payload, expected)
@@ -1148,13 +1166,13 @@ class TestGetGCMPayload(PushNotificationTest):
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         user_profile = self.example_user('hamlet')
-        payload = apn.get_gcm_payload(user_profile, message)
+        payload = get_gcm_payload(user_profile, message)
         expected = {
             "user": user_profile.email,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
-            "time": apn.datetime_to_timestamp(message.pub_date),
+            "time": datetime_to_timestamp(message.pub_date),
             "content": message.content,
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
@@ -1163,7 +1181,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
             "stream": "Denmark"
@@ -1176,13 +1194,13 @@ class TestGetGCMPayload(PushNotificationTest):
         message.trigger = 'stream_push_notify'
         message.stream_name = 'Denmark'
         user_profile = self.example_user('hamlet')
-        payload = apn.get_gcm_payload(user_profile, message)
+        payload = get_gcm_payload(user_profile, message)
         expected = {
             "user": user_profile.email,
             "event": "message",
             "alert": "New stream message from King Hamlet in Denmark",
             "zulip_message_id": message.id,
-            "time": apn.datetime_to_timestamp(message.pub_date),
+            "time": datetime_to_timestamp(message.pub_date),
             "content": "***REDACTED***",
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
@@ -1191,7 +1209,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
-            "sender_avatar_url": apn.absolute_avatar_url(message.sender),
+            "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "topic": "Test Topic",
             "stream": "Denmark"
@@ -1202,7 +1220,7 @@ class TestGetGCMPayload(PushNotificationTest):
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch('zerver.lib.remote_server.send_to_push_bouncer')
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
-        apn.send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True}, {})
+        send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True}, {})
         post_data = {
             'user_id': 1,
             'apns_payload': {'apns': True},
@@ -1224,14 +1242,14 @@ class TestSendToPushBouncer(PushNotificationTest):
     @mock.patch('requests.request', return_value=Result(status=500))
     def test_500_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerException) as exc:
-            apn.send_to_push_bouncer('register', 'register', {'data': True})
+            send_to_push_bouncer('register', 'register', {'data': True})
         self.assertEqual(str(exc.exception),
                          'Received 500 from push notification bouncer')
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request: mock.MagicMock) -> None:
-        with self.assertRaises(apn.JsonableError) as exc:
-            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+        with self.assertRaises(JsonableError) as exc:
+            send_to_push_bouncer('register', 'register', {'msg': True})
         self.assertEqual(exc.exception.msg, 'error')
 
     def test_400_error_invalid_server_key(self) -> None:
@@ -1242,7 +1260,7 @@ class TestSendToPushBouncer(PushNotificationTest):
                         return_value=Result(status=400,
                                             content=ujson.dumps(error_obj.to_json()))):
             with self.assertRaises(PushNotificationBouncerException) as exc:
-                apn.send_to_push_bouncer('register', 'register', {'msg': True})
+                send_to_push_bouncer('register', 'register', {'msg': True})
         self.assertEqual(str(exc.exception),
                          'Push notifications bouncer error: '
                          'Zulip server auth failure: testRole is not registered')
@@ -1250,24 +1268,24 @@ class TestSendToPushBouncer(PushNotificationTest):
     @mock.patch('requests.request', return_value=Result(status=400, content='/'))
     def test_400_error_when_content_is_not_serializable(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(ValueError) as exc:
-            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+            send_to_push_bouncer('register', 'register', {'msg': True})
         self.assertEqual(str(exc.exception),
                          'Expected object or value')
 
     @mock.patch('requests.request', return_value=Result(status=300, content='/'))
     def test_300_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerException) as exc:
-            apn.send_to_push_bouncer('register', 'register', {'msg': True})
+            send_to_push_bouncer('register', 'register', {'msg': True})
         self.assertEqual(str(exc.exception),
                          'Push notification bouncer returned unexpected status code 300')
 
 class TestNumPushDevicesForUser(PushNotificationTest):
     def test_when_kind_is_none(self) -> None:
-        self.assertEqual(apn.num_push_devices_for_user(self.user_profile), 2)
+        self.assertEqual(num_push_devices_for_user(self.user_profile), 2)
 
     def test_when_kind_is_not_none(self) -> None:
-        count = apn.num_push_devices_for_user(self.user_profile,
-                                              kind=PushDeviceToken.APNS)
+        count = num_push_devices_for_user(self.user_profile,
+                                          kind=PushDeviceToken.APNS)
         self.assertEqual(count, 2)
 
 class TestPushApi(ZulipTestCase):
@@ -1326,25 +1344,25 @@ class TestPushApi(ZulipTestCase):
 class GCMParseOptionsTest(TestCase):
     def test_invalid_option(self) -> None:
         with self.assertRaises(JsonableError):
-            apn.parse_gcm_options({"invalid": True}, {})
+            parse_gcm_options({"invalid": True}, {})
 
     def test_invalid_priority_value(self) -> None:
         with self.assertRaises(JsonableError):
-            apn.parse_gcm_options({"priority": "invalid"}, {})
+            parse_gcm_options({"priority": "invalid"}, {})
 
     def test_default_priority(self) -> None:
         self.assertEqual(
-            "high", apn.parse_gcm_options({}, {"event": "message"}))
+            "high", parse_gcm_options({}, {"event": "message"}))
         self.assertEqual(
-            "normal", apn.parse_gcm_options({}, {"event": "remove"}))
+            "normal", parse_gcm_options({}, {"event": "remove"}))
         self.assertEqual(
-            "normal", apn.parse_gcm_options({}, {}))
+            "normal", parse_gcm_options({}, {}))
 
     def test_explicit_priority(self) -> None:
         self.assertEqual(
-            "normal", apn.parse_gcm_options({"priority": "normal"}, {}))
+            "normal", parse_gcm_options({"priority": "normal"}, {}))
         self.assertEqual(
-            "high", apn.parse_gcm_options({"priority": "high"}, {}))
+            "high", parse_gcm_options({"priority": "high"}, {}))
 
 @mock.patch('zerver.lib.push_notifications.gcm')
 class GCMSendTest(PushNotificationTest):
@@ -1354,7 +1372,7 @@ class GCMSendTest(PushNotificationTest):
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.GCM,
-                token=apn.hex_to_b64(token),
+                token=hex_to_b64(token),
                 user=self.user_profile,
                 ios_app_id=None)
 
@@ -1369,7 +1387,7 @@ class GCMSendTest(PushNotificationTest):
     @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         mock_gcm.__bool__.return_value = False
-        apn.send_android_push_notification_to_user(self.user_profile, {}, {})
+        send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_debug.assert_called_with(
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
             "and ANDROID_GCM_API_KEY are both unset")
@@ -1378,7 +1396,7 @@ class GCMSendTest(PushNotificationTest):
     def test_json_request_raises_ioerror(self, mock_warn: mock.MagicMock,
                                          mock_gcm: mock.MagicMock) -> None:
         mock_gcm.json_request.side_effect = IOError('error')
-        apn.send_android_push_notification_to_user(self.user_profile, {}, {})
+        send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_warn.assert_called_with('error')
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
@@ -1390,7 +1408,7 @@ class GCMSendTest(PushNotificationTest):
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         self.assertEqual(mock_info.call_count, 2)
         c1 = call("GCM: Sent 1111 as 0")
         c2 = call("GCM: Sent 2222 as 1")
@@ -1404,7 +1422,7 @@ class GCMSendTest(PushNotificationTest):
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
                                              "already matches our ID 1!")
 
@@ -1412,13 +1430,13 @@ class GCMSendTest(PushNotificationTest):
     def test_canonical_pushdevice_not_present(self, mock_warning: mock.MagicMock,
                                               mock_gcm: mock.MagicMock) -> None:
         res = {}
-        t1 = apn.hex_to_b64(u'1111')
-        t2 = apn.hex_to_b64(u'3333')
+        t1 = hex_to_b64(u'1111')
+        t2 = hex_to_b64(u'3333')
         res['canonical'] = {t1: t2}
         mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
-            token = apn.hex_to_b64(hex_token)
+            token = hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
@@ -1426,7 +1444,7 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count(u'3333'), 0)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         msg = ("GCM: Got canonical ref %s "
                "replacing %s but new ID not "
                "registered! Updating.")
@@ -1439,13 +1457,13 @@ class GCMSendTest(PushNotificationTest):
     def test_canonical_pushdevice_different(self, mock_info: mock.MagicMock,
                                             mock_gcm: mock.MagicMock) -> None:
         res = {}
-        old_token = apn.hex_to_b64(u'1111')
-        new_token = apn.hex_to_b64(u'2222')
+        old_token = hex_to_b64(u'1111')
+        new_token = hex_to_b64(u'2222')
         res['canonical'] = {old_token: new_token}
         mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
-            token = apn.hex_to_b64(hex_token)
+            token = hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
@@ -1453,7 +1471,7 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count(u'2222'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
@@ -1463,31 +1481,31 @@ class GCMSendTest(PushNotificationTest):
     @mock.patch('zerver.lib.push_notifications.logger.info')
     def test_not_registered(self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = apn.hex_to_b64(u'1111')
+        token = hex_to_b64(u'1111')
         res['errors'] = {'NotRegistered': [token]}
         mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
-            token = apn.hex_to_b64(hex_token)
+            token = hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
         self.assertEqual(get_count(u'1111'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
         self.assertEqual(get_count(u'1111'), 0)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_failure(self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
-        token = apn.hex_to_b64(u'1111')
+        token = hex_to_b64(u'1111')
         res['errors'] = {'Failed': [token]}
         mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification_to_user(self.user_profile, data, {})
+        send_android_push_notification_to_user(self.user_profile, data, {})
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
 
