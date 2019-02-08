@@ -417,7 +417,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                   context={'form': form, 'current_url': request.get_full_path},
                   )
 
-def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
+def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
+                  multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
 
     if realm is None:
@@ -459,6 +460,7 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
     return render(request,
                   'zerver/accounts_home.html',
                   context={'form': form, 'current_url': request.get_full_path,
+                           'multiuse_object_key': multiuse_object_key,
                            'from_multiuse_invite': from_multiuse_invite},
                   )
 
@@ -467,12 +469,12 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     try:
         multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
         # Required for oAuth2
-        request.session["multiuse_object_key"] = confirmation_key
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
-    return accounts_home(request, multiuse_object=multiuse_object)
+    return accounts_home(request, multiuse_object_key=confirmation_key,
+                         multiuse_object=multiuse_object)
 
 def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)

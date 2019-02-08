@@ -81,15 +81,19 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         self.assertDictEqual(data, {'name': name, 'next': '',
                                     'email': email,
                                     'subdomain': realm.subdomain,
-                                    'is_signup': False})
+                                    'is_signup': False,
+                                    'multiuse_object_key': ''})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
-                                                   is_signup=True)
+                                                   is_signup=True,
+                                                   multiuse_object_key='key')
         data = load_subdomain_token(response)
         self.assertDictEqual(data, {'name': name, 'next': '',
                                     'email': email,
                                     'subdomain': realm.subdomain,
-                                    'is_signup': True})
+                                    'is_signup': True,
+                                    'multiuse_object_key': 'key'
+                                    })
 
 class DeactivationNoticeTestCase(ZulipTestCase):
     def test_redirection_for_deactivated_realm(self) -> None:
