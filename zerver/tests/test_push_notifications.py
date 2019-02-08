@@ -1346,10 +1346,10 @@ class GCMParseOptionsTest(TestCase):
         self.assertEqual(
             "high", apn.parse_gcm_options({"priority": "high"}, {}))
 
+@mock.patch('zerver.lib.push_notifications.gcm')
 class GCMSendTest(PushNotificationTest):
     def setUp(self) -> None:
         super().setUp()
-        apn.gcm = gcm.GCM('fake key')
         self.gcm_tokens = [u'1111', u'2222']
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
@@ -1367,30 +1367,27 @@ class GCMSendTest(PushNotificationTest):
         return data
 
     @mock.patch('zerver.lib.push_notifications.logger.debug')
-    @mock.patch('zerver.lib.push_notifications.gcm')
-    def test_gcm_is_none(self, mock_gcm: mock.MagicMock, mock_debug: mock.MagicMock) -> None:
+    def test_gcm_is_none(self, mock_debug: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         mock_gcm.__bool__.return_value = False
         apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_debug.assert_called_with(
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
             "and ANDROID_GCM_API_KEY are both unset")
 
-    @mock.patch('zerver.lib.push_notifications.gcm.json_request')
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_json_request_raises_ioerror(self, mock_warn: mock.MagicMock,
-                                         mock_json_request: mock.MagicMock) -> None:
-        mock_json_request.side_effect = IOError('error')
+                                         mock_gcm: mock.MagicMock) -> None:
+        mock_gcm.json_request.side_effect = IOError('error')
         apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_warn.assert_called_with('error')
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('zerver.lib.push_notifications.logger.info')
-    @mock.patch('gcm.GCM.json_request')
-    def test_success(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
-                     mock_warning: mock.MagicMock) -> None:
+    def test_success(self, mock_info: mock.MagicMock, mock_warning: mock.MagicMock,
+                     mock_gcm: mock.MagicMock) -> None:
         res = {}
         res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data, {})
@@ -1401,11 +1398,10 @@ class GCMSendTest(PushNotificationTest):
         mock_warning.assert_not_called()
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('gcm.GCM.json_request')
-    def test_canonical_equal(self, mock_send: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
+    def test_canonical_equal(self, mock_warning: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
         res['canonical'] = {1: 1}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data, {})
@@ -1413,14 +1409,13 @@ class GCMSendTest(PushNotificationTest):
                                              "already matches our ID 1!")
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('gcm.GCM.json_request')
-    def test_canonical_pushdevice_not_present(self, mock_send: mock.MagicMock,
-                                              mock_warning: mock.MagicMock) -> None:
+    def test_canonical_pushdevice_not_present(self, mock_warning: mock.MagicMock,
+                                              mock_gcm: mock.MagicMock) -> None:
         res = {}
         t1 = apn.hex_to_b64(u'1111')
         t2 = apn.hex_to_b64(u'3333')
         res['canonical'] = {t1: t2}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
@@ -1441,14 +1436,13 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count(u'3333'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
-    @mock.patch('gcm.GCM.json_request')
-    def test_canonical_pushdevice_different(self, mock_send: mock.MagicMock,
-                                            mock_info: mock.MagicMock) -> None:
+    def test_canonical_pushdevice_different(self, mock_info: mock.MagicMock,
+                                            mock_gcm: mock.MagicMock) -> None:
         res = {}
         old_token = apn.hex_to_b64(u'1111')
         new_token = apn.hex_to_b64(u'2222')
         res['canonical'] = {old_token: new_token}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
@@ -1467,12 +1461,11 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count(u'2222'), 1)
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
-    @mock.patch('gcm.GCM.json_request')
-    def test_not_registered(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock) -> None:
+    def test_not_registered(self, mock_info: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
         token = apn.hex_to_b64(u'1111')
         res['errors'] = {'NotRegistered': [token]}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
@@ -1487,12 +1480,11 @@ class GCMSendTest(PushNotificationTest):
         self.assertEqual(get_count(u'1111'), 0)
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('gcm.GCM.json_request')
-    def test_failure(self, mock_send: mock.MagicMock, mock_warn: mock.MagicMock) -> None:
+    def test_failure(self, mock_warn: mock.MagicMock, mock_gcm: mock.MagicMock) -> None:
         res = {}
         token = apn.hex_to_b64(u'1111')
         res['errors'] = {'Failed': [token]}
-        mock_send.return_value = res
+        mock_gcm.json_request.return_value = res
 
         data = self.get_gcm_data()
         apn.send_android_push_notification_to_user(self.user_profile, data, {})
