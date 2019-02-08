@@ -302,8 +302,9 @@ class BugdownTest(ZulipTestCase):
             else:
                 converted = bugdown_convert(test['input'])
 
-            print("Running Bugdown test %s" % (name,))
-            self.assertEqual(converted, test['expected_output'])
+            with self.subTest(test=test):    
+                print("Running Bugdown test %s" % (name,))
+                self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload: str, url: str, phrase: str='') -> str:
             target = " target=\"_blank\""
