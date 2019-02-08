@@ -71,8 +71,11 @@ class EmbeddedBotHandler:
             self._rate_limit.show_error_and_exit()
 
         if message['type'] == 'stream':
-            internal_send_stream_message(self.user_profile.realm, self.user_profile, message['to'],
-                                         message['topic'], message['content'])
+            internal_send_stream_message(
+                self.user_profile.realm, self.user_profile,
+                message['topic'], message['content'],
+                stream_name=message['to']
+            )
             return
 
         assert message['type'] == 'private'
