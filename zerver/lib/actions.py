@@ -317,8 +317,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
                                                  user_profile=user_profile).values_list("message_id",
                                                                                         flat=True))
-    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
-                                 flags=UserMessage.flags.read)
+    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id)
                      for message_id in message_ids_to_use
                      if message_id not in already_ids][-80:]
 
