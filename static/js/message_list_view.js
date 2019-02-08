@@ -247,6 +247,8 @@ MessageListView.prototype = {
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
+                update_group_date_divider(current_group, message_container, prev);
+
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
@@ -272,7 +274,6 @@ MessageListView.prototype = {
                 }
             }
 
-            update_group_date_divider(current_group, message_container, prev);
             set_timestr(message_container);
 
             message_container.include_sender = true;
