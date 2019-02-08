@@ -197,6 +197,8 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     bouncer's API.  They are:
 
     `priority`: Passed through to GCM; see upstream doc linked below.
+        Zulip servers should always set this; when unset, we guess a value
+        based on the behavior of old server versions.
 
     Including unrecognized options is an error.
 
@@ -205,7 +207,13 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
     Returns `priority`.
     """
-    priority = options.pop('priority', 'normal')
+    priority = options.pop('priority', None)
+    if priority is None:
+        # An older server.  Identify if this seems to be an actual notification.
+        if data.get('event') == 'message':
+            priority = 'high'
+        else:  # `'event': 'remove'`, presumably
+            priority = 'normal'
     if priority not in ('normal', 'high'):
         raise JsonableError(_("Invalid GCM option to bouncer: priority %r")
                             % (priority,))
