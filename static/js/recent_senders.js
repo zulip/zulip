@@ -1,3 +1,5 @@
+var Dict = require('../ts/dict').Dict;
+
 var recent_senders = (function () {
 
 var exports = {};

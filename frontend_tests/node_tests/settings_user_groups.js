@@ -1,4 +1,3 @@
-zrequire('dict');
 zrequire('user_pill');
 zrequire('settings_user_groups');
 

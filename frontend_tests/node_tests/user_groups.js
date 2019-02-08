@@ -1,7 +1,6 @@
 set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
-zrequire('dict');
 zrequire('user_groups');
 
 run_test('user_groups', () => {

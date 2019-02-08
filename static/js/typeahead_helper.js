@@ -1,3 +1,5 @@
+var Dict = require('../ts/dict').Dict;
+
 var typeahead_helper = (function () {
 
 var exports = {};
