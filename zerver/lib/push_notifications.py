@@ -189,6 +189,17 @@ def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict
                                                   kind=PushDeviceToken.GCM))
     send_android_push_notification(devices, data, options)
 
+def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> None:
+    """
+    Parse GCM options, raising an error if invalid.
+    """
+    if options:
+        # We're strict about the API; there is no use case for a newer Zulip
+        # server talking to an older bouncer, so we only need to provide
+        # one-way compatibility.
+        raise JsonableError(_("Invalid GCM options to bouncer: %s")
+                            % (ujson.dumps(options),))
+
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
                                    options: Dict[str, Any], remote: bool=False) -> None:
@@ -210,15 +221,12 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
 
-    if options:
-        # We're strict about the API; there is no use case for a newer Zulip
-        # server talking to an older bouncer, so we only need to provide
-        # one-way compatibility.
-        raise JsonableError(_("Invalid GCM options to bouncer: %s")
-                            % (ujson.dumps(options),))
-
     reg_ids = [device.token for device in devices]
+    parse_gcm_options(options, data)
     try:
+        # See https://developers.google.com/cloud-messaging/http-server-ref .
+        # Two kwargs `retries` and `session` get eaten by `json_request`;
+        # the rest pass through to the GCM server.
         res = gcm.json_request(registration_ids=reg_ids,
                                data=data,
                                retries=10)
