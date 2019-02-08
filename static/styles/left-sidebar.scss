@@ -85,6 +85,11 @@
     width: 100%;
 }
 
+#stream-filters-container > .ps__rail-x,
+#stream-filters-container > .ps__rail-y {
+    opacity: 0.6;
+}
+
 .input-append input[type=text].stream-list-filter {
     margin-left: 10px;
 }
