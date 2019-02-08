@@ -440,6 +440,7 @@ class SocialAuthBase(ZulipTestCase):
                          mobile_flow_otp: Optional[str]=None,
                          is_signup: Optional[str]=None,
                          next: str='',
+                         multiuse_object_key: str='',
                          **extra_data: Any) -> HttpResponse:
         url = self.LOGIN_URL
         params = {}
@@ -452,6 +453,7 @@ class SocialAuthBase(ZulipTestCase):
         if is_signup is not None:
             url = self.SIGNUP_URL
         params['next'] = next
+        params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -687,6 +689,79 @@ class SocialAuthBase(ZulipTestCase):
         user_profile = get_user(email, realm)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_social_auth_registration_using_multiuse_invite(self) -> None:
+        """If the user doesn't exist yet, social auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        stream_names = ["new_stream_1", "new_stream_2"]
+        streams = []
+        for stream_name in set(stream_names):
+            stream = ensure_stream(realm, stream_name)
+            streams.append(stream)
+
+        referrer = self.example_user("hamlet")
+        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj.streams.set(streams)
+        create_confirmation_link(multiuse_obj, realm.host, Confirmation.MULTIUSE_INVITE)
+        multiuse_confirmation = Confirmation.objects.all().last()
+        multiuse_object_key = multiuse_confirmation.confirmation_key
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        # First, try to signup for closed realm without using an invitation
+        result = self.social_auth_test(account_data_dict,
+                                       subdomain='zulip', is_signup='1')
+        result = self.client_get(result.url)
+        # Verify that we're unable to signup, since this is a closed realm
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Sign up"], result)
+
+        result = self.social_auth_test(account_data_dict, subdomain='zulip', is_signup='1',
+                                       multiuse_object_key=multiuse_object_key)
+
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], email)
+        self.assertEqual(data['name'], name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['multiuse_object_key'], multiuse_object_key)
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        result = self.client_get(result.url)
+
+        self.assertEqual(result.status_code, 302)
+        confirmation = Confirmation.objects.all().last()
+        confirmation_key = confirmation.confirmation_key
+        self.assertIn('do_confirm/' + confirmation_key, result.url)
+        result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        data = {"from_confirmation": "1",
+                "full_name": name,
+                "key": confirmation_key}
+        result = self.client_post('/accounts/register/', data)
+        self.assert_in_response("We just need you to do one last thing", result)
+
+        # Verify that the user is asked for name but not password
+        self.assert_not_in_success_response(['id_password'], result)
+        self.assert_in_success_response(['id_full_name'], result)
+
+        # Click confirm registration button.
+        result = self.client_post(
+            '/accounts/register/',
+            {'full_name': name,
+             'key': confirmation_key,
+             'terms': True})
+
+        self.assertEqual(result.status_code, 302)
+        user_profile = get_user(email, realm)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
     def test_social_auth_registration_without_is_signup(self) -> None:
         """If `is_signup` is not set then a new account isn't created"""
         email = "newuser@zulip.com"
@@ -863,7 +938,8 @@ class GoogleOAuthTest(ZulipTestCase):
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
                            is_signup: Optional[str]=None,
-                           next: str='') -> HttpResponse:
+                           next: str='',
+                           multiuse_object_key: str='') -> HttpResponse:
         url = "/accounts/login/google/"
         params = {}
         headers = {}
@@ -875,6 +951,7 @@ class GoogleOAuthTest(ZulipTestCase):
         if is_signup is not None:
             params['is_signup'] = is_signup
         params['next'] = next
+        params['multiuse_object_key'] = multiuse_object_key
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -1117,12 +1194,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        invite_link = create_confirmation_link(multiuse_obj, realm.host,
-                                               Confirmation.MULTIUSE_INVITE)
+        create_confirmation_link(multiuse_obj, realm.host, Confirmation.MULTIUSE_INVITE)
+        multiuse_confirmation = Confirmation.objects.all().last()
+        multiuse_object_key = multiuse_confirmation.confirmation_key
 
-        result = self.client_get(invite_link, subdomain="zulip")
-        self.assert_in_success_response(['Sign up for Zulip'], result)
-
+        data["multiuse_object_key"] = multiuse_object_key
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
 
@@ -1247,6 +1323,85 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         user_profile = get_user(email, realm)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_google_oauth2_registration_using_multiuse_invite(self) -> None:
+        """If the user doesn't exist yet, Google auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        stream_names = ["new_stream_1", "new_stream_2"]
+        streams = []
+        for stream_name in set(stream_names):
+            stream = ensure_stream(realm, stream_name)
+            streams.append(stream)
+
+        referrer = self.example_user("hamlet")
+        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj.streams.set(streams)
+        link = create_confirmation_link(multiuse_obj, realm.host, Confirmation.MULTIUSE_INVITE)
+        multiuse_confirmation = Confirmation.objects.all().last()
+        multiuse_object_key = multiuse_confirmation.confirmation_key
+
+        input_element = "name=\'multiuse_object_key\' value=\'{}\' /".format(multiuse_object_key)
+        response = self.client_get(link)
+        self.assert_in_success_response([input_element], response)
+
+        # First, try to signup for closed realm without using an invitation
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name="Full Name",
+                            email_verified=True,
+                            email=email)
+        account_response = ResponseMock(200, account_data)
+        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
+                                         is_signup='1', multiuse_object_key="")
+        result = self.client_get(result.url)
+        # Verify that we're unable to signup, since this is a closed realm
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Sign up"], result)
+
+        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
+                                         is_signup='1', multiuse_object_key=multiuse_object_key)
+        data = load_subdomain_token(result)
+        name = 'Full Name'
+        self.assertEqual(data['name'], name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['multiuse_object_key'], multiuse_object_key)
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        result = self.client_get(result.url)
+        self.assertEqual(result.status_code, 302)
+        confirmation = Confirmation.objects.all().last()
+        confirmation_key = confirmation.confirmation_key
+        self.assertIn('do_confirm/' + confirmation_key, result.url)
+        result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        data = {"from_confirmation": "1",
+                "full_name": name,
+                "key": confirmation_key}
+        result = self.client_post('/accounts/register/', data)
+        self.assert_in_response("We just need you to do one last thing", result)
+
+        # Verify that the user is asked for name but not password
+        self.assert_not_in_success_response(['id_password'], result)
+        self.assert_in_success_response(['id_full_name'], result)
+
+        # Click confirm registration button.
+        result = self.client_post(
+            '/accounts/register/',
+            {'full_name': name,
+             'key': confirmation_key,
+             'terms': True})
+
+        self.assertEqual(result.status_code, 302)
+        user_profile = get_user(email, realm)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assertEqual(sorted(self.get_streams(email, realm)), stream_names)
+
 class GoogleLoginTest(GoogleOAuthTest):
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_google_oauth2_subdomains_homepage(self) -> None:
@@ -1322,7 +1477,7 @@ class GoogleLoginTest(GoogleOAuthTest):
 
     def test_google_oauth2_csrf_badstate(self) -> None:
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more:::")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more::::")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')

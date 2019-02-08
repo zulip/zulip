@@ -635,7 +635,7 @@ def social_auth_finish(backend: Any,
     is_signup = strategy.session_get('is_signup') == '1'
     redirect_to = strategy.session_get('next')
     realm = Realm.objects.get(id=return_data["realm_id"])
-
+    multiuse_object_key = strategy.session_get('multiuse_object_key', '')
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
     if mobile_flow_otp is not None:
         return login_or_register_remote_user(strategy.request, email_address,
@@ -646,7 +646,8 @@ def social_auth_finish(backend: Any,
                                              redirect_to=redirect_to)
     return redirect_and_log_into_subdomain(realm, full_name, email_address,
                                            is_signup=is_signup,
-                                           redirect_to=redirect_to)
+                                           redirect_to=redirect_to,
+                                           multiuse_object_key=multiuse_object_key)
 
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
