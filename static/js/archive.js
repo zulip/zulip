@@ -25,7 +25,7 @@ exports.initialize = function () {
     var topic = recipient_and_topic.split('-')[1];
     var recipient_color = color_data.pick_color();
     current_message_group.message_containers = [];
-    current_message_group.show_date_separator = false;
+    current_message_group.show_group_date_divider = false;
     current_message_group.display_recipient = stream_name;
     current_message_group.topic = topic;
     current_message_group.background_color = recipient_color;
@@ -41,7 +41,7 @@ exports.initialize = function () {
         current_message_group.message_containers = [];
         current_message_group.group_date_divider_html =
             timerender.render_date(time, prev_time, today)[0].outerHTML;
-        current_message_group.show_date_separator = true;
+        current_message_group.show_group_date_divider = true;
         current_message_group.display_recipient = stream_name;
         current_message_group.topic = topic;
         current_message_group.background_color = recipient_color;
