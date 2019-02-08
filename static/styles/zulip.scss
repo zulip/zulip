@@ -1190,7 +1190,8 @@ td.pointer {
     opacity: 1 !important;
     display: inline-flex;
     justify-content: space-between;
-    width: 27.86px;
+    width: 28px;
+    /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
     font-weight: bold;
     color: hsl(0, 100%, 50%);
     position: relative;
