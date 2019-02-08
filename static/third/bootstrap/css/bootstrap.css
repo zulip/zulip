@@ -2008,16 +2008,6 @@ table {
   vertical-align: bottom;
 }
 
-.table .json-api-example {
-  width: fit-content;
-  max-width: 300px;
-  word-wrap: break-word;
-}
-
-.table .json-api-example code {
-  white-space: pre-wrap;
-}
-
 .table caption + thead tr:first-child th,
 .table caption + thead tr:first-child td,
 .table colgroup + thead tr:first-child th,
