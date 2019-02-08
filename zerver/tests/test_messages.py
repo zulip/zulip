@@ -508,7 +508,7 @@ class InternalPrepTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        stream_name = 'Verona'
+        stream = get_stream('Verona', realm)
 
         with mock.patch('logging.exception') as m:
             internal_send_private_message(
@@ -536,9 +536,9 @@ class InternalPrepTest(ZulipTestCase):
             internal_send_stream_message(
                 realm=realm,
                 sender=cordelia,
-                stream_name=stream_name,
                 topic='whatever',
                 content=bad_content,
+                stream=stream
             )
 
         arg = m.call_args_list[0][0][0]
@@ -549,7 +549,7 @@ class InternalPrepTest(ZulipTestCase):
                 realm=realm,
                 sender_email=settings.ERROR_BOT,
                 recipient_type_name='stream',
-                recipients=stream_name,
+                recipients=stream.name,
                 topic_name='whatever',
                 content=bad_content,
             )
