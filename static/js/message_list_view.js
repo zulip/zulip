@@ -75,6 +75,14 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
+function render_group_display_date(group, message_container) {
+    var time = new XDate(message_container.msg.timestamp * 1000);
+    var today = new XDate();
+    var date_element = timerender.render_date(time, undefined, today)[0];
+
+    group.date = date_element.outerHTML;
+}
+
 function update_group_date_divider(group, message_container, prev) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     var today = new XDate();
@@ -150,12 +158,7 @@ function populate_group_from_message_container(group, message_container) {
     group.topic_links = util.get_topic_links(message_container.msg);
 
     set_topic_edit_properties(group, message_container.msg);
-
-    var time = new XDate(message_container.msg.timestamp * 1000);
-    var today = new XDate();
-    var date_element = timerender.render_date(time, undefined, today)[0];
-
-    group.date = date_element.outerHTML;
+    render_group_display_date(group, message_container);
 }
 
 MessageListView.prototype = {
