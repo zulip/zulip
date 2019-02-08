@@ -20,3 +20,9 @@ Desktop/browser instructions
 {tab|android}
 Android instructions
 {end_tabs}
+
+## Heading 3
+
+{start_tabs}
+Instructions for all platforms
+{end_tabs}

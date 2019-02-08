@@ -109,12 +109,21 @@ body {
     border-radius: 4px 4px 0px 0px;
 }
 
+.code-section.no-tabs ul.nav {
+    display: none;
+}
+
 .code-section .blocks {
     padding: 10px;
-
     border: 1px solid hsl(0, 0%, 87%);
+}
 
-    border-radius: 0px 4px 4px 4px;
+.code-section.has-tabs .blocks {
+    border-radius: 0px 6px 6px 6px;
+}
+
+.code-section.no-tabs .blocks {
+    border-radius: 6px;
 }
 
 /* The API tabbed content tends to have a lot of code blocks,
@@ -138,7 +147,8 @@ body {
     display: none;
 }
 
-.code-section .blocks > .active {
+.code-section.no-tabs .blocks > div,
+.code-section.has-tabs .blocks > .active {
     display: block;
 }
 
