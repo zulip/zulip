@@ -398,6 +398,9 @@ def main(options):
     setup_shell_profile('~/.bash_profile')
     setup_shell_profile('~/.zprofile')
 
+    # This needs to happen before anything that imports zproject.settings.
+    run(["scripts/setup/generate_secrets.py", "--development"])
+
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
@@ -436,8 +439,6 @@ def main(options):
         run(["tools/setup/build_pygments_data"])
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
-
-    run(["scripts/setup/generate_secrets.py", "--development"])
 
     update_authors_json_paths = ["tools/update-authors-json", "zerver/tests/fixtures/authors.json"]
     if file_or_package_hash_updated(update_authors_json_paths, "update_authors_json_hash", options.is_force):
