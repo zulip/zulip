@@ -1,3 +1,5 @@
+var Dict = require('../ts/dict').Dict;
+
 var stream_data = (function () {
 
 var exports = {};

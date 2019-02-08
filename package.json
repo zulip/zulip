@@ -7,6 +7,7 @@
   "dependencies": {
     "@types/node": "8.0.34",
     "@types/webpack": "4.4.0",
+    "@types/underscore": "1.8.9",
     "blueimp-md5": "2.10.0",
     "clipboard": "2.0.1",
     "css-hot-loader": "1.3.9",
