@@ -50,8 +50,9 @@ var user_search = function (opts) {
     };
 
     self.show_widget = function () {
-        // Hide user detail popover when the user wants to search.
-        popovers.hide_all();
+        // Hide all the popovers but not userlist sidebar
+        // when the user wants to search.
+        popovers.hide_all_except_userlist_sidebar();
         $widget.removeClass('notdisplayed');
     };
 
