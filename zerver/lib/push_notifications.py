@@ -189,16 +189,25 @@ def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict
                                                   kind=PushDeviceToken.GCM))
     send_android_push_notification(devices, data, options)
 
-def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> None:
+def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
-    Parse GCM options, raising an error if invalid.
+    Parse GCM options, supplying defaults, and raising an error if invalid.
+
+    Returns `priority`.
     """
+    priority = options.pop('priority', 'normal')
+    if priority not in ('normal', 'high'):
+        raise JsonableError(_("Invalid GCM option to bouncer: priority %r")
+                            % (priority,))
+
     if options:
         # We're strict about the API; there is no use case for a newer Zulip
         # server talking to an older bouncer, so we only need to provide
         # one-way compatibility.
         raise JsonableError(_("Invalid GCM options to bouncer: %s")
                             % (ujson.dumps(options),))
+
+    return priority  # when this grows a second option, can make it a tuple
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
@@ -213,8 +222,8 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         the GCM message.
     options: Additional options to control the GCM message sent, defined as
         part of the Zulip notification bouncer's API.  Including unrecognized
-        options is an error.  Currently no options are recognized, so this
-        parameter must be `{}`.
+        options is an error.  Permitted options are:
+          priority:  See upstream doc linked above.
     """
     if not gcm:
         logger.debug("Skipping sending a GCM push notification since "
@@ -222,12 +231,13 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         return
 
     reg_ids = [device.token for device in devices]
-    parse_gcm_options(options, data)
+    priority = parse_gcm_options(options, data)
     try:
         # See https://developers.google.com/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
         res = gcm.json_request(registration_ids=reg_ids,
+                               priority=priority,
                                data=data,
                                retries=10)
     except IOError as e:
