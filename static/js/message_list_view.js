@@ -93,6 +93,11 @@ function update_group_time_display(group, message_container, prev) {
     }
 }
 
+function clear_group_date_divider(group) {
+    group.show_date_separator = false;
+    group.show_date = undefined;
+}
+
 function update_timestr(message_container) {
     if (message_container.timestr === undefined) {
         var time = new XDate(message_container.msg.timestamp * 1000);
@@ -407,9 +412,7 @@ MessageListView.prototype = {
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
                 if (same_day(prev_msg_container, curr_msg_container)) {
-                    // Clear the date if it is the same as the last group
-                    second_group.show_date = false;
-                    second_group.show_date_separator = undefined;
+                    clear_group_date_divider(second_group);
                 } else {
                     // If we just sent the first message on a new day
                     // in a narrow, make sure we render a date separator.
