@@ -82,20 +82,21 @@ function update_group_time_display(group, message_container, prev) {
     if (prev !== undefined) {
         var prev_time = new XDate(prev.msg.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
-            // NB: show_date is HTML, inserted into the document without escaping.
-            group.show_date = timerender.render_date(time, prev_time, today)[0].outerHTML;
+            // NB: group_date_divider_html is HTML, inserted into the document without escaping.
+            group.group_date_divider_html = timerender.render_date(time, prev_time,
+                                                                   today)[0].outerHTML;
             group.show_date_separator = true;
         }
     } else {
         // Show the date in the recipient bar, but not a date separator bar.
         group.show_date_separator = false;
-        group.show_date = timerender.render_date(time, undefined, today)[0].outerHTML;
+        group.group_date_divider_html = timerender.render_date(time, undefined, today)[0].outerHTML;
     }
 }
 
 function clear_group_date_divider(group) {
     group.show_date_separator = false;
-    group.show_date = undefined;
+    group.group_date_divider_html = undefined;
 }
 
 function update_timestr(message_container) {
