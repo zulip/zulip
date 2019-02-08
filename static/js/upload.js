@@ -124,8 +124,11 @@ exports.options = function (config) {
         var filename = split_uri[split_uri.length - 1];
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
-        if (!compose_state.composing()) {
+        if (config.mode === 'compose' && !compose_state.composing()) {
             compose_actions.start('stream');
+        } else if (config.mode === 'edit' && document.activeElement !== textarea) {
+            // If we are editing, focus on the edit message box
+            textarea.focus();
         }
 
         var uri = make_upload_absolute(response.uri);
