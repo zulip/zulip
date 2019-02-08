@@ -102,7 +102,7 @@ class EmailChangeTestCase(ZulipTestCase):
         tokenized_no_reply_email = parseaddr(email_message.from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
-        activation_url = [s for s in body.split('\n') if s][4]
+        activation_url = [s for s in body.split('\n') if s][2]
         response = self.client_get(activation_url)
 
         self.assert_in_success_response(["This confirms that the email address"],
@@ -164,7 +164,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
         do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
 
-        activation_url = [s for s in body.split('\n') if s][4]
+        activation_url = [s for s in body.split('\n') if s][2]
         response = self.client_get(activation_url)
 
         self.assertEqual(response.status_code, 400)

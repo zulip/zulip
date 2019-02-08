@@ -1,9 +1,9 @@
 {% if realm_creation %}
-{% trans %}
+{% trans -%}
 {{ realm_name }} on Zulip: Your new organization details
-{% endtrans %}
+{%- endtrans %}
 {% else %}
-{% trans %}
+{% trans -%}
 {{ realm_name }} on Zulip: Your new account details
-{% endtrans %}
+{%- endtrans %}
 {% endif %}
