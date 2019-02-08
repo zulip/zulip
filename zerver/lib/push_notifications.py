@@ -193,6 +193,16 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     """
     Parse GCM options, supplying defaults, and raising an error if invalid.
 
+    The options permitted here form part of the Zulip notification
+    bouncer's API.  They are:
+
+    `priority`: Passed through to GCM; see upstream doc linked below.
+
+    Including unrecognized options is an error.
+
+    For details on options' semantics, see this GCM upstream doc:
+      https://developers.google.com/cloud-messaging/http-server-ref
+
     Returns `priority`.
     """
     priority = options.pop('priority', 'normal')
@@ -220,10 +230,8 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
 
     data: The JSON object (decoded) to send as the 'data' parameter of
         the GCM message.
-    options: Additional options to control the GCM message sent, defined as
-        part of the Zulip notification bouncer's API.  Including unrecognized
-        options is an error.  Permitted options are:
-          priority:  See upstream doc linked above.
+    options: Additional options to control the GCM message sent.
+        For details, see `parse_gcm_options`.
     """
     if not gcm:
         logger.debug("Skipping sending a GCM push notification since "
