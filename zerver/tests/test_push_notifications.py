@@ -1343,7 +1343,30 @@ class GCMTest(PushNotificationTest):
         data.update(kwargs)
         return data
 
-class GCMNotSetTest(GCMTest):
+class GCMParseOptionsTest(GCMTest):
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
+    @mock.patch('gcm.GCM.json_request')
+    def test_invalid_options(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
+                             mock_warning: mock.MagicMock) -> None:
+        data = self.get_gcm_data()
+        with self.assertRaises(JsonableError):
+            apn.send_android_push_notification_to_user(self.user_profile, data,
+                                                       {"invalid": True})
+        mock_send.assert_not_called()
+
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
+    @mock.patch('gcm.GCM.json_request')
+    def test_invalid_priority_value(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
+                                    mock_warning: mock.MagicMock) -> None:
+        data = self.get_gcm_data()
+        with self.assertRaises(JsonableError):
+            apn.send_android_push_notification_to_user(self.user_profile, data,
+                                                       {"priority": "invalid"})
+        mock_send.assert_not_called()
+
+class GCMSendTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
         apn.gcm = None
@@ -1352,7 +1375,6 @@ class GCMNotSetTest(GCMTest):
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
             "and ANDROID_GCM_API_KEY are both unset")
 
-class GCMIOErrorTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.gcm.json_request')
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     def test_json_request_raises_ioerror(self, mock_warn: mock.MagicMock,
@@ -1361,7 +1383,6 @@ class GCMIOErrorTest(GCMTest):
         apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_warn.assert_called_with('error')
 
-class GCMSuccessTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
@@ -1380,39 +1401,8 @@ class GCMSuccessTest(GCMTest):
         mock_warning.assert_not_called()
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
-    def test_invalid_options(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
-                             mock_warning: mock.MagicMock) -> None:
-        res = {}
-        res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
-        mock_send.return_value = res
-
-        data = self.get_gcm_data()
-        with self.assertRaises(JsonableError):
-            apn.send_android_push_notification_to_user(self.user_profile, data,
-                                                       {"invalid": True})
-        mock_send.assert_not_called()
-
-    @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('zerver.lib.push_notifications.logger.info')
-    @mock.patch('gcm.GCM.json_request')
-    def test_invalid_priority_value(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
-                                    mock_warning: mock.MagicMock) -> None:
-        res = {}
-        res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
-        mock_send.return_value = res
-
-        data = self.get_gcm_data()
-        with self.assertRaises(JsonableError):
-            apn.send_android_push_notification_to_user(self.user_profile, data,
-                                                       {"priority": "invalid"})
-        mock_send.assert_not_called()
-
-class GCMCanonicalTest(GCMTest):
-    @mock.patch('zerver.lib.push_notifications.logger.warning')
-    @mock.patch('gcm.GCM.json_request')
-    def test_equal(self, mock_send: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
+    def test_canonical_equal(self, mock_send: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
         res = {}
         res['canonical'] = {1: 1}
         mock_send.return_value = res
@@ -1424,8 +1414,8 @@ class GCMCanonicalTest(GCMTest):
 
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
-    def test_pushdevice_not_present(self, mock_send: mock.MagicMock,
-                                    mock_warning: mock.MagicMock) -> None:
+    def test_canonical_pushdevice_not_present(self, mock_send: mock.MagicMock,
+                                              mock_warning: mock.MagicMock) -> None:
         res = {}
         t1 = apn.hex_to_b64(u'1111')
         t2 = apn.hex_to_b64(u'3333')
@@ -1452,8 +1442,8 @@ class GCMCanonicalTest(GCMTest):
 
     @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
-    def test_pushdevice_different(self, mock_send: mock.MagicMock,
-                                  mock_info: mock.MagicMock) -> None:
+    def test_canonical_pushdevice_different(self, mock_send: mock.MagicMock,
+                                            mock_info: mock.MagicMock) -> None:
         res = {}
         old_token = apn.hex_to_b64(u'1111')
         new_token = apn.hex_to_b64(u'2222')
@@ -1476,7 +1466,6 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 0)
         self.assertEqual(get_count(u'2222'), 1)
 
-class GCMNotRegisteredTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.info')
     @mock.patch('gcm.GCM.json_request')
     def test_not_registered(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock) -> None:
@@ -1497,7 +1486,6 @@ class GCMNotRegisteredTest(GCMTest):
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
         self.assertEqual(get_count(u'1111'), 0)
 
-class GCMFailureTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
     def test_failure(self, mock_send: mock.MagicMock, mock_warn: mock.MagicMock) -> None:
