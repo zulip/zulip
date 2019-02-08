@@ -76,7 +76,6 @@ run_test('merge_message_groups', () => {
         return {
             message_containers: messages,
             message_group_id: _.uniqueId('test_message_group_'),
-            group_date_divider_html: 'some html',
         };
     }
 
@@ -181,6 +180,35 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.rerender_messages, []);
     }());
 
+    (function test_append_message_different_subject_and_days() {
+
+        var message1 = build_message_context({timestamp: 1000});
+        var message_group1 = build_message_group([
+            message1,
+        ]);
+
+        var message2 = build_message_context({topic: 'Test subject 2',
+                                              timestamp: 900000});
+        var message_group2 = build_message_group([
+            message2,
+        ]);
+
+        var list = build_list([message_group1]);
+        var result = list.merge_message_groups([message_group2], 'bottom');
+
+        assert_message_groups_list_equal(
+            list._message_groups,
+            [message_group1, message_group2]);
+        assert_message_groups_list_equal(result.append_groups, [message_group2]);
+        assert.deepEqual(result.prepend_groups, []);
+        assert.deepEqual(result.rerender_groups, []);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
+        assert.equal(
+            message_group2.group_date_divider_html,
+            '900000000 - 1000000');
+    }());
+
     (function test_append_message_different_day() {
 
         var message1 = build_message_context({timestamp: 1000});
@@ -196,15 +224,13 @@ run_test('merge_message_groups', () => {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'bottom');
 
-        assert(message_group2.group_date_divider_html);
-        assert_message_groups_list_equal(
-            list._message_groups,
-            [message_group1, message_group2]);
-        assert_message_groups_list_equal(result.append_groups, [message_group2]);
+        assert_message_groups_list_equal(list._message_groups, [message_group1]);
+        assert.deepEqual(result.append_groups, []);
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
-        assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.append_messages, [message2]);
+        assert.deepEqual(result.rerender_messages, [message1]);
+        assert(list._message_groups[0].message_containers[1].want_date_divider);
     }());
 
     (function test_append_message_historical() {
@@ -311,6 +337,36 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.rerender_messages, []);
     }());
 
+    (function test_prepend_message_different_subject_and_day() {
+
+        var message1 = build_message_context({timestamp: 900000});
+        var message_group1 = build_message_group([
+            message1,
+        ]);
+
+        var message2 = build_message_context({topic: 'Test Subject 2',
+                                              timestamp: 1000});
+        var message_group2 = build_message_group([
+            message2,
+        ]);
+
+        var list = build_list([message_group1]);
+        var result = list.merge_message_groups([message_group2], 'top');
+
+        // We should have a group date divider between the recipient blocks.
+        assert.equal(
+            message_group1.group_date_divider_html,
+            '900000000 - 1000000');
+        assert_message_groups_list_equal(
+            list._message_groups,
+            [message_group2, message_group1]);
+        assert.deepEqual(result.append_groups, []);
+        assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
+        assert.deepEqual(result.rerender_groups, [message_group1]);
+        assert.deepEqual(result.append_messages, []);
+        assert.deepEqual(result.rerender_messages, []);
+    }());
+
     (function test_prepend_message_different_day() {
 
         var message1 = build_message_context({timestamp: 900000});
@@ -326,15 +382,16 @@ run_test('merge_message_groups', () => {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'top');
 
+        // We should have a group date divider within the single recipient block.
         assert.equal(
-            message_group1.group_date_divider_html,
+            message_group2.message_containers[1].date_divider_html,
             '900000000 - 1000000');
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1]);
+            [message_group2]);
         assert.deepEqual(result.append_groups, []);
-        assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
-        assert_message_groups_list_equal(result.rerender_groups, [message_group1]);
+        assert.deepEqual(result.prepend_groups, []);
+        assert_message_groups_list_equal(result.rerender_groups, [message_group2]);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages, []);
     }());
