@@ -1354,6 +1354,10 @@ class GCMParseOptionsTest(GCMTest):
 
     def test_default_priority(self) -> None:
         self.assertEqual(
+            "high", apn.parse_gcm_options({}, self.get_gcm_data(event="message")))
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({}, self.get_gcm_data(event="remove")))
+        self.assertEqual(
             "normal", apn.parse_gcm_options({}, self.get_gcm_data()))
 
     def test_explicit_priority(self) -> None:
