@@ -2213,3 +2213,13 @@ input.new-organization-button {
     margin-top: 20px;
     padding-right: 10px;
 }
+
+.table .json-api-example {
+    width: fit-content;
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.table .json-api-example code {
+    white-space: pre-wrap;
+}
