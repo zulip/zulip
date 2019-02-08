@@ -710,7 +710,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                  {'gcm': True,
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
-                                                 {})
+                                                 {'priority': 'normal'})
 
     @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_non_bouncer_push_remove(self) -> None:
@@ -739,7 +739,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                  {'gcm': True,
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
-                                                 {})
+                                                 {'priority': 'normal'})
 
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
