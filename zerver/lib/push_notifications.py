@@ -591,7 +591,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
         'event': 'remove',
         'zulip_message_id': message_id,  # message_id is reserved for CCS
     })
-    gcm_options = {}  # type: Dict[str, Any]
+    gcm_options = {'priority': 'normal'}  # type: Dict[str, Any]
 
     if uses_notification_bouncer():
         try:
