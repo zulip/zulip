@@ -691,6 +691,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # will be invalid for various values of
     # Realm.email_address_visibility; for that, see delivery_email.
     email = models.EmailField(blank=False, db_index=True)  # type: str
+    needs_to_change_password = models.BooleanField(default=False)   # type: bool
 
     # delivery_email is just used for sending emails.  In almost all
     # organizations, it matches `email`; this field is part of our
@@ -866,6 +867,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         night_mode=bool,
         translate_emoticons=bool,
         starred_message_counts=bool,
+        needs_to_change_password=bool,
     )
 
     notification_setting_types = dict(

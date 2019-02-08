@@ -23,6 +23,7 @@ from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.domains import validate_domain
 from zerver.lib.video_calls import request_zoom_video_call_url
+from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.models import Realm, UserProfile
 from zerver.forms import check_subdomain_available as check_subdomain
 from confirmation.models import get_object_from_key, Confirmation, ConfirmationKeyException
@@ -205,3 +206,10 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
     do_reactivate_realm(realm)
     context = {"realm": realm}
     return render(request, 'zerver/realm_reactivation.html', context)
+
+@require_realm_admin
+def reset_passwords(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    realm = user_profile.realm
+    UserProfile.objects.filter(realm=realm).update(needs_to_change_password=True)
+    delete_realm_user_sessions(realm)
+    return json_success()

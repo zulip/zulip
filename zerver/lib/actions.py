@@ -3079,7 +3079,8 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
 def do_change_password(user_profile: UserProfile, password: str, commit: bool=True) -> None:
     user_profile.set_password(password)
     if commit:
-        user_profile.save(update_fields=["password"])
+        user_profile.needs_to_change_password = False
+        user_profile.save(update_fields=["password", "needs_to_change_password"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_PASSWORD_CHANGED,

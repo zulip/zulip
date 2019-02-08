@@ -483,6 +483,19 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
 
+    def test_reset_passwords(self) -> None:
+        realm = get_realm('zulip')
+        email = 'iago@zulip.com'
+        self.login(email)
+        users_before_reset = UserProfile.objects.filter(realm=realm)
+        for user in users_before_reset:
+            self.assertFalse(user.needs_to_change_password)
+        result = self.client_post('/json/realm/reset_passwords')
+        self.assert_json_success(result)
+        users_after_reset = UserProfile.objects.filter(realm=realm)
+        for user in users_after_reset:
+            self.assertTrue(user.needs_to_change_password)
+
 class RealmAPITest(ZulipTestCase):
 
     def setUp(self) -> None:

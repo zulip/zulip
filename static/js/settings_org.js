@@ -1171,6 +1171,28 @@ exports.build_page = function () {
             },
         });
     });
+
+    $('#reset_passwords_button').on('click', function (e) {
+        if (!overlays.is_modal_open()) {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.open_modal('reset-passwords-modal');
+        }
+    });
+
+    $('#do_reset_passwords_button').on('click', function () {
+        if (overlays.is_modal_open()) {
+            overlays.close_modal('reset-passwords-modal');
+        }
+        channel.post({
+            url: '/json/realm/reset_passwords',
+            error: function (xhr) {
+                ui_report.error(
+                    i18n.t("Failed"), xhr, $('#reset-passwords-status').expectOne()
+                );
+            },
+        });
+    });
 };
 
 return exports;

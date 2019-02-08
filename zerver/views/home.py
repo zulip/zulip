@@ -10,7 +10,7 @@ from django.utils.cache import patch_cache_control
 from zerver.context_processors import get_realm_from_request
 from zerver.decorator import zulip_login_required, \
     redirect_to_login
-from zerver.forms import ToSForm
+from zerver.forms import ToSForm, generate_password_reset_url
 from zerver.models import Message, UserProfile, \
     Realm, UserMessage, \
     PreregistrationUser, \
@@ -27,7 +27,9 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from django.contrib.auth.tokens import default_token_generator
 from two_factor.utils import default_device
+from django.contrib.auth.models import AnonymousUser
 
 import calendar
 import logging
@@ -74,6 +76,14 @@ def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
     return bot_types
 
 def home(request: HttpRequest) -> HttpResponse:
+    user_profile = request.user
+    is_anonymous_user = isinstance(user_profile, AnonymousUser)
+    if (user_profile):
+        if (not is_anonymous_user and user_profile.needs_to_change_password):
+            redirect_url = generate_password_reset_url(user_profile=user_profile,
+                                                       token_generator=default_token_generator)
+            return HttpResponseRedirect(redirect_url, status=302)
+
     if (settings.DEVELOPMENT and not settings.TEST_SUITE and
             os.path.exists('var/handlebars-templates/compile.error')):
         response = render(request, 'zerver/handlebars_compilation_failed.html')
