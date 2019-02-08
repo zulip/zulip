@@ -85,17 +85,17 @@ function update_group_time_display(group, message_container, prev) {
             // NB: group_date_divider_html is HTML, inserted into the document without escaping.
             group.group_date_divider_html = timerender.render_date(time, prev_time,
                                                                    today)[0].outerHTML;
-            group.show_date_separator = true;
+            group.show_group_date_divider = true;
         }
     } else {
         // Show the date in the recipient bar, but not a date separator bar.
-        group.show_date_separator = false;
+        group.show_group_date_divider = false;
         group.group_date_divider_html = timerender.render_date(time, undefined, today)[0].outerHTML;
     }
 }
 
 function clear_group_date_divider(group) {
-    group.show_date_separator = false;
+    group.show_group_date_divider = false;
     group.group_date_divider_html = undefined;
 }
 
