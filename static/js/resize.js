@@ -58,7 +58,8 @@ function get_new_heights() {
 
     res.bottom_sidebar_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"), 10);
+                                - parseInt($(".bottom_sidebar").css("marginTop"), 10)
+                                - parseInt($(".bottom_sidebar").css("marginBottom"), 10);
 
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
@@ -123,7 +124,8 @@ function left_userlist_get_new_heights() {
 
     res.bottom_sidebar_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"), 10);
+                                - parseInt($(".bottom_sidebar").css("marginTop"), 10)
+                                - parseInt($(".bottom_sidebar").css("marginBottom"), 10);
 
 
     res.total_leftlist_height = res.bottom_sidebar_height
