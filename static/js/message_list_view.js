@@ -107,6 +107,31 @@ function clear_group_date_divider(group) {
     group.group_date_divider_html = undefined;
 }
 
+function clear_message_date_divider(msg) {
+    // see update_message_date_divider for how
+    // these get set
+    msg.want_date_divider = false;
+    msg.date_divider_html = undefined;
+}
+
+function update_message_date_divider(opts) {
+    var prev_msg_container = opts.prev_msg_container;
+    var curr_msg_container = opts.curr_msg_container;
+
+    if (!prev_msg_container || same_day(curr_msg_container, prev_msg_container)) {
+        clear_message_date_divider(curr_msg_container);
+        return;
+    }
+
+    var prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
+    var curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
+    var today = new XDate();
+
+    curr_msg_container.want_date_divider = true;
+    curr_msg_container.date_divider_html =
+        timerender.render_date(curr_time, prev_time, today)[0].outerHTML;
+}
+
 function set_timestr(message_container) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
@@ -239,15 +264,19 @@ MessageListView.prototype = {
             message_container.include_footer    = false;
 
             if (same_recipient(prev, message_container) && self.collapse_messages &&
-                prev.msg.historical === message_container.msg.historical &&
-                same_day(prev, message_container)) {
+                prev.msg.historical === message_container.msg.historical) {
                 add_message_container_to_group(message_container);
+                update_message_date_divider({
+                    prev_msg_container: prev,
+                    curr_msg_container: message_container,
+                });
             } else {
                 finish_group();
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
                 update_group_date_divider(current_group, message_container, prev);
+                clear_message_date_divider(message_container);
 
                 message_container.include_recipient = true;
                 message_container.subscribed = false;
@@ -279,6 +308,7 @@ MessageListView.prototype = {
             message_container.include_sender = true;
             if (!message_container.include_recipient &&
                 !prev.status_message &&
+                same_day(prev, message_container) &&
                 same_sender(prev, message_container)) {
                 message_container.include_sender = false;
             }
@@ -307,10 +337,10 @@ MessageListView.prototype = {
 
     join_message_groups: function (first_group, second_group) {
         // join_message_groups will combine groups if they have the
-        // same_recipient on the same_day and the view supports collapsing
-        // otherwise it may add a subscription_marker if required.
-        // It returns true if the two groups were joined in to one and
-        // the second_group should be ignored.
+        // same_recipient and the view supports collapsing, otherwise
+        // it may add a subscription_marker if required.  It returns
+        // true if the two groups were joined in to one and the
+        // second_group should be ignored.
         if (first_group === undefined || second_group === undefined) {
             return false;
         }
@@ -319,9 +349,9 @@ MessageListView.prototype = {
 
         // Join two groups into one.
         if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container) &&
-            same_day(last_msg_container, first_msg_container) &&
             last_msg_container.msg.historical === first_msg_container.msg.historical) {
             if (!last_msg_container.status_message && !first_msg_container.msg.is_me_message
+                && same_day(last_msg_container, first_msg_container)
                 && same_sender(last_msg_container, first_msg_container)) {
                 first_msg_container.include_sender = false;
             }
@@ -382,6 +412,14 @@ MessageListView.prototype = {
         }
 
         var was_joined = this.join_message_groups(first_group, second_group);
+        if (was_joined) {
+            update_message_date_divider({
+                prev_msg_container: prev_msg_container,
+                curr_msg_container: curr_msg_container,
+            });
+        } else {
+            clear_message_date_divider(curr_msg_container);
+        }
 
         if (where === 'top') {
             if (was_joined) {
