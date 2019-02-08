@@ -646,7 +646,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send.assert_called_with(user_profile.id,
                                          {'apns': True},
                                          {'gcm': True},
-                                         {},
+                                         {'priority': 'high'},
                                          )
 
     def test_non_bouncer_push(self) -> None:
@@ -688,7 +688,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
                                                {'apns': True})
-            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
+            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {'priority': 'high'})
             mock_push_notifications.assert_called_once()
 
     @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
@@ -799,7 +799,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_apple.assert_called_with(self.user_profile.id,
                                                apple_devices,
                                                {'apns': True})
-            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {})
+            mock_send_android.assert_called_with(android_devices, {'gcm': True}, {'priority': 'high'})
             mock_push_notifications.assert_called_once()
 
 class TestAPNs(PushNotificationTest):
