@@ -44,7 +44,7 @@ from zerver.lib.remote_server import send_analytics_to_remote_server, \
     build_analytics_data, PushNotificationBouncerException
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import (
-    ZulipTestCase,
+    TestCase, ZulipTestCase,
 )
 
 from zilencer.models import RemoteZulipServer, RemotePushDeviceToken, \
@@ -1323,7 +1323,30 @@ class TestPushApi(ZulipTestCase):
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
             self.assertEqual(len(tokens), 0)
 
-class GCMTest(PushNotificationTest):
+class GCMParseOptionsTest(TestCase):
+    def test_invalid_option(self) -> None:
+        with self.assertRaises(JsonableError):
+            apn.parse_gcm_options({"invalid": True}, {})
+
+    def test_invalid_priority_value(self) -> None:
+        with self.assertRaises(JsonableError):
+            apn.parse_gcm_options({"priority": "invalid"}, {})
+
+    def test_default_priority(self) -> None:
+        self.assertEqual(
+            "high", apn.parse_gcm_options({}, {"event": "message"}))
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({}, {"event": "remove"}))
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({}, {}))
+
+    def test_explicit_priority(self) -> None:
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({"priority": "normal"}, {}))
+        self.assertEqual(
+            "high", apn.parse_gcm_options({"priority": "high"}, {}))
+
+class GCMSendTest(PushNotificationTest):
     def setUp(self) -> None:
         super().setUp()
         apn.gcm = gcm.GCM('fake key')
@@ -1343,30 +1366,6 @@ class GCMTest(PushNotificationTest):
         data.update(kwargs)
         return data
 
-class GCMParseOptionsTest(GCMTest):
-    def test_invalid_option(self) -> None:
-        with self.assertRaises(JsonableError):
-            apn.parse_gcm_options({"invalid": True}, self.get_gcm_data())
-
-    def test_invalid_priority_value(self) -> None:
-        with self.assertRaises(JsonableError):
-            apn.parse_gcm_options({"priority": "invalid"}, self.get_gcm_data())
-
-    def test_default_priority(self) -> None:
-        self.assertEqual(
-            "high", apn.parse_gcm_options({}, self.get_gcm_data(event="message")))
-        self.assertEqual(
-            "normal", apn.parse_gcm_options({}, self.get_gcm_data(event="remove")))
-        self.assertEqual(
-            "normal", apn.parse_gcm_options({}, self.get_gcm_data()))
-
-    def test_explicit_priority(self) -> None:
-        self.assertEqual(
-            "normal", apn.parse_gcm_options({"priority": "normal"}, self.get_gcm_data()))
-        self.assertEqual(
-            "high", apn.parse_gcm_options({"priority": "high"}, self.get_gcm_data()))
-
-class GCMSendTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
         apn.gcm = None
