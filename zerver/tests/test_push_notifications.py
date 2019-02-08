@@ -1394,6 +1394,21 @@ class GCMSuccessTest(GCMTest):
                                                        {"invalid": True})
         mock_send.assert_not_called()
 
+    @mock.patch('zerver.lib.push_notifications.logger.warning')
+    @mock.patch('zerver.lib.push_notifications.logger.info')
+    @mock.patch('gcm.GCM.json_request')
+    def test_invalid_priority_value(self, mock_send: mock.MagicMock, mock_info: mock.MagicMock,
+                                    mock_warning: mock.MagicMock) -> None:
+        res = {}
+        res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
+        mock_send.return_value = res
+
+        data = self.get_gcm_data()
+        with self.assertRaises(JsonableError):
+            apn.send_android_push_notification_to_user(self.user_profile, data,
+                                                       {"priority": "invalid"})
+        mock_send.assert_not_called()
+
 class GCMCanonicalTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.warning')
     @mock.patch('gcm.GCM.json_request')
