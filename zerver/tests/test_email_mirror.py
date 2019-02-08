@@ -54,24 +54,54 @@ class TestEncodeDecode(ZulipTestCase):
         self.assertTrue(email_address.endswith('@testserver'))
         tup = decode_email_address(email_address)
         assert tup is not None
-        (decoded_stream_name, token) = tup
+        (decoded_stream_name, token, show_sender) = tup
+        self.assertFalse(show_sender)
         self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
-        email_address = email_address.replace('+', '.')
-        tup = decode_email_address(email_address)
+        parts = email_address.split('@')
+        parts[0] += "+show-sender"
+        email_address_show = '@'.join(parts)
+        tup = decode_email_address(email_address_show)
         assert tup is not None
-        (decoded_stream_name, token) = tup
+        (decoded_stream_name, token, show_sender) = tup
+        self.assertTrue(show_sender)
+        self.assertEqual(decoded_stream_name, stream_name)
+        self.assertEqual(token, stream.email_token)
+
+        email_address_dots = email_address.replace('+', '.')
+        tup = decode_email_address(email_address_dots)
+        assert tup is not None
+        (decoded_stream_name, token, show_sender) = tup
+        self.assertFalse(show_sender)
+        self.assertEqual(decoded_stream_name, stream_name)
+        self.assertEqual(token, stream.email_token)
+
+        email_address_dots_show = email_address_show.replace('+', '.')
+        tup = decode_email_address(email_address_dots_show)
+        assert tup is not None
+        (decoded_stream_name, token, show_sender) = tup
+        self.assertTrue(show_sender)
         self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
         email_address = email_address.replace('@testserver', '@zulip.org')
+        email_address_show = email_address_show.replace('@testserver', '@zulip.org')
         self.assertEqual(decode_email_address(email_address), None)
+        self.assertEqual(decode_email_address(email_address_show), None)
 
         with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
             tup = decode_email_address(email_address)
             assert tup is not None
-            (decoded_stream_name, token) = tup
+            (decoded_stream_name, token, show_sender) = tup
+            self.assertFalse(show_sender)
+            self.assertEqual(decoded_stream_name, stream_name)
+            self.assertEqual(token, stream.email_token)
+
+            tup = decode_email_address(email_address_show)
+            assert tup is not None
+            (decoded_stream_name, token, show_sender) = tup
+            self.assertTrue(show_sender)
             self.assertEqual(decoded_stream_name, stream_name)
             self.assertEqual(token, stream.email_token)
 
@@ -206,6 +236,30 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
+    def test_receive_stream_email_show_sender_success(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+        parts = stream_to_address.split('@')
+        parts[0] += "+show-sender"
+        stream_to_address = '@'.join(parts)
+
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "From: %s\n%s" % (self.example_email('hamlet'),
+                                                            "TestStreamEmailMessages Body"))
+        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self) -> None:

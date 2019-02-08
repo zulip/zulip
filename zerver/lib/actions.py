@@ -4465,20 +4465,28 @@ def get_email_gateway_message_string_from_address(address: str) -> Optional[str]
 
     return msg_string
 
-def decode_email_address(email: str) -> Optional[Tuple[str, str]]:
-    # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
+def decode_email_address(email: str) -> Optional[Tuple[str, str, bool]]:
+    # Perform the reverse of encode_email_address. Returns a tuple of
+    # (streamname, email_token, show_sender)
     msg_string = get_email_gateway_message_string_from_address(email)
-
     if msg_string is None:
         return None
-    elif '.' in msg_string:
+
+    if msg_string.endswith(('+show-sender', '.show-sender')):
+        show_sender = True
+        msg_string = msg_string[:-12]  # strip "+show-sender"
+    else:
+        show_sender = False
+
+    if '.' in msg_string:
         # Workaround for Google Groups and other programs that don't accept emails
         # that have + signs in them (see Trac #2102)
         encoded_stream_name, token = msg_string.split('.')
     else:
         encoded_stream_name, token = msg_string.split('+')
+
     stream_name = re.sub(r"%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
-    return stream_name, token
+    return stream_name, token, show_sender
 
 SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import logging
 import re
@@ -133,7 +133,8 @@ def mark_missed_message_address_as_used(address: str) -> None:
         redis_client.delete(key)
         raise ZulipEmailForwardError('Missed message address has already been used')
 
-def construct_zulip_body(message: message.Message, realm: Realm) -> str:
+def construct_zulip_body(message: message.Message, realm: Realm,
+                         show_sender: bool=False) -> str:
     body = extract_body(message)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
@@ -142,6 +143,11 @@ def construct_zulip_body(message: message.Message, realm: Realm) -> str:
     body = body.strip()
     if not body:
         body = '(No email body)'
+
+    if show_sender:
+        sender = message.get("From")
+        body = "From: %s\n%s" % (sender, body)
+
     return body
 
 def send_to_missed_message_address(address: str, message: message.Message) -> None:
@@ -282,16 +288,16 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> st
 
     return "\n".join(attachment_links)
 
-def extract_and_validate(email: str) -> Stream:
+def extract_and_validate(email: str) -> Tuple[Stream, bool]:
     temp = decode_email_address(email)
     if temp is None:
         raise ZulipEmailForwardError("Malformed email recipient " + email)
-    stream_name, token = temp
+    stream_name, token, show_sender = temp
 
     if not valid_stream(stream_name, token):
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return Stream.objects.get(email_token=token)
+    return Stream.objects.get(email_token=token), show_sender
 
 def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
@@ -322,8 +328,8 @@ def strip_from_subject(subject: str) -> str:
 
 def process_stream_message(to: str, subject: str, message: message.Message,
                            debug_info: Dict[str, Any]) -> None:
-    stream = extract_and_validate(to)
-    body = construct_zulip_body(message, stream.realm)
+    stream, show_sender = extract_and_validate(to)
+    body = construct_zulip_body(message, stream.realm, show_sender)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
