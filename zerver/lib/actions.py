@@ -2400,10 +2400,18 @@ def internal_send_private_message(realm: Realm,
         return
     do_send_messages([message])
 
-def internal_send_stream_message(realm: Realm, sender: UserProfile, stream_name: str,
-                                 topic: str, content: str) -> None:
-    message = internal_prep_stream_message(realm, sender, topic,
-                                           content, stream_name=stream_name)
+def internal_send_stream_message(
+        realm: Realm, sender: UserProfile,
+        topic: str, content: str,
+        stream_name: Optional[str]=None,
+        stream: Optional[Stream]=None
+) -> None:
+    message = internal_prep_stream_message(
+        realm, sender, topic,
+        content, stream_name=stream_name,
+        stream=stream
+    )
+
     if message is None:
         return
     do_send_messages([message])
@@ -3443,11 +3451,11 @@ def do_rename_stream(stream: Stream,
     internal_send_stream_message(
         stream.realm,
         sender,
-        new_name,
         "welcome",
         "_@**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
                                                          user_profile.id,
-                                                         old_name, new_name)
+                                                         old_name, new_name),
+        stream=stream
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.
