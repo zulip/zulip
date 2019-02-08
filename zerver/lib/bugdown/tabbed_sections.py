@@ -10,7 +10,7 @@ END_TABBED_SECTION_REGEX = re.compile(r'^\{end_tabs\}$')
 TAB_CONTENT_REGEX = re.compile(r'^\{tab\|\s*(.+?)\s*\}$')
 
 CODE_SECTION_TEMPLATE = """
-<div class="code-section" markdown="1">
+<div class="code-section {tab_class}" markdown="1">
 {nav_bar}
 <div class="blocks">
 {blocks}
@@ -65,10 +65,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def run(self, lines: List[str]) -> List[str]:
         tab_section = self.parse_tabs(lines)
         while tab_section:
+            if 'tabs' in tab_section:
+                tab_class = 'has-tabs'
+            else:
+                tab_class = 'no-tabs'
+                tab_section['tabs'] = [{'tab_name': 'null_tab',
+                                        'start': tab_section['start_tabs_index']}]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
             rendered_tabs = CODE_SECTION_TEMPLATE.format(
-                nav_bar=nav_bar, blocks=content_blocks)
+                tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks)
 
             start = tab_section['start_tabs_index']
             end = tab_section['end_tabs_index'] + 1
