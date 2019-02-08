@@ -76,7 +76,7 @@ run_test('merge_message_groups', () => {
         return {
             message_containers: messages,
             message_group_id: _.uniqueId('test_message_group_'),
-            show_date: true,
+            group_date_divider_html: 'some html',
         };
     }
 
@@ -170,7 +170,7 @@ run_test('merge_message_groups', () => {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'bottom');
 
-        assert(!message_group2.show_date);
+        assert(!message_group2.group_date_divider_html);
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group1, message_group2]);
@@ -196,7 +196,7 @@ run_test('merge_message_groups', () => {
         var list = build_list([message_group1]);
         var result = list.merge_message_groups([message_group2], 'bottom');
 
-        assert(message_group2.show_date);
+        assert(message_group2.group_date_divider_html);
         assert_message_groups_list_equal(
             list._message_groups,
             [message_group1, message_group2]);
@@ -327,7 +327,7 @@ run_test('merge_message_groups', () => {
         var result = list.merge_message_groups([message_group2], 'top');
 
         assert.equal(
-            message_group1.show_date,
+            message_group1.group_date_divider_html,
             '900000000 - 1000000');
         assert_message_groups_list_equal(
             list._message_groups,
