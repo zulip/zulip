@@ -302,7 +302,7 @@ class BugdownTest(ZulipTestCase):
             else:
                 converted = bugdown_convert(test['input'])
 
-            with self.subTest(test=test):    
+            with self.subTest(test=test):
                 print("Running Bugdown test %s" % (name,))
                 self.assertEqual(converted, test['expected_output'])
 
