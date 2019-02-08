@@ -16,6 +16,7 @@ from zerver.lib.actions import decode_email_address, get_email_gateway_message_s
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.streams import get_stream_by_id
 from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
 from zerver.lib.send_email import FromAddress
@@ -154,22 +155,25 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
 
     user_profile = get_user_profile_by_id(user_profile_id)
     recipient = Recipient.objects.get(id=recipient_id)
-    display_recipient = get_display_recipient(recipient)
 
     body = construct_zulip_body(message, user_profile.realm)
 
     if recipient.type == Recipient.STREAM:
-        assert isinstance(display_recipient, str)
-        recipient_str = display_recipient
-        internal_send_stream_message(user_profile.realm, user_profile, recipient_str,
-                                     subject_b.decode('utf-8'), body)
+        stream = get_stream_by_id(recipient.type_id)
+        internal_send_stream_message(
+            user_profile.realm, user_profile,
+            subject_b.decode('utf-8'), body,
+            stream=stream
+        )
     elif recipient.type == Recipient.PERSONAL:
+        display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)
         recipient_str = display_recipient[0]['email']
         recipient_user = get_user(recipient_str, user_profile.realm)
         internal_send_private_message(user_profile.realm, user_profile,
                                       recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
+        display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)
         emails = [user_dict['email'] for user_dict in display_recipient]
         recipient_str = ', '.join(emails)
