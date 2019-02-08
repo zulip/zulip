@@ -1035,7 +1035,8 @@ exports.any_active = function () {
         $("[class^='column-'].expanded").length;
 };
 
-exports.hide_all = function () {
+// This function will hide all the popovers but not userlist sidebar.
+exports.hide_all_except_userlist_sidebar = function () {
     $('.has_popover').removeClass('has_popover has_actions_popover has_emoji_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
@@ -1044,7 +1045,6 @@ exports.hide_all = function () {
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
     popovers.hide_user_sidebar_popover();
-    popovers.hide_userlist_sidebar();
     popovers.hide_mobile_message_buttons_popover();
     stream_popover.restore_stream_list_size();
     popovers.hide_user_profile();
@@ -1056,6 +1056,12 @@ exports.hide_all = function () {
         }
     });
     list_of_popovers = [];
+};
+
+// This function will hide all the popovers plus userlist sidebar.
+exports.hide_all = function () {
+    popovers.hide_userlist_sidebar();
+    popovers.hide_all_except_userlist_sidebar();
 };
 
 exports.set_userlist_placement = function (placement) {
