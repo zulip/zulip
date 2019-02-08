@@ -47,9 +47,14 @@
 #stream_filters {
     overflow: visible;
     /* The -1px here prevents the scrollbar from going above the top of the container */
-    margin: -1px 0px 22px 0px;
+    margin-top: -1px;
+    margin-bottom: 18px;
     padding: 0;
     font-weight: normal;
+}
+
+.bottom_sidebar {
+    margin-bottom: 4px;
 }
 
 .left-sidebar li {
