@@ -239,7 +239,7 @@ header
 
 <h1 id="heading">Heading</h1>
 <p>
-  <div class="code-section" markdown="1">
+  <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
       <li data-language="ios">iOS</li>
       <li data-language="desktop-web">Desktop/Web</li>
@@ -257,7 +257,7 @@ header
 
 <h2 id="heading-2">Heading 2</h2>
 <p>
-  <div class="code-section" markdown="1">
+  <div class="code-section has-tabs" markdown="1">
     <ul class="nav">
       <li data-language="desktop-web">Desktop/Web</li>
       <li data-language="android">Android</li>
@@ -268,6 +268,20 @@ header
       <p></div>
       <div data-language="android" markdown="1"></p>
         <p>Android instructions</p>
+      <p></div>
+    </div>
+  </div>
+</p>
+
+<h2 id="heading-3">Heading 3</h2>
+<p>
+  <div class="code-section no-tabs" markdown="1">
+    <ul class="nav">
+      <li data-language="null_tab">None</li>
+    </ul>
+    <div class="blocks">
+      <div data-language="null_tab" markdown="1"></p>
+        <p>Instructions for all platforms</p>
       <p></div>
     </div>
   </div>
