@@ -94,27 +94,44 @@ body {
 
 .code-section ul.nav li {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 5px 14px;
     margin: 0;
-
-    border: 1px solid hsl(0, 0%, 87%);
-    border-bottom: none;
-    border-radius: 4px 4px 0px 0px;
 
     cursor: pointer;
 }
 
 .code-section ul.nav li.active {
     color: hsl(176, 46%, 41%);
+    margin-bottom: -1px;
+
+    border: 1px solid hsl(0, 0%, 87%);
+    border-bottom: 1px solid hsl(0, 0%, 100%);
+    border-radius: 4px 4px 0px 0px;
 }
 
 .code-section .blocks {
-    padding: 20px;
+    padding: 10px;
 
-    background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
 
     border-radius: 0px 4px 4px 4px;
+}
+
+/* The API tabbed content tends to have a lot of code blocks,
+   which look nicer against a different background */
+.api-center .code-section .blocks {
+    background-color: hsl(0, 0%, 98%);
+}
+
+.api-center .code-section ul.nav li.active {
+    background-color: hsl(0, 0%, 98%);
+    border-bottom: 1px solid hsl(0, 0%, 98%);
+}
+
+/* The Help Center tabbed content tends to be a lot short sentences.
+   We also want the Help Center tabbed content to pop more. */
+.help-center .code-section .blocks {
+    max-width: 500px;
 }
 
 .code-section .blocks > div {
@@ -123,6 +140,10 @@ body {
 
 .code-section .blocks > .active {
     display: block;
+}
+
+.markdown .code-section ol {
+    margin-left: 15px;
 }
 
 .digest-container {
