@@ -1367,8 +1367,9 @@ class GCMSendTest(PushNotificationTest):
         return data
 
     @mock.patch('zerver.lib.push_notifications.logger.debug')
-    def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
-        apn.gcm = None
+    @mock.patch('zerver.lib.push_notifications.gcm')
+    def test_gcm_is_none(self, mock_gcm: mock.MagicMock, mock_debug: mock.MagicMock) -> None:
+        mock_gcm.__bool__.return_value = False
         apn.send_android_push_notification_to_user(self.user_profile, {}, {})
         mock_debug.assert_called_with(
             "Skipping sending a GCM push notification since PUSH_NOTIFICATION_BOUNCER_URL "
