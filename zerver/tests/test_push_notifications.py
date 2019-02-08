@@ -393,23 +393,6 @@ class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user('hamlet')
-        self.tokens = [u'aaaa', u'bbbb']
-        for token in self.tokens:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.APNS,
-                token=hex_to_b64(token),
-                user=self.user_profile,
-                ios_app_id=settings.ZULIP_IOS_APP_ID)
-
-        self.remote_tokens = [u'cccc']
-        for token in self.remote_tokens:
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(token),
-                user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
-            )
-
         self.sending_client = get_client('test')
         self.sender = self.example_user('hamlet')
 
@@ -439,6 +422,42 @@ class PushNotificationTest(BouncerTestCase):
             mock_get.return_value = mock_apns
             yield mock_apns
 
+    def setup_apns_tokens(self) -> None:
+        self.tokens = [u'aaaa', u'bbbb']
+        for token in self.tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.APNS,
+                token=hex_to_b64(token),
+                user=self.user_profile,
+                ios_app_id=settings.ZULIP_IOS_APP_ID)
+
+        self.remote_tokens = [u'cccc']
+        for token in self.remote_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=hex_to_b64(token),
+                user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+
+    def setup_gcm_tokens(self) -> None:
+        self.gcm_tokens = [u'1111', u'2222']
+        for token in self.gcm_tokens:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.GCM,
+                token=hex_to_b64(token),
+                user=self.user_profile,
+                ios_app_id=None)
+
+        self.remote_gcm_tokens = [u'dddd']
+        for token in self.remote_gcm_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=hex_to_b64(token),
+                user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
@@ -458,14 +477,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         return result
 
     def test_end_to_end(self) -> None:
-        remote_gcm_tokens = [u'dddd']
-        for token in remote_gcm_tokens:
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
-            )
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
 
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
@@ -516,14 +529,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
 
     def test_end_to_end_connection_error(self) -> None:
-        remote_gcm_tokens = [u'dddd']
-        for token in remote_gcm_tokens:
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user_id=self.user_profile.id,
-                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
-            )
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
 
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
@@ -668,17 +675,13 @@ class HandlePushNotificationTest(PushNotificationTest):
                                          )
 
     def test_non_bouncer_push(self) -> None:
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message
         )
-
-        for token in [u'dddd']:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user=self.user_profile)
 
         android_devices = list(
             PushDeviceToken.objects.filter(user=self.user_profile,
@@ -732,17 +735,13 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_non_bouncer_push_remove(self) -> None:
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message
         )
-
-        for token in [u'dddd']:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user=self.user_profile)
 
         android_devices = list(
             PushDeviceToken.objects.filter(user=self.user_profile,
@@ -778,6 +777,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
         not have received the message in the first place"""
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
         self.make_stream('public_stream')
         self.subscribe(self.user_profile, 'public_stream')
         do_soft_deactivate_users([self.user_profile])
@@ -787,12 +788,6 @@ class HandlePushNotificationTest(PushNotificationTest):
             'message_id': message_id,
             'trigger': 'stream_push_notify',
         }
-
-        for token in [u'dddd']:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user=self.user_profile)
 
         android_devices = list(
             PushDeviceToken.objects.filter(user=self.user_profile,
@@ -864,6 +859,7 @@ class TestAPNs(PushNotificationTest):
                 "See https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html")
 
     def test_success(self) -> None:
+        self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.return_value = 'Success'
@@ -876,6 +872,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry(self) -> None:
         import hyper
+        self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
@@ -891,6 +888,7 @@ class TestAPNs(PushNotificationTest):
                     self.user_profile.id, device.token)
 
     def test_http_retry_pipefail(self) -> None:
+        self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
@@ -907,6 +905,7 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry_eventually_fails(self) -> None:
         import hyper
+        self.setup_apns_tokens()
         with self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger') as mock_logging:
             mock_apns.get_notification_result.side_effect = itertools.chain(
@@ -1238,7 +1237,7 @@ class Result:
         self.status_code = status
         self.content = content
 
-class TestSendToPushBouncer(PushNotificationTest):
+class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
     def test_500_error(self, mock_request: mock.MagicMock) -> None:
         with self.assertRaises(PushNotificationBouncerException) as exc:
@@ -1281,9 +1280,11 @@ class TestSendToPushBouncer(PushNotificationTest):
 
 class TestNumPushDevicesForUser(PushNotificationTest):
     def test_when_kind_is_none(self) -> None:
+        self.setup_apns_tokens()
         self.assertEqual(num_push_devices_for_user(self.user_profile), 2)
 
     def test_when_kind_is_not_none(self) -> None:
+        self.setup_apns_tokens()
         count = num_push_devices_for_user(self.user_profile,
                                           kind=PushDeviceToken.APNS)
         self.assertEqual(count, 2)
@@ -1368,13 +1369,7 @@ class GCMParseOptionsTest(TestCase):
 class GCMSendTest(PushNotificationTest):
     def setUp(self) -> None:
         super().setUp()
-        self.gcm_tokens = [u'1111', u'2222']
-        for token in self.gcm_tokens:
-            PushDeviceToken.objects.create(
-                kind=PushDeviceToken.GCM,
-                token=hex_to_b64(token),
-                user=self.user_profile,
-                ios_app_id=None)
+        self.setup_gcm_tokens()
 
     def get_gcm_data(self, **kwargs: Any) -> Dict[str, Any]:
         data = {
