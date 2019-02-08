@@ -342,6 +342,40 @@ exports.tokenize_compose_str = function (s) {
     return '';
 };
 
+function get_mention_candidates_data() {
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: mention}),
+            email: mention,
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: mention,
+        };
+    });
+    var persons = people.get_realm_persons();
+    var groups = user_groups.get_realm_user_groups();
+    return [].concat(persons, all_items, groups);
+}
+
+function filter_mention_name(current_token) {
+    if (current_token.startsWith('**')) {
+        current_token = current_token.substring(2);
+    } else if (current_token.startsWith('*')) {
+        current_token = current_token.substring(1);
+    }
+    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+        return false;
+    }
+
+    // Don't autocomplete if there is a space following an '@'
+    if (current_token[0] === " ") {
+        return false;
+    }
+    return current_token;
+}
+
 exports.compose_content_begins_typeahead = function (query) {
     var split = exports.split_at_cursor(query, this.$element);
     var current_token = exports.tokenize_compose_str(split[0]);
@@ -405,36 +439,13 @@ exports.compose_content_begins_typeahead = function (query) {
 
     if (this.options.completions.mention && current_token[0] === '@') {
         current_token = current_token.substring(1);
-        if (current_token.startsWith('**')) {
-            current_token = current_token.substring(2);
-        } else if (current_token.startsWith('*')) {
-            current_token = current_token.substring(1);
-        }
-        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+        current_token = filter_mention_name(current_token);
+        if (!current_token) {
             return false;
         }
-
-        // Don't autocomplete if there is a space following an '@'
-        if (current_token[0] === " ") {
-            return false;
-        }
-
         this.completing = 'mention';
         this.token = current_token;
-        var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-            return {
-                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                          {wildcard_mention_token: mention}),
-                email: mention,
-                // Always sort above, under the assumption that names will
-                // be longer and only contain "all" as a substring.
-                pm_recipient_count: Infinity,
-                full_name: mention,
-            };
-        });
-        var persons = people.get_realm_persons();
-        var groups = user_groups.get_realm_user_groups();
-        return [].concat(persons, all_items, groups);
+        return get_mention_candidates_data();
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
