@@ -1352,6 +1352,16 @@ class GCMParseOptionsTest(GCMTest):
         with self.assertRaises(JsonableError):
             apn.parse_gcm_options({"priority": "invalid"}, self.get_gcm_data())
 
+    def test_default_priority(self) -> None:
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({}, self.get_gcm_data()))
+
+    def test_explicit_priority(self) -> None:
+        self.assertEqual(
+            "normal", apn.parse_gcm_options({"priority": "normal"}, self.get_gcm_data()))
+        self.assertEqual(
+            "high", apn.parse_gcm_options({"priority": "high"}, self.get_gcm_data()))
+
 class GCMSendTest(GCMTest):
     @mock.patch('zerver.lib.push_notifications.logger.debug')
     def test_gcm_is_none(self, mock_debug: mock.MagicMock) -> None:
