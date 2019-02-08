@@ -75,7 +75,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function update_group_time_display(group, message_container, prev) {
+function update_group_date_divider(group, message_container, prev) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     var today = new XDate();
 
@@ -271,7 +271,7 @@ MessageListView.prototype = {
                 }
             }
 
-            update_group_time_display(current_group, message_container, prev);
+            update_group_date_divider(current_group, message_container, prev);
             update_timestr(message_container);
 
             message_container.include_sender = true;
@@ -398,7 +398,7 @@ MessageListView.prototype = {
             } else if (!same_day(second_group.message_containers[0],
                                  first_group.message_containers[0])) {
                 // The groups did not merge, so we need up update the date row for the old group
-                update_group_time_display(second_group, curr_msg_container, prev_msg_container);
+                update_group_date_divider(second_group, curr_msg_container, prev_msg_container);
                 update_timestr(curr_msg_container);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
@@ -417,7 +417,7 @@ MessageListView.prototype = {
                 } else {
                     // If we just sent the first message on a new day
                     // in a narrow, make sure we render a date separator.
-                    update_group_time_display(second_group, curr_msg_container, prev_msg_container);
+                    update_group_date_divider(second_group, curr_msg_container, prev_msg_container);
                     update_timestr(curr_msg_container);
                 }
             }
