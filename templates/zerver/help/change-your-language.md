@@ -1,4 +1,4 @@
-# Change your language
+# Change your default language
 
 Zulip has been translated or partially translated into a number of different
 languages. You can see which languages Zulip supports, and help add support
@@ -9,6 +9,10 @@ If your entire organization speaks a language other than English, an administrat
 
 [change-org-lang]: change-the-default-language-for-your-organization
 
+### Change your default language
+
+{start_tabs}
+
 {settings_tab|display-settings}
 
 2. Under **Language Settings**, click the button next to **Default language**.
@@ -16,6 +20,8 @@ If your entire organization speaks a language other than English, an administrat
 3. Click on a language.
 
 4. Click **Reload**.
+
+{end_tabs}
 
 !!! tip ""
     You can always send and read messages in any language.

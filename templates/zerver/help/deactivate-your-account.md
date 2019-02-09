@@ -1,10 +1,14 @@
 # Deactivate your account
 
+{start_tabs}
+
 {settings_tab|your-account}
 
 1. Under **Deactivate account**, click **Deactivate account**.
 
 1. Confirm by clicking **Deactivate now**.
+
+{end_tabs}
 
 ## What happens when you deactivate an account
 

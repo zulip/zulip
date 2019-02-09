@@ -7,6 +7,8 @@ Organization administrators can [change anyone's name](/help/change-a-users-name
 [prevent users from changing their names](/help/restrict-name-and-email-changes). This
 is useful when users' names are managed via LDAP or another data source.
 
+### Change your name
+
 {start_tabs}
 
 {settings_tab|your-account}
