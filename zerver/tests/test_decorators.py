@@ -44,7 +44,7 @@ from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
-    check_string_fixed_length, check_capped_string, check_color
+    check_string_fixed_length, check_capped_string, check_color, to_non_negative_int,
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Realm
@@ -745,6 +745,15 @@ class ValidatorTestCase(TestCase):
 
         x = [{}]
         self.assertEqual(check_int('x', x), 'x is not an integer')
+
+    def test_to_non_negative_int(self) -> None:
+        self.assertEqual(to_non_negative_int('5'), 5)
+        with self.assertRaisesRegex(ValueError, 'argument is negative'):
+            self.assertEqual(to_non_negative_int('-1'))
+        with self.assertRaisesRegex(ValueError, re.escape('5 is too large (max 4)')):
+            self.assertEqual(to_non_negative_int('5', max_int_size=4))
+        with self.assertRaisesRegex(ValueError, re.escape('%s is too large (max %s)' % (2**32, 2**32-1))):
+            self.assertEqual(to_non_negative_int(str(2**32)))
 
     def test_check_to_not_negative_int_or_none(self) -> None:
         self.assertEqual(to_not_negative_int_or_none('5'), 5)

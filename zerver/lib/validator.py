@@ -303,3 +303,13 @@ def check_widget_content(widget_content: object) -> Optional[str]:
         return 'unknown zform type: ' + extra_data['type']
 
     return 'unknown widget type: ' + widget_type
+
+
+# Converter functions for use with has_request_variables
+def to_non_negative_int(s: str, max_int_size: int=2**32-1) -> int:
+    x = int(s)
+    if x < 0:
+        raise ValueError("argument is negative")
+    if x > max_int_size:
+        raise ValueError('%s is too large (max %s)' % (x, max_int_size))
+    return x
