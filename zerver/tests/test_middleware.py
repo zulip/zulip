@@ -95,7 +95,8 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/help/deactivate-your-account',
             "Deactivate your account (Zulip Help Center)",
-            ["Go to Your account. Under Deactivate account, click"], [])
+            ["Any bots that you maintain will be disabled. Deactivating "],
+            ["Confirm by clicking"])
 
     def test_tabs(self) -> None:
         # logging-out starts with {start_tabs}

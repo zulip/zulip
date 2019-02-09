@@ -10,7 +10,7 @@
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
 * [Edit your profile](/help/edit-your-profile)
-* [Manage your password](/help/change-your-password)
+* [Change your password](/help/change-your-password)
 * [Review your settings](/help/review-your-settings)
 * [Set your avatar](/help/change-your-avatar)
 * [Change your default language](/help/change-your-language)
