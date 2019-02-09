@@ -398,9 +398,9 @@ def add_subscriptions_backend(
                 internal_prep_stream_message(
                     realm=user_profile.realm,
                     sender=sender,
+                    stream=notifications_stream,
                     topic=topic,
                     content=msg,
-                    stream=notifications_stream
                 )
             )
 

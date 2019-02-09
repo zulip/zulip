@@ -2325,18 +2325,28 @@ def _internal_prep_message(realm: Realm,
 
 def internal_prep_stream_message(
         realm: Realm, sender: UserProfile,
-        topic: str, content: str,
-        stream_name: Optional[str]=None,
-        stream: Optional[Stream]=None
+        stream: Stream, topic: str, content: str
 ) -> Optional[Dict[str, Any]]:
     """
     See _internal_prep_message for details of how this works.
     """
-    assert stream_name is not None or stream is not None
-    if stream is not None:
-        addressee = Addressee.for_stream(stream, topic)
-    else:
-        addressee = Addressee.for_stream_name(stream_name, topic)
+    addressee = Addressee.for_stream(stream, topic)
+
+    return _internal_prep_message(
+        realm=realm,
+        sender=sender,
+        addressee=addressee,
+        content=content,
+    )
+
+def internal_prep_stream_message_by_name(
+        realm: Realm, sender: UserProfile,
+        stream_name: str, topic: str, content: str
+) -> Optional[Dict[str, Any]]:
+    """
+    See _internal_prep_message for details of how this works.
+    """
+    addressee = Addressee.for_stream_name(stream_name, topic)
 
     return _internal_prep_message(
         realm=realm,
@@ -2402,14 +2412,24 @@ def internal_send_private_message(realm: Realm,
 
 def internal_send_stream_message(
         realm: Realm, sender: UserProfile,
-        topic: str, content: str,
-        stream_name: Optional[str]=None,
-        stream: Optional[Stream]=None
+        stream: Stream, topic: str, content: str
 ) -> None:
     message = internal_prep_stream_message(
-        realm, sender, topic,
-        content, stream_name=stream_name,
-        stream=stream
+        realm, sender, stream,
+        topic, content
+    )
+
+    if message is None:
+        return
+    do_send_messages([message])
+
+def internal_send_stream_message_by_name(
+        realm: Realm, sender: UserProfile,
+        stream_name: str, topic: str, content: str
+) -> None:
+    message = internal_prep_stream_message_by_name(
+        realm, sender, stream_name,
+        topic, content
     )
 
     if message is None:
@@ -3451,11 +3471,11 @@ def do_rename_stream(stream: Stream,
     internal_send_stream_message(
         stream.realm,
         sender,
+        stream,
         "welcome",
         "_@**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
                                                          user_profile.id,
-                                                         old_name, new_name),
-        stream=stream
+                                                         old_name, new_name)
     )
     # Even though the token doesn't change, the web client needs to update the
     # email forwarding address to display the correctly-escaped new name.

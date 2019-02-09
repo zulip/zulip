@@ -2,7 +2,7 @@
 from django.conf import settings
 
 from zerver.lib.actions import set_default_streams, \
-    internal_prep_stream_message, internal_send_private_message, \
+    internal_prep_stream_message_by_name, internal_send_private_message, \
     create_streams_if_needed, do_send_messages, \
     do_add_reaction_legacy, create_users, missing_any_realm_internal_bots
 from zerver.lib.topic import get_turtle_message
@@ -107,10 +107,9 @@ def send_initial_realm_messages(realm: Realm) -> None:
          "in that each conversation should get its own topic. Keep them short, though; one "
          "or two words will do it!"},
     ]  # type: List[Dict[str, str]]
-    messages = [internal_prep_stream_message(
-        realm, welcome_bot,
-        message['topic'], message['content'],
-        stream_name=message['stream']
+    messages = [internal_prep_stream_message_by_name(
+        realm, welcome_bot, message['stream'],
+        message['topic'], message['content']
     ) for message in welcome_messages]
     message_ids = do_send_messages(messages)
 
