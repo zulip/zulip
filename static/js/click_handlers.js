@@ -579,8 +579,14 @@ exports.initialize = function () {
 
     (function () {
         var map = {
-            ".stream-description-editable": stream_edit.change_stream_description,
-            ".stream-name-editable": stream_edit.change_stream_name,
+            ".stream-description-editable": {
+                on_start: stream_edit.set_raw_description,
+                on_save: stream_edit.change_stream_description,
+            },
+            ".stream-name-editable": {
+                on_start: null,
+                on_save: stream_edit.change_stream_name,
+            },
         };
 
         $(document).on("keydown", ".editable-section", function (e) {
@@ -626,9 +632,8 @@ exports.initialize = function () {
                 edit_area.attr("data-prev-text", edit_area.text().trim())
                     .attr("contenteditable", true);
 
-                if (selector === ".stream-description-editable") {
-                    var sub = stream_edit.get_sub_for_target(this);
-                    edit_area.text(sub.description);
+                if (map[selector].on_start) {
+                    map[selector].on_start(this, edit_area);
                 }
 
                 ui_util.place_caret_at_end(edit_area[0]);
@@ -639,8 +644,8 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-finish-editing]", function (e) {
             var selector = $(this).attr("data-finish-editing");
-            if (map[selector]) {
-                map[selector](e);
+            if (map[selector].on_save) {
+                map[selector].on_save(e);
                 $(this).hide();
                 $(this).parent().find(selector).attr("contenteditable", false);
                 $("[data-make-editable='" + selector + "']").html("");
