@@ -160,9 +160,8 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
     if recipient.type == Recipient.STREAM:
         stream = get_stream_by_id_in_realm(recipient.type_id, user_profile.realm)
         internal_send_stream_message(
-            user_profile.realm, user_profile,
-            subject_b.decode('utf-8'), body,
-            stream=stream
+            user_profile.realm, user_profile, stream,
+            subject_b.decode('utf-8'), body
         )
     elif recipient.type == Recipient.PERSONAL:
         display_recipient = get_display_recipient(recipient)

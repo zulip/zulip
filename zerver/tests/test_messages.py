@@ -29,11 +29,12 @@ from zerver.lib.actions import (
     get_last_message_id,
     get_user_info_for_message_updates,
     internal_prep_private_message,
-    internal_prep_stream_message,
+    internal_prep_stream_message_by_name,
     internal_send_huddle_message,
     internal_send_message,
     internal_send_private_message,
     internal_send_stream_message,
+    internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 
@@ -545,6 +546,18 @@ class InternalPrepTest(ZulipTestCase):
         self.assertIn('Message must not be empty', arg)
 
         with mock.patch('logging.exception') as m:
+            internal_send_stream_message_by_name(
+                realm=realm,
+                sender=cordelia,
+                stream_name=stream.name,
+                topic='whatever',
+                content=bad_content
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
             internal_send_message(
                 realm=realm,
                 sender_email=settings.ERROR_BOT,
@@ -598,7 +611,7 @@ class InternalPrepTest(ZulipTestCase):
         topic = 'whatever'
         content = 'hello'
 
-        internal_prep_stream_message(
+        internal_prep_stream_message_by_name(
             realm=realm,
             sender=sender,
             stream_name=stream_name,
