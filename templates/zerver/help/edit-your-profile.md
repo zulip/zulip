@@ -8,14 +8,19 @@ Organization administrators can also
 fields are always optional, and will not appear in your profile unless you
 fill them out.
 
-## Edit your profile
+### Edit your profile
+
+{start_tabs}
 
 {settings_tab|your-account}
 
 1. Edit the fields under **Profile**.
 
-Note: The **Profile** section will only appear if an organization
-administrator has added custom profile fields.
+{end_tabs}
+
+!!! warn ""
+    Note: The **Profile** section will only appear if an organization
+    administrator has added custom profile fields.
 
 ## Related articles
 
