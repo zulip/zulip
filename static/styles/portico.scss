@@ -115,6 +115,7 @@ body {
 
 .code-section .blocks {
     padding: 10px;
+    margin-bottom: 10px;
     border: 1px solid hsl(0, 0%, 87%);
 }
 
@@ -154,6 +155,7 @@ body {
 
 .markdown .code-section ol {
     margin-left: 15px;
+    margin-top: 10px;
 }
 
 .digest-container {
@@ -185,6 +187,11 @@ body {
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
+}
+
+/* Markdown processor generates lots of spurious <p></p> */
+.help p:empty {
+    margin: 0px;
 }
 
 .help .sidebar {
