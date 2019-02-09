@@ -2,7 +2,7 @@ import json
 import os
 import importlib
 from zerver.lib.actions import internal_send_private_message, \
-    internal_send_stream_message, internal_send_huddle_message
+    internal_send_stream_message_by_name, internal_send_huddle_message
 from zerver.models import UserProfile, get_active_user
 from zerver.lib.bot_storage import get_bot_storage, set_bot_storage, \
     is_key_in_bot_storage, remove_bot_storage
@@ -71,10 +71,9 @@ class EmbeddedBotHandler:
             self._rate_limit.show_error_and_exit()
 
         if message['type'] == 'stream':
-            internal_send_stream_message(
+            internal_send_stream_message_by_name(
                 self.user_profile.realm, self.user_profile,
-                message['topic'], message['content'],
-                stream_name=message['to']
+                message['to'], message['topic'], message['content']
             )
             return
 
