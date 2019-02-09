@@ -25,6 +25,7 @@ from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode, \
     InvalidJSONError, InvalidAPIKeyError
 from zerver.lib.types import ViewFuncT
+from zerver.lib.validator import to_non_negative_int
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser, RateLimiterLockingException
@@ -749,13 +750,6 @@ def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFun
             return view_func(request, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
-
-# Converter functions for use with has_request_variables
-def to_non_negative_int(s: str) -> int:
-    x = int(s)
-    if x < 0:
-        raise ValueError("argument is negative")
-    return x
 
 
 def to_not_negative_int_or_none(s: str) -> Optional[int]:
