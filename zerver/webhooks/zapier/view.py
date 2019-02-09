@@ -23,7 +23,14 @@ def api_zapier_webhook(request: HttpRequest, user_profile: UserProfile,
     if user_agent == 'ZapierZulipApp':
         event_type = payload.get('type')
         if event_type == 'auth':
-            return json_success()
+            # The bot's details are used by Zapier to format a connection
+            # label for users to be able to distinguish between different
+            # Zulip bots and API keys in their UI
+            return json_success({
+                'bot_name': user_profile.full_name,
+                'bot_email': user_profile.email,
+                'bot_id': user_profile.id
+            })
         elif event_type == 'stream':
             check_send_webhook_message(
                 request, user_profile,
