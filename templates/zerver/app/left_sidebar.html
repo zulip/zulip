@@ -52,17 +52,17 @@
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Subscribed streams') }}">{{ _('STREAMS') }}</h4>
                 <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
                 <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
-            </div>
-            <div id="topics_header">
-                <a href="" class="show-all-streams"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{ _('All streams') }}</a>
-            </div>
-            <div id="stream-filters-container" class="scrolling_list">
-                <div class="input-append notdisplayed">
+                <div class="input-append notdisplayed stream_search_section">
                     <input class="stream-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
+            </div>
+            <div id="topics_header">
+                <a href="" class="show-all-streams"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{ _('All streams') }}</a>
+            </div>
+            <div id="stream-filters-container" class="scrolling_list">
                 <ul id="stream_filters" class="filters"></ul>
             </div>
         </div>

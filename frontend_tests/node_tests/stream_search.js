@@ -8,6 +8,7 @@ const noop = () => {};
 
 set_global('resize', {
     resize_page_components: noop,
+    resize_stream_filters_container: noop,
 });
 
 set_global('popovers', {});
@@ -38,11 +39,11 @@ function simulate_search_expanded() {
     // The way we check if the search widget is expanded
     // is kind of awkward.
 
-    $('#stream-filters-container .input-append.notdisplayed').length = 0;
+    $('.stream_search_section.notdisplayed').length = 0;
 }
 
 function simulate_search_collapsed() {
-    $('#stream-filters-container .input-append.notdisplayed').length = 1;
+    $('.stream_search_section.notdisplayed').length = 1;
 }
 
 function toggle_filter() {
@@ -52,17 +53,15 @@ function toggle_filter() {
 run_test('basics', () => {
     var cursor_helper;
     const input = $('.stream-list-filter');
-    const header = $.create('header stub');
-
-    input.parent = () => header;
+    const section = $('.stream_search_section');
 
     expand_sidebar();
-    header.addClass('notdisplayed');
+    section.addClass('notdisplayed');
 
     cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
-        assert(!header.hasClass('notdisplayed'));
+        assert(!section.hasClass('notdisplayed'));
         simulate_search_expanded();
     }
 
@@ -77,7 +76,7 @@ run_test('basics', () => {
     }
 
     function verify_collapsed() {
-        assert(header.hasClass('notdisplayed'));
+        assert(section.hasClass('notdisplayed'));
         assert(!input.is_focused());
         assert(!stream_list.searching());
         simulate_search_collapsed();
