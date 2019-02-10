@@ -5,7 +5,7 @@ var user_search = function (opts) {
 
     var self = {};
 
-    var $widget = $('#user-list .input-append').expectOne();
+    var $widget = $('#user_search_section').expectOne();
     var $input = $('.user-list-filter').expectOne();
 
     self.input_field = function () {
