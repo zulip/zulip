@@ -22,9 +22,6 @@
                 <ul id="user_presences" class="filters"></ul>
                 <div id="buddy_list_wrapper_padding"></div>
             </div>
-            {% if show_invites %}
-            <a id="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Invite more users') }}</a>
-            {% endif %}
         </div>
         <div id="group-pm-list">
             <div id="group-pm-header">
@@ -33,6 +30,9 @@
             <ul id="group-pms" class="filters scrolling_list">
             </ul>
         </div>
+        {% if show_invites %}
+        <a id="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Invite more users') }}</a>
+        {% endif %}
         <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts">
             <i class="fa fa-keyboard-o fa-2x" id="keyboard-icon" data-html="true" data-toggle="tooltip" title="{{ _('Keyboard shortcuts') }} <span class='hotkey-hint'>(?)</span>"></i>
         </a>
