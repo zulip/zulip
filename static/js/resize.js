@@ -56,8 +56,6 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
-
     res.stream_filters_max_height = viewport_height
         - parseInt($("#left-sidebar").css("marginTop"), 10)
         - parseInt($(".narrows_panel").css("marginTop"), 10)
@@ -73,8 +71,8 @@ function get_new_heights() {
     var group_pms = $('#group-pms').expectOne();
     var keyboard_popover_shortcut = $('#keyboard-icon').expectOne();
 
-    var usable_height =
-        res.right_sidebar_height
+    var usable_height = viewport_height
+        - parseInt($("#right-sidebar").css("marginTop"), 10)
         - $("#feedback_section").safeOuterHeight(true)
         - parseInt(buddy_list_wrapper.css("marginTop"), 10)
         - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
