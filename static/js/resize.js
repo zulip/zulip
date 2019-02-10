@@ -69,7 +69,6 @@ function get_new_heights() {
     // RIGHT SIDEBAR
     var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
-    var keyboard_popover_shortcut = $('#keyboard-icon').expectOne();
 
     var usable_height = viewport_height
         - parseInt($("#right-sidebar").css("marginTop"), 10)
@@ -82,8 +81,7 @@ function get_new_heights() {
         - parseInt(group_pms.css("marginTop"), 10)
         - parseInt(group_pms.css("marginBottom"), 10)
         - $("#group-pm-header").safeOuterHeight(true)
-        - keyboard_popover_shortcut.safeOuterHeight(true)
-        - parseInt(keyboard_popover_shortcut.css("marginBottom"), 10);
+        - $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
 
     // set these
     // res.buddy_list_wrapper_max_height
