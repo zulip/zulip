@@ -1042,12 +1042,13 @@
     , backdrop: function (callback) {
         var that = this
           , animate = this.$element.hasClass('fade') ? 'fade' : ''
+          , bgContainer = this.options.bgContainer || document.body;
 
         if (this.isShown && this.options.backdrop) {
           var doAnimate = $.support.transition && animate
 
           this.$backdrop = $('<div class="modal-backdrop ' + animate + '" />')
-            .appendTo(document.body)
+            .appendTo($(this.options.bgContainer).get(0));
 
           if (this.options.backdrop != 'static') {
             this.$backdrop.click($.proxy(this.hide, this))
@@ -1093,6 +1094,7 @@
       backdrop: true
     , keyboard: true
     , show: true
+    , bgContainer: '.app'
   }
 
   $.fn.modal.Constructor = Modal
