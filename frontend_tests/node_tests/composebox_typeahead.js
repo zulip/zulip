@@ -1,5 +1,4 @@
 set_global('i18n', global.stub_i18n);
-zrequire('dict');
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
