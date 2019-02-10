@@ -209,6 +209,33 @@ exports.set_up = function () {
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
 
+    function show_reset_email_loader() {
+        loading.make_indicator($(".loading_indicator_spinner"), {text: i18n.t("Sending...")});
+    }
+
+    function hide_reset_email_loader() {
+        loading.destroy_indicator($(".loading_indicator_spinner"));
+    }
+
+    function send_password_reset(type) {
+        var email = people.my_current_email();
+        var data = {};
+
+        data.email = email;
+        channel.post({
+            url: '/accounts/password/reset/',
+            data: data,
+            complete: function () {
+                hide_reset_email_loader();
+                if (type === 'user_password_reset') {
+                    $('#resend_link, #email_text').show();
+                } else {
+                    $('#api_resend_link, #api_email_text').show();
+                }
+            },
+        });
+    }
+
     $('#api_key_button').click(function () {
         if (page_params.realm_password_auth_enabled !== false) {
             $("#get_api_key_box").show();
@@ -216,7 +243,28 @@ exports.set_up = function () {
             // Skip the password prompt step
             $("#get_api_key_box form").submit();
         }
+        $('#api_forgot_password').show();
+        $('#api_reset_password').hide();
+        $('#api_resend_link').hide();
+        $('#api_email_text').hide();
         $("#api_key_button_box").hide();
+    });
+
+    $('#api_forgot_password').on('click', function () {
+        $('#api_forgot_password').hide();
+        $('#api_reset_password').show();
+    });
+
+    $('#api_reset_password').on('click', function () {
+        $('#api_reset_password').hide();
+        show_reset_email_loader();
+        send_password_reset('api_password_reset');
+    });
+
+    $('#api_resend_link').on('click', function () {
+        $('#api_resend_link, #api_email_text').hide();
+        show_reset_email_loader();
+        send_password_reset('api_password_reset');
     });
 
     $("#get_api_key_box").hide();
@@ -288,6 +336,10 @@ exports.set_up = function () {
     $('#change_password').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+        $('#forgot_password').show();
+        $('#reset_password').hide();
+        $('#resend_link').hide();
+        $('#email_text').hide();
         overlays.open_modal('change_password_modal');
         $('#pw_change_controls').show();
         if (page_params.realm_password_auth_enabled !== false) {
@@ -303,6 +355,23 @@ exports.set_up = function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
+    });
+
+    $('#forgot_password').on('click', function () {
+        $('#forgot_password').hide();
+        $('#reset_password').show();
+    });
+
+    $('#reset_password').on('click', function () {
+        $('#reset_password').hide();
+        show_reset_email_loader();
+        send_password_reset('user_password_reset');
+    });
+
+    $('#resend_link').on('click', function () {
+        $('#resend_link, #email_text').hide();
+        show_reset_email_loader();
+        send_password_reset('user_password_reset');
     });
 
     $('#change_password_modal').find('[data-dismiss=modal]').on('click', function () {

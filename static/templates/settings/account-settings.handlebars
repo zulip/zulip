@@ -103,7 +103,11 @@
                             <label for="old_password" class="title">{{t "Old password" }}</label>
                             <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
                             <div class="info">
-                                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                                <a class="sea-green" id="forgot_password" target="_blank">{{t "Forgotten it?" }}</a>
+                                <a class="sea-green" reset_password_container id="reset_password" style="display: none">{{t "Reset password" }}</a>
+                                <div class="loading_indicator_spinner"></div>
+                                <a class="sea-green reset_password_container" id="resend_link">{{t "Resend" }}</a>
+                                <span id="email_text">{{t "(Check your email)" }}</span>
                             </div>
 
                         </div>
@@ -218,8 +222,13 @@
             </div>
         </div>
         <div id="get_api_key_box">
+            <div class="loading_indicator_spinner"></div>
             <p>{{t "Please re-enter your password to confirm your identity." }}
-              <a href="/accounts/password/reset/" target="_blank">{{t "Never had one? Forgotten it?" }}</a></p>
+                <a class="sea-green" id="api_forgot_password" target="_blank">{{t "Never had one? Forgotten it?" }}</a>
+                <a class="sea-green reset_password_container" id="api_reset_password" style="display: none">{{t "Reset password" }}</a>
+                <a class="sea-green reset_password_container" id="api_resend_link">{{t "Resend" }}</a>
+                <span id="api_email_text">{{t "(Check your email)" }}</span>
+            </p>
             <form cslass="form-horizontal" id="get_api_key_form">
                 <div class="control-group">
                     <label for="password" class="control-label">{{t "Current password" }}</label>

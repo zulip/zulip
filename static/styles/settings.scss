@@ -69,6 +69,18 @@ label {
     margin: 6px 0px 0px 0px;
 }
 
+.new-style #account-settings .loading_indicator_spinner {
+    display: inline-block;
+    width: 32px;
+    height: 15px;
+    float: none;
+    margin-top: 0;
+}
+
+#account-settings #change_password_modal {
+    padding-right: 3px;
+}
+
 .new-style .button ul {
     text-align: left;
 }
