@@ -77,7 +77,7 @@ function get_new_heights() {
         - parseInt(buddy_list_wrapper.css("marginTop"), 10)
         - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
         - $("#userlist-header").safeOuterHeight(true)
-        - $(".user-list-filter").safeOuterHeight(true)
+        - $("#user_search_section").safeOuterHeight(true)
         - invite_user_link_height
         - parseInt(group_pms.css("marginTop"), 10)
         - parseInt(group_pms.css("marginBottom"), 10)
@@ -124,7 +124,7 @@ function left_userlist_get_new_heights() {
                                 - $("#global_filters").safeOuterHeight(true)
                                 - $("#streams_header").safeOuterHeight(true)
                                 - $("#userlist-header").safeOuterHeight(true)
-                                - $(".user-list-filter").safeOuterHeight(true)
+                                - $("#user_search_section").safeOuterHeight(true)
                                 - $("#group-pm-header").safeOuterHeight(true)
                                 - parseInt(stream_filters.css("marginBottom"), 10)
                                 - parseInt(buddy_list_wrapper.css("marginTop"), 10)
