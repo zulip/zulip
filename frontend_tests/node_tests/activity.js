@@ -704,7 +704,7 @@ run_test('clear_search', () => {
     activity.user_filter.clear_search();
     assert.equal($('.user-list-filter').val(), '');
     activity.user_filter.clear_search();
-    assert($('#user-list .input-append').hasClass('notdisplayed'));
+    assert($('#user_search_section').hasClass('notdisplayed'));
 });
 
 run_test('escape_search', () => {
@@ -713,7 +713,7 @@ run_test('escape_search', () => {
     activity.escape_search();
     assert.equal($('.user-list-filter').val(), '');
     activity.escape_search();
-    assert($('#user-list .input-append').hasClass('notdisplayed'));
+    assert($('#user_search_section').hasClass('notdisplayed'));
 });
 
 reset_setup();
@@ -733,13 +733,13 @@ run_test('initiate_search', () => {
 
 run_test('toggle_filter_display', () => {
     activity.user_filter.toggle_filter_displayed();
-    assert($('#user-list .input-append').hasClass('notdisplayed'));
+    assert($('#user_search_section').hasClass('notdisplayed'));
     $('.user-list-filter').closest = function (selector) {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create('sidebar').addClass('column-right');
     };
     activity.user_filter.toggle_filter_displayed();
-    assert.equal($('#user-list .input-append').hasClass('notdisplayed'), false);
+    assert.equal($('#user_search_section').hasClass('notdisplayed'), false);
 });
 
 run_test('searching', () => {
