@@ -43,8 +43,10 @@ created (e.g. `exampleinc-zulip-uploads`).
     ```
     [s3]
     use-sigv4 = True
-    host = s3.eu-central-1.amazonaws.com  # Substitute your AWS region here
+    # Edit to provide your S3 bucket's AWS region here.
+    host = s3.eu-central-1.amazonaws.com
     ```
+
 
 1. You will need to configure `nginx` to direct requests for uploaded
     files to the Zulip server (which will then serve a redirect to the
