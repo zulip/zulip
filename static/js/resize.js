@@ -56,15 +56,12 @@ function get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height
-                                - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginBottom"), 10);
-
     res.right_sidebar_height = viewport_height - parseInt($("#right-sidebar").css("marginTop"), 10);
 
-    res.stream_filters_max_height =
-        res.bottom_sidebar_height
+    res.stream_filters_max_height = viewport_height
+        - parseInt($("#left-sidebar").css("marginTop"), 10)
+        - parseInt($(".narrows_panel").css("marginTop"), 10)
+        - parseInt($(".narrows_panel").css("marginBottom"), 10)
         - $("#global_filters").safeOuterHeight(true)
         - $("#streams_header").safeOuterHeight(true);
 
@@ -122,13 +119,10 @@ function left_userlist_get_new_heights() {
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
-    res.bottom_sidebar_height = viewport_height
+    res.total_leftlist_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginTop"), 10)
-                                - parseInt($(".bottom_sidebar").css("marginBottom"), 10);
-
-
-    res.total_leftlist_height = res.bottom_sidebar_height
+                                - parseInt($(".narrows_panel").css("marginTop"), 10)
+                                - parseInt($(".narrows_panel").css("marginBottom"), 10)
                                 - $("#global_filters").safeOuterHeight(true)
                                 - $("#streams_header").safeOuterHeight(true)
                                 - $("#userlist-header").safeOuterHeight(true)
@@ -234,7 +228,7 @@ exports.resize_page_components = function () {
             // move stuff to the left sidebar (skinny mode)
             narrow_window = true;
             popovers.set_userlist_placement("left");
-            sidebar = $(".bottom_sidebar").expectOne();
+            sidebar = $(".narrows_panel").expectOne();
             sidebar.append($("#user-list").expectOne());
             sidebar.append($("#group-pm-list").expectOne());
             $("#buddy_list_wrapper").css("margin", "0px");
