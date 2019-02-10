@@ -20,12 +20,19 @@ exports.patch_builtin = function (name, val) {
 };
 
 exports.zrequire = function (name, fn) {
+    var path;
     if (fn === undefined) {
-        fn = 'js/' + name;
+        try {
+            path = require.resolve('js/' + name);
+        } catch (_e /* MODULE_NOT_FOUND */) {
+            path = require.resolve('ts/' + name);
+        }
+    } else {
+        path = require.resolve(fn);
     }
-    delete require.cache[require.resolve(fn)];
-    var obj = require(fn);
-    requires.push(fn);
+    delete require.cache[path];
+    var obj = require(path);
+    requires.push(path);
     set_global(name, obj);
     return obj;
 };

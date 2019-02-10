@@ -1,3 +1,13 @@
+require('ts-node').register({
+    project: 'static/ts/tsconfig.json',
+    compilerOptions: {
+        typeRoots: ["node_modules/@types", "../../static/ts/js_typings"],
+        // We don't have webpack to handle es6 modules here so directly
+        // transpile to CommonJS format.
+        module: "commonjs",
+    },
+});
+
 var path = require('path');
 var fs = require('fs');
 
