@@ -224,13 +224,14 @@ exports.resize_page_components = function () {
 
         $("#top_navbar").removeClass("rightside-userlist");
 
+        var right_items = $('.right-sidebar-items').expectOne();
+
         if (css_narrow_mode && !narrow_window) {
             // move stuff to the left sidebar (skinny mode)
             narrow_window = true;
             popovers.set_userlist_placement("left");
-            sidebar = $(".narrows_panel").expectOne();
-            sidebar.append($("#user-list").expectOne());
-            sidebar.append($("#group-pm-list").expectOne());
+            sidebar = $("#left-sidebar").expectOne();
+            sidebar.append(right_items);
             $("#buddy_list_wrapper").css("margin", "0px");
             $("#group-pms").css("margin", "0px");
             $("#userlist-toggle").css("display", "none");
@@ -240,8 +241,7 @@ exports.resize_page_components = function () {
             narrow_window = false;
             popovers.set_userlist_placement("right");
             sidebar = $("#right-sidebar").expectOne();
-            sidebar.append($("#user-list").expectOne());
-            sidebar.append($("#group-pm-list").expectOne());
+            sidebar.append(right_items);
             $("#buddy_list_wrapper").css("margin", '');
             $("#group-pms").css("margin", '');
             $("#userlist-toggle").css("display", '');
