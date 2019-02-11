@@ -467,10 +467,10 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             text = ''
             for paragraph in bs.find_all('p'):
                 # .text converts it from HTML to text
-                text = text + paragraph.text.replace('\n', ' ') + ' '
+                text = text + paragraph.text + ' '
                 if len(text) > 500:
-                    return text.strip()
-            return text.strip()
+                    return ' '.join(text.split())
+            return ' '.join(text.split())
 
         def alter_content(content: bytes) -> bytes:
             first_paragraph_text = get_content_description(content, request)

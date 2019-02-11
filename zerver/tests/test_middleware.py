@@ -96,7 +96,7 @@ class OpenGraphTest(ZulipTestCase):
             '/help/deactivate-your-account',
             "Deactivate your account (Zulip Help Center)",
             ["Any bots that you maintain will be disabled. Deactivating "],
-            ["Confirm by clicking"])
+            ["Confirm by clicking", "  ", "\n"])
 
     def test_tabs(self) -> None:
         # logging-out starts with {start_tabs}
@@ -118,7 +118,7 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/api/',
             "Zulip API Documentation",
-            [("Zulip's APIs allow you to integrate other services with Zulip.  This "
+            [("Zulip's APIs allow you to integrate other services with Zulip. This "
               "guide should help you find the API you need:")], [])
 
     def test_nonexistent_page(self) -> None:
