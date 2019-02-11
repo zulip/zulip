@@ -2,6 +2,7 @@
 import datetime
 import ujson
 import zlib
+import ahocorasick
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
@@ -578,7 +579,7 @@ def bulk_access_messages_expect_usermessage(
 def render_markdown(message: Message,
                     content: str,
                     realm: Optional[Realm]=None,
-                    realm_alert_words: Optional[RealmAlertWords]=None,
+                    realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                     user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
                     email_gateway: Optional[bool]=False) -> str:
@@ -594,9 +595,6 @@ def render_markdown(message: Message,
     if realm is None:
         realm = message.get_realm()
 
-    if realm_alert_words is None:
-        realm_alert_words = dict()
-
     sender = get_user_profile_by_id(message.sender_id)
     sent_by_bot = sender.is_bot
     translate_emoticons = sender.translate_emoticons
@@ -605,7 +603,7 @@ def render_markdown(message: Message,
         message=message,
         content=content,
         realm=realm,
-        realm_alert_words=realm_alert_words,
+        realm_alert_words_automaton=realm_alert_words_automaton,
         message_user_ids=message_user_ids,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
@@ -618,10 +616,10 @@ def render_markdown(message: Message,
 def do_render_markdown(message: Message,
                        content: str,
                        realm: Realm,
-                       realm_alert_words: RealmAlertWords,
                        message_user_ids: Set[int],
                        sent_by_bot: bool,
                        translate_emoticons: bool,
+                       realm_alert_words_automaton: Optional[ahocorasick.Automaton]=None,
                        mention_data: Optional[bugdown.MentionData]=None,
                        email_gateway: Optional[bool]=False) -> str:
     """Return HTML for given markdown. Bugdown may add properties to the
@@ -635,31 +633,19 @@ def do_render_markdown(message: Message,
     message.mentions_user_group_ids = set()
     message.alert_words = set()
     message.links_for_preview = set()
-
-    possible_words = set()  # type: Set[str]
-    for user_id, words in realm_alert_words.items():
-        if user_id in message_user_ids:
-            possible_words.update(set(words))
+    message.user_ids_with_alert_words = set()
 
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(
         content,
+        realm_alert_words_automaton=realm_alert_words_automaton,
         message=message,
         message_realm=realm,
-        possible_words=possible_words,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
         mention_data=mention_data,
         email_gateway=email_gateway
     )
-
-    message.user_ids_with_alert_words = set()
-
-    for user_id, words in realm_alert_words.items():
-        if user_id in message_user_ids:
-            if set(words).intersection(message.alert_words):
-                message.user_ids_with_alert_words.add(user_id)
-
     return rendered_content
 
 def huddle_users(recipient_id: int) -> str:

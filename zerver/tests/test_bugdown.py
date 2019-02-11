@@ -8,7 +8,7 @@ from zerver.lib.actions import (
     do_remove_realm_emoji,
     do_set_alert_words,
 )
-from zerver.lib.alert_words import alert_words_in_realm
+from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
 from zerver.lib.exceptions import BugdownRenderingException
@@ -172,7 +172,7 @@ def bugdown_convert(content: str) -> str:
     return bugdown.convert(
         content=content,
         message_realm=get_realm('zulip'),
-        message=message,
+        message=message
     )
 
 class BugdownMiscTest(ZulipTestCase):
@@ -899,12 +899,12 @@ class BugdownTest(ZulipTestCase):
         user_profile = self.example_user('othello')
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
-        realm_alert_words = alert_words_in_realm(user_profile.realm)
+        realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
 
         def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
-                                   realm_alert_words=realm_alert_words,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
                                    user_ids={user_profile.id})
 
         content = "We have an ALERTWORD day today!"
@@ -915,6 +915,214 @@ class BugdownTest(ZulipTestCase):
         content = "We have a NOTHINGWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have a NOTHINGWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set())
+
+    def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
+        alert_words_for_users = {
+            'hamlet': ['how'], 'cordelia': ['this possible'],
+            'iago': ['hello'], 'prospero': ['hello'],
+            'othello': ['how are you'], 'aaron': ['hey']
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            user_ids.add(user_profile.id)
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        user_ids.add(sender_user_profile.id)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = "hello how is this possible how are you doing today"
+        render(msg, content)
+        expected_user_ids = {
+            user_profiles['hamlet'].id, user_profiles['cordelia'].id, user_profiles['iago'].id,
+            user_profiles['prospero'].id, user_profiles['othello'].id
+        }  # type: Set[int]
+        # All users except aaron have their alert word appear in the message content
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def test_alert_words_returns_user_ids_with_alert_words_1(self) -> None:
+        alert_words_for_users = {
+            'hamlet': ['provisioning', 'Prod deployment'],
+            'cordelia': ['test', 'Prod'],
+            'iago': ['prod'], 'prospero': ['deployment'],
+            'othello': ['last']
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            user_ids.add(user_profile.id)
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        user_ids.add(sender_user_profile.id)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = """Hello, everyone. Prod deployment has been completed
+        And this is a new line
+        to test out how markdown convert this into something line ending splitted array
+        and this is a new line
+        last"""
+        render(msg, content)
+        expected_user_ids = {
+            user_profiles['hamlet'].id,
+            user_profiles['cordelia'].id,
+            user_profiles['iago'].id,
+            user_profiles['prospero'].id,
+            user_profiles['othello'].id
+        }  # type: Set[int]
+        # All users have their alert word appear in the message content
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def test_alert_words_returns_user_ids_with_alert_words_in_french(self) -> None:
+        alert_words_for_users = {
+            'hamlet': ['réglementaire', 'une politique', 'une merveille'],
+            'cordelia': ['énormément', 'Prod'],
+            'iago': ['prod'], 'prospero': ['deployment'],
+            'othello': ['last']
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            user_ids.add(user_profile.id)
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        user_ids.add(sender_user_profile.id)
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = """This is to test out alert words work in languages with accented characters too
+        bonjour est (énormément) ce a quoi ressemble le français
+        et j'espère qu'il n'y n' réglementaire a pas de mots d'alerte dans ce texte français
+        """
+        render(msg, content)
+        expected_user_ids = {user_profiles['hamlet'].id, user_profiles['cordelia'].id}  # type: Set[int]
+        # Only hamlet and cordelia have their alert-words appear in the message content
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def test_alert_words_returns_empty_user_ids_with_alert_words(self) -> None:
+        alert_words_for_users = {
+            'hamlet': [], 'cordelia': [], 'iago': [], 'prospero': [],
+            'othello': [], 'aaron': []
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = """hello how is this possible how are you doing today
+        This is to test that the no user_ids who have alrert wourldword is participating
+        in sending of the message
+        """
+        render(msg, content)
+        expected_user_ids = set()  # type: Set[int]
+        # None of the users have their alert-words appear in the message content
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def get_mock_alert_words(self, num_words: int, word_length: int) -> List[str]:
+        alert_words = ['x' * word_length] * num_words  # type List[str]
+        return alert_words
+
+    def test_alert_words_with_empty_alert_words(self) -> None:
+        alert_words_for_users = {
+            'hamlet': [],
+            'cordelia': [],
+            'iago': [],
+            'othello': []
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = """This is to test a empty alert words i.e. no user has any alert-words set"""
+        render(msg, content)
+        expected_user_ids = set()  # type: Set[int]
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
+
+    def test_alert_words_retuns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
+
+        alert_words_for_users = {
+            'hamlet': ['issue124'],
+            'cordelia': self.get_mock_alert_words(500, 10),
+            'iago': self.get_mock_alert_words(500, 10),
+            'othello': self.get_mock_alert_words(500, 10)
+        }  # type: Dict[str, List[str]]
+        user_profiles = {}  # type: Dict[str, UserProfile]
+        user_ids = set()  # type: Set[int]
+        for (username, alert_words) in alert_words_for_users.items():
+            user_profile = self.example_user(username)
+            user_profiles.update({username: user_profile})
+            do_set_alert_words(user_profile, alert_words)
+        sender_user_profile = self.example_user('polonius')
+        user_ids = {user_profiles['hamlet'].id, user_profiles['iago'].id, user_profiles['othello'].id}
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
+
+        def render(msg: Message, content: str) -> str:
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words_automaton=realm_alert_words_automaton,
+                                   user_ids = user_ids)
+
+        content = """The code above will print 10 random values of numbers between 1 and 100.
+        The second line, for x in range(10), determines how many values will be printed (when you use
+        range(x), the number that you use in place of x will be the amount of values that you'll have
+        printed. if you want 20 values, use range(20). use range(5) if you only want 5 values returned,
+        etc.). I was talking abou the issue124 on github. Then the third line: print random.randint(1,101) will automatically select a random integer
+        between 1 and 100 for you. The process is fairly simple
+        """
+        render(msg, content)
+        expected_user_ids = {user_profiles['hamlet'].id}  # type: Set[int]
+        # Only hamlet has alert-word 'issue124' present in the message content
+        self.assertEqual(msg.user_ids_with_alert_words, expected_user_ids)
 
     def test_mention_wildcard(self) -> None:
         user_profile = self.example_user('othello')

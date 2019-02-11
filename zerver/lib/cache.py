@@ -414,6 +414,7 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     # alert words
     if changed(['alert_words']):
         cache_delete(realm_alert_words_cache_key(user_profile.realm))
+        cache_delete(realm_alert_words_automaton_cache_key(user_profile.realm))
 
 # Called by models.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is
@@ -429,10 +430,14 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
+        cache_delete(realm_alert_words_automaton_cache_key(realm))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
+
+def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
+    return "realm_alert_words_automaton:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.

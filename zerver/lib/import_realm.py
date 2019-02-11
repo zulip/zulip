@@ -21,7 +21,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, \
     Record, TableData, TableName, Field, Path
-from zerver.lib.message import do_render_markdown, RealmAlertWords
+from zerver.lib.message import do_render_markdown
 from zerver.lib.bugdown import version as bugdown_version, convert as bugdown_convert
 from zerver.lib.upload import random_name, sanitize_name, \
     guess_type, BadImageError
@@ -256,14 +256,14 @@ def fix_message_rendered_content(realm: Realm,
             # We don't handle alert words on import from third-party
             # platforms, since they generally don't have an "alert
             # words" type feature, and notifications aren't important anyway.
-            realm_alert_words = dict()  # type: RealmAlertWords
+            realm_alert_words_automaton = None
             message_user_ids = set()  # type: Set[int]
 
             rendered_content = do_render_markdown(
                 message=cast(Message, message_object),
                 content=content,
                 realm=realm,
-                realm_alert_words=realm_alert_words,
+                realm_alert_words_automaton=realm_alert_words_automaton,
                 message_user_ids=message_user_ids,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
