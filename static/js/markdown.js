@@ -246,6 +246,8 @@ function python_to_js_filter(pattern, url) {
         // Replace named reference in url to numbered reference
         url = url.replace('%(' + name + ')s', '\\' + current_group);
 
+        // Reset the RegExp state
+        named_group_re.lastIndex = 0; 
         match = named_group_re.exec(pattern);
 
         current_group += 1;
