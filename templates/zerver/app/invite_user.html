@@ -8,7 +8,6 @@
         <form id="invite_user_form" class="form-horizontal">{{ csrf_input }}
             <div class="modal-body">
                 <div class="control-group">
-                    <div id="invite-result"></div>
                     <label class="control-label" for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
                     <div class="controls">
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
