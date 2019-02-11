@@ -250,6 +250,16 @@ AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
 )
 ```
 
+### Restricting access to an LDAP group
+
+You can restrict access to your Zulip server to a set of LDAP groups
+using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
+settings in `/etc/zulip/settings.py`.  See the
+[upstream django-auth-ldap documentation][upstream-ldap-groups] for
+details.
+
+[upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
+
 ## Apache-based SSO with `REMOTE_USER`
 
 If you have any existing SSO solution where a preferred way to deploy
