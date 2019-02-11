@@ -103,7 +103,9 @@ class OpenGraphTest(ZulipTestCase):
             '/help/logging-out',
             "Logging out (Zulip Help Center)",
             # Ideally we'd do something better here
-            ["Click on the gear () icon in", "Click Log out.  Tap the menu"], [])
+            ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
+             "feature requests."],
+            ["Click on the gear"])
 
     def test_index_pages(self) -> None:
         self.check_title_and_description(
