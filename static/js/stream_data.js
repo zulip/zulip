@@ -7,6 +7,7 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
+var filter_out_inactives = false;
 
 var stream_ids_by_name = new Dict({fold_case: true});
 
@@ -17,7 +18,26 @@ exports.clear_subscriptions = function () {
 
 exports.clear_subscriptions();
 
+exports.set_filter_out_inactives = function (want_filter) {
+    filter_out_inactives = want_filter || false;
+};
+
+// for testing:
+exports.is_filtering_inactives = function () {
+    return filter_out_inactives;
+};
+
 exports.is_active = function (sub) {
+    if (!filter_out_inactives) {
+        // If users don't want to filter inactive streams
+        // to the bottom, we respect that setting and don't
+        // treat any streams as dormant.
+        //
+        // Currently this setting is automatically determined
+        // by the number of streams.  See the callers
+        // to set_filter_out_inactives.
+        return true;
+    }
     return topic_data.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 };
 
@@ -621,6 +641,9 @@ exports.initialize = function () {
     } else {
         page_params.notifications_stream = "";
     }
+
+    var has_many_streams = exports.subscribed_subs().length >= 30;
+    exports.set_filter_out_inactives(has_many_streams);
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subscriptions;
