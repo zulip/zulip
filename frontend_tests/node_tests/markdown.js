@@ -519,6 +519,11 @@ run_test('python_to_js_filter', () => {
     var actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     var expected_value = [/\/aa\/g(?![\w])/gim, /\/aa\/g(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
+    // Test case with multiple replacements.
+    markdown.set_realm_filters([['#cf(?P<contest>[0-9]+)(?P<problem>[A-Z][0-9A-Z]*)', 'http://google.com']]);
+    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
+    assert.deepEqual(actual_value, expected_value);
 });
 
 run_test('katex_throws_unexpected_exceptions', () => {
