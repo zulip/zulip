@@ -1224,6 +1224,8 @@
         , placement
         , tp
         , newtop
+        , left
+        , top
 
       if (this.hasContent() && this.enabled) {
         $tip = this.tip()
@@ -1251,18 +1253,51 @@
 
         switch (inside ? placement.split(' ')[1] : placement) {
           case 'bottom':
-            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
+            top = pos.top + pos.height;
+            left = pos.left + pos.width / 2 - actualWidth / 2;
             break
           case 'top':
-            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
+            top = pos.top - actualHeight;
+            left = pos.left + pos.width / 2 - actualWidth / 2;
             break
           case 'left':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
+            top = pos.top + pos.height / 2 - actualHeight / 2;
+            left = pos.left - actualWidth;
             break
           case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
+            top = pos.top + pos.height / 2 - actualHeight / 2;
+            left = pos.left + pos.width;
             break
         }
+
+        if (this.options.fix_positions) {
+            var win_height = $(window).height();
+            var win_width = $(window).width();
+
+            /* Ensure that the popover stays fully onscreen,
+               as best as we can.  It might still not look
+               great--in some cases, we should probably just
+               center--but this patch makes the popover more
+               likely to be usable.  (If the screen is super
+               small, obviously we can't fit it completely.)
+
+               If you use this fix_positions option, you want
+               to also use the "no_arrow_popover" template.
+            */
+            if (top < 0) {
+                top = 0;
+            } else if (top + actualHeight > win_height) {
+                top = win_height - actualHeight;
+            }
+
+            if (left < 0) {
+                left = 0;
+            } else if (left + actualWidth > win_width) {
+                left = win_width - actualWidth;
+            }
+        }
+
+        tp = {top: top, left: left};
 
         if (this.options.fixed) {
           // If using position: fixed, position relative to top of
