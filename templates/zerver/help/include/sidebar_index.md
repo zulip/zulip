@@ -1,6 +1,8 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Streams and topics](/help/about-streams-and-topics)
+* [Moderating open organizations](/help/moderating-open-organizations)
 
 # Using Zulip
 
@@ -109,7 +111,6 @@
 * [Roles and permissions](/help/roles-and-permissions)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
-* [Moderating open organizations](/help/moderating-open-organizations)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [GDPR Compliance](/help/gdpr-compliance)
 
