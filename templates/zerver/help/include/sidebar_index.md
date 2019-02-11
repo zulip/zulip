@@ -88,6 +88,7 @@
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [View emoji as text](/help/view-emoji-as-text)
+* [Change your timezone](/help/change-your-timezone)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 * [Connect through a proxy](/help/connect-through-a-proxy)
