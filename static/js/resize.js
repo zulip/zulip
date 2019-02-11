@@ -101,8 +101,16 @@ function left_userlist_get_new_heights() {
     var res = {};
     var viewport_height = message_viewport.height();
     var viewport_width = message_viewport.width();
-    var top_navbar_height = $(".header").safeOuterHeight(true);
+    res.viewport_height = viewport_height;
+    res.viewport_width = viewport_width;
 
+    // main div
+    var top_navbar_height = $(".header").safeOuterHeight(true);
+    res.bottom_whitespace_height = viewport_height * 0.4;
+    res.main_div_min_height = viewport_height - top_navbar_height;
+
+
+    // left sidebar
     var stream_filters = $('#stream_filters').expectOne();
     var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
@@ -110,10 +118,6 @@ function left_userlist_get_new_heights() {
     var stream_filters_real_height = stream_filters.prop("scrollHeight");
     var user_list_real_height = buddy_list_wrapper.prop("scrollHeight");
     var group_pms_real_height = group_pms.prop("scrollHeight");
-
-    res.bottom_whitespace_height = viewport_height * 0.4;
-
-    res.main_div_min_height = viewport_height - top_navbar_height;
 
     res.total_leftlist_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
@@ -147,9 +151,6 @@ function left_userlist_get_new_heights() {
     res.stream_filters_max_height = blocks[0].max_height;
     res.buddy_list_wrapper_max_height = blocks[1].max_height;
     res.group_pms_max_height = blocks[2].max_height;
-
-    res.viewport_height = viewport_height;
-    res.viewport_width = viewport_width;
 
     return res;
 }
