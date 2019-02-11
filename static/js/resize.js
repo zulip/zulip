@@ -128,8 +128,7 @@ function left_userlist_get_new_heights() {
                                 - parseInt(buddy_list_wrapper.css("marginTop"), 10)
                                 - parseInt(buddy_list_wrapper.css("marginBottom"), 10)
                                 - parseInt(group_pms.css("marginTop"), 10)
-                                - parseInt(group_pms.css("marginBottom"), 10)
-                                - 15;
+                                - parseInt(group_pms.css("marginBottom"), 10);
 
     var blocks = [
         {
