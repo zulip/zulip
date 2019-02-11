@@ -460,6 +460,10 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             for tag in bs.find_all('div', class_="admonition"):
                 tag.clear()
 
+            # Skip code-sections, which just contains navigation instructions.
+            for tag in bs.find_all('div', class_="code-section"):
+                tag.clear()
+
             text = ''
             for paragraph in bs.find_all('p'):
                 # .text converts it from HTML to text
