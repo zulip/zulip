@@ -1,7 +1,8 @@
 # Moderating open organizations
 
-Zulip aims to be the best chat possible for open organizations. Moderation
-is a big part of making an open community work.
+An **open organization** is one where
+[anyone can join without an invitation](/help/manage-who-can-join-and-invite).
+Moderation is a big part of making an open community work.
 
 ## Prevention
 
