@@ -18,6 +18,7 @@ import functools
 import ujson
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
+import ahocorasick
 
 from collections import deque, defaultdict
 
@@ -1636,6 +1637,21 @@ def possible_linked_stream_names(content: str) -> Set[str]:
     return set(matches)
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
+
+    allowed_before_punctuation = set([' ', '\n', '(', '"', '.', ',', '\'', ';', '[', '*', '`', '>'])
+    allowed_after_punctuation = set([' ', '\n', ')', '",', '?', ':', '.', ',', '\'', ';', ']', '!',
+                                     '*', '`'])
+
+    def check_valid_start_position(self, content: str, index: int) -> bool:
+        if index <= 0 or content[index] in self.allowed_before_punctuation:
+            return True
+        return False
+
+    def check_valid_end_position(self, content: str, index: int) -> bool:
+        if index >= len(content) or content[index] in self.allowed_after_punctuation:
+            return True
+        return False
+
     def run(self, lines: Iterable[str]) -> Iterable[str]:
         db_data = self.markdown.zulip_db_data
         if self.markdown.zulip_message and db_data is not None:
@@ -1646,22 +1662,14 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             # don't do any special rendering; we just append the alert words
             # we find to the set self.markdown.zulip_message.alert_words.
 
-            realm_words = db_data['possible_words']
+            realm_alert_words_automaton = db_data['realm_alert_words_automaton']
 
-            content = '\n'.join(lines).lower()
-
-            allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[\*`>]'])
-            allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,\';\]!\*`]'])
-
-            for word in realm_words:
-                escaped = re.escape(word.lower())
-                match_re = re.compile('(?:%s)%s(?:%s)' %
-                                      (allowed_before_punctuation,
-                                       escaped,
-                                       allowed_after_punctuation))
-                if re.search(match_re, content):
-                    self.markdown.zulip_message.alert_words.add(word)
-
+            if realm_alert_words_automaton is not None:
+                content = '\n'.join(lines).lower()
+                for end_index, (original_value, user_ids) in realm_alert_words_automaton.iter(content):
+                    if self.check_valid_start_position(content, end_index - len(original_value)) and \
+                       self.check_valid_end_position(content, end_index + 1):
+                        self.markdown.zulip_message.user_ids_with_alert_words.update(user_ids)
         return lines
 
 # This prevents realm_filters from running on the content of a
@@ -2118,9 +2126,9 @@ def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, Full
 
 
 def do_convert(content: str,
+               realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
                message: Optional[Message]=None,
                message_realm: Optional[Realm]=None,
-               possible_words: Optional[Set[str]]=None,
                sent_by_bot: Optional[bool]=False,
                translate_emoticons: Optional[bool]=False,
                mention_data: Optional[MentionData]=None,
@@ -2176,8 +2184,6 @@ def do_convert(content: str,
     # Pre-fetch data from the DB that is used in the bugdown thread
     if message is not None:
         assert message_realm is not None  # ensured above if message is not None
-        if possible_words is None:
-            possible_words = set()  # Set[str]
 
         # Here we fetch the data structures needed to render
         # mentions/avatars/stream mentions from the database, but only
@@ -2200,7 +2206,7 @@ def do_convert(content: str,
             active_realm_emoji = dict()
 
         _md_engine.zulip_db_data = {
-            'possible_words': possible_words,
+            'realm_alert_words_automaton': realm_alert_words_automaton,
             'email_info': email_info,
             'mention_data': mention_data,
             'active_realm_emoji': active_realm_emoji,
@@ -2265,17 +2271,18 @@ def bugdown_stats_finish() -> None:
     bugdown_total_time += (time.time() - bugdown_time_start)
 
 def convert(content: str,
+            realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
             message: Optional[Message]=None,
             message_realm: Optional[Realm]=None,
-            possible_words: Optional[Set[str]]=None,
             sent_by_bot: Optional[bool]=False,
             translate_emoticons: Optional[bool]=False,
             mention_data: Optional[MentionData]=None,
             email_gateway: Optional[bool]=False,
             no_previews: Optional[bool]=False) -> str:
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm,
-                     possible_words, sent_by_bot, translate_emoticons,
-                     mention_data, email_gateway, no_previews=no_previews)
+    ret = do_convert(content, realm_alert_words_automaton,
+                     message, message_realm, sent_by_bot,
+                     translate_emoticons, mention_data, email_gateway,
+                     no_previews=no_previews)
     bugdown_stats_finish()
     return ret

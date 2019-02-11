@@ -107,7 +107,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm, \
     get_stream_by_id_in_realm
 
-from zerver.lib.alert_words import alert_words_in_realm
+from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.validator import check_widget_content
@@ -891,13 +891,13 @@ def render_incoming_message(message: Message,
                             realm: Realm,
                             mention_data: Optional[bugdown.MentionData]=None,
                             email_gateway: Optional[bool]=False) -> str:
-    realm_alert_words = alert_words_in_realm(realm)
+    realm_alert_words_automaton = get_alert_word_automaton(realm)
     try:
         rendered_content = render_markdown(
             message=message,
             content=content,
             realm=realm,
-            realm_alert_words=realm_alert_words,
+            realm_alert_words_automaton = realm_alert_words_automaton,
             user_ids=user_ids,
             mention_data=mention_data,
             email_gateway=email_gateway,
