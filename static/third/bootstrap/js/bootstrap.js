@@ -1262,6 +1262,9 @@
             break
           case 'left':
             top = pos.top + pos.height / 2 - actualHeight / 2;
+            if (this.options.top_offset) {
+                top = this.options.top_offset;
+            }
             left = pos.left - actualWidth;
             break
           case 'right':
