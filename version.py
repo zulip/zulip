@@ -1,4 +1,4 @@
-ZULIP_VERSION = "2.0.0-rc1"
+ZULIP_VERSION = "2.0.0-rc1+git"
 LATEST_MAJOR_VERSION = "1.9"
 LATEST_RELEASE_VERSION = "1.9.2"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.org/2018/11/07/zulip-1-9-released/"
