@@ -1109,10 +1109,9 @@ td.pointer {
 
 .selected_message .messagebox-content {
     box-shadow:
-        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-        -1px -1px 0px 0px hsl(215, 47%, 50%),
+        -3px -1px 0px 0px hsl(215, 47%, 50%),
         1px 1px 0px 0px hsl(215, 47%, 50%),
-        -1px 1px 0px 0px hsl(215, 47%, 50%),
+        -3px 1px 0px 0px hsl(215, 47%, 50%),
         1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
@@ -1483,7 +1482,8 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    padding: 4px 115px 1px 9px;
+    margin-left: 1px;
 }
 
 #message-edit-history .messagebox-content {
