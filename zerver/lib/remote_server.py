@@ -131,6 +131,7 @@ def send_analytics_to_remote_server() -> None:
     request = {
         'realm_counts': ujson.dumps(realm_count_data),
         'installation_counts': ujson.dumps(installation_count_data),
+        'version': ujson.dumps(ZULIP_VERSION),
     }
 
     # Gather only entries with an ID greater than last_realm_count_id

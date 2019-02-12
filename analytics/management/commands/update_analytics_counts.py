@@ -11,6 +11,7 @@ from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from scripts.lib.zulip_tools import ENDC, WARNING
+from zerver.lib.remote_server import send_analytics_to_remote_server
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -84,3 +85,6 @@ class Command(BaseCommand):
             print("Finished updating analytics counts through %s in %.3fs" %
                   (fill_to_time, time.time() - start))
         logger.info("Finished updating analytics counts through %s" % (fill_to_time,))
+
+        if settings.PUSH_NOTIFICATION_BOUNCER_URL and settings.SUBMIT_USAGE_STATISTICS:
+            send_analytics_to_remote_server()

@@ -223,6 +223,13 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 # notification encryption feature.
 #PUSH_NOTIFICATION_REDACT_CONTENT = False
 
+# Whether to submit basic usage statistics to help the Zulip core team.  Details at
+#
+#   https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+#
+# Defaults to True if and only if the Mobile Push Notifications Service is enabled.
+#SUBMIT_USAGE_STATISTICS = True
+
 # Controls whether session cookies expire when the browser closes
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
