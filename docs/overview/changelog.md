@@ -17,7 +17,7 @@ in bursts.
 - Added a built-in /poll slash command for lightweight polls.
 - Added support for using Zoom as the video chat provider.  We now
   support Jitsi, Google Hangouts, and Zoom.
-- Added support for branding the top-right corner of the logged in app
+- Added support for branding the top-left corner of the logged in app
   with an organization's logo.
 - Zulip's "Guest users" feature is no longer experimental.
 - The HipChat/Stride data import tool is no longer experimental.
