@@ -141,7 +141,11 @@ exports.relevant_recipient_bars = function () {
     header_height += 10;
 
     function next(elem) {
-        return elem.next('.recipient_row');
+        elem = elem.next();
+        while (elem.length !== 0 && !elem.hasClass("recipient_row")) {
+            elem = elem.next();
+        }
+        return elem;
     }
 
     // Now start the forward traversal of recipient bars.
