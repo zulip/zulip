@@ -55,7 +55,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 }
 
 
-exports.insert_new_messages = function insert_new_messages(messages, locally_echoed) {
+exports.insert_new_messages = function insert_new_messages(messages, sent_by_this_client) {
     messages = _.map(messages, message_store.add_message_metadata);
 
     unread.process_loaded_messages(messages);
@@ -83,7 +83,7 @@ exports.insert_new_messages = function insert_new_messages(messages, locally_ech
     }
 
 
-    if (locally_echoed) {
+    if (sent_by_this_client) {
         var need_user_to_scroll = render_info && render_info.need_user_to_scroll;
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }

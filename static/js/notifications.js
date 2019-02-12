@@ -588,12 +588,13 @@ exports.get_local_notify_mix_reason = function (message) {
 
 exports.notify_local_mixes = function (messages, need_user_to_scroll) {
     /*
-        This code should only be called when we are locally echoing
-        messages.  It notifies users that their messages aren't
-        actually in the view that they composed to.
+        This code should only be called when we are displaying
+        messages sent by current client. It notifies users that
+        their messages aren't actually in the view that they
+        composed to.
 
         This code is called after we insert messages into our
-        message list widgets.  All of the conditions here are
+        message list widgets. All of the conditions here are
         checkable locally, so we may want to execute this code
         earlier in the codepath at some point and possibly punt
         on local rendering.
