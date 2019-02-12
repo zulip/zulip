@@ -50,9 +50,9 @@ author = 'The Zulip Team'
 # built documents.
 #
 # The short X.Y version.
-version = '1.9+git'
+version = '2.0'
 # The full version, including alpha/beta/rc tags.
-release = '1.9.2+git'
+release = '2.0.0-rc1'
 
 # This allows us to insert a warning that appears only on an unreleased
 # version, e.g. to say that something is likely to have changed.
