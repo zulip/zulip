@@ -5,7 +5,7 @@ To run a Zulip server, you will need:
 * A supported OS:
   * Ubuntu 18.04 Bionic
   * Ubuntu 16.04 Xenial
-  * Ubuntu 14.04 Trusty (not recommended for new installations)
+  * Ubuntu 14.04 Trusty (deprecated due to [approaching end-of-life][trusty-eol])
   * Debian 9 Stretch
 * At least 2GB RAM, and 10GB disk space
   * If you expect 100+ users: 4GB RAM, and 2 CPUs
@@ -33,7 +33,9 @@ Ubuntu 18.04 Bionic, Ubuntu 16.04 Xenial, Ubuntu 14.04 Trusty and
 Debian Stretch are supported for running Zulip in production.  64-bit
 is recommended.  We also recommend installing on the newest option
 you're comfortable with, to save your organization the work of
-upgrading.
+upgrading (Ubuntu Trusty will
+[reach end of life in April 2019][trusty-eol]; Zulip 2.0 will be the
+last major release to support it).
 
 If you're using Ubuntu, the
 [Ubuntu universe repository][ubuntu-repositories] must be
@@ -125,3 +127,5 @@ certificate documentation](ssl-certificates.html).
 
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](../production/install.html).
+
+[trusty-eol]: https://wiki.ubuntu.com/Releases
