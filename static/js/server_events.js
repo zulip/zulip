@@ -104,7 +104,14 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             _.each(messages, message_store.set_message_booleans);
-            message_events.insert_new_messages(messages);
+            var sent_by_this_client = false;
+            _.each(messages, function (msg) {
+                var msg_state = sent_messages.messages[msg.local_id];
+                if (msg_state) {
+                    sent_by_this_client = true;
+                }
+            });
+            message_events.insert_new_messages(messages, sent_by_this_client);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +
                            blueslip.exception_msg(ex2),
