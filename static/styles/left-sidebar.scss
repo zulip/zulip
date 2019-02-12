@@ -196,11 +196,8 @@ a.conversation-partners:hover {
 */
 .top_left_starred_messages .count {
     background-color: transparent;
-    border-width: 1px;
-    border-style: solid;
     color: inherit;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 2px 1px 0px 3px;
     border-color: hsl(105, 2%, 50%);
 }
 
