@@ -524,6 +524,14 @@ run_test('python_to_js_filter', () => {
     actual_value = marked.InlineLexer.rules.zulip.realm_filters;
     expected_value = [/#cf([0-9]+)([A-Z][0-9A-Z]*)(?![\w])/g];
     assert.deepEqual(actual_value, expected_value);
+    // Test incorrect syntax.
+    blueslip.set_test_data('warn', 'python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?![\\w])/: Unterminated group');
+    markdown.set_realm_filters([['!@#@(!#&((!&(@#(', 'http://google.com']]);
+    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    expected_value = [];
+    assert.deepEqual(actual_value, expected_value);
+    assert(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 });
 
 run_test('katex_throws_unexpected_exceptions', () => {
