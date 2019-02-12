@@ -277,7 +277,16 @@ function python_to_js_filter(pattern, url) {
     // message is rendered on the backend which has proper support
     // for negative lookbehind.
     pattern = pattern + /(?![\w])/.source;
-    return [new RegExp(pattern, js_flags), url];
+    var final_regex = null;
+    try {
+        final_regex = new RegExp(pattern, js_flags);
+    } catch (ex) {
+        // We have an error computing the generated regex syntax.
+        // We'll ignore this realm filter for now, but log this
+        // failure for debugging later.
+        blueslip.error('python_to_js_filter: ' + ex.message);
+    }
+    return [final_regex, url];
 }
 
 exports.set_realm_filters = function (realm_filters) {
@@ -290,6 +299,10 @@ exports.set_realm_filters = function (realm_filters) {
         var pattern = realm_filter[0];
         var url = realm_filter[1];
         var js_filters = python_to_js_filter(pattern, url);
+        if (!js_filters[0]) {
+            // Skip any realm filters that could not be converted
+            return;
+        }
 
         realm_filter_map[js_filters[0]] = js_filters[1];
         realm_filter_list.push([js_filters[0], js_filters[1]]);
