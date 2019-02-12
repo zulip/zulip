@@ -80,6 +80,9 @@ function load_medium_avatar(user, elt) {
 function user_last_seen_time_status(user_id) {
     var status = presence.get_status(user_id);
     if (status === "active") {
+        if (user_status.is_away(user_id)) {
+            return i18n.t("Recently");
+        }
         return i18n.t("Active now");
     }
 
