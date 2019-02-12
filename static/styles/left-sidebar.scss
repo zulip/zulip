@@ -147,6 +147,13 @@ li.active-sub-filter {
     display: block;
 }
 
+.conversation-partners {
+    display: inline-block;
+    line-height: 1.2;
+    width: 90%;
+    overflow: hidden;
+}
+
 a.conversation-partners:hover {
     text-decoration: underline;
 }
