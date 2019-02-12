@@ -598,11 +598,18 @@ exports.notify_local_mixes = function (messages, need_user_to_scroll) {
         checkable locally, so we may want to execute this code
         earlier in the codepath at some point and possibly punt
         on local rendering.
+
+        Possible cleanup: Arguably, we should call this function
+        unconditionally and just check if message.local_id is in
+        sent_messages.messages here.
     */
 
     _.each(messages, function (message) {
         if (!people.is_my_user_id(message.sender_id)) {
-            blueslip.warn('We did not expect messages sent by others to get here');
+            // This can happen if the client is offline for a while
+            // around the time this client sends a message; see the
+            // caller of message_events.insert_new_messages.
+            blueslip.info('Slightly unexpected: A message not sent by us batches with those that were.');
             return;
         }
 

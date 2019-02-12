@@ -85,6 +85,9 @@ exports.insert_new_messages = function insert_new_messages(messages, sent_by_thi
 
     if (sent_by_this_client) {
         var need_user_to_scroll = render_info && render_info.need_user_to_scroll;
+        // sent_by_this_client will be true if ANY of the messages
+        // were sent by this client; notifications.notify_local_mixes
+        // will filter out any not sent by us.
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
