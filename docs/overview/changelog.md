@@ -7,12 +7,11 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.0-rc1 -- 2019-02-11
+
 **Highlights:**
 - Added automation for synchronizing user avatars, custom profile
   fields, disabled status, and more from LDAP/active directory.
-- Added support for CentOS 7 in the development environment
-  provisioning process.  This is an important step towards production
-  CentOS/RHEL 7 support.
 - Added support for explicitly setting oneself as "away" and "user
   status" messages.
 - Added a built-in /poll slash command for lightweight polls.
@@ -26,6 +25,9 @@ in bursts.
   of messages, 10,000s of users, and 100,000s of uploaded files.
 
 **Full feature changelog:**
+- Added support for CentOS 7 in the development environment
+  provisioning process.  This is an important step towards production
+  CentOS/RHEL 7 support.
 - Added a new Azure Active Directory authentication integration.
   New authentication backends supported by python-social-auth can now be
   added with just a few dozen lines of code.
