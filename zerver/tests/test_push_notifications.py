@@ -1239,11 +1239,12 @@ class Result:
 
 class TestSendToPushBouncer(ZulipTestCase):
     @mock.patch('requests.request', return_value=Result(status=500))
-    def test_500_error(self, mock_request: mock.MagicMock) -> None:
-        with self.assertRaises(PushNotificationBouncerException) as exc:
-            send_to_push_bouncer('register', 'register', {'data': True})
-        self.assertEqual(str(exc.exception),
-                         'Received 500 from push notification bouncer')
+    @mock.patch('logging.warning')
+    def test_500_error(self, mock_request: mock.MagicMock, mock_warning: mock.MagicMock) -> None:
+        result, failed = send_to_push_bouncer('register', 'register', {'data': True})
+        self.assertEqual(result, {})
+        self.assertEqual(failed, True)
+        mock_warning.assert_called_once()
 
     @mock.patch('requests.request', return_value=Result(status=400))
     def test_400_error(self, mock_request: mock.MagicMock) -> None:
