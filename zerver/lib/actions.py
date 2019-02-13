@@ -969,10 +969,15 @@ def get_recipient_info(recipient: Recipient,
         # of this function for different message types.
         assert(stream_topic is not None)
 
-        subscription_rows = stream_topic.get_active_subscriptions().values(
+        subscription_rows = stream_topic.get_active_subscriptions().annotate(
+            user_profile_email_notifications=F('user_profile__enable_stream_email_notifications'),
+            user_profile_push_notifications=F('user_profile__enable_stream_push_notifications'),
+        ).values(
             'user_profile_id',
             'push_notifications',
             'email_notifications',
+            'user_profile_email_notifications',
+            'user_profile_push_notifications',
             'in_home_view',
         ).order_by('user_profile_id')
 
@@ -981,20 +986,30 @@ def get_recipient_info(recipient: Recipient,
             for row in subscription_rows
         ]
 
+        def should_send(setting: str, row: Dict[str, Any]) -> bool:
+            # This implements the structure that the UserProfile stream notification settings
+            # are defaults, which can be overridden by the stream-level settings (if those
+            # values are not null).
+            if not row['in_home_view']:
+                return False
+            if row[setting] is not None:
+                return row[setting]
+            return row['user_profile_' + setting]
+
         user_ids_muting_topic = stream_topic.user_ids_muting_topic()
 
         stream_push_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_push_notify
-            if row['push_notifications'] and row['in_home_view']
+            if should_send('push_notifications', row)
         } - user_ids_muting_topic
 
         stream_email_user_ids = {
             row['user_profile_id']
             for row in subscription_rows
             # Note: muting a stream overrides stream_email_notify
-            if row['email_notifications'] and row['in_home_view']
+            if should_send('email_notifications', row)
         } - user_ids_muting_topic
 
     elif recipient.type == Recipient.HUDDLE:
@@ -2780,12 +2795,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
             color = pick_color(user_profile, subs_by_user[user_profile.id])
 
         sub_to_add = Subscription(user_profile=user_profile, active=True,
-                                  color=color, recipient_id=recipient_id,
-                                  desktop_notifications=user_profile.enable_stream_desktop_notifications,
-                                  audible_notifications=user_profile.enable_stream_sounds,
-                                  push_notifications=user_profile.enable_stream_push_notifications,
-                                  email_notifications=user_profile.enable_stream_email_notifications,
-                                  )
+                                  color=color, recipient_id=recipient_id)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
@@ -4637,6 +4647,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                                                                   recent_traffic),
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"]),
                        'history_public_to_subscribers': stream['history_public_to_subscribers']}
+
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
         if sub["active"]:

@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from mypy_extensions import TypedDict
 
 from django.db.models.query import QuerySet
@@ -74,3 +74,30 @@ def num_subscribers_for_stream_id(stream_id: int) -> int:
     return get_active_subscriptions_for_stream_id(stream_id).filter(
         user_profile__is_active=True,
     ).count()
+
+
+def handle_stream_notifications_compatibility(user_profile: UserProfile,
+                                              stream_dict: Dict[str, Any],
+                                              notification_settings_null: bool) -> None:
+    # Old versions of the mobile apps don't support `None` as a
+    # value for the stream-level notifications properties, so we
+    # have to handle the normally frontend-side defaults for these
+    # settings here for those older clients.
+    #
+    # Note that this situation results in these older mobile apps
+    # having a subtle bug where changes to the user-level stream
+    # notification defaults will not properly propagate to the
+    # mobile app "stream notification settings" UI until the app
+    # re-registers.  This is an acceptable level of
+    # backwards-compatibility problem in our view.
+    assert not notification_settings_null
+
+    for notification_type in ["desktop_notifications", "audible_notifications",
+                              "push_notifications", "email_notifications"]:
+        # Values of true/false are supported by older clients.
+        if stream_dict[notification_type] is not None:
+            continue
+        target_attr = "enable_stream_" + notification_type
+        if notification_type == 'audible_notifications':
+            target_attr = "enable_stream_sounds"
+        stream_dict[notification_type] = getattr(user_profile, target_attr)

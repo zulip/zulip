@@ -6,132 +6,77 @@
 # to get a tutorial on the framework that inspired this feature.
 
 from zerver.lib.test_classes import MigrationsTestCase
-from zerver.lib.test_helpers import use_db_models, make_client
-from django.utils.timezone import now as timezone_now
+from zerver.lib.test_helpers import use_db_models
 from django.db.migrations.state import StateApps
-from django.db.models.base import ModelBase
 
 from zerver.models import get_stream
 
-class EmojiName2IdTestCase(MigrationsTestCase):
+# Important note: These tests are very expensive, and details of
+# Django's database transaction model mean it does not super work to
+# have a lot of migrations tested in this file at once; so we usually
+# delete the old migration tests when adding a new one, so this file
+# always has a single migration test in it as an example.
+#
+# The error you get with multiple similar tests doing migrations on
+# the same table is this (table name may vary):
+#
+#   django.db.utils.OperationalError: cannot ALTER TABLE
+#   "zerver_subscription" because it has pending trigger events
 
-    migrate_from = '0144_remove_realm_create_generic_bot_by_admins_only'
-    migrate_to = '0145_reactions_realm_emoji_name_to_id'
+class SubsNotificationSettingsTestCase(MigrationsTestCase):
+
+    migrate_from = '0220_subscription_notification_settings'
+    migrate_to = '0221_subscription_notifications_data_migration'
+    RECIPIENT_PERSONAL = 1
+    RECIPIENT_STREAM = 2
 
     @use_db_models
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        Reaction = apps.get_model('zerver', 'Reaction')
-        RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
-        Message = apps.get_model('zerver', 'Message')
         Recipient = apps.get_model('zerver', 'Recipient')
+        Subscription = apps.get_model('zerver', 'Subscription')
 
-        sender = self.example_user('iago')
-        realm = sender.realm
-        sending_client = make_client(name="test suite")
+        iago = self.example_user('iago')
+        iago.enable_stream_desktop_notifications = True
+        iago.enable_stream_audible_notifications = False
+        iago.enable_desktop_notifications = True
+        iago.enable_online_push_notifications = True
+        iago.enable_sounds = False
+        iago.save()
+
         stream_name = 'Denmark'
-        stream = get_stream(stream_name, realm)
-        subject = 'foo'
+        denmark = get_stream(stream_name, iago.realm)
+        denmark_recipient = Recipient.objects.get(type=self.RECIPIENT_STREAM, type_id=denmark.id)
+        denmark_sub = Subscription.objects.get(user_profile=iago, recipient=denmark_recipient)
+        denmark_sub.desktop_notifications = False
+        denmark_sub.audible_notifications = False
+        denmark_sub.save(update_fields=['desktop_notifications', 'audible_notifications'])
 
-        def send_fake_message(message_content: str, stream: ModelBase) -> ModelBase:
-            recipient = Recipient.objects.get(type_id=stream.id, type=2)
-            return Message.objects.create(sender = sender,
-                                          recipient = recipient,
-                                          subject = subject,
-                                          content = message_content,
-                                          pub_date = timezone_now(),
-                                          sending_client = sending_client)
-        message = send_fake_message('Test 1', stream)
+        iago_recipient = Recipient.objects.get(type=self.RECIPIENT_PERSONAL, type_id=iago.id)
+        iago_sub = Subscription.objects.get(user_profile=iago, recipient=iago_recipient)
+        iago_sub.desktop_notifications = False
+        iago_sub.audible_notifications = False
+        iago_sub.push_notifications = True
+        iago_sub.save(update_fields=['desktop_notifications', 'audible_notifications', 'push_notifications'])
 
-        # Create reactions for all the realm emoji's on the message we faked.
-        for realm_emoji in RealmEmoji.objects.all():
-            reaction = Reaction(user_profile=sender, message=message,
-                                emoji_name=realm_emoji.name, emoji_code=realm_emoji.name,
-                                reaction_type='realm_emoji')
-            reaction.save()
-        realm_emoji_reactions_count = Reaction.objects.filter(reaction_type='realm_emoji').count()
-        self.assertEqual(realm_emoji_reactions_count, 1)
+    def test_subs_migrated(self) -> None:
+        UserProfile = self.apps.get_model('zerver', 'UserProfile')
+        Recipient = self.apps.get_model('zerver', 'Recipient')
+        Realm = self.apps.get_model('zerver', 'Realm')
+        Subscription = self.apps.get_model('zerver', 'Subscription')
+        Stream = self.apps.get_model('zerver', 'Stream')
 
-    def test_tags_migrated(self) -> None:
-        """Test runs after the migration, and verifies the data was migrated correctly"""
-        Reaction = self.apps.get_model('zerver', 'Reaction')
-        RealmEmoji = self.apps.get_model('zerver', 'RealmEmoji')
+        realm = Realm.objects.get(string_id='zulip')
+        iago = UserProfile.objects.get(email='iago@zulip.com', realm=realm)
+        stream_name = 'Denmark'
+        denmark = Stream.objects.get(realm=iago.realm, name=stream_name)
+        denmark_recipient = Recipient.objects.get(type=self.RECIPIENT_STREAM, type_id=denmark.id)
+        denmark_sub = Subscription.objects.get(user_profile=iago, recipient=denmark_recipient)
+        self.assertEqual(denmark_sub.desktop_notifications, False)
+        self.assertIsNone(denmark_sub.audible_notifications)
 
-        realm_emoji_reactions = Reaction.objects.filter(reaction_type='realm_emoji')
-        realm_emoji_reactions_count = realm_emoji_reactions.count()
-        self.assertEqual(realm_emoji_reactions_count, 1)
-        for reaction in realm_emoji_reactions:
-            realm_emoji = RealmEmoji.objects.get(
-                realm_id=reaction.user_profile.realm_id,
-                name=reaction.emoji_name)
-            self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
-
-class CreateStreamPolicyMembersAndAdmins(MigrationsTestCase):
-
-    migrate_from = '0215_realm_avatar_changes_disabled'
-    migrate_to = '0218_remove_create_stream_by_admins_only'
-
-    @use_db_models
-    def setUpBeforeMigration(self, apps: StateApps) -> None:
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "Members and admins"
-        realm.create_stream_by_admins_only = False
-        realm.waiting_period_threshold = 0
-
-        realm.save()
-
-    def test_policy_migrated(self) -> None:
-        """Test runs after the migration, and verifies the data was migrated correctly"""
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "Members and admins"
-        self.assertEqual(realm.create_stream_policy, realm.CREATE_STREAM_POLICY_MEMBERS)
-
-class CreateStreamPolicyAdmins(MigrationsTestCase):
-
-    migrate_from = '0215_realm_avatar_changes_disabled'
-    migrate_to = '0218_remove_create_stream_by_admins_only'
-
-    @use_db_models
-    def setUpBeforeMigration(self, apps: StateApps) -> None:
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "Admins only"
-        realm.create_stream_by_admins_only = True
-
-        realm.save()
-
-    def test_policy_migrated(self) -> None:
-        """Test runs after the migration, and verifies the data was migrated correctly"""
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "Admins only"
-        self.assertEqual(realm.create_stream_policy, realm.CREATE_STREAM_POLICY_ADMINS)
-
-class CreateStreamPolicyWaitingPeriod(MigrationsTestCase):
-
-    migrate_from = '0215_realm_avatar_changes_disabled'
-    migrate_to = '0218_remove_create_stream_by_admins_only'
-
-    @use_db_models
-    def setUpBeforeMigration(self, apps: StateApps) -> None:
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "All admins, and members with accounts at least N days old."
-        realm.create_stream_by_admins_only = False
-        realm.waiting_period_threshold = 6
-
-        realm.save()
-
-    def test_policy_migrated(self) -> None:
-        """Test runs after the migration, and verifies the data was migrated correctly"""
-        user = self.example_user('iago')
-        realm = user.realm
-
-        # Test migration of "All admins, and members with accounts at least N days old."
-        self.assertEqual(realm.create_stream_policy, realm.CREATE_STREAM_POLICY_WAITING_PERIOD)
+        # Zulip ignores subscription's notification related settings for PMs so don't migrate them.
+        iago_recipient = Recipient.objects.get(type=self.RECIPIENT_PERSONAL, type_id=iago.id)
+        iago_sub = Subscription.objects.get(user_profile=iago, recipient=iago_recipient)
+        self.assertEqual(iago_sub.desktop_notifications, False)
+        self.assertEqual(iago_sub.audible_notifications, False)
+        self.assertEqual(iago_sub.push_notifications, True)
