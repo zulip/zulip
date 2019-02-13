@@ -2,7 +2,7 @@
 
 Attach files to messages, including images, documents, sound, and video.
 
-[Start composing](/help/compose-and-reply) a new message or reply. Then
+First, [open the compose box](/help/open-the-compose-box). Then
 
 * **Drag and drop** files into the compose box.
 * **Copy and paste** files into the compose box.
