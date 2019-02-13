@@ -81,12 +81,17 @@
     padding: 2px 0px 2px 29px;
 }
 
+#private-container,
 #stream-filters-container {
     overflow-x: hidden;
     overflow-y: hidden;
     position: relative;
     z-index: 0;
     width: 100%;
+}
+
+#private-container {
+    max-height: 200px;
 }
 
 #global_filters li:hover,
