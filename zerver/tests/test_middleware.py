@@ -1,4 +1,6 @@
+import re
 import time
+from typing import List
 
 from django.test import override_settings
 from unittest.mock import Mock, patch
@@ -51,16 +53,29 @@ class SlowQueryTest(ZulipTestCase):
         mock_internal_send_message.assert_not_called()
 
 class OpenGraphTest(ZulipTestCase):
-    def check_title_and_description(self, path: str, title: str, description: str) -> None:
+    def check_title_and_description(self, path: str, title: str,
+                                    in_description: List[str],
+                                    not_in_description: List[str]) -> None:
         response = self.client_get(path)
-        self.assert_in_success_response([
-            # Open graph
-            '<meta property="og:title" content="{}">'.format(title),
-            '<meta property="og:description" content="{}">'.format(description),
-            # Twitter
-            '<meta property="twitter:title" content="{}">'.format(title),
-            '<meta name="twitter:description" content="{}">'.format(description),
-        ], response)
+        self.assertEqual(response.status_code, 200)
+        decoded = response.content.decode('utf-8')
+        for title_string in [
+                '<meta property="og:title" content="{}">'.format(title),
+                '<meta property="twitter:title" content="{}">'.format(title)]:
+            self.assertIn(title_string, decoded)
+
+        open_graph_description = re.search(  # type: ignore
+            r'<meta property="og:description" content="(?P<description>[^>]*)">',
+            decoded).group('description')
+        twitter_description = re.search(  # type: ignore
+            r'<meta name="twitter:description" content="(?P<description>[^>]*)">',
+            decoded).group('description')
+        for substring in in_description:
+            self.assertIn(substring, open_graph_description)
+            self.assertIn(substring, twitter_description)
+        for substring in not_in_description:
+            self.assertNotIn(substring, open_graph_description)
+            self.assertNotIn(substring, twitter_description)
 
     def test_admonition_and_link(self) -> None:
         # disable-message-edit-history starts with an {!admin-only.md!}, and has a link
@@ -68,17 +83,20 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             '/help/disable-message-edit-history',
             "Disable message edit history (Zulip Help Center)",
-            "By default, Zulip displays messages that have been edited with an EDITED tag, " +
-            "and users can view the edit history of a message.")
+            ["By default, Zulip displays messages",
+             "users can view the edit history of a message. To remove the",
+             "best to delete the message entirely. "],
+            ["Disable message edit history", "feature is only available", "Related articles",
+             "Restrict message editing"]
+        )
 
     def test_settings_tab(self) -> None:
         # deactivate-your-account starts with {settings_tab|your-account}
         self.check_title_and_description(
             '/help/deactivate-your-account',
             "Deactivate your account (Zulip Help Center)",
-            # Ideally, we'd grab the second and third paragraphs as well, if
-            # the first paragraph is this short
-            "Go to Your account.")
+            ["Any bots that you maintain will be disabled. Deactivating "],
+            ["Confirm by clicking", "  ", "\n"])
 
     def test_tabs(self) -> None:
         # logging-out starts with {start_tabs}
@@ -86,22 +104,22 @@ class OpenGraphTest(ZulipTestCase):
             '/help/logging-out',
             "Logging out (Zulip Help Center)",
             # Ideally we'd do something better here
-            "")
+            ["We're here to help! Email us at zulip-admin@example.com with questions, feedback, or " +
+             "feature requests."],
+            ["Click on the gear"])
 
     def test_index_pages(self) -> None:
         self.check_title_and_description(
             '/help/',
             "Zulip Help Center",
-            ("Zulip is a group chat app. Its most distinctive characteristic is that "
-             "conversation within an organization is divided into “streams” and further "
-             "subdivided into “topics”, so that much finer-grained conversations are possible "
-             "than with IRC or other chat tools."))
+            [("Zulip is a group chat app. Its most distinctive characteristic is that "
+              "conversation within an organization is divided into “streams” and further ")], [])
 
         self.check_title_and_description(
             '/api/',
             "Zulip API Documentation",
-            ("Zulip's APIs allow you to integrate other services with Zulip.  This "
-             "guide should help you find the API you need:"))
+            [("Zulip's APIs allow you to integrate other services with Zulip. This "
+              "guide should help you find the API you need:")], [])
 
     def test_nonexistent_page(self) -> None:
         response = self.client_get('/help/not-a-real-page')
@@ -110,4 +128,6 @@ class OpenGraphTest(ZulipTestCase):
         self.assert_in_response(
             # Probably we should make this "Zulip Help Center"
             '<meta property="og:title" content="No such article. (Zulip Help Center)">', response)
-        self.assert_in_response('<meta property="og:description" content="No such article.">', response)
+        self.assert_in_response('<meta property="og:description" content="No such article. '
+                                'We\'re here to help! Email us at zulip-admin@example.com with questions, '
+                                'feedback, or feature requests.">', response)

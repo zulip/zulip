@@ -123,12 +123,12 @@ exports.update_stream_name = function (sub, new_name) {
     message_live_update.update_stream_name(stream_id, new_name);
 };
 
-exports.update_stream_description = function (sub, description) {
+exports.update_stream_description = function (sub, description, rendered_description) {
     sub.description = description;
+    sub.rendered_description = rendered_description.replace('<p>', '').replace('</p>', '');
 
     // Update stream row
     var sub_row = row_for_stream_id(sub.stream_id);
-    stream_data.render_stream_description(sub);
     sub_row.find(".description").html(sub.rendered_description);
 
     // Update stream settings

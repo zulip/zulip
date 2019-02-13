@@ -1,6 +1,8 @@
 ## Guides
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Streams and topics](/help/about-streams-and-topics)
+* [Moderating open organizations](/help/moderating-open-organizations)
 
 # Using Zulip
 
@@ -8,7 +10,7 @@
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
 * [Edit your profile](/help/edit-your-profile)
-* [Manage your password](/help/change-your-password)
+* [Change your password](/help/change-your-password)
 * [Review your settings](/help/review-your-settings)
 * [Set your avatar](/help/change-your-avatar)
 * [Change your default language](/help/change-your-language)
@@ -109,7 +111,6 @@
 * [Roles and permissions](/help/roles-and-permissions)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
-* [Moderating open organizations](/help/moderating-open-organizations)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [GDPR Compliance](/help/gdpr-compliance)
 

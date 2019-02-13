@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from gcm import GCM
 import requests
+import ujson
 
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
@@ -182,27 +183,79 @@ else:
 def gcm_enabled() -> bool:  # nocoverage
     return gcm is not None
 
-def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any]) -> None:
+def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any],
+                                           options: Dict[str, Any]) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                   kind=PushDeviceToken.GCM))
-    send_android_push_notification(devices, data)
+    send_android_push_notification(devices, data, options)
+
+def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
+    """
+    Parse GCM options, supplying defaults, and raising an error if invalid.
+
+    The options permitted here form part of the Zulip notification
+    bouncer's API.  They are:
+
+    `priority`: Passed through to GCM; see upstream doc linked below.
+        Zulip servers should always set this; when unset, we guess a value
+        based on the behavior of old server versions.
+
+    Including unrecognized options is an error.
+
+    For details on options' semantics, see this GCM upstream doc:
+      https://developers.google.com/cloud-messaging/http-server-ref
+
+    Returns `priority`.
+    """
+    priority = options.pop('priority', None)
+    if priority is None:
+        # An older server.  Identify if this seems to be an actual notification.
+        if data.get('event') == 'message':
+            priority = 'high'
+        else:  # `'event': 'remove'`, presumably
+            priority = 'normal'
+    if priority not in ('normal', 'high'):
+        raise JsonableError(_("Invalid GCM option to bouncer: priority %r")
+                            % (priority,))
+
+    if options:
+        # We're strict about the API; there is no use case for a newer Zulip
+        # server talking to an older bouncer, so we only need to provide
+        # one-way compatibility.
+        raise JsonableError(_("Invalid GCM options to bouncer: %s")
+                            % (ujson.dumps(options),))
+
+    return priority  # when this grows a second option, can make it a tuple
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, Any],
-                                   remote: bool=False) -> None:
+                                   options: Dict[str, Any], remote: bool=False) -> None:
+    """
+    Send a GCM message to the given devices.
+
+    See https://developers.google.com/cloud-messaging/http-server-ref
+    for the GCM upstream API which this talks to.
+
+    data: The JSON object (decoded) to send as the 'data' parameter of
+        the GCM message.
+    options: Additional options to control the GCM message sent.
+        For details, see `parse_gcm_options`.
+    """
     if not gcm:
         logger.debug("Skipping sending a GCM push notification since "
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
+
     reg_ids = [device.token for device in devices]
-
-    if remote:
-        DeviceTokenClass = RemotePushDeviceToken
-    else:
-        DeviceTokenClass = PushDeviceToken
-
+    priority = parse_gcm_options(options, data)
     try:
-        res = gcm.json_request(registration_ids=reg_ids, data=data, retries=10)
+        # See https://developers.google.com/cloud-messaging/http-server-ref .
+        # Two kwargs `retries` and `session` get eaten by `json_request`;
+        # the rest pass through to the GCM server.
+        res = gcm.json_request(registration_ids=reg_ids,
+                               priority=priority,
+                               data=data,
+                               retries=10)
     except IOError as e:
         logger.warning(str(e))
         return
@@ -210,6 +263,11 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     if res and 'success' in res:
         for reg_id, msg_id in res['success'].items():
             logger.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+
+    if remote:
+        DeviceTokenClass = RemotePushDeviceToken
+    else:
+        DeviceTokenClass = PushDeviceToken
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
@@ -260,11 +318,13 @@ def uses_notification_bouncer() -> bool:
 
 def send_notifications_to_bouncer(user_profile_id: int,
                                   apns_payload: Dict[str, Any],
-                                  gcm_payload: Dict[str, Any]) -> None:
+                                  gcm_payload: Dict[str, Any],
+                                  gcm_options: Dict[str, Any]) -> None:
     post_data = {
         'user_id': user_profile_id,
         'apns_payload': apns_payload,
         'gcm_payload': gcm_payload,
+        'gcm_options': gcm_options,
     }
     # Calls zilencer.views.remote_server_notify_push
     send_json_to_push_bouncer('POST', 'push/notify', post_data)
@@ -539,12 +599,14 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
         'event': 'remove',
         'zulip_message_id': message_id,  # message_id is reserved for CCS
     })
+    gcm_options = {'priority': 'normal'}  # type: Dict[str, Any]
 
     if uses_notification_bouncer():
         try:
             send_notifications_to_bouncer(user_profile_id,
                                           {},
-                                          gcm_payload)
+                                          gcm_payload,
+                                          gcm_options)
         except requests.ConnectionError:  # nocoverage
             def failure_processor(event: Dict[str, Any]) -> None:
                 logger.warning(
@@ -556,7 +618,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
                                                           kind=PushDeviceToken.GCM))
 
     if android_devices:
-        send_android_push_notification(android_devices, gcm_payload)
+        send_android_push_notification(android_devices, gcm_payload, gcm_options)
 
     user_message.flags.active_mobile_push_notification = False
     user_message.save(update_fields=["flags"])
@@ -613,13 +675,15 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     apns_payload = get_apns_payload(user_profile, message)
     gcm_payload = get_gcm_payload(user_profile, message)
+    gcm_options = {'priority': 'high'}  # type: Dict[str, Any]
     logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
         try:
             send_notifications_to_bouncer(user_profile_id,
                                           apns_payload,
-                                          gcm_payload)
+                                          gcm_payload,
+                                          gcm_options)
         except requests.ConnectionError:
             def failure_processor(event: Dict[str, Any]) -> None:
                 logger.warning(
@@ -640,4 +704,4 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                                      apns_payload)
 
     if android_devices:
-        send_android_push_notification(android_devices, gcm_payload)
+        send_android_push_notification(android_devices, gcm_payload, gcm_options)

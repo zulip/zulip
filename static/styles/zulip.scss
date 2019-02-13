@@ -187,8 +187,13 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
     height: 40px;
+    padding-bottom: 10px;
+    background-color: inherit;
+}
+
+#top_navbar {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
 #panels {
@@ -840,14 +845,6 @@ td.pointer {
     display: none;
 }
 
-/*
-   used to override .hide-date when floating_recipient_bar just begins to
-   overlap the top-most recipient_bar
-*/
-.recipient_row_date.temp-show-date {
-    display: block !important;
-}
-
 .floating_recipient .recipient_row_date.hide-date {
     display: block;
 }
@@ -1058,7 +1055,7 @@ td.pointer {
     border-right: 1px solid hsl(0, 0%, 88%);
 }
 
-.mention .messagebox {
+.mention .messagebox-content {
     background-color: hsl(8, 94%, 94%);
 }
 
@@ -2380,13 +2377,6 @@ li .message_inline_image img {
     table-layout: fixed;
 }
 
-.conversation-partners {
-    display: inline-block;
-    line-height: 1.2;
-    width: 90%;
-    overflow: hidden;
-}
-
 #user-checkboxes {
     margin-top: 10px;
 }
@@ -2531,12 +2521,37 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: none;
 }
 
-#invite-user-label,
-#invite-method-choice {
+#invite-user-label {
     font-size: 1em;
     font-weight: 700;
     text-align: center;
     text-transform: uppercase;
+}
+
+#multiuse_invite_status {
+    display: none;
+    margin-top: 7px;
+    margin-bottom: -5px;
+    text-align: left;
+}
+
+#invite-stream-checkboxes {
+    padding-bottom: 26px;
+}
+
+#invite-method-choice {
+    margin-top: 2px;
+}
+
+#multiuse_radio_section {
+    margin-top: 4px;
+    margin-bottom: -2px;
+    display: none;
+}
+
+#generate_multiuse_invite_button {
+    position: relative;
+    top: 1px;
 }
 
 #invite-user .invite-stream-controls {

@@ -18,6 +18,7 @@ IGNORED_PHRASES = [
     r"Botserver",
     r"Cookie Bot",
     r"Dropbox",
+    r"GCM",
     r"GitHub",
     r"G Suite",
     r"Google",
@@ -141,6 +142,8 @@ IGNORED_PHRASES = [
     r"leafy green vegetable",
     # Subdomain placeholder
     r"your-organization-url",
+    # Used in invite modal
+    r"or",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

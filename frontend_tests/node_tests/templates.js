@@ -899,8 +899,8 @@ run_test('message_group', () => {
             is_stream: true,
             message_ids: [1, 2],
             message_containers: messages,
-            show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
-            show_date_separator: true,
+            group_date_divider_html: '"<span class="timerender82">Jan&nbsp;07</span>"',
+            show_group_date_divider: true,
             match_topic: '<span class="highlight">two</span> messages',
         },
     ];
@@ -1618,8 +1618,8 @@ run_test('archive_message_group', () => {
         {
             display_recipient: "support",
             message_containers: messages,
-            show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
-            show_date_separator: true,
+            group_date_divider_html: '"<span class="timerender82">Jan&nbsp;07</span>"',
+            show_group_date_divider: true,
         },
     ];
 

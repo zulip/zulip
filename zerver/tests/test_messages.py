@@ -29,11 +29,12 @@ from zerver.lib.actions import (
     get_last_message_id,
     get_user_info_for_message_updates,
     internal_prep_private_message,
-    internal_prep_stream_message,
+    internal_prep_stream_message_by_name,
     internal_send_huddle_message,
     internal_send_message,
     internal_send_private_message,
     internal_send_stream_message,
+    internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 
@@ -508,7 +509,7 @@ class InternalPrepTest(ZulipTestCase):
         cordelia = self.example_user('cordelia')
         hamlet = self.example_user('hamlet')
         othello = self.example_user('othello')
-        stream_name = 'Verona'
+        stream = get_stream('Verona', realm)
 
         with mock.patch('logging.exception') as m:
             internal_send_private_message(
@@ -536,9 +537,21 @@ class InternalPrepTest(ZulipTestCase):
             internal_send_stream_message(
                 realm=realm,
                 sender=cordelia,
-                stream_name=stream_name,
                 topic='whatever',
                 content=bad_content,
+                stream=stream
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_stream_message_by_name(
+                realm=realm,
+                sender=cordelia,
+                stream_name=stream.name,
+                topic='whatever',
+                content=bad_content
             )
 
         arg = m.call_args_list[0][0][0]
@@ -549,7 +562,7 @@ class InternalPrepTest(ZulipTestCase):
                 realm=realm,
                 sender_email=settings.ERROR_BOT,
                 recipient_type_name='stream',
-                recipients=stream_name,
+                recipients=stream.name,
                 topic_name='whatever',
                 content=bad_content,
             )
@@ -598,7 +611,7 @@ class InternalPrepTest(ZulipTestCase):
         topic = 'whatever'
         content = 'hello'
 
-        internal_prep_stream_message(
+        internal_prep_stream_message_by_name(
             realm=realm,
             sender=sender,
             stream_name=stream_name,
@@ -3448,7 +3461,7 @@ class CheckMessageTest(ZulipTestCase):
         self.make_stream(stream_name)
         topic_name = 'issue'
         message_content = 'whatever'
-        addressee = Addressee.for_stream(stream_name, topic_name)
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
         ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.email, self.example_email("othello"))
 
@@ -3471,7 +3484,7 @@ class CheckMessageTest(ZulipTestCase):
         client = make_client(name="test suite")
         stream_name = u'Россия'
         topic_name = 'issue'
-        addressee = Addressee.for_stream(stream_name, topic_name)
+        addressee = Addressee.for_stream_name(stream_name, topic_name)
         message_content = 'whatever'
         old_count = message_stream_count(parent)
 

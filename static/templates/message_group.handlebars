@@ -3,8 +3,8 @@
 {{#each message_groups}}
     {{#with this}}
 
-        {{#if show_date_separator}}
-        <div class="date_row no-select">{{{show_date}}}</div>
+        {{#if show_group_date_divider}}
+        <div class="date_row no-select">{{{group_date_divider_html}}}</div>
         {{/if}}
 
         {{#if bookend_top}}

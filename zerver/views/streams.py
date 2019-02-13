@@ -392,16 +392,17 @@ def add_subscriptions_backend(
             msg = ("_@**%s|%d** just created %s" % (user_profile.full_name, user_profile.id, stream_msg))
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
-            stream_name = notifications_stream.name
             topic = 'Streams'
 
             notifications.append(
                 internal_prep_stream_message(
                     realm=user_profile.realm,
                     sender=sender,
-                    stream_name=stream_name,
+                    stream=notifications_stream,
                     topic=topic,
-                    content=msg))
+                    content=msg,
+                )
+            )
 
     if not user_profile.realm.is_zephyr_mirror_realm:
         for stream in created_streams:

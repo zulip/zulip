@@ -331,6 +331,7 @@ exports.tokenize_compose_str = function (s) {
         case '#':
         case '@':
         case ':':
+        case '_':
             if (i === 0) {
                 return s.slice(i);
             } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
@@ -341,6 +342,40 @@ exports.tokenize_compose_str = function (s) {
 
     return '';
 };
+
+function get_mention_candidates_data() {
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: mention}),
+            email: mention,
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: mention,
+        };
+    });
+    var persons = people.get_realm_persons();
+    var groups = user_groups.get_realm_user_groups();
+    return [].concat(persons, all_items, groups);
+}
+
+function filter_mention_name(current_token) {
+    if (current_token.startsWith('**')) {
+        current_token = current_token.substring(2);
+    } else if (current_token.startsWith('*')) {
+        current_token = current_token.substring(1);
+    }
+    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+        return false;
+    }
+
+    // Don't autocomplete if there is a space following an '@'
+    if (current_token[0] === " ") {
+        return false;
+    }
+    return current_token;
+}
 
 exports.compose_content_begins_typeahead = function (query) {
     var split = exports.split_at_cursor(query, this.$element);
@@ -405,36 +440,25 @@ exports.compose_content_begins_typeahead = function (query) {
 
     if (this.options.completions.mention && current_token[0] === '@') {
         current_token = current_token.substring(1);
-        if (current_token.startsWith('**')) {
-            current_token = current_token.substring(2);
-        } else if (current_token.startsWith('*')) {
-            current_token = current_token.substring(1);
-        }
-        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+        current_token = filter_mention_name(current_token);
+        if (!current_token) {
             return false;
         }
-
-        // Don't autocomplete if there is a space following an '@'
-        if (current_token[0] === " ") {
-            return false;
-        }
-
         this.completing = 'mention';
         this.token = current_token;
-        var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-            return {
-                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                          {wildcard_mention_token: mention}),
-                email: mention,
-                // Always sort above, under the assumption that names will
-                // be longer and only contain "all" as a substring.
-                pm_recipient_count: Infinity,
-                full_name: mention,
-            };
-        });
-        var persons = people.get_realm_persons();
-        var groups = user_groups.get_realm_user_groups();
-        return [].concat(persons, all_items, groups);
+        return get_mention_candidates_data();
+    }
+
+    if (this.options.completions.silent_mention && current_token.startsWith('_@')) {
+        // Ideally, we'd figure out a way to deduplicate this with the main mentions block.
+        current_token = current_token.substring(2);
+        current_token = filter_mention_name(current_token);
+        if (!current_token) {
+            return false;
+        }
+        this.completing = 'silent_mention';
+        this.token = current_token;
+        return get_mention_candidates_data();
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
@@ -462,7 +486,7 @@ exports.compose_content_begins_typeahead = function (query) {
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
         return typeahead_helper.render_emoji(item);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.render_person_or_user_group(item);
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(item);
@@ -487,7 +511,7 @@ exports.content_typeahead_selected = function (item) {
         } else {
             beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
         }
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
         if (beginning.endsWith('@*')) {
             beginning = beginning.substring(0, beginning.length - 2);
@@ -539,7 +563,7 @@ exports.content_typeahead_selected = function (item) {
 exports.compose_content_matcher = function (item) {
     if (this.completing === 'emoji') {
         return query_matches_emoji(this.token, item);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return query_matches_person_or_user_group(this.token, item);
     } else if (this.completing === 'stream') {
         return query_matches_user_group_or_stream(this.token, item);
@@ -551,7 +575,7 @@ exports.compose_content_matcher = function (item) {
 exports.compose_matches_sorter = function (matches) {
     if (this.completing === 'emoji') {
         return typeahead_helper.sort_emojis(matches, this.token);
-    } else if (this.completing === 'mention') {
+    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.sort_people_and_user_groups(this.token, matches);
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
@@ -564,6 +588,7 @@ exports.initialize_compose_typeahead = function (selector) {
     var completions = {
         mention: true,
         emoji: true,
+        silent_mention: true,
         stream: true,
         syntax: true,
     };

@@ -1,6 +1,5 @@
 """
 Use libraries from a virtualenv (by modifying sys.path) in production.
-Also add Zulip's root directory to sys.path
 """
 
 import os
@@ -17,5 +16,3 @@ if sys.prefix != venv:
         exec(open(activate_this).read(), {}, activate_locals)
         if not os.path.exists(activate_locals["site_packages"]):
             raise RuntimeError(venv + " was not set up for this Python version")
-
-sys.path.append(BASE_DIR)

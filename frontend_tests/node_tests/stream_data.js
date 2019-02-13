@@ -281,8 +281,14 @@ run_test('subscribers', () => {
 run_test('is_active', () => {
     stream_data.clear_subscriptions();
 
-    var sub = {name: 'pets', subscribed: false, stream_id: 1};
+    var sub;
+
+    sub = {name: 'pets', subscribed: false, stream_id: 111};
     stream_data.add_sub('pets', sub);
+
+    assert(stream_data.is_active(sub));
+
+    stream_data.set_filter_out_inactives(true);
 
     assert(!stream_data.is_active(sub));
 
@@ -570,19 +576,6 @@ run_test('remove_default_stream', () => {
     assert.equal(page_params.realm_default_streams.length, 0);
 });
 
-run_test('render_stream_description', () => {
-    var desc = {
-        name: 'no_desc',
-        stream_id: 1002,
-        description: '<p>rendered desc</p>',
-    };
-
-    stream_data.add_sub('desc', desc);
-    var sub = stream_data.get_sub_by_name('desc');
-    stream_data.render_stream_description(sub);
-    assert.deepStrictEqual(sub.rendered_description, "rendered desc");
-});
-
 run_test('canonicalized_name', () => {
     assert.deepStrictEqual(
         stream_data.canonicalized_name('Stream_Bar'),
@@ -652,6 +645,7 @@ run_test('initialize', () => {
     initialize();
     page_params.realm_notifications_stream_id = -1;
     stream_data.initialize();
+    assert(!stream_data.is_filtering_inactives());
 
     const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
     assert(stream_names.indexOf('subscriptions') !== -1);
@@ -678,6 +672,34 @@ run_test('initialize', () => {
     stream_data.add_sub('foo', foo);
     stream_data.initialize();
     assert.equal(page_params.notifications_stream, "foo");
+});
+
+run_test('filter inactives', () => {
+    page_params.unsubscribed = [];
+    page_params.never_subscribed = [];
+    page_params.subscriptions = [];
+
+    stream_data.initialize();
+    assert(!stream_data.is_filtering_inactives());
+
+    page_params.unsubscribed = [];
+    page_params.never_subscribed = [];
+    page_params.subscriptions = [];
+
+    _.times(30, function (i) {
+        var name = 'random' + i.toString();
+        var stream_id = 100 + i;
+
+        var sub = {
+            name: name,
+            subscribed: true,
+            newly_subscribed: false,
+            stream_id: stream_id,
+        };
+        stream_data.add_sub(name, sub);
+    });
+    stream_data.initialize();
+    assert(stream_data.is_filtering_inactives());
 });
 
 run_test('get_newbie_stream', () => {

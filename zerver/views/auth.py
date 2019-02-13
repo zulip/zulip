@@ -69,17 +69,19 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
                                               realm=realm)
 
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
-                               is_signup: bool=False, password_required: bool=True) -> HttpResponse:
+                               is_signup: bool=False, password_required: bool=True,
+                               multiuse_object_key: str='') -> HttpResponse:
     realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
     multiuse_obj = None
     streams_to_subscribe = None
-    multiuse_object_key = request.session.get("multiuse_object_key", None)
-    if multiuse_object_key is not None:
+    invited_as = PreregistrationUser.INVITE_AS['MEMBER']
+    if multiuse_object_key:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
         realm = multiuse_obj.realm
         streams_to_subscribe = multiuse_obj.streams.all()
+        invited_as = multiuse_obj.invited_as
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     if form.is_valid():
@@ -97,11 +99,12 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
             prereg_user = create_preregistration_user(email, request,
                                                       password_required=password_required)
 
-        if multiuse_object_key is not None:
-            del request.session["multiuse_object_key"]
+        if multiuse_object_key:
             request.session.modified = True
             if streams_to_subscribe is not None:
                 prereg_user.streams.set(streams_to_subscribe)
+            prereg_user.invited_as = invited_as
+            prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, request.get_host(),
                                                      Confirmation.USER_REGISTRATION)
@@ -119,7 +122,8 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         return render(request,
                       'zerver/accounts_home.html',
                       context={'form': form, 'current_url': lambda: url,
-                               'from_multiuse_invite': from_multiuse_invite},
+                               'from_multiuse_invite': from_multiuse_invite,
+                               'multiuse_object_key': multiuse_object_key},
                       )
 
 def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
@@ -133,15 +137,15 @@ def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
 def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[str],
                                   user_profile: Optional[UserProfile], full_name: str='',
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
-                                  is_signup: bool=False,
-                                  redirect_to: str='') -> HttpResponse:
+                                  is_signup: bool=False, redirect_to: str='',
+                                  multiuse_object_key: str='') -> HttpResponse:
     email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
         # We have verified the user controls an email address, but
         # there's no associated Zulip user account.  Consider sending
         # the request to registration.
-        return maybe_send_to_registration(request, email,
-                                          full_name, password_required=False, is_signup=is_signup)
+        return maybe_send_to_registration(request, email, full_name, password_required=False,
+                                          is_signup=is_signup, multiuse_object_key=multiuse_object_key)
 
     # Otherwise, the user has successfully authenticated to an
     # account, and we need to do the right thing depending whether
@@ -284,6 +288,8 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
         'is_signup': '1' if is_signup else '0',
     }
 
+    params['multiuse_object_key'] = request.GET.get('multiuse_object_key', '')
+
     # mobile_flow_otp is a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
     mobile_flow_otp = request.GET.get('mobile_flow_otp')
@@ -325,6 +331,7 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
     is_signup = request.GET.get('is_signup', '')
     next = request.GET.get('next', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
+    multiuse_object_key = request.GET.get('multiuse_object_key', '')
 
     if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
             not Realm.objects.filter(string_id=subdomain).exists()):
@@ -332,8 +339,8 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '%s:%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup, next)
-
+    csrf_state = '%s:%s:%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup,
+                                        next, multiuse_object_key)
     # Now compute the CSRF hash with the other parameters as an input
     csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
 
@@ -357,7 +364,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 6:
+    if csrf_state is None or len(csrf_state.split(':')) != 7:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
@@ -365,7 +372,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
     if hmac_value != google_oauth2_csrf(request, csrf_data):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
-    cur_time, subdomain, mobile_flow_otp, is_signup, next = csrf_data.split(':')
+    cur_time, subdomain, mobile_flow_otp, is_signup, next, multiuse_object_key = csrf_data.split(':')
     if mobile_flow_otp == '0':
         mobile_flow_otp = None
 
@@ -425,7 +432,8 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
                                              redirect_to=next)
 
     return redirect_and_log_into_subdomain(
-        realm, full_name, email_address, is_signup=is_signup, redirect_to=next)
+        realm, full_name, email_address, is_signup=is_signup,
+        redirect_to=next, multiuse_object_key=multiuse_object_key)
 
 def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProfile, Dict[str, Any]]:
     return_data = {}  # type: Dict[str, bool]
@@ -466,6 +474,12 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     full_name = data['name']
     is_signup = data['is_signup']
     redirect_to = data['next']
+
+    if 'multiuse_object_key' in data:
+        multiuse_object_key = data['multiuse_object_key']
+    else:
+        multiuse_object_key = ''
+
     if is_signup:
         # If we are signing up, user_profile should be None. In case
         # email_address already exists, user will get an error message.
@@ -482,12 +496,15 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
-                                         is_signup=is_signup, redirect_to=redirect_to)
+                                         is_signup=is_signup, redirect_to=redirect_to,
+                                         multiuse_object_key=multiuse_object_key)
 
 def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
-                                    is_signup: bool=False, redirect_to: str='') -> HttpResponse:
+                                    is_signup: bool=False, redirect_to: str='',
+                                    multiuse_object_key: str='') -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
-            'is_signup': is_signup, 'next': redirect_to}
+            'is_signup': is_signup, 'next': redirect_to,
+            'multiuse_object_key': multiuse_object_key}
     token = signing.dumps(data, salt=_subdomain_token_salt)
     subdomain_login_uri = (realm.uri
                            + reverse('zerver.views.auth.log_into_subdomain', args=[token]))

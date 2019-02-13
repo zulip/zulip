@@ -94,35 +94,68 @@ body {
 
 .code-section ul.nav li {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 5px 14px;
     margin: 0;
-
-    border: 1px solid hsl(0, 0%, 87%);
-    border-bottom: none;
-    border-radius: 4px 4px 0px 0px;
 
     cursor: pointer;
 }
 
 .code-section ul.nav li.active {
     color: hsl(176, 46%, 41%);
+    margin-bottom: -1px;
+
+    border: 1px solid hsl(0, 0%, 87%);
+    border-bottom: 1px solid hsl(0, 0%, 100%);
+    border-radius: 4px 4px 0px 0px;
+}
+
+.code-section.no-tabs ul.nav {
+    display: none;
 }
 
 .code-section .blocks {
-    padding: 20px;
-
-    background-color: hsl(0, 0%, 98%);
+    padding: 10px;
+    margin-bottom: 10px;
     border: 1px solid hsl(0, 0%, 87%);
+}
 
-    border-radius: 0px 4px 4px 4px;
+.code-section.has-tabs .blocks {
+    border-radius: 0px 6px 6px 6px;
+}
+
+.code-section.no-tabs .blocks {
+    border-radius: 6px;
+}
+
+/* The API tabbed content tends to have a lot of code blocks,
+   which look nicer against a different background */
+.api-center .code-section .blocks {
+    background-color: hsl(0, 0%, 98%);
+}
+
+.api-center .code-section ul.nav li.active {
+    background-color: hsl(0, 0%, 98%);
+    border-bottom: 1px solid hsl(0, 0%, 98%);
+}
+
+/* The Help Center tabbed content tends to be a lot short sentences.
+   We also want the Help Center tabbed content to pop more. */
+.help-center .code-section .blocks {
+    max-width: 500px;
 }
 
 .code-section .blocks > div {
     display: none;
 }
 
-.code-section .blocks > .active {
+.code-section.no-tabs .blocks > div,
+.code-section.has-tabs .blocks > .active {
     display: block;
+}
+
+.markdown .code-section ol {
+    margin-left: 15px;
+    margin-top: 10px;
 }
 
 .digest-container {
@@ -154,6 +187,11 @@ body {
     overflow: auto;
 
     color: hsl(0, 0%, 27%);
+}
+
+/* Markdown processor generates lots of spurious <p></p> */
+.help p:empty {
+    margin: 0px;
 }
 
 .help .sidebar {
@@ -1648,14 +1686,16 @@ input.new-organization-button {
 .markdown h2,
 .why-page h2 {
     font-size: 1.5em;
-    margin: 5px 0 0 0;
+    line-height: 1.25;
+    margin: 20px 0px 5px 0px;
 }
 
 .markdown h3,
 .why-page h3 {
-    font-size: 1.1em;
+    font-size: 1.25em;
+    line-height: 1.25;
     opacity: 1;
-    margin-bottom: 0px;
+    margin-bottom: 7px;
 }
 
 .markdown img {
@@ -2212,4 +2252,14 @@ input.new-organization-button {
 #third-party-apps {
     margin-top: 20px;
     padding-right: 10px;
+}
+
+.table .json-api-example {
+    width: fit-content;
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.table .json-api-example code {
+    white-space: pre-wrap;
 }

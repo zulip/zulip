@@ -8,7 +8,7 @@ if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
 from scripts.lib.setup_venv import setup_virtualenv
-from scripts.lib.zulip_tools import subprocess_text_output
+from scripts.lib.zulip_tools import overwrite_symlink, subprocess_text_output
 
 VENV_PATH = "/srv/zulip-py3-venv"
 
@@ -22,8 +22,10 @@ def main() -> None:
     python_interpreter = subprocess_text_output(['which', 'python3'])
     setup_virtualenv("/srv/zulip-thumbor-venv", THUMBOR_REQS_FILE,
                      patch_activate_script=True, virtualenv_args=['-p', 'python2.7'])
-    setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
-                     virtualenv_args=['-p', python_interpreter])
+    cached_venv_path = setup_virtualenv(
+        VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
+        virtualenv_args=['-p', python_interpreter])
+    overwrite_symlink(cached_venv_path, os.path.join(ZULIP_PATH, "zulip-py3-venv"))
 
 if __name__ == "__main__":
     main()

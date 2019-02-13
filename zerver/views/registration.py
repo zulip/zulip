@@ -339,7 +339,8 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
 
 def prepare_activation_url(email: str, request: HttpRequest,
                            realm_creation: bool=False,
-                           streams: Optional[List[Stream]]=None) -> str:
+                           streams: Optional[List[Stream]]=None,
+                           invited_as: Optional[int]=None) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
@@ -348,6 +349,10 @@ def prepare_activation_url(email: str, request: HttpRequest,
 
     if streams is not None:
         prereg_user.streams.set(streams)
+
+    if invited_as is not None:
+        prereg_user.invited_as = invited_as
+        prereg_user.save()
 
     confirmation_type = Confirmation.USER_REGISTRATION
     if realm_creation:
@@ -412,7 +417,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
                   context={'form': form, 'current_url': request.get_full_path},
                   )
 
-def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
+def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
+                  multiuse_object: Optional[MultiuseInvite]=None) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
 
     if realm is None:
@@ -422,17 +428,20 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
 
     from_multiuse_invite = False
     streams_to_subscribe = None
+    invited_as = None
 
     if multiuse_object:
         realm = multiuse_object.realm
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
+        invited_as = multiuse_object.invited_as
 
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
             email = form.cleaned_data['email']
-            activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe)
+            activation_url = prepare_activation_url(email, request, streams=streams_to_subscribe,
+                                                    invited_as=invited_as)
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
             except smtplib.SMTPException as e:
@@ -451,6 +460,7 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
     return render(request,
                   'zerver/accounts_home.html',
                   context={'form': form, 'current_url': request.get_full_path,
+                           'multiuse_object_key': multiuse_object_key,
                            'from_multiuse_invite': from_multiuse_invite},
                   )
 
@@ -459,12 +469,12 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     try:
         multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
         # Required for oAuth2
-        request.session["multiuse_object_key"] = confirmation_key
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
-    return accounts_home(request, multiuse_object=multiuse_object)
+    return accounts_home(request, multiuse_object_key=confirmation_key,
+                         multiuse_object=multiuse_object)
 
 def generate_204(request: HttpRequest) -> HttpResponse:
     return HttpResponse(content=None, status=204)

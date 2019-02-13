@@ -6,6 +6,10 @@ Organization adminstrators can
 [restrict users to certain email domains](/help/change-a-users-name), or
 [prevent users from changing their email](/help/restrict-name-and-email-changes).
 
+### Change your email address
+
+{start_tabs}
+
 {settings_tab|your-account}
 
 2. Under **User settings**, click on the button with your email address.
@@ -13,6 +17,8 @@ Organization adminstrators can
 3. Enter your new email, and click **Change**.
 
 4. You will receive a confirmation email within a few minutes. Open it and click **Confirm email change**.
+
+{end_tabs}
 
 !!! warn ""
     **Note:** If you are unable to click on the button with your email address, check

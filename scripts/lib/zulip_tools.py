@@ -80,6 +80,13 @@ def parse_cache_script_args(description):
     args.verbose |= args.dry_run    # Always print a detailed report in case of dry run.
     return args
 
+def get_deploy_root() -> str:
+    # This calls realpath twice to handle both symlinks and users
+    # running our scripts with relative paths from a current working
+    # directory of `scripts/`.
+    return os.path.realpath(os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.realpath(__file__)))))
+
 def get_deployment_version(extract_path):
     # type: (str) -> str
     version = '0.0.0'
@@ -103,12 +110,23 @@ def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
     return subprocess.check_output(args, universal_newlines=True).strip()
 
-def su_to_zulip():
-    # type: () -> None
-    pwent = pwd.getpwnam("zulip")
+def get_zulip_uid() -> int:
+    return os.stat(get_deploy_root()).st_uid
+
+def su_to_zulip(save_suid=False):
+    # type: (bool) -> None
+    """Warning: su_to_zulip assumes that the zulip checkout is owned by
+    the zulip user (or whatever normal user is running the Zulip
+    installation).  It should never be run from the installer or other
+    production contexts before /home/zulip/deployments/current is
+    created."""
+    pwent = pwd.getpwuid(get_zulip_uid())
     os.setgid(pwent.pw_gid)
-    os.setuid(pwent.pw_uid)
-    os.environ['HOME'] = os.path.abspath(os.path.join(DEPLOYMENTS_DIR, '..'))
+    if save_suid:
+        os.setresuid(pwent.pw_uid, pwent.pw_uid, os.getuid())
+    else:
+        os.setuid(pwent.pw_uid)
+    os.environ['HOME'] = pwent.pw_dir
 
 def make_deploy_path():
     # type: () -> str
@@ -122,8 +140,7 @@ if __name__ == '__main__':
 
 def get_dev_uuid_var_path(create_if_missing=False):
     # type: (bool) -> str
-    zulip_path = os.path.realpath(os.path.dirname(os.path.dirname(
-        os.path.dirname(os.path.realpath(__file__)))))
+    zulip_path = get_deploy_root()
     uuid_path = os.path.join(os.path.realpath(os.path.dirname(zulip_path)), ".zulip-dev-uuid")
     if os.path.exists(uuid_path):
         with open(uuid_path) as f:
@@ -405,11 +422,13 @@ def is_root() -> bool:
 def assert_not_running_as_root() -> None:
     script_name = os.path.abspath(sys.argv[0])
     if is_root():
-        msg = ("{shortname} should not be run as root. Use `su zulip` to switch to the 'zulip'\n"
-               "user before rerunning this, or use \n  su zulip -c '{name} ...'\n"
+        pwent = pwd.getpwuid(get_zulip_uid())
+        msg = ("{shortname} should not be run as root. Use `su {user}` to switch to the 'zulip'\n"
+               "user before rerunning this, or use \n  su {user} -c '{name} ...'\n"
                "to switch users and run this as a single command.").format(
             name=script_name,
-            shortname=os.path.basename(script_name))
+            shortname=os.path.basename(script_name),
+            user=pwent.pw_name)
         print(msg)
         sys.exit(1)
 

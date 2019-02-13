@@ -1060,6 +1060,7 @@ class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS['MEMBER'])  # type: int
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()  # type: str

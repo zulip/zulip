@@ -460,9 +460,17 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             for tag in bs.find_all('div', class_="admonition"):
                 tag.clear()
 
-            # Find the first paragraph after that, and convert it from HTML to text.
-            first_paragraph_text = bs.find('p').text.replace('\n', ' ')
-            return first_paragraph_text
+            # Skip code-sections, which just contains navigation instructions.
+            for tag in bs.find_all('div', class_="code-section"):
+                tag.clear()
+
+            text = ''
+            for paragraph in bs.find_all('p'):
+                # .text converts it from HTML to text
+                text = text + paragraph.text + ' '
+                if len(text) > 500:
+                    return ' '.join(text.split())
+            return ' '.join(text.split())
 
         def alter_content(content: bytes) -> bytes:
             first_paragraph_text = get_content_description(content, request)

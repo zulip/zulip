@@ -8,6 +8,7 @@ from zerver.models import (
     UserProfile,
     get_user_including_cross_realm,
     get_user_by_id_in_realm_including_cross_realm,
+    Stream,
 )
 
 def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
@@ -63,12 +64,14 @@ class Addressee:
     # This should be treated as an immutable class.
     def __init__(self, msg_type: str,
                  user_profiles: Optional[Sequence[UserProfile]]=None,
+                 stream: Optional[Stream]=None,
                  stream_name: Optional[str]=None,
                  stream_id: Optional[int]=None,
                  topic: Optional[str]=None) -> None:
         assert(msg_type in ['stream', 'private'])
         self._msg_type = msg_type
         self._user_profiles = user_profiles
+        self._stream = stream
         self._stream_name = stream_name
         self._stream_id = stream_id
         self._topic = topic
@@ -82,6 +85,10 @@ class Addressee:
     def user_profiles(self) -> List[UserProfile]:
         assert(self.is_private())
         return self._user_profiles  # type: ignore # assertion protects us
+
+    def stream(self) -> Optional[Stream]:
+        assert(self.is_stream())
+        return self._stream
 
     def stream_name(self) -> Optional[str]:
         assert(self.is_stream())
@@ -130,7 +137,7 @@ class Addressee:
                 return Addressee.for_stream_id(stream_id, topic_name)
 
             stream_name = cast(str, stream_name_or_id)
-            return Addressee.for_stream(stream_name, topic_name)
+            return Addressee.for_stream_name(stream_name, topic_name)
         elif message_type_name == 'private':
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
@@ -145,7 +152,16 @@ class Addressee:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream_name: str, topic: str) -> 'Addressee':
+    def for_stream(stream: Stream, topic: str) -> 'Addressee':
+        topic = validate_topic(topic)
+        return Addressee(
+            msg_type='stream',
+            stream=stream,
+            topic=topic,
+        )
+
+    @staticmethod
+    def for_stream_name(stream_name: str, topic: str) -> 'Addressee':
         topic = validate_topic(topic)
         return Addressee(
             msg_type='stream',

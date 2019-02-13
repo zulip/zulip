@@ -33,6 +33,12 @@
                   "is_checked" realm_allow_community_topic_editing
                   "label" admin_settings_label.realm_allow_community_topic_editing}}
 
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_allow_edit_history"
+                  "prefix" "id_"
+                  "is_checked" realm_allow_edit_history
+                  "label" admin_settings_label.realm_allow_edit_history}}
+
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Allow message deleting" }}
@@ -54,21 +60,137 @@
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <div id="org-notifications" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Notifications" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
                 {{partial "settings_checkbox"
-                  "setting_name" "realm_allow_edit_history"
+                  "setting_name" "realm_send_welcome_emails"
                   "prefix" "id_"
-                  "is_checked" realm_allow_edit_history
-                  "label" admin_settings_label.realm_allow_edit_history}}
+                  "is_checked" realm_send_welcome_emails
+                  "label" admin_settings_label.realm_send_welcome_emails}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block">
+                    {{t "New stream notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
+                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+
+            <div class="input-group">
+                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block">
+                    {{t "New user notifications:" }}
+                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
+                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
+                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+                            <span id="realm_signup_notifications_stream_name"></span>
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <ul class="dropdown-menu modal-bg" role="menu">
+                            <li class="dropdown-search" role="presentation">
+                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
+                            </li>
+                            <span class="dropdown-list-body"></span>
+                        </ul>
+                    </span>
+                </label>
+                {{#if is_admin }}
+                <a class="signup-notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
+                {{/if}}
+            </div>
+        </div>
+
+        <div id="org-user-defaults" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Default user settings" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
+            </div>
+            <p>{{t "Default settings for new users joining this organization." }}</p>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
+                    <select name="realm_default_language" id="id_realm_default_language">
+                        {{#each language_list}}
+                        <option value='{{this.code}}'>{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_default_twenty_four_hour_time"
+                  "prefix" "id_"
+                  "is_checked" realm_default_twenty_four_hour_time
+                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
             </div>
         </div>
 
         <div id="org-msg-feed" class="org-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Message feed" }}</h3>
+                <h3>{{t "Other settings" }}</h3>
                 {{ partial "settings-save-discard-widget" "section_name" "msg-feed" }}
             </div>
             <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_video_chat_provider" class="dropdown-title">
+                        {{t 'Video chat provider' }}
+                    </label>
+                    <select name="realm_video_chat_provider" id="id_realm_video_chat_provider">
+                        {{#each realm_available_video_chat_providers}}
+                        <option value='{{this}}'>{{this}}</option>
+                        {{/each}}
+                    </select>
+                    <div id="google_hangouts_domain">
+                        <label>{{t 'Domain for your <a href="https://gsuite.google.com" target="_blank">G Suite team</a> (required)' }}:</label>
+                        <input type="text" id="id_realm_google_hangouts_domain"
+                          name="realm_google_hangouts_domain"
+                          class="admin-realm-google-hangouts-domain"/>
+                    </div>
+                    <div id="zoom_user_id" class="zoom_credentials">
+                        <label>{{t 'Zoom user ID (required)' }}:</label>
+                        <input type="text" id="id_realm_zoom_user_id"
+                          name="realm_zoom_user_id"
+                          class="admin-realm-zoom-field"/>
+                    </div>
+                    <div id="zoom_api_key" class="zoom_credentials">
+                        <label>{{t 'Zoom API key (required)' }}:</label>
+                        <input type="text" id="id_realm_zoom_api_key"
+                          name="realm_zoom_api_key"
+                          class="admin-realm-zoom-field"/>
+                    </div>
+                    <div id="zoom_api_secret" class="zoom_credentials">
+                        <label>{{t 'Zoom API secret (required)' }}:</label>
+                        <input type="text" id="id_realm_zoom_api_secret"
+                          name="realm_zoom_api_secret"
+                          class="admin-realm-zoom-field"/>
+                    </div>
+                </div>
+
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_message_content_allowed_in_email_notifications"
+                  "prefix" "id_"
+                  "is_checked" realm_message_content_allowed_in_email_notifications
+                  "label" admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+
                 {{#if false}}
                 <div class="input-group">
                     <label for="realm_message_retention_days"
@@ -101,135 +223,6 @@
                   "prefix" "id_"
                   "is_checked" realm_inline_url_embed_preview
                   "label" admin_settings_label.realm_inline_url_embed_preview}}
-                {{/if}}
-            </div>
-        </div>
-
-        <div id="org-video-chat" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Video chat provider" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "video-chat" }}
-            </div>
-            <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <select name="realm_video_chat_provider" id="id_realm_video_chat_provider">
-                        {{#each realm_available_video_chat_providers}}
-                        <option value='{{this}}'>{{this}}</option>
-                        {{/each}}
-                    </select>
-                    <div id="google_hangouts_domain">
-                        <label>{{t 'Domain for your <a href="https://gsuite.google.com" target="_blank">G Suite team</a> (required)' }}:</label>
-                        <input type="text" id="id_realm_google_hangouts_domain"
-                          name="realm_google_hangouts_domain"
-                          class="admin-realm-google-hangouts-domain"/>
-                    </div>
-                    <div id="zoom_user_id" class="zoom_credentials">
-                        <label>{{t 'Zoom user ID (required)' }}:</label>
-                        <input type="text" id="id_realm_zoom_user_id"
-                          name="realm_zoom_user_id"
-                          class="admin-realm-zoom-field"/>
-                    </div>
-                    <div id="zoom_api_key" class="zoom_credentials">
-                        <label>{{t 'Zoom API key (required)' }}:</label>
-                        <input type="text" id="id_realm_zoom_api_key"
-                          name="realm_zoom_api_key"
-                          class="admin-realm-zoom-field"/>
-                    </div>
-                    <div id="zoom_api_secret" class="zoom_credentials">
-                        <label>{{t 'Zoom API secret (required)' }}:</label>
-                        <input type="text" id="id_realm_zoom_api_secret"
-                          name="realm_zoom_api_secret"
-                          class="admin-realm-zoom-field"/>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="org-user-defaults" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Default user settings" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
-            </div>
-            <p>{{t "Configure default settings for new users joining this organization." }}</p>
-            <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}:</label>
-                    <select name="realm_default_language" id="id_realm_default_language">
-                        {{#each language_list}}
-                        <option value='{{this.code}}'>{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                </div>
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_default_twenty_four_hour_time"
-                  "prefix" "id_"
-                  "is_checked" realm_default_twenty_four_hour_time
-                  "label" admin_settings_label.realm_default_twenty_four_hour_time}}
-            </div>
-        </div>
-
-        <div id="org-notifications" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Notifications" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
-            </div>
-            <div class="inline-block organization-settings-parent">
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_send_welcome_emails"
-                  "prefix" "id_"
-                  "is_checked" realm_send_welcome_emails
-                  "label" admin_settings_label.realm_send_welcome_emails}}
-
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_message_content_allowed_in_email_notifications"
-                  "prefix" "id_"
-                  "is_checked" realm_message_content_allowed_in_email_notifications
-                  "label" admin_settings_label.realm_message_content_allowed_in_email_notifications}}
-            </div>
-
-            <div class="input-group">
-                <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
-                  title="{{t 'The stream to which new stream notifications go to.' }}">
-                    {{t "New stream notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
-                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body"></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
-                {{/if}}
-            </div>
-
-            <div class="input-group">
-                <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block"
-                  title="{{t 'The stream which new user signup notifications go to.' }}">
-                    {{t "New user notifications:" }}
-                    <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
-                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
-                        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                            <span id="realm_signup_notifications_stream_name"></span>
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <ul class="dropdown-menu modal-bg" role="menu">
-                            <li class="dropdown-search" role="presentation">
-                                <input type="text" role="menuitem" placeholder="{{t 'Filter streams' }}" autofocus/>
-                            </li>
-                            <span class="dropdown-list-body"></span>
-                        </ul>
-                    </span>
-                </label>
-                {{#if is_admin }}
-                <a class="signup-notifications-stream-disable notification-disable">{{t "[Disable]" }}</a>
                 {{/if}}
             </div>
         </div>

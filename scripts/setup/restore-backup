@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import subprocess
+import sys
+import tempfile
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(BASE_DIR)
+from scripts.lib.zulip_tools import su_to_zulip, run
+
+POSTGRES_USER = "postgres"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("tarball", help="Filename of input tarball")
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    su_to_zulip(save_suid=True)
+
+    import scripts.lib.setup_path_on_import
+
+    # First, we unpack the /etc/zulip configuration, so we know how
+    # this server is supposed to be configured (and can import
+    # /etc/zulip/settings.py via `from zproject import settings`,
+    # next).  Ignore errors if zulip-backup/settings is not present
+    # (E.g. because this is a development backup).
+    subprocess.call(
+        [
+            "tar",
+            "-C",
+            "/etc/zulip",
+            "--strip-components=2",
+            "-xzf",
+            args.tarball,
+            "zulip-backup/settings",
+        ]
+    )
+
+    from zproject import settings
+
+    paths = [
+        ("settings", "/etc/zulip"),
+        # zproject will only be present for development environment backups.
+        ("zproject", os.path.join(settings.DEPLOY_ROOT, "zproject")),
+        ("uploads", os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)),
+    ]
+
+    with tempfile.TemporaryDirectory(prefix="zulip-restore-backup-") as tmp:
+        uid = os.getuid()
+        gid = os.getgid()
+        os.setresuid(0, 0, 0)
+        for name, path in paths:
+            os.makedirs(path, exist_ok=True)
+            os.chown(path, uid, gid)
+        os.setresuid(uid, uid, 0)
+
+        # We create symlinks so that we can do a single `tar -x`
+        # command to unpack the uploads, settings, etc. to their
+        # appropriate places.
+        os.mkdir(os.path.join(tmp, "zulip-backup"))
+        for name, path in paths:
+            os.symlink(path, os.path.join(tmp, "zulip-backup", name))
+        run(["tar", "-C", tmp, "--keep-directory-symlink", "-xzf", args.tarball])
+
+        # Now, restore the the database backup using pg_restore.
+        db_name = settings.DATABASES["default"]["NAME"]
+        assert isinstance(db_name, str)
+        db_dir = os.path.join(tmp, "zulip-backup", "database")
+        os.setresuid(0, 0, 0)
+        run(["chown", "-R", POSTGRES_USER, "--", tmp])
+        run(
+            [
+                os.path.join(
+                    settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"
+                ),
+                "zulip",
+                "zulip",
+                "zulip_base",
+            ]
+        )
+        as_postgres = ["su", "-s", "/usr/bin/env", "--", POSTGRES_USER]
+        run(as_postgres + ["dropdb", "--if-exists", "--", db_name])
+        run(as_postgres + ["createdb", "-T", "template0", "--", db_name])
+        run(as_postgres + ["pg_restore", "-d", db_name, "--", db_dir])
+        run(["chown", "-R", str(uid), "--", tmp])
+        os.setresuid(uid, uid, 0)
+
+        # In production, we also need to do a `zulip-puppet-apply` in
+        # order to adjust any configuration from /etc/zulip/zulip.conf
+        # to this system.
+        if settings.PRODUCTION:
+            os.setresuid(0, 0, 0)
+            run(
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"),
+                    "-f",
+                ]
+            )
+            os.setresuid(uid, uid, 0)
+            run(["supervisorctl", "restart", "all"])
+
+        run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])

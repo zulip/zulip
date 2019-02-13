@@ -1,3 +1,7 @@
+#left-sidebar #group-pm-list {
+    display: none;
+}
+
 #left-sidebar {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -47,16 +51,21 @@
 #stream_filters {
     overflow: visible;
     /* The -1px here prevents the scrollbar from going above the top of the container */
-    margin: -1px 0px 22px 0px;
+    margin-top: -1px;
+    margin-bottom: 18px;
     padding: 0;
     font-weight: normal;
 }
 
-.left-sidebar li {
+.narrows_panel {
+    margin-bottom: 4px;
+}
+
+.narrows_panel li {
     margin: 1px 0px;
 }
 
-.left-sidebar li a:hover {
+.narrows_panel li a:hover {
     text-decoration: none;
 }
 
@@ -78,10 +87,6 @@
     position: relative;
     z-index: 0;
     width: 100%;
-}
-
-.input-append input[type=text].stream-list-filter {
-    margin-left: 10px;
 }
 
 #global_filters li:hover,
@@ -115,16 +120,7 @@ li.active-sub-filter {
     position: relative;
 }
 
-.left-sidebar .sidebar-title a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.left-sidebar .sidebar-title:hover {
-    opacity: 1;
-}
-
-#left-sidebar .filter-icon {
+#global_filters .filter-icon {
     display: inline-block;
     width: 18px;
     text-align: center;
@@ -136,7 +132,7 @@ li.active-sub-filter {
     padding: 1px 10px;
 }
 
-.left-sidebar li {
+.narrows_panel li {
     padding-top: 2px;
     padding-bottom: 2px;
 
@@ -151,7 +147,14 @@ li.active-sub-filter {
     display: block;
 }
 
-.left-sidebar li a.conversation-partners:hover {
+.conversation-partners {
+    display: inline-block;
+    line-height: 1.2;
+    width: 90%;
+    overflow: hidden;
+}
+
+a.conversation-partners:hover {
     text-decoration: underline;
 }
 
@@ -193,11 +196,8 @@ li.active-sub-filter {
 */
 .top_left_starred_messages .count {
     background-color: transparent;
-    border-width: 1px;
-    border-style: solid;
     color: inherit;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 2px 1px 0px 3px;
     border-color: hsl(105, 2%, 50%);
 }
 

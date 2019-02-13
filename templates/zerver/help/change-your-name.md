@@ -7,11 +7,17 @@ Organization administrators can [change anyone's name](/help/change-a-users-name
 [prevent users from changing their names](/help/restrict-name-and-email-changes). This
 is useful when users' names are managed via LDAP or another data source.
 
+### Change your name
+
+{start_tabs}
+
 {settings_tab|your-account}
 
 1. Under **User settings**, click on the button with your name in it.
 
 1. Change your name, and click **Save**.
+
+{end_tabs}
 
 !!! warn ""
     **Note:** If you are unable to click on the button with your name, check
