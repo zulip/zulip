@@ -540,7 +540,8 @@ class RealmAPITest(ZulipTestCase):
     @slow("Tests a dozen properties in a loop")
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
-            self.do_test_realm_update_api(prop)
+            with self.subTest(property=prop):
+                self.do_test_realm_update_api(prop)
 
     def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""
