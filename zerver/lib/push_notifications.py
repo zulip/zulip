@@ -24,7 +24,7 @@ from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
+from zerver.models import PushDeviceToken, Message, Realm, Recipient, UserProfile, \
     get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, get_user_profile_by_id, \
     ArchivedMessage
@@ -510,13 +510,19 @@ def truncate_content(content: str) -> Tuple[str, bool]:
         return content, False
     return content[:200] + "…", True
 
-def get_common_payload(message: Message) -> Dict[str, Any]:
+def get_base_payload(realm: Realm) -> Dict[str, Any]:
+    '''Common fields for all notification payloads.'''
     data = {}  # type: Dict[str, Any]
 
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST
-    data['realm_id'] = message.sender.realm.id
-    data['realm_uri'] = message.sender.realm.uri
+    data['realm_id'] = realm.id
+    data['realm_uri'] = realm.uri
+
+    return data
+
+def get_common_payload(message: Message) -> Dict[str, Any]:
+    data = get_base_payload(message.sender.realm)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data['sender_id'] = message.sender.id
@@ -602,7 +608,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     user_profile = get_user_profile_by_id(user_profile_id)
     message, user_message = access_message(user_profile, message_id)
 
-    gcm_payload = get_common_payload(message)
+    gcm_payload = get_base_payload(message.sender.realm)
     gcm_payload.update({
         'event': 'remove',
         'zulip_message_id': message_id,  # message_id is reserved for CCS
