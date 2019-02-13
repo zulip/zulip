@@ -482,7 +482,6 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             flags=UserMessage.flags.active_mobile_push_notification).order_by(
                 "message_id").values_list("message_id", flat=True))
 
-    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     @mock.patch('zerver.lib.push_notifications.push_notifications_enabled', return_value=True)
     def test_track_active_mobile_push_notifications(self, mock_push_notifications: mock.MagicMock) -> None:
         mock_push_notifications.return_value = True

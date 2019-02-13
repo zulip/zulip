@@ -585,15 +585,6 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     user_profile = get_user_profile_by_id(user_profile_id)
     message, user_message = access_message(user_profile, message_id)
 
-    if not settings.SEND_REMOVE_PUSH_NOTIFICATIONS:
-        # It's a little annoying that we duplicate this flag-clearing
-        # code (also present below), but this block is scheduled to be
-        # removed in a few weeks, once the app has supported the
-        # feature for long enough.
-        user_message.flags.active_mobile_push_notification = False
-        user_message.save(update_fields=["flags"])
-        return
-
     gcm_payload = get_common_payload(message)
     gcm_payload.update({
         'event': 'remove',
