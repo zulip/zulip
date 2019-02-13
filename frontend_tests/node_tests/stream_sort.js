@@ -92,4 +92,17 @@ with_overrides(function (override) {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, ['fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, []);
+
+    // Test sorting of streams according to recency
+    stream_sort.set_stream_latest_message_id('scalene', 1);
+    stream_sort.set_stream_latest_message_id('clarinet', 2);
+    stream_sort.set_stream_latest_message_id('fast tortoise', 3);
+    stream_sort.set_stream_latest_message_id('weaving', 4);
+    weaving.subscribed = true;
+    stream_sort.set_sort_streams_by_recency();
+    sorted = stream_sort.sort_groups("");
+    assert.deepEqual(sorted.pinned_streams, ['scalene']);
+    assert.deepEqual(sorted.normal_streams, ['weaving', 'fast tortoise', 'clarinet']);
+    assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
+    weaving.subscribed = false;
 });
