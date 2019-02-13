@@ -202,6 +202,8 @@ exports.update_messages = function update_messages(events) {
                     topic_name: util.get_message_topic(msg),
                     message_id: msg.id,
                 });
+
+                stream_sort.set_stream_latest_message_id(msg.stream, msg.id);
             });
         }
 

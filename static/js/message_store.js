@@ -143,6 +143,8 @@ exports.add_message_metadata = function (message) {
             message_id: message.id,
         });
 
+        stream_sort.set_stream_latest_message_id(message.stream, message.id);
+
         recent_senders.process_message_for_senders(message);
         break;
 

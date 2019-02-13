@@ -6,6 +6,8 @@ var previous_pinned;
 var previous_normal;
 var previous_dormant;
 var all_streams = [];
+var stream_latest_message_id = {}; //key name gives the id of the latest message
+var recent_streams = false;
 
 exports.get_streams = function () {
     // Right now this is only used for testing, but we should
@@ -37,6 +39,33 @@ function filter_streams_by_search(streams, search_term) {
     return filtered_streams;
 }
 
+function sort_streams_by_recency(streams) {
+    streams.sort(function (a, b) {
+        var a_id;
+        var b_id;
+        if (stream_latest_message_id.hasOwnProperty(b)) {
+            b_id = stream_latest_message_id[b];
+        } else {
+            b_id = 0;
+        }
+        if (stream_latest_message_id.hasOwnProperty(a)) {
+            a_id = stream_latest_message_id[a];
+        } else {
+            a_id = 0;
+        }
+        return b_id - a_id;
+    });
+    return streams;
+}
+
+exports.set_stream_latest_message_id = function (name, message_id) {
+    stream_latest_message_id[name] = message_id;
+};
+
+exports.set_sort_streams_by_recency = function () {
+    recent_streams = !recent_streams;
+};
+
 exports.sort_groups = function (search_term) {
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
@@ -44,6 +73,9 @@ exports.sort_groups = function (search_term) {
     }
 
     streams = filter_streams_by_search(streams, search_term);
+    if (recent_streams) {
+        streams = sort_streams_by_recency(streams);
+    }
 
     function is_normal(sub) {
         return stream_data.is_active(sub);
@@ -65,9 +97,11 @@ exports.sort_groups = function (search_term) {
         }
     });
 
-    pinned_streams.sort(util.strcmp);
-    normal_streams.sort(util.strcmp);
-    dormant_streams.sort(util.strcmp);
+    if (!recent_streams) {
+        pinned_streams.sort(util.strcmp);
+        normal_streams.sort(util.strcmp);
+        dormant_streams.sort(util.strcmp);
+    }
 
     var same_as_before =
         previous_pinned !== undefined &&

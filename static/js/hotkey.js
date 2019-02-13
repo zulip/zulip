@@ -110,6 +110,7 @@ var keypress_mappings = {
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_users', message_view_only: false}, // 'w'
     120: {name: 'compose_private_message', message_view_only: true}, // 'x'
+    121: {name: 'recent_streams', message_view_only: false}, // 'y'
 };
 
 exports.get_keydown_hotkey = function (e) {
@@ -684,6 +685,10 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'star_deprecated':
         ui.maybe_show_deprecation_notice('*');
+        return true;
+    case 'recent_streams':
+        stream_sort.set_sort_streams_by_recency();
+        stream_list.build_stream_list();
         return true;
     }
 

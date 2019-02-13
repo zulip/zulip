@@ -2,6 +2,7 @@ zrequire('pm_conversations');
 zrequire('util');
 zrequire('people');
 zrequire('message_store');
+zrequire('stream_sort');
 
 var noop = function () {};
 var people = global.people;

@@ -138,6 +138,8 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
             topic_name: util.get_message_topic(message),
             message_id: message.id,
         });
+
+        stream_sort.set_stream_latest_message_id(message.stream, message.id);
     }
 
     if (message_content_edited) {

@@ -170,7 +170,7 @@ run_test('basic_chars', () => {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abefhlmotyz');
+    assert_unmapped('abefhlmotz');
     assert_unmapped('BEFHILNOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
