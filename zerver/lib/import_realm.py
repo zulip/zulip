@@ -986,6 +986,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
 
     if settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED)
+    else:
+        do_change_plan_type(realm, Realm.SELF_HOSTED)
     return realm
 
 # create_users and do_import_system_bots differ from their equivalent in
