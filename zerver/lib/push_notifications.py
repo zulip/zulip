@@ -521,7 +521,8 @@ def get_base_payload(realm: Realm) -> Dict[str, Any]:
 
     return data
 
-def get_common_payload(message: Message) -> Dict[str, Any]:
+def get_message_payload(message: Message) -> Dict[str, Any]:
+    '''Common fields for `message` payloads, for all platforms.'''
     data = get_base_payload(message.sender.realm)
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
@@ -563,8 +564,9 @@ def get_apns_alert_subtitle(message: Message) -> str:
     # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
     return message.sender.full_name + ":"
 
-def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-    zulip_data = get_common_payload(message)
+def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+    '''A `message` payload for iOS, via APNs.'''
+    zulip_data = get_message_payload(message)
     zulip_data.update({
         'message_ids': [message.id],
     })
@@ -582,8 +584,9 @@ def get_apns_payload(user_profile: UserProfile, message: Message) -> Dict[str, A
     }
     return apns_data
 
-def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-    data = get_common_payload(message)
+def get_message_payload_gcm(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
+    '''A `message` payload for Android, via GCM/FCM.'''
+    data = get_message_payload(message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
         'user': user_profile.email,
@@ -598,6 +601,15 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     })
     return data
 
+def get_remove_payload_gcm(user_profile: UserProfile, message_id: int) -> Dict[str, Any]:
+    '''A `remove` payload for Android, via GCM/FCM.'''
+    gcm_payload = get_base_payload(user_profile.realm)
+    gcm_payload.update({
+        'event': 'remove',
+        'zulip_message_id': message_id,  # message_id is reserved for CCS
+    })
+    return gcm_payload
+
 def handle_remove_push_notification(user_profile_id: int, message_id: int) -> None:
     """This should be called when a message that had previously had a
     mobile push executed is read.  This triggers a mobile push notifica
@@ -607,12 +619,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     """
     user_profile = get_user_profile_by_id(user_profile_id)
     message, user_message = access_message(user_profile, message_id)
-
-    gcm_payload = get_base_payload(message.sender.realm)
-    gcm_payload.update({
-        'event': 'remove',
-        'zulip_message_id': message_id,  # message_id is reserved for CCS
-    })
+    gcm_payload = get_remove_payload_gcm(user_profile, message_id)
     gcm_options = {'priority': 'normal'}  # type: Dict[str, Any]
 
     if uses_notification_bouncer():
@@ -685,8 +692,8 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     message.trigger = missed_message['trigger']
 
-    apns_payload = get_apns_payload(user_profile, message)
-    gcm_payload = get_gcm_payload(user_profile, message)
+    apns_payload = get_message_payload_apns(user_profile, message)
+    gcm_payload = get_message_payload_gcm(user_profile, message)
     gcm_options = {'priority': 'high'}  # type: Dict[str, Any]
     logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
