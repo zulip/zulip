@@ -80,6 +80,7 @@
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Disable new login emails](/help/disable-new-login-emails)
 * [Configure missed message emails](/help/configure-missed-message-emails)
+* [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 * [Test mobile notifications](/help/test-mobile-notifications)
 
