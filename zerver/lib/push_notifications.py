@@ -176,12 +176,12 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 #
 
 if settings.ANDROID_GCM_API_KEY:  # nocoverage
-    gcm = GCM(settings.ANDROID_GCM_API_KEY)
+    gcm_client = GCM(settings.ANDROID_GCM_API_KEY)
 else:
-    gcm = None
+    gcm_client = None
 
 def gcm_enabled() -> bool:  # nocoverage
-    return gcm is not None
+    return gcm_client is not None
 
 def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any],
                                            options: Dict[str, Any]) -> None:
@@ -241,7 +241,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     options: Additional options to control the GCM message sent.
         For details, see `parse_gcm_options`.
     """
-    if not gcm:
+    if not gcm_client:
         logger.debug("Skipping sending a GCM push notification since "
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
@@ -252,10 +252,10 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         # See https://developers.google.com/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
-        res = gcm.json_request(registration_ids=reg_ids,
-                               priority=priority,
-                               data=data,
-                               retries=10)
+        res = gcm_client.json_request(registration_ids=reg_ids,
+                                      priority=priority,
+                                      data=data,
+                                      retries=10)
     except IOError as e:
         logger.warning(str(e))
         return
