@@ -20,7 +20,6 @@
 * [Logging out](/help/logging-out)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
-* [Zulip glossary](/help/zulip-glossary)
 
 ## Sending messages
 * [Compose and reply](/help/compose-and-reply)
