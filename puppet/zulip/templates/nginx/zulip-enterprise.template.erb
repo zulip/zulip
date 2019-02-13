@@ -2,6 +2,7 @@
 <% else -%>
 server {
     listen 80;
+    listen [::]:80;
     return 301 https://$host$request_uri;
 }
 <% end -%>
@@ -11,8 +12,10 @@ include /etc/nginx/zulip-include/upstreams;
 server {
 <% if @nginx_http_only != '' -%>
     listen 80;
+    listen [::]:80;
 <% else -%>
     listen 443;
+    listen [::]:443;
 
     ssl on;
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
