@@ -1,5 +1,7 @@
 # Start a video call
 
+{start_tabs}
+
 {!start-composing.md!}
 
 2. Click the video-camera (<i class="fa fa-video-camera"></i>) icon in the
@@ -10,6 +12,8 @@ compose box.
 4. Send the message.
 
 5. Click on the link in the message to start or join the call.
+
+{end_tabs}
 
 !!! tip ""
     You can replace **Click to join video call** with anything you want.

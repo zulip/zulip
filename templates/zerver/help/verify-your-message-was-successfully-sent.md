@@ -31,4 +31,4 @@ If you do see the red icons, you can either
   to attempt a resend.
 * Click **cancel** (<i class="fa fa-times-circle" style="color: red;"></i>)
   to delete the message.
-* Reload the page to cancel all messages with the red icons.
+* Reload the page to cancel all the messages with red icons.
