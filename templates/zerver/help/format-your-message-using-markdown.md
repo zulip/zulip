@@ -150,7 +150,7 @@ You can also [add custom emoji](/help/add-custom-emoji).
 
 ## Mentions
 
-Learn more about at-mentions [here](/help/at-mention-a-team-member).
+Learn more about at-mentions [here](/help/at-mention-a-user).
 The numbers will be added automatically by the typeahead if needed for disambiguation
 
 ```

@@ -32,7 +32,7 @@
 * [Share and upload files](/help/share-and-upload-files)
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
-* [@-mention a user](/help/at-mention-a-team-member)
+* [@-mention a user](/help/at-mention-a-user)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
