@@ -78,15 +78,16 @@
 }
 
 .draft-info-box.active {
-    background-color: hsl(0, 0%, 93%);
+    outline: none;
 }
 
-.night-mode .draft-info-box.active {
-    background-color: hsl(0, 0%, 13%);
-}
-
-.draft-info-box.active .recipient_row_date {
-    color: hsl(240, 100%, 40%);
+.draft-info-box.active .messagebox-content {
+    box-shadow:
+        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+        -1px -1px 0px 0px hsl(215, 47%, 50%),
+        1px 1px 0px 0px hsl(215, 47%, 50%),
+        -1px 1px 0px 0px hsl(215, 47%, 50%),
+        1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
 .draft-row > div {
