@@ -4,6 +4,9 @@ set_global('narrow_state', {});
 set_global('resize', {
     resize_stream_filters_container: function () {},
 });
+set_global('ui', {
+    set_up_scrollbar: function () {},
+});
 set_global('stream_popover', {
     hide_topic_popover: function () {},
 });
@@ -48,7 +51,7 @@ run_test('get_conversation_li', () => {
 
 run_test('close', () => {
     var collapsed;
-    $('ul.expanded_private_messages').remove = function () {
+    $('#private-container').remove = function () {
         collapsed = true;
     };
     pm_list.close();
@@ -118,7 +121,7 @@ run_test('build_private_messages_list', () => {
 
 run_test('expand_and_update_private_messages', () => {
     var collapsed;
-    $('ul.expanded_private_messages').remove = function () {
+    $('#private-container').remove = function () {
         collapsed = true;
     };
 

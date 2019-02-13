@@ -62,7 +62,7 @@ function set_pm_conversation_count(user_ids_string, count) {
 
 function remove_expanded_private_messages() {
     stream_popover.hide_topic_popover();
-    $("ul.expanded_private_messages").remove();
+    $("#private-container").remove();
     resize.resize_stream_filters_container();
 }
 
@@ -166,6 +166,9 @@ exports.update_private_messages = function () {
     } else if (is_pm_filter) {
         exports.rebuild_recent("");
         $(".top_left_private_messages").addClass('active-filter');
+    }
+    if ($("#private-container").length !== 0) {
+        ui.set_up_scrollbar($("#private-container"));
     }
 };
 
