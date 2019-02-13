@@ -1038,6 +1038,7 @@ td.pointer {
 }
 
 .private-message .messagebox,
+.private-message .date_row,
 .message_header_private_message .message-header-contents {
     background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
@@ -1047,7 +1048,7 @@ td.pointer {
     border-right: 1px solid hsl(0, 0%, 88%);
 }
 
-.mention .messagebox-content {
+.mention .messagebox {
     background-color: hsl(8, 94%, 94%);
 }
 
@@ -2653,7 +2654,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .sub-unsub-message,
 .date_row {
     text-align: center;
-    margin-bottom: 10px;
+    padding-bottom: 10px;
 }
 
 .date_row .date-direction {
@@ -2673,7 +2674,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .sub-unsub-message span,
 .date_row span {
     display: block;
-    background: inherit;
     padding: 4px;
     overflow: hidden;
     text-transform: uppercase;
