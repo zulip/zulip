@@ -18,7 +18,6 @@
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
-<!-- Find your Zulip organization -->
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
 * [Zulip glossary](/help/zulip-glossary)
@@ -31,7 +30,6 @@
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Video calls](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
-<!-- Automatically link to an external issue tracker (improve wording) -->
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [@-mention a user](/help/at-mention-a-team-member)
@@ -100,7 +98,6 @@
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
-<!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
 # Zulip administration
 
