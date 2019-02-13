@@ -12,7 +12,7 @@
 * [Edit your profile](/help/edit-your-profile)
 * [Change your password](/help/change-your-password)
 * [Review your settings](/help/review-your-settings)
-* [Set your avatar](/help/change-your-avatar)
+* [Set your avatar](/help/set-your-avatar)
 * [Change your default language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
