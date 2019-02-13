@@ -638,7 +638,8 @@ class ImportExportTest(ZulipTestCase):
 
         # test realmauditlog
         def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
-            realmauditlogs = RealmAuditLog.objects.filter(realm=r)
+            realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
+                event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
 
@@ -832,6 +833,10 @@ class ImportExportTest(ZulipTestCase):
             with self.settings(BILLING_ENABLED=True):
                 realm = do_import_realm('var/test-export', 'test-zulip-1')
                 self.assertTrue(realm.plan_type, Realm.LIMITED)
+                self.assertTrue(RealmAuditLog.objects.filter(
+                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())
             with self.settings(BILLING_ENABLED=False):
                 realm = do_import_realm('var/test-export', 'test-zulip-2')
                 self.assertTrue(realm.plan_type, Realm.SELF_HOSTED)
+                self.assertTrue(RealmAuditLog.objects.filter(
+                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED).exists())
