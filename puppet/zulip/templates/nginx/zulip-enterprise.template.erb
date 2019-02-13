@@ -2,6 +2,7 @@
 <% else -%>
 server {
     listen 80;
+    listen [::]:80;
     return 301 https://$host$request_uri;
 }
 <% end -%>
@@ -13,7 +14,7 @@ server {
     listen 80;
 <% else -%>
     listen 443;
-
+    listen [::]:443 ssl http2;
     ssl on;
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
     ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
