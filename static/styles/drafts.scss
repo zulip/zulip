@@ -15,7 +15,10 @@
 }
 
 .drafts-header {
-    padding-top: 4px;
+    padding: {
+        top: 4px;
+        bottom: 8px;
+    }
     text-align: center;
     border-bottom: 1px solid hsl(0, 0%, 87%);
 }
@@ -48,7 +51,7 @@
     overflow: auto;
     height: calc(100% - 55px);
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .drafts-list .no-drafts {
@@ -71,7 +74,7 @@
 }
 
 .draft-row {
-    padding: 5px 10px;
+    padding: 5px 25px;
 }
 
 .draft-info-box.active {
