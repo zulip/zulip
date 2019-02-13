@@ -305,20 +305,6 @@ exports.set_stream_property = function (sub, property, value) {
     exports.bulk_set_stream_property([sub_data]);
 };
 
-exports.set_notification_setting_for_all_streams = function (notification_type, new_setting) {
-    var sub_data = [];
-    _.each(stream_data.subscribed_subs(), function (sub) {
-        if (sub[notification_type] !== new_setting) {
-            sub_data.push({
-                stream_id: sub.stream_id,
-                property: notification_type,
-                value: new_setting,
-            });
-        }
-    });
-    exports.bulk_set_stream_property(sub_data);
-};
-
 function redraw_privacy_related_stuff(sub_row, sub) {
     var stream_settings = settings_for_sub(sub);
     var html;
@@ -405,25 +391,41 @@ function change_stream_privacy(e) {
 
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.desktop_notifications = !sub.desktop_notifications;
+    if (sub.desktop_notifications === null) {
+        sub.desktop_notifications = !page_params.enable_stream_desktop_notifications;
+    } else {
+        sub.desktop_notifications = !sub.desktop_notifications;
+    }
     exports.set_stream_property(sub, 'desktop_notifications', sub.desktop_notifications);
 }
 
 function stream_audible_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.audible_notifications = !sub.audible_notifications;
+    if (sub.audible_notifications === null) {
+        sub.audible_notifications = !page_params.enable_stream_sounds;
+    } else {
+        sub.audible_notifications = !sub.audible_notifications;
+    }
     exports.set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
 function stream_push_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.push_notifications = !sub.push_notifications;
+    if (sub.push_notifications === null) {
+        sub.push_notifications = !page_params.enable_stream_push_notifications;
+    } else {
+        sub.push_notifications = !sub.push_notifications;
+    }
     exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
 }
 
 function stream_email_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.email_notifications = !sub.email_notifications;
+    if (sub.email_notifications === null) {
+        sub.email_notifications = !page_params.enable_stream_email_notifications;
+    } else {
+        sub.email_notifications = !sub.email_notifications;
+    }
     exports.set_stream_property(sub, 'email_notifications', sub.email_notifications);
 }
 

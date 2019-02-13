@@ -526,16 +526,36 @@ run_test('notifications', () => {
         stream_id: 102,
         name: 'India',
         subscribed: true,
-        desktop_notifications: true,
-        audible_notifications: true,
+        desktop_notifications: null,
+        audible_notifications: null,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub('India', india);
-    assert(stream_data.receives_desktop_notifications('India'));
-    assert(!stream_data.receives_desktop_notifications('Indiana'));
 
-    assert(stream_data.receives_audible_notifications('India'));
+    assert(!stream_data.receives_desktop_notifications('Indiana'));
     assert(!stream_data.receives_audible_notifications('Indiana'));
+
+    page_params.enable_stream_desktop_notifications = true;
+    page_params.enable_stream_sounds = true;
+    assert(stream_data.receives_desktop_notifications('India'));
+    assert(stream_data.receives_audible_notifications('India'));
+
+    page_params.enable_stream_desktop_notifications = false;
+    page_params.enable_stream_sounds = false;
+    assert(!stream_data.receives_desktop_notifications('India'));
+    assert(!stream_data.receives_audible_notifications('India'));
+
+    india.desktop_notifications = true;
+    india.audible_notifications = true;
+    assert(stream_data.receives_desktop_notifications('India'));
+    assert(stream_data.receives_audible_notifications('India'));
+
+    india.desktop_notifications = false;
+    india.audible_notifications = false;
+    page_params.enable_stream_desktop_notifications = true;
+    page_params.enable_stream_sounds = true;
+    assert(!stream_data.receives_desktop_notifications('India'));
+    assert(!stream_data.receives_audible_notifications('India'));
 });
 
 run_test('in_home_view', () => {

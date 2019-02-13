@@ -31,22 +31,6 @@ exports.notification_settings = other_notification_settings.concat(
     _.pluck(stream_notification_settings, 'setting')
 );
 
-function maybe_bulk_update_stream_notification_setting(notification_checkbox,
-                                                       propagate_setting_function) {
-    var html = templates.render("propagate_notification_change");
-    // TODO: This seems broken!!!
-    var group = notification_checkbox.closest(".input-group");
-    var checkbox_status = notification_checkbox.prop('checked');
-    group.find(".propagate_stream_notifications_change").html(html);
-    group.find(".yes_propagate_notifications").on("click", function () {
-        propagate_setting_function(checkbox_status);
-        group.find(".propagate_stream_notifications_change").empty();
-    });
-    group.find(".no_propagate_notifications").on("click", function () {
-        group.find(".propagate_stream_notifications_change").empty();
-    });
-}
-
 function change_notification_setting(setting, setting_data, status_element) {
     var data = {};
     data[setting] = JSON.stringify(setting_data);
@@ -86,10 +70,6 @@ exports.set_up = function () {
         $("#" + setting).change(function () {
             var setting_data = $(this).prop('checked');
             change_notification_setting(setting, setting_data, "#stream-notify-settings-status");
-            maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
-                stream_edit.set_notification_setting_for_all_streams(
-                    stream_setting.notifications, setting_data);
-            });
         });
     });
 

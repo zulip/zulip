@@ -934,10 +934,6 @@ class RecipientInfoTest(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        sub = get_subscription(stream_name, hamlet)
-        sub.push_notifications = True
-        sub.save()
-
         info = get_recipient_info(
             recipient=recipient,
             sender_id=hamlet.id,
@@ -949,7 +945,7 @@ class RecipientInfoTest(ZulipTestCase):
         expected_info = dict(
             active_user_ids=all_user_ids,
             push_notify_user_ids=set(),
-            stream_push_user_ids={hamlet.id},
+            stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
@@ -958,6 +954,37 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         self.assertEqual(info, expected_info)
+
+        hamlet.enable_stream_push_notifications = True
+        hamlet.save()
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info['stream_push_user_ids'], {hamlet.id})
+
+        sub = get_subscription(stream_name, hamlet)
+        sub.push_notifications = False
+        sub.save()
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info['stream_push_user_ids'], set())
+
+        hamlet.enable_stream_push_notifications = False
+        hamlet.save()
+        sub = get_subscription(stream_name, hamlet)
+        sub.push_notifications = True
+        sub.save()
+        info = get_recipient_info(
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info['stream_push_user_ids'], {hamlet.id})
 
         # Now mute Hamlet to omit him from stream_push_user_ids.
         add_topic_mute(

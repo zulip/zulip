@@ -1067,14 +1067,6 @@ run_test('notification', () => {
     assert.equal(title.text().trim(), 'You have a notification');
 });
 
-run_test('propagate_notification_change', () => {
-    var html = render('propagate_notification_change');
-
-    var button_area = $(html).find(".propagate-notifications-controls");
-    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'translated: Yes');
-    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
-});
-
 run_test('reminder_popover_content', () => {
     var args = {
         message: {

@@ -572,7 +572,10 @@ exports.receives_desktop_notifications = function (stream_name) {
     if (sub === undefined) {
         return false;
     }
-    return sub.desktop_notifications;
+    if (sub.desktop_notifications !== null) {
+        return sub.desktop_notifications;
+    }
+    return page_params.enable_stream_desktop_notifications;
 };
 
 exports.receives_audible_notifications = function (stream_name) {
@@ -580,7 +583,10 @@ exports.receives_audible_notifications = function (stream_name) {
     if (sub === undefined) {
         return false;
     }
-    return sub.audible_notifications;
+    if (sub.audible_notifications !== null) {
+        return sub.audible_notifications;
+    }
+    return page_params.enable_stream_sounds;
 };
 
 exports.get_streams_for_settings_page = function () {

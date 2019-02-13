@@ -2760,11 +2760,11 @@ class SubscriptionAPITest(ZulipTestCase):
             recipient__type_id=stream.id,
         )
 
-    def test_subscriptions_add_notification_default_true(self) -> None:
+    def test_subscriptions_add_notification_default_none(self) -> None:
         """
         When creating a subscription, the desktop, push, and audible notification
-        settings for that stream are derived from the global notification
-        settings.
+        settings for that stream are none. A value of None means to use the values
+        inherited from the global notification settings.
         """
         user_profile = self.example_user('iago')
         invitee_email = user_profile.email
@@ -2784,31 +2784,10 @@ class SubscriptionAPITest(ZulipTestCase):
                              u'<Subscription: '
                              '<UserProfile: %s <Realm: zulip 1>> -> recip>' % (self.example_email('iago'),))
 
-        self.assertTrue(subscription.desktop_notifications)
-        self.assertTrue(subscription.push_notifications)
-        self.assertTrue(subscription.audible_notifications)
-        self.assertTrue(subscription.email_notifications)
-
-    def test_subscriptions_add_notification_default_false(self) -> None:
-        """
-        When creating a subscription, the desktop, push, and audible notification
-        settings for that stream are derived from the global notification
-        settings.
-        """
-        user_profile = self.example_user('iago')
-        invitee_email = user_profile.email
-        invitee_realm = user_profile.realm
-        user_profile.enable_stream_desktop_notifications = False
-        user_profile.enable_stream_push_notifications = False
-        user_profile.enable_stream_sounds = False
-        user_profile.save()
-        current_stream = self.get_streams(invitee_email, invitee_realm)[0]
-        invite_streams = self.make_random_stream_names([current_stream])
-        self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams)
-        subscription = self.get_subscription(user_profile, invite_streams[0])
-        self.assertFalse(subscription.desktop_notifications)
-        self.assertFalse(subscription.push_notifications)
-        self.assertFalse(subscription.audible_notifications)
+        self.assertIsNone(subscription.desktop_notifications)
+        self.assertIsNone(subscription.push_notifications)
+        self.assertIsNone(subscription.audible_notifications)
+        self.assertIsNone(subscription.email_notifications)
 
     def test_mark_messages_as_unread_on_unsubscribe(self) -> None:
         realm = get_realm("zulip")

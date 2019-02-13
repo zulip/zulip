@@ -1853,10 +1853,13 @@ class Subscription(models.Model):
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)  # type: str
     pin_to_top = models.BooleanField(default=False)  # type: bool
 
-    desktop_notifications = models.BooleanField(default=True)  # type: bool
-    audible_notifications = models.BooleanField(default=True)  # type: bool
-    push_notifications = models.BooleanField(default=False)  # type: bool
-    email_notifications = models.BooleanField(default=False)  # type: bool
+    # These fields are stream-level overrides for the user's default
+    # configuration for notification, configured in UserProfile.  The
+    # default, None, means we just inherit the user-level default.
+    desktop_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
+    audible_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
+    push_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
+    email_notifications = models.NullBooleanField(default=None)  # type: Optional[bool]
 
     class Meta:
         unique_together = ("user_profile", "recipient")
