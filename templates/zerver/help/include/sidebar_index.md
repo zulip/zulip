@@ -22,6 +22,7 @@
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Sending messages
+* [Open the compose box](/help/open-the-compose-box)
 * [Compose and reply](/help/compose-and-reply)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
