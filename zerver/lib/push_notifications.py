@@ -13,7 +13,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-from gcm import GCM
+import gcm
 import requests
 import ujson
 
@@ -175,8 +175,25 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 # Sending to GCM, for Android
 #
 
+def make_gcm_client() -> gcm.GCM:  # nocoverage
+    # From GCM upstream's doc for migrating to FCM:
+    #
+    #   FCM supports HTTP and XMPP protocols that are virtually
+    #   identical to the GCM server protocols, so you don't need to
+    #   update your sending logic for the migration.
+    #
+    #   https://developers.google.com/cloud-messaging/android/android-migrate-fcm
+    #
+    # The one thing we're required to change on the server is the URL of
+    # the endpoint.  So we get to keep using the GCM client library we've
+    # been using (as long as we're happy with it) -- just monkey-patch in
+    # that one change, because the library's API doesn't anticipate that
+    # as a customization point.
+    gcm.gcm.GCM_URL = 'https://fcm.googleapis.com/fcm/send'
+    return gcm.GCM(settings.ANDROID_GCM_API_KEY)
+
 if settings.ANDROID_GCM_API_KEY:  # nocoverage
-    gcm_client = GCM(settings.ANDROID_GCM_API_KEY)
+    gcm_client = make_gcm_client()
 else:
     gcm_client = None
 
