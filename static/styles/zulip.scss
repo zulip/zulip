@@ -2657,6 +2657,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     padding-bottom: 10px;
 }
 
+.message_row .date_row {
+    /* We only want padding for the date rows between recipient blocks */
+    padding-bottom: 0px;
+}
+
 .date_row .date-direction {
     display: inline-block;
     padding-right: 5px;
