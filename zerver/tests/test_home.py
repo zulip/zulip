@@ -101,6 +101,7 @@ class HomeTest(ZulipTestCase):
             "muted_topics",
             "narrow",
             "narrow_stream",
+            "needs_to_change_password",
             "needs_tutorial",
             "never_subscribed",
             "night_mode",
@@ -884,3 +885,11 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('google-blob-sprite.css', html)
         self.assertNotIn('text-sprite.css', html)
+
+    def test_password_reset_redirection(self) -> None:
+        request = HostRequestMock()
+        user = self.example_user("hamlet")
+        user.needs_to_change_password = True
+        request.user = user
+        result = home(request)
+        self.assertEqual(result.status_code, 302)
