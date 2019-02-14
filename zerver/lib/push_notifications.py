@@ -584,8 +584,10 @@ def get_message_payload_apns(user_profile: UserProfile, message: Message) -> Dic
     }
     return apns_data
 
-def get_message_payload_gcm(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-    '''A `message` payload for Android, via GCM/FCM.'''
+def get_message_payload_gcm(
+        user_profile: UserProfile, message: Message,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    '''A `message` payload + options, for Android via GCM/FCM.'''
     data = get_message_payload(message)
     content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
     data.update({
@@ -599,16 +601,20 @@ def get_message_payload_gcm(user_profile: UserProfile, message: Message) -> Dict
         'sender_full_name': message.sender.full_name,
         'sender_avatar_url': absolute_avatar_url(message.sender),
     })
-    return data
+    gcm_options = {'priority': 'high'}
+    return data, gcm_options
 
-def get_remove_payload_gcm(user_profile: UserProfile, message_id: int) -> Dict[str, Any]:
-    '''A `remove` payload for Android, via GCM/FCM.'''
+def get_remove_payload_gcm(
+        user_profile: UserProfile, message_id: int,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    '''A `remove` payload + options, for Android via GCM/FCM.'''
     gcm_payload = get_base_payload(user_profile.realm)
     gcm_payload.update({
         'event': 'remove',
         'zulip_message_id': message_id,  # message_id is reserved for CCS
     })
-    return gcm_payload
+    gcm_options = {'priority': 'normal'}
+    return gcm_payload, gcm_options
 
 def handle_remove_push_notification(user_profile_id: int, message_id: int) -> None:
     """This should be called when a message that had previously had a
@@ -619,8 +625,7 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     """
     user_profile = get_user_profile_by_id(user_profile_id)
     message, user_message = access_message(user_profile, message_id)
-    gcm_payload = get_remove_payload_gcm(user_profile, message_id)
-    gcm_options = {'priority': 'normal'}  # type: Dict[str, Any]
+    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_id)
 
     if uses_notification_bouncer():
         try:
@@ -693,8 +698,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     message.trigger = missed_message['trigger']
 
     apns_payload = get_message_payload_apns(user_profile, message)
-    gcm_payload = get_message_payload_gcm(user_profile, message)
-    gcm_options = {'priority': 'high'}  # type: Dict[str, Any]
+    gcm_payload, gcm_options = get_message_payload_gcm(user_profile, message)
     logger.info("Sending push notifications to mobile clients for user %s" % (user_profile_id,))
 
     if uses_notification_bouncer():
