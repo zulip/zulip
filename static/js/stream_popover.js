@@ -119,6 +119,7 @@ function build_stream_popover(e) {
         content: content,
         trigger: "manual",
         fixed: true,
+        fix_positions: true,
     });
 
     $(elt).popover("show");
