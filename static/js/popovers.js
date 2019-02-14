@@ -163,6 +163,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
                                  user_is_guest: user.is_guest}),
         trigger: "manual",
         top_offset: 100,
+        fix_positions: true,
     });
     popover_element.popover("show");
 
@@ -178,7 +179,6 @@ exports._test_calculate_info_popover_placement = calculate_info_popover_placemen
 // message is the message containing it, which should be selected
 function show_user_info_popover(element, user, message) {
     var last_popover_elem = current_message_info_popover_elem;
-    var popover_size = 428; // hardcoded pixel height of the popover
     popovers.hide_all();
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
@@ -198,7 +198,7 @@ function show_user_info_popover(element, user, message) {
 
         var is_sender_popover =  message.sender_id === user.user_id;
         render_user_info_popover(user, elt, is_sender_popover, "respond_personal_button",
-                                 "message-info-popover", calculate_info_popover_placement(popover_size, elt));
+                                 "message-info-popover", "right");
 
         current_message_info_popover_elem = elt;
     }
