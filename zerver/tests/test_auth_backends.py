@@ -3041,7 +3041,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         cordelia.save()
 
         _, error = validate_email(inviter, cordelia.email)
-        self.assertEqual(error, 'Already has an account.')
+        self.assertEqual(error, 'Account has been deactivated.')
 
         _, error = validate_email(inviter, 'fred-is-fine@zulip.com')
         self.assertEqual(error, None)

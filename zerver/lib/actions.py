@@ -4754,9 +4754,10 @@ def validate_email_for_realm(target_realm: Realm, email: str) -> None:
         if existing_user_profile.is_mirror_dummy:
             raise AssertionError("Mirror dummy user is already active!")
         # Other users should not already exist at all.
-        raise ValidationError('%s already has an account' % (email,))
+        raise ValidationError('%s already has an account' % (email,), code = _("Already has an account."))
     elif not existing_user_profile.is_mirror_dummy:
-        raise ValidationError('The account for %s has been deactivated' % (email,))
+        raise ValidationError('The account for %s has been deactivated' % (email,),
+                              code = _("Account has been deactivated."))
 
 def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str], Optional[str]]:
     try:
@@ -4775,8 +4776,8 @@ def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str]
 
     try:
         validate_email_for_realm(user_profile.realm, email)
-    except ValidationError:
-        return None, _("Already has an account.")
+    except ValidationError as error:
+        return None, (error.code)
 
     return None, None
 
