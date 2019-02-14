@@ -20,17 +20,31 @@ exports.process_message = function (message) {
         return;
     }
 
+    var arr = [];
+
     _.each(exports.words, function (word) {
+        arr.push (word);
+    });
+
+    arr.sort(function (a, b) {
+        // ASC  -> a.length - b.length
+        // DESC -> b.length - a.length
+        return b.length - a.length;
+    });
+
+    arr.forEach(word => {
         var clean = escape_user_regex(word);
         var before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
         var after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
 
 
         var regex = new RegExp('(' + before_punctuation + ')' +
-                               '(' + clean + ')' +
-                               '(' + after_punctuation + ')', 'ig');
+                                '(' + clean + ')' +
+                                '(' + after_punctuation + ')', 'ig');
+
         message.content = message.content.replace(regex, function (match, before, word,
                                                                    after, offset, content) {
+
             // Logic for ensuring that we don't muck up rendered HTML.
             var pre_match = content.substring(0, offset);
             // We want to find the position of the `<` and `>` only in the
@@ -45,7 +59,12 @@ exports.process_message = function (message) {
             }
             return before + "<span class='alert-word'>" + word + "</span>" + after;
         });
+
+        while (message.content.indexOf("<span class='alert-word'><span class='alert-word'>") !== -1) {
+            message.content = message.content.replace(/<span class='alert-word'><span class='alert-word'>([\w\d\s<>]+)<\/span>/g, "<span class='alert-word'>$1");
+        }
     });
+
 };
 
 exports.notifies = function (message) {
