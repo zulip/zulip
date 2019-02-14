@@ -212,6 +212,7 @@ exports.format_draft = function (draft) {
         var space_string = new Handlebars.SafeString("&nbsp;");
         var stream = draft.stream.length > 0 ? draft.stream : space_string;
         var draft_topic = util.get_draft_topic(draft);
+        var draft_stream_color = stream_data.get_color(draft.stream);
 
         if (draft_topic === '') {
             draft_topic = compose.empty_topic_placeholder();
@@ -221,7 +222,8 @@ exports.format_draft = function (draft) {
             draft_id: draft.id,
             is_stream: true,
             stream: stream,
-            stream_color: stream_data.get_color(draft.stream),
+            stream_color: draft_stream_color,
+            dark_background: stream_color.get_color_class(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
             time_stamp: time_stamp,

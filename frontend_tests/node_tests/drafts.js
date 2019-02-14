@@ -7,6 +7,8 @@ zrequire('XDate', 'xdate');
 zrequire('timerender');
 zrequire('Handlebars', 'handlebars');
 zrequire('util');
+zrequire('stream_color');
+zrequire('colorspace');
 
 var ls_container = {};
 var noop = function () { return; };
@@ -261,6 +263,7 @@ run_test('format_drafts', () => {
             is_stream: true,
             stream: 'stream',
             stream_color: '#FFFFFF',
+            dark_background: '',
             topic: 'topic',
             raw_content: 'Test Stream Message',
             time_stamp: '7:55 AM',
@@ -291,6 +294,7 @@ run_test('format_drafts', () => {
             is_stream: true,
             stream: 'stream 2',
             stream_color: '#FFFFFF',
+            dark_background: '',
             topic: 'topic',
             raw_content: 'Test Stream Message 2',
             time_stamp: 'Jan 21',
