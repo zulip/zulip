@@ -1448,8 +1448,8 @@ run_test('user_group_info_popover_content', () => {
     assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
 });
 
-run_test('user_info_popover', () => {
-    var html = render('user_info_popover', {class: 'message-info-popover'});
+run_test('no_arrow_popover', () => {
+    var html = render('no_arrow_popover', {class: 'message-info-popover'});
 
     $(html).hasClass('popover message-info-popover');
 });
