@@ -8,7 +8,9 @@ The default is the `LOCAL_UPLOADS_DIR` backend, which just stores
 files on disk in the specified directory on the Zulip server.
 Obviously, this backend doesn't work with multiple Zulip servers and
 doesn't scale, but it's great for getting a Zulip server up and
-running quickly.
+running quickly. You can later migrate the uploads to S3 if necessary
+by following the instructions in [local to s3 migration
+section](#migrating-from-local-uploads-to-amazon-s3-backend).
 
 We also support an `S3` backend, which uses the Python `boto` library
 to upload files to Amazon S3 (and, with some work, it should be
@@ -137,3 +139,18 @@ need a block like this:
 The file-uploads bucket should not be world-readable.  See the
 [documentation on the Zulip security model](security-model.html) for
 details on the security model for uploaded files.
+
+## Migrating from local uploads to Amazon S3 backend
+
+As you scale your server you might want to migrate the uploads from your
+local backend to Amazon S3. Follow the instructions step by step to
+do the migration.
+
+1. First, [setup the S3 backend](#s3-backend-configuration) in the settings
+    (all the auth stuff), but leave `LOCAL_UPLOADS_DIR` set.
+2. Run `./manage.py transfer_uploads_to_s3`. This will start uploading
+    files from the local uploads directory to Amazon S3. This command
+    by default runs on 6 parallel processes. You can control the number
+    of process using the `--processes` option.
+3. Now, turn off `LOCAL_UPLOADS_DIR`, and restart your server
+    (continuing the last few steps of the S3 backend setup).
