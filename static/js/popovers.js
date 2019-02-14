@@ -150,6 +150,14 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         status_text: user_status.get_status_text(user.user_id),
     };
 
+    if (user.is_bot) {
+        var bot_owner_id = user.bot_owner_id;
+        if (bot_owner_id) {
+            var bot_owner = people.get_person_from_user_id(bot_owner_id);
+            args.bot_owner = bot_owner;
+        }
+    }
+
     popover_element.popover({
         content: templates.render('user_info_popover_content', args),
         // TODO: Determine whether `fixed` should be applied
@@ -781,6 +789,12 @@ exports.register_click_handlers = function () {
                 $('.info_popover_actions #status_message').html('');
             },
         });
+    });
+
+    $('body').on('click', '.bot-owner-name', function (e) {
+        var user_id = $(e.target).attr('data-bot-owner-id');
+        var user = people.get_person_from_user_id(user_id);
+        exports.show_user_profile(user);
     });
 
     $('body').on('click', '#user-profile-modal #name #edit-button', function () {

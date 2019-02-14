@@ -136,6 +136,15 @@ ul.remind_me_popover .remind_icon {
     margin-right: 5px;
 }
 
+.bot-owner-name {
+    text-decoration: underline;
+
+    &:hover {
+        cursor: pointer;
+        color: rgb(0, 136, 204);
+    }
+}
+
 .user_popover .popover-title {
     padding: 0;
 }

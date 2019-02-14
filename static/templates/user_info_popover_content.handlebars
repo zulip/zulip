@@ -28,7 +28,17 @@
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
 
-        <li>{{ user_type }}</li>
+        {{#if_and is_bot bot_owner }}
+            <li>{{#tr this}}Owner{{/tr}}:
+                <span class="bot-owner-name" data-bot-owner-id='{{ bot_owner.user_id }}'>
+                    {{bot_owner.full_name}}
+                </span>
+            </li>
+        {{else}}
+            {{#unless is_bot}}
+            <li>{{ user_type }}</li>
+            {{/unless}}
+        {{/if_and}}
     </div>
 
     {{#if is_me}}
