@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from django.conf import settings
 from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 import gcm
@@ -20,11 +21,13 @@ import ujson
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, huddle_users
+from zerver.lib.message import access_message, \
+    bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import send_to_push_bouncer, send_json_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDeviceToken, Message, Realm, Recipient, UserProfile, \
+from zerver.models import PushDeviceToken, Message, Realm, Recipient, \
+    UserMessage, UserProfile, \
     get_display_recipient, receives_offline_push_notifications, \
     receives_online_notifications, get_user_profile_by_id, \
     ArchivedMessage
@@ -627,8 +630,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
 
     """
     user_profile = get_user_profile_by_id(user_profile_id)
-    user_messages = [access_message(user_profile, message_id)[1]
-                     for message_id in message_ids]
+    message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
     gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
 
     if uses_notification_bouncer():
@@ -648,10 +650,12 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         if android_devices:
             send_android_push_notification(android_devices, gcm_payload, gcm_options)
 
-    for user_message in user_messages:
-        # TODO make this O(1) queries... including access_message, above
-        user_message.flags.active_mobile_push_notification = False
-        user_message.save(update_fields=["flags"])
+    UserMessage.objects.filter(
+        user_profile_id=user_profile_id,
+        message_id__in=message_ids,
+    ).update(
+        flags=F('flags').bitand(
+            ~UserMessage.flags.active_mobile_push_notification))
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
