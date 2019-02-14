@@ -123,7 +123,8 @@ def update_display_settings_backend(
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string, default=None),
-        timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
+        timezone: Optional[str]=REQ(validator=check_string, default=None),
+        needs_to_change_password: Optional[bool]=REQ(validator=check_bool, default=None)) -> HttpResponse:
 
     if (default_language is not None and
             default_language not in get_available_language_codes()):
