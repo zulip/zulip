@@ -591,9 +591,11 @@ exports.render_emoji_popover = function (elt, id) {
     });
     elt.popover("show");
     elt.prop("title", i18n.t("Add emoji reaction (:)"));
-    $('.emoji-popover-filter').focus();
-    ui.set_up_scrollbar($(".emoji-popover-emoji-map"));
-    ui.set_up_scrollbar($(".emoji-search-results-container"));
+
+    var popover = elt.data('popover').$tip;
+    popover.find('.emoji-popover-filter').focus();
+    ui.set_up_scrollbar(popover.find(".emoji-popover-emoji-map"));
+    ui.set_up_scrollbar(popover.find(".emoji-search-results-container"));
     current_message_emoji_popover_elem = elt;
 
     emoji_catalog_last_coordinates = {
@@ -602,7 +604,6 @@ exports.render_emoji_popover = function (elt, id) {
     };
     show_emoji_catalog();
 
-    var popover = elt.data('popover').$tip;
     refill_section_head_offsets(popover);
     register_popover_events(popover);
 };
