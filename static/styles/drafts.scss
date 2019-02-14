@@ -96,9 +96,12 @@
 
 .draft-row .draft-info-box {
     width: 100%;
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    border-top: 1px solid hsl(0, 0%, 88%);
+    border: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
+}
+
+.draft-info-box .message_row {
+    border: 0;
 }
 
 .draft-info-box .messagebox {
