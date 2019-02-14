@@ -201,7 +201,7 @@ def avatar_disk_path(user_profile: UserProfile, medium: bool=False, original: bo
                                     avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
     if original:
-        avatar_disk_path.replace(".png", ".original")
+        return avatar_disk_path.replace(".png", ".original")
     return avatar_disk_path
 
 def make_client(name: str) -> Client:
