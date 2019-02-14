@@ -51,6 +51,7 @@ in bursts.
 - Added Ctrl+. shortcut for narrowing to current compose recipient.
 - Added icons to indicate which "organization settings" tabs are
   available to regular users.
+- Added a tool for migrating from S3 to the local file uploads backend.
 - Added protocol for communicating version incompatibility to mobile apps.
 - Added support for copying avatar and other profile data when
   creating a second account on a Zulip server with a given email address.
