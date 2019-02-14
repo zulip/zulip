@@ -97,12 +97,18 @@ function build_stream_popover(e) {
 
     var stream_id = $(elt).parents('li').attr('data-stream-id');
 
+    var template = templates.render(
+        'no_arrow_popover',
+        {class: 'stream_popover_menu'}
+    );
+
     var content = templates.render(
         'stream_sidebar_actions',
         {stream: stream_data.get_sub_by_id(stream_id)}
     );
 
     $(elt).popover({
+        template: template,
         content: content,
         trigger: "manual",
         fixed: true,
