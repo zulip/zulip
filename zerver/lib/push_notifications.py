@@ -605,18 +605,21 @@ def get_message_payload_gcm(
     return data, gcm_options
 
 def get_remove_payload_gcm(
-        user_profile: UserProfile, message_id: int,
+        user_profile: UserProfile, message_ids: List[int],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     '''A `remove` payload + options, for Android via GCM/FCM.'''
     gcm_payload = get_base_payload(user_profile.realm)
     gcm_payload.update({
         'event': 'remove',
-        'zulip_message_id': message_id,  # message_id is reserved for CCS
+        'zulip_message_ids': ','.join(str(id) for id in message_ids),
+        # Older clients (all clients older than 2019-02-13) look only at
+        # `zulip_message_id` and ignore `zulip_message_ids`.  Do our best.
+        'zulip_message_id': message_ids[0],
     })
     gcm_options = {'priority': 'normal'}
     return gcm_payload, gcm_options
 
-def handle_remove_push_notification(user_profile_id: int, message_id: int) -> None:
+def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]) -> None:
     """This should be called when a message that had previously had a
     mobile push executed is read.  This triggers a mobile push notifica
     mobile app when the message is read on the server, to remove the
@@ -624,8 +627,9 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
 
     """
     user_profile = get_user_profile_by_id(user_profile_id)
-    message, user_message = access_message(user_profile, message_id)
-    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_id)
+    user_messages = [access_message(user_profile, message_id)[1]
+                     for message_id in message_ids]
+    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
 
     if uses_notification_bouncer():
         try:
@@ -644,8 +648,10 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
         if android_devices:
             send_android_push_notification(android_devices, gcm_payload, gcm_options)
 
-    user_message.flags.active_mobile_push_notification = False
-    user_message.save(update_fields=["flags"])
+    for user_message in user_messages:
+        # TODO make this O(1) queries... including access_message, above
+        user_message.flags.active_mobile_push_notification = False
+        user_message.save(update_fields=["flags"])
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:

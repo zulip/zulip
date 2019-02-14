@@ -4016,16 +4016,29 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
 
 def do_clear_mobile_push_notifications_for_ids(user_profile: UserProfile,
                                                message_ids: List[int]) -> None:
-    for user_message in UserMessage.objects.filter(
-            message_id__in=message_ids,
-            user_profile=user_profile).extra(
-                where=[UserMessage.where_active_push_notification()]):
-        event = {
-            "user_profile_id": user_profile.id,
-            "message_id": user_message.message_id,
+    filtered_message_ids = list(UserMessage.objects.filter(
+        message_id__in=message_ids,
+        user_profile=user_profile,
+    ).extra(
+        where=[UserMessage.where_active_push_notification()],
+    ).values_list('message_id', flat=True))
+
+    num_detached = settings.MAX_UNBATCHED_REMOVE_NOTIFICATIONS - 1
+    for message_id in filtered_message_ids[:num_detached]:
+        # Older clients (all clients older than 2019-02-13) will only
+        # see the first message ID in a given notification-message.
+        # To help them out, send a few of these separately.
+        queue_json_publish("missedmessage_mobile_notifications", {
             "type": "remove",
-        }
-        queue_json_publish("missedmessage_mobile_notifications", event)
+            "user_profile_id": user_profile.id,
+            "message_ids": [message_id],
+        })
+    if filtered_message_ids[num_detached:]:
+        queue_json_publish("missedmessage_mobile_notifications", {
+            "type": "remove",
+            "user_profile_id": user_profile.id,
+            "message_ids": filtered_message_ids[num_detached:],
+        })
 
 def do_update_message_flags(user_profile: UserProfile,
                             client: Client,
