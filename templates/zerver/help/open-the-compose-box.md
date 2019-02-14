@@ -25,14 +25,13 @@ can close the compose box using `Esc`, or up/down arrow if the box is empty.
 
 ## Why does Zulip close the compose box?
 
-The main reason is so that keyboard shortcuts work. It also gives more real
-estate to the message feed when you're reading messages.
+Zulip's model gives more vertical real estate to the message feed when
+you're reading messages, and allows us to use 1-character keyboard
+shortcuts such as `n` for [common workflows](/help/reading-strategies)
+in reading messages, which make catching up on a lot of messages in
+Zulip delightful.
 
-If you haven't done so already, try using `n` (next unread topic) and `r`
-(reply) to read and reply to messages, instead of using the mouse.
-
-This is one of our most contentious features, since it's so different from
-how other apps do things. We may eventually add an option to pin the
-compose box open. However, if you plan on using Zulip for more than an hour
-a day, we highly recommend learning the `n` and `r` keyboard shortcuts as
-soon as you can.
+This feature sometimes confuses new users, since it's different from
+how other apps do things. However, once users learn how to open the
+compose box, they're generally quite happy with Zulip's efficient
+read/reply/compose workflow.
