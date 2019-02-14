@@ -38,7 +38,7 @@
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages
-* [Navigation and unread counts](/help/unread-counter-and-pointer)
+* [Reading strategies](/help/reading-strategies)
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View an image at full size](/help/viewing-images)
@@ -46,6 +46,7 @@
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Emoji reactions](/help/emoji-reactions)
+* [Marking messages as read](/help/marking-messages-as-read)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
