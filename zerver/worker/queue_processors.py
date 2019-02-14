@@ -360,7 +360,10 @@ class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
 
     def consume(self, data: Mapping[str, Any]) -> None:
         if data.get("type", "add") == "remove":
-            handle_remove_push_notification(data['user_profile_id'], data['message_id'])
+            message_ids = data.get('message_ids')
+            if message_ids is None:  # legacy task across an upgrade
+                message_ids = [data['message_id']]
+            handle_remove_push_notification(data['user_profile_id'], message_ids)
         else:
             handle_push_notification(data['user_profile_id'], data)
 

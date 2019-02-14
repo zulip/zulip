@@ -15,6 +15,7 @@ import uuid
 from django.test import override_settings
 from django.conf import settings
 from django.http import HttpResponse
+from django.db.models import F
 from django.utils.crypto import get_random_string
 from django.utils.timezone import utc as timezone_utc
 
@@ -34,7 +35,7 @@ from zerver.models import (
     Stream,
     Subscription,
 )
-from zerver.lib.actions import do_delete_messages
+from zerver.lib.actions import do_delete_messages, do_mark_stream_messages_as_read
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.push_notifications import (
     absolute_avatar_url,
@@ -725,12 +726,17 @@ class HandlePushNotificationTest(PushNotificationTest):
                            '.send_notifications_to_bouncer') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_base_payload',
                            return_value={'gcm': True}):
-            handle_remove_push_notification(user_profile.id, message.id)
-            mock_send_android.assert_called_with(user_profile.id, {},
-                                                 {'gcm': True,
-                                                  'event': 'remove',
-                                                  'zulip_message_id': message.id},
-                                                 {'priority': 'normal'})
+            handle_remove_push_notification(user_profile.id, [message.id])
+            mock_send_android.assert_called_with(
+                user_profile.id,
+                {},
+                {
+                    'gcm': True,
+                    'event': 'remove',
+                    'zulip_message_ids': str(message.id),
+                    'zulip_message_id': message.id,
+                },
+                {'priority': 'normal'})
             user_message = UserMessage.objects.get(user_profile=self.user_profile,
                                                    message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
@@ -753,12 +759,16 @@ class HandlePushNotificationTest(PushNotificationTest):
                         '.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_base_payload',
                            return_value={'gcm': True}):
-            handle_remove_push_notification(self.user_profile.id, message.id)
-            mock_send_android.assert_called_with(android_devices,
-                                                 {'gcm': True,
-                                                  'event': 'remove',
-                                                  'zulip_message_id': message.id},
-                                                 {'priority': 'normal'})
+            handle_remove_push_notification(self.user_profile.id, [message.id])
+            mock_send_android.assert_called_with(
+                android_devices,
+                {
+                    'gcm': True,
+                    'event': 'remove',
+                    'zulip_message_ids': str(message.id),
+                    'zulip_message_id': message.id,
+                },
+                {'priority': 'normal'})
             user_message = UserMessage.objects.get(user_profile=self.user_profile,
                                                    message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
@@ -1517,6 +1527,39 @@ class GCMSendTest(PushNotificationTest):
         send_android_push_notification_to_user(self.user_profile, data, {})
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
+
+class TestClearOnRead(ZulipTestCase):
+    def test_mark_stream_as_read(self) -> None:
+        n_msgs = 3
+        max_unbatched = 2
+
+        hamlet = self.example_user("hamlet")
+        hamlet.enable_stream_push_notifications = True
+        hamlet.save()
+        stream = self.subscribe(hamlet, "Denmark")
+
+        msgids = [self.send_stream_message(self.example_email("iago"),
+                                           stream.name,
+                                           "yo {}".format(i))
+                  for i in range(n_msgs)]
+        UserMessage.objects.filter(
+            user_profile_id=hamlet.id,
+            message_id__in=msgids,
+        ).update(
+            flags=F('flags').bitor(
+                UserMessage.flags.active_mobile_push_notification))
+
+        with mock.patch("zerver.lib.actions.queue_json_publish") as mock_publish:
+            with override_settings(MAX_UNBATCHED_REMOVE_NOTIFICATIONS=max_unbatched):
+                do_mark_stream_messages_as_read(hamlet, self.client, stream)
+            queue_items = [c[0][1] for c in mock_publish.call_args_list]
+            groups = [item['message_ids'] for item in queue_items]
+
+        self.assertEqual(len(groups), min(len(msgids), max_unbatched))
+        for g in groups[:-1]:
+            self.assertEqual(len(g), 1)
+        self.assertEqual(sum(len(g) for g in groups), len(msgids))
+        self.assertEqual(set(id for g in groups for id in g), set(msgids))
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self) -> None:
