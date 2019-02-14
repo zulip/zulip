@@ -448,6 +448,17 @@ class BugdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted, expected)
 
+    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    def test_corrected_image_source(self) -> None:
+        # testing only wikipedia because linx.li urls can be expected to expire
+        content = 'https://en.wikipedia.org/wiki/File:Wright_of_Derby,_The_Orrery.jpg'
+        expected = '<div class="message_inline_image"><a href="https://en.wikipedia.org/wiki/Special:FilePath/File:Wright_of_Derby,_The_Orrery.jpg" target="_blank" title="https://en.wikipedia.org/wiki/Special:FilePath/File:Wright_of_Derby,_The_Orrery.jpg"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSpecial%3AFilePath%2FFile%3AWright_of_Derby%2C_The_Orrery.jpg&amp;size=thumbnail"></a></div>'
+
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, expected)
+
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
         ret = bugdown.image_preview_enabled()
