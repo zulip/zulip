@@ -601,11 +601,32 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not self.markdown.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
+        # remove html urls which end with img extensions that can not be shorted
+        if parsed_url.netloc == 'pasteboard.co':
+            return False
+
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
             if parsed_url.path.lower().endswith(ext):
                 return True
         return False
+
+    def corrected_image_source(self, url: str) -> str:
+        # This function adjusts any urls from linx.li and
+        # wikipedia.org to point to the actual image url.  It's
+        # structurally very similar to dropbox_image, and possibly
+        # should be rewritten to use open graph, but has some value.
+        parsed_url = urllib.parse.urlparse(url)
+        if parsed_url.netloc.lower().endswith('.wikipedia.org'):
+            # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
+            # A possible alternative, that avoids the redirect after hitting "Special:"
+            # is using the first characters of md5($filename) to generate the url
+            domain = parsed_url.scheme + "://" + parsed_url.netloc
+            correct_url = domain + parsed_url.path[:6] + 'Special:FilePath' + parsed_url.path[5:]
+            return correct_url
+        if parsed_url.netloc == 'linx.li':
+            return 'https://linx.li/s' + parsed_url.path
+        return None
 
     def dropbox_image(self, url: str) -> Optional[Dict[str, Any]]:
         # TODO: The returned Dict could possibly be a TypedDict in future.
@@ -978,9 +999,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr,
                       already_thumbnailed=True)
                 continue
+
             if self.is_image(url):
+                image_source = self.corrected_image_source(url)
+                if image_source is not None:
+                    found_url = ResultWithFamily(
+                        family=found_url.family,
+                        result=(image_source, image_source)
+                    )
                 self.handle_image_inlining(root, found_url)
                 continue
+
             if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
                     # Only render at most one tweet per message
