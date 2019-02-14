@@ -4,10 +4,13 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 
 from django.conf import settings
+from django.db import connection
 from django.utils.timezone import now as timezone_now
 
+from scripts.lib.zulip_tools import parse_lsb_release, run, TIMESTAMP_FORMAT
+from version import ZULIP_VERSION
 from zerver.lib.management import ZulipBaseCommand
-from scripts.lib.zulip_tools import run, TIMESTAMP_FORMAT
+from zerver.logging_handlers import try_git_describe
 
 
 class Command(ZulipBaseCommand):
@@ -30,6 +33,24 @@ class Command(ZulipBaseCommand):
         ) as tmp:
             os.mkdir(os.path.join(tmp, "zulip-backup"))
             members = []
+
+            with open(os.path.join(tmp, "zulip-backup", "zulip-version"), "w") as f:
+                print(ZULIP_VERSION, file=f)
+                git = try_git_describe()
+                if git:
+                    print(git, file=f)
+            members.append("zulip-backup/zulip-version")
+
+            with open(os.path.join(tmp, "zulip-backup", "os-version"), "w") as f:
+                print(
+                    "{DISTRIB_ID} {DISTRIB_CODENAME}".format(**parse_lsb_release()),
+                    file=f,
+                )
+            members.append("zulip-backup/os-version")
+
+            with open(os.path.join(tmp, "zulip-backup", "postgres-version"), "w") as f:
+                print(connection.pg_version, file=f)
+            members.append("zulip-backup/postgres-version")
 
             if settings.DEVELOPMENT:
                 os.symlink(
