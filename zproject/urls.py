@@ -127,6 +127,10 @@ v1_api_and_json_patterns = [
     url(r'^realm/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_statuses_for_realm'}),
 
+    # realm/reset_passwords -> zerver.views.realm.reset_passwords
+    url(r'^realm/reset_passwords$', rest_dispatch,
+        {'POST': 'zerver.views.realm.reset_passwords'}),
+
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on
