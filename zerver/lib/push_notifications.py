@@ -620,13 +620,11 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id']))
-        return
-
-    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                          kind=PushDeviceToken.GCM))
-
-    if android_devices:
-        send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    else:
+        android_devices = list(PushDeviceToken.objects.filter(
+            user=user_profile, kind=PushDeviceToken.GCM))
+        if android_devices:
+            send_android_push_notification(android_devices, gcm_payload, gcm_options)
 
     user_message.flags.active_mobile_push_notification = False
     user_message.save(update_fields=["flags"])

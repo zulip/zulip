@@ -717,7 +717,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
-            message=message
+            message=message,
+            flags=UserMessage.flags.active_mobile_push_notification,
         )
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
@@ -731,6 +732,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
                                                  {'priority': 'normal'})
+            user_message = UserMessage.objects.get(user_profile=self.user_profile,
+                                                   message=message)
+            self.assertEqual(user_message.flags.active_mobile_push_notification, False)
 
     def test_non_bouncer_push_remove(self) -> None:
         self.setup_apns_tokens()
@@ -738,7 +742,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
+            flags=UserMessage.flags.active_mobile_push_notification,
         )
 
         android_devices = list(
@@ -755,6 +760,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
                                                  {'priority': 'normal'})
+            user_message = UserMessage.objects.get(user_profile=self.user_profile,
+                                                   message=message)
+            self.assertEqual(user_message.flags.active_mobile_push_notification, False)
 
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
