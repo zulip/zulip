@@ -14,8 +14,8 @@ var exports = {};
 exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
-    away_me: 'is away',
-    away_them: 'is away',
+    away_me: 'is unavailable',
+    away_them: 'is unavailable',
     active: 'is active',
     idle: 'is not active',
 };
@@ -128,7 +128,7 @@ exports.my_user_status = function (user_id) {
     }
 
     if (user_status.is_away(user_id)) {
-        return i18n.t('(away)');
+        return i18n.t('(unavailable)');
     }
 
     return i18n.t('(you)');
@@ -148,7 +148,7 @@ exports.user_title = function (user_id) {
     } else {
         title = person.full_name;
         if (type_desc) {
-            // example: "Cordelia Lear is away"
+            // example: "Cordelia Lear is unavailable"
             title += ' ' + type_desc;
         }
     }
