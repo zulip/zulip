@@ -265,6 +265,16 @@ installation.  Then, run as root:
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
 ```
 
+If you're not sure what versions were in use when a given backup was
+created, you can get that information via the files in the backup
+tarball `postgres-version`, `os-version`, and `zulip-version`.  The
+following command may be useful for viewing these files without
+extracting the entire archive.
+
+```
+tar -Oaxf /path/to/archive/zulip-backup-rest.tar.gz zulip-backup/zulip-version
+```
+
 [install-server]: ../production/install.html
 
 ### What is included
