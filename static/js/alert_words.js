@@ -60,9 +60,9 @@ exports.process_message = function (message) {
             return before + "<span class='alert-word'>" + word + "</span>" + after;
         });
 
-        while (message.content.indexOf("<span class='alert-word'><span class='alert-word'>") !== -1) {
-            message.content = message.content.replace(/<span class='alert-word'><span class='alert-word'>([\w\d\s<>]+)<\/span>/g, "<span class='alert-word'>$1");
-        }
+        var replace_regex = /<span class='alert-word'><span class='alert-word'>([\w\d\s<>]+)<\/span>/g;
+        message.content = message.content.replace(replace_regex, "<span class='alert-word'>$1");
+
     });
 
 };
