@@ -591,6 +591,7 @@ exports.render_emoji_popover = function (elt, id) {
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
         placement: placement,
+        fix_positions: true,
         template: template,
         title: "",
         content: generate_emoji_picker_content(id),
