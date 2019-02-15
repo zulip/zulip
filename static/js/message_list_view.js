@@ -525,7 +525,11 @@ MessageListView.prototype = {
                 if (person !== undefined) {
                     // Note that person might be undefined in some
                     // unpleasant corner cases involving data import.
-                    $(this).text("@" + person.full_name);
+                    if ($(this).hasClass('silent')) {
+                        $(this).text(person.full_name);
+                    } else {
+                        $(this).text("@" + person.full_name);
+                    }
                 }
             }
         });

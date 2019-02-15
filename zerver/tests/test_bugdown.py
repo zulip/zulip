@@ -988,7 +988,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention silent" '
                          'data-user-id="%s">'
-                         '@King Hamlet</span></p>' % (user_id))
+                         'King Hamlet</span></p>' % (user_id))
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
@@ -1031,9 +1031,9 @@ class BugdownTest(ZulipTestCase):
         content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
         self.assertEqual(render_markdown(msg, content),
                          '<blockquote>\n<p>'
-                         '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                         '<span class="user-mention silent" data-user-id="%s">King Hamlet</span>'
                          ' and '
-                         '<span class="user-mention silent" data-user-id="%s">@Othello, the Moor of Venice</span>'
+                         '<span class="user-mention silent" data-user-id="%s">Othello, the Moor of Venice</span>'
                          '</p>\n</blockquote>\n'
                          '<p>'
                          '<span class="user-mention" data-user-id="%s">@King Hamlet</span>'
@@ -1044,7 +1044,7 @@ class BugdownTest(ZulipTestCase):
 
         # Both fenced quote and > quote should be identical for both silent and regular syntax.
         expected = ('<blockquote>\n<p>'
-                    '<span class="user-mention silent" data-user-id="%s">@King Hamlet</span>'
+                    '<span class="user-mention silent" data-user-id="%s">King Hamlet</span>'
                     '</p>\n</blockquote>' % (hamlet.id))
         content = "```quote\n@**King Hamlet**\n```"
         self.assertEqual(render_markdown(msg, content), expected)

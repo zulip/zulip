@@ -2169,7 +2169,7 @@ class EventsRegisterTest(ZulipTestCase):
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe(self.user_profile, stream.name)
-        notification = '<p><span class="user-mention silent" data-user-id="4">@King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong></p>'
+        notification = '<p><span class="user-mention silent" data-user-id="4">King Hamlet</span> renamed stream <strong>old_name</strong> to <strong>stream with a brand new name</strong></p>'
         action = lambda: do_rename_stream(stream, new_name, self.user_profile)
         events = self.do_test(action, num_events=3)
         schema_checker = self.check_events_dict([

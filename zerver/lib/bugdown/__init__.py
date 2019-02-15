@@ -1571,9 +1571,10 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el.set('data-user-id', user_id)
             if silent:
                 el.set('class', 'user-mention silent')
+                el.text = "%s" % (name,)
             else:
                 el.set('class', 'user-mention')
-            el.text = "@%s" % (name,)
+                el.text = "@%s" % (name,)
             return el
         return None
 
