@@ -77,9 +77,21 @@ function update_spectrum(popover, update_func) {
 
     var popover_root = popover.closest(".popover");
     var current_top_px = parseFloat(popover_root.css('top').replace('px', ''));
-    var height_delta = -(after_height - initial_height) * 0.5;
+    var height_delta = after_height - initial_height;
+    var top = current_top_px - height_delta / 2;
 
-    popover_root.css('top', current_top_px + height_delta + "px");
+    if (top < 0) {
+        top = 0;
+        popover_root.find("div.arrow").hide();
+    } else if (top + after_height > $(window).height() - 20) {
+        top = $(window).height() - after_height - 20;
+        if (top < 0) {
+            top = 0;
+        }
+        popover_root.find("div.arrow").hide();
+    }
+
+    popover_root.css('top', top + "px");
 }
 
 function build_stream_popover(e) {
@@ -106,6 +118,7 @@ function build_stream_popover(e) {
         content: content,
         trigger: "manual",
         fixed: true,
+        fix_positions: true,
     });
 
     $(elt).popover("show");

@@ -1289,14 +1289,21 @@
             */
             if (top < 0) {
                 top = 0;
-            } else if (top + actualHeight > win_height) {
-                top = win_height - actualHeight;
+                $tip.find("div.arrow").hide();
+            } else if (top + actualHeight > win_height - 20) {
+                top = win_height - actualHeight - 20;
+                if (top < 0) {
+                    top = 0;
+                }
+                $tip.find("div.arrow").hide();
             }
 
             if (left < 0) {
                 left = 0;
+                $tip.find("div.arrow").hide();
             } else if (left + actualWidth > win_width) {
                 left = win_width - actualWidth;
+                $tip.find("div.arrow").hide();
             }
         }
 
