@@ -16,7 +16,7 @@ from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email
+    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite
 )
 
 from zerver.lib.actions import (
@@ -51,6 +51,7 @@ from zerver.lib.actions import (
     do_change_user_delivery_email,
     do_create_user,
     do_create_default_stream_group,
+    do_create_multiuse_invite_link,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -69,6 +70,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
+    do_revoke_multi_use_invite,
     do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
