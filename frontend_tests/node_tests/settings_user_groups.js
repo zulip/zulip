@@ -302,7 +302,7 @@ run_test('populate_user_groups', () => {
     assert(user_groups_list_append_called);
     assert(get_person_from_user_id_called);
     assert(input_typeahead_called);
-    assert(blueslip.get_test_logs('warn').length, 1);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
     test_create_item(create_item_handler);
 

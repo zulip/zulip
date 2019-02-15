@@ -833,7 +833,7 @@ run_test('initialize', () => {
     assert(people.is_my_user_id(42));
 
     var fetched_retiree = people.get_person_from_user_id(15);
-    assert(fetched_retiree.full_name, 'Retiree');
+    assert.equal(fetched_retiree.full_name, 'Retiree');
 
     assert.equal(global.page_params.realm_users, undefined);
     assert.equal(global.page_params.cross_realm_bots, undefined);

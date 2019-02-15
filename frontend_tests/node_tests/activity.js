@@ -178,7 +178,7 @@ run_test('get_status', () => {
 run_test('reload_defaults', () => {
     blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
-    assert(blueslip.get_test_logs('warn').length, 1);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
 });
 
@@ -816,8 +816,8 @@ run_test('update_presence_info', () => {
     blueslip.set_test_data('warn', 'unknown email: foo@bar.com');
     blueslip.set_test_data('error', 'Unknown email for get_user_id: foo@bar.com');
     activity.update_presence_info('foo@bar.com', info, server_time);
-    assert(blueslip.get_test_logs('warn').length, 1);
-    assert(blueslip.get_test_logs('error').length, 1);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 });
 

@@ -73,5 +73,5 @@ run_test('create_pills', () => {
 
     var pills = search_pill.create_pills({});
     assert(input_pill_create_called);
-    assert(pills, {dummy: 'dummy'});
+    assert.deepEqual(pills, {dummy: 'dummy'});
 });
