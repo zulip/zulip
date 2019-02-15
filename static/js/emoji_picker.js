@@ -573,6 +573,13 @@ exports.render_emoji_popover = function (elt, id) {
     };
     var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
+    if (placement === 'viewport_center') {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center`, but bootstrap doesn't actually
+        // support that.
+        placement = 'left';
+    }
+
     var template = templates.render('emoji_popover', template_args);
 
     // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
@@ -583,7 +590,7 @@ exports.render_emoji_popover = function (elt, id) {
 
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
-        placement: placement === 'viewport_center' ? 'left' : placement,
+        placement: placement,
         template: template,
         title: "",
         content: generate_emoji_picker_content(id),
