@@ -152,8 +152,6 @@ exports.rebuild_recent = function (active_conversation) {
 };
 
 exports.update_private_messages = function () {
-    exports._build_private_messages_list();
-
     if (!narrow_state.active()) {
         return;
     }
