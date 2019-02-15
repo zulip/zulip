@@ -107,8 +107,11 @@ function revoke_invite() {
     });
 }
 
-exports.set_up = function (initialize_event_handlers = true) {
+exports.set_up = function (initialize_event_handlers) {
     meta.loaded = true;
+    if (typeof initialize_event_handlers === 'undefined') {
+        initialize_event_handlers = true;
+    }
 
     // create loading indicators
     loading.make_indicator($('#admin_page_invites_loading_indicator'));
