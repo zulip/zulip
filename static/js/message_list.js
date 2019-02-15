@@ -435,6 +435,10 @@ exports.MessageList.prototype = {
     get_last_message_sent_by_me: function () {
         return this.data.get_last_message_sent_by_me();
     },
+
+    get_first_message_of_stream_topic: function (stream_name, topic_name) {
+        return this.data.get_first_message_of_stream_topic(stream_name, topic_name);
+    },
 };
 
 exports.all = new exports.MessageList({

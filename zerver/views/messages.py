@@ -1444,12 +1444,20 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
                            message_id: int=REQ(converter=to_non_negative_int),
                            topic_name: Optional[str]=REQ_topic(),
                            propagate_mode: Optional[str]=REQ(default="change_one"),
-                           content: Optional[str]=REQ(default=None)) -> HttpResponse:
+                           content: Optional[str]=REQ(default=None),
+                           client_oldest_message_id: Optional[int]=REQ(default=None)
+                           ) -> HttpResponse:
 
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
+
+    # Oldest message of the topic which is visible to the client.
+    client_oldest_message = None
+    if client_oldest_message_id:
+        client_oldest_message, ignored_user_message = access_message(user_profile,
+                                                                     client_oldest_message_id)
     is_no_topic_msg = (message.topic_name() == "(no topic)")
 
     # You only have permission to edit a message if:
@@ -1522,7 +1530,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     number_changed = do_update_message(user_profile, message, topic_name,
                                        propagate_mode, content, rendered_content,
                                        prior_mention_user_ids,
-                                       mention_user_ids)
+                                       mention_user_ids, client_oldest_message)
 
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)

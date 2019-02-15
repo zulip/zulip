@@ -169,6 +169,11 @@ exports.save = function (row, from_topic_edited_only) {
             request.propagate_mode = selected_topic_propagation;
         }
         changed = true;
+        var top_target_message = current_msg_list.get_first_message_of_stream_topic(
+            message.stream,
+            message.topic
+        );
+        request.client_oldest_message_id = top_target_message.id;
     }
 
     if (new_content !== message.raw_content && !from_topic_edited_only) {

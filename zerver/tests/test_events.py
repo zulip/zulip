@@ -733,12 +733,13 @@ class EventsRegisterTest(ZulipTestCase):
         rendered_content = render_markdown(message, content)
         prior_mention_user_ids = set()  # type: Set[int]
         mentioned_user_ids = set()  # type: Set[int]
+        client_oldest_message = message
 
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content,
-                                      prior_mention_user_ids,
-                                      mentioned_user_ids),
+                                      prior_mention_user_ids, mentioned_user_ids,
+                                      client_oldest_message),
             state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])

@@ -2871,7 +2871,8 @@ class EditMessageTest(ZulipTestCase):
                 content=None,
                 rendered_content=None,
                 prior_mention_user_ids=set(),
-                mention_user_ids=set()
+                mention_user_ids=set(),
+                client_oldest_message=message
             )
 
             mock_send_event.assert_called_with(mock.ANY, mock.ANY, users_to_be_notified)
@@ -2934,7 +2935,8 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_patch("/json/messages/" + str(id1), {
             'message_id': id1,
             'topic': 'edited',
-            'propagate_mode': 'change_later'
+            'propagate_mode': 'change_later',
+            'client_oldest_message_id': id1
         })
         self.assert_json_success(result)
 
@@ -2946,32 +2948,48 @@ class EditMessageTest(ZulipTestCase):
 
     def test_propagate_all_topics(self) -> None:
         self.login(self.example_email("hamlet"))
-        id1 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+        id1 = self.send_stream_message(self.example_email("iago"), "Scotland",
                                        topic_name="topic1")
         id2 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
                                        topic_name="topic1")
-        id3 = self.send_stream_message(self.example_email("iago"), "Rome",
+        id3 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
                                        topic_name="topic1")
         id4 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
-                                       topic_name="topic2")
-        id5 = self.send_stream_message(self.example_email("iago"), "Scotland",
                                        topic_name="topic1")
-        id6 = self.send_stream_message(self.example_email("iago"), "Scotland",
+        id5 = self.send_stream_message(self.example_email("iago"), "Rome",
+                                       topic_name="topic1")
+        id6 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       topic_name="topic2")
+        id7 = self.send_stream_message(self.example_email("iago"), "Scotland",
+                                       topic_name="topic1")
+        id8 = self.send_stream_message(self.example_email("iago"), "Scotland",
                                        topic_name="topic3")
 
-        result = self.client_patch("/json/messages/" + str(id2), {
-            'message_id': id2,
+        ten_days_ago = timezone_now() - datetime.timedelta(days=10)
+        for message in Message.objects.filter(id__in=[id1, id2]):
+            message.date_sent = ten_days_ago
+            message.save()
+
+        result = self.client_patch("/json/messages/" + str(id4), {
+            'message_id': id4,
             'topic': 'edited',
-            'propagate_mode': 'change_all'
+            'propagate_mode': 'change_all',
+            'client_oldest_message_id': id2
         })
         self.assert_json_success(result)
 
-        self.check_message(id1, topic_name="edited")
+        # id1 is too old and so isn't edited.
+        self.check_message(id1, topic_name="topic1")
+        # id2 is client_oldest_message_id and should be edited.
         self.check_message(id2, topic_name="edited")
-        self.check_message(id3, topic_name="topic1")
-        self.check_message(id4, topic_name="topic2")
-        self.check_message(id5, topic_name="edited")
-        self.check_message(id6, topic_name="topic3")
+        self.check_message(id3, topic_name="edited")
+        self.check_message(id4, topic_name="edited")
+        # id5 is on another stream, so not edited
+        self.check_message(id5, topic_name="topic1")
+        # id6 and id8 are on other topics, so not edited
+        self.check_message(id6, topic_name="topic2")
+        self.check_message(id7, topic_name="edited")
+        self.check_message(id8, topic_name="topic3")
 
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:

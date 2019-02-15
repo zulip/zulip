@@ -4333,7 +4333,8 @@ def do_update_embedded_data(user_profile: UserProfile,
 def do_update_message(user_profile: UserProfile, message: Message, topic_name: Optional[str],
                       propagate_mode: str, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
-                      mention_user_ids: Set[int]) -> int:
+                      mention_user_ids: Set[int],
+                      client_oldest_message: Optional[Message]) -> int:
     """
     The main function for message editing.  A message edit event can
     modify:
@@ -4439,6 +4440,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
                 propagate_mode=propagate_mode,
                 orig_topic_name=orig_topic_name,
                 topic_name=topic_name,
+                client_oldest_message=client_oldest_message,
             )
 
             changed_messages += messages_list

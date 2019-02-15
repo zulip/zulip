@@ -115,17 +115,23 @@ def user_message_exists_for_topic(user_profile: UserProfile,
     ).exists()
 
 def update_messages_for_topic_edit(message: Message,
+                                   client_oldest_message: Optional[Message],
                                    propagate_mode: str,
                                    orig_topic_name: str,
                                    topic_name: str) -> List[Message]:
     propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
-    # We only change messages up to 7 days in the past, to avoid hammering our
-    # DB by changing an unbounded amount of messages
     if propagate_mode == 'change_all':
         before_bound = timezone_now() - datetime.timedelta(days=7)
 
-        propagate_query = (propagate_query & ~Q(id = message.id) &
-                           Q(date_sent__range=(before_bound, timezone_now())))
+        # By default, we only change messages up to 7 days in the
+        # past.  Additionally, if client_oldest_message is provided,
+        # we include messages newer than the provided message
+        # (i.e. all messages visible in the client).
+        target_messages_query = Q(date_sent__range = (before_bound, timezone_now()))
+        if client_oldest_message is not None:
+            target_messages_query = target_messages_query | Q(id__gte = client_oldest_message.id)
+
+        propagate_query = propagate_query & ~Q(id = message.id) & target_messages_query
     if propagate_mode == 'change_later':
         propagate_query = propagate_query & Q(id__gt = message.id)
 

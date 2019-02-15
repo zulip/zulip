@@ -568,6 +568,15 @@ MessageListData.prototype = {
         var msg = this._items[msg_index];
         return msg;
     },
+
+    get_first_message_of_stream_topic: function (stream_name, topic_name) {
+        var msg_index = _.findIndex(this._items, {topic: topic_name, stream: stream_name});
+        if (msg_index === -1) {
+            return;
+        }
+        var msg = this._items[msg_index];
+        return msg;
+    },
 };
 
 if (typeof module !== 'undefined') {
