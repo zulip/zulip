@@ -542,3 +542,12 @@ run_test('katex_throws_unexpected_exceptions', () => {
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 });
+
+run_test('misc_helpers', () => {
+    const elem = $('.user-mention');
+    markdown.set_name_in_mention_element(elem, 'Aaron');
+    assert.equal(elem.text(), '@Aaron');
+    elem.addClass('silent');
+    markdown.set_name_in_mention_element(elem, 'Aaron, but silent');
+    assert.equal(elem.text(), 'Aaron, but silent');
+});

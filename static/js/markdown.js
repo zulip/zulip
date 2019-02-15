@@ -36,6 +36,15 @@ var backend_only_markdown_re = [
     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
 ];
 
+// Helper function to update a mentioned user's name.
+exports.set_name_in_mention_element = function (element, name) {
+    if ($(element).hasClass('silent')) {
+        $(element).text(name);
+    } else {
+        $(element).text("@" + name);
+    }
+};
+
 exports.contains_backend_only_syntax = function (content) {
     // Try to guess whether or not a message has bugdown in it
     // If it doesn't, we can immediately render it client-side
