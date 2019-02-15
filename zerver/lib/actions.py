@@ -119,7 +119,8 @@ from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now as timezone_now
 
-from confirmation.models import Confirmation, create_confirmation_link, generate_key
+from confirmation.models import Confirmation, create_confirmation_link, generate_key, \
+    confirmation_url
 from confirmation import settings as confirmation_settings
 
 from zerver.lib.bulk_create import bulk_create_users
@@ -4913,6 +4914,9 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
         invites.append(dict(ref=invite.referred_by.email,
                             invited=datetime_to_timestamp(confirmation_obj.date_sent),
                             id=invite.id,
+                            link_url=confirmation_url(confirmation_obj.confirmation_key,
+                                                      user_profile.realm.host,
+                                                      Confirmation.MULTIUSE_INVITE),
                             invited_as=invite.invited_as,
                             is_multiuse=True))
     return invites
@@ -5509,8 +5513,8 @@ def missing_any_realm_internal_bots() -> bool:
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
-    confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
-    context = {'confirmation_url': confirmation_url,
+    url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
+    context = {'confirmation_url': url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}
     send_email_to_admins(
