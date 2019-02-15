@@ -59,7 +59,7 @@ function populate_invites(invites_data) {
         list_render.create(invites_table, invites_data.invites, {
             name: "admin_invites_list",
             modifier: function (item) {
-                item.invited = timerender.absolute_time(item.invited * 1000);
+                item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
                 return templates.render("admin_invites_list", { invite: item });
             },
             filter: {
