@@ -59,6 +59,14 @@ body.night-mode {
         color: inherit !important;
     }
 
+    .alert-msg {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .private-message .alert-msg {
+        background-color: hsl(208, 17%, 29%);
+    }
+
     /* this one makes the border of the reactions highlighted on hovering. */
     .message_reaction:hover,
     .reaction_button:hover {
