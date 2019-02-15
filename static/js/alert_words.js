@@ -32,7 +32,8 @@ exports.process_message = function (message) {
         return b.length - a.length;
     });
 
-    arr.forEach(word => {
+    for (var i = 0; i < arr.length; i = i + 1) {
+        var word = arr[i];
         var clean = escape_user_regex(word);
         var before_punctuation = '\\s|^|>|[\\(\\".,\';\\[]';
         var after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
@@ -62,8 +63,7 @@ exports.process_message = function (message) {
 
         var replace_regex = /<span class='alert-word'><span class='alert-word'>([\w\d\s<>]+)<\/span>/g;
         message.content = message.content.replace(replace_regex, "<span class='alert-word'>$1");
-
-    });
+    }
 
 };
 
