@@ -13,6 +13,7 @@ import ujson
 import subprocess
 import tempfile
 import shutil
+import sys
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from analytics.models import RealmCount, UserCount, StreamCount
@@ -1422,7 +1423,8 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path) -> None:
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
 
     def run_job(shard: str) -> int:
-        subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
+        subprocess.call([os.path.join(settings.DEPLOY_ROOT, "manage.py"),
+                         'export_usermessage_batch', '--path',
                          str(output_dir), '--thread', shard])
         return 0
 
