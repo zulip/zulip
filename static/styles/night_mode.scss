@@ -59,6 +59,17 @@ body.night-mode {
         color: inherit !important;
     }
 
+    /* It's a little annoying that we need to specify the different
+       background colors for these, but this alert feature can't use a
+       transparent background without creating other problems */
+    .alert-msg {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .private-message .alert-msg {
+        background-color: hsl(208, 17%, 29%);
+    }
+
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
