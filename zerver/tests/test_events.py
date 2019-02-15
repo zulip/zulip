@@ -16,7 +16,7 @@ from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email
+    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite
 )
 
 from zerver.lib.actions import (
@@ -51,6 +51,7 @@ from zerver.lib.actions import (
     do_change_user_delivery_email,
     do_create_user,
     do_create_default_stream_group,
+    do_create_multiuse_invite_link,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -69,6 +70,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
+    do_revoke_multi_use_invite,
     do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
@@ -947,6 +949,23 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_create_multiuse_invite_event(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('invites_changed')),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Verona"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        events = self.do_test(
+            lambda: do_create_multiuse_invite_link(self.user_profile, PreregistrationUser.INVITE_AS['MEMBER'], streams),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_revoke_user_invite_event(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('invites_changed')),
@@ -960,6 +979,25 @@ class EventsRegisterTest(ZulipTestCase):
         prereg_users = PreregistrationUser.objects.filter(referred_by__realm=self.user_profile.realm)
         events = self.do_test(
             lambda: do_revoke_user_invite(prereg_users[0]),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_revoke_multiuse_invite_event(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('invites_changed')),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Verona"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+        do_create_multiuse_invite_link(self.user_profile, PreregistrationUser.INVITE_AS['MEMBER'], streams)
+
+        multiuse_object = MultiuseInvite.objects.get()
+        events = self.do_test(
+            lambda: do_revoke_multi_use_invite(multiuse_object),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])

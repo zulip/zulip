@@ -294,9 +294,6 @@ run_test('admin_invites_list', () => {
 
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
-
-    var icon = $(html).find(".fa-bolt");
-    assert.equal(icon.attr('title'), "translated: Invited as administrator");
 });
 
 run_test('admin_tab', () => {
@@ -1048,6 +1045,18 @@ run_test('reminder_popover_content', () => {
     html += "</div>";
     var link = $(html).find("a.remind.custom");
     assert.equal(link.text().trim(), 'translated: Select date and time');
+});
+
+run_test('revoke_invite_modal', () => {
+    var args = {
+        is_multiuse: false,
+        email: "iago@zulip.com",
+    };
+
+    var html = "<div>";
+    html += render('revoke-invite-modal', args);
+    html += "</div>";
+    assert.equal($(html).find("p strong").text(), "iago@zulip.com");
 });
 
 run_test('settings_tab', () => {

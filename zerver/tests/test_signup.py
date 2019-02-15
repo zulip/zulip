@@ -1254,7 +1254,7 @@ class InvitationsTestCase(InviteUserBase):
         """
         A GET call to /json/invites returns all unexpired invitations.
         """
-
+        realm = get_realm("zulip")
         days_to_activate = getattr(settings, 'INVITATION_LINK_VALIDITY_DAYS', "Wrong")
         active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', "Wrong")
         self.assertNotEqual(days_to_activate, "Wrong")
@@ -1273,10 +1273,19 @@ class InvitationsTestCase(InviteUserBase):
                                                 referred_by=user_profile, status=active_value)
         prereg_user_three.save()
 
+        multiuse_invite_one = MultiuseInvite.objects.create(referred_by=self.example_user("hamlet"), realm=realm)
+        create_confirmation_link(multiuse_invite_one, realm.host, Confirmation.MULTIUSE_INVITE)
+
+        multiuse_invite_two = MultiuseInvite.objects.create(referred_by=self.example_user("othello"), realm=realm)
+        create_confirmation_link(multiuse_invite_two, realm.host, Confirmation.MULTIUSE_INVITE)
+        confirmation = Confirmation.objects.last()
+        confirmation.date_sent = expired_datetime
+        confirmation.save()
+
         result = self.client_get("/json/invites")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["TestOne@zulip.com"], result)
-        self.assert_not_in_success_response(["TestTwo@zulip.com", "TestThree@zulip.com"], result)
+        self.assert_in_success_response(["TestOne@zulip.com", "hamlet@zulip.com"], result)
+        self.assert_not_in_success_response(["TestTwo@zulip.com", "TestThree@zulip.com", "othello@zulip.com"], result)
 
     def test_successful_delete_invitation(self) -> None:
         """
@@ -1301,6 +1310,30 @@ class InvitationsTestCase(InviteUserBase):
         self.assertRaises(ScheduledEmail.DoesNotExist,
                           lambda: ScheduledEmail.objects.get(address__iexact=invitee,
                                                              type=ScheduledEmail.INVITATION_REMINDER))
+
+    def test_delete_multiuse_invite(self) -> None:
+        """
+        A DELETE call to /json/invites/multiuse<ID> should delete the
+        multiuse_invite.
+        """
+        self.login(self.example_email("iago"))
+
+        zulip_realm = get_realm("zulip")
+        multiuse_invite = MultiuseInvite.objects.create(referred_by=self.example_user("hamlet"), realm=zulip_realm)
+        create_confirmation_link(multiuse_invite, zulip_realm.host, Confirmation.MULTIUSE_INVITE)
+        result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        # Test that trying to double-delete fails
+        error_result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite.id))
+        self.assert_json_error(error_result, "No such invitation")
+
+        # Test deleting multiuse invite from another realm
+        mit_realm = get_realm("zephyr")
+        multiuse_invite_in_mit = MultiuseInvite.objects.create(referred_by=self.mit_user("sipbtest"), realm=mit_realm)
+        create_confirmation_link(multiuse_invite_in_mit, mit_realm.host, Confirmation.MULTIUSE_INVITE)
+        error_result = self.client_delete('/json/invites/multiuse/' + str(multiuse_invite_in_mit.id))
+        self.assert_json_error(error_result, "No such invitation")
 
     def test_successful_resend_invitation(self) -> None:
         """

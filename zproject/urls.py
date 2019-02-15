@@ -165,6 +165,10 @@ v1_api_and_json_patterns = [
     # invites/multiuse -> zerver.views.invite
     url(r'^invites/multiuse$', rest_dispatch,
         {'POST': 'zerver.views.invite.generate_multiuse_invite_backend'}),
+    # invites/multiuse -> zerver.views.invite
+    url(r'^invites/multiuse/(?P<invite_id>[0-9]+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.invite.revoke_multiuse_invite'}),
+
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
         {'POST': 'zerver.views.messages.mark_all_as_read'}),
