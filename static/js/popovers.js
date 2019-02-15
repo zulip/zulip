@@ -708,9 +708,10 @@ exports.register_click_handlers = function () {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
-        var group = user_groups.get_user_group_from_id(id);
+        var group = user_groups.get_user_group_from_id(id, true);
         if (group === undefined) {
-            blueslip.error('Unable to find user group in message' + message.sender_id);
+            // This user group has likely been deleted.
+            blueslip.info('Unable to find user group in message' + message.sender_id);
         } else {
             show_user_group_info_popover(this, group, message);
         }
