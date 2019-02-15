@@ -74,6 +74,27 @@ function populate_invites(invites_data) {
     loading.destroy_indicator($('#admin_page_invites_loading_indicator'));
 }
 
+function do_revoke_invite() {
+    var modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id");
+    var revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
+
+    if (modal_invite_id !== meta.invite_id) {
+        blueslip.error("Invite revoking canceled due to non-matching fields.");
+        ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
+                          $("#home-error"), 'alert-error');
+    }
+    $("#revoke_invite_modal").modal("hide");
+    revoke_button.prop("disabled", true).text(i18n.t("Working…"));
+    channel.del({
+        url: '/json/invites/' + meta.invite_id,
+        error: function (xhr) {
+            ui_report.generic_row_button_error(xhr, revoke_button);
+        },
+        success: function () {
+            meta.current_revoke_invite_user_modal_row.remove();
+        },
+    });
+}
 
 exports.set_up = function () {
     meta.loaded = true;
@@ -127,27 +148,7 @@ exports.on_load_success = function (invites_data) {
         $("#resend_invite_modal").modal("show");
     });
 
-    $("#do_revoke_invite_button").click(function () {
-        var modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id");
-        var revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
-
-        if (modal_invite_id !== meta.invite_id) {
-            blueslip.error("Invite revoking canceled due to non-matching fields.");
-            ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
-                              $("#home-error"), 'alert-error');
-        }
-        $("#revoke_invite_modal").modal("hide");
-        revoke_button.prop("disabled", true).text(i18n.t("Working…"));
-        channel.del({
-            url: '/json/invites/' + meta.invite_id,
-            error: function (xhr) {
-                ui_report.generic_row_button_error(xhr, revoke_button);
-            },
-            success: function () {
-                meta.current_revoke_invite_user_modal_row.remove();
-            },
-        });
-    });
+    $("#do_revoke_invite_button").click(do_revoke_invite);
 
     $("#do_resend_invite_button").click(function () {
         var modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id");
