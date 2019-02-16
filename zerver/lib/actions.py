@@ -119,7 +119,8 @@ from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now as timezone_now
 
-from confirmation.models import Confirmation, create_confirmation_link, generate_key
+from confirmation.models import Confirmation, create_confirmation_link, generate_key, \
+    confirmation_url
 from confirmation import settings as confirmation_settings
 
 from zerver.lib.bulk_create import bulk_create_users
@@ -4887,7 +4888,7 @@ def do_invite_users(user_profile: UserProfile,
     notify_invites_changed(user_profile)
 
 def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
-    days_to_activate = getattr(settings, 'ACCOUNT_ACTIVATION_DAYS', 7)
+    days_to_activate = settings.INVITATION_LINK_VALIDITY_DAYS
     active_value = getattr(confirmation_settings, 'STATUS_ACTIVE', 1)
 
     lowest_datetime = timezone_now() - datetime.timedelta(days=days_to_activate)
@@ -4902,8 +4903,22 @@ def do_get_user_invites(user_profile: UserProfile) -> List[Dict[str, Any]]:
                             ref=invitee.referred_by.email,
                             invited=datetime_to_timestamp(invitee.invited_at),
                             id=invitee.id,
-                            invited_as=invitee.invited_as))
+                            invited_as=invitee.invited_as,
+                            is_multiuse=False))
 
+    multiuse_confirmation_objs = Confirmation.objects.filter(realm=user_profile.realm,
+                                                             type=Confirmation.MULTIUSE_INVITE,
+                                                             date_sent__gte=lowest_datetime)
+    for confirmation_obj in multiuse_confirmation_objs:
+        invite = confirmation_obj.content_object
+        invites.append(dict(ref=invite.referred_by.email,
+                            invited=datetime_to_timestamp(confirmation_obj.date_sent),
+                            id=invite.id,
+                            link_url=confirmation_url(confirmation_obj.confirmation_key,
+                                                      user_profile.realm.host,
+                                                      Confirmation.MULTIUSE_INVITE),
+                            invited_as=invite.invited_as,
+                            is_multiuse=True))
     return invites
 
 def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
@@ -4914,6 +4929,7 @@ def do_create_multiuse_invite_link(referred_by: UserProfile, invited_as: int,
         invite.streams.set(streams)
     invite.invited_as = invited_as
     invite.save()
+    notify_invites_changed(referred_by)
     return create_confirmation_link(invite, realm.host, Confirmation.MULTIUSE_INVITE)
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
@@ -4921,7 +4937,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
 
     # Delete both the confirmation objects and the prereg_user object.
     # TODO: Probably we actaully want to set the confirmation objects
-    # to a "revoked" status so that we can give the user a better
+    # to a "revoked" status so that we can give the invited user a better
     # error message.
     content_type = ContentType.objects.get_for_model(PreregistrationUser)
     Confirmation.objects.filter(content_type=content_type,
@@ -4929,6 +4945,13 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
     notify_invites_changed(prereg_user)
+
+def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
+    content_type = ContentType.objects.get_for_model(MultiuseInvite)
+    Confirmation.objects.filter(content_type=content_type,
+                                object_id=multiuse_invite.id).delete()
+    multiuse_invite.delete()
+    notify_invites_changed(multiuse_invite.referred_by)
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     check_invite_limit(prereg_user.referred_by.realm, 1)
@@ -5490,8 +5513,8 @@ def missing_any_realm_internal_bots() -> bool:
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
 
 def do_send_realm_reactivation_email(realm: Realm) -> None:
-    confirmation_url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
-    context = {'confirmation_url': confirmation_url,
+    url = create_confirmation_link(realm, realm.host, Confirmation.REALM_REACTIVATION)
+    context = {'confirmation_url': url,
                'realm_uri': realm.uri,
                'realm_name': realm.name}
     send_email_to_admins(

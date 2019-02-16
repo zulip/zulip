@@ -13,6 +13,7 @@ import ujson
 import subprocess
 import tempfile
 import shutil
+import sys
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from analytics.models import RealmCount, UserCount, StreamCount
@@ -1279,8 +1280,13 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         output_path = os.path.join(output_dir, emoji_path)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
+        # Realm Emoji author is optional.
+        author = realm_emoji.author
+        author_id = None
+        if author:
+            author_id = realm_emoji.author.id
         record = dict(realm_id=realm.id,
-                      author=realm_emoji.author.id,
+                      author=author_id,
                       path=emoji_path,
                       s3_path=emoji_path,
                       file_name=realm_emoji.file_name,
@@ -1417,7 +1423,8 @@ def launch_user_message_subprocesses(threads: int, output_dir: Path) -> None:
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
 
     def run_job(shard: str) -> int:
-        subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
+        subprocess.call([os.path.join(settings.DEPLOY_ROOT, "manage.py"),
+                         'export_usermessage_batch', '--path',
                          str(output_dir), '--thread', shard])
         return 0
 

@@ -6,7 +6,13 @@ import os
 import pwd
 from typing import Set
 
-LOCAL_UPLOADS_DIR = 'var/uploads'
+# We want LOCAL_UPLOADS_DIR to be an absolute path so that code can
+# chdir without having problems accessing it.  Unfortunately, this
+# means we need a duplicate definition of DEPLOY_ROOT with the one in
+# settings.py.
+DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
+LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
+
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
 # Check if test_settings.py set EXTERNAL_HOST.
 EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')

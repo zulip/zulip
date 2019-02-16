@@ -12,32 +12,30 @@
 * [Edit your profile](/help/edit-your-profile)
 * [Change your password](/help/change-your-password)
 * [Review your settings](/help/review-your-settings)
-* [Set your avatar](/help/change-your-avatar)
-* [Change your default language](/help/change-your-language)
+* [Set your avatar](/help/set-your-avatar)
+* [Change your language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
-<!-- Find your Zulip organization -->
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
-* [Zulip glossary](/help/zulip-glossary)
 
 ## Sending messages
-* [Compose and reply](/help/compose-and-reply)
+* [Open the compose box](/help/open-the-compose-box)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
 * [Video calls](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
-<!-- Automatically link to an external issue tracker (improve wording) -->
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
-* [@-mention a user](/help/at-mention-a-team-member)
+* [Quote and reply](/help/quote-and-reply)
+* [@-mention a user](/help/at-mention-a-user)
+* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
-* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
 ## Reading messages
 * [Navigation and unread counts](/help/unread-counter-and-pointer)
@@ -78,6 +76,9 @@
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Alert words](/help/add-an-alert-word)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
+* [Disable new login emails](/help/disable-new-login-emails)
+* [Configure missed message emails](/help/configure-missed-message-emails)
+* [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 * [Test mobile notifications](/help/test-mobile-notifications)
 
@@ -88,6 +89,7 @@
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [View emoji as text](/help/view-emoji-as-text)
+* [Change your timezone](/help/change-your-timezone)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 * [Connect through a proxy](/help/connect-through-a-proxy)
@@ -96,7 +98,6 @@
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
-<!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
 # Zulip administration
 
@@ -121,6 +122,7 @@
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
+* [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Community topic edits](/help/community-topic-edits)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)

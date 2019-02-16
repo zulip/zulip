@@ -1,4 +1,4 @@
-# Change your default language
+# Change your language
 
 Zulip has been translated or partially translated into a number of different
 languages. You can see which languages Zulip supports, and help add support
@@ -9,7 +9,7 @@ If your entire organization speaks a language other than English, an administrat
 
 [change-org-lang]: change-the-default-language-for-your-organization
 
-### Change your default language
+### Change your language
 
 {start_tabs}
 

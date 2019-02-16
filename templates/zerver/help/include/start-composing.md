@@ -1,1 +1,1 @@
-1. [Start composing](/help/compose-and-reply) a new message or reply.
+1. [Open the compose box](/help/open-the-compose-box).

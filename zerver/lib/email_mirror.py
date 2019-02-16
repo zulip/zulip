@@ -163,6 +163,7 @@ def send_to_missed_message_address(address: str, message: message.Message) -> No
             user_profile.realm, user_profile, stream,
             subject_b.decode('utf-8'), body
         )
+        recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
         display_recipient = get_display_recipient(recipient)
         assert not isinstance(display_recipient, str)

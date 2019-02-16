@@ -749,6 +749,37 @@ exports.restore_home_state = function () {
     navigate.maybe_scroll_to_selected();
 };
 
+function show_search_query() {
+    // Don't need to handle "search:" filter because search_query does not contain it.
+    var search_query = narrow_state.search_string();
+    var query_words = search_query.split(" ");
+
+    var search_string_display = $("#empty_search_stop_words_string");
+    var query_contains_stop_words = false;
+
+    // Also removes previous search_string if any
+    search_string_display.text(i18n.t("You searched for:"));
+
+    _.each(query_words, function (query_word) {
+        search_string_display.append(' ');
+
+        // if query contains stop words, it is enclosed by a <del> tag
+        if (_.contains(page_params.stop_words, query_word)) {
+            // stop_words do not need sanitization so this is unnecesary but it is fail-safe.
+            search_string_display.append($('<del>').text(query_word));
+            query_contains_stop_words = true;
+        } else {
+            // We use .text("...") to sanitize the user-given query_string.
+            search_string_display.append($('<span>').text(query_word));
+        }
+    });
+
+    if (query_contains_stop_words) {
+        search_string_display.html(i18n.t(
+            "Some common words were excluded from your search.") + "<br/>" + search_string_display.html());
+    }
+}
+
 function pick_empty_narrow_banner() {
     var default_banner = $('#empty_narrow_message');
 
@@ -789,6 +820,7 @@ function pick_empty_narrow_banner() {
         return $("#nonsubbed_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
+        show_search_query();
         return $("#empty_search_narrow_message");
     } else if (first_operator === "pm-with") {
         if (!people.is_valid_bulk_emails_for_compose(first_operand.split(','))) {

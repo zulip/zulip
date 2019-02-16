@@ -532,6 +532,15 @@ MessageListView.prototype = {
 
         content.find('.user-group-mention').each(function () {
             var user_group_id = get_user_group_id_for_mention_button(this);
+            var user_group = user_groups.get_user_group_from_id(user_group_id, true);
+            if (user_group === undefined) {
+                // This is a user group the current user doesn't have
+                // data on.  This can happen when user groups are
+                // deleted.
+                blueslip.info("Rendered unexpected user group " + user_group_id);
+                return;
+            }
+
             var my_user_id = people.my_current_user_id();
             // Mark user group you're a member of.
             if (user_groups.is_member_of(user_group_id, my_user_id)) {
@@ -541,7 +550,7 @@ MessageListView.prototype = {
             if (user_group_id && !$(this).find(".highlight").length) {
                 // Edit the mention to show the current name for the
                 // user group, if its not in search.
-                $(this).text("@" + user_groups.get_user_group_from_id(user_group_id).name);
+                $(this).text("@" + user_group.name);
             }
         });
 

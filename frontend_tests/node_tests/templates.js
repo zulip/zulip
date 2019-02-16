@@ -294,9 +294,6 @@ run_test('admin_invites_list', () => {
 
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
-
-    var icon = $(html).find(".fa-bolt");
-    assert.equal(icon.attr('title'), "translated: Invited as administrator");
 });
 
 run_test('admin_tab', () => {
@@ -646,8 +643,6 @@ run_test('draft_table_body', () => {
     assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
     assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
     assert(!row_1.find(".message_row").hasClass("private-message"));
-    assert.equal(row_1.find(".messagebox").css("box-shadow"),
-                 "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
 
     var row_2 = $(html).find(".draft-row[data-draft-id='2']");
@@ -1052,6 +1047,18 @@ run_test('reminder_popover_content', () => {
     assert.equal(link.text().trim(), 'translated: Select date and time');
 });
 
+run_test('revoke_invite_modal', () => {
+    var args = {
+        is_multiuse: false,
+        email: "iago@zulip.com",
+    };
+
+    var html = "<div>";
+    html += render('revoke-invite-modal', args);
+    html += "</div>";
+    assert.equal($(html).find("p strong").text(), "iago@zulip.com");
+});
+
 run_test('settings_tab', () => {
     var page_param_checkbox_options = {
         enable_stream_desktop_notifications: true,
@@ -1448,8 +1455,8 @@ run_test('user_group_info_popover_content', () => {
     assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
 });
 
-run_test('user_info_popover', () => {
-    var html = render('user_info_popover', {class: 'message-info-popover'});
+run_test('no_arrow_popover', () => {
+    var html = render('no_arrow_popover', {class: 'message-info-popover'});
 
     $(html).hasClass('popover message-info-popover');
 });

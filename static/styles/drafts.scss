@@ -8,22 +8,25 @@
     background-color: hsl(0, 0%, 100%);
     border-radius: 4px;
     padding: 0px;
-    width: 60%;
+    width: 58%;
     overflow: hidden;
     max-width: 1200px;
     max-height: 1000px;
 }
 
 .drafts-header {
-    padding-top: 4px;
+    padding: {
+        top: 4px;
+        bottom: 8px;
+    }
     text-align: center;
-    text-transform: uppercase;
     border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
 .drafts-header h1 {
     margin: 0;
     font-size: 1.1em;
+    text-transform: uppercase;
 }
 
 .drafts-container .exit {
@@ -48,7 +51,7 @@
     overflow: auto;
     height: calc(100% - 55px);
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .drafts-list .no-drafts {
@@ -71,19 +74,11 @@
 }
 
 .draft-row {
-    padding: 5px 10px;
+    padding: 5px 25px;
 }
 
 .draft-info-box.active {
-    background-color: hsl(0, 0%, 93%);
-}
-
-.night-mode .draft-info-box.active {
-    background-color: hsl(0, 0%, 13%);
-}
-
-.draft-info-box.active .recipient_row_date {
-    color: hsl(240, 100%, 40%);
+    outline: 2px solid hsl(215, 47%, 50%);
 }
 
 .draft-row > div {
@@ -93,9 +88,12 @@
 
 .draft-row .draft-info-box {
     width: 100%;
-    border-bottom: 1px solid hsl(0, 0%, 88%);
-    border-top: 1px solid hsl(0, 0%, 88%);
+    border: 1px solid hsl(0, 0%, 88%);
     margin-bottom: 10px;
+}
+
+.draft-info-box .message_row {
+    border: 0;
 }
 
 .draft-info-box .messagebox {

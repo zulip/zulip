@@ -728,14 +728,6 @@ td.pointer {
     top: -3px;
 }
 
-.message_data {
-    vertical-align: top;
-    text-align: left;
-    padding: 0px;
-    background-color: hsl(0, 0%, 100%);
-    position: relative;
-}
-
 .message_header {
     vertical-align: middle;
     text-align: left;
@@ -1046,6 +1038,7 @@ td.pointer {
 }
 
 .private-message .messagebox,
+.private-message .date_row,
 .message_header_private_message .message-header-contents {
     background-color: hsla(192, 19%, 75%, 0.2);
     box-shadow: inset 1px 1px 0px hsl(0, 0%, 88%);
@@ -1055,7 +1048,7 @@ td.pointer {
     border-right: 1px solid hsl(0, 0%, 88%);
 }
 
-.mention .messagebox-content {
+.mention .messagebox {
     background-color: hsl(8, 94%, 94%);
 }
 
@@ -1525,14 +1518,6 @@ blockquote p {
 .bookend {
     margin-top: 10px;
     background-color: transparent;
-}
-
-.prev_is_same_sender.messagebox {
-    padding-top: 0px;
-}
-
-.prev_is_same_sender.message_data {
-    padding-top: 0px;
 }
 
 .next_is_same_sender {
@@ -2663,7 +2648,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .sub-unsub-message,
 .date_row {
     text-align: center;
-    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+.message_row .date_row {
+    /* We only want padding for the date rows between recipient blocks */
+    padding-bottom: 0px;
+}
+
+.date_row {
+    padding-left: 2px;
 }
 
 .date_row .date-direction {
@@ -2683,7 +2677,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .sub-unsub-message span,
 .date_row span {
     display: block;
-    background: inherit;
     padding: 4px;
     overflow: hidden;
     text-transform: uppercase;

@@ -573,6 +573,13 @@ exports.render_emoji_popover = function (elt, id) {
     };
     var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
+    if (placement === 'viewport_center') {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center`, but bootstrap doesn't actually
+        // support that.
+        placement = 'left';
+    }
+
     var template = templates.render('emoji_popover', template_args);
 
     // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
@@ -583,7 +590,8 @@ exports.render_emoji_popover = function (elt, id) {
 
     elt.popover({
         // temporary patch for handling popover placement of `viewport_center`
-        placement: placement === 'viewport_center' ? 'left' : placement,
+        placement: placement,
+        fix_positions: true,
         template: template,
         title: "",
         content: generate_emoji_picker_content(id),
@@ -591,9 +599,11 @@ exports.render_emoji_popover = function (elt, id) {
     });
     elt.popover("show");
     elt.prop("title", i18n.t("Add emoji reaction (:)"));
-    $('.emoji-popover-filter').focus();
-    ui.set_up_scrollbar($(".emoji-popover-emoji-map"));
-    ui.set_up_scrollbar($(".emoji-search-results-container"));
+
+    var popover = elt.data('popover').$tip;
+    popover.find('.emoji-popover-filter').focus();
+    ui.set_up_scrollbar(popover.find(".emoji-popover-emoji-map"));
+    ui.set_up_scrollbar(popover.find(".emoji-search-results-container"));
     current_message_emoji_popover_elem = elt;
 
     emoji_catalog_last_coordinates = {
@@ -602,7 +612,6 @@ exports.render_emoji_popover = function (elt, id) {
     };
     show_emoji_catalog();
 
-    var popover = elt.data('popover').$tip;
     refill_section_head_offsets(popover);
     register_popover_events(popover);
 };

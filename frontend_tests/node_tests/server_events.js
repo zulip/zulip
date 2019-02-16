@@ -9,6 +9,7 @@ global.stub_out_jquery();
 zrequire('message_store');
 zrequire('server_events_dispatch');
 zrequire('server_events');
+zrequire('sent_messages');
 
 set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});

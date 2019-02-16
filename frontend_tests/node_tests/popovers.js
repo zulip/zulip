@@ -135,7 +135,7 @@ run_test('sender_hover', () => {
 
     templates.render = function (fn, opts) {
         switch (fn) {
-        case 'user_info_popover':
+        case 'no_arrow_popover':
             assert.deepEqual(opts, {
                 class: 'message-info-popover',
             });

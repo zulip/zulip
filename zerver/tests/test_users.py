@@ -360,7 +360,8 @@ class PermissionTest(ZulipTestCase):
 
         cordelia = self.example_user("cordelia")
         for field_dict in cordelia.profile_data:
-            self.assertEqual(field_dict['value'], fields[field_dict['name']])  # type: ignore # Reason in comment
+            with self.subTest(field_name=field_dict['name']):
+                self.assertEqual(field_dict['value'], fields[field_dict['name']])  # type: ignore # Reason in comment
             # Invalid index type for dict key, it must be str but field_dict values can be anything
 
         # Test admin user cannot set invalid profile data
@@ -416,7 +417,8 @@ class PermissionTest(ZulipTestCase):
                                    {'profile_data': ujson.dumps(empty_profile_data)})
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
-            self.assertEqual(field_dict['value'], None)
+            with self.subTest(field_name=field_dict['name']):
+                self.assertEqual(field_dict['value'], None)
 
         # Test adding some of the field values after removing all.
         hamlet = self.example_user("hamlet")
@@ -443,7 +445,8 @@ class PermissionTest(ZulipTestCase):
                                    {'profile_data': ujson.dumps(new_profile_data)})
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data:
-            self.assertEqual(field_dict['value'], new_fields[str(field_dict['name'])])
+            with self.subTest(field_name=field_dict['name']):
+                self.assertEqual(field_dict['value'], new_fields[str(field_dict['name'])])
 
     def test_non_admin_user_cannot_change_profile_data(self) -> None:
         self.login(self.example_email("cordelia"))

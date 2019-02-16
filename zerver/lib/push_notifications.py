@@ -13,7 +13,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
-from gcm import GCM
+import gcm
 import requests
 import ujson
 
@@ -175,13 +175,30 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
 # Sending to GCM, for Android
 #
 
+def make_gcm_client() -> gcm.GCM:  # nocoverage
+    # From GCM upstream's doc for migrating to FCM:
+    #
+    #   FCM supports HTTP and XMPP protocols that are virtually
+    #   identical to the GCM server protocols, so you don't need to
+    #   update your sending logic for the migration.
+    #
+    #   https://developers.google.com/cloud-messaging/android/android-migrate-fcm
+    #
+    # The one thing we're required to change on the server is the URL of
+    # the endpoint.  So we get to keep using the GCM client library we've
+    # been using (as long as we're happy with it) -- just monkey-patch in
+    # that one change, because the library's API doesn't anticipate that
+    # as a customization point.
+    gcm.gcm.GCM_URL = 'https://fcm.googleapis.com/fcm/send'
+    return gcm.GCM(settings.ANDROID_GCM_API_KEY)
+
 if settings.ANDROID_GCM_API_KEY:  # nocoverage
-    gcm = GCM(settings.ANDROID_GCM_API_KEY)
+    gcm_client = make_gcm_client()
 else:
-    gcm = None
+    gcm_client = None
 
 def gcm_enabled() -> bool:  # nocoverage
-    return gcm is not None
+    return gcm_client is not None
 
 def send_android_push_notification_to_user(user_profile: UserProfile, data: Dict[str, Any],
                                            options: Dict[str, Any]) -> None:
@@ -241,7 +258,7 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
     options: Additional options to control the GCM message sent.
         For details, see `parse_gcm_options`.
     """
-    if not gcm:
+    if not gcm_client:
         logger.debug("Skipping sending a GCM push notification since "
                      "PUSH_NOTIFICATION_BOUNCER_URL and ANDROID_GCM_API_KEY are both unset")
         return
@@ -252,10 +269,10 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
         # See https://developers.google.com/cloud-messaging/http-server-ref .
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
-        res = gcm.json_request(registration_ids=reg_ids,
-                               priority=priority,
-                               data=data,
-                               retries=10)
+        res = gcm_client.json_request(registration_ids=reg_ids,
+                                      priority=priority,
+                                      data=data,
+                                      retries=10)
     except IOError as e:
         logger.warning(str(e))
         return
@@ -585,15 +602,6 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     user_profile = get_user_profile_by_id(user_profile_id)
     message, user_message = access_message(user_profile, message_id)
 
-    if not settings.SEND_REMOVE_PUSH_NOTIFICATIONS:
-        # It's a little annoying that we duplicate this flag-clearing
-        # code (also present below), but this block is scheduled to be
-        # removed in a few weeks, once the app has supported the
-        # feature for long enough.
-        user_message.flags.active_mobile_push_notification = False
-        user_message.save(update_fields=["flags"])
-        return
-
     gcm_payload = get_common_payload(message)
     gcm_payload.update({
         'event': 'remove',
@@ -612,13 +620,11 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
                 logger.warning(
                     "Maximum retries exceeded for trigger:%s event:push_notification" % (
                         event['user_profile_id']))
-        return
-
-    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                          kind=PushDeviceToken.GCM))
-
-    if android_devices:
-        send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    else:
+        android_devices = list(PushDeviceToken.objects.filter(
+            user=user_profile, kind=PushDeviceToken.GCM))
+        if android_devices:
+            send_android_push_notification(android_devices, gcm_payload, gcm_options)
 
     user_message.flags.active_mobile_push_notification = False
     user_message.save(update_fields=["flags"])

@@ -493,7 +493,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
-                mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
+                mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
                 self.mock_apns() as mock_apns, \
                 mock.patch('zerver.lib.push_notifications.logger.info') as mock_info, \
                 mock.patch('zerver.lib.push_notifications.logger.warning'):
@@ -549,7 +549,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=''), \
                 mock.patch('zerver.lib.push_notifications.requests.request',
                            side_effect=self.bounce_request), \
-                mock.patch('zerver.lib.push_notifications.gcm') as mock_gcm, \
+                mock.patch('zerver.lib.push_notifications.gcm_client') as mock_gcm, \
                 mock.patch('zerver.lib.push_notifications.send_notifications_to_bouncer',
                            side_effect=requests.ConnectionError), \
                 mock.patch('zerver.lib.queue.queue_json_publish',
@@ -712,13 +712,13 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(android_devices, {'gcm': True}, {'priority': 'high'})
             mock_push_notifications.assert_called_once()
 
-    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_send_remove_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=user_profile,
-            message=message
+            message=message,
+            flags=UserMessage.flags.active_mobile_push_notification,
         )
 
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
@@ -732,15 +732,18 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
                                                  {'priority': 'normal'})
+            user_message = UserMessage.objects.get(user_profile=self.user_profile,
+                                                   message=message)
+            self.assertEqual(user_message.flags.active_mobile_push_notification, False)
 
-    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_non_bouncer_push_remove(self) -> None:
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
             user_profile=self.user_profile,
-            message=message
+            message=message,
+            flags=UserMessage.flags.active_mobile_push_notification,
         )
 
         android_devices = list(
@@ -757,6 +760,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id},
                                                  {'priority': 'normal'})
+            user_message = UserMessage.objects.get(user_profile=self.user_profile,
+                                                   message=message)
+            self.assertEqual(user_message.flags.active_mobile_push_notification, False)
 
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
@@ -1366,7 +1372,7 @@ class GCMParseOptionsTest(TestCase):
         self.assertEqual(
             "high", parse_gcm_options({"priority": "high"}, {}))
 
-@mock.patch('zerver.lib.push_notifications.gcm')
+@mock.patch('zerver.lib.push_notifications.gcm_client')
 class GCMSendTest(PushNotificationTest):
     def setUp(self) -> None:
         super().setUp()

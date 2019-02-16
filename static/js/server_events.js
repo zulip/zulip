@@ -104,7 +104,23 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             _.each(messages, message_store.set_message_booleans);
-            message_events.insert_new_messages(messages);
+            var sent_by_this_client = false;
+            _.each(messages, function (msg) {
+                var msg_state = sent_messages.messages[msg.local_id];
+                if (msg_state) {
+                    // Almost every time, this message will be the
+                    // only one in messages, because multiple messages
+                    // being returned by get_events usually only
+                    // happens when a client is offline, but we know
+                    // this client just sent a message in this batch
+                    // of events.  But in any case,
+                    // insert_new_messages handles multiple messages,
+                    // only one of which was sent by this client,
+                    // correctly.
+                    sent_by_this_client = true;
+                }
+            });
+            message_events.insert_new_messages(messages, sent_by_this_client);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +
                            blueslip.exception_msg(ex2),

@@ -64,12 +64,6 @@ exports.update_button = function () {
     } else {
         button.attr('disabled', false);
     }
-
-    if (new_status_text === '') {
-        button.text(i18n.t('Clear'));
-    } else {
-        button.text(i18n.t('Save'));
-    }
 };
 
 exports.initialize = function () {

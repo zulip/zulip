@@ -7,7 +7,7 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
-### 2.0.0-rc1 -- 2019-02-11
+### 2.0.0 -- coming 2019-02-14 or so
 
 **Highlights:**
 - Added automation for synchronizing user avatars, custom profile
@@ -23,11 +23,16 @@ in bursts.
 - The HipChat/Stride data import tool is no longer experimental.
   Our HipChat and Slack import tools are now well-tested with millions
   of messages, 10,000s of users, and 100,000s of uploaded files.
+- Added a built-in tool for backups and restoration.
+- Deprecated support for Ubuntu Trusty.  Zulip 2.0.x will continue to
+  support Ubuntu Trusty, but Zulip 2.1.0 will remove support for
+  installing on Trusty.
 
 **Full feature changelog:**
 - Added support for CentOS 7 in the development environment
   provisioning process.  This is an important step towards production
   CentOS/RHEL 7 support.
+- Added a new invitation workflow with reusable links.
 - Added a new Azure Active Directory authentication integration.
   New authentication backends supported by python-social-auth can now be
   added with just a few dozen lines of code.
@@ -46,6 +51,7 @@ in bursts.
 - Added Ctrl+. shortcut for narrowing to current compose recipient.
 - Added icons to indicate which "organization settings" tabs are
   available to regular users.
+- Added a tool for migrating from S3 to the local file uploads backend.
 - Added protocol for communicating version incompatibility to mobile apps.
 - Added support for copying avatar and other profile data when
   creating a second account on a Zulip server with a given email address.
@@ -55,10 +61,14 @@ in bursts.
 - Added a ReviewBoard integration, and improved numerous existing integrations.
 - Added support for multi-line messages for the /me feature.
 - Added markdown rendering of text when displaying custom profile fields.
-- Added "silent mentions" syntax (_@**Tim Abbott**), which show
-  visually, but don't trigger a notification for the target user.
+- Added "silent mentions" syntax (`_@**Tim Abbott**`), which show
+  visually, but don't trigger a notification to the target user.
+- Added support for using lightbox in compose preview.
+- Changes in date no longer force a repeated recipient bar.  This
+  fixes a common source of confusion for new users.
 - Suppressed notifications when quoting a message mentioning yourself.
 - Message editing now has the compose widgets for emoji, video calls, etc.
+- Message editing now has a markdown preview feature just like compose.
 - Message editing now uses same "enter-sends" behavior as compose.
 - Organization administrators can now edit users' custom profile fields.
 - Optimized performance of data import from Slack, HipChat, etc.
@@ -74,8 +84,9 @@ in bursts.
 - Fixed missing API authentication headers for mobile file access.
 - Fixed various select and copy-paste issues.
 - Fixed various back button bugs in settings UI.
+- Fixed various mobile web visual issues.
 - Fixed unnecessary resizing of animated custom emoji.
-- Fixed some performance issues for organizations with 1000s of streams.
+- Fixed several performance issues for organizations with 1000s of streams.
 - Fixed various error handling bugs sending push notifications.
 - Fixed handling of diacritics in user-mention typeahead.
 - Fixed several bugs with importing data into Zulip's S3 backend.

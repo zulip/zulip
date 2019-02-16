@@ -14,7 +14,7 @@ or desktop experience.
 
 ## Set up your account
 
-- [Set a profile picture](/help/change-your-avatar)
+- [Set a profile picture](/help/set-your-avatar)
 - Get the [mobile and desktop apps](/apps)
 - [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 - [Configure your notifications](/#settings/notifications) to work the way

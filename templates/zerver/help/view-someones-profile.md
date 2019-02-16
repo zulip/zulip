@@ -10,7 +10,7 @@ were last active, and any
 
 1. Click on a user's avatar.
 
-1. Click **View user profile**.
+1. Click **View full profile**.
 
 ### Via the right sidebar
 
@@ -19,7 +19,7 @@ were last active, and any
 1. Click on the down chevron (<i class="fa fa-chevron-down"></i>) to
    the right of their name.
 
-1. Click **View user profile**.
+1. Click **View full profile**.
 
 ## Related articles
 
