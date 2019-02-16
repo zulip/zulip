@@ -7,7 +7,6 @@
     top: calc((30vh - 50px) / 2);
     border-radius: 4px;
     overflow: hidden;
-
     background-color: hsl(0, 0%, 100%);
 }
 
@@ -46,10 +45,6 @@
     font-weight: 400;
 }
 
-.informational-overlays td.operator {
-    font-size: 0.9em;
-}
-
 .hotkeys_table {
     width: 247px;
     /* this is because some generic setting for striped tables in settings.css
@@ -67,8 +62,7 @@
 .hotkeys_table .hotkey {
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
     text-align: right;
-    font-weight: bold;
-    font-size: 90%;
+    font-weight: 500;
     white-space: nowrap;
 }
 
