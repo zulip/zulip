@@ -7,9 +7,12 @@
     top: 5px;
 }
 
+.user_active .user-status-indicator {
+    background-color: hsl(106, 74%, 44%);
+}
+
 .user_active .user-status-indicator,
 .group-pm-status-indicator {
-    background-color: hsl(106, 74%, 44%);
     border-color: hsl(106, 74%, 44%);
 }
 
