@@ -388,9 +388,10 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
-@has_request_variables
-def get_members_backend(request: HttpRequest, user_profile: UserProfile,
-                        client_gravatar: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+def do_get_members(
+        user_profile: UserProfile,
+        client_gravatar: bool=False
+) -> List[Dict[str, Any]]:
     '''
     The client_gravatar field here is set to True if clients can compute
     their own gravatars, which saves us bandwidth.  We want to eventually
@@ -448,7 +449,18 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         return result
 
     members = [get_member(row) for row in query]
+    return members
 
+@has_request_variables
+def get_members_backend(request: HttpRequest, user_profile: UserProfile,
+                        client_gravatar: bool=REQ(validator=check_bool, default=False)) -> HttpResponse:
+    '''
+    The client_gravatar field here is set to True if clients can compute
+    their own gravatars, which saves us bandwidth.  We want to eventually
+    make this the default behavior, but we have old clients that expect
+    the server to compute this for us.
+    '''
+    members = do_get_members(user_profile, client_gravatar)
     return json_success({'members': members})
 
 @require_realm_admin
