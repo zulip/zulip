@@ -210,26 +210,53 @@ class Command(BaseCommand):
             guest_user.is_guest = True
             guest_user.save(update_fields=['is_guest'])
 
+            # Create realm for system bots, logic drawn from initialize_voyager_db.
+            zulipinternal_realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM,
+                                                       name='System Bots')
+
+            internal_names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
+            create_users(zulipinternal_realm, internal_names, bot_type=UserProfile.DEFAULT_BOT)
+
+            get_client("website")
+            get_client("API")
+
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
+            # TODO: Update tests in regard to bot relocation.
             all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
                               for bot in settings.INTERNAL_BOTS]
-            zulip_realm_bots = [
-                ("Zulip New User Bot", "new-user-bot@zulip.com"),
-                ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Default Bot", "default-bot@zulip.com"),
-                ("Welcome Bot", "welcome-bot@zulip.com"),
-            ]
+            new_user_bot = ("Zulip New User Bot", "new-user-bot@zulip.com")
+            all_realm_bots.append(new_user_bot)
+            create_users(zulipinternal_realm, all_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
-            zulip_realm_bots.extend(all_realm_bots)
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            bots = UserProfile.objects.filter(email__in=[bot_info[1] for bot_info in all_realm_bots])
+            for bot in bots:
+                bot.bot_owner = bot
+                bot.save()
 
             # Initialize the email gateway bot as an API Super User
             email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
             email_gateway_bot.is_api_super_user = True
             email_gateway_bot.save()
+
+            zulip_realm_bots = [
+                ("Zulip Error Bot", "error-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@zulip.com"),
+                # These are temp placeholders for count tests affected by the realm change .
+                ("Fake New User Bot", "replacement-bot-1@zulip.com"),
+                ("Fake Welcome Bot", "replacement-bot-4@zulip.com"),
+                ("Fake Notication Bot", "replacement-bot-5@zulip.com"),
+                ("Fake Email Gateway Bot", "replacement-bot-6@zulip.com"),
+                ("Fake Nagios Send Bot", "replacement-bot-7@zulip.com"),
+                ("Fake Nagios Recieve bot", "replacement-bot-8@zulip.com"),
+                ("Fake Feedback Bot", "replacement-bot-9@zulip.com"),
+            ]
+
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
+            # all_realm_bots have been moved to SYSTEM_BOT_REALM
+            # zulip_realm_bots.extend(all_realm_bots)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             zoe = get_user("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
@@ -514,11 +541,6 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
-
-            zulip_cross_realm_bots = [
-                ("Zulip Feedback Bot", "feedback@zulip.com"),
-            ]
-            create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)

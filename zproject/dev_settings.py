@@ -48,12 +48,16 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.AzureADAuthBackend',
 )
 
+# Separate realm for the system bots.
+SYSTEM_BOT_REALM = 'zulipinternal'
+
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST.split(':')[0]
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 # SLOW_QUERY_LOGS_STREAM = "errors"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
+WELCOME_BOT = "welcome-bot@zulip.com"
 PHYSICAL_ADDRESS = "Zulip Headquarters, 123 Octo Stream, South Pacific Ocean"
 EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
