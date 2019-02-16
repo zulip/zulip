@@ -222,6 +222,7 @@ import "styles/input_pill.scss";
 import "styles/informational-overlays.scss";
 import "styles/compose.scss";
 import "styles/reactions.scss";
+import "styles/user_circles.scss";
 import "styles/left-sidebar.scss";
 import "styles/right-sidebar.scss";
 import "styles/lightbox.scss";
