@@ -948,6 +948,31 @@ Users who are unable to do "vagrant up" due to a VT-X unavailability error need 
 
 See ["Possible testing issues"](../testing/testing.html#possible-testing-issues).
 
+#### Mounting NFS fails on macOS Mojave
+
+ If you see following error (or similar) when you try to start Vagrant environment by `vagrant up`:
+
+ ```
+==> default: Configuring and enabling network interfaces...
+==> default: Exporting NFS shared folders...
+==> default: Preparing to edit /etc/exports. Administrator privileges will be required...
+Password:
+tee: /etc/exports: Operation not permitted
+tee: /etc/exports: Operation not permitted
+tee: /etc/exports: Operation not permitted
+The nfsd service does not appear to be running.
+Starting the nfsd service
+==> default: Mounting NFS shared folders...
+The following SSH command responded with a non-zero exit status.
+Vagrant assumes that this means the command failed!
+ mount -o vers=3,udp 172.28.128.1:<zulip_path> /srv/zulip
+ Stdout from the command:
+ Stderr from the command:
+ mount.nfs: mount to NFS server '172.28.128.1:<zulip_path>' failed: RPC Error: Unable to receive
+```
+
+ On macOS Mojave terminal that you are using needs "Full Disk Access" to edit /etc/exports. This privilege can be added here: System Preferences/Security & Privacy/Full Disk Access
+
 #### ImportError: No module named '...' on MacOS during Vagrant provisioning
 
 If you see following error (or similar) when you try to provision
