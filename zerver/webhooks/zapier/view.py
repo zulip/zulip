@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_private_message_from_emails, \
+from zerver.lib.actions import check_send_private_message_from_user_ids, \
     do_get_streams
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -53,7 +53,7 @@ def api_zapier_webhook(request: HttpRequest, user_profile: UserProfile,
                 payload['topic'], payload['content']
             )
         elif event_type == 'private':
-            check_send_private_message_from_emails(
+            check_send_private_message_from_user_ids(
                 user_profile, request.client,
                 payload['to'], payload['content']
             )

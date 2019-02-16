@@ -1976,11 +1976,11 @@ def check_send_private_message(sender: UserProfile, client: Client,
 
     return do_send_messages([message])[0]
 
-def check_send_private_message_from_emails(
+def check_send_private_message_from_user_ids(
         sender: UserProfile, client: Client,
-        receiving_emails: Sequence[str], body: str
+        recipient_user_ids: Sequence[int], body: str
 ) -> int:
-    addressee = Addressee.for_private(receiving_emails, sender.realm)
+    addressee = Addressee.for_user_ids(recipient_user_ids, sender.realm)
     message = check_message(sender, client, addressee, body)
 
     return do_send_messages([message])[0]
