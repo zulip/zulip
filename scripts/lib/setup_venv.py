@@ -218,6 +218,16 @@ def try_to_copy_venv(venv_path, new_packages):
                 # virtualenv-clone isn't working, so just make a new venv
                 return False
 
+        # virtualenv-clone, unfortunately, copies the success stamp,
+        # which means if the upcoming `pip install` phase were to
+        # fail, we'd end up with a broken half-provisioned virtualenv
+        # that's incorrectly tagged as properly provisioned.  The
+        # right fix is to use
+        # https://github.com/edwardgeorge/virtualenv-clone/pull/38,
+        # but this rm is almost as good.
+        success_stamp_path = os.path.join(venv_path, 'success-stamp')
+        run(["sudo", "rm", "-f", success_stamp_path])
+
         run(["sudo", "chown", "-R",
              "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         source_log = get_logfile_name(source_venv_path)
