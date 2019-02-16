@@ -463,7 +463,8 @@ INTEGRATIONS = {
 BOT_INTEGRATIONS = [
     BotIntegration('github_detail', ['version-control', 'bots'],
                    display_name='GitHub Detail'),
-    BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd'),
+    BotIntegration('xkcd', ['bots', 'misc'], display_name='xkcd',
+                   logo='static/images/integrations/logos/xkcd.png'),
 ]  # type: List[BotIntegration]
 
 HUBOT_INTEGRATIONS = [
