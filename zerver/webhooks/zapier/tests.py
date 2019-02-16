@@ -47,6 +47,24 @@ class ZapierZulipAppTests(WebhookTestCase):
         expected = set(['Verona', 'Venice', 'Scotland', 'Rome', 'Denmark'])
         self.assertEqual(set(json_result['streams']), expected)
 
+    def test_list_users(self) -> None:
+        payload = self.get_body('zapier_zulip_app_list_users')
+        headers = {'HTTP_USER_AGENT': 'ZapierZulipApp'}
+        result = self.client_post(self.url, payload,
+                                  content_type='application/json',
+                                  **headers)
+        json_result = self.assert_json_success(result)
+        expected = [
+            'Welcome Bot', 'Cordelia Lear',
+            'Othello, the Moor of Venice', 'Zulip New User Bot',
+            'Zoe', 'Prospero from The Tempest', 'Nagios Receive Bot',
+            'Iago', 'King Hamlet', 'Polonius', 'Zulip Webhook Bot',
+            'Zulip Default Bot', 'Email Gateway', 'Zulip Feedback Bot',
+            'aaron', 'Zulip Error Bot', 'Notification Bot',
+            'Outgoing Webhook', 'Nagios Send Bot'
+        ]
+        self.assertEqual(set(json_result['users'].values()), set(expected))
+
     def test_stream(self) -> None:
         expected_topic = u"Sample message from Zapier!"
         expected_message = u"Hi! I am a new sample message from Zapier!"
