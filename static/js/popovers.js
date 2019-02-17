@@ -331,7 +331,7 @@ function fetch_group_members(member_ids) {
         })
         .map(function (p) {
             return Object.assign({}, p, {
-                presence_status: presence.get_status(p.user_id),
+                presence_status: buddy_data.buddy_status(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
                 user_last_seen_time_status: user_last_seen_time_status(p.user_id),
             });
