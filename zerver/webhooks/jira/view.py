@@ -13,7 +13,6 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
 IGNORED_EVENTS = [
-    'comment_created',  # we handle issue_update event instead
     'comment_deleted',  # we handle issue_update event instead
     'issuelink_created',
     'comment_updated',
@@ -215,7 +214,7 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
 
     return content
 
-def handle_created_issue_event(payload: Dict[str, Any]) -> str:
+def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
     return u"{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
         get_issue_author(payload),
         get_issue_string(payload),
@@ -224,8 +223,15 @@ def handle_created_issue_event(payload: Dict[str, Any]) -> str:
         get_issue_title(payload)
     )
 
-def handle_deleted_issue_event(payload: Dict[str, Any]) -> str:
+def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
     return u"{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
+
+JIRA_CONTENT_FUNCTION_MAPPER = {
+    "jira:issue_created": handle_created_issue_event,
+    "jira:issue_deleted": handle_deleted_issue_event,
+    "jira:issue_updated": handle_updated_issue_event,
+    "comment_created": handle_updated_issue_event
+}
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
@@ -233,22 +239,18 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     event = get_event_type(payload)
-    if event == 'jira:issue_created':
-        subject = get_issue_subject(payload)
-        content = handle_created_issue_event(payload)
-    elif event == 'jira:issue_deleted':
-        subject = get_issue_subject(payload)
-        content = handle_deleted_issue_event(payload)
-    elif event == 'jira:issue_updated':
-        subject = get_issue_subject(payload)
-        content = handle_updated_issue_event(payload, user_profile)
-    elif event == 'comment_created':
-        subject = get_issue_subject(payload)
-        content = handle_updated_issue_event(payload, user_profile)
-    elif event in IGNORED_EVENTS:
+    subject = get_issue_subject(payload)
+
+    if event in IGNORED_EVENTS:
         return json_success()
-    else:
+
+    if event is not None:
+        content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)  # type: Any
+
+    if subject is None or content_func is None:
         raise UnexpectedWebhookEventType('Jira', event)
+
+    content = content_func(payload, user_profile)  # type: ignore # we are passing the payload
 
     check_send_webhook_message(request, user_profile,
                                subject, content,
