@@ -1,4 +1,6 @@
-.user-status-indicator,
+.user_circle_green,
+.user_circle_orange,
+.user_circle_empty,
 .user_circle_fraction {
     border-radius: 50%;
     border: 1px solid;
@@ -7,16 +9,16 @@
     top: 5px;
 }
 
-.user_active .user-status-indicator {
+.user_circle_green {
     background-color: hsl(106, 74%, 44%);
 }
 
-.user_active .user-status-indicator,
+.user_circle_green,
 .user_circle_fraction {
     border-color: hsl(106, 74%, 44%);
 }
 
-.user_idle .user-status-indicator {
+.user_circle_orange {
     border-color: hsl(29, 84%, 51%);
     background-color: hsl(29, 84%, 51%);
 
@@ -29,11 +31,7 @@
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18', GradientType=0 ); /* IE6-9; filters only work with hex colors */
 }
 
-// We show "away" users identically to long-gone
-// users, but this may change.
-.user_away_me .user-status-indicator,
-.user_away_them .user-status-indicator,
-.user-status-indicator {
+.user_circle_empty {
     background-color: none;
     border-color: hsl(0, 0%, 50%);
 }

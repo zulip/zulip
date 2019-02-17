@@ -1,6 +1,6 @@
-<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}} user-with-count {{/if}} narrow-filter user_{{type}} {{#if faded}} user-fade {{/if}}">
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
     <div class="selectable_sidebar_block">
-        <span class="user-status-indicator"></span>
+        <span class="{{user_circle_class}} user_circle"></span>
         <a class="user-presence-link"
           href="{{href}}"
           data-user-id="{{user_id}}"

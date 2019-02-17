@@ -1,13 +1,13 @@
 {{! Contents of the "message info" popup }}
 <ul class="nav nav-list actions_popover info_popover_actions" data-user-id="{{user_id}}">
     <div class="popover_info">
-        <li class="user_{{type}}">
+        <li>
             <b>{{user_full_name}}</b>
             {{#if is_active }}
                 {{#if is_bot}}
                 <i class="zulip-icon bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                <span class="{{user_circle_class}} user_circle popover_user_presence" title="{{user_last_seen_time_status}}"></span>
                 {{/if}}
             {{/if}}
         </li>

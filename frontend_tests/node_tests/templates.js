@@ -1422,19 +1422,16 @@ run_test('user_group_info_popover_content', () => {
         group_description: 'groupDescription',
         members: [
             {
-                presence_status: 'active',
                 full_name: 'Active Alice',
                 user_last_seen_time_status: 'time',
                 is_bot: false,
             },
             {
-                presence_status: 'offline',
                 full_name: 'Bot Bob',
                 user_last_seen_time_status: 'time',
                 is_bot: true,
             },
             {
-                presence_status: 'offline',
                 full_name: 'Inactive Imogen',
                 user_last_seen_time_status: 'time',
                 is_bot: false,
@@ -1445,8 +1442,6 @@ run_test('user_group_info_popover_content', () => {
     var html = render('user_group_info_popover_content', args);
 
     var allUsers = $(html).find("li");
-    assert.equal(allUsers[0].classList.contains("user_active"), true);
-    assert.equal(allUsers[2].classList.contains("user_offline"), true);
     assert.equal($(allUsers[0]).text().trim(), 'Active Alice');
     assert.equal($(allUsers[1]).text().trim(), 'Bot Bob');
     assert.equal($(allUsers[2]).text().trim(), 'Inactive Imogen');

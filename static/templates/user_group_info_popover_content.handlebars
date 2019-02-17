@@ -8,12 +8,12 @@
 <hr>
 <ul class="nav nav-list member-list">
     {{#each members}}
-    <li class="user_{{presence_status}}">
+    <li>
         {{#if is_active }}
             {{#if is_bot}}
             <i class="zulip-icon bot" aria-hidden="true"></i>
             {{else}}
-            <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+            <span class="user_circle {{user_circle_class}}  popover_user_presence" title="{{user_last_seen_time_status}}"></span>
             {{/if}}
         {{/if}}
         <span>{{full_name}}</span>

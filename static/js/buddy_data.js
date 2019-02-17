@@ -32,6 +32,22 @@ var fade_config = {
     },
 };
 
+exports.get_user_circle_class = function (user_id) {
+    var status = exports.buddy_status(user_id);
+
+    switch (status) {
+    case 'active':
+        return 'user_circle_green';
+    case 'idle':
+        return 'user_circle_orange';
+    case 'away_them':
+    case 'away_me':
+        return 'user_circle_empty';
+    default:
+        return 'user_circle_empty';
+    }
+};
+
 exports.level = function (user_id) {
     if (people.is_my_user_id(user_id)) {
         // Always put current user at the top.
@@ -157,7 +173,7 @@ exports.user_title = function (user_id) {
 };
 
 exports.info_for = function (user_id) {
-    var buddy_status = exports.buddy_status(user_id);
+    var user_circle_class = exports.get_user_circle_class(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
     var title = exports.user_title(user_id);
@@ -169,7 +185,7 @@ exports.info_for = function (user_id) {
         my_user_status: my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        type: buddy_status,
+        user_circle_class: user_circle_class,
         title: title,
     };
 };

@@ -59,16 +59,16 @@
     display: inline-block;
 }
 
-.user-status-indicator,
-.user_circle_fraction {
-    display: block;
+.user_circle,
+#group-pms .user_circle_fraction {
     width: 8px;
     height: 8px;
     margin: 0px 5px;
 }
 
-.user_unknown .user-status-indicator {
-    display: none;
+#user_presences .user_circle,
+#group-pms .user_circle_fraction {
+    display: block;
 }
 
 #user_presences a,
