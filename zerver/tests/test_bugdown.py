@@ -746,11 +746,11 @@ class BugdownTest(ZulipTestCase):
 
         flush_per_request_caches()
 
-        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
+        content = "We should fix #224 and [Issue 115](#115), but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, message_realm=realm, message=msg)
         converted_topic = bugdown.topic_links(realm.id, msg.topic_name())
 
-        self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">Issue 115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_topic, [u'https://trac.zulip.net/ticket/444'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
@@ -780,6 +780,7 @@ class BugdownTest(ZulipTestCase):
         self.assertTrue(was_converted('#123@'))
         self.assertTrue(not was_converted(')#123('))
         self.assertTrue(not was_converted('##123'))
+        self.assertTrue(was_converted('[Hello](#123)'))
 
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
