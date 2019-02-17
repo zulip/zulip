@@ -137,7 +137,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         is_me: is_me,
         is_sender_popover: is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
-        type: buddy_data.buddy_status(user.user_id),
+        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
@@ -331,7 +331,7 @@ function fetch_group_members(member_ids) {
         })
         .map(function (p) {
             return Object.assign({}, p, {
-                presence_status: buddy_data.buddy_status(p.user_id),
+                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
                 user_last_seen_time_status: user_last_seen_time_status(p.user_id),
             });

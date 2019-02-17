@@ -607,7 +607,7 @@ run_test('insert_one_user_into_empty_list', () => {
     clear_buddy_list();
     activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf('user_active') > 0);
+    assert(appended_html.indexOf('user_circle_green') > 0);
 });
 
 reset_setup();
@@ -622,11 +622,11 @@ run_test('insert_alice_then_fred', () => {
 
     activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf('user_active') > 0);
+    assert(appended_html.indexOf('user_circle_green') > 0);
 
     activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf('user_active') > 0);
+    assert(appended_html.indexOf('user_circle_green') > 0);
 });
 
 reset_setup();
@@ -641,7 +641,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
 
     activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf('user_active') > 0);
+    assert(appended_html.indexOf('user_circle_green') > 0);
 
     var fred_stub = $.create('fred-first');
     buddy_list_add(fred.user_id, fred_stub);
@@ -653,7 +653,7 @@ run_test('insert_fred_then_alice_then_rename', () => {
 
     activity.redraw_user(alice.user_id);
     assert(inserted_html.indexOf('data-user-id="1"') > 0);
-    assert(inserted_html.indexOf('user_active') > 0);
+    assert(inserted_html.indexOf('user_circle_green') > 0);
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
