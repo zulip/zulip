@@ -450,6 +450,7 @@ var inline = {
   tex: noop,
   gravatar: noop,
   realm_filters: [],
+  realm_filter_marker: /\{realm-filter-(\d+)\}/g,
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -600,7 +601,26 @@ InlineLexer.prototype.output = function(src) {
     , link
     , text
     , href
-    , cap;
+    , cap
+    , realm_filter_id = 0
+    , realm_filter_urls = {};
+
+  // realm_filters (zulip)
+  //
+  // Since realm filters doesn't have a particular code shape, we can't lex
+  // them like other markdown elements. Instead we mark the location of all
+  // potential realm filters and handle them later given more context.
+  var self = this;
+  this.rules.realm_filters.forEach(function (realm_filter) {
+    src = src.replace(realm_filter, function (match) {
+      var groups = Array.prototype.slice.call(arguments, 1);
+      realm_filter_urls[realm_filter_id] = {
+        'href': self.realm_filter(realm_filter, groups, match),
+        'text': match,
+      };
+      return '{realm-filter-' + realm_filter_id++ + '}';
+    });
+  });
 
   while (src) {
     // escape
@@ -609,24 +629,6 @@ InlineLexer.prototype.output = function(src) {
       out += cap[1];
       continue;
     }
-
-    // realm_filters (zulip)
-    var self = this;
-    this.rules.realm_filters.forEach(function (realm_filter) {
-      var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
-        // Insert the created URL
-        href = self.realm_filter(regex, groups, match);
-        if (href !== undefined) {
-          href = escape(href);
-          return self.renderer.link(href, href, match);
-        } else {
-          return match;
-        }
-      });
-
-      src = ret[0];
-      out += ret[1];
-    });
 
     // autolink
     if (cap = this.rules.autolink.exec(src)) {
@@ -672,9 +674,17 @@ InlineLexer.prototype.output = function(src) {
     // link
     if (cap = this.rules.link.exec(src)) {
       src = src.substring(cap[0].length);
+
+      href = undefined;
+      // realm_filters in links (zulip)
+      var link_cap = this.rules.realm_filter_marker.exec(cap[2]);
+      if (link_cap) {
+          href = realm_filter_urls[link_cap[1]].href;
+      }
+
       this.inLink = true;
       out += this.outputLink(cap, {
-        href: cap[2],
+        href: href || cap[2],
         title: cap[3]
       });
       this.inLink = false;
@@ -796,7 +806,17 @@ InlineLexer.prototype.output = function(src) {
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.renderer.text(escape(this.smartypants(cap[0])));
+
+      var rendered = this.renderer.text(escape(this.smartypants(cap[0])));
+
+      // bare realm filter
+      rendered = rendered.replace(this.rules.realm_filter_marker, function (_match, id) {
+        var link = realm_filter_urls[id];
+        return self.renderer.link(link.href, link.href,
+            escape(self.smartypants(link.text)));
+      });
+
+      out += rendered;
       continue;
     }
 
@@ -805,6 +825,12 @@ InlineLexer.prototype.output = function(src) {
         Error('Infinite loop on byte: ' + src.charCodeAt(0));
     }
   }
+
+  // If a realm filter marker haven't been converted to a link yet, it is
+  // inside a markdown element, so we just render it as plain text.
+  out = out.replace(this.rules.realm_filter_marker, function(_match, id) {
+    return escape(realm_filter_urls[id].text);
+  });
 
   return out;
 };
