@@ -267,7 +267,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration(
         'bitbucket2',
         ['version-control'],
-        logo='static/images/integrations/logos/bitbucket.png',
+        logo='static/images/integrations/logos/bitbucket.svg',
         display_name='Bitbucket',
         stream_name='bitbucket'
     ),
