@@ -503,6 +503,18 @@ def send_message(client):
 
     return message_id
 
+def add_reaction(client, message_id):
+    # type: (Client, int) -> None
+    request = {
+        'message_id': message_id,
+        'emoji_name': 'joy',
+        'emoji_code': '1f602',
+        'emoji_type': 'unicode_emoji'
+    }
+    result = client.add_reaction(request)
+
+    assert result['result'] == 'success'
+
 def test_nonexistent_stream_error(client):
     # type: (Client) -> None
     request = {
@@ -877,6 +889,7 @@ def test_messages(client, nonadmin_client):
 
     render_message(client)
     message_id = send_message(client)
+    add_reaction(client, message_id)
     update_message(client, message_id)
     get_raw_message(client, message_id)
     get_messages(client)
