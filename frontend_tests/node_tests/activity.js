@@ -286,7 +286,7 @@ run_test('huddle_fraction_present', () => {
     presence.presence_info = presence_info;
 
     assert.equal(
-        activity.huddle_fraction_present(huddle),
+        buddy_data.huddle_fraction_present(huddle),
         '0.50');
 
     huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
@@ -299,7 +299,7 @@ run_test('huddle_fraction_present', () => {
     presence.presence_info = presence_info;
 
     assert.equal(
-        activity.huddle_fraction_present(huddle),
+        buddy_data.huddle_fraction_present(huddle),
         false);
 });
 

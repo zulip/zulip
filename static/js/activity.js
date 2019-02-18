@@ -177,24 +177,6 @@ exports.short_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
-exports.huddle_fraction_present = function (huddle) {
-    var user_ids = huddle.split(',');
-
-    var num_present = 0;
-    _.each(user_ids, function (user_id) {
-        if (presence.is_active(user_id)) {
-            num_present += 1;
-        }
-    });
-
-    if (num_present === user_ids.length) {
-        return 1;
-    } else if (num_present !== 0) {
-        return 0.5;
-    }
-    return false;
-};
-
 function focus_lost() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
@@ -280,7 +262,7 @@ exports.update_huddles = function () {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
             href: hash_util.huddle_with_uri(huddle),
-            fraction_present: exports.huddle_fraction_present(huddle),
+            fraction_present: buddy_data.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
         };
     });
