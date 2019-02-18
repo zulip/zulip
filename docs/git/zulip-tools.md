@@ -115,6 +115,33 @@ Switched to a new branch 'review-original-5156'
 HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 ```
 
+## Push to a pull request
+
+`tools/push-to-pull-request` is primarily useful for maintainers who
+are merging other users' commits into a Zulip repository.  After doing
+`reset-to-pull-request` or `fetch-pull-request` and making some
+changes, you can push a branch back to a pull request with e.g.
+`tools/push-to-pull-rqeuest 1234`.  This is useful for a few things:
+
+* Getting CI to run and enabling you to use the GitHub "Merge" buttons
+  to merge a PR after you make some corrections to a PR, without
+  waiting for an extra round trip with the PR author.
+* For commits that aren't ready to merge yet, communicating clearly
+  any changes you'd like to see happen that are easier for you to
+  explain by just editing the code than in words.
+* Saving a contributor from needing to duplicate any rebase work that
+  you did as part of integrating parts of the PR.
+
+You'll likely want to comment on the PR after doing so, to ensure that
+the original contributor knows to pull your changes rather than
+accidentally overwriting them with a force push when they make their
+next batch of changes.
+
+Note that in order to do this you need permission to do such a push,
+which GitHub offers by default to users with write access to the
+repository.  For multiple developers collaborating on a PR, you can
+achieve this by granting other users permission to write to your fork.
+
 ## Delete unimportant branches
 
 `tools/clean-branches` is a shell script that removes branches that are either:
