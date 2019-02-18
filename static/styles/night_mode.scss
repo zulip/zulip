@@ -59,12 +59,6 @@ body.night-mode {
         color: inherit !important;
     }
 
-    /* this one makes the border of the reactions highlighted on hovering. */
-    .message_reaction:hover,
-    .reaction_button:hover {
-        border-color: hsl(0, 0%, 100%) !important;
-    }
-
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
@@ -134,21 +128,21 @@ on a dark background, and don't change the dark labels dark either. */
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .message_reactions .message_reaction.reacted,
-    .message_reactions:hover .message_reaction + .reaction_button {
+    .emoji-popover .reaction.reacted,
+    .message_reactions .message_reaction.reacted {
         background-color: hsla(0, 0%, 0%, 0.5);
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
-    /* this one makes the reacted reactions appear differently for the logged in user. */
-    .message_reactions .message_reaction.reacted {
-        background-color: hsl(200, 100%, 25%);
-    }
-
+    .message_reactions:hover .message_reaction + .reaction_button,
     .message_reactions .message_reaction {
-        background-color: hsla(0, 0%, 0%, 0.2);
-        border-color: hsla(0, 0%, 0%, 0.5);
+        background-color: transparent;
+        border-color: hsla(0, 0%, 0%, 0.8);
         color: inherit;
+
+        &:hover {
+            border-color: hsl(236, 33%, 90%);
+        }
     }
 
     .new-style .button:not(.save-status):focus,
