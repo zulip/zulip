@@ -265,6 +265,24 @@ exports.get_items_for_users = function (user_ids) {
     return user_info;
 };
 
+exports.huddle_fraction_present = function (huddle) {
+    var user_ids = huddle.split(',');
+
+    var num_present = 0;
+    _.each(user_ids, function (user_id) {
+        if (presence.is_active(user_id)) {
+            num_present += 1;
+        }
+    });
+
+    if (num_present === user_ids.length) {
+        return 1;
+    } else if (num_present !== 0) {
+        return 0.5;
+    }
+    return false;
+};
+
 return exports;
 
 }());
