@@ -59,11 +59,14 @@
     display: inline-block;
 }
 
-.user_circle,
+#user_presences .user_circle,
 #group-pms .user_circle_fraction {
     width: 8px;
     height: 8px;
-    margin: 0px 5px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 #user_presences .user_circle,

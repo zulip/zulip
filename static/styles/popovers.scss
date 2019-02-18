@@ -126,6 +126,16 @@ ul.remind_me_popover .remind_icon {
     text-align: center;
 }
 
+.popover_user_presence,
+.group-info-popover .member-list .user_circle {
+    width: 8px;
+    height: 8px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
 .user_popover .popover-title {
     padding: 0;
 }
