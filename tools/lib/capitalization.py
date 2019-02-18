@@ -103,6 +103,7 @@ IGNORED_PHRASES = [
     r"user",
     r"an unknown operating system",
     r"Go to Settings",
+    r"Like Organization logo",
 
     # SPECIAL CASES
     # Enter is usually capitalized
