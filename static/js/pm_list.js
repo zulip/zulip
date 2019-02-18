@@ -105,6 +105,16 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             }
         }
 
+        var is_group = user_ids_string.indexOf(',') >= 0;
+
+        var user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
+
+        var fraction_present;
+        if (is_group) {
+            user_circle_class = 'user_circle_fraction';
+            fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
+        }
+
         var display_message = {
             recipients: recipients_string,
             user_ids_string: user_ids_string,
@@ -112,6 +122,9 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
             url: hash_util.pm_with_uri(reply_to),
+            user_circle_class: user_circle_class,
+            fraction_present: fraction_present,
+            is_group: is_group,
         };
         display_messages.push(display_message);
     });

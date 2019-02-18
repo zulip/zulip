@@ -153,10 +153,7 @@ li.active-sub-filter {
 }
 
 .conversation-partners {
-    display: inline-block;
-    line-height: 1.2;
-    width: 90%;
-    overflow: hidden;
+    line-height: 1.25;
 }
 
 a.conversation-partners:hover {
@@ -386,11 +383,18 @@ li.topic-list-item {
 li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
-    padding: 1px 0px 1px 24px;
+    padding-top: 1px;
+    padding-right: 0px;
+    padding-bottom: 1px;
+    padding-left: 0px;
 }
 
 li.expanded_private_message a {
     margin: 1px 0px;
+}
+
+li.show-more-private-messages {
+    margin-left: 5px;
 }
 
 .show-all-streams a {
@@ -408,6 +412,17 @@ li.expanded_private_message a {
 .pm-box {
     margin-right: 20px;
     align-items: center;
+}
+
+.pm-box .user_circle {
+    min-width: 8px;
+    height: 8px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 5px;
+    margin-right: 9px;
+    position: relative;
+    top: 0px;
 }
 
 .zero-topic-unreads .pm-box,
