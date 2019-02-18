@@ -35,6 +35,10 @@ const _scroll_util = {
     scroll_element_into_container: () => {},
 };
 
+const _pm_list = {
+    update_private_messages: () => {},
+};
+
 const _popovers = {
     hide_all_except_userlist_sidebar: function () {},
     hide_all: function () {},
@@ -67,6 +71,7 @@ set_global('document', _document);
 set_global('feature_flags', _feature_flags);
 set_global('keydown_util', _keydown_util);
 set_global('page_params', _page_params);
+set_global('pm_list', _pm_list);
 set_global('popovers', _popovers);
 set_global('reload_state', _reload_state);
 set_global('resize', _resize);

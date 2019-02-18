@@ -17,6 +17,9 @@ set_global('popovers', {
     hide_all: function () {},
 });
 
+zrequire('user_status');
+zrequire('presence');
+zrequire('buddy_data');
 zrequire('hash_util');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
@@ -89,6 +92,9 @@ run_test('build_private_messages_list', () => {
                 is_zero: false,
                 zoom_out_hide: false,
                 url: '#narrow/pm-with/101,102-group',
+                user_circle_class: 'user_circle_fraction',
+                fraction_present: false,
+                is_group: true,
             },
         ],
         zoom_class: 'zoomed-out',

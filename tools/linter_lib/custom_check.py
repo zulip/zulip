@@ -817,6 +817,7 @@ def build_custom_checkers(by_lang):
 
              # background image property is dynamically generated
              'static/templates/user_profile_modal.handlebars',
+             'static/templates/sidebar_private_message_list.handlebars',
 
              # Inline styling for an svg; could be moved to CSS files?
              'templates/zerver/landing_nav.html',

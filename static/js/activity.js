@@ -375,22 +375,26 @@ exports.update_presence_info = function (email, info, server_time) {
     presence.set_info_for_user(user_id, info, server_time);
     exports.redraw_user(user_id);
     exports.update_huddles();
+    pm_list.update_private_messages();
 };
 
 exports.on_set_away = function (user_id) {
     user_status.set_away(user_id);
     exports.redraw_user(user_id);
+    pm_list.update_private_messages();
 };
 
 exports.on_revoke_away = function (user_id) {
     user_status.revoke_away(user_id);
     exports.redraw_user(user_id);
+    pm_list.update_private_messages();
 };
 
 exports.redraw = function () {
     exports.build_user_sidebar();
     exports.user_cursor.redraw();
     exports.update_huddles();
+    pm_list.update_private_messages();
 };
 
 exports.reset_users = function () {
