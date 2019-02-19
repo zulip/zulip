@@ -368,7 +368,6 @@ input.recipient_box {
 #send_controls {
     float: right;
     position: relative;
-    right: -7px;
     font-size: 0.8em;
     height: 2.2em;
 }
@@ -382,7 +381,6 @@ input.recipient_box {
     border-radius: 4px;
     padding-top: 3px;
     padding-bottom: 3px;
-    margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);
     background-color: hsl(170, 48%, 54%);
