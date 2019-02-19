@@ -424,7 +424,8 @@ EVENT_FUNCTION_MAPPER = {
 }
 
 IGNORED_EVENTS = [
-    'repository_vulnerability_alert'
+    'repository_vulnerability_alert',
+    'project_card',
 ]
 
 @api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
