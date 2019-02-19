@@ -335,6 +335,25 @@ def get_pull_request_review_requested_body(payload: Dict[str, Any],
         title=payload['pull_request']['title'] if include_title else None
     )
 
+def get_check_run_body(payload: Dict[str, Any]) -> str:
+    template = """
+Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+""".strip()
+
+    kwargs = {
+        'name': payload['check_run']['name'],
+        'html_url': payload['check_run']['html_url'],
+        'status': payload['check_run']['status'],
+        'short_hash': payload['check_run']['head_sha'][:7],
+        'commit_url': "{}/commit/{}".format(
+            payload['repository']['html_url'],
+            payload['check_run']['head_sha']
+        ),
+        'conclusion': payload['check_run']['conclusion']
+    }
+
+    return template.format(**kwargs)
+
 def get_ping_body(payload: Dict[str, Any]) -> str:
     return get_setup_webhook_message('GitHub', get_sender_name(payload))
 
@@ -391,6 +410,9 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event == 'ping':
         if payload.get('repository') is None:
             return get_organization_name(payload)
+    elif event == 'check_run':
+        return u"{} / checks".format(get_repository_name(payload))
+
     return get_repository_name(payload)
 
 EVENT_FUNCTION_MAPPER = {
@@ -398,6 +420,7 @@ EVENT_FUNCTION_MAPPER = {
     'commit_comment': get_commit_comment_body,
     'closed_pull_request': get_closed_pull_request_body,
     'create': partial(get_create_or_delete_body, action='created'),
+    'check_run': get_check_run_body,
     'delete': partial(get_create_or_delete_body, action='deleted'),
     'deployment': get_deployment_body,
     'deployment_status': get_change_deployment_status_body,
@@ -473,6 +496,10 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return "push_commits"
         else:
             return "push_tags"
+    elif event == 'check_run':
+        if payload['check_run']['status'] != 'completed':
+            return None
+        return event
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
     elif event in IGNORED_EVENTS:

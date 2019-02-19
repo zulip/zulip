@@ -303,6 +303,26 @@ class GithubWebhookTest(WebhookTestCase):
                                           expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
 
+    def test_check_run(self) -> None:
+        expected_topic = u"hello-world / checks"
+        expected_message = u"""
+Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+""".strip()
+        self.send_and_test_stream_message('check_run_completed',
+                                          expected_topic,
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='check_run')
+
+    @patch('zerver.webhooks.github.view.check_send_webhook_message')
+    def test_check_run_in_progress_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body('check_run_in_progress')
+        result = self.client_post(self.url, payload,
+                                  HTTP_X_GITHUB_EVENT='check_run',
+                                  content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
+
     @patch('zerver.webhooks.github.view.check_send_webhook_message')
     def test_pull_request_labeled_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
