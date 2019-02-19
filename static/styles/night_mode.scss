@@ -125,6 +125,10 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: transparent;
     }
 
+    .emoji-popover-category-tabs .emoji-popover-tab-item.active {
+        background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
@@ -143,6 +147,10 @@ on a dark background, and don't change the dark labels dark either. */
         &:hover {
             border-color: hsl(236, 33%, 90%);
         }
+    }
+
+    .emoji-popover .reaction:focus {
+        box-shadow: 0 0 1px hsl(0, 0%, 98%);
     }
 
     .new-style .button:not(.save-status):focus,
