@@ -362,3 +362,14 @@ class GithubWebhookTest(WebhookTestCase):
         result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='push', content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github.view.check_send_webhook_message')
+    def test_repository_vulnerability_alert_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body('repository_vulnerability_alert')
+        result = self.client_post(self.url, payload,
+                                  HTTP_X_GITHUB_EVENT='repository_vulnerability_alert',
+                                  content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)

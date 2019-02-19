@@ -423,6 +423,10 @@ EVENT_FUNCTION_MAPPER = {
     'watch': get_watch_body,
 }
 
+IGNORED_EVENTS = [
+    'repository_vulnerability_alert'
+]
+
 @api_key_only_webhook_view('GitHub', notify_bot_owner_on_invalid_json=True)
 @has_request_variables
 def api_github_webhook(
@@ -470,6 +474,8 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return "push_tags"
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
+    elif event in IGNORED_EVENTS:
+        return None
 
     raise UnexpectedWebhookEventType('GitHub', event)
 
