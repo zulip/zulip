@@ -368,7 +368,6 @@ input.recipient_box {
 #send_controls {
     float: right;
     position: relative;
-    right: -7px;
     font-size: 0.8em;
     height: 2.2em;
 }
@@ -378,16 +377,15 @@ input.recipient_box {
     margin-right: 2px;
 }
 
-#send_controls #compose-send-button {
+#compose-send-button {
     border-radius: 4px;
-    padding-top: 3px;
-    padding-bottom: 3px;
-    margin-right: 7px;
     font-weight: 600;
     border: 1px solid hsl(170, 68%, 41%);
     background-color: hsl(170, 48%, 54%);
     color: hsl(0, 0%, 100%);
+    padding: 3px 10px;
 }
+
 
 #compose-send-button:focus {
     box-shadow: 0px 0px 10px hsl(170, 48%, 54%), 0px 0px 5px hsl(170, 48%, 54%);
