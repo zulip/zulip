@@ -16,6 +16,10 @@ IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead
     'comment_deleted',  # we handle issue_update event instead
     'issuelink_created',
+    'comment_updated',
+    'attachment_created',
+    'issuelink_deleted',
+    'sprint_started',
 ]
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> Optional[UserProfile]:
