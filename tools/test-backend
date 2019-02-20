@@ -228,7 +228,7 @@ if __name__ == "__main__":
                         action="store_true",
                         default=False, help='Enable verbose print of coverage report.')
 
-    parser.add_argument('--processes', dest='processes',
+    parser.add_argument('--parallel', dest='processes',
                         type=int,
                         action='store',
                         default=4,
