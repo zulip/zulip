@@ -984,7 +984,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_id = user_profile.id
 
-        content = "_@**King Hamlet**"
+        content = "@_**King Hamlet**"
         self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention silent" '
                          'data-user-id="%s">'
@@ -1052,10 +1052,10 @@ class BugdownTest(ZulipTestCase):
         content = "> @**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
-        content = "```quote\n_@**King Hamlet**\n```"
+        content = "```quote\n@_**King Hamlet**\n```"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
-        content = "> _@**King Hamlet**"
+        content = "> @_**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
 

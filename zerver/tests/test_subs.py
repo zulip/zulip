@@ -617,7 +617,7 @@ class StreamAdminTest(ZulipTestCase):
         # Inspect the notification message sent
         message = self.get_last_message()
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        message_content = '_@**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**'.format(user_profile.id)
+        message_content = '@_**King Hamlet|{}** renamed stream **stream_name1** to **stream_name2**'.format(user_profile.id)
         self.assertEqual(message.sender.realm, user_profile.realm)
         self.assertEqual(actual_stream.name, 'stream_name2')
         self.assertEqual(message.recipient.type, Recipient.STREAM)
@@ -1962,7 +1962,7 @@ class SubscriptionAPITest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "_@**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
+        expected_msg = "@_**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_cross_realm_notification(self) -> None:
@@ -2030,7 +2030,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "_@**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
+        expected_msg = "@_**%s|%d** just created a new stream #**%s**." % (invitee_full_name, invitee_user.id, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
