@@ -309,6 +309,8 @@ run_test('marked', () => {
         // Test only those realm filters which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
+        {input: 'abc `[def](#123)` bla bla',
+         expected: '<p>abc <code>[def](#123)</code> bla bla</p>'},
         {input: 'This is a realm filter #1234 with text after it',
          expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
         {input: '#1234is not a realm filter.',

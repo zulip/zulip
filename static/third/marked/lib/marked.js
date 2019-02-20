@@ -450,7 +450,7 @@ var inline = {
   tex: noop,
   gravatar: noop,
   realm_filters: [],
-  realm_filter_marker: /\[realm_filter:(\d+)\]/g,
+  realm_filter_marker: /\{realmfilter(\d+)\}/g,
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -792,7 +792,9 @@ InlineLexer.prototype.output = function(src) {
           'href': href,
           'text': match,
         };
-        return '[realm_filter:' + realm_filter_id++ + ']';
+        // This syntax needs to be such that the text regex doesn't
+        // match any part of it.
+        return '{realmfilter' + realm_filter_id++ + '}';
       });
     });
 
@@ -803,9 +805,21 @@ InlineLexer.prototype.output = function(src) {
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.renderer.text(escape(this.smartypants(cap[0])));
+
+      // Escape HTML before replacing realm_filters.
+      cap[0] = this.renderer.text(escape(this.smartypants(cap[0])));
+
+      // Replace realm filters in the captured text with links.
+      cap[0] = cap[0].replace(this.rules.realm_filter_marker, function (_match, id, offset, string) {
+        console.log("TRYING TO REPLACE", _match, id);
+        var link = realm_filter_urls[id];
+        return self.renderer.link(link.href, link.href, link.text);
+      });
+      out += cap[0];
+
       continue;
     }
+
 
     if (src) {
       throw new
@@ -813,13 +827,11 @@ InlineLexer.prototype.output = function(src) {
     }
   }
 
-  // bare realm filter
-  out = out.replace(this.rules.realm_filter_marker, function (_match, id) {
+  // Replace remaining realm filters with original text
+  out = out.replace(this.rules.realm_filter_marker, function (_match, id, offset, string) {
     var link = realm_filter_urls[id];
-    return self.renderer.link(link.href, link.href, link.text);
+    return link.text;
   });
-
-  console.log(out);
 
   return out;
 };
