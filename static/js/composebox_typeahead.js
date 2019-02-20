@@ -440,23 +440,17 @@ exports.compose_content_begins_typeahead = function (query) {
 
     if (this.options.completions.mention && current_token[0] === '@') {
         current_token = current_token.substring(1);
-        current_token = filter_mention_name(current_token);
-        if (!current_token) {
-            return false;
-        }
         this.completing = 'mention';
-        this.token = current_token;
-        return get_mention_candidates_data();
-    }
-
-    if (this.options.completions.silent_mention && current_token.startsWith('_@')) {
-        // Ideally, we'd figure out a way to deduplicate this with the main mentions block.
-        current_token = current_token.substring(2);
+        // Silent mentions
+        if (current_token.startsWith('_')) {
+            this.completing = 'silent_mention';
+            current_token = current_token.substring(1);
+        }
         current_token = filter_mention_name(current_token);
         if (!current_token) {
+            this.completing = null;
             return false;
         }
-        this.completing = 'silent_mention';
         this.token = current_token;
         return get_mention_candidates_data();
     }
@@ -512,18 +506,13 @@ exports.content_typeahead_selected = function (item) {
             beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
         }
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith('@*')) {
-            beginning = beginning.substring(0, beginning.length - 2);
-        } else if (beginning.endsWith('@')) {
-            beginning = beginning.substring(0, beginning.length - 1);
-        }
+        var is_silent = this.completing === 'silent_mention';
         if (user_groups.is_user_group(item)) {
-            beginning += '@*' + item.name + '* ';
+            beginning =  '@*' + item.name + '* ';
             $(document).trigger('usermention_completed.zulip', {user_group: item});
         } else {
-            var mention_text = people.get_mention_syntax(item.full_name, item.user_id);
-            beginning += mention_text + ' ';
+            var mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
+            beginning = mention_text + ' ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
     } else if (this.completing === 'stream') {

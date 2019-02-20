@@ -850,8 +850,14 @@ exports.is_duplicate_full_name = function (full_name) {
     return false;
 };
 
-exports.get_mention_syntax = function (full_name, user_id) {
-    var mention = '@**' + full_name;
+exports.get_mention_syntax = function (full_name, user_id, silent) {
+    var mention = '';
+    if (silent) {
+        mention += '@_**';
+    } else {
+        mention += '@**';
+    }
+    mention += full_name;
     if (!user_id) {
         blueslip.warn('get_mention_syntax called without user_id.');
     }
