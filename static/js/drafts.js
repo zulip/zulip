@@ -188,7 +188,7 @@ exports.restore_draft = function (draft_id) {
 
 var DRAFT_LIFETIME = 30;
 
-function remove_old_drafts() {
+exports.remove_old_drafts = function () {
     var old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
     var drafts = draft_model.get();
     _.each(drafts, function (draft, id) {
@@ -196,7 +196,7 @@ function remove_old_drafts() {
             draft_model.deleteDraft(id);
         }
     });
-}
+};
 
 exports.format_draft = function (draft) {
     var id = draft.id;
@@ -295,9 +295,6 @@ function remove_draft(draft_row) {
     }
 }
 
-// Exporting for testing purpose
-exports.remove_old_drafts = remove_old_drafts;
-
 exports.launch = function () {
     function format_drafts(data) {
         _.each(data, function (draft, id) {
@@ -343,7 +340,7 @@ exports.launch = function () {
         });
     }
 
-    remove_old_drafts();
+    exports.remove_old_drafts();
     var drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
     exports.open_modal();
