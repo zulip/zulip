@@ -36,6 +36,11 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = u"The story [Story 2](https://app.clubhouse.io/zulip/story/9) was archived."
         self.send_and_test_stream_message('story_archive', "Story 2", expected_message)
 
+    def test_epic_archive(self) -> None:
+        expected_message = u"The epic **Zulip is epic!** was archived."
+        self.send_and_test_stream_message('epic_archive', 'Zulip is epic!',
+                                          expected_message)
+
     def test_story_unarchive(self) -> None:
         expected_message = u"The story [Story 2](https://app.clubhouse.io/zulip/story/9) was unarchived."
         self.send_and_test_stream_message('story_unarchive', "Story 2", expected_message)

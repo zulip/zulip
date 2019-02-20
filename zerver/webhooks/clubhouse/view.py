@@ -21,7 +21,7 @@ DESC_REMOVED_TEMPLATE = "Description for the {entity} {name_template} was remove
 STATE_CHANGED_TEMPLATE = "State of the {entity} {name_template} was changed from **{old}** to **{new}**."
 NAME_CHANGED_TEMPLATE = ("The name of the {entity} {name_template} was changed from:\n"
                          "``` quote\n{old}\n```\nto\n``` quote\n{new}\n```")
-STORY_ARCHIVED_TEMPLATE = "The story {name_template} was {action}."
+ARCHIVED_TEMPLATE = "The {entity} {name_template} was {action}."
 STORY_TASK_TEMPLATE = "Task **{task_description}** was {action} the story {name_template}."
 STORY_TASK_COMPLETED_TEMPLATE = "Task **{task_description}** ({name_template}) was completed. :tada:"
 STORY_ADDED_REMOVED_EPIC_TEMPLATE = ("The story {story_name_template} was {action} the"
@@ -210,7 +210,7 @@ def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
 
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
 
-def get_story_update_archived_body(payload: Dict[str, Any]) -> str:
+def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
     primary_action = get_action_with_primary_id(payload)
     archived = primary_action["changes"]["archived"]
     if archived["new"]:
@@ -219,14 +219,15 @@ def get_story_update_archived_body(payload: Dict[str, Any]) -> str:
         action = "unarchived"
 
     kwargs = {
-        "name_template": STORY_NAME_TEMPLATE.format(
+        "entity": entity,
+        "name_template": get_name_template(entity).format(
             name=primary_action["name"],
             app_url=primary_action.get("app_url")
         ),
         "action": action,
     }
 
-    return STORY_ARCHIVED_TEMPLATE.format(**kwargs)
+    return ARCHIVED_TEMPLATE.format(**kwargs)
 
 def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
     primary_action = get_action_with_primary_id(payload)
@@ -473,7 +474,8 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 EVENT_BODY_FUNCTION_MAPPER = {
-    "story_update_archived": get_story_update_archived_body,
+    "story_update_archived": partial(get_update_archived_body, entity='story'),
+    "epic_update_archived": partial(get_update_archived_body, entity='epic'),
     "story_create": get_story_create_body,
     "pull-request_create": partial(get_story_create_github_entity_body, entity='pull-request'),
     "branch_create": partial(get_story_create_github_entity_body, entity='branch'),
