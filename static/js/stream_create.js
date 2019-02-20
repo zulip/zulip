@@ -195,6 +195,14 @@ function create_stream() {
     var announce = !!page_params.notifications_stream &&
         $('#announce-new-stream input').prop('checked');
 
+    // Even though we already check to make sure that while typing the user cannot enter
+    // newline characters (by pressing the enter key) it would still be possible to copy
+    // and paste over a description with newline characters in it. Prevent that.
+    if (description.indexOf('\n') !== -1) {
+        ui_report.message(i18n.t("The stream description cannot contain newline characters."), $(".stream_create_info"), 'alert-error');
+        return;
+    }
+
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
     ajaxSubscribeForCreation(
@@ -435,6 +443,14 @@ exports.set_up_handlers = function () {
     container.on("mouseout", "#announce-stream-docs", function (e) {
         $("#announce-stream-docs").popover('hide');
         e.stopPropagation();
+    });
+
+    // Do not allow the user to enter newline characters while typing out the
+    // stream's description during it's creation.
+    container.on("keydown", "#create_stream_description", function (e) {
+        if ((e.keyCode || e.which) === 13) {
+            e.preventDefault();
+        }
     });
 
 };
