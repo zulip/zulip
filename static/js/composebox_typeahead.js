@@ -343,20 +343,26 @@ exports.tokenize_compose_str = function (s) {
     return '';
 };
 
-function get_mention_candidates_data() {
-    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
-        return {
-            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                      {wildcard_mention_token: mention}),
-            email: mention,
-            // Always sort above, under the assumption that names will
-            // be longer and only contain "all" as a substring.
-            pm_recipient_count: Infinity,
-            full_name: mention,
-        };
-    });
+function get_mention_candidates_data(is_silent) {
+    var all_items = [];
+    var groups = [];
+
+    if (!is_silent) {
+        all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+            return {
+                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                          {wildcard_mention_token: mention}),
+                email: mention,
+                // Always sort above, under the assumption that names will
+                // be longer and only contain "all" as a substring.
+                pm_recipient_count: Infinity,
+                full_name: mention,
+            };
+        });
+        groups = user_groups.get_realm_user_groups();
+    }
+
     var persons = people.get_realm_persons();
-    var groups = user_groups.get_realm_user_groups();
     return [].concat(persons, all_items, groups);
 }
 
@@ -442,8 +448,10 @@ exports.compose_content_begins_typeahead = function (query) {
         current_token = current_token.substring(1);
         this.completing = 'mention';
         // Silent mentions
+        var is_silent = false;
         if (current_token.startsWith('_')) {
             this.completing = 'silent_mention';
+            is_silent = true;
             current_token = current_token.substring(1);
         }
         current_token = filter_mention_name(current_token);
@@ -452,7 +460,7 @@ exports.compose_content_begins_typeahead = function (query) {
             return false;
         }
         this.token = current_token;
-        return get_mention_candidates_data();
+        return get_mention_candidates_data(is_silent);
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {

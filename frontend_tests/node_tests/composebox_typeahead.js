@@ -316,7 +316,7 @@ run_test('content_typeahead_selected', () => {
     var document_stub_trigger1_called = false;
     $('document-stub').trigger = function (event, params) {
         assert.equal(event, 'usermention_completed.zulip');
-        assert.deepEqual(params, { mentioned: othello });
+        assert.deepEqual(params, { mentioned: othello, is_silent: false });
         document_stub_trigger1_called = true;
     };
 
@@ -349,7 +349,7 @@ run_test('content_typeahead_selected', () => {
     var document_stub_trigger3_called = false;
     $('document-stub').trigger = function (event, params) {
         assert.equal(event, 'usermention_completed.zulip');
-        assert.deepEqual(params, { mentioned: hamlet });
+        assert.deepEqual(params, { mentioned: hamlet, is_silent: true });
         document_stub_trigger3_called = true;
     };
 
@@ -1134,7 +1134,8 @@ run_test('begins_typeahead', () => {
         };
     });
 
-    var people_with_all = global.people.get_realm_persons().concat(all_items);
+    var people_only = global.people.get_realm_persons();
+    var people_with_all = people_only.concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var lang_list = Object.keys(pygments_data.langs);
 
@@ -1156,11 +1157,11 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals(" @", false);
     assert_typeahead_equals(" @_", false);
     assert_typeahead_equals("test @**o", all_mentions);
-    assert_typeahead_equals("test @_**o", all_mentions);
+    assert_typeahead_equals("test @_**o", people_only);
     assert_typeahead_equals("test @*o", all_mentions);
-    assert_typeahead_equals("test @_*k", all_mentions);
+    assert_typeahead_equals("test @_*k", people_only);
     assert_typeahead_equals("test @*h", all_mentions);
-    assert_typeahead_equals("test @_*h", all_mentions);
+    assert_typeahead_equals("test @_*h", people_only);
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test @_", false);
     assert_typeahead_equals("test no@o", false);
@@ -1172,19 +1173,19 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("@** ", false);
     assert_typeahead_equals("@_** ", false);
     assert_typeahead_equals("test\n@i", all_mentions);
-    assert_typeahead_equals("test\n@_i", all_mentions);
+    assert_typeahead_equals("test\n@_i", people_only);
     assert_typeahead_equals("test\n @l", all_mentions);
-    assert_typeahead_equals("test\n @_l", all_mentions);
+    assert_typeahead_equals("test\n @_l", people_only);
     assert_typeahead_equals("@zuli", all_mentions);
-    assert_typeahead_equals("@_zuli", all_mentions);
+    assert_typeahead_equals("@_zuli", people_only);
     assert_typeahead_equals("@ zuli", false);
     assert_typeahead_equals("@_ zuli", false);
     assert_typeahead_equals(" @zuli", all_mentions);
-    assert_typeahead_equals(" @_zuli", all_mentions);
+    assert_typeahead_equals(" @_zuli", people_only);
     assert_typeahead_equals("test @o", all_mentions);
-    assert_typeahead_equals("test @_o", all_mentions);
+    assert_typeahead_equals("test @_o", people_only);
     assert_typeahead_equals("test @z", all_mentions);
-    assert_typeahead_equals("test @_z", all_mentions);
+    assert_typeahead_equals("test @_z", people_only);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
