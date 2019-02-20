@@ -61,7 +61,7 @@ in bursts.
 - Added a ReviewBoard integration, and improved numerous existing integrations.
 - Added support for multi-line messages for the /me feature.
 - Added markdown rendering of text when displaying custom profile fields.
-- Added "silent mentions" syntax (`_@**Tim Abbott**`), which show
+- Added "silent mentions" syntax (`@_**Tim Abbott**`), which show
   visually, but don't trigger a notification to the target user.
 - Added support for using lightbox in compose preview.
 - Changes in date no longer force a repeated recipient bar.  This

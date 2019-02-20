@@ -1358,7 +1358,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
-        line = re.sub(self.mention_re, lambda m: "_@{}".format(m.group('match')), line)
+        line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group('match')), line)
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)

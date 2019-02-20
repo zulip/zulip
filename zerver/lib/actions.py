@@ -254,7 +254,7 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
             "stream",
             signup_notifications_stream.name,
             "signups",
-            "_@**%s|%s** just signed up for Zulip. (total: %i)" % (
+            "@_**%s|%s** just signed up for Zulip. (total: %i)" % (
                 user_profile.full_name, user_profile.id, user_count
             )
         )
@@ -3491,7 +3491,7 @@ def do_rename_stream(stream: Stream,
         sender,
         stream,
         "welcome",
-        "_@**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
+        "@_**%s|%d** renamed stream **%s** to **%s**" % (user_profile.full_name,
                                                          user_profile.id,
                                                          old_name, new_name)
     )
