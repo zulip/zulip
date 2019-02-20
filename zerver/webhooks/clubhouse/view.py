@@ -325,18 +325,16 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
 
     return ref
 
-def get_story(payload: Dict[str, Any]) -> Dict[str, Any]:
-    story = {}  # type: Dict[str, Any]
-    for a in payload['actions']:
-        if a['entity_type'] == 'story':
-            story = a
-
-    return story
-
 def get_story_create_github_entity_body(payload: Dict[str, Any],
                                         entity: str) -> str:
     action = get_action_with_primary_id(payload)
-    story = get_story(payload)
+
+    story = {}  # type: Dict[str, Any]
+    for a in payload['actions']:
+        if (a['entity_type'] == 'story' and
+                a['changes'].get('workflow_state_id') is not None):
+            story = a
+
     new_state_id = story['changes']['workflow_state_id']['new']
     old_state_id = story['changes']['workflow_state_id']['old']
     new_state = get_reference_by_id(payload, new_state_id)['name']
