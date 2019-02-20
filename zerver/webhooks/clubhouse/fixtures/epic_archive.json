@@ -1,0 +1,21 @@
+{
+    "id":"5c6dd2b0-399b-43b9-9758-4d60771bad08",
+    "changed_at":"2019-02-20T22:20:32.285Z",
+    "primary_id":29,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":29,
+            "entity_type":"epic",
+            "action":"update",
+            "name":"Zulip is epic!",
+            "changes":{
+                "archived":{
+                    "new":true,
+                    "old":false
+                }
+            }
+        }
+    ]
+}
