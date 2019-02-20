@@ -34,6 +34,23 @@ messages and alert words.
 
 Alternatively, click on the avatar of any user in the main message feed.
 
+### Silently mention a user
+
+A regular mention notifies the mentioned user as well as lets other
+users see the mentioned user's profile. A silent mention doesn't
+notify the mentioned user, making it perfect for when you want to
+refer to someone unambiguously but don't want to bother them.
+
+{start_tabs}
+
+{!start-composing.md!}
+
+2. Type `@_` followed by a few letters from their name or email address.
+
+3. Pick the appropriate user from the autocomplete.
+
+{end_tabs}
+
 ## Related articles
 
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
