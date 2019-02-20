@@ -779,6 +779,10 @@ exports.initialize = function () {
         if (compose_state.get_message_type() !== 'stream') {
             return;
         }
+        if (data.is_silent) {
+            // We don't need to warn in case of silent mentions.
+            return;
+        }
 
         // Disable for Zephyr mirroring realms, since we never have subscriber lists there
         if (page_params.realm_is_zephyr_mirror_realm) {

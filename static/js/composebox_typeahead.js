@@ -529,7 +529,7 @@ exports.content_typeahead_selected = function (item) {
         } else {
             var mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
             beginning += mention_text + ' ';
-            $(document).trigger('usermention_completed.zulip', {mentioned: item});
+            $(document).trigger('usermention_completed.zulip', {mentioned: item, is_silent: is_silent});
         }
     } else if (this.completing === 'stream') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
