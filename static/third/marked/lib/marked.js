@@ -605,22 +605,6 @@ InlineLexer.prototype.output = function(src) {
     , realm_filter_id = 0
     , realm_filter_urls = {};
 
-  // realm_filters (zulip)
-  // Realm filters could be either bare or inside a link, so we preprocess
-  // them by marking their locations and resolving their urls first.
-  var self = this;
-  this.rules.realm_filters.forEach(function (realm_filter) {
-    src = src.replace(realm_filter, function (match) {
-      var groups = Array.prototype.slice.call(arguments, 1);
-      href = self.realm_filter(realm_filter, groups, match);
-      realm_filter_urls[realm_filter_id] = {
-        'href': href,
-        'text': match,
-      };
-      return '[realm_filter:' + realm_filter_id++ + ']';
-    });
-  });
-
   while (src) {
     // escape
     if (cap = this.rules.escape.exec(src)) {
@@ -798,6 +782,20 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // realm_filters (zulip)
+    var self = this;
+    this.rules.realm_filters.forEach(function (realm_filter) {
+      src = src.replace(realm_filter, function (match) {
+        var groups = Array.prototype.slice.call(arguments, 1);
+        href = self.realm_filter(realm_filter, groups, match);
+        realm_filter_urls[realm_filter_id] = {
+          'href': href,
+          'text': match,
+        };
+        return '[realm_filter:' + realm_filter_id++ + ']';
+      });
+    });
+
     // WARNING: Do not place any parsing logic below this comment.
     // Any parsing logic place after the `text` block below will most
     // likely be silently never executed.
@@ -820,6 +818,8 @@ InlineLexer.prototype.output = function(src) {
     var link = realm_filter_urls[id];
     return self.renderer.link(link.href, link.href, link.text);
   });
+
+  console.log(out);
 
   return out;
 };
