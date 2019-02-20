@@ -100,6 +100,9 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
         )
         if not is_bot:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})
+        else:
+            if row['bot_owner_id'] is not None:
+                result['bot_owner_id'] = row['bot_owner_id']
         return result
 
     return {
