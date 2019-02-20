@@ -327,7 +327,7 @@ def build_stream(date_created: Any, realm_id: int, name: str,
     stream = Stream(
         name=name,
         deactivated=deactivated,
-        description=description,
+        description=description.replace("\n", " "),
         # We don't set rendered_description here; it'll be added on import
         date_created=date_created,
         invite_only=invite_only,

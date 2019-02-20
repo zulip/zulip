@@ -174,6 +174,19 @@ class TestCreateStreams(ZulipTestCase):
         for stream in existing_streams:
             self.assertTrue(stream.invite_only)
 
+    def test_create_api_multiline_description(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login(user.email)
+        post_data = {'subscriptions': ujson.dumps([{"name": 'new_stream',
+                                                    "description": "multi\nline\ndescription"}]),
+                     'invite_only': ujson.dumps(False)}
+        result = self.api_post(user.email, "/api/v1/users/me/subscriptions", post_data,
+                               subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(stream.description, 'multi line description')
+
     def test_history_public_to_subscribers_on_stream_creation(self) -> None:
         realm = get_realm('zulip')
         stream_dicts = [
@@ -688,6 +701,12 @@ class StreamAdminTest(ZulipTestCase):
                                    {'description': ujson.dumps('a' * 1025)})
         self.assert_json_error(result, "description is too long (limit: %s characters)"
                                % (Stream.MAX_DESCRIPTION_LENGTH))
+
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('a\nmulti\nline\ndescription')})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', realm)
+        self.assertEqual(stream.description, 'a multi line description')
 
     def test_change_stream_description_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')

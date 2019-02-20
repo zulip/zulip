@@ -158,6 +158,9 @@ def update_stream_backend(
     # description even for private streams.
     stream = access_stream_for_delete_or_update(user_profile, stream_id)
     if description is not None:
+        if '\n' in description:
+            # We don't allow newline characters in stream descriptions.
+            description = description.replace("\n", " ")
         do_change_stream_description(stream, description)
     if new_name is not None:
         new_name = new_name.strip()
@@ -278,7 +281,7 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 @has_request_variables
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,
-        streams_raw: Iterable[Mapping[str, str]]=REQ(
+        streams_raw: Iterable[Dict[str, str]]=REQ(
             "subscriptions", validator=check_list(check_dict_only(
                 [('name', check_string)], optional_keys=[
                     ('color', check_color),
@@ -299,6 +302,9 @@ def add_subscriptions_backend(
         # check for its presence in the streams_raw first
         if 'color' in stream_dict:
             color_map[stream_dict['name']] = stream_dict['color']
+        if 'description' in stream_dict:
+            # We don't allow newline characters in stream descriptions.
+            stream_dict['description'] = stream_dict['description'].replace("\n", " ")
 
         stream_dict_copy = {}  # type: Dict[str, Any]
         for field in stream_dict:
