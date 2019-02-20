@@ -347,22 +347,22 @@ run_test('content_typeahead_selected', () => {
         document_stub_trigger3_called = true;
     };
 
-    fake_this.query = '_@kin';
+    fake_this.query = '@_kin';
     fake_this.token = 'kin';
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
-    expected_value = '_@**King Hamlet** ';
+    expected_value = '@_**King Hamlet** ';
     assert.equal(actual_value, expected_value);
 
-    fake_this.query = '_@*kin';
+    fake_this.query = '@_*kin';
     fake_this.token = 'kin';
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
-    expected_value = '_@**King Hamlet** ';
+    expected_value = '@_**King Hamlet** ';
     assert.equal(actual_value, expected_value);
 
-    fake_this.query =  '_@**kin';
+    fake_this.query =  '@_**kin';
     fake_this.token = 'kin';
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
-    expected_value = '_@**King Hamlet** ';
+    expected_value = '@_**King Hamlet** ';
     assert.equal(actual_value, expected_value);
 
     // user group mention
@@ -1128,39 +1128,39 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
     assert_typeahead_equals("@", false);
-    assert_typeahead_equals("_@", false);
+    assert_typeahead_equals("@_", false);
     assert_typeahead_equals(" @", false);
-    assert_typeahead_equals(" _@", false);
+    assert_typeahead_equals(" @_", false);
     assert_typeahead_equals("test @**o", all_mentions);
-    assert_typeahead_equals("test _@**o", all_mentions);
+    assert_typeahead_equals("test @_**o", all_mentions);
     assert_typeahead_equals("test @*o", all_mentions);
-    assert_typeahead_equals("test _@*k", all_mentions);
+    assert_typeahead_equals("test @_*k", all_mentions);
     assert_typeahead_equals("test @*h", all_mentions);
-    assert_typeahead_equals("test _@*h", all_mentions);
+    assert_typeahead_equals("test @_*h", all_mentions);
     assert_typeahead_equals("test @", false);
-    assert_typeahead_equals("test _@", false);
+    assert_typeahead_equals("test @_", false);
     assert_typeahead_equals("test no@o", false);
-    assert_typeahead_equals("test no_@k", false);
+    assert_typeahead_equals("test no@_k", false);
     assert_typeahead_equals("@ ", false);
-    assert_typeahead_equals("_@ ", false);
+    assert_typeahead_equals("@_ ", false);
     assert_typeahead_equals("@* ", false);
-    assert_typeahead_equals("_@* ", false);
+    assert_typeahead_equals("@_* ", false);
     assert_typeahead_equals("@** ", false);
-    assert_typeahead_equals("_@** ", false);
+    assert_typeahead_equals("@_** ", false);
     assert_typeahead_equals("test\n@i", all_mentions);
-    assert_typeahead_equals("test\n_@i", all_mentions);
+    assert_typeahead_equals("test\n@_i", all_mentions);
     assert_typeahead_equals("test\n @l", all_mentions);
-    assert_typeahead_equals("test\n _@l", all_mentions);
+    assert_typeahead_equals("test\n @_l", all_mentions);
     assert_typeahead_equals("@zuli", all_mentions);
-    assert_typeahead_equals("_@zuli", all_mentions);
+    assert_typeahead_equals("@_zuli", all_mentions);
     assert_typeahead_equals("@ zuli", false);
-    assert_typeahead_equals("_@ zuli", false);
+    assert_typeahead_equals("@_ zuli", false);
     assert_typeahead_equals(" @zuli", all_mentions);
-    assert_typeahead_equals(" _@zuli", all_mentions);
+    assert_typeahead_equals(" @_zuli", all_mentions);
     assert_typeahead_equals("test @o", all_mentions);
-    assert_typeahead_equals("test _@k", all_mentions);
+    assert_typeahead_equals("test @_o", all_mentions);
     assert_typeahead_equals("test @z", all_mentions);
-    assert_typeahead_equals("test _@z", all_mentions);
+    assert_typeahead_equals("test @_z", all_mentions);
 
     assert_typeahead_equals(":", false);
     assert_typeahead_equals(": ", false);
