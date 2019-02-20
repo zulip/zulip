@@ -224,3 +224,10 @@ class ClubhouseWebhookTest(WebhookTestCase):
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
+
+    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    def test_story_comment_updated_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body('story_comment_updated')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)

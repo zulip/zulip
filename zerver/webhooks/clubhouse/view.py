@@ -50,9 +50,12 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     return action_with_primary_id
 
-def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
+def get_event(payload: Dict[str, Any]) -> Optional[str]:
     action = get_action_with_primary_id(payload)
     event = "{}_{}".format(action["entity_type"], action["action"])
+
+    if event in IGNORED_EVENTS:
+        return None
 
     changes = action.get("changes")
     if changes is not None:
@@ -82,10 +85,8 @@ def get_body_function_based_on_type(payload: Dict[str, Any]) -> Any:
             event = "{}_{}".format(event, "type")
         elif changes.get("owner_ids") is not None:
             event = "{}_{}".format(event, "owner")
-        else:
-            raise UnexpectedWebhookEventType("Clubhouse", event)
 
-    return EVENT_BODY_FUNCTION_MAPPER.get(event)
+    return event
 
 def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
     entity_type = get_action_with_primary_id(payload)["entity_type"]
@@ -509,6 +510,10 @@ EVENT_TOPIC_FUNCTION_MAPPER = {
     "epic-comment": partial(get_entity_name, entity='epic'),
 }
 
+IGNORED_EVENTS = {
+    'story-comment_update',
+}
+
 @api_key_only_webhook_view('ClubHouse')
 @has_request_variables
 def api_clubhouse_webhook(
@@ -523,10 +528,14 @@ def api_clubhouse_webhook(
     if payload is None:
         return json_success()
 
-    body_func = get_body_function_based_on_type(payload)
+    event = get_event(payload)
+    if event is None:
+        return json_success()
+
+    body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)  # type: Any
     topic_func = get_topic_function_based_on_type(payload)
     if body_func is None or topic_func is None:
-        raise UnexpectedWebhookEventType('Clubhouse', 'unknown')
+        raise UnexpectedWebhookEventType('Clubhouse', event)
     topic = topic_func(payload)
     body = body_func(payload)
 
