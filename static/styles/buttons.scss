@@ -1,0 +1,154 @@
+.btn {
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border-color: rgb(167, 169, 170);
+    border-radius: 4px;
+    line-height: 16px;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active {
+    color: hsl(0, 0%, 100%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.21);
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+}
+
+.outline {
+    background-color: rgba(255, 255, 255, 0) !important;
+    background-image: none;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* size  */
+.btn-group-lg > .btn,
+.btn-lg {
+    padding: .5rem 1rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    border-radius: .3rem;
+}
+
+.btn-group-sm > .btn,
+.btn-sm {
+    padding: .25rem .5rem;
+    font-size: .8rem;
+    line-height: .9;
+    border-radius: .2rem;
+}
+
+/* colors */
+.btn-primary {
+    background-color: hsl(156, 30%, 50%);
+    border-color: hsl(156, 30%, 50%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-primary.outline {
+    color: hsl(156, 30%, 40%);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active {
+    background-color: hsl(156, 30%, 45%);
+    border-color: hsl(156, 30%, 45%);
+}
+
+.btn-secondary {
+    background-color: hsl(0, 0%, 60%);
+    border-color: hsl(0, 0%, 60%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-secondary.outline {
+    color: hsl(0, 0%, 50%);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary.active {
+    background-color: hsl(0, 0%, 50%);
+    border-color: hsl(0, 0%, 50%);
+}
+
+.btn-success {
+    background-color: hsl(120, 40%, 46%);
+    border-color: hsl(120, 40%, 46%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-success.outline {
+    color: hsl(120, 40%, 46%);
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active {
+    background-color: hsl(120, 40%, 41%);
+    border-color: hsl(120, 40%, 41%);
+}
+
+.btn-danger {
+    background-color: hsl(2, 60%, 45%);
+    border-color: hsl(2, 60%, 45%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-danger.outline {
+    color: hsl(2, 60%, 45%);
+}
+
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active,
+.btn-danger.active {
+    background-color: hsl(2, 60%, 40%);
+    border-color: hsl(2, 60%, 40%);
+}
+
+.btn-warning {
+    background-color: hsl(35, 82%, 40%);
+    border-color: hsl(35, 82%, 40%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-warning.outline {
+    color: hsl(35, 82%, 40%);
+}
+
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active {
+    background-color: hsl(35, 82%, 35%);
+    border-color: hsl(35, 82%, 35%);
+}
+
+.btn-info {
+    background-color: hsl(194, 66%, 60%);
+    border-color: hsl(194, 66%, 60%);
+    color: hsl(0, 0%, 100%);
+}
+
+.btn-info.outline {
+    color: hsl(194, 66%, 50%);
+}
+
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active {
+    background-color: hsl(194, 66%, 50%);
+    border-color: hsl(194, 66%, 50%);
+}
