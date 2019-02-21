@@ -62,7 +62,19 @@ var realm_logo = (function () {
         var file_input = $("#realm_logo_file_input");
         var night_file_input = $("#realm_night_logo_file_input");
         $("#realm-settings-logo").attr("src", page_params.realm_logo_url);
-        $("#realm-settings-night-logo").attr("src", page_params.realm_night_logo_url);
+
+        if (page_params.realm_night_logo_source === 'D' &&
+            page_params.realm_logo_source !== 'D') {
+            // If no night mode logo is uploaded but a day mode one
+            // is, use the day mode one; this handles the common case
+            // of transparent background logos that look good on both
+            // night and day themes.  See also similar code in admin.js.
+
+            $("#realm-settings-night-logo").attr("src", page_params.realm_logo_url);
+        } else {
+            $("#realm-settings-night-logo").attr("src", page_params.realm_night_logo_url);
+        }
+
         if (page_params.night_mode) {
             $("#realm-logo").attr("src", page_params.realm_night_logo_url);
         } else {

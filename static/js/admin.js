@@ -68,6 +68,13 @@ exports.build_page = function () {
     options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     options.email_address_visibility_values = settings_org.email_address_visibility_values;
+
+    if (options.realm_logo_source !== 'D' && options.realm_night_logo_source === 'D') {
+        // If no night mode logo is specified but a day mode one is,
+        // use the day mode one.  See also similar code in realm_logo.js.
+        options.realm_night_logo_url = options.realm_logo_url;
+    }
+
     var rendered_admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
