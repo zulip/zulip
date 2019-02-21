@@ -52,6 +52,14 @@ exports.highlight_with_escaping_and_regex = function (regex, item) {
     return result;
 };
 
+exports.render_typeahead_title = function(completing) {
+    if (completing === 'silent_mention') {
+        return '<h1>Silently mention</h1>';
+    } else {
+        return '';
+    }
+}
+
 exports.highlight_query_in_phrase = function (query, phrase) {
     var i;
     query = query.toLowerCase();

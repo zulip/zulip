@@ -609,6 +609,7 @@ exports.initialize_compose_typeahead = function (selector) {
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
         completions: completions,
+        title: typeahead_helper.render_typeahead_title,
     });
 };
 

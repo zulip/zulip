@@ -1730,6 +1730,10 @@ blockquote p {
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
 }
 
+.typeahead.title {
+    margin-top: -60px;
+}
+
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;

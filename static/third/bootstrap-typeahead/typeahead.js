@@ -35,6 +35,7 @@
     this.updater = this.options.updater || this.updater
     this.$menu = $(this.options.menu).appendTo('body')
     this.source = this.options.source
+    this.title = this.options.title
     this.shown = false
     this.dropup = this.options.dropup
     this.fixed = this.options.fixed || false;
@@ -177,6 +178,7 @@
 
       items.first().addClass('active')
       this.$menu.html(items)
+      $(this.$menu[0]).html(this.title ? this.title(this.completing) : '');
       return this
     }
 
@@ -339,7 +341,7 @@
   $.fn.typeahead.defaults = {
     source: []
   , items: 8
-  , menu: '<ul class="typeahead dropdown-menu"></ul>'
+  , menu: '<div class="typeahead title"></div><ul class="typeahead dropdown-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
   , stopAdvance: false
