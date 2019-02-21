@@ -424,6 +424,10 @@ run_test('merge_message_groups', () => {
 
 });
 
+// TODO: Add a test suite for rerender_messages() that includes cases
+// where new messages added via local echo have a different date from
+// the older messages.
+
 run_test('render_windows', () => {
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with

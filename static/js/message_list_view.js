@@ -1070,6 +1070,21 @@ MessageListView.prototype = {
         }
     },
 
+    _find_message_group: function (message_group_id) {
+        // Ideally, we'd maintain this data structure with a hash
+        // table or at least a pointer from the message containers (in
+        // either case, updating the data structure when message
+        // groups are merged etc.) , but we only call this from flows
+        // like message editing, so it's not a big performance
+        // problem.
+        return _.find(this._message_groups, function (message_group) {
+            // Since we don't have a way to get a message group from
+            // the containing message container, we just do a search
+            // to find it.
+            return message_group.message_group_id === message_group_id;
+        });
+    },
+
     _rerender_header: function (message_containers) {
         // Given a list of messages that are in the **same** message group,
         // rerender the header / recipient bar of the messages
@@ -1086,9 +1101,24 @@ MessageListView.prototype = {
 
         var recipient_row = rows.get_message_recipient_row(first_row);
         var header = recipient_row.find('.message_header');
+        var message_group_id = recipient_row.attr("id");
 
-        var group = {message_containers: message_containers};
-        populate_group_from_message_container(group, message_containers[0]);
+        // Since there might be multiple dates within the message
+        // group, it's important to lookup the original/full message
+        // group rather than doing an artificial rerendering of the
+        // message header from the set of message containers passed in
+        // here.
+        var group = this._find_message_group(message_group_id);
+        if (group === undefined) {
+            blueslip.error("Could not find message group for rerendering headers");
+            return;
+        }
+
+        // TODO: It's possible that we no longer need this populate
+        // call; it was introduced in an earlier version of this code
+        // where we constructed an artificial message group for this
+        // rerendering rather than looking up the original version.
+        populate_group_from_message_container(group, group.message_containers[0]);
 
         var rendered_recipient_row = $(templates.render('recipient_row', group));
 
