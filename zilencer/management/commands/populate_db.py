@@ -150,7 +150,8 @@ class Command(BaseCommand):
         parser.add_argument('--test-suite',
                             default=False,
                             action="store_true",
-                            help='Whether to delete all the existing messages.')
+                            help='Configures populate_db to create a deterministic '
+                            'data set for the backend tests.')
 
     def handle(self, **options: Any) -> None:
         if options["percent_huddles"] + options["percent_personals"] > 100:
