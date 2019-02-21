@@ -14,6 +14,10 @@ SUPPORTED_CARD_ACTIONS = [
     u'commentCard'
 ]
 
+IGNORED_CARD_ACTIONS = [
+    'createCheckItem',
+]
+
 CREATE = u'createCard'
 CHANGE_LIST = u'changeList'
 CHANGE_NAME = u'changeName'
