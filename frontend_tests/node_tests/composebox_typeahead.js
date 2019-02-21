@@ -326,6 +326,12 @@ run_test('content_typeahead_selected', () => {
     expected_value = '@**Othello, the Moor of Venice** ';
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = 'Hello @oth';
+    fake_this.token = 'oth';
+    actual_value = ct.content_typeahead_selected.call(fake_this, othello);
+    expected_value = 'Hello @**Othello, the Moor of Venice** ';
+    assert.equal(actual_value, expected_value);
+
     fake_this.query = '@**oth';
     fake_this.token = 'oth';
     actual_value = ct.content_typeahead_selected.call(fake_this, othello);
@@ -351,6 +357,12 @@ run_test('content_typeahead_selected', () => {
     fake_this.token = 'kin';
     actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
     expected_value = '@_**King Hamlet** ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = 'Hello @_kin';
+    fake_this.token = 'kin';
+    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    expected_value = 'Hello @_**King Hamlet** ';
     assert.equal(actual_value, expected_value);
 
     fake_this.query = '@_*kin';
@@ -400,6 +412,12 @@ run_test('content_typeahead_selected', () => {
     expected_value = '#**Sweden** ';
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = 'Hello #swed';
+    fake_this.token = 'swed';
+    actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
+    expected_value = 'Hello #**Sweden** ';
+    assert.equal(actual_value, expected_value);
+
     fake_this.query = '#**swed';
     fake_this.token = 'swed';
     actual_value = ct.content_typeahead_selected.call(fake_this, sweden_stream);
@@ -413,6 +431,12 @@ run_test('content_typeahead_selected', () => {
     fake_this.token = 'p';
     actual_value = ct.content_typeahead_selected.call(fake_this, 'python');
     expected_value = '~~~python\n\n~~~';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = 'Hello ~~~p';
+    fake_this.token = 'p';
+    actual_value = ct.content_typeahead_selected.call(fake_this, 'python');
+    expected_value = 'Hello ~~~python\n\n~~~';
     assert.equal(actual_value, expected_value);
 
     fake_this.query = '```p';

@@ -507,12 +507,20 @@ exports.content_typeahead_selected = function (item) {
         }
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         var is_silent = this.completing === 'silent_mention';
+        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
+        if (beginning.endsWith('@_*')) {
+            beginning = beginning.substring(0, beginning.length - 3);
+        } else if (beginning.endsWith('@*') || beginning.endsWith('@_')) {
+            beginning = beginning.substring(0, beginning.length - 2);
+        } else if (beginning.endsWith('@')) {
+            beginning = beginning.substring(0, beginning.length - 1);
+        }
         if (user_groups.is_user_group(item)) {
-            beginning =  '@*' + item.name + '* ';
+            beginning +=  '@*' + item.name + '* ';
             $(document).trigger('usermention_completed.zulip', {user_group: item});
         } else {
             var mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
-            beginning = mention_text + ' ';
+            beginning += mention_text + ' ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
     } else if (this.completing === 'stream') {
