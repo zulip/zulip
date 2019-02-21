@@ -11,7 +11,8 @@ SUPPORTED_CARD_ACTIONS = [
     u'removeMemberFromCard',
     u'addAttachmentToCard',
     u'addChecklistToCard',
-    u'commentCard'
+    u'commentCard',
+    u'updateCheckItemStateOnCard',
 ]
 
 IGNORED_CARD_ACTIONS = [
@@ -36,6 +37,7 @@ REMOVE_MEMBER = u'removeMemberFromCard'
 ADD_ATTACHMENT = u'addAttachmentToCard'
 ADD_CHECKLIST = u'addChecklistToCard'
 COMMENT = u'commentCard'
+UPDATE_CHECK_ITEM_STATE = u'updateCheckItemStateOnCard'
 
 TRELLO_CARD_URL_TEMPLATE = u'[{card_name}]({card_url})'
 
@@ -58,7 +60,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     REMOVE_MEMBER: u'removed {member_name} from {card_url_template}.',
     ADD_ATTACHMENT: u'added [{attachment_name}]({attachment_url}) to {card_url_template}.',
     ADD_CHECKLIST: u'added the {checklist_name} checklist to {card_url_template}.',
-    COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n'
+    COMMENT: u'commented on {card_url_template}\n~~~ quote\n{text}\n~~~\n',
+    UPDATE_CHECK_ITEM_STATE: u'{action} **{item_name}** in **{checklist_name}** ({card_url_template}).'
 }
 
 def prettify_date(date_string: str) -> str:
@@ -116,6 +119,16 @@ def get_body(payload: Mapping[str, Any], action_type: str) -> str:
 def get_added_checklist_body(payload: Mapping[str, Any], action_type: str) -> str:
     data = {
         'checklist_name': get_action_data(payload)['checklist'].get('name'),
+    }
+    return fill_appropriate_message_content(payload, action_type, data)
+
+def get_update_check_item_body(payload: Mapping[str, Any], action_type: str) -> str:
+    action = get_action_data(payload)
+    state = action['checkItem']['state']
+    data = {
+        'action': 'checked' if state == 'complete' else 'unchecked',
+        'checklist_name': action['checklist'].get('name'),
+        'item_name': action['checkItem'].get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
@@ -232,4 +245,5 @@ ACTIONS_TO_FILL_BODY_MAPPER = {
     ADD_ATTACHMENT: get_added_attachment_body,
     ADD_CHECKLIST: get_added_checklist_body,
     COMMENT: get_comment_body,
+    UPDATE_CHECK_ITEM_STATE: get_update_check_item_body,
 }

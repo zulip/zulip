@@ -68,6 +68,14 @@ class TrelloHookTests(WebhookTestCase):
         expected_message = u"TomaszKolek added the Checklist checklist to [New card](https://trello.com/c/xPKXoSTQ)."
         self.send_and_test_stream_message('adding_checklist_to_card', u"Welcome Board", expected_message)
 
+    def test_trello_webhook_when_check_item_is_checked(self) -> None:
+        expected_message = u"Eeshan Garg checked **Tomatoes** in **Checklist** ([Something something](https://trello.com/c/R2thJK3P))."
+        self.send_and_test_stream_message('check_item_on_card_checklist', u"Zulip", expected_message)
+
+    def test_trello_webhook_when_check_item_is_unchecked(self) -> None:
+        expected_message = u"Eeshan Garg unchecked **Tomatoes** in **Checklist** ([Something something](https://trello.com/c/R2thJK3P))."
+        self.send_and_test_stream_message('uncheck_item_on_card_checklist', u"Zulip", expected_message)
+
     def test_trello_webhook_when_member_was_removed_from_board(self) -> None:
         expected_message = u"TomaszKolek removed Trello from [Welcome Board](https://trello.com/b/iqXXzYEj)."
         self.send_and_test_stream_message('removing_member_from_board', u"Welcome Board", expected_message)
