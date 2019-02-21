@@ -104,6 +104,14 @@ class TrelloHookTests(WebhookTestCase):
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
+    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
+    def test_create_card_check_item_ignore(
+            self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body('create_check_item')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
+
     def test_trello_webhook_when_description_was_added_to_card(self) -> None:
         expected_message = u"Marco Matarazzo set description for [New Card](https://trello.com/c/P2r0z66z) to\n~~~ quote\nNew Description\n~~~"
         self.send_and_test_stream_message('adding_description_to_card', u"Welcome Board", expected_message)

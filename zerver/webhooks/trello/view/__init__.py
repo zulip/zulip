@@ -9,7 +9,8 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     UnexpectedWebhookEventType
 from zerver.models import UserProfile
 
-from .card_actions import SUPPORTED_CARD_ACTIONS, process_card_action
+from .card_actions import SUPPORTED_CARD_ACTIONS, \
+    IGNORED_CARD_ACTIONS, process_card_action
 from .board_actions import SUPPORTED_BOARD_ACTIONS, process_board_action
 from .exceptions import UnsupportedAction
 
@@ -28,6 +29,9 @@ def api_trello_webhook(request: HttpRequest,
         else:
             subject, body = message
     except UnsupportedAction:
+        if action_type in IGNORED_CARD_ACTIONS:
+            return json_success()
+
         raise UnexpectedWebhookEventType('Trello', action_type)
 
     check_send_webhook_message(request, user_profile, subject, body)
