@@ -251,7 +251,7 @@ reasoning here.
   repository.  We use the standard `package.json` file to declare our
   direct dependencies, with sections for development and
   production.  Yarn takes care of pinning the versions of indirect
-  dependencies in the `yarn.lock` file; `yarn upgrade` updates the
+  dependencies in the `yarn.lock` file; `yarn install` updates the
   `yarn.lock` files.
 * `tools/update-prod-static`.  This process is discussed in detail in
   the [static asset pipeline](../subsystems/front-end-build-process.html) article,
