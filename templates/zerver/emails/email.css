@@ -180,7 +180,6 @@ a.button:hover {
     width: 600px;
     font-size: 12px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow-y: scroll;
 }
 
 .recipient_block {
