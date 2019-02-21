@@ -95,12 +95,16 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
         )
 
     trigger_message = []
-    trigger_subject = message['data']['incident']['trigger_summary_data'].get('subject', '')
-    if trigger_subject:
-        trigger_message.append(trigger_subject)
-    trigger_description = message['data']['incident']['trigger_summary_data'].get('description', '')
-    if trigger_description:
-        trigger_message.append(trigger_description)
+    trigger_summary_data = message['data']['incident']['trigger_summary_data']
+    if trigger_summary_data is not None:
+        trigger_subject = trigger_summary_data.get('subject', '')
+        if trigger_subject:
+            trigger_message.append(trigger_subject)
+
+        trigger_description = trigger_summary_data.get('description', '')
+        if trigger_description:
+            trigger_message.append(trigger_description)
+
     format_dict['trigger_message'] = u'\n'.join(trigger_message)
     return format_dict
 
