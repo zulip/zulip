@@ -9,8 +9,8 @@ from zulint.printer import print_err, colors
 from typing import List
 
 suppress_patterns = [
-    (b'', b'imported but unused'),
-    (b'', b'redefinition of unused'),
+    (b"scripts/lib/pythonrc.py", b"imported but unused"),
+    (b'', b"'scripts.lib.setup_path_on_import' imported but unused"),
 
     # Our ipython startup pythonrc file intentionally imports *
     (b"scripts/lib/pythonrc.py",
