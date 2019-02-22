@@ -28,6 +28,7 @@ django.setup()  # We need to call setup to load applications.
 # need to import zerver.models first before the middleware tries to import it.
 
 import zerver.models
+zerver.models
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

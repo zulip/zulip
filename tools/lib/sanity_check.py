@@ -8,6 +8,9 @@ def check_venv(filename):
         import django
         import ujson
         import zulip
+        django
+        ujson
+        zulip
     except ImportError:
         print("You need to run %s inside a Zulip dev environment." % (filename,))
         user_id = os.getuid()
