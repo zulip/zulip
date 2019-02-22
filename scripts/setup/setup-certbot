@@ -99,7 +99,7 @@ chmod a+x "$CERTBOT_PATH"
 # an annoying prompt we stifle with --no-eff-email.
 "$CERTBOT_PATH" certonly "${method_args[@]}" \
                 "${HOSTNAMES[@]}" -m "$EMAIL" \
-                $agree_tos --force-renewal \
+                $agree_tos \
                 "${deploy_hook[@]}" \
                 --force-interactive --no-eff-email
 
