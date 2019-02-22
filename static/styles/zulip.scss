@@ -1065,10 +1065,9 @@ td.pointer {
     position: absolute;
     left: 2px;
     top: 0px;
-    padding-bottom: 2px;
     opacity: 0;
     z-index: 1;
-    height: 100%;
+    bottom: 1px;
     @include prefixed-transition(all, 0.3s, ease-out);
 }
 
@@ -1076,11 +1075,10 @@ td.pointer {
     background-color: hsl(107, 74%, 29%);
     width: 3px;
     height: 100%;
-    box-shadow: inset 0px -1px 0px 0px hsl(0, 0%, 100%);
 }
 
-.last_message .unread-marker-fill {
-    box-shadow: none;
+.last_message .unread_marker {
+    bottom: 0;
 }
 
 .unread .unread_marker {
