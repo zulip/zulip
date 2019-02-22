@@ -94,20 +94,19 @@ function update_spectrum(popover, update_func) {
     popover_root.css('top', top + "px");
 }
 
-function build_stream_popover(e) {
-    var elt = e.target;
+function build_stream_popover(opts) {
+    var elt = opts.elt;
+    var stream_id = opts.stream_id;
+
     if (exports.stream_popped()
         && current_stream_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
         exports.hide_stream_popover();
-        e.stopPropagation();
         return;
     }
 
     popovers.hide_all();
     exports.show_streamlist_sidebar();
-
-    var stream_id = $(elt).parents('li').attr('data-stream-id');
 
     var content = templates.render(
         'stream_sidebar_actions',
@@ -129,7 +128,6 @@ function build_stream_popover(e) {
     });
 
     current_stream_sidebar_elem = elt;
-    e.stopPropagation();
 }
 
 function build_topic_popover(opts) {
@@ -206,7 +204,17 @@ function build_all_messages_popover(e) {
 }
 
 exports.register_click_handlers = function () {
-    $('#stream_filters').on('click', '.stream-sidebar-arrow', build_stream_popover);
+    $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
+        e.stopPropagation();
+
+        var elt = e.target;
+        var stream_id = $(elt).parents('li').attr('data-stream-id');
+
+        build_stream_popover({
+            elt: elt,
+            stream_id: stream_id,
+        });
+    });
 
     $('#stream_filters').on('click', '.topic-sidebar-arrow', function (e) {
         e.stopPropagation();
