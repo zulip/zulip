@@ -550,15 +550,9 @@ exports.show_history = function (message) {
         url: "/json/messages/" + message.id + "/history",
         data: {message_id: JSON.stringify(message.id)},
         success: function (data) {
-            // For now, we ignore topic edits
             var content_edit_history = [];
             var prev_timestamp;
             _.each(data.message_history, function (msg, index) {
-                if (index !== 0 && !msg.prev_content) {
-                    // Skip topic edits
-                    return;
-                }
-
                 // Format timestamp nicely for display
                 var timestamp = timerender.get_full_time(msg.timestamp);
                 var item = {
@@ -570,10 +564,23 @@ exports.show_history = function (message) {
                     item.body_to_render = msg.rendered_content;
                     prev_timestamp = timestamp;
                     item.show_date_row = true;
+                } else if (msg.prev_topic && msg.prev_content) {
+                    item.posted_or_edited = "Edited by";
+                    item.body_to_render = msg.content_html_diff;
+                    item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
+                    item.topic_edited = true;
+                    item.prev_topic = msg.prev_topic;
+                    item.new_topic = msg.topic;
                 } else {
                     item.posted_or_edited = "Edited by";
                     item.body_to_render = msg.content_html_diff;
                     item.show_date_row = !moment(timestamp).isSame(prev_timestamp, 'day');
+                }
+                if (index !== 0 && !msg.prev_content) {
+                    item.posted_or_edited = "Topic edited by";
+                    item.topic_edited = true;
+                    item.prev_topic = msg.prev_topic;
+                    item.new_topic = msg.topic;
                 }
                 if (msg.user_id) {
                     var person = people.get_person_from_user_id(msg.user_id);
