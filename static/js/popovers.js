@@ -399,7 +399,8 @@ exports.toggle_actions_popover = function (element, id) {
                 muting.is_topic_muted(message.stream_id, topic);
 
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
-            return entry.prev_content !== undefined;
+            var prev_topic = util.get_edit_event_prev_topic(entry);
+            return entry.prev_content !== undefined || prev_topic !== undefined;
         }) && page_params.realm_allow_edit_history;
 
         // Disabling this for /me messages is a temporary workaround

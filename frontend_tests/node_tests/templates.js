@@ -936,6 +936,54 @@ run_test('message_edit_history', () => {
                  "1468132659\n        Let\'s go to lunchdinner!\n        Edited by Alice");
 });
 
+run_test('message_and_topic_edit_history', () => {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                body_to_render: "<p>Let's go to " +
+                                    "<span class='highlight_text_deleted'>lunch</span>" +
+                                    "<span class='highlight_text_inserted'>dinner</span>" +
+                                "!</p>",
+                new_topic: 'Lunch',
+                prev_topic: 'Dinner',
+                topic_edited: true,
+                timestamp: 1468132659,
+                edited_by: 'Alice',
+                posted_or_edited: "Edited by",
+            },
+        ],
+    };
+    var html = "<div>" + render('message_edit_history', {
+        edited_messages: message.edit_history,
+    }) + "</div>";
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                 "1468132659\n        Topic: Lunch Dinner\n        Let\'s go to lunchdinner!\n        Edited by Alice");
+});
+
+run_test('topic_edit_history', () => {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                prev_topic: 'Dinner',
+                new_topic: 'Lunch',
+                topic_edited: true,
+                timestamp: 1468132659,
+                edited_by: 'Alice',
+                posted_or_edited: "Topic edited by",
+            },
+        ],
+    };
+    var html = "<div>" + render('message_edit_history', {
+        edited_messages: message.edit_history,
+    }) + "</div>";
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                 "1468132659\n        Topic: Lunch Dinner\n        Topic edited by Alice");
+});
+
 run_test('message_reaction', () => {
     var args = {
         class: 'message_reaction',
