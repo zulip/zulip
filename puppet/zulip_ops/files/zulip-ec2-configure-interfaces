@@ -48,8 +48,6 @@ import logging
 import logging.handlers
 import subprocess
 
-import sys
-
 import boto.utils
 import netifaces
 if False:

@@ -8,7 +8,7 @@ from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
+    custom_profile_fields_for_realm, CustomProfileFieldValue
 import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):

@@ -3,7 +3,6 @@
 from typing import Any, List, Mapping
 
 from django.db import connection
-from django.test import override_settings
 
 from zerver.models import (
     get_realm,
