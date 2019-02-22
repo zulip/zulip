@@ -126,6 +126,8 @@ IGNORED_PHRASES = [
     r"^new_emoji$",
     # Used to refer custom time limits
     r"\bN\b",
+    # Capital c feels obtrusive in clear status option
+    r"clear",
 
     r"group private messages with __recipient__",
     r"private messages with __recipient__",
