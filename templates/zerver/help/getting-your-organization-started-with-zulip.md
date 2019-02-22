@@ -83,7 +83,7 @@ expert teaching other users how to use Zulip.
 ## Invite users and onboard your community
 
 * [Delete any test messages](/help/edit-or-delete-a-message#delete-a-message-completely)
-  you want to delete.
+  or [topics](/help/delete-a-topic) you want to delete.
 * Use the `#zulip` stream to answer questions and share tips on how to use
   Zulip effectively.
 * If you have an existing chat tool, make sure everyone knows that the
@@ -106,7 +106,6 @@ expert teaching other users how to use Zulip.
 - [Add custom emoji](/help/add-custom-emoji), at the very least for
   your organization's logo.
 - Link to your Zulip instance with a [nice badge](/help/join-zulip-chat-badge).
-- [Delete](/help/delete-a-topic) embarrassing test messages before sending invites.
 - Send feedback to the Zulip development community!  We love hearing
   about problems (however minor) and feature ideas that could make
   Zulip even better.
