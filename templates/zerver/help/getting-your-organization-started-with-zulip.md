@@ -94,7 +94,7 @@ expert teaching other users how to use Zulip.
   encourage a few people to help rename topics for the first few days, while
   everyone is still getting used to the new conversation model.
 
-## Bonus things to setup
+## Bonus things to set up
 
 * [Add custom profile fields](/help/add-custom-profile-fields)
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
