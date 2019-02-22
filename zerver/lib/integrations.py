@@ -457,6 +457,7 @@ INTEGRATIONS = {
         legacy=True
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
+                           logo='static/images/integrations/logos/twt.svg',
                            doc='zerver/integrations/twitter.md'),
 }  # type: Dict[str, Integration]
 
@@ -476,12 +477,14 @@ HUBOT_INTEGRATIONS = [
                      logo_alt='Dark Sky logo'),
     HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
                      logo_alt='Google Hangouts logo'),
-    HubotIntegration('instagram', ['misc'], display_name='Instagram'),
+    HubotIntegration('instagram', ['misc'], display_name='Instagram',
+                     logo='static/images/integrations/logos/ig.svg'),
     HubotIntegration('mailchimp', ['communication', 'marketing'],
                      display_name='MailChimp'),
     HubotIntegration('google-translate', ['misc'],
                      display_name="Google Translate", logo_alt='Google Translate logo'),
-    HubotIntegration('youtube', ['misc'], display_name='YouTube'),
+    HubotIntegration('youtube', ['misc'], display_name='YouTube',
+                     logo='static/images/integrations/logos/yt.svg'),
 ]  # type: List[HubotIntegration]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
