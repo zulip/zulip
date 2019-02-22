@@ -7,6 +7,7 @@ var exports = {};
 var current_stream_sidebar_elem;
 var current_topic_sidebar_elem;
 var all_messages_sidebar_elem;
+var starred_messages_sidebar_elem;
 
 exports.stream_popped = function () {
     return current_stream_sidebar_elem !== undefined;
@@ -18,6 +19,10 @@ exports.topic_popped = function () {
 
 exports.all_messages_popped = function () {
     return all_messages_sidebar_elem !== undefined;
+};
+
+exports.starred_messages_popped = function () {
+    return starred_messages_sidebar_elem !== undefined;
 };
 
 exports.hide_stream_popover = function () {
@@ -38,6 +43,13 @@ exports.hide_all_messages_popover = function () {
     if (exports.all_messages_popped()) {
         $(all_messages_sidebar_elem).popover("destroy");
         all_messages_sidebar_elem = undefined;
+    }
+};
+
+exports.hide_starred_messages_popover = function () {
+    if (exports.starred_messages_popped()) {
+        $(starred_messages_sidebar_elem).popover("destroy");
+        starred_messages_sidebar_elem = undefined;
     }
 };
 
@@ -205,6 +217,34 @@ function build_all_messages_popover(e) {
 
 }
 
+function build_starred_messages_popover(e) {
+    var elt = e.target;
+
+    if (exports.starred_messages_popped()
+        && starred_messages_sidebar_elem === elt) {
+        exports.hide_starred_messages_popover();
+        e.stopPropagation();
+        return;
+    }
+
+    popovers.hide_all();
+
+    var content = templates.render(
+        'starred_messages_sidebar_actions'
+    );
+
+    $(elt).popover({
+        content: content,
+        trigger: "manual",
+        fixed: true,
+    });
+
+    $(elt).popover("show");
+    starred_messages_sidebar_elem = elt;
+    e.stopPropagation();
+
+}
+
 exports.register_click_handlers = function () {
     $('#stream_filters').on('click', '.stream-sidebar-arrow', build_stream_popover);
 
@@ -223,6 +263,8 @@ exports.register_click_handlers = function () {
     });
 
     $('#global_filters').on('click', '.all-messages-arrow', build_all_messages_popover);
+
+    $('#global_filters').on('click', '.starred-messages-sidebar-arrow', build_starred_messages_popover);
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();
@@ -258,6 +300,22 @@ exports.register_stream_handlers = function () {
     $('body').on('click', '#mark_all_messages_as_read', function (e) {
         exports.hide_all_messages_popover();
         pointer.fast_forward_pointer();
+        e.stopPropagation();
+    });
+
+    // Unstar all messages
+    $('body').on('click', '#unstar_all_messages', function (e) {
+        exports.hide_starred_messages_popover();
+        e.preventDefault();
+        e.stopPropagation();
+        $(".left-sidebar-modal-holder").empty();
+        $(".left-sidebar-modal-holder").html(templates.render("unstar-messages-modal"));
+        $("#unstar-messages-modal").modal("show");
+    });
+
+    $('body').on('click', '#do_unstar_messages_button', function (e) {
+        $("#unstar-messages-modal").modal("hide");
+        message_flags.unstar_all_messages();
         e.stopPropagation();
     });
 

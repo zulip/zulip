@@ -257,6 +257,7 @@ on a dark background, and don't change the dark labels dark either. */
     .close,
     #user_presences li:hover .user-list-arrow,
     li.top_left_all_messages:hover .all-messages-arrow,
+    li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
     #stream_filters li:hover .stream-sidebar-arrow,
     li.topic-list-item:hover .topic-sidebar-arrow {
         color: hsl(236, 33%, 80%);
@@ -274,6 +275,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     #user_presences li .user-list-arrow:hover,
     .all-messages-arrow:hover,
+    .starred-messages-sidebar-arrow:hover,
     .stream-sidebar-arrow:hover,
     .topic-sidebar-arrow:hover {
         color: hsl(0, 0%, 100%) !important;

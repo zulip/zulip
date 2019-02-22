@@ -113,6 +113,19 @@ exports.toggle_starred_and_update_server = function (message) {
     }
 };
 
+exports.unstar_all_messages = function () {
+    var starred_msg_ids = starred_messages.get_starred_msg_ids();
+    channel.post({
+        url: '/json/messages/flags',
+        idempotent: true,
+        data: {
+            messages: JSON.stringify(starred_msg_ids),
+            flag: 'starred',
+            op: 'remove',
+        },
+    });
+};
+
 return exports;
 }());
 

@@ -260,6 +260,7 @@ a.conversation-partners:hover {
 .filter-icon i,
 .all-messages-arrow i,
 .stream-sidebar-arrow i,
+.starred-messages-sidebar-arrow i,
 .topic-sidebar-arrow i {
     padding-right: 0.25em;
     display: inline-block;
@@ -272,6 +273,7 @@ a.conversation-partners:hover {
 */
 .all-messages-arrow,
 .stream-sidebar-arrow,
+.starred-messages-sidebar-arrow,
 .topic-sidebar-arrow {
     position: absolute;
     display: none;
@@ -282,6 +284,7 @@ a.conversation-partners:hover {
     pretty similar.
 */
 .all-messages-arrow,
+.starred-messages-sidebar-arrow,
 .stream-sidebar-arrow {
     top: 2px;
     right: 10px;
@@ -304,6 +307,7 @@ a.conversation-partners:hover {
     the relevant chevrons in light gray.
 */
 li.top_left_all_messages:hover .all-messages-arrow,
+li.top_left_starred_messages:hover .starred-messages-sidebar-arrow,
 #stream_filters li:hover .stream-sidebar-arrow,
 li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline;
@@ -315,6 +319,7 @@ li.topic-list-item:hover .topic-sidebar-arrow {
     If you hover directly over the chevron itself,
     show it in black.
 */
+.starred-messages-sidebar-arrow:hover,
 .all-messages-arrow:hover,
 .stream-sidebar-arrow:hover,
 .topic-sidebar-arrow:hover {
