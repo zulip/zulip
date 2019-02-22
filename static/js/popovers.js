@@ -771,6 +771,18 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.info_popover_actions .clear_status', function (e) {
+        e.preventDefault();
+        var me = $(e.target).parents('ul').attr('data-user-id');
+        user_status.server_update({
+            user_id: me,
+            status_text: '',
+            success: function () {
+                $('.info_popover_actions #status_message').html('');
+            },
+        });
+    });
+
     $('body').on('click', '#user-profile-modal #name #edit-button', function () {
         exports.hide_user_profile();
     });

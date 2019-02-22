@@ -62,7 +62,10 @@
     {{#if status_text}}
         {{#unless is_me}}<hr />{{/unless}}
         <li class="user_info_status_text">
-            {{status_text}}
+            <span id="status_message">
+                {{status_text}}
+                {{#if is_me}}(<a href="#" class="clear_status">{{#tr this}}clear{{/tr}}</a>){{/if}}
+            </span>
         </li>
     {{/if}}
 
