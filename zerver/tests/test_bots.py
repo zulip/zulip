@@ -100,7 +100,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(hamlet.email)
         self.assert_num_bots_equal(0)
 
-        num_bots = 30
+        num_bots = 3
         for i in range(num_bots):
             full_name = 'Bot %d' % (i,)
             short_name = 'bot-%d' % (i,)
