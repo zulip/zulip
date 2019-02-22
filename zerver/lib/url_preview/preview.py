@@ -1,6 +1,4 @@
 import re
-import logging
-import traceback
 from typing import Any, Optional, Dict
 from typing.re import Match
 import requests

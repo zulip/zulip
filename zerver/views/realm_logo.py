@@ -2,10 +2,8 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
-from typing import Optional, Callable, Any
 
-from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type, check_capped_string, check_color
+from zerver.lib.validator import check_bool
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_logo_source

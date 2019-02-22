@@ -7,7 +7,7 @@ from mimetypes import guess_type
 
 from zerver.models import UserProfile, Attachment, RealmEmoji
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.upload import read_local_file, S3UploadBackend, upload_image_to_s3
+from zerver.lib.upload import S3UploadBackend, upload_image_to_s3
 from zerver.lib.parallel import run_parallel
 
 s3backend = S3UploadBackend()

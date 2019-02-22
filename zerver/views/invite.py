@@ -5,11 +5,11 @@ from typing import List, Optional, Set
 from zerver.decorator import require_realm_admin, require_non_guest_human_user
 from zerver.lib.actions import do_invite_users, do_revoke_user_invite, \
     do_revoke_multi_use_invite, do_resend_user_invite_email, \
-    get_default_subs, do_get_user_invites, do_create_multiuse_invite_link
+    do_get_user_invites, do_create_multiuse_invite_link
 from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error, json_response
+from zerver.lib.response import json_success, json_error
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_string, check_list, check_bool, check_int
+from zerver.lib.validator import check_list, check_int
 from zerver.models import PreregistrationUser, Stream, UserProfile, MultiuseInvite
 
 import re

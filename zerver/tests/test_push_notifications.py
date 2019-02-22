@@ -8,7 +8,6 @@ from mock import call
 from typing import Any, Dict, List, Optional
 
 import base64
-import gcm
 import os
 import ujson
 import uuid

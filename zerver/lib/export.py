@@ -13,7 +13,6 @@ import ujson
 import subprocess
 import tempfile
 import shutil
-import sys
 from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from analytics.models import RealmCount, UserCount, StreamCount
