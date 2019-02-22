@@ -457,6 +457,8 @@ INTEGRATIONS = {
         legacy=True
     ),
     'twitter': Integration('twitter', 'twitter', ['customer-support', 'marketing'],
+                           # _ needed to get around adblock plus
+                           logo='static/images/integrations/logos/twitte_r.svg',
                            doc='zerver/integrations/twitter.md'),
 }  # type: Dict[str, Integration]
 
@@ -476,12 +478,16 @@ HUBOT_INTEGRATIONS = [
                      logo_alt='Dark Sky logo'),
     HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
                      logo_alt='Google Hangouts logo'),
-    HubotIntegration('instagram', ['misc'], display_name='Instagram'),
+    HubotIntegration('instagram', ['misc'], display_name='Instagram',
+                     # _ needed to get around adblock plus
+                     logo='static/images/integrations/logos/instagra_m.svg'),
     HubotIntegration('mailchimp', ['communication', 'marketing'],
                      display_name='MailChimp'),
     HubotIntegration('google-translate', ['misc'],
                      display_name="Google Translate", logo_alt='Google Translate logo'),
-    HubotIntegration('youtube', ['misc'], display_name='YouTube'),
+    HubotIntegration('youtube', ['misc'], display_name='YouTube',
+                     # _ needed to get around adblock plus
+                     logo='static/images/integrations/logos/youtub_e.svg'),
 ]  # type: List[HubotIntegration]
 
 for hubot_integration in HUBOT_INTEGRATIONS:
