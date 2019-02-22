@@ -6,7 +6,12 @@
     {{/if}}
     <div class="messagebox-content">
         <div class="message_top_line"><span class="message_time">{{ timestamp }}</span></div>
+        {{#if topic_edited}}
+        <div class="message_content message_edit_history_content"><p>Topic: <span class="highlight_text_inserted">{{ new_topic }}</span> <span class="highlight_text_deleted">{{ prev_topic }}</span></p></div>
+        {{/if}}
+        {{#if body_to_render}}
         <div class="message_content message_edit_history_content">{{{ body_to_render }}}</div>
+        {{/if}}
         <div class="message_author"><div class="author_details">{{ posted_or_edited }} {{ edited_by }}</div></div>
     </div>
     <hr/>

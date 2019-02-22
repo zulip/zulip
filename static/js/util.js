@@ -337,6 +337,10 @@ exports.get_edit_event_orig_topic = function (obj) {
     return obj.orig_subject;
 };
 
+exports.get_edit_event_prev_topic = function (obj) {
+    return obj.prev_subject;
+};
+
 exports.is_topic_synonym = function (operator) {
     return operator === 'subject';
 };
