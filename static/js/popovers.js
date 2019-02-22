@@ -1036,6 +1036,7 @@ exports.hide_all_except_userlist_sidebar = function () {
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
+    stream_popover.hide_starred_messages_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_mobile_message_buttons_popover();
     stream_popover.restore_stream_list_size();

@@ -32,6 +32,10 @@ exports.count = function () {
     return exports.ids.num_items();
 };
 
+exports.get_starred_msg_ids = function () {
+    return exports.ids.keys();
+};
+
 exports.rerender_ui = function () {
     var count = exports.count();
 
