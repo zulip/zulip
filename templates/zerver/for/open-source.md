@@ -68,6 +68,11 @@ Get events from GitHub, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
 
+### Keep your IRC
+
+Two-way integrations with IRC and Matrix, and one-way integration with
+Slack (get Slack messages in Zulip).
+
 ### Quality data export
 
 Our high quality [export](/help/export-your-organization) and
