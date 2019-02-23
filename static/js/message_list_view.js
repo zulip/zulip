@@ -598,6 +598,12 @@ MessageListView.prototype = {
         _.each(message_groups, function (message_group) {
             _.each(message_group.message_containers, function (mc) {
                 mc.show_name_on_top_line = mc.include_sender && !mc.status_message;
+                mc.show_edited_on_top_line = mc.last_edit_timestr &&
+                                             mc.include_sender &&
+                                             !mc.status_message;
+                mc.show_edited_at_end = mc.last_edit_timestr &&
+                                        !mc.include_sender;
+
             });
         });
 
