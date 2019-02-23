@@ -13,30 +13,30 @@
                     <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
 
                         {{#if include_sender}}
-                            {{! See ../js/notifications.js for another user of avatar_url. }}
-                            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
-                                <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
-                            </div>
+                        {{! See ../js/notifications.js for another user of avatar_url. }}
+                        <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
+                            <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+                        </div>
                         {{/if}}
 
                         {{#if include_sender}}
                             {{#if status_message}}
-                                <span class="sender-status">
-                                    <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-                                    {{#if sender_is_bot}}
-                                    <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-                                    {{/if}}
+                            <span class="sender-status">
+                                <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                                {{#if sender_is_bot}}
+                                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+                                {{/if}}
 
-                                    <span class="status-message auto-select">
-                                        {{{ status_message }}}
-                                    </span>
-
-                                    {{#if_and last_edit_timestr include_sender}}
-                                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                                        ({{t "EDITED" }})
-                                    </div>
-                                    {{/if_and}}
+                                <span class="status-message auto-select">
+                                    {{{ status_message }}}
                                 </span>
+
+                                {{#if_and last_edit_timestr include_sender}}
+                                <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                                    ({{t "EDITED" }})
+                                </div>
+                                {{/if_and}}
+                            </span>
                             {{/if}}
                         {{/if}}
 
