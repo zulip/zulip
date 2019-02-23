@@ -559,10 +559,11 @@ exports.escape_search = function () {
     update_streams_for_search();
 };
 
-exports.clear_search = function () {
+exports.clear_search = function (e) {
     var filter = $('.stream-list-filter').expectOne();
     if (filter.val() === '') {
         exports.clear_and_hide_search();
+        e.stopPropagation();
         return;
     }
     filter.val('');
