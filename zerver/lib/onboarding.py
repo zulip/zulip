@@ -1,14 +1,14 @@
 
 from django.conf import settings
 
-from zerver.lib.actions import set_default_streams, \
+from zerver.lib.actions import \
     internal_prep_stream_message_by_name, internal_send_private_message, \
-    create_streams_if_needed, do_send_messages, \
+    do_send_messages, \
     do_add_reaction_legacy, create_users, missing_any_realm_internal_bots
 from zerver.lib.topic import get_turtle_message
 from zerver.models import Realm, UserProfile, get_system_bot
 
-from typing import Any, Dict, List, Mapping
+from typing import Dict, List
 
 def setup_realm_internal_bots(realm: Realm) -> None:
     """Create this realm's internal bots.
@@ -60,25 +60,13 @@ def send_initial_pms(user: UserProfile) -> None:
     internal_send_private_message(user.realm, get_system_bot(settings.WELCOME_BOT),
                                   user, content)
 
-def setup_initial_streams(realm: Realm) -> None:
-    stream_dicts = [
-        {'name': "announce"},
-        {'name': "new members",
-         'description': "For welcoming and onboarding new members. If you haven't yet, "
-         "introduce yourself in a new thread using your name as the topic!"},
-        {'name': "zulip",
-         'description': "For discussing Zulip, Zulip tips and tricks, and asking "
-         "questions about how Zulip works"}]  # type: List[Mapping[str, Any]]
-    create_streams_if_needed(realm, stream_dicts)
-    set_default_streams(realm, {stream['name']: {} for stream in stream_dicts})
-
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT)
     # Make sure each stream created in the realm creation process has at least one message below
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
     welcome_messages = [
-        {'stream': "announce",
+        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "welcome",
          'content': "This is a message on stream `%s` with the topic `welcome`. We'll use this stream "
          "for system-generated notifications." % (Realm.DEFAULT_NOTIFICATION_STREAM_NAME,)},
@@ -86,26 +74,19 @@ def send_initial_realm_messages(realm: Realm) -> None:
          'topic': "private streams",
          'content': "This is a private stream. Only admins and people you invite "
          "to the stream will be able to see that this stream exists."},
-        {'stream': "general",
-         'topic': "welcome",
-         'content': "Welcome to #**general**."},
-        {'stream': "new members",
-         'topic': "onboarding",
-         'content': "A #**new members** stream is great for onboarding new members.\n\nIf you're "
-         "reading this and aren't the first person here, introduce yourself in a new thread "
-         "using your name as the topic! Type `c` or click on `New Topic` at the bottom of the "
-         "screen to start a new topic."},
-        {'stream': "zulip",
+        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "topic demonstration",
          'content': "Here is a message in one topic. Replies to this message will go to this topic."},
-        {'stream': "zulip",
+        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "topic demonstration",
          'content': "A second message in this topic. With [turtles](/static/images/cute/turtle.png)!"},
-        {'stream': "zulip",
+        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
          'topic': "second topic",
          'content': "This is a message in a second topic.\n\nTopics are similar to email subjects, "
          "in that each conversation should get its own topic. Keep them short, though; one "
-         "or two words will do it!"},
+         "or two words will do it! "
+         "Type `c` or click on `New Topic` at the bottom of the "
+         "screen to start a new topic."},
     ]  # type: List[Dict[str, str]]
     messages = [internal_prep_stream_message_by_name(
         realm, welcome_bot, message['stream'],
