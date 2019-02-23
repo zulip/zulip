@@ -18,15 +18,14 @@ from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.actions import do_change_password, do_change_full_name, \
     do_activate_user, do_create_user, do_create_realm, \
-    validate_email_for_realm, \
+    validate_email_for_realm, set_default_streams, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     FindMyTeamForm, RealmRedirectForm
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, \
     do_login
-from zerver.lib.onboarding import setup_initial_streams, \
-    send_initial_realm_messages, setup_realm_internal_bots
+from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
@@ -194,7 +193,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             realm = do_create_realm(string_id, realm_name)
-            setup_initial_streams(realm)
+            set_default_streams(realm, {})
             setup_realm_internal_bots(realm)
         assert(realm is not None)
 
