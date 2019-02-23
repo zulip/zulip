@@ -8,7 +8,7 @@
         {{{ status_message }}}
     </span>
 
-    {{#if_and last_edit_timestr include_sender}}
+    {{#if last_edit_timestr}}
     {{partial "edited_notice"}}
-    {{/if_and}}
+    {{/if}}
 </span>
