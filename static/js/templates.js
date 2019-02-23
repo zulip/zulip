@@ -46,22 +46,6 @@ Handlebars.registerHelper('plural', function (condition, one, other) {
     return condition === 1 ? one : other;
 });
 
-Handlebars.registerHelper('if_and', function () {
-    // Execute the conditional code if all conditions are true.
-    // Example usage:
-    //     {{#if_and cond1 cond2 cond3}}
-    //         <p>All true</p>
-    //     {{/if_and}}
-    var options = arguments[arguments.length - 1];
-    var i;
-    for (i = 0; i < arguments.length - 1; i += 1) {
-        if (!arguments[i]) {
-            return options.inverse(this);
-        }
-    }
-    return options.fn(this);
-});
-
 Handlebars.registerHelper('unless_a_not_b', function () {
     // Execute the conditional code if at least one condition is false.
     // Example usage:
