@@ -218,7 +218,7 @@ class Realm(models.Model):
     default_twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: str
 
-    DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
+    DEFAULT_NOTIFICATION_STREAM_NAME = u'general'
     INITIAL_PRIVATE_STREAM_NAME = u'core team'
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     signup_notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]

@@ -1065,7 +1065,7 @@ class DefaultStreamTest(ZulipTestCase):
             "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
         }  # type: Dict[str, Dict[str, Any]]
         expected_names = list(stream_dict.keys())
-        expected_names.append("announce")
+        expected_names.append("general")
         expected_descriptions = [i["description"] for i in stream_dict.values()] + [""]
         set_default_streams(realm, stream_dict)
         stream_names_set = self.get_default_stream_names(realm)
@@ -2001,7 +2001,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         realm = do_create_realm("testrealm", "Test Realm")
 
-        notifications_stream = Stream.objects.get(name='announce', realm=realm)
+        notifications_stream = Stream.objects.get(name='general', realm=realm)
         realm.notifications_stream = notifications_stream
         realm.save()
 
@@ -2355,7 +2355,7 @@ class SubscriptionAPITest(ZulipTestCase):
         but not create those streams, only realm admins can
         """
         member = self.example_user("AARON")
-        result = self.common_subscribe_to_streams(member.email, ["announce"])
+        result = self.common_subscribe_to_streams(member.email, ["general"])
         self.assert_json_success(result)
 
         streams_raw = [{
