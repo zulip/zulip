@@ -32,9 +32,7 @@
                                 </span>
 
                                 {{#if_and last_edit_timestr include_sender}}
-                                <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                                    ({{t "EDITED" }})
-                                </div>
+                                {{partial "edited_notice"}}
                                 {{/if_and}}
                             </span>
                             {{/if}}
@@ -61,9 +59,7 @@
 
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
-                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                            ({{t "EDITED" }})
-                        </div>
+                        {{partial "edited_notice"}}
                         {{/unless}}
                     {{/if_and}}
 
@@ -75,9 +71,7 @@
 
                 {{#if last_edit_timestr}}
                     {{#unless include_sender}}
-                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                        ({{t "EDITED" }})
-                    </div>
+                    {{partial "edited_notice"}}
                     {{/unless}}
                 {{/if}}
 
