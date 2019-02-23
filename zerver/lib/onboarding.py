@@ -62,7 +62,7 @@ def send_initial_pms(user: UserProfile) -> None:
 
 def setup_initial_streams(realm: Realm) -> None:
     stream_dicts = [
-        {'name': "general"},
+        {'name': "announce"},
         {'name': "new members",
          'description': "For welcoming and onboarding new members. If you haven't yet, "
          "introduce yourself in a new thread using your name as the topic!"},
@@ -78,7 +78,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # Order corresponds to the ordering of the streams on the left sidebar, to make the initial Home
     # view slightly less overwhelming
     welcome_messages = [
-        {'stream': Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+        {'stream': "announce",
          'topic': "welcome",
          'content': "This is a message on stream `%s` with the topic `welcome`. We'll use this stream "
          "for system-generated notifications." % (Realm.DEFAULT_NOTIFICATION_STREAM_NAME,)},
