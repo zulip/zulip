@@ -50,6 +50,10 @@ function toggle_filter() {
     stream_list.toggle_filter_displayed({preventDefault: noop});
 }
 
+function clear_search_input() {
+    stream_list.clear_search({stopPropagation: noop});
+}
+
 run_test('basics', () => {
     var cursor_helper;
     const input = $('.stream-list-filter');
@@ -129,7 +133,7 @@ run_test('basics', () => {
     verify_focused();
 
     // Clear an empty search.
-    stream_list.clear_search();
+    clear_search_input();
     verify_collapsed();
 
     // Expand the widget.
@@ -139,7 +143,7 @@ run_test('basics', () => {
     // Clear a non-empty search.
     input.val('foo');
     verify_list_updated(() => {
-        stream_list.clear_search();
+        clear_search_input();
     });
     verify_expanded();
 
