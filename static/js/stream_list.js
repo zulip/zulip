@@ -561,10 +561,6 @@ exports.escape_search = function () {
 
 exports.clear_search = function () {
     var filter = $('.stream-list-filter').expectOne();
-    if (filter.val() === '') {
-        exports.clear_and_hide_search();
-        return;
-    }
     filter.val('');
     filter.blur();
     update_streams_for_search();
