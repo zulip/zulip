@@ -19,10 +19,8 @@
                         </div>
                         {{/if}}
 
-                        {{#if include_sender}}
-                            {{#if status_message}}
-                            {{partial "me_message"}}
-                            {{/if}}
+                        {{#if status_message}}
+                        {{partial "me_message"}}
                         {{/if}}
 
                         {{#if include_sender}}
