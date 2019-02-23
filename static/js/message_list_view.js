@@ -595,6 +595,12 @@ MessageListView.prototype = {
         var use_match_properties = opts.use_match_properties;
         var table_name = opts.table_name;
 
+        _.each(message_groups, function (message_group) {
+            _.each(message_group.message_containers, function (mc) {
+                mc.show_name_on_top_line = mc.include_sender && !mc.status_message;
+            });
+        });
+
         return $(templates.render('message_group', {
             message_groups: message_groups,
             use_match_properties: use_match_properties,

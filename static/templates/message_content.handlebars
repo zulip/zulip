@@ -9,13 +9,11 @@
         {{partial "me_message"}}
         {{/if}}
 
-        {{#if include_sender}}
-            {{#unless status_message}}
-                <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-                {{#if sender_is_bot}}
-                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-                {{/if}}
-            {{/unless}}
+        {{#if show_name_on_top_line}}
+            <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+            {{#if sender_is_bot}}
+            <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
         {{/if}}
     </span>
 
