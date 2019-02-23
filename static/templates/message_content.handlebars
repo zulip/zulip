@@ -1,0 +1,57 @@
+<div class="message_top_line">
+    <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
+
+        {{#if include_sender}}
+        {{! See ../js/notifications.js for another user of avatar_url. }}
+        <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
+            <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+        </div>
+        {{/if}}
+
+        {{#if status_message}}
+        {{partial "me_message"}}
+        {{/if}}
+
+        {{#if include_sender}}
+            {{#unless status_message}}
+                <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                {{#if sender_is_bot}}
+                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+                {{/if}}
+            {{/unless}}
+        {{/if}}
+    </span>
+
+    <span class="alert-msg pull-right"></span>
+
+    <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
+        {{#unless include_sender}}
+        <span class="copy-paste-text">&nbsp;</span>
+        {{/unless}}
+        {{timestr}}
+    </span>
+
+    {{#if_and last_edit_timestr include_sender}}
+        {{#unless status_message}}
+        {{partial "edited_notice"}}
+        {{/unless}}
+    {{/if_and}}
+
+    {{partial "message_controls"}}
+
+</div>
+
+<div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+
+{{#if last_edit_timestr}}
+    {{#unless include_sender}}
+    {{partial "edited_notice"}}
+    {{/unless}}
+{{/if}}
+
+<div class="message_edit">
+    <div class="message_edit_form"></div>
+</div>
+<div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
+<div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
+<div class="message_reactions">{{ partial "message_reactions" }}</div>
