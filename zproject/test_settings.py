@@ -166,3 +166,8 @@ THUMBOR_SERVES_CAMO = True
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False
+
+ENABLE_EMAIL_ENCRYPTION = True
+ENABLE_EMAIL_SIGNATURES = True
+
+GPG_SERVER_KEYFILE = os.path.join(DEPLOY_ROOT, 'zerver/tests/fixtures/email/pgp/server_key.asc')

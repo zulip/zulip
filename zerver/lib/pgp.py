@@ -1,18 +1,23 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, SafeMIMEMultipart, \
     SafeMIMEText
+from django.utils.encoding import smart_text
 
 from email.encoders import encode_7or8bit
-from email.header import Header
 from email.message import Message
 from email.mime.application import MIMEApplication
 
 from zerver.lib.email_helpers import format_to
-from zerver.lib.logging_util import log_to_file
 from zerver.models import UserProfile, UserPGP
 
 from copy import deepcopy
-from typing import Dict, Optional, List, DefaultDict, Callable, Any, Union
+from shutil import rmtree
+from tempfile import mkdtemp
+from typing import Dict, Optional, List, Any, Union, Tuple
+
+from gnupg import GPG
+
+import os
 
 class PGPKeyNotFound(Exception):
     pass
@@ -97,7 +102,7 @@ class PGPEmailMessage(EmailMultiAlternatives):
         self._signed = sign
 
         base_msg = self.get_base_message()
-        encrypted_content = gpg_encrypt_content(base_msg.as_string(linesep='\r\n'),
+        encrypted_content = gpg_encrypt_content(base_msg.as_bytes(linesep='\r\n'),
                                                 public_keys, sign)
         self._generated_message = form_encrypted_message(encrypted_content)
         self._set_headers()
@@ -184,7 +189,7 @@ def _sign_and_encrypt(message: PGPEmailMessage, to_emails: List[str],
 def create_signature_mime(to_sign: Union[SafeMIMEMultipart, SafeMIMEText]) -> Message:
     signature = gpg_sign_content(to_sign.as_bytes(linesep='\r\n'))
     sigtype = 'pgp-signature; name="signature.asc"'
-    signature_mime = MIMEApplication(_data=signature, _subtype=sigtype,
+    signature_mime = MIMEApplication(_data=signature.encode(), _subtype=sigtype,
                                      _encoder=encode_7or8bit)
     signature_mime['Content-Description'] = 'signature'
     signature_mime.set_charset('us-ascii')
@@ -195,17 +200,18 @@ def create_signature_mime(to_sign: Union[SafeMIMEMultipart, SafeMIMEText]) -> Me
 def form_signed_message(signature_mime: Message,
                         base_msg: Union[SafeMIMEMultipart, SafeMIMEText]) -> Message:
     msg = SafeMIMEMultipart(_subtype='signed', encoding=base_msg.encoding,
-                            micalg='pgp-sha256', protocol='application/pgp-signature')
+                            micalg='pgp-'+settings.GPG_HASH_ALGO.lower(),
+                            protocol='application/pgp-signature')
     msg.attach(base_msg)
     msg.attach(signature_mime)
 
     return msg
 
-def form_encrypted_message(encrypted_content: bytes) -> Message:
+def form_encrypted_message(encrypted_content: str) -> Message:
     version_string = "Version: 1"
     control_mime = MIMEApplication(_data=version_string.encode(), _subtype='pgp-encrypted',
                                    _encoder=encode_7or8bit)
-    encrypted_mime = MIMEApplication(_data=encrypted_content, _subtype='octet-stream',
+    encrypted_mime = MIMEApplication(_data=encrypted_content.encode(), _subtype='octet-stream',
                                      _encoder=encode_7or8bit)
     del control_mime['MIME-Version']
     del encrypted_mime['MIME-Version']
@@ -216,10 +222,98 @@ def form_encrypted_message(encrypted_content: bytes) -> Message:
 
     return msg
 
-def gpg_sign_content(content: str) -> bytes:
-    return "dummysignature".encode()
+# Below, actual signing and encryption happen. When a function below is executed,
+# a temporary directory is created using mkdtemp, to be used as the homedir for gpg
+# for the function's run. On exit, it gets cleaned up using rmtree.
+# Note: using ignore_errors=True is necessary to avoid a rare race condition with gpg-agent,
+# where rmtree tries to delete a file that gpg-agent removed a bit sooner during its own cleanup,
+# causing rmtree to throw FileNotFoundError. We need it to ignore such errors and continue
+# the cleanup. For this reason (adjusting the cleanup process) we have to use mkdtemp
+# instead of the more elegant TemporaryDirectory() context manager.
+# Since for every function call, we create a separate directory for a new gpg instance,
+# there is no resource sharing and we have thread safety.
 
-def gpg_encrypt_content(content: str, public_keys: List[str], sign: bool=False) -> bytes:
-    if sign:
-        return 'dummysignedciphertext'.encode()
-    return 'dummyciphertext'.encode()
+# TODO: Rewrite these functions to use gpgme with Python bindings instead, when it becomes possible.
+# The problem as of this moment is that still-supported Ubuntu 14.04 and 16.04 have
+# the package with a much older and incompatible API (package name: python-gpgme)
+# compared to the modern one, shipped on 18.04 (package name: python3-gpg).
+
+class GPGSignatureFailed(Exception):
+    pass
+
+class GPGEncryptionFailed(Exception):
+    pass
+
+def _get_server_gpg_key() -> str:
+    with open(settings.GPG_SERVER_KEYFILE) as f:
+        return f.read()
+
+def gpg_sign_content(content: bytes) -> str:
+    try:
+        tmp_dir = mkdtemp()
+        gpg = GPG(gnupghome=os.path.join(tmp_dir, '.gnupg'))
+        result = gpg.import_keys(_get_server_gpg_key())
+        if not result:
+            raise GPGSignatureFailed("Failed to import server key: \n" + str(result.results))
+
+        result = gpg.sign(content, detach=True)
+        if not result:
+            raise GPGSignatureFailed("Failed to sign: " + str(result.status))
+
+        return smart_text(result)
+    finally:
+        rmtree(tmp_dir, ignore_errors=True)
+
+def gpg_encrypt_content(content: bytes, public_keys: List[str], sign: bool=False) -> str:
+    try:
+        tmp_dir = mkdtemp()
+        gpg = GPG(gnupghome=os.path.join(tmp_dir, '.gnupg'))
+        import_result = gpg.import_keys('\n'.join(public_keys))
+        if len(import_result.fingerprints) < len(public_keys):
+            raise GPGEncryptionFailed("Failed to import public keys:\n" + str(import_result.results))
+
+        if sign:
+            import_privkey = gpg.import_keys(_get_server_gpg_key())
+            if not import_privkey:
+                raise GPGEncryptionFailed("Failed to import server key: \n" + str(import_privkey.results))
+
+        encryption_result = gpg.encrypt(content, import_result.fingerprints,
+                                        sign=sign, always_trust=True)
+        if not encryption_result:
+            raise GPGEncryptionFailed("Failed to encrypt: " + str(encryption_result.status))
+
+        return smart_text(encryption_result)
+    finally:
+        rmtree(tmp_dir, ignore_errors=True)
+
+# The functions below aren't used for sending PGP emails, but are needed to test
+# gpg_sign_content and gpg_encrypt_content.
+
+def gpg_decrypt_content(content: str, private_key: str) -> Tuple[bytes, bool]:
+    try:
+        tmp_dir = mkdtemp()
+        gpg = GPG(gnupghome=os.path.join(tmp_dir, '.gnupg'))
+        gpg.import_keys(private_key)
+        gpg.import_keys(_get_server_gpg_key())
+        result = gpg.decrypt(content, always_trust=True)
+
+        return result.data, result.valid
+    finally:
+        rmtree(tmp_dir, ignore_errors=True)
+
+def gpg_verify_signature(signature: str, data: bytes) -> bool:
+    from tempfile import NamedTemporaryFile
+
+    try:
+        tmp_dir = mkdtemp()
+        gpg = GPG(gnupghome=os.path.join(tmp_dir, '.gnupg'))
+        gpg.import_keys(_get_server_gpg_key())
+        # We set buffering=0, because by default file.name may be
+        # an empty file when opened by _gpg.verify
+        with NamedTemporaryFile(buffering=0) as file:
+            file.write(data)
+            verify = gpg.verify(signature, data_filename=file.name)
+
+        return bool(verify)
+    finally:
+        rmtree(tmp_dir, ignore_errors=True)
