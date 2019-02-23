@@ -11,41 +11,54 @@
             <div class="messagebox-content">
                 <div class="message_top_line">
                     <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
-                        {{#include_sender}}
+
+                        {{#if include_sender}}
                             {{! See ../js/notifications.js for another user of avatar_url. }}
                             <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
                                 <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
                             </div>
+                        {{/if}}
+
+                        {{#if include_sender}}
                             {{#if status_message}}
                                 <span class="sender-status">
                                     <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
                                     {{#if sender_is_bot}}
                                     <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
                                     {{/if}}
+
                                     <span class="status-message auto-select">
                                         {{{ status_message }}}
                                     </span>
+
                                     {{#if_and last_edit_timestr include_sender}}
                                     <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
                                         ({{t "EDITED" }})
                                     </div>
                                     {{/if_and}}
                                 </span>
-                            {{else}}
+                            {{/if}}
+                        {{/if}}
+
+                        {{#if include_sender}}
+                            {{#unless status_message}}
                                 <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
                                 <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
                                 {{/if}}
-                            {{/if}}
-                        {{/include_sender}}
+                            {{/unless}}
+                        {{/if}}
                     </span>
+
                     <span class="alert-msg pull-right"></span>
+
                     <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">
                         {{#unless include_sender}}
                         <span class="copy-paste-text">&nbsp;</span>
                         {{/unless}}
                         {{timestr}}
                     </span>
+
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
                         <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
@@ -53,14 +66,18 @@
                         </div>
                         {{/unless}}
                     {{/if_and}}
+
                     <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
+
                         {{#if msg/sent_by_me}}
                         <div class="edit_content"></div>
-                        {{else}}
+                        {{/if}}
+
+                        {{#unless msg/sent_by_me}}
                         <div class="reaction_button">
                             <i class="fa fa-smile-o" title="{{#tr this}}Add emoji reaction{{/tr}} (:)" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
                         </div>
-                        {{/if}}
+                        {{/unless}}
 
                         {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
@@ -80,7 +97,9 @@
 
                     </div>
                 </div>
+
                 <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+
                 {{#if last_edit_timestr}}
                     {{#unless include_sender}}
                     <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
@@ -88,6 +107,7 @@
                     </div>
                     {{/unless}}
                 {{/if}}
+
                 <div class="message_edit">
                     <div class="message_edit_form"></div>
                 </div>
