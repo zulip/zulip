@@ -3546,6 +3546,7 @@ def do_create_realm(string_id: str, name: str,
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
     realm.notifications_stream = notifications_stream
+    DefaultStream.objects.create(stream=notifications_stream, realm=realm)
 
     signup_notifications_stream = ensure_stream(
         realm, Realm.INITIAL_PRIVATE_STREAM_NAME, invite_only=True,
@@ -3637,25 +3638,6 @@ def lookup_default_stream_groups(default_stream_group_names: List[str],
             raise JsonableError(_('Invalid default stream group %s' % (group_name,)))
         default_stream_groups.append(default_stream_group)
     return default_stream_groups
-
-def set_default_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
-    DefaultStream.objects.filter(realm=realm).delete()
-    stream_names = []
-    for name, options in stream_dict.items():
-        stream_names.append(name)
-        stream = ensure_stream(realm,
-                               name,
-                               invite_only = options.get("invite_only", False),
-                               stream_description = options.get("description", ''))
-        DefaultStream.objects.create(stream=stream, realm=realm)
-
-    # Always include the realm's default notifications streams, if it exists
-    if realm.notifications_stream is not None:
-        DefaultStream.objects.get_or_create(stream=realm.notifications_stream, realm=realm)
-
-    log_event({'type': 'default_streams',
-               'realm': realm.string_id,
-               'streams': stream_names})
 
 def notify_default_streams(realm: Realm) -> None:
     event = dict(

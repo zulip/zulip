@@ -28,12 +28,11 @@ from zerver.views.development.registration import confirmation_key
 
 from zerver.models import (
     get_realm, get_user, get_realm_stream, get_stream_recipient,
-    CustomProfileField, CustomProfileFieldValue, PreregistrationUser,
+    CustomProfileField, CustomProfileFieldValue, DefaultStream, PreregistrationUser,
     Realm, Recipient, Message, ScheduledEmail, UserProfile, UserMessage,
     Stream, Subscription, flush_per_request_caches
 )
 from zerver.lib.actions import (
-    set_default_streams,
     do_change_is_admin,
     get_stream,
     do_create_default_stream_group,
@@ -67,7 +66,7 @@ import re
 import smtplib
 import ujson
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import urllib
 import pytz
@@ -129,12 +128,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self) -> None:
         """Sends a message during user creation"""
         # Create a user who hasn't had historical messages added
-        stream_dict = {
-            "Denmark": {"description": "A Scandinavian country", "invite_only": False},
-            "Verona": {"description": "A city in Italy", "invite_only": False}
-        }  # type: Dict[str, Dict[str, Any]]
         realm = get_realm('zulip')
-        set_default_streams(realm, stream_dict)
+        stream = Stream.objects.get(realm=realm, name='Denmark')
+        DefaultStream.objects.create(stream=stream, realm=realm)
         with patch("zerver.lib.actions.add_new_user_history"):
             self.register(self.nonreg_email('test'), "test")
         user_profile = self.nonreg_user('test')
@@ -446,12 +442,11 @@ class LoginTest(ZulipTestCase):
 
     def test_register(self) -> None:
         realm = get_realm("zulip")
-        stream_dict = {"stream_"+str(i): {"description": "stream_%s_description" % i, "invite_only": False}
-                       for i in range(40)}  # type: Dict[str, Dict[str, Any]]
-        for stream_name in stream_dict.keys():
-            self.make_stream(stream_name, realm=realm)
+        stream_names = ["stream_{}".format(i) for i in range(40)]
+        for stream_name in stream_names:
+            stream = self.make_stream(stream_name, realm=realm)
+            DefaultStream.objects.create(stream=stream, realm=realm)
 
-        set_default_streams(realm, stream_dict)
         # Clear all the caches.
         flush_per_request_caches()
         ContentType.objects.clear_cache()
