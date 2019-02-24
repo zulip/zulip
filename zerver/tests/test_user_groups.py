@@ -234,12 +234,17 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.client_post('/json/user_groups/create', info=params)
         user_group = UserGroup.objects.get(name='support')
         # Test success
-        self.assertEqual(UserGroup.objects.count(), 2)
-        self.assertEqual(UserGroupMembership.objects.count(), 3)
+        self.assertTrue(user_group.is_active)
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.count(), 1)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        user_group = UserGroup.objects.get(name='support')
+        self.assertFalse(user_group.is_active)
+
+        # Ensure deactivating already deactivated user group is working
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+        self.assertFalse(user_group.is_active)
 
         # Test when invalid user group is supplied
         result = self.client_delete('/json/user_groups/1111')
@@ -253,14 +258,15 @@ class UserGroupAPITestCase(ZulipTestCase):
         }
         self.client_post('/json/user_groups/create', info=params)
         user_group = UserGroup.objects.get(name='Development')
-        self.assertEqual(UserGroup.objects.count(), 2)
+        self.assertTrue(user_group.is_active)
         self.logout()
         cordelia = self.example_user('cordelia')
         self.login(cordelia.email)
 
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_error(result, "Only group members and organization administrators can administer this group.")
-        self.assertEqual(UserGroup.objects.count(), 2)
+        user_group = UserGroup.objects.get(name='Development')
+        self.assertTrue(user_group.is_active)
 
         self.logout()
         # Test when organization admin tries to delete group
@@ -269,8 +275,8 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.count(), 1)
-        self.assertEqual(UserGroupMembership.objects.count(), 2)
+        user_group = UserGroup.objects.get(name='Development')
+        self.assertFalse(user_group.is_active)
 
     def test_user_group_delete_by_guest_user(self) -> None:
         hamlet = self.example_user('hamlet')

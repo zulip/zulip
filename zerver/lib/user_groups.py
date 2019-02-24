@@ -34,6 +34,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
             id=user_group.id,
             name=user_group.name,
             description=user_group.description,
+            is_active=user_group.is_active,
             members=[],
         )
 
