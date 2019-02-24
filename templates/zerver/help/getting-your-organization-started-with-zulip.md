@@ -51,6 +51,11 @@ few people who understand the conversation model at the beginning.
   [Zulip community server](https://chat.zulip.org) and see what topics look
   like there.
 
+Topics are lightweight and do not need to be managed. Anyone writing to a
+stream can and should [start topics](/help/start-a-new-topic) for new
+conversations. "Old" topics naturally lose visibility over time, and do not
+need to be deleted.
+
 ## Set up integrations
 
 Zulip integrates directly with dozens of products, and hundreds more through
