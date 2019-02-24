@@ -685,20 +685,6 @@ exports.initialize = function () {
     delete page_params.never_subscribed;
 };
 
-exports.get_newbie_stream = function () {
-    // This is the stream that we narrow folks to after the tutorial.
-
-    if (exports.is_subscribed("new members")) {
-        return "new members";
-    }
-
-    if (exports.notifications_in_home_view()) {
-        return page_params.notifications_stream;
-    }
-
-    return;
-};
-
 exports.remove_default_stream = function (stream_id) {
     page_params.realm_default_streams = _.reject(
         page_params.realm_default_streams,

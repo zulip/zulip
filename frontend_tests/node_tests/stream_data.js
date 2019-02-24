@@ -709,36 +709,6 @@ run_test('filter inactives', () => {
     assert(stream_data.is_filtering_inactives());
 });
 
-run_test('get_newbie_stream', () => {
-    var newbie = {
-        name: 'newbie',
-        stream_id: 234,
-        subscribed: true,
-        in_home_view: true,
-    };
-
-    var new_members = {
-        subscribed: true,
-        name: 'new members',
-        stream_id: 531,
-    };
-
-    assert.equal(stream_data.get_newbie_stream(), undefined);
-
-    stream_data.add_sub('newbie', newbie);
-    page_params.notifications_stream = 'newbie';
-    assert.equal(stream_data.get_newbie_stream(), 'newbie');
-
-    newbie.in_home_view = false;
-    assert.equal(stream_data.get_newbie_stream(), undefined);
-
-    stream_data.add_sub('new members', new_members);
-    assert.equal(stream_data.get_newbie_stream(), 'new members');
-
-    new_members.subscribed = false;
-    assert.equal(stream_data.get_newbie_stream(), undefined);
-});
-
 run_test('invite_streams', () => {
     // add default stream
     var orie = {
