@@ -271,6 +271,7 @@ function edit_message(row, raw_content) {
         {is_stream: message.type === 'stream',
          message_id: message.id,
          is_editable: is_editable,
+         is_content_editable: editability === message_edit.editability_types.FULL,
          has_been_editable: editability !== editability_types.NO,
          topic: util.get_message_topic(message),
          content: raw_content,
