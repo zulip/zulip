@@ -65,6 +65,7 @@
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Start a new topic](/help/start-a-new-topic)
 * [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [Rename a topic](/help/rename-a-topic)
 * [Delete a topic](/help/delete-a-topic)
