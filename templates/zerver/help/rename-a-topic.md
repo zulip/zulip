@@ -1,8 +1,6 @@
 # Rename a topic
 
-By default, any user can rename any topic. This is useful for
-keeping messages organized, even if some users are still learning how to use
-topics effectively.
+By default, any user can rename any topic.
 
 Organization administrators can
 [turn off community topic editing](/help/community-topic-edits), or turn off
