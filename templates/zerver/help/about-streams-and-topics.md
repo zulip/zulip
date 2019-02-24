@@ -32,19 +32,24 @@ investment up front pays huge dividends in access to a more powerful
 communication paradigm.
 A longer answer is [here](https://zulipchat.com/why-zulip).
 
-## Replying
+## Replying to a topic
 
 When replying to a message, the stream and topic are conveniently
 pre-filled. Click on a message to reply, or type `r` to reply to the message
 under the blue box.
 
+## Tips for administrators
+
+Topics are lightweight and do not need to be managed. Anyone writing to a
+stream can and should [start topics](/help/start-a-new-topic) for new
+conversations. "Old" topics naturally lose visibility over time, and do not
+need to be deleted.
+
 ## Further reading
 
-* [Setting up streams for your organization](/help/getting-your-organization-started-with-zulip#create-streams)
+* [Creating streams for your organization](/help/getting-your-organization-started-with-zulip#create-streams)
 
-* [Browsing and joining streams](/help/browse-and-subscribe-to-streams)
-
-* [Public and private streams (stream permissions)](/help/stream-permissions)
+* [Stream permissions](/help/stream-permissions)
 
 * Browse the articles under **Streams & topics** and
   **Stream management** on the left sidebar.
