@@ -3544,7 +3544,9 @@ def do_create_realm(string_id: str, name: str,
     realm.save()
 
     # Create stream once Realm object has been saved
-    notifications_stream = ensure_stream(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+    notifications_stream = ensure_stream(
+        realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
+        stream_description="Everyone is added to this stream by default. Welcome! :octopus:")
     realm.notifications_stream = notifications_stream
     DefaultStream.objects.create(stream=notifications_stream, realm=realm)
 
