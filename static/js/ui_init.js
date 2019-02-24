@@ -244,9 +244,35 @@ exports.initialize_kitchen_sink_stuff = function () {
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
+// modification
+    $('#keyboard-icon').tooltip({placement: 'left',
+    animation: false});
+    $('#left_bar_compose_reply_button_big').tooltip({placement: 'top',
+    animation: false});
+    $('#left_bar_compose_private_button_big').tooltip({placement: 'top',
+    animation: false});
+    $('#left_bar_compose_stream_button_big').tooltip({placement: 'top',
+    animation: false});
+    $('#left_bar_compose_draft_button_big').tooltip({placement: 'top',
+    animation: false}); 
+    $('#user-presence-right-menu-link').tooltip({placement: 'right',
+    animation: false});
+    $('#search-big-icon').tooltip({placement: 'bottom',
+    animation: false});
+    $('#settings-dropdown').tooltip({placement: 'top',
+    animation: false});
+    $('#reaction-button').tooltip({placement: 'top',
+    animation: false});
+    $('#top-left-messages').tooltip({placement: 'bottom',
+    animation: false});
+    $('#top-left-private-message-filter').tooltip({placement: 'bottom',
+    animation: false});
+    $('#message-label-clickable').tooltip({placement: 'bottom',
+    animation: false});
+      
 
-    $('#keyboard-icon').tooltip();
-
+    
+    
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });

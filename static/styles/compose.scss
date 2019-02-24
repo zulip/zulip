@@ -488,6 +488,10 @@ a#undo_markdown_preview {
 .compose_mobile_private_button i {
     margin-right: 4px;
 }
+// modifications
+.tooltip-inner{
+    max-width: 100px;
+}
 
 @media (max-width: 550px) {
     #compose_buttons .compose_stream_button,

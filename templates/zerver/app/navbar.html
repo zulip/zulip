@@ -40,12 +40,12 @@
                     <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
-                </div>
+                </div>  
                 {% if search_pills_enabled %}
                 <div id="searchbox" class="searchbox-rightmargin">
                     <div id="tab_bar" class="notdisplayed">
                     </div>
-                    <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                    <a id="search-nav-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"><span>Search help</span></i></a>
                     <form id="searchbox_form" class="form-search navbar-search">
                         <div id="search_arrows" class="pill-container input-append">
                             <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
@@ -62,10 +62,10 @@
                     <form id="searchbox_form" class="form-search navbar-search">
                         <div id="search_arrows" class="input-append">
                             <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
+                              autocomplete="off" aria-label="{{ _('Search') }}" />
                             {# Start the button off disabled since there is no active search #}
                             <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                            <a id="search-big-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
                         </div>
                     </form>
                 </div>
@@ -81,9 +81,12 @@
             <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
                 <ul class="nav" role="navigation">
                     <li class="dropdown actual-dropdown-menu" id="gear-menu">
-                        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
+                        <div class="settings-dropdown-menu" id="settings-dropdown">
+                            <span>Menu (g)</span>
+                        <a  href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" >
                             <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
                         </a>
+                    </div>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
                             {#
                             It is quite ingrained in our frontend code that your Home
@@ -208,3 +211,35 @@
         </div>
     </nav>
 </div>
+
+<!-- I have included the CSS snippet here, please let me know the CSS file path -->
+
+<style>
+       div.settings-dropdown-menu span{
+            display: none;
+        }
+        div.settings-dropdown-menu:hover span{
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+            background-color: hsla(0, 0%, 7%, 0.8);
+            padding: 3px 5px;
+            font-size: 11px;
+            line-height: 1.3;
+            opacity: 1;
+            display: block;
+            z-index: 9999;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            left: -70px;
+            margin: 10px;
+            width: 70px;
+            position: absolute;
+            top: 15px;
+            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+            text-decoration: none !important; 
+        }
+
+        
+</style>
