@@ -52,7 +52,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    set_default_streams, do_get_streams,
+    do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -1051,44 +1051,6 @@ class DefaultStreamTest(ZulipTestCase):
         streams = get_default_streams_for_realm(realm.id)
         stream_names = [s.name for s in streams]
         return set(stream_names)
-
-    def get_default_stream_descriptions(self, realm: Realm) -> Set[str]:
-        streams = get_default_streams_for_realm(realm.id)
-        stream_descriptions = [s.description for s in streams]
-        return set(stream_descriptions)
-
-    def test_set_default_streams(self) -> None:
-        realm = do_create_realm("testrealm", "Test Realm")
-        stream_dict = {
-            "apple": {"description": "A red fruit", "invite_only": False},
-            "banana": {"description": "A yellow fruit", "invite_only": False},
-            "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
-        }  # type: Dict[str, Dict[str, Any]]
-        expected_names = list(stream_dict.keys())
-        expected_names.append("general")
-        expected_descriptions = [i["description"] for i in stream_dict.values()] + [""]
-        set_default_streams(realm, stream_dict)
-        stream_names_set = self.get_default_stream_names(realm)
-        stream_descriptions_set = self.get_default_stream_descriptions(realm)
-        self.assertEqual(stream_names_set, set(expected_names))
-        self.assertEqual(stream_descriptions_set, set(expected_descriptions))
-
-    def test_set_default_streams_no_notifications_stream(self) -> None:
-        realm = do_create_realm("testrealm", "Test Realm")
-        realm.notifications_stream = None
-        realm.save(update_fields=["notifications_stream"])
-        stream_dict = {
-            "apple": {"description": "A red fruit", "invite_only": False},
-            "banana": {"description": "A yellow fruit", "invite_only": False},
-            "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
-        }  # type: Dict[str, Dict[str, Any]]
-        expected_names = list(stream_dict.keys())
-        expected_descriptions = [i["description"] for i in stream_dict.values()]
-        set_default_streams(realm, stream_dict)
-        stream_names_set = self.get_default_stream_names(realm)
-        stream_descriptions_set = self.get_default_stream_descriptions(realm)
-        self.assertEqual(stream_names_set, set(expected_names))
-        self.assertEqual(stream_descriptions_set, set(expected_descriptions))
 
     def test_add_and_remove_default_stream(self) -> None:
         realm = get_realm("zulip")
