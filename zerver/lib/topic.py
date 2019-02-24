@@ -225,12 +225,3 @@ def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[s
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
-
-def get_turtle_message(message_ids: List[int]) -> Message:
-    # This is used for onboarding, and it's only extracted
-    # here to make subject -> topic sweeping easier.
-    turtle_message = Message.objects.get(  # nolint
-        id__in=message_ids,
-        subject='topic demonstration',
-        content__icontains='cute/turtle.png')
-    return turtle_message

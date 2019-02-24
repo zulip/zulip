@@ -5,8 +5,7 @@ from zerver.lib.actions import \
     internal_prep_stream_message_by_name, internal_send_private_message, \
     do_send_messages, \
     do_add_reaction_legacy, create_users, missing_any_realm_internal_bots
-from zerver.lib.topic import get_turtle_message
-from zerver.models import Realm, UserProfile, get_system_bot
+from zerver.models import Message, Realm, UserProfile, get_system_bot
 
 from typing import Dict, List
 
@@ -97,5 +96,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     # We find the one of our just-sent messages with turtle.png in it,
     # and react to it.  This is a bit hacky, but works and is kinda a
     # 1-off thing.
-    turtle_message = get_turtle_message(message_ids=message_ids)
+    turtle_message = Message.objects.get(
+        id__in=message_ids,
+        content__icontains='cute/turtle.png')
     do_add_reaction_legacy(welcome_bot, turtle_message, 'turtle')
