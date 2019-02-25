@@ -35,11 +35,6 @@ var HOTSPOT_LOCATIONS = {
         offset_y: 1.2,
         popover: LEFT_BOTTOM,
     },
-    intro_compose: {
-        element: '#left_bar_compose_stream_button_big',
-        offset_x: 0,
-        offset_y: 0,
-    },
 };
 
 // popover illustration url(s)
