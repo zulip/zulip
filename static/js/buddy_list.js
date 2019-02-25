@@ -346,3 +346,7 @@ if (typeof module !== 'undefined') {
 }
 
 window.buddy_list = buddy_list;
+<script>
+    $('#user-presence-right-menu-link').tooltip({placement: 'top',
+    animation: false});
+</script>

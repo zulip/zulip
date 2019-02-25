@@ -1,42 +1,44 @@
-<div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
-  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
-  role="listitem">
-    <div class="unread_marker"><div class="unread-marker-fill"></div></div>
+<div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}" class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
+    role="listitem">
+    <div class="unread_marker">
+        <div class="unread-marker-fill"></div>
+    </div>
     {{#if want_date_divider}}
     <div class="date_row no-select" style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">{{{date_divider_html}}}</div>
     {{/if}}
     <div class="messagebox{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
-      style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
+        style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
         <div class="messagebox-border">
             <div class="messagebox-content">
                 <div class="message_top_line">
                     <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}} no-select">
                         {{#include_sender}}
-                            {{! See ../js/notifications.js for another user of avatar_url. }}
-                            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}" aria-hidden="true">
-                                <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
-                            </div>
-                            {{#if status_message}}
-                                <span class="sender-status">
-                                    <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-                                    {{#if sender_is_bot}}
-                                    <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-                                    {{/if}}
-                                    <span class="status-message auto-select">
-                                        {{{ status_message }}}
-                                    </span>
-                                    {{#if_and last_edit_timestr include_sender}}
-                                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                                        ({{t "EDITED" }})
-                                    </div>
-                                    {{/if_and}}
-                                </span>
-                            {{else}}
-                                <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-                                {{#if sender_is_bot}}
-                                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-                                {{/if}}
+                        {{! See ../js/notifications.js for another user of avatar_url. }}
+                        <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}{{#sender_is_guest}} guest-avatar{{/sender_is_guest}}"
+                            aria-hidden="true">
+                            <img src="{{small_avatar_url}}" alt="" class="no-drag" />
+                        </div>
+                        {{#if status_message}}
+                        <span class="sender-status">
+                            <span class="sender_name-in-status sender_info_hover auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                            {{#if sender_is_bot}}
+                            <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
                             {{/if}}
+                            <span class="status-message auto-select">
+                                {{{ status_message }}}
+                            </span>
+                            {{#if_and last_edit_timestr include_sender}}
+                            <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                                ({{t "EDITED" }})
+                            </div>
+                            {{/if_and}}
+                        </span>
+                        {{else}}
+                        <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+                        {{#if sender_is_bot}}
+                        <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+                        {{/if}}
+                        {{/if}}
                         {{/include_sender}}
                     </span>
                     <span class="alert-msg pull-right"></span>
@@ -47,141 +49,134 @@
                         {{timestr}}
                     </span>
                     {{#if_and last_edit_timestr include_sender}}
-                        {{#unless status_message}}
-                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                            ({{t "EDITED" }})
-                        </div>
-                        {{/unless}}
+                    {{#unless status_message}}
+                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                        ({{t "EDITED" }})
+                    </div>
+                    {{/unless}}
                     {{/if_and}}
                     <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
                         {{#if msg/sent_by_me}}
                         <div class="edit_content"></div>
                         {{else}}
-                        <div
-                        <div class="reaction_button">
-                            <i class="fa fa-smile-o" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"><span>Add emoji reaction (:)</span></i>
+                        <div <div class="reaction_button">
+                            <i class="fa fa-smile-o" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button"
+                                aria-haspopup="true" tabindex="0"><span>Add emoji reaction (:)</span></i>
                         </div>
                         {{/if}}
 
                         {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
-                            <i class="fa fa-chevron-down" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr this}}Message actions{{/tr}}"><span>Message actions (i)</span></i>
+                            <i class="fa fa-chevron-down" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr this}}Message actions{{/tr}}"><span>Message
+                                    actions (i)</span></i>
                         </div>
                         {{/unless}}
 
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-                            <i class="fa fa-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}" aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
-                            <i class="fa fa-times-circle remove-failed-message" aria-hidden="true" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
+                            <i class="fa fa-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"
+                                aria-label="{{t 'Retry' }}" role="button" tabindex="0"></i>
+                            <i class="fa fa-times-circle remove-failed-message" aria-hidden="true" data-toggle="tooltip"
+                                title="{{t 'Cancel' }}"></i>
                         </div>
 
                         {{#unless msg/locally_echoed}}
-                        <div class="star-message star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" >
-                        <span>Star this message (*)</span>
+                        <div class="star-message star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}">
+                            <span>Star this message (*)</span>
                         </div>
                         {{/unless}}
 
                     </div>
                 </div>
-                <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+                <div class="message_content">{{#unless status_message}}{{#if
+                    use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
                 {{#if last_edit_timestr}}
-                    {{#unless include_sender}}
-                    <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
-                        ({{t "EDITED" }})
-                    </div>
-                    {{/unless}}
+                {{#unless include_sender}}
+                <div class="message_edit_notice auto-select" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">
+                    ({{t "EDITED" }})
+                </div>
+                {{/unless}}
                 {{/if}}
                 <div class="message_edit">
                     <div class="message_edit_form"></div>
                 </div>
-                <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
-                <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
+                <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t
+                    "[More...]" }}</div>
+                <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t
+                    "[Condense this message]" }}</div>
                 <div class="message_reactions">{{ partial "message_reactions" }}</div>
             </div>
         </div>
     </div>
-</div> 
-
+</div>
 {{!-- I have included the CSS snippet here, please let me know the CSS file path --}}
-
-    <style>
-        i.fa-smile-o span{
-            display: none;
-        }
-        i.fa-chevron-down span{
-            display: none;
-        }
-        .star-message span{
-            display: none;
-        }
-        i.fa-smile-o:hover span{
-            -webkit-border-radius: 4px;
-            -moz-border-radius: 4px;
-            border-radius: 4px;
-            background-color: hsla(0, 0%, 7%, 0.8);
-            padding: 3px 5px;
-            font-size: 11px;
-            line-height: 1.3;
-            opacity: 1;
-            display: block;
-            z-index: 9999;
-            color: #ffffff;
-            text-align: center;
-            text-decoration: none;
-            left: -60px;
-            margin: 10px;
-            width: 100px;
-            position: absolute;
-            top: 10px;
-            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-            text-decoration: none !important; 
-        }
-
-        
-        
-        i.fa-chevron-down:hover span{
-            -webkit-border-radius: 4px;
-            -moz-border-radius: 4px;
-            border-radius: 4px;
-            background-color: hsla(0, 0%, 7%, 0.8);
-            padding: 3px 5px;
-            font-size: 11px;
-            line-height: 1.3;
-            opacity: 1;
-            display: block;
-            z-index: 9999;
-            color: #ffffff;
-            text-align: center;
-            text-decoration: none;
-            left: -60px;
-            margin: 10px;
-            width: 100px;
-            position: absolute;
-            top: 10px;
-            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-            text-decoration: none !important; 
-        }
-
-        .star-message:hover span{
-             -webkit-border-radius: 4px;
-            -moz-border-radius: 4px;
-            border-radius: 4px;
-            background-color: hsla(0, 0%, 7%, 0.8);
-            padding: 3px 5px;
-            font-size: 11px;
-            line-height: 1.3;
-            opacity: 1;
-            display: block;
-            z-index: 9999;
-            color: #ffffff;
-            text-align: center;
-            text-decoration: none;
-            left: -30px;
-            margin: 10px;
-            width: 100px;
-            position: absolute;
-            top: 10px;
-            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-            text-decoration: none !important; 
-        }
-
-     </style>
+<style>
+    i.fa-smile-o span {
+        display: none;}
+    i.fa-chevron-down span {
+        display: none;}
+    .star-message span {
+        display: none;}
+    i.fa-smile-o:hover span {
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+        font-size: 11px;
+        line-height: 1.3;
+        opacity: 1;
+        display: block;
+        z-index: 9999;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        left: -60px;
+        margin: 10px;
+        width: 100px;
+        position: absolute;
+        top: 10px;
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        text-decoration: none !important;}
+    i.fa-chevron-down:hover span {
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+        font-size: 11px;
+        line-height: 1.3;
+        opacity: 1;
+        display: block;
+        z-index: 9999;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        left: -60px;
+        margin: 10px;
+        width: 100px;
+        position: absolute;
+        top: 10px;
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        text-decoration: none !important;}
+    .star-message:hover span {
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+        font-size: 11px;
+        line-height: 1.3;
+        opacity: 1;
+        display: block;
+        z-index: 9999;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        left: -30px;
+        margin: 10px;
+        width: 100px;
+        position: absolute;
+        top: 10px;
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        text-decoration: none !important;}
+</style>
