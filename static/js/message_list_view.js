@@ -712,7 +712,8 @@ MessageListView.prototype = {
         // entirely, since it appears the next_is_same_sender CSS
         // class doesn't do anything.
         if (message_actions.rerender_messages_next_same_sender.length > 0) {
-            _.each(message_actions.rerender_messages_next_same_sender, function (message_container) {
+            var targets = message_actions.rerender_messages_next_same_sender;
+            _.each(targets, function (message_container) {
                 var row = self.get_row(message_container.msg.id);
                 $(row).find("div.messagebox").toggleClass("next_is_same_sender",
                                                           message_container.next_is_same_sender);
