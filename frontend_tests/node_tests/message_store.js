@@ -184,6 +184,12 @@ run_test('update_booleans', () => {
     assert.equal(message.unread, true);
 });
 
+run_test('each', () => {
+    message_store.each((message) => {
+        assert(message.alerted !== undefined);
+    });
+});
+
 run_test('message_id_change', () => {
     var message = {
         sender_email: 'me@example.com',

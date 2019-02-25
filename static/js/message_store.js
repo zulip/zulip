@@ -7,6 +7,12 @@ exports.get = function get(message_id) {
     return stored_messages[message_id];
 };
 
+exports.each = function (f) {
+    _.each(stored_messages, function (message) {
+        f(message);
+    });
+};
+
 exports.get_pm_emails = function (message) {
 
     function email(user_id) {
