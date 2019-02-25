@@ -191,7 +191,7 @@ function timer_text(seconds_left) {
 
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
-    condense.hide_message_expander(row);
+    condense.start_edit(row);
     const content_top = row.find('.message_top_line')[0]
         .getBoundingClientRect().top;
 
@@ -447,7 +447,6 @@ exports.end = function (row) {
     if (row !== undefined) {
         current_msg_list.hide_edit_topic(row);
     }
-    condense.show_message_expander(row);
     row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js

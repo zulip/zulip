@@ -10,72 +10,161 @@ This library implements two related, similar concepts:
 
 */
 
-const Dict = require('./dict').Dict;
+/*
 
-let _message_content_height_cache = new Dict();
 
-function show_more_link(row) {
+    This modules solves two closely-related problems:
+
+    * Some messages are **too tall**.  They take up
+      two much space on the screen and we want to
+      **condense** them for users.
+
+    * Some messages are **annoying**.  This can be
+      due to spam, mixes, animated gifs, etc., and
+      this can apply to both short and tall messages.
+      We allow users to **collapse** them.
+
+    There are three different states for a message:
+
+        COLLAPSED - show none of the message
+        CONDENSED - show up to N pixels of the message
+        NORMAL - show whole message
+
+    For NORMAL messages that are tall, we show this link:
+
+        [Condense this message]
+
+    For COLLAPSED or CONDENSED messages, we show this link
+
+        [More...]
+
+    We have a hotkey (`-`) that toggles messages:
+
+        Short messages:
+
+            NORMAL -> COLLASED -> repeat cycle
+
+        Tall messages:
+
+            NORMAL -> CONDENSED -> COLLASED -> repeat cycle
+
+    In the message menu, we have two options:
+
+        * Collapse (will either condense or collapse)
+        * Un-collapse (will go back to NORMAL)
+
+    (Todo: we may want to change the wording from "Collapse"
+    to "Condense" when tall messages are displayed normally.)
+
+    The user's view of the world are controlled by these
+    HTML elements:
+
+        .message_content .collapsed -> causes CSS to hide it
+        .message_content .condensed -> causes CSS to set max height
+        .message_condenser -> link for "[Condense this message]"
+        .message_expander -> link for "More..."
+
+    For view stuff we use these three methods:
+
+        show_row_as_collapsed
+        show_row_as_condensed
+        show_row_as_normal
+
+    These are wrapped by bigger methods which update
+    any data elements, as well as updating the row in
+    our "home" view:
+
+        move_to_collapsed_state
+        move_to_condensed_state
+        move_from_collapsed_to_normal_state
+
+    There are three flags on the `message` data object:
+
+        is_tall
+        condensed
+        collapsed
+
+    Note that `collapsed` is a server-side concept.  The
+    other two flags are more transient client-side concepts.
+
+    The `message.is_tall` flag is particularly sensitive to
+    screen dimensions, so we clear it during resize events.
+
+    Finally, the most important method here is the following:
+
+        exports.condense_and_collapse
+
+    This method goes through all message row elements in a
+    particular message list and updates their views.  It also
+    calculates `message.is_tall` on a "lazy" basis.
+*/
+
+
+exports.clear_message_content_height_cache = function () {
+    message_store.each(function (message) {
+        message.is_tall = undefined;
+    });
+};
+
+exports.un_cache_message_content_height = function (message_id) {
+    message_store.get(message_id).is_tall = undefined;
+};
+
+function get_height_cutoff() {
+    const height_cutoff = message_viewport.height() * 0.65;
+    return height_cutoff;
+}
+
+function get_message(row) {
+    const message_id = rows.id(row);
+    return message_store.get(message_id);
+}
+
+exports.start_edit = function (row) {
+    row.find(".message_content").removeClass("condensed");
+    row.find(".message_content").removeClass("collapsed");
+    row.find(".message_condenser").hide();
+    row.find(".message_expander").hide();
+};
+
+function show_row_as_collapsed(row) {
+    row.find(".message_content").removeClass("condensed");
+    row.find(".message_content").addClass("collapsed");
     row.find(".message_condenser").hide();
     row.find(".message_expander").show();
 }
 
-function show_condense_link(row) {
+function show_row_as_condensed(row) {
+    row.find(".message_content").addClass("condensed");
+    row.find(".message_content").removeClass("collapsed");
+    row.find(".message_condenser").hide();
+    row.find(".message_expander").show();
+}
+
+function show_row_as_normal(row) {
+    row.find(".message_content").removeClass("condensed");
+    row.find(".message_content").removeClass("collapsed");
     row.find(".message_expander").hide();
-    row.find(".message_condenser").show();
+
+    const message = get_message(row);
+    row.find(".message_condenser").toggle(message.is_tall);
 }
 
-function condense_row(row) {
-    const content = row.find(".message_content");
-    content.addClass("condensed");
-    show_more_link(row);
+function get_home_row(row) {
+    return home_msg_list.get_row(rows.id(row));
 }
 
-function uncondense_row(row) {
-    const content = row.find(".message_content");
-    content.removeClass("condensed");
-    show_condense_link(row);
-}
+exports.move_to_condensed_state = function (row) {
+    const message = get_message(row);
 
-exports.uncollapse = function (row) {
-    // Uncollapse a message, restoring the condensed message [More] or
-    // [Condense] link if necessary.
-    const message = current_msg_list.get(rows.id(row));
-    message.collapsed = false;
-    message_flags.save_uncollapsed(message);
+    message.condensed = true;
 
-    const process_row = function process_row(row) {
-        const content = row.find(".message_content");
-        content.removeClass("collapsed");
-
-        if (message.condensed === true) {
-            // This message was condensed by the user, so re-show the
-            // [More] link.
-            condense_row(row);
-        } else if (message.condensed === false) {
-            // This message was un-condensed by the user, so re-show the
-            // [Condense] link.
-            uncondense_row(row);
-        } else if (content.hasClass("could-be-condensed")) {
-            // By default, condense a long message.
-            condense_row(row);
-        } else {
-            // This was a short message, no more need for a [More] link.
-            row.find(".message_expander").hide();
-        }
-    };
-
-    // We also need to collapse this message in the home view
-    const home_row = home_msg_list.get_row(rows.id(row));
-
-    process_row(row);
-    process_row(home_row);
+    show_row_as_condensed(row);
+    show_row_as_condensed(get_home_row(row));
 };
 
-exports.collapse = function (row) {
-    // Collapse a message, hiding the condensed message [More] or
-    // [Condense] link if necessary.
-    const message = current_msg_list.get(rows.id(row));
-    message.collapsed = true;
+exports.move_to_collapsed_state = function (row) {
+    const message = get_message(row);
 
     if (message.locally_echoed) {
         // Trying to collapse a locally echoed message is
@@ -85,18 +174,26 @@ exports.collapse = function (row) {
         return;
     }
 
+    message.collapsed = true;
     message_flags.save_collapsed(message);
 
-    const process_row = function process_row(row) {
-        row.find(".message_content").addClass("collapsed");
-        show_more_link(row);
-    };
+    show_row_as_collapsed(row);
+    show_row_as_collapsed(get_home_row(row));
+};
 
-    // We also need to collapse this message in the home view
-    const home_row = home_msg_list.get_row(rows.id(row));
+exports.move_from_collapsed_to_normal_state = function (row) {
+    const message = get_message(row);
 
-    process_row(row);
-    process_row(home_row);
+    if (message.locally_echoed) {
+        return;
+    }
+
+    message.collapsed = false;
+    message.condensed = false;
+    message_flags.save_uncollapsed(message);
+
+    show_row_as_normal(row);
+    show_row_as_normal(get_home_row(row));
 };
 
 exports.toggle_collapse = function (message) {
@@ -120,125 +217,82 @@ exports.toggle_collapse = function (message) {
         return;
     }
 
-    const content = row.find(".message_content");
-    const is_condensable = content.hasClass("could-be-condensed");
-    const is_condensed = content.hasClass("condensed");
+    // We always try to make the message smaller, unless
+    // we are completely collased--and then we go back
+    // to the tallest, aka normal, state.
     if (message.collapsed) {
-        if (is_condensable) {
-            message.condensed = true;
-            content.addClass("condensed");
-            exports.show_message_expander(row);
-            row.find(".message_condenser").hide();
-        }
-        exports.uncollapse(row);
-    } else {
-        if (is_condensed) {
-            message.condensed = false;
-            content.removeClass("condensed");
-            exports.hide_message_expander(row);
-            row.find(".message_condenser").show();
-        } else {
-            exports.collapse(row);
-        }
-    }
-};
-
-exports.clear_message_content_height_cache = function () {
-    _message_content_height_cache = new Dict();
-};
-
-exports.un_cache_message_content_height = function (message_id) {
-    _message_content_height_cache.del(message_id);
-};
-
-function get_message_height(elem, message_id) {
-    if (_message_content_height_cache.has(message_id)) {
-        return _message_content_height_cache.get(message_id);
+        exports.move_from_collapsed_to_normal_state(row);
+        return;
     }
 
-    // shown to be ~2.5x faster than Node.getBoundingClientRect().
-    const height = elem.offsetHeight;
-    _message_content_height_cache.set(message_id, height);
-    return height;
-}
-
-exports.hide_message_expander = function (row) {
-    if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_expander").hide();
+    if (message.condensed) {
+        exports.move_to_collapsed_state(row);
+        return;
     }
-};
 
-exports.show_message_expander = function (row) {
-    if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_expander").show();
+    if (message.is_tall) {
+        exports.move_to_condensed_state(row);
+        return;
     }
+
+    // Short messages go straight to collapsed state.
+    exports.move_to_collapsed_state(row);
 };
 
 exports.condense_and_collapse = function (elems) {
-    const height_cutoff = message_viewport.height() * 0.65;
+    const height_cutoff = get_height_cutoff();
 
     _.each(elems, function (elem) {
-        const content = $(elem).find(".message_content");
-        const message = current_msg_list.get(rows.id($(elem)));
-        if (content !== undefined && message !== undefined) {
-            const message_height = get_message_height(elem, message.id);
-            const long_message = message_height > height_cutoff;
-            if (long_message) {
-                // All long messages are flagged as such.
-                content.addClass("could-be-condensed");
-            } else {
-                content.removeClass("could-be-condensed");
-            }
-
-            // If message.condensed is defined, then the user has manually
-            // specified whether this message should be expanded or condensed.
-            if (message.condensed === true) {
-                condense_row($(elem));
-                return;
-            } else if (message.condensed === false) {
-                uncondense_row($(elem));
-                return;
-            } else if (long_message) {
-                // By default, condense a long message.
-                condense_row($(elem));
-            } else {
-                content.removeClass('condensed');
-                $(elem).find(".message_expander").hide();
-            }
-
-            // Completely hide the message and replace it with a [More]
-            // link if the user has collapsed it.
-            if (message.collapsed) {
-                content.addClass("collapsed");
-                $(elem).find(".message_expander").show();
-            }
-        }
+        exports._redraw_elem(elem, height_cutoff);
     });
+};
+
+exports._redraw_elem = function (elem, height_cutoff) {
+    const row = $(elem);
+    const message = get_message(row);
+    if (message === undefined) {
+        return;
+    }
+
+    if (message.condensed) {
+        show_row_as_condensed(row);
+        return;
+    }
+
+    if (message.collapsed) {
+        show_row_as_collapsed(row);
+        return;
+    }
+
+    if (message.is_tall === undefined) {
+        if (elem.offsetHeight === 0) {
+            // If our callers are feeding us rows from some
+            // hidden view, it's just wasteful.
+            blueslip.warn('We are trying to redraw zero-size rows.');
+            return;
+        }
+
+        message.is_tall = elem.offsetHeight > height_cutoff;
+
+        if (message.is_tall) {
+            message.condensed = true;
+            show_row_as_condensed(row);
+            return;
+        }
+    }
+
+    show_row_as_normal(row);
 };
 
 exports.initialize = function () {
     $("#home").on("click", ".message_expander", function () {
-        // Expanding a message can mean either uncollapsing or
-        // uncondensing it.
         const row = $(this).closest(".message_row");
-        const message = current_msg_list.get(rows.id(row));
-        const content = row.find(".message_content");
-        if (message.collapsed) {
-            // Uncollapse.
-            exports.uncollapse(row);
-        } else if (content.hasClass("condensed")) {
-            // Uncondense (show the full long message).
-            message.condensed = false;
-            content.removeClass("condensed");
-            $(this).hide();
-            row.find(".message_condenser").show();
-        }
+        exports.move_from_collapsed_to_normal_state(row);
     });
 
     $("#home").on("click", ".message_condenser", function () {
         const row = $(this).closest(".message_row");
-        current_msg_list.get(rows.id(row)).condensed = true;
-        condense_row(row);
+        exports.move_to_condensed_state(row);
     });
 };
 

@@ -982,12 +982,8 @@ exports.register_click_handlers = function () {
 
         exports.hide_actions_popover();
 
-        if (row) {
-            if (message.collapsed) {
-                condense.uncollapse(row);
-            } else {
-                condense.collapse(row);
-            }
+        if (message) {
+            condense.toggle_collapse(message);
         }
 
         e.stopPropagation();
