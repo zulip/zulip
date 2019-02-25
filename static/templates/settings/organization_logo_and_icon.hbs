@@ -1,0 +1,17 @@
+<div id = "realm-{{#if night_mode}}night-{{/if}}{{ type }}-section" class="upload-realm-widget-section">
+    <div class="{{ class }}">
+        <img class="realm-settings-widget" src="{{{ source }}}"/>
+        <input type="file" name="settings_file_input" class="notvisible file_input"
+          value="{{t 'Upload' }} {{ type }}"/>
+    </div>
+    {{#if (or plan_includes_wide_organization_logo (eq type "icon"))}}
+    <div class="inline-block avatar-controls">
+        <div class="file_input_error"></div>
+        <button class="button rounded sea-green w-200 block input-size upload-button">
+            <span class="upload-button-text">{{t 'Upload new' }} {{ type }}</span>
+            <span class="upload-spinner"></span>
+        </button>
+        <button class="button rounded btn-danger w-200 m-t-10 block input-size delete-button">{{t 'Delete' }} {{ type }}</button>
+    </div>
+    {{/if}}
+</div>

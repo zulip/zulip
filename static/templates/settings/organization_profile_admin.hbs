@@ -27,24 +27,13 @@
             </div>
         </div>
 
-        <div>{{t "Organization profile picture" }}</div>
-        <div class="realm-icon-section">
-            <div class="inline-block">
-                <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
-                <input type="file" name="realm_icon_file_input" class="notvisible"
-                  id="realm_icon_file_input" value="{{t 'Upload profile picture' }}"/>
-            </div>
-            <div class="inline-block avatar-controls">
-                <div id="realm_icon_file_input_error" class="alert text-error"></div>
-                <button class="button rounded sea-green w-200 block input-size"
-                  id="realm_icon_upload_button">
-                    <span id="upload_icon_button_text">{{t 'Upload new profile picture' }}</span>
-                    <span id="upload_icon_spinner"></span>
-                </button>
-                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
-                  id="realm_icon_delete_button">{{t 'Delete profile picture' }}</button>
-            </div>
-        </div>
+        <div>{{t "Organization avatar" }}</div>
+
+        {{> organization_logo_and_icon
+          class="inline-block"
+          type="icon"
+          source=realm_icon_url}}
+
         <a href="/login/?preview=true" target="_blank" class="button rounded sea-green w-200 block" id="id_org_profile_preview">
             {{t 'Preview organization profile' }}
             <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview organization profile' }}"></i>
@@ -66,46 +55,19 @@
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
-        <div class="realm-logo-section">
-            <div class="inline-block realm-logo-block">
-                <img id="realm-settings-logo" src="{{ realm_logo_url }}"/>
-                <input type="file" name="realm_logo_file_input" class="notvisible"
-                  id="realm_logo_file_input" value="{{t 'Upload logo' }}"/>
-            </div>
-            <div class="inline-block avatar-controls">
-                <div id="realm_logo_file_input_error" class="alert text-error"></div>
-                {{#if plan_includes_wide_organization_logo}}
-                <button class="button rounded sea-green w-200 block input-size"
-                  id="realm_logo_upload_button">
-                    <span id="upload_logo_button_text">{{t 'Upload new logo' }}</span>
-                    <span id="upload_logo_spinner"></span>
-                </button>
-                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
-                  id="realm_logo_delete_button">{{t 'Delete logo' }}</button>
-                {{/if}}
-            </div>
-        </div>
+
+        {{> organization_logo_and_icon
+          class="inline-block realm-logo-block"
+          type="logo"
+          source=realm_logo_url}}
 
         <p>{{t "A wide logo for night mode. Logo will be shown against a dark background." }}</p>
-        <div class="realm-logo-section realm-night-logo-section">
-            <div class="inline-block realm-logo-block">
-                <img id="realm-settings-night-logo" src="{{ realm_night_logo_url }}">
-                <input type="file" name="realm_night_logo_file_input" class="notvisible"
-                  id="realm_night_logo_file_input" value="{{t 'Upload logo' }}"/>
-            </div>
-            <div class="inline-block avatar-controls">
-                <div id="realm_night_logo_file_input_error" class="alert text-error"></div>
-                {{#if plan_includes_wide_organization_logo}}
-                <button class="button rounded sea-green w-200 block input-size"
-                  id="realm_night_logo_upload_button">
-                    <span id="upload_night_logo_button_text">{{t 'Upload new logo' }}</span>
-                    <span id="upload_night_logo_spinner"></span>
-                </button>
-                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
-                  id="realm_night_logo_delete_button">{{t 'Delete logo' }}</button>
-                {{/if}}
-            </div>
-        </div>
+
+        {{> organization_logo_and_icon
+          class="inline-block realm-logo-block"
+          night_mode=true
+          type="logo"
+          source= realm_night_logo_url}}
 
         <h3 class="light">{{t "Deactivate organization" }}</h3>
         <div class="deactivate-realm-section">
