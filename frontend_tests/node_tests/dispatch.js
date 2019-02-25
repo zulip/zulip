@@ -741,7 +741,7 @@ with_overrides(function (override) {
     var event = event_fixtures.user_group__add;
     override('settings_user_groups.reload', noop);
     global.with_stub(function (stub) {
-        override('user_groups.add', stub.f);
+        override('user_groups.add_in_realm', stub.f);
         dispatch(event);
         var args = stub.get_args('group');
         assert_same(args.group, event.group);
