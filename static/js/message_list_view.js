@@ -388,7 +388,7 @@ MessageListView.prototype = {
             prepend_groups: [],
             rerender_groups: [],
             append_messages: [],
-            rerender_messages: [],
+            rerender_messages_next_same_sender: [],
         };
         var first_group;
         var second_group;
@@ -447,7 +447,7 @@ MessageListView.prototype = {
         } else {
             if (was_joined) {
                 // rerender the last message
-                message_actions.rerender_messages.push(prev_msg_container);
+                message_actions.rerender_messages_next_same_sender.push(prev_msg_container);
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {
@@ -704,15 +704,18 @@ MessageListView.prototype = {
             });
         }
 
-        // Rerender message rows
-        if (message_actions.rerender_messages.length > 0) {
-            _.each(message_actions.rerender_messages, function (message_container) {
-                var old_row = self.get_row(message_container.msg.id);
-                var row = $(self._get_message_template(message_container));
-                self._post_process(row);
-                old_row.replaceWith(row);
-                condense.condense_and_collapse(row);
-                list.reselect_selected_id();
+        // Update the rendering for message rows which used to be last
+        // and now know whether the following message has the same
+        // sender.
+        //
+        // It is likely the case that we can just remove the block
+        // entirely, since it appears the next_is_same_sender CSS
+        // class doesn't do anything.
+        if (message_actions.rerender_messages_next_same_sender.length > 0) {
+            _.each(message_actions.rerender_messages_next_same_sender, function (message_container) {
+                var row = self.get_row(message_container.msg.id);
+                $(row).find("div.messagebox").toggleClass("next_is_same_sender",
+                                                          message_container.next_is_same_sender);
             });
         }
 

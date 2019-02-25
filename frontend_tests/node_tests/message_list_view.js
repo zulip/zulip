@@ -126,7 +126,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_append_message_same_subject() {
@@ -151,7 +151,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
-        assert_message_list_equal(result.rerender_messages, [message1]);
+        assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
     }());
 
     (function test_append_message_different_subject() {
@@ -177,7 +177,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_append_message_different_subject_and_days() {
@@ -203,7 +203,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
         assert.equal(
             message_group2.group_date_divider_html,
             '900000000 - 1000000');
@@ -229,7 +229,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, [message2]);
-        assert.deepEqual(result.rerender_messages, [message1]);
+        assert.deepEqual(result.rerender_messages_next_same_sender, [message1]);
         assert(list._message_groups[0].message_containers[1].want_date_divider);
     }());
 
@@ -256,7 +256,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_append_message_same_subject_me_message() {
@@ -282,7 +282,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert_message_list_equal(result.append_messages, [message2]);
-        assert_message_list_equal(result.rerender_messages, [message1]);
+        assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
     }());
 
 
@@ -309,7 +309,7 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(result.rerender_groups,
                                          [build_message_group([message2, message1])]);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_prepend_message_different_subject() {
@@ -334,7 +334,7 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_prepend_message_different_subject_and_day() {
@@ -364,7 +364,7 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert.deepEqual(result.rerender_groups, [message_group1]);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_prepend_message_different_day() {
@@ -393,7 +393,7 @@ run_test('merge_message_groups', () => {
         assert.deepEqual(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, [message_group2]);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
     (function test_prepend_message_historical() {
@@ -419,12 +419,12 @@ run_test('merge_message_groups', () => {
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
-        assert.deepEqual(result.rerender_messages, []);
+        assert.deepEqual(result.rerender_messages_next_same_sender, []);
     }());
 
 });
 
-// TODO: Add a test suite for rerender_messages() that includes cases
+// TODO: Add a test suite for rerender_messages_next_same_sender() that includes cases
 // where new messages added via local echo have a different date from
 // the older messages.
 
