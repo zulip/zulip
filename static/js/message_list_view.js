@@ -1147,6 +1147,9 @@ MessageListView.prototype = {
         this._post_process(rendered_msg);
         row.replaceWith(rendered_msg);
 
+        row = this.get_row(message_container.msg.id);
+        condense.condense_and_collapse(row);
+
         if (was_selected) {
             this.list.select_id(message_container.msg.id);
         }
