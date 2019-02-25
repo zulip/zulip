@@ -352,6 +352,9 @@ def get_client_descriptor(queue_id: str) -> ClientDescriptor:
     return clients.get(queue_id)
 
 def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescriptor]:
+    print('inside get_client_descriptors_for_user')
+    print('user_profile_id', user_profile_id)
+    print('user_clients', user_clients)
     return user_clients.get(user_profile_id, [])
 
 def get_client_descriptors_for_realm_all_streams(realm_id: int) -> List[ClientDescriptor]:
@@ -872,6 +875,8 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
 
 def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     for user_profile_id in users:
+        print('in process_event for loop')
+        print('user_profile_id', user_profile_id)
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(event):
                 client.add_event(dict(event))
@@ -988,6 +993,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     elif event['type'] == "delete_message":
         process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
     else:
+        print('inside process_notification')
+        print('users', users)
         process_event(event, cast(Iterable[int], users))
     logging.debug("Tornado: Event %s for %s users took %sms" % (
         event['type'], len(users), int(1000 * (time.time() - start_time))))
