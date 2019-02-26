@@ -1,8 +1,9 @@
 <li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
     <div class="selectable_sidebar_block">
         <span class="{{user_circle_class}} user_circle"></span>
-        <a class="user-presence-link" id="user-presence-right-menu-link" href="{{href}}" data-user-id="{{user_id}}" data-name="{{name}}" data-toggle="tooltip" data-title="{{title}}">  
-          {{name}}
+        <a class="user-presence-link" id="user-presence-right-menu-link" href="{{href}}" data-user-id="{{user_id}}"
+            data-name="{{name}}" data-toggle="tooltip" data-title="{{title}}">
+            {{name}}
             {{#if my_user_status}}
             <span class="my_user_status">{{my_user_status}}</span>
             {{/if}}

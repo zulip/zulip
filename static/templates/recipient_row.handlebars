@@ -3,16 +3,14 @@
     <div class="message-header-wrapper">
         <div class="message-header-contents">
             {{! stream link }}
-            <a class="message_label_clickable narrows_by_recipient stream_label {{color_class}}"
-            
-                style="background: {{background_color}}; border-left-color: {{background_color}};"
-                href="{{stream_url}}"
-                title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;{{/tr}}">
+            <a class="message_label_clickable narrows_by_recipient stream_label {{color_class}}" style="background: {{background_color}}; border-left-color: {{background_color}};"
+                href="{{stream_url}}" title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;{{/tr}}">
                 {{! invite only lock }}
                 {{#if invite_only}}
-              
-                <i class="fa fa-lock invite-stream-icon"id="msg-clc"
-            data-toggle="tooltip" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}">  <span>{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;{{/tr}}</span></i>
+
+                <i class="fa fa-lock invite-stream-icon" id="msg-clc" data-toggle="tooltip" title="{{t 'This is a private stream' }}"
+                    aria-label="{{t 'This is a private stream' }}"> <span>{{#tr this}}Narrow to stream
+                        &quot;__display_recipient__&quot;{{/tr}}</span></i>
                 {{/if}}
                 {{display_recipient}}
             </a>
@@ -23,12 +21,8 @@
             {{! topic stuff }}
             <span class="stream_topic">
                 {{! topic link }}
-                <a class="message_label_clickable narrows_by_topic"
-                id="message-label-clickable"
-                    data-toggle="tooltip"
-
-                    href="{{topic_url}}"
-                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;{{/tr}}">
+                <a class="message_label_clickable narrows_by_topic" id="message-label-clickable" data-toggle="tooltip"
+                    href="{{topic_url}}" title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;{{/tr}}">
                     {{#if use_match_properties}}
                     {{{match_topic}}}
                     {{else}}
@@ -46,18 +40,21 @@
 
                 {{! edit topic pencil icon }}
                 {{#if always_visible_topic_edit}}
-                    <i class="fa fa-pencil always_visible_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
+                <i class="fa fa-pencil always_visible_topic_edit" {{#unless realm_allow_message_editing}} style="display: none"
+                    {{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
                 {{else}}
-                    {{#if on_hover_topic_edit}}
-                    <i class="fa fa-pencil on_hover_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
-                    {{/if}}
+                {{#if on_hover_topic_edit}}
+                <i class="fa fa-pencil on_hover_topic_edit" {{#unless realm_allow_message_editing}} style="display: none"
+                    {{/unless}} role="button" tabindex="0" aria-label="{{t 'Edit' }}"></i>
+                {{/if}}
                 {{/if}}
 
                 <span class="topic_edit">
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
 
-                <i class="fa fa-eye-slash on_hover_topic_mute" id="eye-slash" data-toggle="tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
+                <i class="fa fa-eye-slash on_hover_topic_mute" id="eye-slash" data-toggle="tooltip" data-stream-id="{{stream_id}}"
+                    data-topic-name="{{topic}}" title="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }} (M)"></i>
                 <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
             </span>
         </div>
@@ -67,9 +64,7 @@
 <div class="message_header message_header_private_message dark_background">
     <div class="message-header-wrapper">
         <div class="message-header-contents">
-            <a class="message_label_clickable narrows_by_recipient stream_label"
-                href="{{pm_with_url}}"
-                title="{{#tr this}}Narrow to your private messages with __display_reply_to__{{/tr}}">
+            <a class="message_label_clickable narrows_by_recipient stream_label" href="{{pm_with_url}}" title="{{#tr this}}Narrow to your private messages with __display_reply_to__{{/tr}}">
                 {{#tr this}}You and __display_reply_to__{{/tr}}
             </a>
 
@@ -78,12 +73,16 @@
     </div>
 </div>
 {{/if}}
-{{!-- I have included the JS snippet here, please let me know the JS file path --}}
+{{!-- I have included the JS snippet here, please let me know the JS file path
 
 <script>
- $('#msg-clc').tooltip({placement: 'bottom',
-    animation: false})
-$('#eye-slash').tooltip({placement: 'bottom',
-    animation: false});
+    $('#msg-clc').tooltip({
+        placement: 'bottom',
+        animation: false
+    })
+    $('#eye-slash').tooltip({
+        placement: 'bottom',
+        animation: false
+    });
 
-</script>
+</script> --}}

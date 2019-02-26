@@ -31,29 +31,33 @@
     <nav class="header-main rightside-userlist" id="top_navbar">
         <div class="column-left">
             <a class="brand no-style" href="#">
-                <img id="realm-logo" src="{% if night_mode %} {{ realm_night_logo }}{% else %} {{ realm_logo }} {% endif %}" alt="" class="nav-logo no-drag"/>
+                <img id="realm-logo" src="{% if night_mode %} {{ realm_night_logo }}{% else %} {{ realm_logo }} {% endif %}"
+                    alt="" class="nav-logo no-drag" />
             </a>
         </div>
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
-                <div id="streamlist-toggle" title="{{ _('Stream list') }} (q)" {%if embedded %} style="visibility: hidden"{% endif %}>
+                <div id="streamlist-toggle" title="{{ _('Stream list') }} (q)" {%if embedded %} style="visibility: hidden"
+                    {% endif %}>
                     <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
-                    </a>
-                </div>  
-                {% if search_pills_enabled %}
+                    </a></div> {% if search_pills_enabled %}
                 <div id="searchbox" class="searchbox-rightmargin">
                     <div id="tab_bar" class="notdisplayed">
                     </div>
-                    <a id="search-nav-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"><span>Search help</span></i></a>
+                    <a id="search-nav-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"
+                        data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"><span>Search
+                                help</span></i></a>
                     <form id="searchbox_form" class="form-search navbar-search">
                         <div id="search_arrows" class="pill-container input-append">
-                            <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"> </div>
+                            <div contenteditable="true" class="input search-query input-block-level" id="search_query"
+                                type="text" placeholder="{{ _('Search') }}" autocomplete="off" aria-label="{{ _('Search') }}"
+                                title="{{ _('Search') }} (/)"> </div>
                         </div>
                     </form>
                     {# Start the button off disabled since there is no active search #}
-                    <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                    <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i
+                            class="fa fa-remove" aria-hidden="true"></i></button>
                 </div>
                 {% else %}
                 <div id="searchbox_legacy" class="searchbox-rightmargin">
@@ -62,10 +66,13 @@
                     <form id="searchbox_form" class="form-search navbar-search">
                         <div id="search_arrows" class="input-append">
                             <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                              autocomplete="off" aria-label="{{ _('Search') }}" />
+                                autocomplete="off" aria-label="{{ _('Search') }}" />
                             {# Start the button off disabled since there is no active search #}
-                            <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            <a id="search-big-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                            <button class="btn search_button" type="button" id="search_exit" disabled="disabled"
+                                aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                            <a id="search-big-icon" class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"
+                                data-toggle="tooltip" title="{{ _('Search help') }}"><i class="fa fa-search"
+                                    aria-hidden="true"></i></a>
                         </div>
                     </form>
                 </div>
@@ -78,15 +85,16 @@
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
-            <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
+            <div id="navbar-buttons" {%if embedded %} style="visibility: hidden" {% endif %}>
                 <ul class="nav" role="navigation">
                     <li class="dropdown actual-dropdown-menu" id="gear-menu">
                         <div class="settings-dropdown-menu" id="settings-dropdown">
                             <span>Menu (g)</span>
-                        <a  href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" >
-                            <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
-                        </a>
-                    </div>
+                            <a href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown">
+                                <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret"
+                                    aria-hidden="true"></i>
+                            </a>
+                        </div>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
                             {#
                             It is quite ingrained in our frontend code that your Home
@@ -118,7 +126,8 @@
                             </li>
                             <li role="presentation">
                                 <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
-                                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{ _('Keyboard shortcuts') }} <span class="hotkey-hint">(?)</span>
+                                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{ _('Keyboard shortcuts') }}
+                                    <span class="hotkey-hint">(?)</span>
                                 </a>
                             </li>
                             <li role="presentation">
@@ -186,7 +195,8 @@
                             <li class="divider" role="presentation"></li>
                             {% endif %}
                             {% if show_webathena %}
-                            <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu" role="presentation">
+                            <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}"
+                                id="webathena_login_menu" role="presentation">
                                 <a href="#webathena" class="webathena_login" role="menuitem">
                                     <i class="fa fa-bolt" aria-hidden="true"></i>{{ _('Link with Webathena') }}
                                 </a>
@@ -215,31 +225,30 @@
 <!-- I have included the CSS snippet here, please let me know the CSS file path -->
 
 <style>
-       div.settings-dropdown-menu span{
-            display: none;
-        }
-        div.settings-dropdown-menu:hover span{
-            -webkit-border-radius: 4px;
-            -moz-border-radius: 4px;
-            border-radius: 4px;
-            background-color: hsla(0, 0%, 7%, 0.8);
-            padding: 3px 5px;
-            font-size: 11px;
-            line-height: 1.3;
-            opacity: 1;
-            display: block;
-            z-index: 9999;
-            color: #ffffff;
-            text-align: center;
-            text-decoration: none;
-            left: -70px;
-            margin: 10px;
-            width: 70px;
-            position: absolute;
-            top: 15px;
-            font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-            text-decoration: none !important; 
-        }
+    div.settings-dropdown-menu span {
+        display: none;
+    }
 
-        
+    div.settings-dropdown-menu:hover span {
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        background-color: hsla(0, 0%, 7%, 0.8);
+        padding: 3px 5px;
+        font-size: 11px;
+        line-height: 1.3;
+        opacity: 1;
+        display: block;
+        z-index: 9999;
+        color: #ffffff;
+        text-align: center;
+        text-decoration: none;
+        left: -70px;
+        margin: 10px;
+        width: 70px;
+        position: absolute;
+        top: 15px;
+        font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+        text-decoration: none !important;
+    }
 </style>
