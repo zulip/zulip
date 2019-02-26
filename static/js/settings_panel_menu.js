@@ -73,7 +73,7 @@ exports.make_menu = function (opts) {
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
-        ui.update_scrollbar($("#settings_content"));
+        ui.reset_scrollbar($("#settings_content"));
 
         settings_sections.load_settings_section(section);
 
