@@ -233,7 +233,7 @@ from the SSH session.
 [mypy-docs]: ../testing/mypy.html
 [requirements-readme]: https://github.com/zulip/zulip/blob/master/requirements/README.md
 [stack-overflow]: https://askubuntu.com/questions/8653/how-to-keep-processes-running-after-ending-ssh-session
-[caching]: https://help.github.com/articles/caching-your-github-password-in-git/
+[caching]: https://help.github.com/en/articles/caching-your-github-password-in-git
 
 ## JavaScript and other frontend packages
 

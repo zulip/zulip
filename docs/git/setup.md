@@ -63,5 +63,5 @@ And, if none of the above are to your liking, try [one of these][gitbook-guis].
 [gitgui-gitk]: https://git-scm.com/docs/gitk
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/
 [gitgui-sourcetree]: https://www.sourcetreeapp.com/
-[github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
+[github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
 [tig]: http://jonas.nitro.dk/tig/

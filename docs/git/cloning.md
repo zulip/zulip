@@ -143,10 +143,10 @@ Zulip.
 ![Screencast of Travis CI setup](../_static/zulip-travisci.gif)
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
-[github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
-[github-help-conf-remote]: https://help.github.com/articles/configuring-a-remote-for-a-fork/
-[github-help-fork]: https://help.github.com/articles/fork-a-repo/
-[github-help-sync-fork]: https://help.github.com/articles/syncing-a-fork/
+[github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
+[github-help-conf-remote]: https://help.github.com/en/articles/configuring-a-remote-for-a-fork
+[github-help-fork]: https://help.github.com/en/articles/fork-a-repo
+[github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [travis-ci]: https://travis-ci.org/
