@@ -732,7 +732,7 @@ MessageListView.prototype = {
             // added in a rerenderd in the group below
             table.find('.recipient_row').first().prev('.date_row').remove();
             table.prepend(rendered_groups);
-            condense.condense_and_collapse(dom_messages);
+            self.adjust_heights(dom_messages);
         }
 
         // Rerender message groups
@@ -755,7 +755,7 @@ MessageListView.prototype = {
 
                 self._post_process(dom_messages);
                 old_message_group.replaceWith(rendered_groups);
-                condense.condense_and_collapse(dom_messages);
+                self.adjust_heights(dom_messages);
             });
         }
 
@@ -786,7 +786,7 @@ MessageListView.prototype = {
             self._post_process(dom_messages);
             last_group_row.append(dom_messages);
 
-            condense.condense_and_collapse(dom_messages);
+            self.adjust_heights(dom_messages);
             new_dom_elements = new_dom_elements.concat(dom_messages);
         }
 
@@ -821,7 +821,7 @@ MessageListView.prototype = {
             message_viewport.scrollTop();
 
             table.append(rendered_groups);
-            condense.condense_and_collapse(dom_messages);
+            self.adjust_heights(dom_messages);
         }
 
         restore_scroll_position();
@@ -1362,6 +1362,16 @@ MessageListView.prototype = {
             message_container.include_sender = true;
         } else {
             message_container.status_message = false;
+        }
+    },
+
+    adjust_heights: function (rows) {
+        /* Don't try to condense/collapse messages for
+           the non-current view.  Without actual heights
+           it just leads to problems.
+        */
+        if (this.list === current_msg_list) {
+            condense.condense_and_collapse(rows);
         }
     },
 };

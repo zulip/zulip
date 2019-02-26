@@ -33,6 +33,10 @@ exports.prev_visible = function (message_row) {
     return $('.selectable_row', prev_recipient_rows[0]).last();
 };
 
+exports.all_visible_rows = function () {
+    return $('.focused_table .message_row');
+};
+
 exports.first_visible = function () {
     return $('.focused_table .selectable_row').first();
 };

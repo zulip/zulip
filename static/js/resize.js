@@ -262,7 +262,7 @@ exports.handler = function () {
     exports.resize_page_components();
 
     // Re-compute and display/remove [More] links to messages
-    condense.condense_and_collapse($("div.message_row"));
+    condense.condense_and_collapse(rows.all_visible_rows());
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
