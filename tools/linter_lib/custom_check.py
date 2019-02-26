@@ -480,9 +480,6 @@ def build_custom_checkers(by_lang):
          'include_only': set(['scripts/']),
          'exclude': set(['scripts/lib/setup_venv.py']),
          'exclude_line': set([
-             ('scripts/lib/zulip_tools.py', '# We need sudo here, since the path will be under /srv/ in the'),
-             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "/bin/bash", "-c",'),
-             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "rm", "-rf", directory])'),
              ('scripts/lib/zulip_tools.py', 'sudo_args = kwargs.pop(\'sudo_args\', [])'),
              ('scripts/lib/zulip_tools.py', 'args = [\'sudo\'] + sudo_args + [\'--\'] + args'),
          ]),
