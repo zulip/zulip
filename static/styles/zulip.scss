@@ -1269,13 +1269,13 @@ div.focused_table {
     text-align: right;
 }
 
-.message_content.condensed {
+.messagebox-content.condensed .message_content {
     max-height: 8.5em;
     min-height: 0em;
     overflow: hidden;
 }
 
-.message_content.collapsed {
+.messagebox-content.collapsed .message_content {
     max-height: 0em;
     min-height: 0em;
     overflow: hidden;

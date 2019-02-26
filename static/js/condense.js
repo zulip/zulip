@@ -59,8 +59,8 @@ This library implements two related, similar concepts:
     The user's view of the world are controlled by these
     HTML elements:
 
-        .message_content .collapsed -> causes CSS to hide it
-        .message_content .condensed -> causes CSS to set max height
+        .messagebox-content .collapsed -> causes CSS to hide it
+        .messagebox-content .condensed -> causes CSS to set max height
         .message_condenser -> link for "[Condense this message]"
         .message_expander -> link for "More..."
 
@@ -121,29 +121,29 @@ function get_message(row) {
 }
 
 exports.start_edit = function (row) {
-    row.find(".message_content").removeClass("condensed");
-    row.find(".message_content").removeClass("collapsed");
+    row.find(".messagebox-content").removeClass("condensed");
+    row.find(".messagebox-content").removeClass("collapsed");
     row.find(".message_condenser").hide();
     row.find(".message_expander").hide();
 };
 
 function show_row_as_collapsed(row) {
-    row.find(".message_content").removeClass("condensed");
-    row.find(".message_content").addClass("collapsed");
+    row.find(".messagebox-content").removeClass("condensed");
+    row.find(".messagebox-content").addClass("collapsed");
     row.find(".message_condenser").hide();
     row.find(".message_expander").show();
 }
 
 function show_row_as_condensed(row) {
-    row.find(".message_content").addClass("condensed");
-    row.find(".message_content").removeClass("collapsed");
+    row.find(".messagebox-content").addClass("condensed");
+    row.find(".messagebox-content").removeClass("collapsed");
     row.find(".message_condenser").hide();
     row.find(".message_expander").show();
 }
 
 function show_row_as_normal(row) {
-    row.find(".message_content").removeClass("condensed");
-    row.find(".message_content").removeClass("collapsed");
+    row.find(".messagebox-content").removeClass("condensed");
+    row.find(".messagebox-content").removeClass("collapsed");
     row.find(".message_expander").hide();
 
     const message = get_message(row);
