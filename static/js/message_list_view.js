@@ -1193,7 +1193,7 @@ MessageListView.prototype = {
     },
 
     _rerender_message: function (message_container, message_content_edited) {
-        const row = this.get_row(message_container.msg.id);
+        let row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
         // Re-render just this one message
@@ -1209,6 +1209,9 @@ MessageListView.prototype = {
         }
         this._post_process(rendered_msg);
         row.replaceWith(rendered_msg);
+
+        row = this.get_row(message_container.msg.id);
+        this.adjust_heights(row);
 
         if (was_selected) {
             this.list.select_id(message_container.msg.id);
