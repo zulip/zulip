@@ -118,7 +118,7 @@ run_test('validate_stream_message_address_info', () => {
 
     $('#stream_message_recipient_stream').select(noop);
     assert(!compose.validate_stream_message_address_info('foobar'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>The stream <b>foobar</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "translated: The stream <b>foobar</b> does not exist.");
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
@@ -153,7 +153,7 @@ run_test('validate_stream_message_address_info', () => {
         payload.error({status: 404});
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), "translated: The stream <b>Frontend</b> does not exist.");
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'social');

@@ -465,7 +465,7 @@ exports.validation_error = function (error_type, stream_name) {
 
     switch (error_type) {
     case "does-not-exist":
-        response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
+        response = i18n.t("The stream <b>__stream_name__</b> does not exist.", context);
         compose_error(response, $('#stream_message_recipient_stream'));
         return false;
     case "error":
