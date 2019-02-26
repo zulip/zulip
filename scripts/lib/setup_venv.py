@@ -3,7 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
-from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
+from scripts.lib.zulip_tools import run, run_as_root, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -226,10 +226,10 @@ def try_to_copy_venv(venv_path, new_packages):
         # https://github.com/edwardgeorge/virtualenv-clone/pull/38,
         # but this rm is almost as good.
         success_stamp_path = os.path.join(venv_path, 'success-stamp')
-        run(["sudo", "rm", "-f", success_stamp_path])
+        run_as_root(["rm", "-f", success_stamp_path])
 
-        run(["sudo", "chown", "-R",
-             "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        run_as_root(["chown", "-R",
+                     "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         source_log = get_logfile_name(source_venv_path)
         copy_parent_log(source_log, target_log)
         create_log_entry(target_log, source_venv_path, copied_packages,
@@ -301,7 +301,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
-        run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
+        run_as_root(["ln", "-nsf", cached_venv_path, target_venv_path])
         if patch_activate_script:
             do_patch_activate_script(target_venv_path)
     return cached_venv_path
@@ -319,13 +319,13 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Setup Python virtualenv
     new_packages = set(get_package_names(requirements_file))
 
-    run(["sudo", "rm", "-rf", venv_path])
+    run_as_root(["rm", "-rf", venv_path])
     if not try_to_copy_venv(venv_path, new_packages):
         # Create new virtualenv.
-        run(["sudo", "mkdir", "-p", venv_path])
-        run(["sudo", "virtualenv"] + virtualenv_args + [venv_path])
-        run(["sudo", "chown", "-R",
-             "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        run_as_root(["mkdir", "-p", venv_path])
+        run_as_root(["virtualenv"] + virtualenv_args + [venv_path])
+        run_as_root(["chown", "-R",
+                     "{}:{}".format(os.getuid(), os.getgid()), venv_path])
         create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
 
     create_requirements_index_file(venv_path, requirements_file)
@@ -370,4 +370,4 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     if at_least_35 and ('python2.7' not in virtualenv_args):
         run([pip, "uninstall", "-y", "typing"])
 
-    run(["sudo", "chmod", "-R", "a+rX", venv_path])
+    run_as_root(["chmod", "-R", "a+rX", venv_path])
