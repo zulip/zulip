@@ -87,18 +87,18 @@ exports.show_license_section = function (license) {
 };
 
 exports.set_tab = function (page) {
-    var hash = window.location.hash;
+    var hash = location.hash;
     if (hash) {
         $('#' + page + '-tabs.nav a[href="' + hash + '"]').tab('show');
         $('html').scrollTop(0);
     }
 
     $('#' + page + '-tabs.nav-tabs a').click(function () {
-        window.location.hash = this.hash;
+        location.hash = this.hash;
     });
 
     $(window).on('hashchange', function () {
-        $('#' + page + '-tabs.nav a[href="' + window.location.hash + '"]').tab('show');
+        $('#' + page + '-tabs.nav a[href="' + location.hash + '"]').tab('show');
         $('html').scrollTop(0);
     });
 };
