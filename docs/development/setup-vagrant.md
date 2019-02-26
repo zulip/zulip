@@ -66,7 +66,7 @@ Follow our [Git Guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc.  Be sure to create an ssh key and add it to your
 GitHub account using
-[these instructions](https://help.github.com/articles/generating-an-ssh-key/).
+[these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
 
 ### Step 1: Install Prerequisites
 

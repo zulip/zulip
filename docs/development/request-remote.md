@@ -77,7 +77,7 @@ Next, read the following to learn more about developing for Zulip:
 * [Testing](../testing/testing.html)
 
 [github-join]: https://github.com/join
-[github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
+[github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[github-help-fork]: https://help.github.com/articles/fork-a-repo/
+[github-help-fork]: https://help.github.com/en/articles/fork-a-repo
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing

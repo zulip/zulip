@@ -43,7 +43,7 @@ followed by the desired labels enclosed within double quotes (`""`).
     (`""`).
 
 * **Find unclaimed issues** — Use the [GitHub search
-feature](https://help.github.com/articles/using-search-to-filter-issues-and-pull-requests/)
+feature](https://help.github.com/en/articles/using-search-to-filter-issues-and-pull-requests)
 to find unclaimed issues by adding one of the following filters to your search:
 
     * `-label: "in progress"` (excludes issues labeled with the **in progress** label)

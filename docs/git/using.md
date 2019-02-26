@@ -442,10 +442,10 @@ complicated rebase.
 [gitbook-other-envs-bash]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Bash
 [gitbook-other-envs-zsh]: https://git-scm.com/book/en/v2/Git-in-Other-Environments-Git-in-Zsh
 [gitbook-rm]: https://git-scm.com/docs/git-rm
-[github-help-closing-issues]: https://help.github.com/articles/closing-issues-via-commit-messages/
-[github-help-push]: https://help.github.com/articles/pushing-to-a-remote/
-[github-help-rebase]: https://help.github.com/articles/using-git-rebase/
-[github-help-sync-fork]: https://help.github.com/articles/syncing-a-fork/
+[github-help-closing-issues]: https://help.github.com/en/articles/closing-issues-via-commit-messages
+[github-help-push]: https://help.github.com/en/articles/pushing-to-a-remote
+[github-help-rebase]: https://help.github.com/en/articles/using-git-rebase
+[github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [how-git-is-different]: ./the-git-difference.html
 [zulip-git-guide-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline

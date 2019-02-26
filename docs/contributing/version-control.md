@@ -128,7 +128,7 @@ commit message.
     performance.
 -   When you fix a GitHub issue, [mark that you've fixed the issue in
     your commit
-    message](https://help.github.com/articles/closing-issues-via-commit-messages/)
+    message](https://help.github.com/en/articles/closing-issues-via-commit-messages)
     so that the issue is automatically closed when your code is merged.
     Zulip's preferred style for this is to have the final paragraph of
     the commit message read e.g. "Fixes: \#123."

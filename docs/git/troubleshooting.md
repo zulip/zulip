@@ -277,4 +277,4 @@ whichever branch you need to update.
 [gitbook-basic-merge-conflicts]: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merge-Conflicts
 [gitbook-git-cherry-pick]: https://git-scm.com/docs/git-cherry-pick
 [gitbook-reset]: https://git-scm.com/docs/git-reset
-[github-help-resolve-merge-conflict]: https://help.github.com/articles/resolving-a-merge-conflict-using-the-command-line/
+[github-help-resolve-merge-conflict]: https://help.github.com/en/articles/resolving-a-merge-conflict-using-the-command-line
