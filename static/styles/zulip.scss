@@ -1281,6 +1281,10 @@ div.focused_table {
     overflow: hidden;
 }
 
+.messagebox-content.collapsed .message_reactions {
+    display: none;
+}
+
 .message_length_controller {
     display: none;
     text-align: center;
