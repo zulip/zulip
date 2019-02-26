@@ -13,7 +13,7 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from scripts.lib.zulip_tools import run, OKBLUE, ENDC, WARNING, \
+from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, WARNING, \
     get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
     VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
@@ -114,7 +114,7 @@ else:
 # know the codename.
 is_rhel_based = os.path.exists("/etc/redhat-release")
 if (not is_rhel_based) and (not os.path.exists("/usr/bin/lsb_release")):
-    subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
+    run_as_root(["apt-get", "install", "-y", "lsb-release"])
 
 distro_info = parse_lsb_release()
 vendor = distro_info['DISTRIB_ID']
@@ -257,16 +257,16 @@ def install_apt_deps(deps_to_install, retry=False):
         # running `apt-get update` when the target apt repository
         # is out of date, we run it explicitly here so that we
         # recover automatically.
-        run(['sudo', 'apt-get', 'update'])
+        run_as_root(['apt-get', 'update'])
 
     # setup-apt-repo does an `apt-get update`
-    run(["sudo", "./scripts/lib/setup-apt-repo"])
-    run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
+    run_as_root(["./scripts/lib/setup-apt-repo"])
+    run_as_root(["apt-get", "-y", "install", "--no-install-recommends"] + deps_to_install)
 
 def install_yum_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
     print(WARNING + "RedHat support is still experimental.")
-    run(["sudo", "./scripts/lib/setup-yum-repo"])
+    run_as_root(["./scripts/lib/setup-yum-repo"])
 
     # Hack specific to unregistered RHEL system.  The moreutils
     # package requires a perl module package, which isn't available in
@@ -286,27 +286,27 @@ def install_yum_deps(deps_to_install, retry=False):
             else:
                 print("Unrecognized output. `subscription-manager` might not be available")
 
-    run(["sudo", "yum", "install", "-y"] + yum_extra_flags + deps_to_install)
+    run_as_root(["yum", "install", "-y"] + yum_extra_flags + deps_to_install)
     if vendor in ["CentOS", "RedHat"]:
         # This is how a pip3 is installed to /usr/bin in CentOS/RHEL
         # for python35 and later.
-        run(["sudo", "python36", "-m", "ensurepip"])
+        run_as_root(["python36", "-m", "ensurepip"])
         # `python36` is not aliased to `python3` by default
-        run(["sudo", "ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
+        run_as_root(["ln", "-nsf", "/usr/bin/python36", "/usr/bin/python3"])
     postgres_dir = 'pgsql-%s' % (POSTGRES_VERSION,)
     for cmd in ['pg_config', 'pg_isready', 'psql']:
         # Our tooling expects these postgres scripts to be at
         # well-known paths.  There's an argument for eventually
         # making our tooling auto-detect, but this is simpler.
-        run(["sudo", "ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
-             "/usr/bin/%s" % (cmd,)])
+        run_as_root(["ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
+                     "/usr/bin/%s" % (cmd,)])
     # Compile tsearch-extras from scratch, since we maintain the
     # package and haven't built an RPM package for it.
-    run(["sudo", "./scripts/lib/build-tsearch-extras"])
+    run_as_root(["./scripts/lib/build-tsearch-extras"])
     if vendor == "Fedora":
         # Compile PGroonga from scratch, since pgroonga upstream
         # doesn't provide Fedora packages.
-        run(["sudo", "./scripts/lib/build-pgroonga"])
+        run_as_root(["./scripts/lib/build-pgroonga"])
 
     # From here, we do the first-time setup/initialization for the postgres database.
     pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
@@ -319,9 +319,10 @@ def install_yum_deps(deps_to_install, retry=False):
         # Skip setup if it has been applied previously
         return
 
-    run(["sudo", "-H", "/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"])
+    run_as_root(["/usr/%s/bin/postgresql-%s-setup" % (postgres_dir, POSTGRES_VERSION), "initdb"],
+                sudo_args = ['-H'])
     # Use vendored pg_hba.conf, which enables password authentication.
-    run(["sudo", "cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
+    run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure postgres is started
 
 def main(options):
@@ -370,7 +371,7 @@ def main(options):
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run(["sudo", "-H"] + proxy_env + ["scripts/lib/install-node"])
+    run_as_root(proxy_env + ["scripts/lib/install-node"], sudo_args = ['-H'])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.
@@ -378,16 +379,16 @@ def main(options):
         # Hack: We remove `node_modules` as root to work around an
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
-            run(["sudo", "rm", "-f", "node_modules"])
-        run(["sudo", "mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run(["sudo", "chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
+            run_as_root(["rm", "-f", "node_modules"])
+        run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
+        run_as_root(["chown", "%s:%s" % (user_id, user_id), NODE_MODULES_CACHE_PATH])
         setup_node_modules(prefer_offline=True)
     except subprocess.CalledProcessError:
         print(WARNING + "`yarn install` failed; retrying..." + ENDC)
         setup_node_modules()
 
     # Install shellcheck.
-    run(["sudo", "scripts/lib/install-shellcheck"])
+    run_as_root(["scripts/lib/install-shellcheck"])
 
     from tools.setup import setup_venvs
     setup_venvs.main()
@@ -401,7 +402,7 @@ def main(options):
     # This needs to happen before anything that imports zproject.settings.
     run(["scripts/setup/generate_secrets.py", "--development"])
 
-    run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
+    run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
     os.makedirs(LOG_DIR_PATH, exist_ok=True)
@@ -418,8 +419,8 @@ def main(options):
     # which we install via npm; thus this step is after installing npm
     # packages.
     if not os.path.isdir(EMOJI_CACHE_PATH):
-        run(["sudo", "mkdir", EMOJI_CACHE_PATH])
-    run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
+        run_as_root(["mkdir", EMOJI_CACHE_PATH])
+    run_as_root(["chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
 
     # copy over static files from the zulip_bots package
@@ -454,20 +455,20 @@ def main(options):
         print("No need to run `tools/inline-email-css`.")
 
     if is_circleci or (is_travis and not options.is_production_travis):
-        run(["sudo", "service", "rabbitmq-server", "restart"])
-        run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
-        run(["sudo", "service", "postgresql", "restart"])
+        run_as_root(["service", "rabbitmq-server", "restart"])
+        run_as_root(["service", "redis-server", "restart"])
+        run_as_root(["service", "memcached", "restart"])
+        run_as_root(["service", "postgresql", "restart"])
     elif family == 'redhat':
         for service in ["postgresql-%s" % (POSTGRES_VERSION,), "rabbitmq-server", "memcached", "redis"]:
-            run(["sudo", "-H", "systemctl", "enable", service])
-            run(["sudo", "-H", "systemctl", "start", service])
+            run_as_root(["systemctl", "enable", service], sudo_args = ['-H'])
+            run_as_root(["systemctl", "start", service], sudo_args = ['-H'])
     elif options.is_docker:
-        run(["sudo", "service", "rabbitmq-server", "restart"])
-        run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
-        run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
-        run(["sudo", "service", "redis-server", "restart"])
-        run(["sudo", "service", "memcached", "restart"])
+        run_as_root(["service", "rabbitmq-server", "restart"])
+        run_as_root(["pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
+        run_as_root(["pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
+        run_as_root(["service", "redis-server", "restart"])
+        run_as_root(["service", "memcached", "restart"])
     if not options.is_production_travis:
         # The following block is skipped for the production Travis
         # suite, because that suite doesn't make use of these elements

@@ -483,6 +483,8 @@ def build_custom_checkers(by_lang):
              ('scripts/lib/zulip_tools.py', '# We need sudo here, since the path will be under /srv/ in the'),
              ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "/bin/bash", "-c",'),
              ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "rm", "-rf", directory])'),
+             ('scripts/lib/zulip_tools.py', 'sudo_args = kwargs.pop(\'sudo_args\', [])'),
+             ('scripts/lib/zulip_tools.py', 'args = [\'sudo\'] + sudo_args + [\'--\'] + args'),
          ]),
          'description': 'Most scripts are intended to run on systems without sudo.',
          'good_lines': ['subprocess.check_call(["ls"])'],
