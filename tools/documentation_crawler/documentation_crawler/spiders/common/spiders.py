@@ -21,6 +21,22 @@ EXCLUDED_URLS = [
     'https://circleci.com/gh/zulip/zulip/16617',
     # 500s because the site is semi-down
     'http://citizencodeofconduct.org/',
+    # Returns 404 to HEAD requests unconditionally
+    'https://help.github.com/articles/about-pull-requests/',
+    'https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/',
+    'https://help.github.com/articles/caching-your-github-password-in-git/',
+    'https://help.github.com/articles/changing-a-commit-message/',
+    'https://help.github.com/articles/checking-out-pull-requests-locally/',
+    'https://help.github.com/articles/closing-issues-via-commit-messages/',
+    'https://help.github.com/articles/configuring-a-remote-for-a-fork/',
+    'https://help.github.com/articles/creating-a-pull-request-from-a-fork/',
+    'https://help.github.com/articles/fork-a-repo/',
+    'https://help.github.com/articles/generating-an-ssh-key/',
+    'https://help.github.com/articles/pushing-to-a-remote/',
+    'https://help.github.com/articles/resolving-a-merge-conflict-using-the-command-line/',
+    'https://help.github.com/articles/syncing-a-fork/',
+    'https://help.github.com/articles/using-git-rebase/',
+    'https://help.github.com/articles/using-search-to-filter-issues-and-pull-requests/',
 ]
 
 
