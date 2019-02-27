@@ -279,10 +279,12 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
    **run as an Administrator**).
 3. In Terminal/Git BASH,
    [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine)
-   and [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+4. Change into the zulip directory
+5. [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
 
 ```
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
