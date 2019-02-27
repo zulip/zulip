@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/hotspots.html
+# for documentation on this subsystem.
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
@@ -36,7 +38,9 @@ ALL_HOTSPOTS = {
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # For manual testing, it can be convenient to set
     # ALWAYS_SEND_ALL_HOTSPOTS=True in `zproject/dev_settings.py` to
-    # make it easy to click on all of the hotspots.
+    # make it easy to click on all of the hotspots.  Note that
+    # ALWAYS_SEND_ALL_HOTSPOTS has some bugs; see ReadTheDocs (link
+    # above) for details.
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
         return [{
             'name': hotspot,
