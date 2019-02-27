@@ -16,12 +16,18 @@ exports.smart_insert = function (textarea, syntax) {
     var after_str = textarea.val().slice(pos);
 
     if (pos > 0) {
-        if (!is_space(before_str.slice(-1))) {
+        // If there isn't space either at the end of the content
+        // before the insert or (unlikely) at the start of the syntax,
+        // add one.
+        if (!is_space(before_str.slice(-1)) && !is_space(syntax[0])) {
             syntax = ' ' + syntax;
         }
     }
 
-    if (!(after_str.length > 0 && is_space(after_str[0]))) {
+    // If there isn't whitespace either at the end of the syntax or the
+    // start of the content after the syntax, add one.
+    if (!(after_str.length > 0 && is_space(after_str[0]) ||
+          syntax.length > 0 && is_space(syntax.slice(-1)))) {
         syntax += ' ';
     }
 

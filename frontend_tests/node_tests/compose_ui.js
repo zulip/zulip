@@ -106,6 +106,31 @@ run_test('smart_insert', () => {
     assert.equal(textbox.val(), ':octopus: abc :smile: :airplane: :heart: ');
     assert(textbox.focused);
 
+    // Test handling of spaces for ```quote
+    textbox = make_textbox('');
+    textbox.caret(0);
+    textbox.blur();
+    compose_ui.smart_insert(textbox, '```quote\nquoted message\n```\n');
+    assert.equal(textbox.insert_text, '```quote\nquoted message\n```\n');
+    assert.equal(textbox.val(), '```quote\nquoted message\n```\n');
+    assert(textbox.focused);
+
+    textbox = make_textbox('');
+    textbox.caret(0);
+    textbox.blur();
+    compose_ui.smart_insert(textbox, "[Quoting…]\n");
+    assert.equal(textbox.insert_text, '[Quoting…]\n');
+    assert.equal(textbox.val(), '[Quoting…]\n');
+    assert(textbox.focused);
+
+    textbox = make_textbox('abc');
+    textbox.caret(3);
+    textbox.blur();
+    compose_ui.smart_insert(textbox, " test with space");
+    assert.equal(textbox.insert_text, ' test with space ');
+    assert.equal(textbox.val(), 'abc test with space ');
+    assert(textbox.focused);
+
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
