@@ -1,6 +1,6 @@
 {{#each options}}
 <li>
-    <button class="poll-vote" data-key="{{ key }}">
+    <button class="poll-vote {{#if current_user_vote}}current-user-vote{{/if}}" data-key="{{ key }}">
         {{ count }}
     </button>
     <span class="poll-option">{{ option }}</span>
