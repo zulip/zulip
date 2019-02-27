@@ -46,12 +46,14 @@ exports.poll_data_holder = function (is_my_poll, question, options) {
 
         _.each(key_to_option, function (obj, key) {
             var voters = _.keys(obj.votes);
+            var curr_user_vote = _.contains(voters, String(me));
 
             options.push({
                 option: obj.option,
                 names: people.safe_full_names(voters),
                 count: voters.length,
                 key: key,
+                curr_user_vote: curr_user_vote,
             });
         });
 
