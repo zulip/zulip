@@ -93,7 +93,7 @@ exports.set_tab = function (page) {
         $('html').scrollTop(0);
     }
 
-    $('#' + page + '-tabs.nav-tabs a').click(function () {
+    $('#' + page + '-tabs.nav-tabs a').on("click", function () {
         location.hash = this.hash;
     });
 
