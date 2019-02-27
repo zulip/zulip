@@ -87,11 +87,11 @@ def update_realm(
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
     if video_chat_provider == "Zoom":
         if not zoom_user_id:
-            return json_error(_('Invalid user ID: user ID cannot be empty'))
+            return json_error(_('User ID cannot be empty'))
         if not zoom_api_key:
-            return json_error(_('Invalid API key: API key cannot be empty'))
+            return json_error(_('API key cannot be empty'))
         if not zoom_api_secret:
-            return json_error(_('Invalid API secret: API secret cannot be empty'))
+            return json_error(_('API secret cannot be empty'))
         # Technically, we could call some other API endpoint that
         # doesn't create a video call link, but this is a nicer
         # end-to-end test, since it verifies that the Zoom API user's
