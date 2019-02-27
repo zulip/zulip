@@ -302,6 +302,9 @@ exports.make_new_elem = function (selector, opts) {
         replaceWith: function () {
             return self;
         },
+        scrollTop: function () {
+            return self;
+        },
         select: function (arg) {
             event_store.generic_event('select', arg);
             return self;
@@ -311,6 +314,9 @@ exports.make_new_elem = function (selector, opts) {
         },
         show: function () {
             shown = true;
+            return self;
+        },
+        serializeArray: function () {
             return self;
         },
         set_parent: function (parent_elem) {
