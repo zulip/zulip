@@ -1,5 +1,11 @@
 # Two Factor Authentication
 
+```eval_rst
+.. only:: false
+    This documentation is meant to be read on ReadTheDocs, go there:
+    https://zulip.readthedocs.io/en/latest/subsystems/two-factor-auth.html
+```
+
 Zulip uses [django-two-factor-auth][0] to integrate 2FA.
 
 To enable 2FA, set `TWO_FACTOR_AUTHENTICATION_ENABLED` in settings to `True`,
