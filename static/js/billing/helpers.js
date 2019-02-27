@@ -97,10 +97,10 @@ exports.set_tab = function (page) {
         location.hash = this.hash;
     });
 
-    $(window).on('hashchange', function () {
+    window.onhashchange = function () {
         $('#' + page + '-tabs.nav a[href="' + location.hash + '"]').tab('show');
         $('html').scrollTop(0);
-    });
+    };
 };
 
 exports.is_valid_input = function (elem) {
