@@ -4,10 +4,6 @@ Use this as a checklist to get your organization off to a great start.
 
 ## Organization settings
 
-* Set a policy for [who can join the organization](/help/manage-who-can-join-and-invite).
-
-* Configure [allowed authentication methods](/help/configure-authentication-methods).
-
 * Add an organization [icon and description](/help/create-your-organization-profile) to
   customize your login/registration pages as well as how your
   organization appears in the desktop and mobile apps.
@@ -84,19 +80,23 @@ expert teaching other users how to use Zulip.
 
 * [Delete any test messages](/help/edit-or-delete-a-message#delete-a-message-completely)
   or [topics](/help/delete-a-topic) you want to delete.
-* Use the `#zulip` stream to answer questions and share tips on how to use
-  Zulip effectively.
+
+* Configure
+  [allowed authentication methods](/help/configure-authentication-methods),
+  and [invite users](/help/invite-new-users).
+
 * If you have an existing chat tool, make sure everyone knows that the
   team is switching, and why. The team should commit to use Zulip
   exclusively **for at least a week** to make an effective trial;
   stragglers will result in everyone having a bad experience.
+
 * If [community topic edits](/help/community-topic-edits) are enabled,
   encourage a few people to help rename topics for the first few days, while
   everyone is still getting used to the new conversation model.
 
 ## Bonus things to set up
 
-* [Add custom profile fields](/help/add-custom-profile-fields)
+* [Add custom profile fields](/help/add-custom-profile-fields).
 - [Automatically linkify](/help/add-a-custom-linkification-filter)
   issue numbers.
 - [Write custom integrations](/api/integrations-overview)

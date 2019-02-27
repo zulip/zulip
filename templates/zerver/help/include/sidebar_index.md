@@ -52,7 +52,6 @@
 * [View a message's edit history](/help/view-a-messages-edit-history)
 
 ## People
-* [Invite users](/help/invite-users)
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
 * [View someone's profile](/help/view-someones-profile)
 
@@ -109,7 +108,6 @@
 * [Import from HipChat/Stride](/help/import-from-hipchat)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
-* [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Export your organization](/help/export-your-organization)
@@ -132,6 +130,8 @@
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 
 ## Users & bots
+* [Invite new users](/help/invite-new-users)
+* [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
