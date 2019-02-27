@@ -538,7 +538,8 @@ exports.initialize = function () {
             is_public: !stream.invite_only,
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
             is_private_with_public_history: stream.invite_only &&
-                                             stream.history_public_to_subscribers,
+                stream.history_public_to_subscribers,
+            is_admin: page_params.is_admin,
         };
         var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
         $("#stream_privacy_modal").remove();
