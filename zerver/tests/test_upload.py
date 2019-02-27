@@ -1703,9 +1703,7 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.upload_realm_logo_image(image_file, user_profile, night)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "%s.original" % (file_name))
-        print(original_path_id)
         original_key = bucket.get_key(original_path_id)
-        print(original_key)
         image_file.seek(0)
         self.assertEqual(image_file.read(), original_key.get_contents_as_string())
 
