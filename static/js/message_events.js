@@ -157,12 +157,11 @@ exports.update_messages = function update_messages(events) {
                 }
             }
 
+            var current_filter = narrow_state.filter();
             if (going_forward_change) {
                 var current_id = current_msg_list.selected_id();
                 var selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
-
                 if (selection_changed_topic) {
-                    var current_filter = narrow_state.filter();
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, orig_topic)) {
                             var new_filter = current_filter.filter_with_new_topic(new_topic);
@@ -205,6 +204,18 @@ exports.update_messages = function update_messages(events) {
                     topic_name: util.get_message_topic(msg),
                     message_id: msg.id,
                 });
+
+                if (!changed_narrow && current_filter && current_filter.can_apply_locally() &&
+                    !current_filter.predicate()(msg)) {
+                    // This topic edit makes this message leave the
+                    // current narrow, which is not being changed as
+                    // part of processing this event.  So we should
+                    // remove the message from the current/narrowed message list.
+                    var cur_row = current_msg_list.get_row(id);
+                    if (cur_row !== undefined) {
+                        current_msg_list.remove_and_rerender([{id: id}]);
+                    }
+                }
             });
         }
 
