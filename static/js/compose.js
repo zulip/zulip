@@ -101,17 +101,21 @@ exports.clear_preview_area = function () {
     $("#markdown_preview").show();
 };
 
-function update_stream_button(title) {
-    $("#left_bar_compose_stream_button_big").text(title);
+function update_stream_button(btn_text, title) {
+    $("#left_bar_compose_stream_button_big").text(btn_text);
     $("#left_bar_compose_stream_button_big").prop("title", title);
 }
 
 exports.update_stream_button_for_private = function () {
-    update_stream_button(i18n.t("New stream message"));
+    var text = i18n.t("New stream message");
+    var title = text + " (c)";
+    update_stream_button(text, title);
 };
 
 exports.update_stream_button_for_stream = function () {
-    update_stream_button(i18n.t("New topic"));
+    var text = i18n.t("New topic");
+    var title = text + " (c)";
+    update_stream_button(text, title);
 };
 
 function update_fade() {
