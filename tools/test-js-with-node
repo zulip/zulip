@@ -19,7 +19,7 @@ import ujson
 USAGE = '''
     tools/test-js-with-node                      - to run all tests
     tools/test-js-with-node util.js activity.js  - to run just a couple tests
-    tools/test-js-with-node --coverage           - to generage coverage report
+    tools/test-js-with-node --coverage           - to generate coverage report
     '''
 
 enforce_fully_covered = {
