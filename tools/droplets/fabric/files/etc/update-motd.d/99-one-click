@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# Configured as part of the DigitalOcean 1-Click Image build process
+
+myip=$(hostname -I | awk '{print$1}')
+cat <<EOF
+********************************************************************************
+
+This is the text that will be shown in the MOTD users see when they log in via
+SSH.  This copy should include links to documentation or product informaiton
+along with any information that would helpful to users.
+
+********************************************************************************
+To delete this message of the day: rm -rf $(readlink -f ${0})
+EOF
