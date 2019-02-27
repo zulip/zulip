@@ -15,8 +15,8 @@ Moderation is a big part of making an open community work.
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).
 * Create at least one
-  [default stream](/help/set-default-streams-for-new-users) where only
-  admins can post.
+  [default stream](/help/set-default-streams-for-new-users) where
+  [only admins can post](/help/announcement-only-streams).
 
 ## Response
 
