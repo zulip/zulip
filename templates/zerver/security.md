@@ -43,7 +43,7 @@ priority.
   synchronizing these data from another database (such as
   [LDAP/Active Directory][ldap-name]).
 - Zulip provides many options for
-  [managing who can join the organization](/help/manage-who-can-join-and-invite),
+  [managing who can join the organization](/help/invite-new-users),
   supporting everything from open to the public (e.g. for open source
   projects), to requiring an invitation to join, to having an email from a
   list of domains, to being a member of a specific organization in

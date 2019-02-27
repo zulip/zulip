@@ -1,12 +1,12 @@
 # Moderating open organizations
 
 An **open organization** is one where
-[anyone can join without an invitation](/help/manage-who-can-join-and-invite).
+[anyone can join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
 Moderation is a big part of making an open community work.
 
 ## Prevention
 
-* [Disallow disposable email addresses](/help/manage-who-can-join-and-invite),
+* [Disallow disposable email addresses](/help/allow-anyone-to-join-without-an-invitation)
   or [require users to log in via GitHub](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation) or

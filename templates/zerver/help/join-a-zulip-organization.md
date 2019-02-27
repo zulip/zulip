@@ -4,7 +4,7 @@ By default, Zulip organizations require an invitation to join.
 
 Organization administrators can also allow anyone to join without an
 invitation, and/or restrict user email addresses to a company domain. See
-[manage who can join and invite](/help/manage-who-can-join-and-invite).
+[inviting new users](/help/invite-new-users).
 
 ## Check if you need an invitation to join
 
@@ -36,9 +36,12 @@ invitation, and/or restrict user email addresses to a company domain. See
 
 ## Accept an invitation
 
-Invitations to Zulip organizations come by email. Look for an email from
-Zulip. It may take a few minutes for the invitation email to reach your
+Invitations to Zulip organizations often come by email. Look for an email
+from Zulip. It may take a few minutes for the invitation email to reach your
 inbox.
+
+Alternatively, an organization administrator may have sent you an invitation
+link via another method.
 
 ## Tips
 

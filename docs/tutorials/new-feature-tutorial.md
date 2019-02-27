@@ -668,12 +668,3 @@ documenting the feature to `templates/zerver/help/` in the main Zulip
 server repository, where the source for Zulip's user documentation is
 stored. For information on writing user documentation, see
 [Zulip's general user guide documentation](../subsystems/user-docs.html).
-
-For a more concrete example of writing documentation for a new
-feature, see [an example commit in the Zulip repo][example-commit]
-that documented a realm feature, [the current source][example-current-source],
-and [the final rendered documentation][example-docs].
-
-[example-commit]: https://github.com/zulip/zulip/commit/ce1875533e27a6ec5aab02260dde5f76976ff326
-[example-current-source]: https://github.com/zulip/zulip/blob/master/templates/zerver/help/manage-who-can-join-and-invite.md
-[example-docs]: https://chat.zulip.org/help/manage-who-can-join-and-invite
