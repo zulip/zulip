@@ -1154,10 +1154,10 @@ exports.build_page = function () {
                 ui_report.error("", xhr, error_field);
             },
         });
-
     }
-    realm_logo.build_realm_night_logo_widget(upload_realm_logo);
-    realm_logo.build_realm_logo_widget(upload_realm_logo);
+
+    realm_logo.build_realm_day_mode_logo_widget(upload_realm_logo);
+    realm_logo.build_realm_night_mode_logo_widget(upload_realm_logo);
 
     $('#deactivate_realm_button').on('click', function (e) {
         if (!overlays.is_modal_open()) {
