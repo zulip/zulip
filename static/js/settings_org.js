@@ -28,7 +28,7 @@ var org_settings = {
             type: 'bool',
         },
     },
-    msg_feed: {
+    other_settings: {
         inline_image_preview: {
             type: 'bool',
         },
@@ -38,8 +38,6 @@ var org_settings = {
         mandatory_topics: {
             type: 'bool',
         },
-    },
-    video_chat: {
         video_chat_provider: {
             type: 'text',
         },
@@ -55,6 +53,9 @@ var org_settings = {
         zoom_api_secret: {
             type: 'text',
         },
+        message_content_allowed_in_email_notifications: {
+            type: 'bool',
+        },
     },
     user_defaults: {
         default_language: {
@@ -66,9 +67,6 @@ var org_settings = {
     },
     notifications: {
         send_welcome_emails: {
-            type: 'bool',
-        },
-        message_content_allowed_in_email_notifications: {
             type: 'bool',
         },
     },
