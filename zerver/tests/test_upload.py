@@ -1365,19 +1365,13 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         """
         A DELETE request to /json/realm/logo should delete the realm logo and return gravatar URL
         """
-        if self.night:
-            field_name = 'night_logo_url'
-        else:
-            field_name = 'logo_url'
 
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         result = self.client_delete("/json/realm/logo", {'night': ujson.dumps(self.night)})
         self.assert_json_success(result)
-        self.assertIn(field_name, result.json())
         realm = get_realm('zulip')
-        self.assertEqual(result.json()[field_name], realm_logo_url(realm, self.night))
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_DEFAULT)
         else:
