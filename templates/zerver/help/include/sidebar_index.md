@@ -53,6 +53,7 @@
 ## People
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
 * [View someone's profile](/help/view-someones-profile)
+* [Private messages](/help/private-messages)
 
 ## Streams & topics
 * [About streams and topics](/help/about-streams-and-topics)

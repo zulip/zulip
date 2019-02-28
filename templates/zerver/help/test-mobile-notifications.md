@@ -3,7 +3,7 @@
 Normally, mobile notifications are only sent if you're idle, which isn't
 ideal for testing.
 
-You can instead have mobile notifications sent for all private messages,
+You can instead have mobile notifications sent for all [private messages](/help/private-messages),
 regardless of whether you're on-line.
 
 {settings_tab|notifications}

@@ -19,7 +19,7 @@ start a new topic whenever you're not replying to an existing message.
 Don't worry about picking the perfect topic. The first 2-4 words that come
 to mind are great.
 
-Note that topics are not available for private messages (PMs). If you find
+Note that topics are not available for [private messages (PMs)](/help/private-messages). If you find
 yourself wanting topics in a PM, we recommend
 [creating a private stream](/help/create-a-stream).
 
