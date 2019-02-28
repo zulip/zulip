@@ -36,8 +36,9 @@ transparent background, and trim the logo of any bordering whitespace.
 
 {settings_tab|organization-profile}
 
-1. Under **Organization logo**, upload a new logo.
+1. Under **Organization logo**, upload logos for white and dark backgrounds.
 
 {end_tabs}
 
-Make sure to test the logo in both day mode and [night mode](/help/night-mode).
+You can enable [night mode](/help/night-mode) to see how your logo looks on
+a dark background.
