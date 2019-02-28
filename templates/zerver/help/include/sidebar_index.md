@@ -130,6 +130,7 @@
 ## Users & bots
 * [Invite new users](/help/invite-new-users)
 * [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
+* [User groups](/help/user-groups)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)

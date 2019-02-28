@@ -1,6 +1,6 @@
 # Mention a user or group
 
-You can mention a team member or user group to call their attention to a
+You can mention a team member or [user group](/help/user-groups) to call their attention to a
 message. Mentions follow the same
 [notification settings](/help/pm-mention-alert-notifications) as private
 messages and alert words.
