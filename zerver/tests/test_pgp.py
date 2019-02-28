@@ -6,6 +6,7 @@ from django.core.mail.message import SafeMIMEText, SafeMIMEMultipart
 from email import message_from_bytes
 from email.message import Message
 
+from zerver.lib.email_helpers import get_message_part_by_type
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.pgp import (
     gpg_encrypt_content,
@@ -33,6 +34,50 @@ class PGPTestCase(ZulipTestCase):
         keys['pubkey'] = parts[1]
 
         return keys
+
+    def check_signed_msg_structure(self, message: Message) -> None:
+        self.assertTrue(message.is_multipart())
+        self.assertEqual(message.get_content_subtype(), 'signed')
+        self.assertEqual(message.get_param('protocol'), 'application/pgp-signature')
+
+        parts = message.get_payload()
+        assert isinstance(parts, List)
+        assert isinstance(parts[1], Message)
+        self.assertEqual(parts[1].get_content_type(), 'application/pgp-signature')
+        signature = str(parts[1].get_payload())
+        assert isinstance(parts[0], SafeMIMEText) or isinstance(parts[0], SafeMIMEMultipart)
+        verify = gpg_verify_signature(signature, parts[0].as_bytes(linesep='\r\n'))
+        self.assertTrue(verify)
+
+    def check_encrypted_msg_structure(self, message: Message, decryption_key: str,
+                                      expected_content: str, expect_signed: bool=False
+                                      ) -> None:
+        self.assertTrue(message.is_multipart())
+        self.assertEqual(message.get_content_subtype(), 'encrypted')
+        self.assertEqual(message.get_param('protocol'), 'application/pgp-encrypted')
+
+        parts = message.get_payload()
+        assert isinstance(parts, List)
+        assert isinstance(parts[0], Message)
+        assert isinstance(parts[1], Message)
+        self.assertEqual(parts[0].get_content_type(), 'application/pgp-encrypted')
+        self.assertEqual(parts[0].get_payload(), 'Version: 1')
+        self.assertEqual(parts[1].get_content_type(), 'application/octet-stream')
+
+        encrypted = str(parts[1].get_payload())
+        decrypted, is_signed = gpg_decrypt_content(encrypted, decryption_key)
+        self.assertEqual(expect_signed, is_signed)
+        msg = message_from_bytes(decrypted)
+
+        payload = msg.get_payload(decode=True)
+        assert isinstance(payload, str) or isinstance(payload, bytes)
+        if isinstance(payload, bytes):
+            payload = payload.decode()
+
+        # we need to ensure uniform convention for line endings
+        payload = payload.replace('\r\n', '\n')
+        expected_content = expected_content.replace('\r\n', '\n')
+        self.assertEqual(payload, expected_content)
 
 class TestGPGFunctions(PGPTestCase):
     def test_gpg_sign_success(self) -> None:
@@ -104,6 +149,21 @@ class TestGPGFunctions(PGPTestCase):
             with self.assertRaises(GPGEncryptionFailed):
                 gpg_encrypt_content(data, [hamlet_keys['pubkey']], sign=True)
 
+    def test_gpg_encrypt_utf8_text(self) -> None:
+        data = 'Gżegżółka'.encode()
+        hamlet_keys = self.example_user_keys('hamlet')
+
+        encrypted = gpg_encrypt_content(data, [hamlet_keys['pubkey']])
+        decrypted, signed = gpg_decrypt_content(encrypted, hamlet_keys['privkey'])
+        self.assertFalse(signed)
+        self.assertEqual(data, decrypted)
+
+    def test_gpg_sign_utf8_text(self) -> None:
+        data = 'Gżegżółka'.encode()
+        signature = gpg_sign_content(data)
+        verify = gpg_verify_signature(signature, data)
+        self.assertTrue(verify)
+
 class TestPGPSignAndEncrypt(PGPTestCase):
     def setUp(self) -> None:
         hamlet_keys = self.example_user_keys('hamlet')
@@ -127,45 +187,6 @@ class TestPGPSignAndEncrypt(PGPTestCase):
 
     def tearDown(self) -> None:
         UserPGP.objects.all().delete()
-
-    def check_signed_msg_structure(self, message: Message) -> None:
-        self.assertTrue(message.is_multipart())
-        self.assertEqual(message.get_content_subtype(), 'signed')
-        self.assertEqual(message.get_param('protocol'), 'application/pgp-signature')
-
-        parts = message.get_payload()
-        assert isinstance(parts, List)
-        assert isinstance(parts[1], Message)
-        self.assertEqual(parts[1].get_content_type(), 'application/pgp-signature')
-        signature = str(parts[1].get_payload())
-        assert isinstance(parts[0], SafeMIMEText) or isinstance(parts[0], SafeMIMEMultipart)
-        verify = gpg_verify_signature(signature, parts[0].as_bytes(linesep='\r\n'))
-        self.assertTrue(verify)
-
-    def check_encrypted_msg_structure(self, message: Message, decryption_key: str,
-                                      expected_body: str, expect_signed: bool=False
-                                      ) -> None:
-        self.assertTrue(message.is_multipart())
-        self.assertEqual(message.get_content_subtype(), 'encrypted')
-        self.assertEqual(message.get_param('protocol'), 'application/pgp-encrypted')
-
-        parts = message.get_payload()
-        assert isinstance(parts, List)
-        assert isinstance(parts[0], Message)
-        assert isinstance(parts[1], Message)
-        self.assertEqual(parts[0].get_content_type(), 'application/pgp-encrypted')
-        self.assertEqual(parts[0].get_payload(), 'Version: 1')
-        self.assertEqual(parts[1].get_content_type(), 'application/octet-stream')
-
-        encrypted = str(parts[1].get_payload())
-        decrypted, is_signed = gpg_decrypt_content(encrypted, decryption_key)
-        self.assertEqual(expect_signed, is_signed)
-        msg = message_from_bytes(decrypted)
-
-        # we need to ensure uniform convention for line endings
-        payload = str(msg.get_payload()).replace('\r\n', '\n')
-        expected_body = expected_body.replace('\r\n', '\n')
-        self.assertEqual(payload, expected_body)
 
     def test_pgp_vanilla_message(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -207,7 +228,7 @@ class TestPGPSignAndEncrypt(PGPTestCase):
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0]._encrypted, True)
         self.check_encrypted_msg_structure(emails[0].message(),
-                                           expected_body='Email\nbody',
+                                           expected_content='Email\nbody',
                                            decryption_key=user_privkey)
 
         emails[0].send()
@@ -231,7 +252,7 @@ class TestPGPSignAndEncrypt(PGPTestCase):
         self.assertEqual(emails[0]._encrypted, True)
         self.check_encrypted_msg_structure(emails[0].message(),
                                            decryption_key=othello_privkey,
-                                           expected_body='Email body',
+                                           expected_content='Email body',
                                            expect_signed=True)
 
         user_profiles[0].want_signed_emails = False
@@ -268,7 +289,7 @@ class TestPGPSignAndEncrypt(PGPTestCase):
         with self.assertRaises(PGPKeyNotFound):
             pgp_sign_and_encrypt(msg, [user_profile])
 
-class TestPGPEmailMessageClassInternals(ZulipTestCase):
+class TestPGPEmailMessageClassInternals(PGPTestCase):
     def test_pgpemailmessage_setattr_lock(self) -> None:
         pgp_msg = PGPEmailMessage(body='text')
         pgp_msg._locked = True
@@ -303,3 +324,64 @@ class TestPGPEmailMessageClassInternals(ZulipTestCase):
         for header in headers_list:
             self.assertEqual(msg._generated_message[header],
                              original_message[header])
+
+        self.assertEqual(msg._generated_message['From'], self.example_email('iago'))
+
+    def test_pgpemailmessage_encrypt_utf8_text(self) -> None:
+        hamlet_keys = self.example_user_keys('hamlet')
+        msg = PGPEmailMessage(subject='Subject', body='Gżegżółka',
+                              to=[self.example_email('hamlet')])
+        msg.encrypt([hamlet_keys['pubkey']])
+        self.check_encrypted_msg_structure(msg.message(), hamlet_keys['privkey'],
+                                           expected_content='Gżegżółka')
+
+    def test_pgpemailmessage_sign_utf8_text(self) -> None:
+        msg = PGPEmailMessage(subject='Subject', body='Gżegżółka',
+                              to=[self.example_email('hamlet')])
+        msg.sign()
+        self.check_signed_msg_structure(msg.message())
+
+    def test_pgpemailmessage_encrypt_with_alternatives(self) -> None:
+        hamlet_keys = self.example_user_keys('hamlet')
+
+        text_content = 'This is an important message.'
+        html_content = '<p>This is an <strong>important</strong> message.</p>'
+        msg = PGPEmailMessage(subject='Subject', body=text_content,
+                              to=[self.example_email('hamlet')])
+        msg.attach_alternative(html_content, 'text/html')
+        msg.encrypt([hamlet_keys['pubkey']])
+
+        generated_message = msg.message()
+        parts = generated_message.get_payload()
+        assert isinstance(parts, List)
+        assert isinstance(parts[1], Message)
+        self.assertEqual(parts[1].get_content_type(), 'application/octet-stream')
+
+        encrypted = str(parts[1].get_payload())
+        decrypted = gpg_decrypt_content(encrypted, hamlet_keys['privkey'])[0]
+        decrypted_msg = message_from_bytes(decrypted)
+
+        self.assertEqual(decrypted_msg.get_content_type(), 'multipart/alternative')
+
+        parts = decrypted_msg.get_payload()
+        assert isinstance(parts, List)
+        assert isinstance(parts[0], Message)
+        assert isinstance(parts[1], Message)
+
+        self.assertEqual(parts[0].get_content_type(), 'text/plain')
+        self.assertEqual(parts[1].get_content_type(), 'text/html')
+
+        decrypted_text = get_message_part_by_type(decrypted_msg, 'text/plain')
+        decrypted_html = get_message_part_by_type(decrypted_msg, 'text/html')
+        self.assertEqual(text_content, decrypted_text)
+        self.assertEqual(html_content, decrypted_html)
+
+    def test_pgpemailmessage_sign_with_alternatives(self) -> None:
+        text_content = 'This is an important message.'
+        html_content = '<p>This is an <strong>important</strong> message.</p>'
+        msg = PGPEmailMessage(subject='Subject', body=text_content,
+                              to=[self.example_email('hamlet')])
+        msg.attach_alternative(html_content, 'text/html')
+        msg.sign()
+
+        self.check_signed_msg_structure(msg.message())
