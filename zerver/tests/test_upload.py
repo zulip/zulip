@@ -32,6 +32,8 @@ from zerver.models import Attachment, get_user, \
     validate_attachment_request
 from zerver.lib.actions import (
     do_change_plan_type,
+    do_change_icon_source,
+    do_change_logo_source,
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
@@ -1160,8 +1162,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_icon(self) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
-        realm.icon_source = Realm.ICON_FROM_GRAVATAR
-        realm.save()
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon?foo=bar")
             redirect_url = response['Location']
@@ -1176,8 +1177,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
 
         realm = get_realm('zulip')
-        realm.icon_source = Realm.ICON_UPLOADED
-        realm.save()
+        do_change_icon_source(realm, Realm.ICON_UPLOADED)
         response = self.client_get("/json/realm/icon?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + '&foo=bar'))
@@ -1223,8 +1223,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        realm.icon_source = Realm.ICON_UPLOADED
-        realm.save()
+        do_change_icon_source(realm, Realm.ICON_UPLOADED)
 
         result = self.client_delete("/json/realm/icon")
 
@@ -1304,9 +1303,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_default_logo(self) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
-        realm.logo_source = Realm.LOGO_DEFAULT
-        realm.night_logo_source = Realm.LOGO_DEFAULT
-        realm.save()
+        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertEqual(redirect_url, realm_logo_url(realm, self.night) +
@@ -1315,9 +1312,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_realm_logo(self) -> None:
         self.login(self.example_email("hamlet"))
         realm = get_realm('zulip')
-        realm.logo_source = Realm.LOGO_UPLOADED
-        realm.night_logo_source = Realm.LOGO_UPLOADED
-        realm.save()
+        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         response = self.client_get("/json/realm/logo", {'night': ujson.dumps(self.night)})
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(realm_logo_url(realm, self.night) +
@@ -1377,9 +1372,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        realm.logo_source = Realm.LOGO_UPLOADED
-        realm.night_logo_source = Realm.LOGO_UPLOADED
-        realm.save()
+        do_change_logo_source(realm, Realm.LOGO_UPLOADED, self.night)
         result = self.client_delete("/json/realm/logo", {'night': ujson.dumps(self.night)})
         self.assert_json_success(result)
         self.assertIn(field_name, result.json())
