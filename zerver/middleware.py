@@ -97,6 +97,14 @@ def is_slow_query(time_delta: float, path: str) -> bool:
         return time_delta >= 10
     return True
 
+statsd_blacklisted_requests = [
+    'do_confirm', 'signup_send_confirm', 'new_realm_send_confirm,'
+    'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
+    'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
+    'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
+    'upload_file', 'realm_activity', 'user_activity'
+]
+
 def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str, email: str,
                    client_name: str, status_code: int=200, error_content: Optional[AnyStr]=None,
                    error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
@@ -104,21 +112,21 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
     if error_content is not None:
         error_content_iter = (error_content,)
 
-    # For statsd timer name
-    if path == '/':
-        statsd_path = u'webreq'
+    if settings.STATSD_HOST != '':
+        # For statsd timer name
+        if path == '/':
+            statsd_path = u'webreq'
+        else:
+            statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
+            # Remove non-ascii chars from path (there should be none, if there are it's
+            # because someone manually entered a nonexistent path), as UTF-8 chars make
+            # statsd sad when it sends the key name over the socket
+            statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
+        # TODO: This could probably be optimized to use a regular expression rather than a loop.
+        suppress_statsd = any((blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests))
     else:
-        statsd_path = u"webreq.%s" % (path[1:].replace('/', '.'),)
-        # Remove non-ascii chars from path (there should be none, if there are it's
-        # because someone manually entered a nonexistent path), as UTF-8 chars make
-        # statsd sad when it sends the key name over the socket
-        statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
-    blacklisted_requests = ['do_confirm', 'signup_send_confirm', 'new_realm_send_confirm,'
-                            'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
-                            'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
-                            'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
-                            'upload_file', 'realm_activity', 'user_activity']
-    suppress_statsd = any((blacklisted in statsd_path for blacklisted in blacklisted_requests))
+        suppress_statsd = True
+        statsd_path = ''
 
     time_delta = -1
     # A time duration of -1 means the StartLogRequests middleware
