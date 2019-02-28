@@ -262,7 +262,7 @@ run_test('last_seen_status_from_date', () => {
                 i18n.t("On Dec 31"));
 
     assert_same(function (d) { return d.addDays(-300); },
-                i18n.t("On May 06"));
+                i18n.t("On May 06, 2015"));
 
     assert_same(function (d) { return d.addDays(-366); },
                 i18n.t("On Mar 01, 2015"));

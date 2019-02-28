@@ -299,6 +299,7 @@ function get_user_info_popover_items() {
 }
 
 function fetch_group_members(member_ids) {
+
     return member_ids
         .map(function (m) {
             return people.get_person_from_user_id(m);
@@ -307,6 +308,7 @@ function fetch_group_members(member_ids) {
             return m !== undefined;
         })
         .map(function (p) {
+            var user_circle_class = buddy_data.get_user_circle_class(p.user_id);
             return Object.assign({}, p, {
                 user_circle_class: user_circle_class.circle_color,
                 is_active: people.is_active_user_for_popover(p.user_id),
