@@ -24,7 +24,7 @@ Moderation is a big part of making an open community work.
   bad faith. You can reactivate them later if they repent.
 * Delete messages, [delete streams](/help/delete-a-stream), and
   [unsubscribe users from streams](/help/add-or-remove-users-from-a-stream).
-* Rename topics.
+* [Rename topics](/help/rename-a-topic).
 * [Change users' names](/help/change-a-users-name) (e.g. to "Spammer")
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
   [delete custom emoji](/help/add-custom-emoji#delete-a-custom-emoji).
