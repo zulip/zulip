@@ -1,5 +1,8 @@
 # Format your messages
 
+[//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
+[//]: # (Requires some additional fiddling for the LaTeX picture, inline code block, and maybe a few others.)
+
 Zulip uses a variant of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 to allow you to easily format your messages.
@@ -151,11 +154,12 @@ You can also [add custom emoji](/help/add-custom-emoji).
 ## Mentions
 
 Learn more about at-mentions [here](/help/at-mention-a-user).
-The numbers will be added automatically by the typeahead if needed for disambiguation
+The numbers will be added automatically by the typeahead if needed for disambiguation.
 
 ```
 Users: @**Polonius** or @**Zoe|2132** (two asterisks)
 User group: @*support team* (one asterisk)
+Silent mention: @_**Polonius** (@_ instead of @)
 ```
 
 ![](/static/images/help/markdown-mentions.png)
