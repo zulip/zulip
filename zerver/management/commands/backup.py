@@ -64,7 +64,10 @@ class Command(ZulipBaseCommand):
 
             db_name = settings.DATABASES["default"]["NAME"]
             db_dir = os.path.join(tmp, "zulip-backup", "database")
-            run(["pg_dump", "--format=directory", db_name, "--file", db_dir])
+            run(
+                ["pg_dump", "--format=directory", "--file", db_dir, "--", db_name],
+                cwd=tmp,
+            )
             members.append("zulip-backup/database")
 
             if settings.LOCAL_UPLOADS_DIR is not None and os.path.exists(
