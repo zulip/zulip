@@ -116,6 +116,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             emails_restricted_to_domains: noop,
             video_chat_provider: noop,
             waiting_period_threshold: noop,
+            zoom_user_id: noop,
+            zoom_api_key: noop,
+            zoom_api_secret: noop,
         };
         if (event.op === 'update' && _.has(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
