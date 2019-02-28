@@ -2,11 +2,6 @@ const _page_params = {};
 
 set_global('page_params', _page_params);
 set_global('i18n', global.stub_i18n);
-
-set_global('popovers', {
-    user_last_seen_time_status: () => {},
-});
-
 zrequire('people');
 zrequire('presence');
 zrequire('util');

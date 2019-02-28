@@ -174,7 +174,7 @@ exports.user_last_seen_time_status = function (user_id) {
 exports.user_title = function (user_id) {
     var status_text = user_status.get_status_text(user_id);
     var person = people.get_person_from_user_id(user_id);
-    var last_seen = popovers.user_last_seen_time_status(user_id);
+    var last_seen = exports.user_last_seen_time_status(user_id);
     var name = person.full_name;
     var title;
 
