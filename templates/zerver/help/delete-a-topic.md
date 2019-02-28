@@ -15,6 +15,10 @@ In most other cases, [renaming a topic](/help/rename-a-topic) is often a
 better idea, or just leaving the topic as is. Deleting a topic can confuse
 users who come to the topic later via an email notification.
 
+### Delete a topic
+
+{start_tabs}
+
 1. Hover over the topic in the **left sidebar**.
 
 1. Click the down chevron (<i class="fa fa-chevron-down"></i>).
@@ -22,3 +26,5 @@ users who come to the topic later via an email notification.
 1. Click **Delete all messages in `<topic>`**.
 
 1. Click **Delete messages**.
+
+{end_tabs}
