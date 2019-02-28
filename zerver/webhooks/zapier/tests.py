@@ -20,38 +20,3 @@ class ZapierHookTests(WebhookTestCase):
         expected_topic = u"Here is your weather update for the day:"
         expected_message = u"Foggy in the morning.\nMaximum temperature to be 24.\nMinimum temperature to be 12"
         self.send_and_test_stream_message('weather_update', expected_topic, expected_message)
-
-class ZapierZulipAppTests(WebhookTestCase):
-    STREAM_NAME = 'zapier'
-    URL_TEMPLATE = "/api/v1/external/zapier?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'zapier'
-
-    def test_auth(self) -> None:
-        payload = self.get_body('zapier_zulip_app_auth')
-        headers = {'HTTP_USER_AGENT': 'ZapierZulipApp'}
-        result = self.client_post(self.url, payload,
-                                  content_type='application/json',
-                                  **headers)
-        json_result = self.assert_json_success(result)
-        self.assertEqual(json_result['bot_name'], 'Zulip Webhook Bot')
-        self.assertEqual(json_result['bot_email'], 'webhook-bot@zulip.com')
-        self.assertIn('bot_id', json_result)
-
-    def test_stream(self) -> None:
-        expected_topic = u"Sample message from Zapier!"
-        expected_message = u"Hi! I am a new sample message from Zapier!"
-        self.send_and_test_stream_message('zapier_zulip_app_stream',
-                                          expected_topic, expected_message,
-                                          HTTP_USER_AGENT='ZapierZulipApp')
-
-    def test_private(self) -> None:
-        payload = self.get_body('zapier_zulip_app_private')
-        headers = {'HTTP_USER_AGENT': 'ZapierZulipApp'}
-        result = self.client_post(self.url, payload,
-                                  content_type='application/json',
-                                  **headers)
-        self.assert_json_success(result)
-
-        expected_message = "Sample content for private huddle message"
-        msg = self.get_last_message()
-        self.assertEqual(msg.content, expected_message)
