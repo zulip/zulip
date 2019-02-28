@@ -27,7 +27,7 @@
 !!! warn ""
     If you are the only administrator in the organization, you cannot
     deactivate your account. You'll need to
-    [add another administrator](make-a-user-an-administrator) first.
+    [add another administrator](/help/change-a-users-role) first.
 
 ## Related articles
 
