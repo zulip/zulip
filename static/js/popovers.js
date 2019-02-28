@@ -77,30 +77,6 @@ function load_medium_avatar(user, elt) {
     });
 }
 
-function user_last_seen_time_status(user_id) {
-    var status = presence.get_status(user_id);
-    if (status === "active") {
-        return i18n.t("Active now");
-    }
-
-    if (page_params.realm_is_zephyr_mirror_realm) {
-        // We don't send presence data to clients in Zephyr mirroring realms
-        return i18n.t("Unknown");
-    }
-
-    // There are situations where the client has incomplete presence
-    // history on a user.  This can happen when users are deactivated,
-    // or when they just haven't been present in a long time (and we
-    // may have queries on presence that go back only N weeks).
-    //
-    // We give the somewhat vague status of "Unknown" for these users.
-    var last_active_date = presence.last_active_date(user_id);
-    if (last_active_date === undefined) {
-        return i18n.t("More than 2 weeks ago");
-    }
-    return timerender.last_seen_status_from_date(last_active_date.clone());
-}
-
 function calculate_info_popover_placement(size, elt) {
     var ypos = elt.offset().top;
 
@@ -144,7 +120,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_email: user.email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-        user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+        user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
@@ -293,7 +269,7 @@ exports.show_user_profile = function (user) {
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(localFormat),
-        last_seen: user_last_seen_time_status(user.user_id),
+        last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
@@ -333,7 +309,7 @@ function fetch_group_members(member_ids) {
             return Object.assign({}, p, {
                 user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
-                user_last_seen_time_status: user_last_seen_time_status(p.user_id),
+                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
             });
         });
 }

@@ -7,6 +7,7 @@ zrequire('presence');
 zrequire('util');
 zrequire('user_status');
 zrequire('buddy_data');
+set_global('timerender', {});
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -22,6 +23,12 @@ const me = {
     user_id: 1001,
     full_name: 'Human Myself',
     email: 'self@example.com',
+};
+
+const old_user = {
+    user_id: 9999,
+    full_name: 'Old User',
+    email: 'old_user@example.com',
 };
 
 const bot = {
@@ -44,6 +51,7 @@ function make_people() {
     people.add_in_realm(bot);
     people.add_in_realm(selma);
     people.add_in_realm(me);
+    people.add_in_realm(old_user);
 
     people.initialize_current_user(me.user_id);
 }
@@ -187,4 +195,33 @@ run_test('level', () => {
     // stays in level 0.
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
+});
+
+run_test('user_last_seen_time_status', () => {
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id),
+                 'translated: Online now');
+
+    page_params.realm_is_zephyr_mirror_realm = true;
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
+                 'translated: Unknown');
+    page_params.realm_is_zephyr_mirror_realm = false;
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
+                 'translated: More than 2 weeks ago');
+
+    presence.last_active_date = (user_id) => {
+        assert.equal(user_id, old_user.user_id);
+
+        return {
+            clone: () => 'date-stub',
+        };
+    };
+
+    timerender.last_seen_status_from_date = (date) => {
+        assert.equal(date, 'date-stub');
+        return 'May 12';
+    };
+
+    assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
+                 'May 12');
+
 });

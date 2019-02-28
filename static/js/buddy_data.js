@@ -150,6 +150,30 @@ exports.my_user_status = function (user_id) {
     return i18n.t('(you)');
 };
 
+exports.user_last_seen_time_status = function (user_id) {
+    var status = presence.get_status(user_id);
+    if (status === "active") {
+        return i18n.t("Online now");
+    }
+
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        // We don't send presence data to clients in Zephyr mirroring realms
+        return i18n.t("Unknown");
+    }
+
+    // There are situations where the client has incomplete presence
+    // history on a user.  This can happen when users are deactivated,
+    // or when they just haven't been present in a long time (and we
+    // may have queries on presence that go back only N weeks).
+    //
+    // We give the somewhat vague status of "Unknown" for these users.
+    var last_active_date = presence.last_active_date(user_id);
+    if (last_active_date === undefined) {
+        return i18n.t("More than 2 weeks ago");
+    }
+    return timerender.last_seen_status_from_date(last_active_date.clone());
+};
+
 exports.user_title = function (user_id) {
     var buddy_status = exports.buddy_status(user_id);
     var type_desc = presence_descriptions[buddy_status];
