@@ -1935,10 +1935,12 @@ def extract_recipients(
         # We don't complain about empty message recipients here
         return data
 
-    if isinstance(data[0], str):
-        recipients = extract_emails(data)  # type: Union[List[str], List[int]]
-
-    if isinstance(data[0], int):
+    if isinstance(data[0], str) and data[0].isdigit():
+        data = map(int, data)
+        recipients = extract_user_ids(data)  # type: Union[List[str], List[int]]
+    elif isinstance(data[0], str):
+        recipients = extract_emails(data)
+    elif isinstance(data[0], int):
         recipients = extract_user_ids(data)
 
     # Remove any duplicates.

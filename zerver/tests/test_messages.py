@@ -674,6 +674,11 @@ class ExtractedRecipientsTest(TestCase):
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
             extract_recipients(ids)
 
+        # IDs represented as strings are allowed
+        ids = ujson.dumps(['3', '3', '12'])
+        result = sorted(extract_recipients(ids))
+        self.assertEqual(result, [3, 12])
+
         # Heterogeneous lists are not supported
         mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
         with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
