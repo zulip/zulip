@@ -3,7 +3,7 @@
 Messages from muted topics do not show up in **All messages** or generate
 notifications (including [alert word](/help/add-an-alert-word)
 notifications), unless you are
-[@-mentioned](/help/at-mention-a-user). They also do not contribute to
+[mentioned](/help/mention-a-user-or-group). They also do not contribute to
 stream unread counts.
 
 Muted topics still appear in the left sidebar, though they are grayed out.

@@ -2,9 +2,9 @@
 
 You can quote a previous message in your reply.
 
-Note that an [@-mention](/help/at-mention-a-user) inside quoted text will
-not mention the user, so feel free to quote and reply without worrying about
-spurious mentions.
+Note that quote and reply automatically turns mentions in the quoted
+text into
+[silent mentions](/help/mention-a-user-or-group#silently-mention-a-user).
 
 ### Quote and reply
 

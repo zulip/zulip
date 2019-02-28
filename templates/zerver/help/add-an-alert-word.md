@@ -15,4 +15,4 @@ the alert word is included in a message.
 ## Related articles
 
 * [Notification settings](/help/pm-mention-alert-notifications) for alert
-  words, PMs, and @-mentions
+  words, PMs, and mentions

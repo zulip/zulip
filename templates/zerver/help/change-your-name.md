@@ -28,4 +28,4 @@ is useful when users' names are managed via LDAP or another data source.
 ## Reserved words
 
 The words "all", "everyone", and "stream" have special meanings, and if you choose them as your
-display name, nobody will be able to @-mention you.
+display name, nobody will be able to [mention](/help/mention-a-user-or-group) you.

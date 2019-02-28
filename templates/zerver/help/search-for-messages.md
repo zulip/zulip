@@ -35,7 +35,7 @@ Here is the **full list of search operators**.
 * `id:12345`: Show only message `12345`.
 
 * `is:alerted`: See [alert words](/help/add-an-alert-word).
-* `is:mentioned`: See [@-mentions](/help/at-mention-a-user).
+* `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
 * `is:unread`
 * `has:link`

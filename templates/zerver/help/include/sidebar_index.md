@@ -32,8 +32,7 @@
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Quote and reply](/help/quote-and-reply)
-* [@-mention a user](/help/at-mention-a-user)
-* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
+* [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
@@ -75,7 +74,6 @@
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Alert words](/help/add-an-alert-word)
-* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 * [Disable new login emails](/help/disable-new-login-emails)
 * [Configure missed message emails](/help/configure-missed-message-emails)
 * [Change notification sound](/help/change-notification-sound)

@@ -51,8 +51,8 @@ bot can.
 A few more details:
 
 * **Outgoing webhook**: The bot can read private messages where the bot is a
-  participant, and stream messages where the bot is @-mentioned. When the
-  bot is PM'd or at-mentioned, it POSTs the message content to a URL of your
+  participant, and stream messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
+  bot is PM'd or mentioned, it POSTs the message content to a URL of your
   choice. The POST request format can be in a Zulip format or a
   Slack-compatible format.
 

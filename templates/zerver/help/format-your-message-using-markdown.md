@@ -153,7 +153,7 @@ You can also [add custom emoji](/help/add-custom-emoji).
 
 ## Mentions
 
-Learn more about at-mentions [here](/help/at-mention-a-user).
+Learn more about mentions [here](/help/mention-a-user-or-group).
 The numbers will be added automatically by the typeahead if needed for disambiguation.
 
 ```
