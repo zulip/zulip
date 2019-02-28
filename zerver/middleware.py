@@ -446,42 +446,39 @@ class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
             real_ip = real_ip.split(",")[0].strip()
             request.META['REMOTE_ADDR'] = real_ip
 
+@cache_with_key(open_graph_description_cache_key, timeout=3600*24)
+def get_content_description(content: bytes, request: HttpRequest) -> str:
+    str_content = content.decode("utf-8")
+    bs = BeautifulSoup(str_content, features='lxml')
+    # Skip any admonition (warning) blocks, since they're
+    # usually something about users needing to be an
+    # organization administrator, and not useful for
+    # describing the page.
+    for tag in bs.find_all('div', class_="admonition"):
+        tag.clear()
+
+    # Skip code-sections, which just contains navigation instructions.
+    for tag in bs.find_all('div', class_="code-section"):
+        tag.clear()
+
+    text = ''
+    for paragraph in bs.find_all('p'):
+        # .text converts it from HTML to text
+        text = text + paragraph.text + ' '
+        if len(text) > 500:
+            return ' '.join(text.split())
+    return ' '.join(text.split())
+
+def alter_content(request: HttpRequest, content: bytes) -> bytes:
+    first_paragraph_text = get_content_description(content, request)
+    return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
+                           first_paragraph_text.encode("utf-8"))
+
 class FinalizeOpenGraphDescription(MiddlewareMixin):
     def process_response(self, request: HttpRequest,
                          response: StreamingHttpResponse) -> StreamingHttpResponse:
-        @cache_with_key(open_graph_description_cache_key, timeout=3600*24)
-        def get_content_description(content: bytes, request: HttpRequest) -> str:
-            str_content = content.decode("utf-8")
-            bs = BeautifulSoup(str_content, features='lxml')
-            # Skip any admonition (warning) blocks, since they're
-            # usually something about users needing to be an
-            # organization administrator, and not useful for
-            # describing the page.
-            for tag in bs.find_all('div', class_="admonition"):
-                tag.clear()
-
-            # Skip code-sections, which just contains navigation instructions.
-            for tag in bs.find_all('div', class_="code-section"):
-                tag.clear()
-
-            text = ''
-            for paragraph in bs.find_all('p'):
-                # .text converts it from HTML to text
-                text = text + paragraph.text + ' '
-                if len(text) > 500:
-                    return ' '.join(text.split())
-            return ' '.join(text.split())
-
-        def alter_content(content: bytes) -> bytes:
-            first_paragraph_text = get_content_description(content, request)
-            return content.replace(request.placeholder_open_graph_description.encode("utf-8"),
-                                   first_paragraph_text.encode("utf-8"))
-
-        def wrap_streaming_content(content: Iterable[bytes]) -> Iterable[bytes]:
-            for chunk in content:
-                yield alter_content(chunk)
 
         if getattr(request, "placeholder_open_graph_description", None) is not None:
             assert not response.streaming
-            response.content = alter_content(response.content)
+            response.content = alter_content(request, response.content)
         return response
