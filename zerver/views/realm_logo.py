@@ -28,16 +28,7 @@ def upload_logo(request: HttpRequest, user_profile: UserProfile,
             settings.MAX_LOGO_FILE_SIZE))
     upload_logo_image(logo_file, user_profile, night)
     do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_UPLOADED, night)
-    logo_url = realm_logo_url(user_profile.realm, night)
-    if night:
-        json_result = dict(
-            night_logo_url=logo_url
-        )
-    else:
-        json_result = dict(
-            logo_url=logo_url
-        )
-    return json_success(json_result)
+    return json_success()
 
 @require_realm_admin
 @has_request_variables
