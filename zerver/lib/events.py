@@ -168,6 +168,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         for property_name in Realm.property_types:
             state['realm_' + property_name] = getattr(realm, property_name)
 
+        # Don't send the zoom API secret to clients.
+        if state.get('realm_zoom_api_secret'):
+            state['realm_zoom_api_secret'] = ''
+
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
         # fit into that framework.

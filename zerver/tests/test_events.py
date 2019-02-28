@@ -1567,8 +1567,12 @@ class EventsRegisterTest(ZulipTestCase):
             raise AssertionError('No test created for %s' % (name))
         do_set_realm_property(self.user_profile.realm, name, vals[0])
         for val in vals[1:]:
+            state_change_expected = True
+            if name == "zoom_api_secret":
+                state_change_expected = False
             events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, name, val))
+                lambda: do_set_realm_property(self.user_profile.realm, name, val),
+                state_change_expected=state_change_expected)
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

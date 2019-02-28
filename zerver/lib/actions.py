@@ -558,6 +558,10 @@ def do_set_realm_property(realm: Realm, name: str, value: Any) -> None:
 
     setattr(realm, name, value)
     realm.save(update_fields=[name])
+
+    if name == 'zoom_api_secret':
+        # Send '' as the value through the API for the API secret
+        value = ''
     event = dict(
         type='realm',
         op='update',

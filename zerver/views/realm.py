@@ -86,18 +86,26 @@ def update_realm(
         except ValidationError as e:
             return json_error(_('Invalid domain: {}').format(e.messages[0]))
     if video_chat_provider == "Zoom":
+        if not zoom_api_secret:
+            # Use the saved Zoom API secret if a new value isn't being sent
+            zoom_api_secret = user_profile.realm.zoom_api_secret
         if not zoom_user_id:
             return json_error(_('User ID cannot be empty'))
         if not zoom_api_key:
             return json_error(_('API key cannot be empty'))
         if not zoom_api_secret:
             return json_error(_('API secret cannot be empty'))
+        # If any of the Zoom settings have changed, validate the Zoom credentials.
+        #
         # Technically, we could call some other API endpoint that
         # doesn't create a video call link, but this is a nicer
         # end-to-end test, since it verifies that the Zoom API user's
         # scopes includes the ability to create video calls, which is
         # the only capabiility we use.
-        if not request_zoom_video_call_url(zoom_user_id, zoom_api_key, zoom_api_secret):
+        if ((zoom_user_id != realm.zoom_user_id or
+             zoom_api_key != realm.zoom_api_key or
+             zoom_api_secret != realm.zoom_api_secret) and
+                not request_zoom_video_call_url(zoom_user_id, zoom_api_key, zoom_api_secret)):
             return json_error(_('Invalid credentials for the %(third_party_service)s API.') % dict(
                 third_party_service="Zoom"))
 
