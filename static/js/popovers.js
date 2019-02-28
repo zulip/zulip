@@ -120,15 +120,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         user_email: user.email,
         user_full_name: user.full_name,
         user_id: user.user_id,
-<<<<<<< HEAD
-        user_last_seen_time_status: user_last_seen_time_status(user.user_id),
-=======
-<<<<<<< HEAD
-        user_last_seen_time_status: popovers.user_last_seen_time_status(user.user_id),
-=======
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
->>>>>>> refactor: Move user_last_seen_time_status() to buddy_data.
->>>>>>> 41b7fe23a... refactor: Move user_last_seen_time_status() to buddy_data.
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         status_text: user_status.get_status_text(user.user_id),
@@ -277,11 +269,7 @@ exports.show_user_profile = function (user) {
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
         date_joined: moment(user.date_joined).format(localFormat),
-<<<<<<< HEAD
-        last_seen: user_last_seen_time_status(user.user_id),
-=======
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
->>>>>>> 41b7fe23a... refactor: Move user_last_seen_time_status() to buddy_data.
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
@@ -321,15 +309,7 @@ function fetch_group_members(member_ids) {
             return Object.assign({}, p, {
                 user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
-<<<<<<< HEAD
-                user_last_seen_time_status: user_last_seen_time_status(p.user_id),
-=======
-<<<<<<< HEAD
-                user_last_seen_time_status: popovers.user_last_seen_time_status(p.user_id),
-=======
                 user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
->>>>>>> refactor: Move user_last_seen_time_status() to buddy_data.
->>>>>>> 41b7fe23a... refactor: Move user_last_seen_time_status() to buddy_data.
             });
         });
 }
