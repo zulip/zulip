@@ -824,7 +824,7 @@ exports.register_click_handlers = function () {
         var target = $(this).closest('li');
         var user_id = target.find('a').attr('data-user-id');
 
-        if (current_user_sidebar_user_id === user_id) {
+        if (String(current_user_sidebar_user_id) === user_id) {
             // If the popover is already shown, clicking again should toggle it.
             popovers.hide_all();
             return;
