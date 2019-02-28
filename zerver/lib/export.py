@@ -1,3 +1,11 @@
+# This is the main code for the `./manage.py export` data export tool.
+# User docs: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+#
+# Most developers will interact with this primarily when they add a
+# new table to the schema, in which case they likely need to (1) add
+# it the lists in `ALL_ZULIP_TABLES` and similar data structures and
+# (2) if it doesn't belong in EXCLUDED_TABLES, add a Config object for
+# it to get_realm_config.
 import datetime
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key  # for mypy
@@ -118,6 +126,10 @@ ALL_ZULIP_TABLES = {
     'zerver_mutedtopic',
 }
 
+# This set contains those database tables that we expect to not be
+# included in the export.  This tool does validation to ensure that
+# every table in the database is either exported or listed here, to
+# ensure we never accidentally fail to export a table.
 NON_EXPORTED_TABLES = {
     # These invitation/confirmation flow tables don't make sense to
     # export, since invitations links will be broken by the server URL
@@ -185,7 +197,8 @@ NON_EXPORTED_TABLES = {
 }
 
 IMPLICIT_TABLES = {
-    # ManyToMany relationships are exported implicitly.
+    # ManyToMany relationships are exported implicitly when importing
+    # the parent table.
     'zerver_attachment_messages',
 }
 
@@ -194,20 +207,29 @@ ATTACHMENT_TABLES = {
 }
 
 MESSAGE_TABLES = {
-    # message tables get special treatment, because they're so big
+    # message tables get special treatment, because they're by far our
+    # largest tables and need to be paginated.
     'zerver_message',
     'zerver_usermessage',
-    # zerver_reaction belongs here, since it's added late
+    # zerver_reaction belongs here, since it's added late because it
+    # has a foreign key into the Message table.
     'zerver_reaction',
 }
 
+# These get their own file as analytics data can be quite large and
+# would otherwise make realm.json unpleasant to manually inspect
 ANALYTICS_TABLES = {
-    # These get their own file as analytics data can be quite large
     'analytics_realmcount',
     'analytics_streamcount',
     'analytics_usercount',
 }
 
+# This data structure lists all the Django DateTimeField fields in the
+# data model.  These are converted to floats during the export process
+# via floatify_datetime_fields, and back during the import process.
+#
+# TODO: This data structure could likely eventually be replaced by
+# inspecting the corresponding Django models
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'pub_date'],
@@ -227,7 +249,7 @@ DATE_FIELDS = {
 
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
-    # configuration for every table.
+    # configuration for every table declared in the `models.py` files.
     target_models = (
         list(apps.get_app_config('analytics').get_models(include_auto_created=True)) +
         list(apps.get_app_config('django_otp').get_models(include_auto_created=True)) +
@@ -306,9 +328,10 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
 class Config:
-    '''
-    A Config object configures a single table for exporting (and,
-    maybe some day importing as well.
+    '''A Config object configures a single table for exporting (and, maybe
+    some day importing as well.  This configuration defines what
+    process needs to be followed to correctly extract the set of
+    objects to export.
 
     You should never mutate Config objects as part of the export;
     instead use the data to determine how you populate other
@@ -505,8 +528,8 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         )
 
 def get_realm_config() -> Config:
-    # This is common, public information about the realm that we can share
-    # with all realm users.
+    # This function generates the main Config object that defines how
+    # to do a full-realm export of a single realm from a Zulip server.
 
     realm_config = Config(
         table='zerver_realm',
@@ -1451,6 +1474,9 @@ def export_single_user(user_profile: UserProfile, response: TableData) -> None:
     )
 
 def get_single_user_config() -> Config:
+    # This function defines the limited configuration for what data to
+    # export when exporting all data that a single Zulip user has
+    # access to in an organization.
 
     # zerver_userprofile
     user_profile_config = Config(
@@ -1536,6 +1562,8 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     write_data_to_file(output_file=export_file, data=response)
 
 def get_analytics_config() -> Config:
+    # The Config function defines what data to export for the
+    # analytics.json file in a full-realm export.
 
     analytics_config = Config(
         table='zerver_analytics',
