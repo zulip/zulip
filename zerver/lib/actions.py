@@ -5138,9 +5138,11 @@ def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
     streams = [(row.to_dict()) for row in query]
     return streams
 
-def do_get_streams(user_profile: UserProfile, include_public: bool=True,
-                   include_subscribed: bool=True, include_all_active: bool=False,
-                   include_default: bool=False) -> List[Dict[str, Any]]:
+def do_get_streams(
+        user_profile: UserProfile, include_public: bool=True,
+        include_subscribed: bool=True, include_all_active: bool=False,
+        include_default: bool=False, include_owner_subscribed: bool=False
+) -> List[Dict[str, Any]]:
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
@@ -5153,19 +5155,35 @@ def do_get_streams(user_profile: UserProfile, include_public: bool=True,
             active=True,
         ).select_related('recipient')
 
+        # We construct a query as the or (|) of the various sources
+        # this user requested streams from.
+        query_filter = None
+
+        def add_filter_option(option: Q) -> None:
+            nonlocal query_filter
+            if query_filter is None:
+                query_filter = option
+            else:
+                query_filter |= option
+
         if include_subscribed:
             recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])
+            add_filter_option(recipient_check)
         if include_public:
             invite_only_check = Q(invite_only=False)
+            add_filter_option(invite_only_check)
+        if include_owner_subscribed and user_profile.is_bot:
+            assert user_profile.bot_owner is not None
+            owner_subs = get_stream_subscriptions_for_user(user_profile.bot_owner).filter(
+                active=True,
+            ).select_related('recipient')
+            owner_subscribed_check = Q(id__in=[sub.recipient.type_id for sub in owner_subs])
+            add_filter_option(owner_subscribed_check)
 
-        if include_subscribed and include_public:
-            query = query.filter(recipient_check | invite_only_check)
-        elif include_public:
-            query = query.filter(invite_only_check)
-        elif include_subscribed:
-            query = query.filter(recipient_check)
+        if query_filter is not None:
+            query = query.filter(query_filter)
         else:
-            # We're including nothing, so don't bother hitting the DB.
+            # Don't bother doing to the database with no valid sources
             query = []
 
     streams = [(row.to_dict()) for row in query]

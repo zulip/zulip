@@ -1825,6 +1825,14 @@ paths:
           type: boolean
           default: false
         example: true
+      - name: include_owner_subscribed
+        in: query
+        description: If the user is a bot, include all streams that the
+          bot's owner is subscribed to.
+        schema:
+          type: boolean
+          default: false
+        example: true
       security:
       - basicAuth: []
       responses:
