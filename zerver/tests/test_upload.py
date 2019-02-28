@@ -1323,12 +1323,6 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
         A PUT request to /json/realm/logo with a valid file should return a url
         and actually create an realm logo.
         """
-        if self.night:
-            field_name = 'night_logo_url'
-            file_name = 'night_logo.png'
-        else:
-            field_name = 'logo_url'
-            file_name = 'logo.png'
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
@@ -1337,13 +1331,10 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/realm/logo", {'file': fp, 'night': ujson.dumps(self.night)})
             realm = get_realm('zulip')
             self.assert_json_success(result)
-            self.assertIn(field_name, result.json())
-            base = '/user_avatars/%s/realm/%s' % (realm.id, file_name)
-            url = result.json()[field_name]
-            self.assertEqual(base, url[:len(base)])
+            logo_url = realm_logo_url(realm, self.night)
 
             if rfname is not None:
-                response = self.client_get(url)
+                response = self.client_get(logo_url)
                 data = b"".join(response.streaming_content)
                 # size should be 100 x 100 because thumbnail keeps aspect ratio
                 # while trying to fit in a 800 x 100 box without losing part of the image
