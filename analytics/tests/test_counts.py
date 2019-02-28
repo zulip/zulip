@@ -1024,7 +1024,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
             self.assertTrue(UserCount.objects.filter(
                 user=user, property=self.current_property, subgroup='false',
                 end_time=end_time, value=1).exists())
-        self.assertFalse(UserCount.objects.filter(user=user2).exists())
+        self.assertFalse(UserCount.objects.filter(user=user2, end_time=end_time).exists())
 
 class TestRealmActiveHumans(AnalyticsTestCase):
     def setUp(self) -> None:
