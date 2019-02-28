@@ -64,6 +64,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
 jedi==0.13.2              # via ipython
 jinja2==2.10
+line_profiler==2.1.2
 lxml==4.3.0
 markdown-include==0.5.1
 markdown==3.0.1

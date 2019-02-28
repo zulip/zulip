@@ -78,6 +78,9 @@ httplib2==0.12.0
 # Needed for hipchat import
 hypchat==0.21
 
+# For doing highly usable Python profiling
+line_profiler==2.1.2
+
 # Needed for inlining the CSS in emails
 premailer==3.2.0
 
