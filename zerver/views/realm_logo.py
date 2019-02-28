@@ -47,16 +47,7 @@ def delete_logo_backend(request: HttpRequest, user_profile: UserProfile,
     # be needed if the URL was cached and it is rewrited
     # in any case after next update.
     do_change_logo_source(user_profile.realm, user_profile.realm.LOGO_DEFAULT, night)
-    default_url = realm_logo_url(user_profile.realm, night)
-    if night:
-        json_result = dict(
-            night_logo_url=default_url
-        )
-    else:
-        json_result = dict(
-            logo_url=default_url
-        )
-    return json_success(json_result)
+    return json_success()
 
 @has_request_variables
 def get_logo_backend(request: HttpRequest, user_profile: UserProfile,
