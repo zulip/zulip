@@ -449,8 +449,8 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(converted, expected)
 
     @override_settings(INLINE_IMAGE_PREVIEW=False)
-    def test_image_preview_enabled_for_realm(self) -> None:
-        ret = bugdown.image_preview_enabled_for_realm()
+    def test_image_preview_enabled(self) -> None:
+        ret = bugdown.image_preview_enabled()
         self.assertEqual(ret, False)
 
         settings.INLINE_IMAGE_PREVIEW = True
@@ -459,25 +459,49 @@ class BugdownTest(ZulipTestCase):
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm = message.get_realm()
 
-        ret = bugdown.image_preview_enabled_for_realm()
-        self.assertEqual(ret, realm.inline_image_preview)
-
-        ret = bugdown.image_preview_enabled_for_realm()
+        ret = bugdown.image_preview_enabled()
         self.assertEqual(ret, True)
 
+        ret = bugdown.image_preview_enabled(no_previews=True)
+        self.assertEqual(ret, False)
+
+        ret = bugdown.image_preview_enabled(message, realm)
+        self.assertEqual(ret, True)
+
+        ret = bugdown.image_preview_enabled(message)
+        self.assertEqual(ret, True)
+
+        ret = bugdown.image_preview_enabled(message, realm,
+                                            no_previews=True)
+        self.assertEqual(ret, False)
+
+        ret = bugdown.image_preview_enabled(message, no_previews=True)
+        self.assertEqual(ret, False)
+
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
-    def test_url_embed_preview_enabled_for_realm(self) -> None:
+    def test_url_embed_preview_enabled(self) -> None:
         sender_user_profile = self.example_user('othello')
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
 
-        ret = bugdown.url_embed_preview_enabled_for_realm()
+        ret = bugdown.url_embed_preview_enabled()
         self.assertEqual(ret, False)
 
         settings.INLINE_URL_EMBED_PREVIEW = True
 
-        ret = bugdown.url_embed_preview_enabled_for_realm()
-        self.assertEqual(ret, realm.inline_image_preview)
+        ret = bugdown.url_embed_preview_enabled()
+        self.assertEqual(ret, True)
+
+        ret = bugdown.image_preview_enabled(no_previews=True)
+        self.assertEqual(ret, False)
+
+        ret = bugdown.url_embed_preview_enabled(message, realm)
+        self.assertEqual(ret, True)
+        ret = bugdown.url_embed_preview_enabled(message)
+        self.assertEqual(ret, True)
+
+        ret = bugdown.url_embed_preview_enabled(message, no_previews=True)
+        self.assertEqual(ret, False)
 
     def test_inline_dropbox(self) -> None:
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'

@@ -195,9 +195,13 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
     return link
 
-def url_embed_preview_enabled_for_realm(message: Optional[Message]=None,
-                                        realm: Optional[Realm]=None) -> bool:
+def url_embed_preview_enabled(message: Optional[Message]=None,
+                              realm: Optional[Realm]=None,
+                              no_previews: Optional[bool]=False) -> bool:
     if not settings.INLINE_URL_EMBED_PREVIEW:
+        return False
+
+    if no_previews:
         return False
 
     if realm is None:
@@ -212,9 +216,13 @@ def url_embed_preview_enabled_for_realm(message: Optional[Message]=None,
 
     return realm.inline_url_embed_preview
 
-def image_preview_enabled_for_realm(message: Optional[Message]=None,
-                                    realm: Optional[Realm]=None) -> bool:
+def image_preview_enabled(message: Optional[Message]=None,
+                          realm: Optional[Realm]=None,
+                          no_previews: Optional[bool]=False) -> bool:
     if not settings.INLINE_IMAGE_PREVIEW:
+        return False
+
+    if no_previews:
         return False
 
     if realm is None:
@@ -589,14 +597,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         return url
 
-    def image_preview_enabled(self) -> bool:
-        return image_preview_enabled_for_realm(
-            self.markdown.zulip_message,
-            self.markdown.zulip_realm,
-        )
-
     def is_image(self, url: str) -> bool:
-        if not self.image_preview_enabled():
+        if not self.markdown.image_preview_enabled:
             return False
         parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
@@ -651,7 +653,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def youtube_id(self, url: str) -> Optional[str]:
-        if not self.image_preview_enabled():
+        if not self.markdown.image_preview_enabled:
             return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
@@ -671,7 +673,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def vimeo_id(self, url: str) -> Optional[str]:
-        if not self.image_preview_enabled():
+        if not self.markdown.image_preview_enabled:
             return None
         #(http|https)?:\/\/(www\.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|)(\d+)(?:|\/\?)
         # If it matches, match.group('id') is the video id.
@@ -1004,8 +1006,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if db_data and db_data['sent_by_bot']:
                 continue
 
-            if not url_embed_preview_enabled_for_realm(self.markdown.zulip_message,
-                                                       self.markdown.zulip_realm):
+            if not self.markdown.url_embed_preview_enabled:
                 continue
 
             try:
@@ -2123,7 +2124,8 @@ def do_convert(content: str,
                sent_by_bot: Optional[bool]=False,
                translate_emoticons: Optional[bool]=False,
                mention_data: Optional[MentionData]=None,
-               email_gateway: Optional[bool]=False) -> str:
+               email_gateway: Optional[bool]=False,
+               no_previews: Optional[bool]=False) -> str:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
     # * Nothing is passed in other than content -> just run default options (e.g. for docs)
@@ -2166,6 +2168,10 @@ def do_convert(content: str,
     _md_engine.zulip_message = message
     _md_engine.zulip_realm = message_realm
     _md_engine.zulip_db_data = None  # for now
+    _md_engine.image_preview_enabled = image_preview_enabled(
+        message, message_realm, no_previews)
+    _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
+        message, message_realm, no_previews)
 
     # Pre-fetch data from the DB that is used in the bugdown thread
     if message is not None:
@@ -2265,10 +2271,11 @@ def convert(content: str,
             sent_by_bot: Optional[bool]=False,
             translate_emoticons: Optional[bool]=False,
             mention_data: Optional[MentionData]=None,
-            email_gateway: Optional[bool]=False) -> str:
+            email_gateway: Optional[bool]=False,
+            no_previews: Optional[bool]=False) -> str:
     bugdown_stats_start()
     ret = do_convert(content, message, message_realm,
                      possible_words, sent_by_bot, translate_emoticons,
-                     mention_data, email_gateway)
+                     mention_data, email_gateway, no_previews=no_previews)
     bugdown_stats_finish()
     return ret

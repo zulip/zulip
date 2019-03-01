@@ -1441,7 +1441,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
 
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)
-    if links_for_embed and bugdown.url_embed_preview_enabled_for_realm(message):
+    if links_for_embed and bugdown.url_embed_preview_enabled(message):
         event_data = {
             'message_id': message.id,
             'message_content': message.content,
