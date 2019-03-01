@@ -42,7 +42,7 @@ exports.get_user_circle_class = function (user_id) {
         return 'user_circle_orange';
     case 'away_them':
     case 'away_me':
-        return 'user_circle_empty';
+        return 'user_circle_empty_line';
     default:
         return 'user_circle_empty';
     }
