@@ -248,36 +248,6 @@ a.conversation-partners:hover {
     text-decoration: underline;
 }
 
-/*
-
-    The .arrow class is used in Zulip for chevrons,
-    but it's also used by popover for the little
-    triangle in the popovers.  We are moving to
-    eliminating the arrow class and using more concrete
-    classes for chevrons.  Here is an audit of the existing
-    state:
-
-        All messages:
-            has stream-sidebar-arrow (why?????)
-            ul.filters .arrow (right: 10px, etc.)
-
-        Private messages:
-            no chevrons
-
-        stream chevron
-            has stream-sidebar-arrow (ok)
-            ul.filters .arrow (right: 10px, etc.)
-
-        topic chevron:
-            ul.filters .topic-sidebar-arrow (ok, smaller font)
-
-            ul.filters .arrow:
-                keeps position, right
-                ignores top, font-size, display
-                display would be none either way
-
-*/
-
 ul.filters i {
     padding-right: 0.25em;
     /* Make filter icons the same width so labels line up. */
@@ -285,42 +255,59 @@ ul.filters i {
     width: 13px;
 }
 
-ul.filters .arrow {
+/*
+    All of our left sidebar handlers use absolute
+    positioning.  We should fix that.
+*/
+.all-messages-arrow,
+.stream-sidebar-arrow,
+.topic-sidebar-arrow {
     position: absolute;
-    top: 2px;
-    right: 10px;
-    font-size: 0.8em;
     display: none;
 }
 
-ul.filters li:hover .arrow {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 53%);
+/*
+    The All Messages and Stream chevrons are
+    pretty similar.
+*/
+.all-messages-arrow,
+.stream-sidebar-arrow {
+    top: 2px;
+    right: 10px;
+    font-size: 0.8em;
 }
 
-ul.filters li .arrow:hover {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 0%);
-}
-
-ul.filters .topic-sidebar-arrow {
-    font-size: 0.7em;
+/*
+    For topic chevrons we use a slightly smaller
+    font to show they're "lower" in the hierarchy,
+    which also affects it positioning.
+*/
+.topic-sidebar-arrow {
     top: 1px;
-    display: none !important;
+    right: 10px;
+    font-size: 0.7em;
 }
 
+/*
+    When you hover over list items, we hover
+    the relevant chevrons in light gray.
+*/
+li.top_left_all_messages:hover .all-messages-arrow,
+#stream_filters li:hover .stream-sidebar-arrow,
 li.topic-list-item:hover .topic-sidebar-arrow {
-    display: inline !important;
+    display: inline;
     cursor: pointer;
     color: hsl(0, 0%, 53%);
 }
 
-li.topic-list-item .topic-sidebar-arrow:hover {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 0%);
+/*
+    If you hover directly over the chevron itself,
+    show it in black.
+*/
+.all-messages-arrow:hover,
+.stream-sidebar-arrow:hover,
+.topic-sidebar-arrow:hover {
+    color: hsl(0, 0%, 0%) !important;
 }
 
 ul.filters li.muted_topic,

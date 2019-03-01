@@ -222,7 +222,7 @@ exports.register_click_handlers = function () {
         });
     });
 
-    $('#global_filters').on('click', '.stream-sidebar-arrow', build_all_messages_popover);
+    $('#global_filters').on('click', '.all-messages-arrow', build_all_messages_popover);
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();

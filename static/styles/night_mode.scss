@@ -257,7 +257,9 @@ on a dark background, and don't change the dark labels dark either. */
     #searchbox .search_button,
     .close,
     #user_presences li:hover .user-list-arrow,
-    ul.filters li:hover .arrow {
+    li.top_left_all_messages:hover .all-messages-arrow,
+    #stream_filters li:hover .stream-sidebar-arrow,
+    li.topic-list-item:hover .topic-sidebar-arrow {
         color: hsl(236, 33%, 80%);
     }
 
@@ -267,10 +269,15 @@ on a dark background, and don't change the dark labels dark either. */
     #searchbox_legacy .search_button:hover,
     #searchbox a.search_icon:hover,
     #searchbox .search_button:hover,
-    .close:hover,
-    #user_presences li .user-list-arrow:hover,
-    ul.filters li .arrow:hover {
+    .close:hover {
         color: hsl(0, 0%, 100%);
+    }
+
+    #user_presences li .user-list-arrow:hover,
+    .all-messages-arrow:hover,
+    .stream-sidebar-arrow:hover,
+    .topic-sidebar-arrow:hover {
+        color: hsl(0, 0%, 100%) !important;
     }
 
     #streamlist-toggle,
