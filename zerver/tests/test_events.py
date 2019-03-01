@@ -44,6 +44,7 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_is_admin,
+    do_change_is_guest,
     do_change_notification_settings,
     do_change_realm_domain,
     do_change_stream_description,
@@ -1422,6 +1423,21 @@ class EventsRegisterTest(ZulipTestCase):
         error = default_stream_groups_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_default_stream_group_events_guest(self) -> None:
+        streams = []
+        for stream_name in ["Scotland", "Verona", "Denmark"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        do_create_default_stream_group(self.user_profile.realm, "group1",
+                                       "This is group1", streams)
+        group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
+
+        do_change_is_guest(self.user_profile, True)
+        venice_stream = get_stream("Venice", self.user_profile.realm)
+        self.do_test(lambda: do_add_streams_to_default_stream_group(self.user_profile.realm,
+                                                                    group, [venice_stream]),
+                     state_change_expected = False, num_events=0)
+
     def test_default_streams_events(self) -> None:
         default_streams_checker = self.check_events_dict([
             ('type', equals('default_streams')),
@@ -1439,6 +1455,14 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(lambda: do_remove_default_stream(stream))
         error = default_streams_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_default_streams_events_guest(self) -> None:
+        do_change_is_guest(self.user_profile, True)
+        stream = get_stream("Scotland", self.user_profile.realm)
+        self.do_test(lambda: do_add_default_stream(stream),
+                     state_change_expected = False, num_events=0)
+        self.do_test(lambda: do_remove_default_stream(stream),
+                     state_change_expected = False, num_events=0)
 
     def test_muted_topics_events(self) -> None:
         muted_topics_checker = self.check_events_dict([

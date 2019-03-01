@@ -111,6 +111,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% if not is_guest %}
                 <li tabindex="0" data-section="default-streams-list">
                     <i class="icon fa fa-exchange" aria-hidden="true"></i>
                     <div class="text">{{ _('Default streams') }}</div>
@@ -118,6 +119,7 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
+                {% endif %}
                 <li tabindex="0" data-section="filter-settings">
                     <i class="icon fa fa-font" aria-hidden="true"></i>
                     <div class="text">{{ _('Linkifiers') }}</div>

@@ -289,11 +289,17 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
-        state['realm_default_streams'] = streams_to_dicts_sorted(
-            get_default_streams_for_realm(realm.id))
+        if user_profile.is_guest:
+            state['realm_default_streams'] = []
+        else:
+            state['realm_default_streams'] = streams_to_dicts_sorted(
+                get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
-        state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
-            get_default_stream_groups(realm))
+        if user_profile.is_guest:
+            state['realm_default_stream_groups'] = []
+        else:
+            state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
+                get_default_stream_groups(realm))
 
     if want('stop_words'):
         state['stop_words'] = read_stop_words()

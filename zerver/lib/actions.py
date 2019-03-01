@@ -3650,14 +3650,14 @@ def notify_default_streams(realm: Realm) -> None:
         type="default_streams",
         default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm.id))
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event(realm, event, active_non_guest_user_ids(realm.id))
 
 def notify_default_stream_groups(realm: Realm) -> None:
     event = dict(
         type="default_stream_groups",
         default_stream_groups=default_stream_groups_to_dicts_sorted(get_default_stream_groups(realm))
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    send_event(realm, event, active_non_guest_user_ids(realm.id))
 
 def do_add_default_stream(stream: Stream) -> None:
     realm_id = stream.realm_id
