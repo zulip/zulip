@@ -255,6 +255,7 @@ on a dark background, and don't change the dark labels dark either. */
     #searchbox a.search_icon,
     #searchbox .search_button,
     .close,
+    #user_presences li:hover .user-list-arrow,
     ul.filters li:hover .arrow {
         color: hsl(236, 33%, 80%);
     }
@@ -266,6 +267,7 @@ on a dark background, and don't change the dark labels dark either. */
     #searchbox a.search_icon:hover,
     #searchbox .search_button:hover,
     .close:hover,
+    #user_presences li .user-list-arrow:hover,
     ul.filters li .arrow:hover {
         color: hsl(0, 0%, 100%);
     }

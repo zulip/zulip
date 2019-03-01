@@ -792,7 +792,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    $('#user_presences').on('click', 'span.arrow', function (e) {
+    $('#user_presences').on('click', '.user-list-arrow', function (e) {
         e.stopPropagation();
 
         // use email of currently selected user, rather than some elem comparison,

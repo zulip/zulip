@@ -273,17 +273,6 @@ a.conversation-partners:hover {
                 ignores top, font-size, display
                 display would be none either way
 
-        buddy list
-            span:
-                #user_presences .arrow (ok, top=0)
-
-                ul.filters .arrow
-                    keeps all but top
-
-            i:
-                ul.filters i
-                ignores ul.filters arrow
-
 */
 
 ul.filters i {
