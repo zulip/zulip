@@ -20,7 +20,6 @@ import "node_modules/handlebars/dist/handlebars.runtime.js";
 import "node_modules/to-markdown/dist/to-markdown.js";
 import "node_modules/flatpickr/dist/flatpickr.js";
 import "node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.js";
-import "node_modules/perfect-scrollbar/dist/perfect-scrollbar.js";
 import "node_modules/error-stack-parser/dist/error-stack-parser.min.js";
 import "node_modules/sortablejs/Sortable.js";
 import "generated/emoji/emoji_codes.js";

@@ -1,7 +1,10 @@
 global.stub_out_jquery();
 
 set_global('templates', {});
-set_global('ui', {});
+set_global('ui', {
+    get_content_element: element => element,
+    get_scroll_element: element => element,
+});
 zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');

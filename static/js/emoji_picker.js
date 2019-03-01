@@ -334,10 +334,10 @@ function may_be_change_focused_emoji(next_section, next_index, preserve_scroll) 
             next_emoji.focus();
         } else {
             var $emoji_map = $(".emoji-popover-emoji-map");
-            var start = $emoji_map.scrollTop();
+            var start = ui.get_scroll_element($emoji_map).scrollTop();
             next_emoji.focus();
-            if ($emoji_map.scrollTop() !== start) {
-                $emoji_map.scrollTop(start);
+            if (ui.get_scroll_element($emoji_map).scrollTop() !== start) {
+                ui.get_scroll_element($emoji_map).scrollTop(start);
             }
         }
         update_emoji_showcase(next_emoji);
@@ -352,7 +352,7 @@ function may_be_change_active_section(next_section) {
         current_index = 0;
         var offset = section_head_offsets[current_section];
         if (offset) {
-            $(".emoji-popover-emoji-map").scrollTop(offset.position_y);
+            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
             may_be_change_focused_emoji(current_section, current_index);
         }
     }
@@ -427,7 +427,7 @@ exports.navigate = function (event_name) {
            is_cursor_at_end && event_name === "right_arrow") {
             selected_emoji.focus();
             if (current_section === 0 && current_index < 6) {
-                $(".emoji-popover-emoji-map").scrollTop(0);
+                ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
             }
             update_emoji_showcase(selected_emoji);
             return true;
@@ -449,8 +449,8 @@ exports.navigate = function (event_name) {
             // consistent (cursor goes to the end of the filter
             // string).
             $('.emoji-popover-filter').focus().caret(Infinity);
-            $(".emoji-popover-emoji-map").scrollTop(0);
-            $(".emoji-search-results-container").scrollTop(0);
+            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(0);
+            ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
             current_index = 0;
             reset_emoji_showcase();
@@ -549,8 +549,8 @@ exports.emoji_select_tab = function (elt) {
 function register_popover_events(popover) {
     var $emoji_map = popover.find('.emoji-popover-emoji-map');
 
-    $emoji_map.on("scroll", function () {
-        emoji_picker.emoji_select_tab($emoji_map);
+    ui.get_scroll_element($emoji_map).on("scroll", function () {
+        emoji_picker.emoji_select_tab(ui.get_scroll_element($emoji_map));
     });
 
     $('.emoji-popover-filter').on('input', filter_emojis);
@@ -713,7 +713,7 @@ exports.register_click_handlers = function () {
         }.bind(this));
 
         if (offset) {
-            $(".emoji-popover-emoji-map").scrollTop(offset.position_y);
+            ui.get_scroll_element($(".emoji-popover-emoji-map")).scrollTop(offset.position_y);
         }
     });
 

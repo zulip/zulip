@@ -91,13 +91,13 @@ exports.initialize_kitchen_sink_stuff = function () {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $('.modal-body, .scrolling_list, input, textarea').on('wheel', function (e) {
-        var self = $(this);
+        var self = ui.get_scroll_element($(this));
         var scroll = self.scrollTop();
         var delta = e.originalEvent.deltaY;
 
         // The -1 fudge factor is important here due to rounding errors.  Better
         // to err on the side of not scrolling.
-        var max_scroll = this.scrollHeight - self.innerHeight() - 1;
+        var max_scroll = self.prop("scrollHeight") - self.innerHeight() - 1;
 
         e.stopPropagation();
         if (delta < 0 && scroll <= 0 ||

@@ -119,7 +119,7 @@ li.show-more-topics a {
 #private-container,
 #stream-filters-container {
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
     position: relative;
     z-index: 0;
     width: 100%;

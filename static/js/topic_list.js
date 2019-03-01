@@ -305,12 +305,9 @@ exports.zoom_in = function () {
         if (after_count === before_count) {
             widget.show_no_more_topics();
         }
-
-        ui.update_scrollbar($("#stream-filters-container"));
     }
 
-    $('#stream-filters-container').scrollTop(0);
-    ui.update_scrollbar($("#stream-filters-container"));
+    ui.get_scroll_element($('#stream-filters-container')).scrollTop(0);
     active_widget.show_spinner();
     topic_data.get_server_history(stream_id, on_success);
 };

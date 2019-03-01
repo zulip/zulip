@@ -17,6 +17,7 @@ zrequire('scroll_util');
 zrequire('list_cursor');
 zrequire('stream_list');
 zrequire('topic_zoom');
+zrequire('ui');
 
 stream_color.initialize();
 
@@ -326,14 +327,9 @@ run_test('narrowing', () => {
     stream_list.zoom_out_topics = noop;
     scroll_util.scroll_element_into_container = noop;
 
-    var scrollbar_updated = false;
-
     set_global('ui', {
-        update_scrollbar: function () {scrollbar_updated = true;},
+        get_scroll_element: element => element,
     });
-    ui.update_scrollbar(
-        $.stub_selector("#stream-filters-container")
-    );
 
     assert(!$('<devel sidebar row html>').hasClass('active-filter'));
 
@@ -346,9 +342,7 @@ run_test('narrowing', () => {
     ]);
     stream_list.handle_narrow_activated(filter);
     assert($('<devel sidebar row html>').hasClass('active-filter'));
-    assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
-    scrollbar_updated = false;
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},
         {operator: 'topic', operand: 'sedans'},
@@ -356,7 +350,6 @@ run_test('narrowing', () => {
     stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert(!$('<cars sidebar row html>').hasClass('active-filter')); // false because of topic
-    assert(scrollbar_updated);  // Make sure we are updating perfectScrollbar.
 
     filter = new Filter([
         {operator: 'stream', operand: 'cars'},

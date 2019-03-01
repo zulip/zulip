@@ -209,11 +209,12 @@ exports.add_sub_to_table = function (sub) {
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (stream_create.get_name() === sub.name) {
-        $(".streams-list").prepend(html).scrollTop(0);
+        ui.get_content_element($(".streams-list")).prepend(html);
+        ui.reset_scrollbar($(".streams-list"));
     } else {
-        $(".streams-list").append(html);
+        ui.get_content_element($(".streams-list")).append(html);
     }
-    $(".subscriptions .settings").append($(settings_html));
+    ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -369,7 +370,7 @@ exports.populate_stream_settings_left_panel = function () {
         subscriptions: sub_rows,
     };
     var html = templates.render('subscriptions', template_data);
-    $('#subscriptions_table .streams-list').html(html);
+    ui.get_content_element($('#subscriptions_table .streams-list')).html(html);
 };
 
 // query is now an object rather than a string.
@@ -378,7 +379,7 @@ exports.filter_table = function (query) {
     exports.show_active_stream_in_left_panel();
 
     var widgets = {};
-    var streams_list_scrolltop = $(".streams-list").scrollTop();
+    var streams_list_scrolltop = ui.get_scroll_element($(".streams-list")).scrollTop();
 
     var stream_ids = [];
     _.each($("#subscriptions_table .stream-row"), function (row) {
@@ -419,13 +420,13 @@ exports.filter_table = function (query) {
     );
 
     _.each(all_stream_ids, function (stream_id) {
-        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
+        ui.get_content_element($('#subscriptions_table .streams-list')).append(widgets[stream_id]);
     });
 
     exports.maybe_reset_right_panel();
 
     // this puts the scrollTop back to what it was before the list was updated again.
-    $(".streams-list").scrollTop(streams_list_scrolltop);
+    ui.get_scroll_element($(".streams-list")).scrollTop(streams_list_scrolltop);
 };
 
 var subscribed_only = true;

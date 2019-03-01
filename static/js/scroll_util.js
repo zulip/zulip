@@ -34,6 +34,7 @@ exports.scroll_element_into_container = function (elem, container) {
     // this will be non-intrusive to users when they already have
     // the element visible.
 
+    container = ui.get_scroll_element(container);
     var elem_top = elem.position().top;
     var elem_bottom = elem_top + elem.innerHeight();
 

@@ -130,7 +130,6 @@ exports.update_subscribers_list = function (sub) {
             stream_edit.sort_but_pin_current_user_on_top(emails);
             subscribers_list.data(emails);
             subscribers_list.render();
-            ui.update_scrollbar($(".subscriber_list_container"));
         }
         $(".subscriber_list_settings_container").show();
     }

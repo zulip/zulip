@@ -66,12 +66,44 @@ a.no-underline:hover {
     font-style: italic;
 }
 
-.ps--scrolling-x > .ps__rail-x > .ps__thumb-x:hover {
-    background-color: hsl(0, 0%, 38%);
+.simplebar-track .simplebar-scrollbar::before {
+    background-color: rgb(136, 136, 136);
 }
 
-.ps--scrolling-y > .ps__rail-y > .ps__thumb-y:hover {
-    background-color: hsl(0, 0%, 38%);
+.simplebar-track.simplebar-vertical {
+    transition: width 0.2s ease 1s;
+}
+
+.simplebar-track.simplebar-vertical.simplebar-hover {
+    width: 15px;
+    transition: width 0.2s ease;
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar {
+    transition: width 0.2s ease 1s;
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar.simplebar-hover {
+    width: 11px;
+    transition: width 0.2s ease;
+}
+
+.simplebar-track.simplebar-horizontal {
+    transition: height 0.2s ease 1s;
+}
+
+.simplebar-track.simplebar-horizontal.simplebar-hover {
+    height: 15px;
+    transition: height 0.2s ease;
+}
+
+.simplebar-track.simplebar-horizontal .simplebar-scrollbar {
+    transition: height 0.2s ease 1s;
+}
+
+.simplebar-track.simplebar-horizontal .simplebar-scrollbar.simplebar-hover {
+    height: 11px;
+    transition: height 0.2s ease;
 }
 
 /* -- flex forms -- */

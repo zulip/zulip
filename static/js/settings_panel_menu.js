@@ -73,11 +73,11 @@ exports.make_menu = function (opts) {
 
         $(".settings-section, .settings-wrapper").removeClass("show");
 
-        ui.reset_scrollbar($("#settings_content"));
-
         settings_sections.load_settings_section(section);
 
         self.get_panel().addClass('show');
+
+        ui.reset_scrollbar($("#settings_content"));
 
         var $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
