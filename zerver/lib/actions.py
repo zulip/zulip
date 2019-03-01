@@ -1751,7 +1751,7 @@ def create_stream_if_needed(realm: Realm,
     )
 
     if created:
-        stream.rendered_description = bugdown_convert(stream.description)
+        stream.rendered_description = bugdown_convert(stream.description, no_previews=True)
         stream.save(update_fields=["rendered_description"])
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
@@ -3505,7 +3505,7 @@ def do_rename_stream(stream: Stream,
 
 def do_change_stream_description(stream: Stream, new_description: str) -> None:
     stream.description = new_description
-    stream.rendered_description = bugdown_convert(new_description)
+    stream.rendered_description = bugdown_convert(new_description, no_previews=True)
     stream.save(update_fields=['description', 'rendered_description'])
 
     event = dict(

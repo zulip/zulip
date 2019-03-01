@@ -746,7 +746,8 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
     for stream in data['zerver_stream']:
         if 'rendered_description' in stream:
             continue
-        stream["rendered_description"] = bugdown_convert(stream["description"])
+        stream["rendered_description"] = bugdown_convert(stream["description"],
+                                                         no_previews=True)
     bulk_import_model(data, Stream)
 
     realm.notifications_stream_id = notifications_stream_id

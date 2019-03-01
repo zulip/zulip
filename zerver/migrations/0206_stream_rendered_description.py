@@ -12,7 +12,8 @@ def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchem
     Stream = apps.get_model('zerver', 'Stream')
     all_streams = Stream.objects.exclude(description='')
     for stream in all_streams:
-        stream.rendered_description = bugdown_convert(stream.description)
+        stream.rendered_description = bugdown_convert(stream.description,
+                                                      no_previews=True)
         stream.save(update_fields=["rendered_description"])
 
 
