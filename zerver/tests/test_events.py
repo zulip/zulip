@@ -44,6 +44,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     do_change_full_name,
     do_change_icon_source,
+    do_change_logo_source,
     do_change_is_admin,
     do_change_is_guest,
     do_change_notification_settings,
@@ -2011,6 +2012,38 @@ class EventsRegisterTest(ZulipTestCase):
             ('data', check_dict_only([
                 ('icon_url', check_string),
                 ('icon_source', check_string),
+            ])),
+        ])
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_realm_day_mode_logo_source(self) -> None:
+        realm = get_realm('zulip')
+        action = lambda: do_change_logo_source(realm, realm.LOGO_UPLOADED, False)
+        events = self.do_test(action, state_change_expected=True)
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update_dict')),
+            ('property', equals('logo')),
+            ('data', check_dict_only([
+                ('logo_url', check_string),
+                ('logo_source', check_string),
+            ])),
+        ])
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_realm_night_mode_logo_source(self) -> None:
+        realm = get_realm('zulip')
+        action = lambda: do_change_logo_source(realm, realm.LOGO_UPLOADED, True)
+        events = self.do_test(action, state_change_expected=True)
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm')),
+            ('op', equals('update_dict')),
+            ('property', equals('night_logo')),
+            ('data', check_dict_only([
+                ('night_logo_url', check_string),
+                ('night_logo_source', check_string),
             ])),
         ])
         error = schema_checker('events[0]', events[0])
