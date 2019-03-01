@@ -22,7 +22,7 @@ from zerver.lib.pgp import (
 
 from zerver.models import UserPGP
 
-from typing import List, Dict
+from typing import List, Dict, Union
 from unittest import mock
 
 class PGPTestCase(ZulipTestCase):
@@ -34,6 +34,12 @@ class PGPTestCase(ZulipTestCase):
         keys['pubkey'] = parts[1]
 
         return keys
+
+    def get_signed_content(self, message: Message) -> Union[SafeMIMEMultipart, SafeMIMEText]:
+        parts = message.get_payload()
+        assert isinstance(parts, List)
+        assert isinstance(parts[0], SafeMIMEText) or isinstance(parts[0], SafeMIMEMultipart)
+        return parts[0]
 
     def check_signed_msg_structure(self, message: Message) -> None:
         self.assertTrue(message.is_multipart())
@@ -339,7 +345,11 @@ class TestPGPEmailMessageClassInternals(PGPTestCase):
         msg = PGPEmailMessage(subject='Subject', body='Gżegżółka',
                               to=[self.example_email('hamlet')])
         msg.sign()
+
         self.check_signed_msg_structure(msg.message())
+        signed_content = self.get_signed_content(msg.message())
+        signed_text = get_message_part_by_type(signed_content, 'text/plain')
+        self.assertEqual('Gżegżółka', signed_text)
 
     def test_pgpemailmessage_encrypt_with_alternatives(self) -> None:
         hamlet_keys = self.example_user_keys('hamlet')
@@ -385,3 +395,8 @@ class TestPGPEmailMessageClassInternals(PGPTestCase):
         msg.sign()
 
         self.check_signed_msg_structure(msg.message())
+        signed_content = self.get_signed_content(msg.message())
+        signed_text = get_message_part_by_type(signed_content, 'text/plain')
+        signed_html = get_message_part_by_type(signed_content, 'text/html')
+        self.assertEqual(text_content, signed_text)
+        self.assertEqual(html_content, signed_html)
