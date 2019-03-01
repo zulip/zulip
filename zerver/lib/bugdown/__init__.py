@@ -1415,14 +1415,21 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
             is_next_item = (m and current_list
                             and current_indent == len(m.group(1)) // self.TAB_LENGTH)
 
-            if not is_next_item:
+            is_blank_line = line.strip() == ""
+
+            if not is_next_item and not is_blank_line:
                 # There is no more items in the list we were processing
                 new_lines.extend(self.renumber(current_list))
                 current_list = []
 
             if not m:
-                # Ordinary line
-                new_lines.append(line)
+                # If current list still has items and current line
+                # is a blank line then do not push it to new line,
+                # otherwise push it to the new line regardless of
+                # whether line is blank line or ordinary line
+                if not current_list:
+                    # Ordinary line
+                    new_lines.append(line)
             elif is_next_item:
                 # Another list item
                 current_list.append(m)

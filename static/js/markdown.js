@@ -361,13 +361,16 @@ var preprocess_auto_olists = (function () {
         _.each(src.split('\n'), function (line) {
             var m = line.match(re);
             var isNextItem = m && currentList.length && currentIndent === getIndent(m);
-            if (!isNextItem) {
+            var isBlankLine = line.trim() === "";
+            if (!isNextItem && !isBlankLine) {
                 extendArray(newLines, renumber(currentList));
                 currentList = [];
             }
 
             if (!m) {
-                newLines.push(line);
+                if (!currentList.length) {
+                    newLines.push(line);
+                }
             } else if (isNextItem) {
                 currentList.push(m);
             } else {
