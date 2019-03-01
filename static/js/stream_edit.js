@@ -230,13 +230,11 @@ exports.show_settings_for = function (node) {
 
     stream_data.update_calculated_fields(sub);
     var html = templates.render('subscription_settings', sub);
-    $('.subscriptions .right .settings').html(html);
+    ui.get_content_element($('.subscriptions .right .settings')).html(html);
 
     var sub_settings = exports.settings_for_sub(sub);
 
     $(".nothing-selected").hide();
-
-    ui.update_scrollbar($("#subscription_overlay .settings"));
 
     sub_settings.addClass("show");
 
@@ -392,7 +390,6 @@ exports.change_stream_name = function (e) {
         error: function (xhr) {
             new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-            ui.update_scrollbar($("#subscription_overlay .settings"));
         },
     });
 };
@@ -435,7 +432,6 @@ exports.change_stream_description = function (e) {
         error: function (xhr) {
             sub_settings.find('.stream-description-editable').html(sub.rendered_description);
             ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
-            ui.update_scrollbar($("#subscription_overlay .settings"));
         },
     });
 };
@@ -566,7 +562,6 @@ exports.initialize = function () {
             }
             stream_subscription_info_elem.addClass('text-success')
                 .removeClass('text-error');
-            ui.update_scrollbar($("#subscription_overlay .settings"));
         }
 
         function removal_failure() {

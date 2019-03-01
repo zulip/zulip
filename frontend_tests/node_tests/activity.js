@@ -20,7 +20,7 @@ const _channel = {};
 
 const _ui = {
     set_up_scrollbar: function () {},
-    update_scrollbar: function () {},
+    get_content_element: element => element,
 };
 
 const _keydown_util = {

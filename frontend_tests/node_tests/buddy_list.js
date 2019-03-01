@@ -2,6 +2,7 @@ set_global('$', global.make_zjquery());
 zrequire('people');
 zrequire('buddy_data');
 zrequire('buddy_list');
+zrequire('ui');
 
 set_global('blueslip', global.make_zblueslip());
 

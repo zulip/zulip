@@ -28,26 +28,6 @@ exports.new_user_input = true;
 
 var huddle_timestamps = new Dict();
 
-exports.update_scrollbar = (function () {
-    var $buddy_list_wrapper = $("#buddy_list_wrapper");
-    var $group_pms = $("#group-pms");
-
-    return {
-        users: function () {
-            if (!$buddy_list_wrapper.length) {
-                $buddy_list_wrapper = $("#buddy_list_wrapper");
-            }
-            ui.update_scrollbar($buddy_list_wrapper);
-        },
-        group_pms: function () {
-            if (!$group_pms.length) {
-                $group_pms = $("#group-pms");
-            }
-            ui.update_scrollbar($group_pms);
-        },
-    };
-}());
-
 function update_pm_count_in_dom(count_span, value_span, count) {
     var li = count_span.parent();
 
@@ -203,8 +183,6 @@ exports.redraw_user = function (user_id) {
         key: user_id,
         item: info,
     });
-
-    exports.update_scrollbar.users();
 };
 
 exports.searching = function () {
@@ -270,7 +248,7 @@ exports.update_huddles = function () {
     });
 
     var html = templates.render('group_pms', {group_pms: group_pms});
-    $('#group-pms').expectOne().html(html);
+    ui.get_content_element($('#group-pms')).html(html);
 
     _.each(huddles, function (user_ids_string) {
         var count = unread.num_unread_for_person(user_ids_string);
@@ -278,7 +256,6 @@ exports.update_huddles = function () {
     });
 
     show_huddles();
-    exports.update_scrollbar.group_pms();
 };
 
 function focus_ping(want_redraw) {
@@ -351,6 +328,7 @@ exports.initialize = function () {
     exports.build_user_sidebar();
     exports.update_huddles();
 
+    ui.set_up_scrollbar($("#buddy_list_wrapper"));
     buddy_list.start_scroll_handler();
 
     // Let the server know we're here, but pass "false" for
@@ -363,7 +341,6 @@ exports.initialize = function () {
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 
-    ui.set_up_scrollbar($("#buddy_list_wrapper"));
     ui.set_up_scrollbar($("#group-pms"));
 };
 

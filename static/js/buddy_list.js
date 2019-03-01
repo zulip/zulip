@@ -289,7 +289,7 @@ function buddy_list_create() {
     self.fill_screen_with_content = function () {
         var height_to_fill = self.height_to_fill();
 
-        var elem = $(self.scroll_container_sel).expectOne()[0];
+        var elem = ui.get_scroll_element($(self.scroll_container_sel)).expectOne()[0];
 
         // Add a fudge factor.
         height_to_fill += 10;
@@ -317,7 +317,7 @@ function buddy_list_create() {
     self.start_scroll_handler = function () {
         // We have our caller explicitly call this to make
         // sure everything's in place.
-        var scroll_container = $(self.scroll_container_sel);
+        var scroll_container = ui.get_scroll_element($(self.scroll_container_sel));
 
         scroll_container.scroll(function () {
             self.fill_screen_with_content();

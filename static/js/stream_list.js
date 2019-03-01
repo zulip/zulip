@@ -426,8 +426,6 @@ exports.handle_narrow_activated = function (filter) {
     if (stream_li) {
         exports.scroll_stream_into_view(stream_li);
     }
-    // Update scrollbar size.
-    ui.update_scrollbar($("#stream-filters-container"));
 };
 
 exports.handle_narrow_deactivated = function () {
@@ -510,7 +508,7 @@ exports.set_event_handlers = function () {
     });
 
     // check for user scrolls on streams list for first time
-    $('#stream-filters-container').on('scroll', function () {
+    ui.get_scroll_element($('#stream-filters-container')).on('scroll', function () {
         has_scrolled = true;
         // remove listener once user has scrolled
         $(this).off('scroll');

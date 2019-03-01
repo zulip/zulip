@@ -33,10 +33,10 @@ function set_user_list_heights(res, usable_height, buddy_list_wrapper, group_pms
     //    res.group_pms_max_height
     var blocks = [
         {
-            real_height: buddy_list_wrapper.prop('scrollHeight'),
+            real_height: ui.get_scroll_element(buddy_list_wrapper).prop('scrollHeight'),
         },
         {
-            real_height: group_pms.prop('scrollHeight'),
+            real_height: ui.get_scroll_element(group_pms).prop('scrollHeight'),
         },
     ];
 
@@ -115,7 +115,7 @@ function left_userlist_get_new_heights() {
     var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
 
     var stream_filters_real_height = stream_filters.prop("scrollHeight");
-    var user_list_real_height = buddy_list_wrapper.prop("scrollHeight");
+    var user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
 
     res.total_leftlist_height = viewport_height
                                 - parseInt($("#left-sidebar").css("marginTop"), 10)
@@ -200,7 +200,6 @@ exports.resize_stream_filters_container = function (h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     exports.resize_bottom_whitespace(h);
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    ui.update_scrollbar($("#stream-filters-container"));
 };
 
 exports.resize_page_components = function () {
@@ -242,10 +241,6 @@ exports.resize_page_components = function () {
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    ui.update_scrollbar($("#stream-filters-container"));
-
-    activity.update_scrollbar.users();
-    activity.update_scrollbar.group_pms();
 
     panels.resize_app();
 };

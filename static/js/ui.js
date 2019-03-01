@@ -1,5 +1,7 @@
 var ui = (function () {
 
+var SimpleBar = require("simplebar").default;
+
 var exports = {};
 
 // What, if anything, obscures the home tab?
@@ -13,34 +15,37 @@ exports.replace_emoji_with_text = function (element) {
     });
 };
 
-exports.set_up_scrollbar = function (element) {
-    var perfectScrollbar = new PerfectScrollbar(element[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-        minScrollbarLength: 40,
-    });
-    element[0].perfectScrollbar = perfectScrollbar;
+exports.set_up_scrollbar = function (element_selector) {
+    new SimpleBar(element_selector.expectOne()[0]);
 };
 
-exports.update_scrollbar = function (element_selector) {
-    var element = element_selector[0];
-    if (element.perfectScrollbar !== undefined) {
-        element.perfectScrollbar.update();
+exports.get_content_element = function (element_selector) {
+    var element = element_selector.expectOne()[0];
+    if (element.SimpleBar) {
+        return $(element.SimpleBar.getContentElement());
     }
+    return element_selector;
+};
+
+exports.get_scroll_element = function (element_selector) {
+    var element = element_selector.expectOne()[0];
+    if (element.SimpleBar) {
+        return $(element.SimpleBar.getScrollElement());
+    }
+    return element_selector;
 };
 
 exports.reset_scrollbar = function (element_selector) {
-    var element = element_selector[0];
-    element.scrollTop = 0;
-    if (element.perfectScrollbar !== undefined) {
-        element.perfectScrollbar.update();
+    var element = element_selector.expectOne()[0];
+    if (element.SimpleBar) {
+        element.SimpleBar.getScrollElement().scrollTop = 0;
+    } else {
+        element.scrollTop = 0;
     }
 };
 
-exports.destroy_scrollbar = function (element) {
-    element[0].perfectScrollbar.destroy();
+exports.destroy_scrollbar = function (element_selector) {
+    element_selector.expectOne()[0].SimpleBar.unMount();
 };
 
 function update_message_in_all_views(message_id, callback) {

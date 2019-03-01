@@ -74,6 +74,7 @@ zrequire('util');
 
 util.is_mobile = () => false;
 templates.render = () => 'some-html';
+ui.get_scroll_element = element => element;
 
 zrequire('echo');
 zrequire('colorspace');

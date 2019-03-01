@@ -6,7 +6,6 @@ set_global('resize', {
 });
 set_global('ui', {
     set_up_scrollbar: function () {},
-    update_scrollbar: function () {},
 });
 set_global('stream_popover', {
     hide_topic_popover: function () {},

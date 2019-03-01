@@ -1,4 +1,7 @@
 zrequire('scroll_util');
+set_global('ui', {
+    get_scroll_element: element => element,
+});
 
 run_test('scroll_delta', () => {
     // If we are entirely on-screen, don't scroll
