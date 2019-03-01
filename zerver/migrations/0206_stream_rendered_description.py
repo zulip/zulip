@@ -6,14 +6,13 @@ from django.db import migrations, models
 from django.db.migrations.state import StateApps
 from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
 
-from zerver.lib.bugdown import convert as bugdown_convert
+from zerver.lib.actions import render_stream_description
 
 def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Stream = apps.get_model('zerver', 'Stream')
     all_streams = Stream.objects.exclude(description='')
     for stream in all_streams:
-        stream.rendered_description = bugdown_convert(stream.description,
-                                                      no_previews=True)
+        stream.rendered_description = render_stream_description(stream.description)
         stream.save(update_fields=["rendered_description"])
 
 
