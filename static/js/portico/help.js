@@ -83,24 +83,11 @@ function render_code_sections() {
     });
 }
 
-function scrollToHash(simplebar) {
-    var hash = window.location.hash;
-    var scrollbar = simplebar.getScrollElement();
-    if (hash !== '') {
-        var position = $(hash).position().top - $(scrollbar.firstChild).position().top;
-        scrollbar.scrollTop = position;
-    } else {
-        scrollbar.scrollTop = 0;
-    }
-}
-
 (function () {
     var html_map = {};
     var loading = {
         name: null,
     };
-
-    var markdownSB = new SimpleBar($(".markdown")[0]);
 
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
@@ -111,20 +98,22 @@ function scrollToHash(simplebar) {
         });
     };
 
-    var update_page = function (html_map, path) {
+    var update_page = function (html_map, path, scroll_top = false) {
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
             render_code_sections();
-            markdownSB.recalculate();
-            scrollToHash(markdownSB);
+            if (scroll_top) {
+                $(".markdown").animate({ scrollTop: 0 }, "fast");
+            }
         } else {
             loading.name = path;
             fetch_page(path, function (res) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
-                markdownSB.recalculate();
-                scrollToHash(markdownSB);
+                if (scroll_top) {
+                    $(".markdown").animate({ scrollTop: 0 }, "fast");
+                }
             });
         }
     };
@@ -138,9 +127,7 @@ function scrollToHash(simplebar) {
             // Close other article's headings first
             $('.sidebar ul').not($next).hide();
             // Toggle the heading
-            $next.slideToggle("fast", "swing", function () {
-                markdownSB.recalculate();
-            });
+            $next.slideToggle("fast", "swing");
         }
     });
 
@@ -160,7 +147,7 @@ function scrollToHash(simplebar) {
 
         history.pushState({}, "", path);
 
-        update_page(html_map, path);
+        update_page(html_map, path, true);
 
         $(".sidebar").removeClass("show");
 
@@ -174,10 +161,8 @@ function scrollToHash(simplebar) {
     // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
     $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
 
-    // Scroll to anchor link when clicked
     $(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
         window.location.hash = $(this).attr("id");
-        scrollToHash(markdownSB);
     });
 
     $(".hamburger").click(function () {
@@ -191,14 +176,6 @@ function scrollToHash(simplebar) {
     });
 
     render_code_sections();
-
-    // Finally, make sure if we loaded a window with a hash, we scroll
-    // to the right place.
-    scrollToHash(markdownSB);
-
-    window.onresize = function () {
-        markdownSB.recalculate();
-    };
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;
