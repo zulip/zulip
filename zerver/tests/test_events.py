@@ -480,6 +480,9 @@ class EventsRegisterTest(ZulipTestCase):
         Make sure we have a clean slate of client descriptors for these tests.
         If we don't do this, then certain failures will only manifest when you
         run multiple tests within a single test function.
+
+        See also https://zulip.readthedocs.io/en/latest/subsystems/events-system.html#testing
+        for details on the design of this test system.
         '''
         clear_client_event_queues_for_testing()
 

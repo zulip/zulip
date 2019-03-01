@@ -213,21 +213,33 @@ request; the logic is in `zerver/views/events_register.py` and
   change event, it finds the user data in the `realm_user` data
   struture, and updates it to have the new name.
 
-This achieves everything we desire, at the cost that we need to write
-the `apply_events` function.  This is a difficult function to
-implement correctly, because the situations that it tests for almost
-never happen (being race conditions).  So we have a special test
-class, `EventsRegisterTest`, that is specifically designed to test
-this function by ensuring the possible race condition always happens.
-In particular, it does the following:
+### Testing
+
+The design above achieves everything we desire, at the cost that we
+need to write a correct `apply_events` function.  This is a difficult
+function to implement correctly, because the situations that it tests
+for almost never happen (being race conditions).  So we have a special
+test class, `EventsRegisterTest`, that is specifically designed to
+test this function by ensuring the possible race condition always
+happens.  In particular, it does the following:
 
 * Call `fetch_initial_state_data` to get the current state.
 * Call a state change function that issues an event,
 e.g. `do_change_full_name`, and capture any events that are generated.
-* Call `apply_events(state, events)`, and compare the result to
-  calling `fetch_initial_state_data` again now.
+* Call `apply_events(state, events)`, and compare the resulting
+  "hybrid state" to what one would get from calling
+  `fetch_initial_state_data` again now.
 
 The `apply_events` code is correct if those two results are identical.
+The `EventsRegisterTest` tests in `test_events` will print a diff
+between the "hybrid state" and the "normal state" obtained from
+calling `fetch_initial_state_data` after the changes.  Those tests
+also inspent the events generated to ensure they have the expected
+format and `do_test` has the `state_change_expected` and `num_events`
+arguments that configure how many events that it asserts were
+generated and whether it expects the state after applying the events
+to differ what what it was before (which help catch common classes of
+bugs).
 
 The final detail we need to ensure that `apply_events` always works
 correctly is to make sure that we have `EventsRegisterTest` tests for
