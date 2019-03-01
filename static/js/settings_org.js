@@ -1101,17 +1101,16 @@ exports.build_page = function () {
 
     function upload_realm_icon(file_input) {
         var form_data = new FormData();
-
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
             form_data.append('file-' + i, file);
         });
-
-        var error_field = $("#realm_icon_file_input_error");
+        var elem_id = "#realm-icon-section";
+        var error_field = $(elem_id + " .file_input_error");
         error_field.hide();
-        var spinner = $("#upload_icon_spinner").expectOne();
-        loading.make_indicator(spinner, {text: i18n.t("Uploading profile picture.")});
-        $("#upload_icon_button_text").expectOne().hide();
+        var spinner = $(elem_id + " .upload-spinner").expectOne();
+        loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
+        $(elem_id + " .upload-button-text").expectOne().hide();
 
         channel.post({
             url: '/json/realm/icon',
@@ -1120,12 +1119,12 @@ exports.build_page = function () {
             processData: false,
             contentType: false,
             success: function () {
-                loading.destroy_indicator($("#upload_icon_spinner"));
-                $("#upload_icon_button_text").expectOne().show();
+                loading.destroy_indicator($(elem_id + " .upload-spinner"));
+                $(elem_id + " .upload-button-text").expectOne().show();
             },
             error: function (xhr) {
-                loading.destroy_indicator($("#upload_icon_spinner"));
-                $("#upload_icon_button_text").expectOne().show();
+                loading.destroy_indicator($(elem_id + ".upload-spinner"));
+                $(elem_id + " .upload-button-text").expectOne().show();
                 ui_report.error("", xhr, error_field);
             },
         });
@@ -1138,20 +1137,20 @@ exports.build_page = function () {
         var spinner;
         var error_field;
         var button_text;
+        var elem_id;
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
             form_data.append('file-' + i, file);
         });
         if (night) {
-            error_field = $("#realm_night_logo_file_input_error");
-            spinner = $("#upload_night_logo_spinner");
-            button_text = $("#upload_night_logo_button_text");
+            elem_id = "#realm-night-logo-section";
         } else {
-            error_field = $("#realm_logo_file_input_error");
-            spinner = $("#upload_logo_spinner");
-            button_text = $("#upload_logo_button_text");
+            elem_id = "#realm-logo-section";
         }
+        error_field = $(elem_id + " .file_input_error");
+        spinner = $(elem_id + " .upload-spinner");
+        button_text = $(elem_id + " .upload-button-text");
         spinner.expectOne();
         error_field.hide();
         button_text.expectOne().hide();
@@ -1179,7 +1178,6 @@ exports.build_page = function () {
         realm_logo.build_realm_logo_widget(upload_realm_logo, false);
         realm_logo.build_realm_logo_widget(upload_realm_logo, true);
     }
-
 
     $('#deactivate_realm_button').on('click', function (e) {
         if (!overlays.is_modal_open()) {
