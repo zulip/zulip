@@ -1,6 +1,7 @@
 .user_circle_green,
 .user_circle_orange,
 .user_circle_empty,
+.user_circle_empty_line,
 .user_circle_fraction {
     border-radius: 50%;
     border: 1px solid;
@@ -34,4 +35,17 @@
 .user_circle_empty {
     background-color: none;
     border-color: hsl(0, 0%, 50%);
+}
+
+.user_circle_empty_line {
+    border-color: hsl(0, 90%, 40%);
+
+    &::after {
+        content: '';
+        background: hsl(0, 90%, 40%);
+        height: 1.5px; // 1px is too thin, 2px is too thick
+        width: 6px;
+        display: block;
+        margin: 3.25px auto 0 auto; // (total height - line height) / 2 = 3.25px
+    }
 }
