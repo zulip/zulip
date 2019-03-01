@@ -27,7 +27,7 @@
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
 * [Emoji and emoticons](/help/emoji-and-emoticons)
-* [Video calls](/help/start-a-call)
+* [Start a video call](/help/start-a-call)
 * [Share and upload files](/help/share-and-upload-files)
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
