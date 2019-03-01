@@ -234,7 +234,7 @@ The `apply_events` code is correct if those two results are identical.
 The `EventsRegisterTest` tests in `test_events` will print a diff
 between the "hybrid state" and the "normal state" obtained from
 calling `fetch_initial_state_data` after the changes.  Those tests
-also inspent the events generated to ensure they have the expected
+also inspect the events generated to ensure they have the expected
 format and `do_test` has the `state_change_expected` and `num_events`
 arguments that configure how many events that it asserts were
 generated and whether it expects the state after applying the events
