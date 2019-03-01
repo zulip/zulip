@@ -18,7 +18,7 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
 from zerver.lib.bugdown import (
     version as bugdown_version,
     url_embed_preview_enabled,
-    convert as bugdown_convert
+    convert as bugdown_convert,
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.bot_config import (
@@ -1726,6 +1726,9 @@ def get_default_value_for_history_public_to_subscribers(
 
     return history_public_to_subscribers
 
+def render_stream_description(text: str) -> str:
+    return bugdown_convert(text, no_previews=True)
+
 def create_stream_if_needed(realm: Realm,
                             stream_name: str,
                             *,
@@ -1751,7 +1754,7 @@ def create_stream_if_needed(realm: Realm,
     )
 
     if created:
-        stream.rendered_description = bugdown_convert(stream.description, no_previews=True)
+        stream.rendered_description = render_stream_description(stream_description)
         stream.save(update_fields=["rendered_description"])
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
@@ -3499,7 +3502,7 @@ def do_rename_stream(stream: Stream,
 
 def do_change_stream_description(stream: Stream, new_description: str) -> None:
     stream.description = new_description
-    stream.rendered_description = bugdown_convert(new_description, no_previews=True)
+    stream.rendered_description = render_stream_description(new_description)
     stream.save(update_fields=['description', 'rendered_description'])
 
     event = dict(
@@ -5337,7 +5340,7 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
                 field_id=field['id'])
             field_value.value = field['value']
             if field_value.field.is_renderable():
-                field_value.rendered_value = bugdown_convert(str(field['value']))
+                field_value.rendered_value = render_stream_description(str(field['value']))
                 field_value.save(update_fields=['value', 'rendered_value'])
             else:
                 field_value.save(update_fields=['value'])
