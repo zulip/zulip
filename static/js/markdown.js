@@ -361,13 +361,30 @@ var preprocess_auto_olists = (function () {
         _.each(src.split('\n'), function (line) {
             var m = line.match(re);
             var isNextItem = m && currentList.length && currentIndent === getIndent(m);
-            if (!isNextItem) {
+            var isBlankLine = line.trim() === "";
+            if (!isNextItem && !isBlankLine) {
+                // This is a non-blank line that doesn't start with a
+                // bullet, so we're done with the previous numbered
+                // list and can start a new one.
                 extendArray(newLines, renumber(currentList));
                 currentList = [];
             }
 
             if (!m) {
-                newLines.push(line);
+                // This line doesn't start with a bullet.  If it's not
+                // between bullets of a list (i.e. `currentList =
+                // []`), this is just normal content outside a bulleted
+                // list and we can append it to `new_lines`.
+                if (!currentList.length) {
+                    newLines.push(line);
+                }
+
+                // Otherwise, it's a blank line in between bullets,
+                // because if this was a bullet, `m` would be truthy,
+                // and if it wasn't blank, we could have terminated the
+                // list (see above).  We can just skip this blank line
+                // syntax, as our bulleted list CSS styling will
+                // control vertical spacing between bullets.
             } else if (isNextItem) {
                 currentList.push(m);
             } else {

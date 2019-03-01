@@ -1415,14 +1415,30 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
             is_next_item = (m and current_list
                             and current_indent == len(m.group(1)) // self.TAB_LENGTH)
 
-            if not is_next_item:
-                # There is no more items in the list we were processing
+            is_blank_line = line.strip() == ""
+
+            if not is_next_item and not is_blank_line:
+                # This is a non-blank line that doesn't start with a
+                # bullet, so we're done with the previous numbered
+                # list and can start a new one.
                 new_lines.extend(self.renumber(current_list))
                 current_list = []
 
             if not m:
-                # Ordinary line
-                new_lines.append(line)
+                # This line doesn't start with a bullet.  If it's not
+                # between bullets of a list (i.e. `current_list =
+                # []`), this is just normal content outside a bulleted
+                # list and we can append it to `new_lines`.
+                if not current_list:
+                    # Ordinary line
+                    new_lines.append(line)
+
+                # Otherwise, it's a blank line in between bullets,
+                # because if this was a bullet, `m` would be truthy,
+                # and if it wasn't blank, we could have terminated the
+                # list (see above).  We can just skip this blank line
+                # syntax, as our bulleted list CSS styling will
+                # control vertical spacing between bullets.
             elif is_next_item:
                 # Another list item
                 current_list.append(m)
