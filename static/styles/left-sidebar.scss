@@ -245,6 +245,47 @@ a.conversation-partners:hover {
     text-decoration: underline;
 }
 
+/*
+
+    The .arrow class is used in Zulip for chevrons,
+    but it's also used by popover for the little
+    triangle in the popovers.  We are moving to
+    eliminating the arrow class and using more concrete
+    classes for chevrons.  Here is an audit of the existing
+    state:
+
+        All messages:
+            has stream-sidebar-arrow (why?????)
+            ul.filters .arrow (right: 10px, etc.)
+
+        Private messages:
+            no chevrons
+
+        stream chevron
+            has stream-sidebar-arrow (ok)
+            ul.filters .arrow (right: 10px, etc.)
+
+        topic chevron:
+            ul.filters .topic-sidebar-arrow (ok, smaller font)
+
+            ul.filters .arrow:
+                keeps position, right
+                ignores top, font-size, display
+                display would be none either way
+
+        buddy list
+            span:
+                #user_presences .arrow (ok, top=0)
+
+                ul.filters .arrow
+                    keeps all but top
+
+            i:
+                ul.filters i
+                ignores ul.filters arrow
+
+*/
+
 ul.filters i {
     padding-right: 0.25em;
     /* Make filter icons the same width so labels line up. */
