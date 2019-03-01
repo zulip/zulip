@@ -7,7 +7,7 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
-### 2.0.0 -- coming 2019-02-14 or so
+### 2.0.0 -- 2019-03-01
 
 **Highlights:**
 - Added automation for synchronizing user avatars, custom profile
@@ -27,6 +27,15 @@ in bursts.
 - Deprecated support for Ubuntu Trusty.  Zulip 2.0.x will continue to
   support Ubuntu Trusty, but Zulip 2.1.0 will remove support for
   installing on Trusty.
+
+**Upgrade notes:**
+- This release adds support for [submitting basic usage statistics] to
+help the Zulip core team. This feature can be enabled only if a server
+is using the [Mobile Push Notification Service][mpns-statistics-docs],
+and is enabled by default in that case. To disable it, set
+`SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
+
+[mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
 
 **Full feature changelog:**
 - Added support for CentOS 7 in the development environment
