@@ -80,13 +80,13 @@ activate_people();
 run_test('user_circle', () => {
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), 'user_circle_green');
     user_status.set_away(selma.user_id);
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), 'user_circle_empty');
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), 'user_circle_empty_line');
     user_status.revoke_away(selma.user_id);
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), 'user_circle_green');
 
     assert.equal(buddy_data.get_user_circle_class(me.user_id), 'user_circle_green');
     user_status.set_away(me.user_id);
-    assert.equal(buddy_data.get_user_circle_class(me.user_id), 'user_circle_empty');
+    assert.equal(buddy_data.get_user_circle_class(me.user_id), 'user_circle_empty_line');
     user_status.revoke_away(me.user_id);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), 'user_circle_green');
 });
