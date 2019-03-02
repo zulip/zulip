@@ -191,3 +191,17 @@ because a list can have many elements, which would make the output too large.
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
 
+## Troubleshooting advice
+
+All of our linters, including mypy, are designed to only check files
+that have been added in git (this is by design, since it means you
+have untracked files in your Zulip checkout safely).  So if you get a
+`mypy` error like this after adding a new file that is referenced by
+the existing codebase:
+
+```
+mypy | zerver/models.py:1234: note: Import of 'zerver.lib.bugdown_wrappers' ignored
+mypy | zerver/models.py:1234: note: (Using --follow-imports=error, module not passed on command line)
+```
+
+The problem is that you need to `git add` the new file.
