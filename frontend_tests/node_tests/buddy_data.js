@@ -25,6 +25,12 @@ const me = {
     email: 'self@example.com',
 };
 
+const long_name_user = {
+    user_id: 9998,
+    full_name: 'Long Name User, The Longest Name Of them All',
+    email: 'long_name_user@example.com',
+};
+
 const old_user = {
     user_id: 9999,
     full_name: 'Old User',
@@ -51,11 +57,11 @@ function make_people() {
     people.add_in_realm(bot);
     people.add_in_realm(selma);
     people.add_in_realm(me);
+    people.add_in_realm(long_name_user);
     people.add_in_realm(old_user);
 
     people.initialize_current_user(me.user_id);
 }
-
 
 function activate_people() {
     const server_time = 9999;
@@ -69,6 +75,7 @@ function activate_people() {
     // Make 400 of the users active
     presence.set_info_for_user(selma.user_id, info, server_time);
     presence.set_info_for_user(me.user_id, info, server_time);
+    presence.set_info_for_user(long_name_user.user_id, info, server_time);
 
     _.each(_.range(1000, 1400), (user_id) => {
         presence.set_info_for_user(user_id, info, server_time);
@@ -114,12 +121,22 @@ run_test('buddy_status', () => {
 });
 
 run_test('user_title', () => {
-    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself\ntranslated: Online now');
+    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself\nLast online: translated: Online now');
+    assert.equal(buddy_data.user_title(long_name_user.user_id),
+                 'Long Name User, The Longest Na\nme Of them All\nLast online: translated: Online now');
+
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: 'out to lunch',
     });
-    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself\nout to lunch\ntranslated: Online now');
+    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself\nout to lunch\nLast online: translated: Online now');
+
+    user_status.set_status_text({
+        user_id: me.user_id,
+        status_text: 'Status Messages over 30 Characters are broken up',
+    });
+    assert.equal(buddy_data.user_title(me.user_id),
+                 'Human Myself\nStatus Messages over 30 Charac\nters are broken up\nLast online: translated: Online now');
 });
 
 run_test('simple search', () => {
@@ -134,10 +151,10 @@ run_test('bulk_data_hacks', () => {
     // Even though we have 1000 users, we only get the 400 active
     // users.  This is a consequence of buddy_data.maybe_shrink_list.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 401);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 401);
 
     // We don't match on "so", because it's not at the start of a
     // word in the name/email.
@@ -159,7 +176,7 @@ run_test('bulk_data_hacks', () => {
     buddy_data.max_size_before_shrinking = 50000;
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
-    assert.equal(user_ids.length, 700);
+    assert.equal(user_ids.length, 701);
 });
 
 run_test('level', () => {
@@ -199,7 +216,7 @@ run_test('level', () => {
 
 run_test('user_last_seen_time_status', () => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id),
-                 'translated: Active now');
+                 'translated: Online now');
 
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id),
