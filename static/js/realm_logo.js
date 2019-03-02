@@ -75,7 +75,7 @@ var realm_logo = (function () {
             $("#realm-settings-night-logo").attr("src", page_params.realm_night_logo_url);
         }
 
-        if (page_params.night_mode) {
+        if (page_params.night_mode && page_params.realm_night_logo_source !== 'D') {
             $("#realm-logo").attr("src", page_params.realm_night_logo_url);
         } else {
             $("#realm-logo").attr("src", page_params.realm_logo_url);

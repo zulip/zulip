@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import Any, List, Dict, Optional
 
 from django.conf import settings
 from django.urls import reverse
@@ -72,6 +72,13 @@ def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
             'allowed': type_id in user_profile.allowed_bot_types
         })
     return bot_types
+
+def compute_navbar_logo_url(page_params: Dict[str, Any]) -> str:
+    if page_params["night_mode"] and page_params["realm_night_logo_source"] != Realm.LOGO_DEFAULT:
+        navbar_logo_url = page_params["realm_night_logo_url"]
+    else:
+        navbar_logo_url = page_params["realm_logo_url"]
+    return navbar_logo_url
 
 def home(request: HttpRequest) -> HttpResponse:
     if (settings.DEVELOPMENT and not settings.TEST_SUITE and
@@ -270,6 +277,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
         # include (and thus how to display emojis in the emoji picker
         # and composebox typeahead).
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
+
+    navbar_logo_url = compute_navbar_logo_url(page_params)
+
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'emojiset': emojiset,
@@ -286,6 +296,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'is_admin': user_profile.is_realm_admin,
                                'is_guest': user_profile.is_guest,
                                'night_mode': user_profile.night_mode,
+                               'navbar_logo_url': navbar_logo_url,
                                'show_webathena': user_profile.realm.webathena_enabled,
                                'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,
