@@ -16,7 +16,8 @@ from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite
+    Attachment, PreregistrationUser, get_user_by_delivery_email, MultiuseInvite,
+    get_user_profile_by_id,
 )
 
 from zerver.lib.actions import (
@@ -499,6 +500,8 @@ class EventsRegisterTest(ZulipTestCase):
                  last_connection_time = time.time(),
                  narrow = [])
         )
+        self.user_profile = get_user_profile_by_id(self.user_profile.id)
+
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(
@@ -522,6 +525,8 @@ class EventsRegisterTest(ZulipTestCase):
         else:
             if before != after:
                 raise AssertionError('Test is invalid--state actually does change here.')
+
+        self.user_profile = get_user_profile_by_id(self.user_profile.id)
 
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
