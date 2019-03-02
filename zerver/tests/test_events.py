@@ -2002,8 +2002,8 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_realm_icon_source(self) -> None:
         realm = get_realm('zulip')
-        action = lambda: do_change_icon_source(realm, realm.ICON_FROM_GRAVATAR)
-        events = self.do_test(action, state_change_expected=False)
+        action = lambda: do_change_icon_source(realm, realm.ICON_UPLOADED)
+        events = self.do_test(action, state_change_expected=True)
         schema_checker = self.check_events_dict([
             ('type', equals('realm')),
             ('op', equals('update_dict')),
