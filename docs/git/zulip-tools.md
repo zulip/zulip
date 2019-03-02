@@ -121,7 +121,7 @@ HEAD is now at 5a1e982 tools: Update clean-branches to clean review branches.
 are merging other users' commits into a Zulip repository.  After doing
 `reset-to-pull-request` or `fetch-pull-request` and making some
 changes, you can push a branch back to a pull request with e.g.
-`tools/push-to-pull-rqeuest 1234`.  This is useful for a few things:
+`tools/push-to-pull-request 1234`.  This is useful for a few things:
 
 * Getting CI to run and enabling you to use the GitHub "Merge" buttons
   to merge a PR after you make some corrections to a PR, without
