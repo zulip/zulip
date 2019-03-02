@@ -2,6 +2,10 @@
 
 {# Login page. #}
 {% block portico_content %}
+{{ render_bundle('dev-login') }}
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="dev-login"></div>
 <div class="app login-page flex full-page">
     <div class="app-main login-page-container dev-login white-box">
         {% if current_realm %}
@@ -64,15 +68,4 @@
     </div>
 </div>
 
-<script>
-if (window.location.hash.substring(0, 1) === "#") {
-    /* We append the location.hash to the formaction so that URL can be
-    preserved after user is logged in. See this:
-    https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-    $("input[name='direct_email']").each(function () {
-        var new_formaction = $(this).attr('formaction') + '/' + window.location.hash;
-        $(this).attr('formaction', new_formaction);
-    });
-}
-</script>
 {% endblock %}

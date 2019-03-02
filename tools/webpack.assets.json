@@ -82,6 +82,7 @@
         "./node_modules/jquery-validation/dist/jquery.validate.min.js",
         "./static/js/portico/signup.js"
     ],
+    "dev-login": "./static/js/portico/dev-login.js",
     "stats": [
         "./static/styles/stats.scss",
         "./static/js/stats/stats.js",
