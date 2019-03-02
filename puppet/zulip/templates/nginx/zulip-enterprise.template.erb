@@ -37,7 +37,4 @@ server {
 
     include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;
-<% if @no_serve_uploads == '' -%>
-    include /etc/nginx/zulip-include/uploads.route;
-<% end -%>
 }
