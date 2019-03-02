@@ -20,7 +20,9 @@
     </script>
     {% endif %}
 
-
+    <!-- The following empty tag has unique data-page-id so that this
+    page can be easily identified in it's respective JavaScript file. -->
+    <div data-page-id="login-page"></div>
     <div class="app login-page split-view new-style flex full-page">
         <div class="inline-block">
             <div class="lead">
@@ -168,19 +170,5 @@
             </div>
         </div>
     </div>
-    <script>
-    if (window.location.hash.substring(0, 1) === "#") {
-        /* We append the location.hash to the formaction so that URL can be
-        preserved after user is logged in. See this:
-        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-        var email_formaction = $("#login_form").attr('action');
-        $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
-        $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
-        $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
-
-        var sso_address = $("#sso-login").attr('href');
-        $("#sso-login").attr('href', sso_address + window.location.hash);
-    }
-    </script>
 
 {% endblock %}
