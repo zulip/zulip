@@ -88,9 +88,15 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     if (days === 1) {
         return [i18n.t("Yesterday")];
     }
+
+    var currentTime = new Date();
     if (days < 365) {
-        return i18n.t("On __last_active__",
-                      {last_active: last_active_date.toString("MMM\xa0dd")});
+        if (days > 90) {
+            if (currentTime.getFullYear() !== last_active_date.getFullYear()) {
+                return i18n.t("On __last_active_date__",
+                              {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
+            }
+        }
     }
 
     return i18n.t("On __last_active_date__",
