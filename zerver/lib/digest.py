@@ -230,7 +230,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
 
     context['unread_pms'] = build_message_list(
         user_profile, [pm.message for pm in pms[:pms_limit]])
-    context['remaining_unread_pms_count'] = min(0, len(pms) - pms_limit)
+    context['remaining_unread_pms_count'] = max(0, len(pms) - pms_limit)
 
     home_view_recipients = [sub.recipient for sub in
                             Subscription.objects.filter(
