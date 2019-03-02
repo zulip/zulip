@@ -191,3 +191,10 @@ because a list can have many elements, which would make the output too large.
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
 
+## Debugging advice
+- Mypy only checks files that have been added by git. So if you face something like an "import ignored" error, make sure that you've added the concerned files to git.   
+example of such an error:
+```
+mypy | zerver/migrations/0206_stream_rendered_description.py:9: note: Import of 'zerver.lib.bugdown_wrappers' ignored
+mypy | zerver/migrations/0206_stream_rendered_description.py:9: note: (Using --follow-imports=error, module not passed on command line)
+```
