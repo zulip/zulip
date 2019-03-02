@@ -63,6 +63,11 @@ function get_new_heights() {
         - $("#global_filters").safeOuterHeight(true)
         - $("#streams_header").safeOuterHeight(true);
 
+    $(".new_message_textarea").css("max-height", viewport_height * 0.439 - 119);
+    // The above code is a linear equation between viewport_height and required max-height of
+    // new_message_textarea which is formed by logging the values of each of them and then using
+    // the logged values to form an equation.
+
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
