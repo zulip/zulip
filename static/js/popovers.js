@@ -304,6 +304,12 @@ exports.show_user_profile = function (user) {
     $("#user-profile-modal").modal("show");
 
     settings_account.intialize_custom_user_type_fields("#user-profile-modal #content", user.user_id, false, false);
+
+    $(".modal-backdrop, #user-profile-modal .close").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#user-profile-modal").modal('hide');
+    });
 };
 
 function get_user_info_popover_items() {
