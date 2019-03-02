@@ -93,6 +93,7 @@ function calculate_info_popover_placement(size, elt) {
 function render_user_info_popover(user, popover_element, is_sender_popover, private_msg_class,
                                   template_class, popover_placement) {
     var is_me = people.is_my_user_id(user.user_id);
+    var user_circle = buddy_data.get_user_circle_class(user.user_id);
 
     var can_set_away = false;
     var can_revoke_away = false;
@@ -113,7 +114,7 @@ function render_user_info_popover(user, popover_element, is_sender_popover, priv
         is_me: is_me,
         is_sender_popover: is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
-        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+        user_circle_class: user_circle.circle_color,
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_uri(user.email),
         show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
@@ -306,8 +307,9 @@ function fetch_group_members(member_ids) {
             return m !== undefined;
         })
         .map(function (p) {
+            var user_circle = buddy_data.get_user_circle_class(p.user_id);
             return Object.assign({}, p, {
-                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+                user_circle_class: user_circle.circle_color,
                 is_active: people.is_active_user_for_popover(p.user_id),
                 user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
             });
