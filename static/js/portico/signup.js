@@ -73,6 +73,23 @@ $(function () {
         $("#timezone").val(moment.tz.guess());
     }
 
+    // Code in this block will be executed when the user is at login page
+    // i.e. login.html is rendered.
+    if ($("[data-page-id='login-page']").length > 0) {
+        if (window.location.hash.substring(0, 1) === "#") {
+            /* We append the location.hash to the formaction so that URL can be
+            preserved after user is logged in. See this:
+            https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+            var email_formaction = $("#login_form").attr('action');
+            $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
+            $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
+            $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
+
+            var sso_address = $("#sso-login").attr('href');
+            $("#sso-login").attr('href', sso_address + window.location.hash);
+        }
+    }
+
     $("#send_confirm").validate({
         errorElement: "div",
         errorPlacement: function (error) {
