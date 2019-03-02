@@ -73,6 +73,12 @@ $(function () {
         $("#timezone").val(moment.tz.guess());
     }
 
+    // Code in this block will be executed when the user visits /new
+    // i.e. create_realm.html is rendered.
+    if ($("[data-page-id='create-realm']").length > 0) {
+        common.autofocus('#email');
+    }
+
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
     if ($("[data-page-id='accounts-home']").length > 0) {
