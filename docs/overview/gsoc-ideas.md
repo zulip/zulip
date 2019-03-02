@@ -313,18 +313,6 @@ CSS](https://github.com/zulip/zulip/).
   set of PRs making small improvements to the logged-out UI.  Expert:
   Tim Abbott.
 
-* Make Zulip's user-facing documentation more awesome.  Zulip now has
-  a [lot of documentation](https://chat.zulip.org/help/) for users
-  (largely written by Google Code-In students!) on how to use the
-  various product features, and what features exist, but it could use
-  a lot of work on organization, polish, and otherwise making it feel
-  nice.  The largest part of this, though, would be writing guides for
-  new users on how to setup Zulip effectively.  One could start with the
-  [open user documentation issues](https://github.com/zulip/zulip/labels/area%3A%20documentation%20%28user%29).
-  **Skills required**: Strong English writing skills, empathy for
-  users, appreciation for the Zulip user experience.  Minimal coding
-  experience required.  Expert: Rishi Gupta.
-
 - Build support for outgoing webhooks and slash commands into Zulip to
   improve its chat-ops capabilities.  There's an existing
   [pull request](https://github.com/zulip/zulip/pull/1393) with a lot
