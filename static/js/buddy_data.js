@@ -31,6 +31,7 @@ exports.get_user_circle_class = function (user_id) {
     var status_green = {circle_color: 'user_circle_green', user_circle_status: 'Active'};
     var status_orange = {circle_color: 'user_circle_orange', user_circle_status: 'Idle'};
     var status_empty = {circle_color: 'user_circle_empty', user_circle_status: 'Offline'};
+    var status_empty_line = {circle_color: 'user_circle_empty_line', user_circle_status: 'Unavailable'};
 
     switch (status) {
     case 'active':
@@ -39,7 +40,7 @@ exports.get_user_circle_class = function (user_id) {
         return status_orange;
     case 'away_them':
     case 'away_me':
-        return status_empty;
+        return status_empty_line;
     default:
         return status_empty;
     }
