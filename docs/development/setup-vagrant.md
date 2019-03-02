@@ -320,7 +320,7 @@ $ cd zulip
 christie@win10 ~/zulip
 $ vagrant up
 ```
-When starting the server for the first time, if your Windows operating system does not support Hyper-V then run the following command after ensuring that you have appropriate version of VirtualBox installed. 
+When starting the server for the first time, if your Windows operating system does not support Hyper-V then run the following command after ensuring that you have appropriate version of VirtualBox installed.
 
 ```
 christie@win10 ~/zulip
