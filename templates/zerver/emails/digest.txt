@@ -13,8 +13,8 @@ You have some missed private messages. Here are some of them:
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}
 {% endfor %}{% endfor %}
-{% if remaining_unread_pms_count > 0 %}+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}{% endif %}
-Catch up on the rest of your PMs: {{ realm_uri }}/#narrow/is/private{% endif %}
+{% if remaining_unread_pms_count > 0 %}+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}
+Catch up on the rest of your PMs: {{ realm_uri }}/#narrow/is/private{% endif %}{% endif %}
 
 {% if hot_conversations %}
 ** Hot conversations **

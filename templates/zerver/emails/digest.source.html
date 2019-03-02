@@ -25,8 +25,9 @@
         </div>
         {% endfor %}
 
-        {% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
+        {% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>
         <p><a href="{{ realm_uri }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
+        {% endif %}
     </div>
     {% endif %}
 
