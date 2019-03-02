@@ -97,6 +97,8 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
                               {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
             }
         }
+        return i18n.t("On __last_active_date__",
+              {last_active_date: last_active_date.toString("MMM\xa0dd")});
     }
 
     return i18n.t("On __last_active_date__",
