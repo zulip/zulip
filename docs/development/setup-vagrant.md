@@ -626,6 +626,15 @@ When reporting your issue, please include the following information:
 The output of `tools/diagnose` run inside the Vagrant guest is also
 usually helpful.
 
+#### Hyper-V enabling issues
+
+If your Windows operating system does not support Hyper-V, you need to run the following command after ensuring that you have appropriate version of VirtualBox installed.
+
+```
+christie@win10 ~/zulip
+$ vagrant up --provide=virtualbox
+```
+
 #### Vagrant guest doesn't show (zulip-py3-venv) at start of prompt
 
 This is caused by provisioning failing to complete successfully.  You
