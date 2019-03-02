@@ -41,6 +41,11 @@ class zulip::nginx {
     'trusty' => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.direct',
     default  => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.internal',
   }
+  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', '')
+  if $no_serve_uploads != '' {
+    # If we're not serving uploads locally, set the appropriate API headers for it.
+    $uploads_route = 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.noserve'
+  }
 
   file { '/etc/nginx/zulip-include/uploads.route':
     ensure  => file,

@@ -1,4 +1,10 @@
+# This Django route not under /api is shared between mobile and web
+# and thus needs API headers added, in addition to the configuration
+# required to have it serve files directly.
+
 location /user_uploads {
+    include /etc/nginx/zulip-include/api_headers;
+
     add_header X-Content-Type-Options nosniff;
     add_header Content-Security-Policy "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'self'; plugin-types application/pdf;";
     include /etc/nginx/zulip-include/uploads.types;

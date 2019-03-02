@@ -27,15 +27,9 @@ location ~ /json/events {
 
 # Send longpoll requests to Tornado
 location /api/v1/events {
-
-    add_header Access-Control-Allow-Origin *;
-    add_header Access-Control-Allow-Headers Authorization;
-    add_header Access-Control-Allow-Methods 'GET, POST';
+    include /etc/nginx/zulip-include/api_headers;
 
     if ($request_method = 'OPTIONS') {
-        add_header Access-Control-Allow-Origin *;
-        add_header Access-Control-Allow-Headers Authorization;
-        add_header Access-Control-Allow-Methods 'GET, POST';
         add_header 'Content-Type' 'text/plain charset=UTF-8';
         add_header 'Content-Length' 0;
         return 204;
@@ -60,15 +54,20 @@ location / {
     uwsgi_pass django;
 }
 
-# Certain Django routes not under /api are shared between mobile and
-# web and thus need API headers added.  We don't collapse this with the
-# above block for /events, because regular expressions take priority over
-# paths in nginx's order-of-operations, and we don't want to override the
-# tornado stuff.
-location ~ ^/(user_uploads|avatar|thumbnail)/ {
-    add_header Access-Control-Allow-Origin *;
-    add_header Access-Control-Allow-Headers Authorization;
-    add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD';
+# These Django routes not under /api are shared between mobile and
+# web, and thus need API headers added.  We can't easily collapse
+# these blocks with the /api block, because regular expressions take
+# priority over paths in nginx's order-of-operations, and we don't
+# want to override the tornado configuration for /api/v1/events.  The
+# last is handled via uploads-route.
+location /thumbnail {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+    uwsgi_pass django;
+}
+location /avatar {
+    include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
     uwsgi_pass django;
@@ -76,12 +75,11 @@ location ~ ^/(user_uploads|avatar|thumbnail)/ {
 
 # Send all API routes not covered above to Django via uWSGI
 location /api/ {
-    add_header Access-Control-Allow-Origin *;
-    add_header Access-Control-Allow-Headers Authorization;
-    add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD';
+    include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
     uwsgi_pass django;
 }
 
+include /etc/nginx/zulip-include/uploads.route;
 include /etc/nginx/zulip-include/app.d/*.conf;
