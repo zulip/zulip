@@ -4,12 +4,10 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
-<script>
-$(function () {
-    common.autofocus('#email');
-});
-</script>
 
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="accounts-home"></div>
 <div class="app register-page split-view flex full-page new-style">
     <div class="inline-block">
         <div class="lead">
@@ -104,9 +102,4 @@ $(function () {
     </div>
 </div>
 
-<script>
-if (window.location.hash.substring(0, 1) === "#") {
-    document.email_form.action += window.location.hash;
-}
-</script>
 {% endblock %}

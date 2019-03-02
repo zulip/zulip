@@ -73,6 +73,16 @@ $(function () {
         $("#timezone").val(moment.tz.guess());
     }
 
+    // Code in this block will be executed when the user visits /register
+    // i.e. accounts_home.html is rendered.
+    if ($("[data-page-id='accounts-home']").length > 0) {
+        common.autofocus('#email');
+
+        if (window.location.hash.substring(0, 1) === "#") {
+            document.email_form.action += window.location.hash;
+        }
+    }
+
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
     if ($("[data-page-id='login-page']").length > 0) {
