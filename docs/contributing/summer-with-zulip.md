@@ -145,7 +145,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
       for even complex changes.
 
     - Or Eklavya Sharma's (from GSoC 2016) to see a fellow GSoC student doing
-      this well. (`git log -p` `--``author=Eklavya` is a fast way to skim).
+      this well. (`git log -p --author=Eklavya` is a fast way to skim).
 
   - Team up with other developers close to or in your time zone who are working
     on similar areas to trade timely initial code reviews. 75% of the feedback
