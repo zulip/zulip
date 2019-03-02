@@ -13,13 +13,6 @@ var exports = {};
 
 exports.max_size_before_shrinking = 600;
 
-var presence_descriptions = {
-    away_me: 'is unavailable',
-    away_them: 'is unavailable',
-    active: 'is active',
-    idle: 'is not active',
-};
-
 var fade_config = {
     get_user_id: function (item) {
         return item.user_id;
