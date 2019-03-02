@@ -35,16 +35,20 @@ var fade_config = {
 exports.get_user_circle_class = function (user_id) {
     var status = exports.buddy_status(user_id);
 
+    var status_green = {circle_color: 'user_circle_green', user_circle_status: 'Active'};
+    var status_orange = {circle_color: 'user_circle_orange', user_circle_status: 'Idle'};
+    var status_empty = {circle_color: 'user_circle_empty', user_circle_status: 'Offline'};
+
     switch (status) {
     case 'active':
-        return 'user_circle_green';
+        return status_green;
     case 'idle':
-        return 'user_circle_orange';
+        return status_orange;
     case 'away_them':
     case 'away_me':
-        return 'user_circle_empty_line';
+        return status_empty;
     default:
-        return 'user_circle_empty';
+        return status_empty;
     }
 };
 
@@ -175,21 +179,37 @@ exports.user_last_seen_time_status = function (user_id) {
 };
 
 exports.user_title = function (user_id) {
-    var buddy_status = exports.buddy_status(user_id);
-    var type_desc = presence_descriptions[buddy_status];
     var status_text = user_status.get_status_text(user_id);
     var person = people.get_person_from_user_id(user_id);
+    var last_seen = exports.user_last_seen_time_status(user_id);
+    var name = person.full_name;
     var title;
 
+    // Wrap Names longer than 30 characters
+    if (name.length > 30) {
+        name = name.slice(0, 30) + '\n' + name.slice(30);
+    }
+
     if (status_text) {
-        // The user-set status, like "out to lunch",
-        // is more important than actual presence.
-        title = status_text;
+        // Wrap Status texts longer than 30 characters
+        if (status_text.length > 30) {
+            status_text = status_text.slice(0, 30) + '\n' + status_text.slice(30);
+        }
+        // example: "Cordelia Lear
+        //           Out to Lunch
+        //           Last Online: 57 minutes ago"
+        if (last_seen === "Online now") {
+            title = name + '\n' + status_text + '\n' + last_seen;
+        } else {
+            title = name + '\n' + status_text + '\n' + 'Last online: ' + last_seen;
+        }
     } else {
-        title = person.full_name;
-        if (type_desc) {
-            // example: "Cordelia Lear is unavailable"
-            title += ' ' + type_desc;
+        // example: "Cordelia Lear
+        //           Last Online: 57 minutes ago"
+        if (last_seen === "Online now") {
+            title = name + '\n' + last_seen;
+        } else {
+            title = name + '\n' + 'Last online: ' + last_seen;
         }
     }
 
@@ -209,8 +229,9 @@ exports.info_for = function (user_id) {
         my_user_status: my_user_status,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
-        user_circle_class: user_circle_class,
+        user_circle_class: user_circle_class.circle_color,
         title: title,
+        user_circle_status: user_circle_class.user_circle_status,
     };
 };
 
