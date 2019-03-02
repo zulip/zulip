@@ -774,9 +774,15 @@ exports.initialize = function () {
                 // Refocus compose message text box if link is clicked
                 $("#compose-textarea").focus();
             } else if (!$(e.target).closest(".overlay").length &&
-            !window.getSelection().toString() &&
-            !$(e.target).closest('.popover-content').length &&
-            $(e.target).closest('body').length) {
+                       !window.getSelection().toString() &&
+                       !$(e.target).closest('.popover-content').length &&
+                       // The "full user profile" modal doesn't use
+                       // either the full popover system or the
+                       // overlays system, so it needs semi-duplicate
+                       // checks here.
+                       !$(e.target).closest(".modal").length &&
+                       !$(e.target).closest(".modal-backdrop").length &&
+                       $(e.target).closest('body').length) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
                 // Check if the click is within the body to prevent extensions from
