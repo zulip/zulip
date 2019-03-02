@@ -606,17 +606,19 @@ MessageListView.prototype = {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
 
-        if (messages.length === 0 || this.table_name === undefined) {
+        // Store this in a separate variable so it doesn't get
+        // confusingly masked in upcoming loops.
+        var self = this;
+
+        if (messages.length === 0 || self.table_name === undefined) {
             return;
         }
 
-        var list = this.list; // for convenience
-        var table_name = this.table_name;
+        var list = self.list; // for convenience
+        var table_name = self.table_name;
         var table = rows.get_table(table_name);
         var orig_scrolltop_offset;
         var message_containers;
-
-        var self = this;
 
         // If we start with the message feed scrolled up (i.e.
         // the bottom message is not visible), then we will respect
@@ -654,12 +656,12 @@ MessageListView.prototype = {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
 
-        if (message_containers.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0 || self.table_name === undefined) {
             return;
         }
 
-        var new_message_groups = this.build_message_groups(message_containers, this.table_name);
-        var message_actions = this.merge_message_groups(new_message_groups, where);
+        var new_message_groups = self.build_message_groups(message_containers, self.table_name);
+        var message_actions = self.merge_message_groups(new_message_groups, where);
         var new_dom_elements = [];
         var rendered_groups;
         var dom_messages;
