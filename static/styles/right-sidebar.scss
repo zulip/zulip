@@ -57,6 +57,12 @@
     display: none;
 }
 
+.user-list-arrow i {
+    padding-right: 0.25em;
+    display: inline-block;
+    width: 13px;
+}
+
 #user_presences li:hover .user-list-arrow {
     display: inline;
     cursor: pointer;

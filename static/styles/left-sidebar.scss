@@ -241,9 +241,11 @@ a.conversation-partners:hover {
     text-decoration: underline;
 }
 
-ul.filters i {
+.filter-icon i,
+.all-messages-arrow i,
+.stream-sidebar-arrow i,
+.topic-sidebar-arrow i {
     padding-right: 0.25em;
-    /* Make filter icons the same width so labels line up. */
     display: inline-block;
     width: 13px;
 }
