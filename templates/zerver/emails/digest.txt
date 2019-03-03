@@ -1,4 +1,4 @@
-Hello {{ name }},
+Hello {{ user_name }},
 
 A lot has happened on Zulip while you've been away! Visit
 {{ realm_uri }} to catch up.
