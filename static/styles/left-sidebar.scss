@@ -2,12 +2,27 @@
     display: none;
 }
 
-#left-sidebar {
-    font-size: 0.89rem;
+.hashtag:empty::after,
+.stream-privacy {
+    font-weight: 800;
 }
 
+.hashtag:empty::after {
+    font-size: 18px;
+}
+
+.stream-privacy {
+    font-size: 15px;
+}
+
+#stream_filters,
 #global_filters {
     font-size: 14px;
+}
+
+li.show-more-topics a,
+li.show-more-private-messages a {
+    font-size: 12px;
 }
 
 #left-sidebar #user-list,
@@ -40,8 +55,6 @@
 
 .hashtag:empty::after {
     content: "#";
-    font-size: 1.3rem;
-    font-weight: 800;
     line-height: 0;
 }
 
@@ -356,22 +369,13 @@ ul.filters li.out_of_home_view li.muted_topic {
     margin-right: 15px;
 }
 
-.stream-privacy {
-    font-size: 15px;
-}
-
 .stream-privacy .fa-lock {
     display: inline-block;
     width: 9px;
     margin-right: 2px;
-    margin-left: 1px;
-    position: relative;
-    top: 1px;
 }
 
 .stream-privacy .hashtag {
-    position: relative;
-    top: 2px;
     margin-right: 5px;
 }
 
@@ -491,11 +495,6 @@ li.show-more-private-messages {
 
 li.show-more-topics a {
     margin-left: 5px;
-    font-size: 80%;
-}
-
-li.show-more-private-messages a {
-    font-size: 90%;
 }
 
 .searching-for-more-topics {
