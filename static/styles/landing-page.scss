@@ -75,6 +75,7 @@ a:hover {
     text-decoration: none;
 }
 
+span a:hover,
 p a:hover,
 ul a:hover,
 ol a:hover {
@@ -2126,7 +2127,6 @@ nav ul li.active::after {
 
 .portico-landing.apps .hero .info button {
     padding: 10px 20px;
-    margin-top: 50px;
 
     font-size: 1em;
     font-weight: 600;
@@ -4250,4 +4250,11 @@ nav ul li.active::after {
     .portico-landing .testimonials .carousel-inner {
         left: -7%;
     }
+}
+
+#download-android-apk a {
+    display: inline-block;
+    color: hsl(0, 0%, 100%);
+    font-size: 13px;
+    padding-left: 10px;
 }

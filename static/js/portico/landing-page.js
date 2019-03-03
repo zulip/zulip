@@ -110,6 +110,7 @@ var apps_events = function () {
     var update_page = function () {
         var $download_instructions = $(".download-instructions");
         var $third_party_apps = $("#third-party-apps");
+        var $download_android_apk = $("#download-android-apk");
         var version_info = info[version];
 
         $(".info .platform").text(version_info.alt);
@@ -130,6 +131,7 @@ var apps_events = function () {
             $third_party_apps.hide();
         }
 
+        $download_android_apk.toggle(version === "android");
     };
 
     $(window).on('popstate', function () {
