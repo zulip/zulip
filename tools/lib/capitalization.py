@@ -23,6 +23,7 @@ IGNORED_PHRASES = [
     r"G Suite",
     r"Google",
     r"Gravatar",
+    r"Group PMs",
     r"Hamlet",
     r"Help Center",
     r"HTTP",
