@@ -337,6 +337,7 @@ exports.on_load_success = function (realm_people_data) {
     function open_user_info_form_modal(person) {
         var html = templates.render('user-info-form-modal', {
             user_id: person.user_id,
+            email: person.email,
             full_name: people.get_full_name(person.user_id),
             is_admin: person.is_admin,
             is_guest: person.is_guest,
