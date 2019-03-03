@@ -265,6 +265,13 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('basecamp', ['project-management']),
     WebhookIntegration('beeminder', ['misc'], display_name='Beeminder'),
     WebhookIntegration(
+        'bitbucket3',
+        ['version-control'],
+        logo='static/images/integrations/logos/bitbucket.svg',
+        display_name='Bitbucket Server',
+        stream_name='bitbucket'
+    ),
+    WebhookIntegration(
         'bitbucket2',
         ['version-control'],
         logo='static/images/integrations/logos/bitbucket.svg',
