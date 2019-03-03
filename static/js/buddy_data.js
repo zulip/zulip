@@ -192,7 +192,7 @@ exports.user_title = function (user_id) {
         // example: "Cordelia Lear
         //           Out to Lunch
         //           Last Online: 57 minutes ago"
-        if (last_seen === "Online now") {
+        if (last_seen.indexOf("Online now") !== -1) {
             title = name + '\n' + status_text + '\n' + last_seen;
         } else {
             title = name + '\n' + status_text + '\n' + 'Last online: ' + last_seen;
@@ -200,7 +200,7 @@ exports.user_title = function (user_id) {
     } else {
         // example: "Cordelia Lear
         //           Last Online: 57 minutes ago"
-        if (last_seen === "Online now") {
+        if (last_seen.indexOf("Online now") !== -1) {
             title = name + '\n' + last_seen;
         } else {
             title = name + '\n' + 'Last online: ' + last_seen;
