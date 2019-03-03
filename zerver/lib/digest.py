@@ -5,7 +5,7 @@ import datetime
 import logging
 import pytz
 
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -80,17 +80,13 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
                 logger.info("%s is inactive, queuing for potential digest" % (
                     user_profile.email,))
 
-def gather_hot_conversations(user_profile: UserProfile, stream_ums: QuerySet) -> List[Dict[str, Any]]:
+def gather_hot_conversations(user_profile: UserProfile, messages: List[Message]) -> List[Dict[str, Any]]:
     # Gather stream conversations of 2 types:
     # 1. long conversations
     # 2. conversations where many different people participated
     #
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
-
-    # stream_ums is a list of UserMessage rows for a single
-    # user, so the list of messages is distinct here.
-    messages = [um.message for um in stream_ums]
 
     conversation_length = defaultdict(int)  # type: Dict[Tuple[int, str], int]
     conversation_messages = defaultdict(list)  # type: Dict[Tuple[int, str], List[Message]]
@@ -239,9 +235,11 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         message__recipient__type=Recipient.STREAM,
         message__recipient__in=home_view_recipients)
 
+    messages = [um.message for um in stream_messages]
+
     # Gather hot conversations.
     context["hot_conversations"] = gather_hot_conversations(
-        user_profile, stream_messages)
+        user_profile, messages)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
