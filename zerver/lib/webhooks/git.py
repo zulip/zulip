@@ -31,6 +31,7 @@ PUSH_COMMITTERS_LIMIT_INFO = 3
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = ("{user_name} [force pushed]({url}) "
                                        "to branch {branch_name}. Head is now {head}")
 CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) branch"
+CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE = "{user_name} created {branch_name} branch"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}"
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
@@ -108,7 +109,12 @@ def get_force_push_commits_event_message(user_name: str, url: str, branch_name: 
         head=head
     )
 
-def get_create_branch_event_message(user_name: str, url: str, branch_name: str) -> str:
+def get_create_branch_event_message(user_name: str, url: Optional[str], branch_name: str) -> str:
+    if url is None:
+        return CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE.format(
+            user_name=user_name,
+            branch_name=branch_name,
+        )
     return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
