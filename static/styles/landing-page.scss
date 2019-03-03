@@ -1626,21 +1626,21 @@ nav ul li.active::after {
     background-color: hsl(220, 23%, 33%);
 }
 
-.portico-landing.hello .testimonials {
+.portico-landing .testimonials {
     color: hsl(0, 0%, 100%);
     background-color: hsl(168, 43%, 24%);
 }
 
-.portico-landing.hello .testimonials .text-header .text-content {
+.portico-landing .testimonials .text-header .text-content {
     float: left;
 }
 
-.portico-landing.hello .testimonials .text-header .action-content {
+.portico-landing .testimonials .text-header .action-content {
     float: right;
     margin-top: 18px;
 }
 
-.portico-landing.hello .testimonials .quote-container {
+.portico-landing .testimonials .quote-container {
     width: 98%;
     margin: 30px auto 20px auto;
     padding-left: 2%;
@@ -1648,22 +1648,22 @@ nav ul li.active::after {
     font-size: 1.2rem;
 }
 
-.portico-landing.hello .testimonials .carousel {
+.portico-landing .testimonials .carousel {
     min-height: 250px;
 }
 
-.portico-landing.hello .testimonials .carousel-quotes {
+.portico-landing .testimonials .carousel-quotes {
     width: 60%;
     margin: auto;
 }
 
-.portico-landing.hello .testimonials .carousel-inner {
+.portico-landing .testimonials .carousel-inner {
     width: 100%;
     left: -2%;
 }
 
-.portico-landing.hello .testimonials .fa-chevron-left,
-.portico-landing.hello .testimonials .fa-chevron-right {
+.portico-landing .testimonials .fa-chevron-left,
+.portico-landing .testimonials .fa-chevron-right {
     color: hsl(0, 0%, 100%);
     opacity: 0.5;
     position: absolute;
@@ -1671,26 +1671,26 @@ nav ul li.active::after {
     top: 40%;
 }
 
-.portico-landing.hello .testimonials .fa-chevron-right {
+.portico-landing .testimonials .fa-chevron-right {
     right: 10%;
 }
 
-.portico-landing.hello .testimonials .fa-chevron-left {
+.portico-landing .testimonials .fa-chevron-left {
     left: 10%;
 }
 
-.portico-landing.hello .testimonials .fa-chevron-left:hover,
-.portico-landing.hello .testimonials .fa-chevron-right:hover {
+.portico-landing .testimonials .fa-chevron-left:hover,
+.portico-landing .testimonials .fa-chevron-right:hover {
     opacity: 1;
 }
 
-.portico-landing.hello .testimonials blockquote::before {
+.portico-landing .testimonials blockquote::before {
     content: "“";
     margin-left: -10px;
     margin-right: -3px;
 }
 
-.portico-landing.hello .testimonials blockquote + cite {
+.portico-landing .testimonials blockquote + cite {
     display: block;
     margin-top: 5px;
     margin-bottom: 30px;
@@ -1700,7 +1700,7 @@ nav ul li.active::after {
     font-weight: 400;
 }
 
-.portico-landing.hello .testimonials blockquote {
+.portico-landing .testimonials blockquote {
     padding: 0px;
 
     font-weight: 400;
@@ -1711,34 +1711,34 @@ nav ul li.active::after {
     opacity: 0.8;
 }
 
-.portico-landing.hello .testimonials hr {
+.portico-landing .testimonials hr {
     width: 60%;
     margin: 0 auto;
     border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.portico-landing.hello .testimonials .company-container {
+.portico-landing .testimonials .company-container {
     width: 60%;
     margin: 30px auto;
     text-align: left;
 }
 
-.portico-landing.hello .testimonials .company-box {
+.portico-landing .testimonials .company-box {
     margin-top: 20px;
 }
 
-.portico-landing.hello .testimonials .company-container header h2 {
+.portico-landing .testimonials .company-container header h2 {
     font-weight: 400;
     font-size: 1.5em;
 }
 
-.portico-landing.hello .testimonials .company-container header .arrow {
+.portico-landing .testimonials .company-container header .arrow {
     margin-top: 12px;
     font-weight: normal;
 }
 
-.portico-landing.hello .testimonials .company-box .company {
+.portico-landing .testimonials .company-box .company {
     display: inline-block;
     margin: 10px 20px;
 
@@ -1752,93 +1752,93 @@ nav ul li.active::after {
 }
 
 /* -- company logos -- */
-.portico-landing.hello .testimonials .company-box .company.akamai {
+.portico-landing .testimonials .company-box .company.akamai {
     background-image: url(/static/images/landing-page/logos/akamai.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.doctorondemand {
+.portico-landing .testimonials .company-box .company.doctorondemand {
     background-image: url(/static/images/landing-page/logos/doctorondemand.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.layershift {
+.portico-landing .testimonials .company-box .company.layershift {
     background-image: url(/static/images/landing-page/logos/layershift.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.recurse {
+.portico-landing .testimonials .company-box .company.recurse {
     background-image: url(/static/images/landing-page/logos/recurse.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.solano {
+.portico-landing .testimonials .company-box .company.solano {
     background-image: url(/static/images/landing-page/logos/solano.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.veelo {
+.portico-landing .testimonials .company-box .company.veelo {
     background-image: url(/static/images/landing-page/logos/veelo.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.panjiva {
+.portico-landing .testimonials .company-box .company.panjiva {
     background-image: url(/static/images/landing-page/logos/panjiva.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.cmt {
+.portico-landing .testimonials .company-box .company.cmt {
     background-image: url(/static/images/landing-page/logos/cambridge-mobile-telematics.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.levelup {
+.portico-landing .testimonials .company-box .company.levelup {
     background-image: url(/static/images/landing-page/logos/levelup.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.wildfly {
+.portico-landing .testimonials .company-box .company.wildfly {
     background-image: url(/static/images/landing-page/logos/wildfly.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.mariadb {
+.portico-landing .testimonials .company-box .company.mariadb {
     background-image: url(/static/images/landing-page/logos/mariadb.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.infinispan {
+.portico-landing .testimonials .company-box .company.infinispan {
     background-image: url(/static/images/landing-page/logos/infinispan.png);
     background-color: transparent;
     height: 50px;
 }
 
-.portico-landing.hello .testimonials .company-box .company.hail {
+.portico-landing .testimonials .company-box .company.hail {
     background-image: url(/static/images/landing-page/logos/hail.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.inspire-hep {
+.portico-landing .testimonials .company-box .company.inspire-hep {
     background-image: url(/static/images/landing-page/logos/inspire-hep.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.wikimedia-outreach {
+.portico-landing .testimonials .company-box .company.wikimedia-outreach {
     background-image: url(/static/images/landing-page/logos/wikimedia-outreach.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.fhir {
+.portico-landing .testimonials .company-box .company.fhir {
     background-image: url(/static/images/landing-page/logos/fhir.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.openshot {
+.portico-landing .testimonials .company-box .company.openshot {
     background-image: url(/static/images/landing-page/logos/openshot.png);
     background-color: transparent;
 }
 
-.portico-landing.hello .testimonials .company-box .company.mixxx {
+.portico-landing .testimonials .company-box .company.mixxx {
     background-image: url(/static/images/landing-page/logos/mixxx.png);
     background-color: transparent;
     height: 45px;
@@ -3174,7 +3174,7 @@ nav ul li.active::after {
 @media (min-width: 1296px),
     (max-width: 985px) and (min-width: 687px) {
     /* while there are nine, show only two rows of four. */
-    .portico-landing.hello .testimonials .company-box > div:last-of-type {
+    .portico-landing .testimonials .company-box > div:last-of-type {
         display: none;
     }
 }
@@ -3202,7 +3202,7 @@ nav ul li.active::after {
         margin: 0px auto 50px;
     }
 
-    .portico-landing.hello .testimonials .company-box .company {
+    .portico-landing .testimonials .company-box .company {
         width: calc(33% - 44px);
     }
 }
@@ -3358,15 +3358,15 @@ nav ul li.active::after {
         margin: 10px;
     }
 
-    .portico-landing.hello .testimonials .carousel-quotes {
+    .portico-landing .testimonials .carousel-quotes {
         width: 100%;
     }
 
-    .portico-landing.hello .testimonials .fa-chevron-right {
+    .portico-landing .testimonials .fa-chevron-right {
         right: -40px;
     }
 
-    .portico-landing.hello .testimonials .fa-chevron-left {
+    .portico-landing .testimonials .fa-chevron-left {
         left: -40px;
     }
 
@@ -3398,12 +3398,12 @@ nav ul li.active::after {
         padding: 0 50px;
     }
 
-    .portico-landing.hello .testimonials hr,
-    .portico-landing.hello .testimonials .company-container {
+    .portico-landing .testimonials hr,
+    .portico-landing .testimonials .company-container {
         width: 100%;
     }
 
-    .portico-landing.hello .testimonials .company-box .company {
+    .portico-landing .testimonials .company-box .company {
         width: calc(25% - 44px);
     }
 
@@ -3495,12 +3495,12 @@ nav ul li.active::after {
         display: none;
     }
 
-    .portico-landing.hello .testimonials .quote-container {
+    .portico-landing .testimonials .quote-container {
         width: 96%;
         padding-left: 4%;
     }
 
-    .portico-landing.hello .testimonials .carousel-inner {
+    .portico-landing .testimonials .carousel-inner {
         left: -4%;
     }
 }
@@ -3955,7 +3955,7 @@ nav ul li.active::after {
         width: 100%;
     }
 
-    .portico-landing.hello .testimonials .company-box .company {
+    .portico-landing .testimonials .company-box .company {
         margin: 10px;
         width: calc(33% - 24px);
     }
@@ -4234,12 +4234,12 @@ nav ul li.active::after {
 }
 
 @media (max-width: 313px) {
-    .portico-landing.hello .testimonials .quote-container {
+    .portico-landing .testimonials .quote-container {
         width: 93%;
         padding-left: 7%;
     }
 
-    .portico-landing.hello .testimonials .carousel-inner {
+    .portico-landing .testimonials .carousel-inner {
         left: -7%;
     }
 }
