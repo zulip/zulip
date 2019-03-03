@@ -121,7 +121,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(29 <= len(queries) <= 30)
+        self.assertTrue(24 <= len(queries) <= 25)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
