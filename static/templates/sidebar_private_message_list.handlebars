@@ -14,7 +14,9 @@
                     {{else}}
                         <span class="{{user_circle_class}} user_circle"></span>
                     {{/if}}
-                </div>
+                {{else}}
+                    <span class="{{user_circle_class}} user_circle" title={{user_circle_status}}></span>
+                {{/if}}
 
                 <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
                     {{recipients}}

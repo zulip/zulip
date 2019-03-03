@@ -95,6 +95,7 @@ run_test('build_private_messages_list', () => {
                 user_circle_class: 'user_circle_fraction',
                 fraction_present: false,
                 is_group: true,
+                user_circle_status: '',
             },
         ],
         zoom_class: 'zoomed-out',
