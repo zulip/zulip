@@ -813,12 +813,38 @@ exports.build_page = function () {
         var subsection_id = save_button.attr('id').replace("org-submit-", "");
         var subsection = subsection_id.split('-').join('_');
 
+        var properties_changed = [];
+        var properties_elements = get_subsection_property_elements($(e.target).closest('.org-subsection-parent'));
+        _.each(properties_elements, function (elem) {
+            if (check_property_changed(elem)) {
+                var property_name = exports.extract_property_name($(elem));
+                property_name = property_name.replace("realm_", "");
+                property_name = property_name.replace("_minutes", "_seconds");
+                property_name = property_name.replace("msg_edit_limit_setting", "allow_message_editing");
+                property_name = property_name.replace("msg_delete_limit_setting", "allow_message_deliting");
+                properties_changed.push(property_name);
+            }
+        });
         var data = populate_data_for_request({}, get_subsection_property_types(subsection));
         var opts = get_complete_data_for_subsection(subsection);
         data = _.extend(data, opts.data);
         var success_continuation = opts.success_continuation;
 
-        exports.save_organization_settings(data, save_button, success_continuation);
+        var data_changed = {};
+        _.each(properties_changed, function (property) {
+            data_changed[property] = data[property];
+        });
+
+        if (data_changed.allow_message_editing) {
+            var edit_limit_seconds = data.message_content_edit_limit_seconds;
+            data_changed.message_content_edit_limit_seconds = edit_limit_seconds;
+        }
+        if (data_changed.allow_message_deleting) {
+            var delet_limit_seconds = data.message_content_delete_limit_seconds;
+            data_changed.message_content_delete_limit_seconds = delet_limit_seconds;
+        }
+
+        exports.save_organization_settings(data_changed, save_button, success_continuation);
     });
 
     $(".org-subsection-parent").on("keydown", "input", function (e) {
