@@ -141,14 +141,16 @@ li.active-sub-filter {
 
 #global_filters .filter-icon {
     display: inline-block;
-    width: 18px;
+    min-width: 17px;
     text-align: center;
-    margin-right: 3px;
 }
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 8px;
+    padding-right: 10px;
 }
 
 .narrows_panel li {
@@ -174,12 +176,11 @@ a.conversation-partners:hover {
     position: relative;
     top: 1px;
     left: -1px;
-
-    font-size: 16px;
+    font-size: 17px;
 }
 
 #global_filters .global-filter i.fa-envelope {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 /* We are mostly consistent in how we style
@@ -408,7 +409,7 @@ li.expanded_private_message a {
 }
 
 li.show-more-private-messages {
-    margin-left: 5px;
+    padding-left: 21px;
 }
 
 .show-all-streams a {
@@ -433,7 +434,7 @@ li.show-more-private-messages {
     height: 8px;
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-left: 5px;
+    margin-left: 2px;
     margin-right: 9px;
     position: relative;
     top: 0px;
