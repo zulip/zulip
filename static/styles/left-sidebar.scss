@@ -369,14 +369,8 @@ ul.filters li.out_of_home_view li.muted_topic {
     margin-right: 15px;
 }
 
-.stream-privacy .fa-lock {
-    display: inline-block;
-    width: 9px;
-    margin-right: 2px;
-}
-
-.stream-privacy .hashtag {
-    margin-right: 5px;
+.stream-privacy {
+    min-width: 17px;
 }
 
 ul.topic-list {
