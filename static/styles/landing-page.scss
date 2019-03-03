@@ -4243,3 +4243,8 @@ nav ul li.active::after {
         left: -7%;
     }
 }
+
+#download-android-apk a {
+    color: hsl(0, 0%, 100%);
+    font-size: 13px;
+}
