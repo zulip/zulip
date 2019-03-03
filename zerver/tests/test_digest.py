@@ -3,16 +3,18 @@
 import datetime
 import mock
 import time
+from typing import List
 
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import create_stream_if_needed, do_create_user
-from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails
+from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
+    exclude_subscription_modified_streams
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.models import get_client, get_realm, flush_per_request_caches, \
-    Realm, Message, UserActivity, UserProfile
+    Realm, Message, UserActivity, UserProfile, RealmAuditLog, get_stream
 
 class TestDigestEmailMessages(ZulipTestCase):
 
@@ -21,8 +23,6 @@ class TestDigestEmailMessages(ZulipTestCase):
     def test_multiple_stream_senders(self,
                                      mock_send_future_email: mock.MagicMock,
                                      mock_enough_traffic: mock.MagicMock) -> None:
-
-        client = 'website'  # this makes `sent_by_human` return True
 
         othello = self.example_user('othello')
         self.subscribe(othello, 'Verona')
@@ -34,25 +34,13 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = time.mktime(one_hour_ago.timetuple())
 
         senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
-        for sender_name in senders:
-            email = self.example_email(sender_name)
-            self.login(email)
-            content = 'some content for ' + email
-            payload = dict(
-                type='stream',
-                client=client,
-                to='Verona',
-                topic='lunch',
-                content=content,
-            )
-            result = self.client_post("/json/messages", payload)
-            self.assert_json_success(result)
+        self.simulate_stream_conversation('Verona', senders)
 
         flush_per_request_caches()
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(21 <= len(queries) <= 22)
+        self.assertTrue(6 <= len(queries) <= 7)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -70,6 +58,86 @@ class TestDigestEmailMessages(ZulipTestCase):
         teaser_messages = hot_convo['first_few_messages'][0]['senders']
         self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
         self.assertIn(teaser_messages[0]['sender'], expected_participants)
+
+    @mock.patch('zerver.lib.digest.enough_traffic')
+    @mock.patch('zerver.lib.digest.send_future_email')
+    def test_soft_deactivated_user_multiple_stream_senders(self,
+                                                           mock_send_future_email: mock.MagicMock,
+                                                           mock_enough_traffic: mock.MagicMock) -> None:
+
+        one_day_ago = timezone_now() - datetime.timedelta(days=1)
+        Message.objects.all().update(pub_date=one_day_ago)
+
+        othello = self.example_user('othello')
+        for stream in ['Verona', 'Scotland', 'Denmark']:
+            self.subscribe(othello, stream)
+        RealmAuditLog.objects.all().delete()
+
+        othello.long_term_idle = True
+        othello.save(update_fields=['long_term_idle'])
+
+        # Send messages to a stream and unsubscribe - subscribe from that stream
+        senders = ['hamlet', 'cordelia',  'iago', 'prospero', 'ZOE']
+        self.simulate_stream_conversation('Verona', senders)
+        self.unsubscribe(othello, 'Verona')
+        self.subscribe(othello, 'Verona')
+
+        # Send messages to other streams
+        self.simulate_stream_conversation('Scotland', senders)
+        self.simulate_stream_conversation('Denmark', senders)
+
+        one_hour_ago = timezone_now() - datetime.timedelta(seconds=3600)
+        cutoff = time.mktime(one_hour_ago.timetuple())
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            handle_digest_email(othello.id, cutoff)
+
+        self.assertTrue(9 <= len(queries) <= 10)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        self.assertEqual(kwargs['to_user_ids'], [othello.id])
+
+        hot_conversations = kwargs['context']['hot_conversations']
+        self.assertEqual(2, len(hot_conversations), [othello.id])
+
+        hot_convo = hot_conversations[0]
+        expected_participants = {
+            self.example_user(sender).full_name
+            for sender in senders
+        }
+
+        self.assertEqual(set(hot_convo['participants']), expected_participants)
+        self.assertEqual(hot_convo['count'], 5 - 2)  # 5 messages, but 2 shown
+        teaser_messages = hot_convo['first_few_messages'][0]['senders']
+        self.assertIn('some content', teaser_messages[0]['content'][0]['plain'])
+        self.assertIn(teaser_messages[0]['sender'], expected_participants)
+
+    def test_exclude_subscription_modified_streams(self) -> None:
+        othello = self.example_user('othello')
+        for stream in ['Verona', 'Scotland', 'Denmark']:
+            self.subscribe(othello, stream)
+
+        # Delete all RealmAuditLogs to ignore any changes to subscriptions to
+        # streams done for the setup.
+        RealmAuditLog.objects.all().delete()
+
+        realm = othello.realm
+        stream_names = self.get_streams(othello.email, realm)
+        stream_ids = {name: get_stream(name, realm).id for name in stream_names}
+
+        # Unsubscribe and subscribe from a stream
+        self.unsubscribe(othello, 'Verona')
+        self.subscribe(othello, 'Verona')
+
+        one_sec_ago = timezone_now() - datetime.timedelta(seconds=1)
+
+        filtered_stream_ids = exclude_subscription_modified_streams(
+            othello, list(stream_ids.values()), one_sec_ago)
+        self.assertNotIn(stream_ids['Verona'], filtered_stream_ids)
+        self.assertIn(stream_ids['Scotland'], filtered_stream_ids)
+        self.assertIn(stream_ids['Denmark'], filtered_stream_ids)
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
@@ -181,6 +249,18 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream = gather_new_streams(cordelia, cutoff)[1]
         expected_html = "<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>".format(stream_id=stream_id)
         self.assertIn(expected_html, new_stream['html'])
+
+    def simulate_stream_conversation(self, stream: str, senders: List[str]) -> List[int]:
+        client = 'website'  # this makes `sent_by_human` return True
+        sending_client = get_client(client)
+        message_ids = []  # List[int]
+        for sender_name in senders:
+            email = self.example_email(sender_name)
+            content = 'some content for {} from {}'.format(stream, email)
+            message_id = self.send_stream_message(email, stream, content)
+            message_ids.append(message_id)
+        Message.objects.filter(id__in=message_ids).update(sending_client=sending_client)
+        return message_ids
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
