@@ -767,6 +767,19 @@ vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCrea
 
 The virtual machine needs to be shut down when you run this command.
 
+#### Hyper-V error messages
+
+If you get an error message on Windows about lack of Windows Home
+support for Hyper-V when running `vagrant up`, the problem is that
+Windows is incorrectly attempting to use Hyper-V rather than
+Virtualbox as the virtualization provider.  You can fix this by
+explicitly passing the virtualbox provider to `vagrant up`:
+
+```
+christie@win10 ~/zulip
+$ vagrant up --provide=virtualbox
+```
+
 #### Connection timeout on `vagrant up`
 
 If you see the following error after running `vagrant up`:

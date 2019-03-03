@@ -43,7 +43,7 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-./manage deactivate_realm -r ''  # Deactivates the organization
+./manage.py deactivate_realm -r ''  # Deactivates the organization
 ./manage.py export -r ''  # Exports the data
 ```
 
@@ -83,7 +83,7 @@ cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
-./manage reactivate_realm -r ''  # Reactivates the organization
+./manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 
 This could take several minutes to run, depending on how much data you're
@@ -99,7 +99,7 @@ root domain. Replace the last two lines above with the following, after replacin
 
 ```
 ./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
-./manage reactivate_realm -r <subdomain>  # Reactivates the organization
+./manage.py reactivate_realm -r <subdomain>  # Reactivates the organization
 ```
 
 ## Logging in
