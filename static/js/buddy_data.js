@@ -189,21 +189,32 @@ exports.user_title = function (user_id) {
         if (status_text.length > 30) {
             status_text = status_text.slice(0, 30) + '\n' + status_text.slice(30);
         }
-        // example: "Cordelia Lear
-        //           Out to Lunch
-        //           Last Online: 57 minutes ago"
-        if (last_seen.indexOf("Online now") !== -1) {
-            title = name + '\n' + status_text + '\n' + last_seen;
+
+        if (user_status.is_away(user_id)) {
+            // Show "Last Online: Today" is user is unavailable.
+            title = name + '\n' + status_text + '\n' + 'Last online: Today';
         } else {
-            title = name + '\n' + status_text + '\n' + 'Last online: ' + last_seen;
+            // example: "Cordelia Lear
+            //           Out to Lunch
+            //           Last Online: 57 minutes ago"
+            if (last_seen.indexOf("Online now") !== -1) {
+                title = name + '\n' + status_text + '\n' + last_seen;
+            } else {
+                title = name + '\n' + status_text + '\n' + 'Last online: ' + last_seen;
+            }
         }
     } else {
-        // example: "Cordelia Lear
-        //           Last Online: 57 minutes ago"
-        if (last_seen.indexOf("Online now") !== -1) {
-            title = name + '\n' + last_seen;
+        if (user_status.is_away(user_id)) {
+            // Show "Last Online: Today" is user is unavailable.
+            title = name + '\n' + 'Last online: Today';
         } else {
-            title = name + '\n' + 'Last online: ' + last_seen;
+            // example: "Cordelia Lear
+            //           Last Online: 57 minutes ago"
+            if (last_seen.indexOf("Online now") !== -1) {
+                title = name + '\n' + last_seen;
+            } else {
+                title = name + '\n' + 'Last online: ' + last_seen;
+            }
         }
     }
 

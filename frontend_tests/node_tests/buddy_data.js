@@ -124,20 +124,34 @@ run_test('user_title', () => {
     // Users without a Status Message
     assert.equal(buddy_data.user_title(me.user_id),
                  'Human Myself\ntranslated: Online now');
+    // Show "Last Online: Today" is user is unavailable.
+    user_status.set_away(me.user_id);
+    assert.equal(buddy_data.user_title(me.user_id),
+                 'Human Myself\nLast online: Today');
+    user_status.revoke_away(me.user_id);
+    assert.equal(buddy_data.user_title(me.user_id),
+                 'Human Myself\ntranslated: Online now');
 
-    // User with a very long Name
+    // User with a very long Name.
     assert.equal(buddy_data.user_title(long_name_user.user_id),
                  'Long Name User, The Longest Na\nme Of them All\ntranslated: Online now');
 
-    // User with a Status Message set
+    // User with a Status Message set.
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: 'out to lunch',
     });
     assert.equal(buddy_data.user_title(me.user_id),
                  'Human Myself\nout to lunch\ntranslated: Online now');
+    // Show "Last Online: Today" is user(with status message) is unavailable.
+    user_status.set_away(me.user_id);
+    assert.equal(buddy_data.user_title(me.user_id),
+                 'Human Myself\nout to lunch\nLast online: Today');
+    user_status.revoke_away(me.user_id);
+    assert.equal(buddy_data.user_title(me.user_id),
+                 'Human Myself\nout to lunch\ntranslated: Online now');
 
-    // User with a very long Status Message
+    // User with a very long Status Message.
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: 'Status Messages over 30 Characters are broken up',
@@ -145,18 +159,20 @@ run_test('user_title', () => {
     assert.equal(buddy_data.user_title(me.user_id),
                  'Human Myself\nStatus Messages over 30 Charac\nters are broken up\ntranslated: Online now');
 
-    // User currently not active
+    // User currently not active.
     page_params.realm_is_zephyr_mirror_realm = false;
     assert.equal(buddy_data.user_title(old_user.user_id),
                  'Old User\nLast online: translated: More than 2 weeks ago');
 
-    // User currently not active with Status Message set
+    // User currently not active with Status Message set.
     user_status.set_status_text({
         user_id: old_user.user_id,
         status_text: 'out to lunch',
     });
     assert.equal(buddy_data.user_title(old_user.user_id),
                  'Old User\nout to lunch\nLast online: translated: More than 2 weeks ago');
+
+
 });
 
 run_test('simple search', () => {
