@@ -1544,10 +1544,22 @@ class RealmFilterPattern(markdown.inlinepatterns.InlineProcessor):
     def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[Element, str, None],
                                                              Union[int, None],
                                                              Union[int, None]]:
-        string_new = m.group('total').replace(m.group('wrap'), 'a' + m.group('wrap') + 'a')
-        if not self.word_boundary_pattern.search(string_new):
+        # TODO: Figure out a better way to process realm filters that start with regular
+        # text characters like 'xyz-123'. Without using total_match, we'd be matching with
+        # 'yz-123'. See https://github.com/zulip/zulip/issues/11777.
+        new_wrap = m.group('total').replace(m.group('wrap'), 'a' + m.group('wrap') + 'a')
+        new_total = 'a' + m.group('total') + 'a'
+        wrap_match = self.word_boundary_pattern.search(new_wrap)
+        total_match = self.word_boundary_pattern.search(new_total)
+        if not wrap_match and not total_match:
             return None, None, None
+
         db_data = self.markdown.zulip_db_data
+        if total_match:
+            return url_to_a(db_data,
+                            self.format_string % m.groupdict(),
+                            m.group("total")), m.start('total'), m.end('total')
+
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
                         m.group("wrap")), m.start('wrap'), m.end('wrap')

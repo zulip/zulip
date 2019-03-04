@@ -786,6 +786,10 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
+        # realm filter may eat first character in string match
+        RealmFilter(realm=realm, pattern=r'(?P<id>[0-9a-y]{1,64}-)',
+                    url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
+
         def was_converted(content: str) -> bool:
             converted = bugdown.convert(content, message_realm=realm, message=msg)
             return 'trac.zulip.net' in converted
@@ -804,6 +808,17 @@ class BugdownTest(ZulipTestCase):
         self.assertTrue(was_converted('#123@'))
         self.assertTrue(not was_converted(')#123('))
         self.assertTrue(not was_converted('##123'))
+        self.assertTrue(was_converted('Hello world123-'))
+        self.assertTrue(was_converted(' world123-'))
+        self.assertTrue(was_converted(',world123-'))
+        self.assertTrue(was_converted('world123-'))
+        self.assertTrue(was_converted(' 123world-'))
+        self.assertTrue(was_converted(',123world-'))
+        self.assertTrue(was_converted('123world-'))
+        self.assertTrue(was_converted('チケットは123world- です'))
+        self.assertTrue(was_converted('aaaa123-'))
+        self.assertTrue(not was_converted('zebra123-'))  # z isn't matched by filter.
+        self.assertTrue(was_converted('z,ebra123-'))  # z isn't matched by filter.
 
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
