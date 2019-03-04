@@ -34,10 +34,6 @@
     vertical-align: middle;
 }
 
-.subscriptions {
-    -webkit-font-smoothing: antialiased;
-}
-
 .subscriptions div #response {
     overflow-wrap: break-word;
 }
@@ -462,7 +458,6 @@ form#add_new_subscription {
     margin-top: calc(45vh - 75px);
     text-align: center;
     font-size: 1em;
-    -webkit-font-smoothing: antialiased;
 }
 
 .subscriptions-container .right .nothing-selected span {

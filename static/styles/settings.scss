@@ -1241,10 +1241,6 @@ input[type=checkbox].inline-block {
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
-
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-
     transition: transform 0.2s ease;
 }
 
@@ -1349,8 +1345,6 @@ input[type=checkbox].inline-block {
     font: normal normal normal 12px/1 FontAwesome;
     font-size: inherit;
     text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 #settings_page .table-striped thead th.active.descend::after {
