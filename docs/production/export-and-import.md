@@ -31,19 +31,39 @@ process.
 
 [backups]: ../production/maintain-secure-upgrade.html#backups
 
-## Export your Zulip data
+## Preventing changes during the export
 
 For best results, you'll want to shut down access to the organization
-you are exporting with `manage.py deactivate_realm` before exporting,
-so that nobody can send new messages (etc.) while you're exporting
-data.  We include that in the instructions below.
+before exporting, so that nobody can send new messages (etc.)  while
+you're exporting data.  There are two ways to do this:
+
+1. `supervisorctl stop all`, which stops the whole server.  This is
+preferred if you're not hosting multiple organizations, because it has
+no side effects other than disabling the Zulip server for the
+duration.
+1. `manage.py deactivate_realm`, which deactivates the target
+organization, logging out all active login sessions and preventing all
+accounts in the from logging in or accessing the API.  This is
+preferred for environments like Zulip Cloud where you might want to
+export a single organization without disrupting any other users, and
+the intent is to move hosting of the organization (and forcing users
+to re-login would be required as part of the hosting migrateion
+anyway).
+
+We include both options in the instructions below, commented out so
+that neither runs (using the `# ` at the start of the lines).  If
+you'd like to use one of these options, remove the `# ` at the start
+of the lines for the appropriate option.
+
+## Export your Zulip data
 
 Log in to a shell on your Zulip server as the `zulip` user. Run the
 following commands:
 
 ```
 cd /home/zulip/deployments/current
-./manage.py deactivate_realm -r ''  # Deactivates the organization
+# ./manage.py deactivate_realm -r ''  # Deactivates the organization
+# supervisorctl stop all # Stops the Zulip server
 ./manage.py export -r ''  # Exports the data
 ```
 
@@ -83,7 +103,8 @@ cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
-./manage.py reactivate_realm -r ''  # Reactivates the organization
+# supervisorctl start all # Starts the Zulip server
+# ./manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 
 This could take several minutes to run, depending on how much data you're
