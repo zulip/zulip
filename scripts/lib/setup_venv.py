@@ -199,21 +199,20 @@ def try_to_copy_venv(venv_path, new_packages):
         _, source_venv_path, copied_packages = overlaps[-1]
         print('Copying packages from {}'.format(source_venv_path))
         clone_ve = "{}/bin/virtualenv-clone".format(source_venv_path)
-        cmd = "sudo {exe} {source} {target}".format(exe=clone_ve,
-                                                    source=source_venv_path,
-                                                    target=venv_path).split()
+        cmd = [clone_ve, source_venv_path, venv_path]
+
         try:
             # TODO: We can probably remove this in a few months, now
             # that we can expect that virtualenv-clone is present in
             # all of our recent virtualenvs.
-            run(cmd)
+            run_as_root(cmd)
         except Exception:
             # Virtualenv-clone is not installed. Install it and try running
             # the command again.
             try:
-                run("{}/bin/pip install --no-deps virtualenv-clone".format(
-                    source_venv_path).split())
-                run(cmd)
+                run([os.path.join(source_venv_path, "bin", "pip"), "install",
+                     "--no-deps", "virtualenv-clone"])
+                run_as_root(cmd)
             except Exception:
                 # virtualenv-clone isn't working, so just make a new venv
                 return False
