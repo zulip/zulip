@@ -451,12 +451,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPException("Realm has been deactivated")
         if return_data.get("inactive_user"):
             raise ZulipLDAPException("User has been deactivated")
-        if return_data.get("invalid_subdomain"):
-            # TODO: Implement something in the caller for this to
-            # provide a nice user-facing error message for this
-            # situation (right now it just acts like any other auth
-            # failure).
-            raise ZulipLDAPException("Wrong subdomain")
+        # An invalid_subdomain `return_data` value here is ignored,
+        # since that just means we're trying to create an account in a
+        # second realm on the server (`ldap_auth_enabled(realm)` would
+        # have been false if this user wasn't meant to have an account
+        # in this second realm).
         if self._realm.deactivated:
             # This happens if no account exists, but the realm is
             # deactivated, so we shouldn't create a new user account
