@@ -329,15 +329,14 @@ class AuthBackendTest(ZulipTestCase):
                                             realm=get_realm('zephyr')))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
-    def test_github_backend(self) -> None:
+    def test_social_auth_backends(self) -> None:
         user = self.example_user('hamlet')
         token_data_dict = {
             'access_token': 'foobar',
             'token_type': 'bearer'
         }
-        account_data_dict = dict(email=user.email, name=user.full_name)
-        email_data = [
-            dict(email=account_data_dict["email"],
+        github_email_data = [
+            dict(email=user.email,
                  verified=True,
                  primary=True),
             dict(email="nonprimary@example.com",
@@ -345,29 +344,31 @@ class AuthBackendTest(ZulipTestCase):
             dict(email="ignored@example.com",
                  verified=False),
         ]
-        httpretty.enable()
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://github.com/login/oauth/access_token",
-            match_querystring=False,
-            status=200,
-            body=json.dumps(token_data_dict))
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.github.com/user",
-            status=200,
-            body=json.dumps(account_data_dict)
-        )
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.github.com/user/emails",
-            status=200,
-            body=json.dumps(email_data)
-        )
-
-        backend = GitHubAuthBackend()
-        backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
-        orig_authenticate = GitHubAuthBackend.authenticate
+        backends_to_test = {
+            'github': {
+                'urls': [
+                    {
+                        'url': "https://github.com/login/oauth/access_token",
+                        'method': httpretty.POST,
+                        'status': 200,
+                        'body': json.dumps(token_data_dict),
+                    },
+                    {
+                        'url': "https://api.github.com/user",
+                        'method': httpretty.GET,
+                        'status': 200,
+                        'body': json.dumps(dict(email=user.email, name=user.full_name)),
+                    },
+                    {
+                        'url': "https://api.github.com/user/emails",
+                        'method': httpretty.GET,
+                        'status': 200,
+                        'body': json.dumps(github_email_data),
+                    },
+                ],
+                'backend': GitHubAuthBackend,
+            }
+        }   # type: Dict[str, Any]
 
         def patched_authenticate(*args: Any, **kwargs: Any) -> Any:
             if 'subdomain' in kwargs:
@@ -375,23 +376,38 @@ class AuthBackendTest(ZulipTestCase):
                 del kwargs['subdomain']
             result = orig_authenticate(backend, *args, **kwargs)
             return result
-        backend.authenticate = patched_authenticate
-        good_kwargs = dict(backend=backend, strategy=backend.strategy,
-                           storage=backend.strategy.storage,
-                           response=token_data_dict,
-                           subdomain='zulip')
-        bad_kwargs = dict(subdomain='acme')
-        with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
-                        return_value=user):
-            self.verify_backend(backend,
-                                good_kwargs=good_kwargs,
-                                bad_kwargs=bad_kwargs)
-            bad_kwargs['subdomain'] = "zephyr"
-            self.verify_backend(backend,
-                                good_kwargs=good_kwargs,
-                                bad_kwargs=bad_kwargs)
-        backend.authenticate = orig_authenticate
-        httpretty.disable()
+
+        for backend_name in backends_to_test:
+            httpretty.enable()
+            urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
+            for details in urls:
+                httpretty.register_uri(
+                    details['method'],
+                    details['url'],
+                    status=details['status'],
+                    body=details['body'])
+            backend_class = backends_to_test[backend_name]['backend']
+            backend = backend_class()
+            backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+            orig_authenticate = backend_class.authenticate
+            backend.authenticate = patched_authenticate
+            good_kwargs = dict(backend=backend, strategy=backend.strategy,
+                               storage=backend.strategy.storage,
+                               response=token_data_dict,
+                               subdomain='zulip')
+            bad_kwargs = dict(subdomain='acme')
+            with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
+                            return_value=user):
+                self.verify_backend(backend,
+                                    good_kwargs=good_kwargs,
+                                    bad_kwargs=bad_kwargs)
+                bad_kwargs['subdomain'] = "zephyr"
+                self.verify_backend(backend,
+                                    good_kwargs=good_kwargs,
+                                    bad_kwargs=bad_kwargs)
+            backend.authenticate = orig_authenticate
+            httpretty.disable()
+            httpretty.reset()
 
 class ResponseMock:
     def __init__(self, status_code: int, data: Any) -> None:
