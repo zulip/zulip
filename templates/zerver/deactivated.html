@@ -1,4 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'">
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="app portico-page">
