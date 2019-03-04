@@ -206,7 +206,7 @@ def try_to_copy_venv(venv_path, new_packages):
             # that we can expect that virtualenv-clone is present in
             # all of our recent virtualenvs.
             run_as_root(cmd)
-        except Exception:
+        except subprocess.CalledProcessError:
             # Virtualenv-clone is not installed. Install it and try running
             # the command again.
             try:
