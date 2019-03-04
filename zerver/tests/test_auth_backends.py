@@ -21,6 +21,8 @@ import time
 import datetime
 
 from zerver.lib.actions import (
+    do_create_realm,
+    do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
     do_reactivate_realm,
@@ -2877,6 +2879,24 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                                                     'custom_profile_field__phone_number': 'phoneNumber'}):
             with mock.patch('zproject.backends.do_update_user_custom_profile_data') as f:
                 self.perform_ldap_sync(self.example_user('hamlet'))
+                f.assert_called_once_with(*expected_call_args)
+
+    def test_update_user_in_multiple_realms(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'fn': ['Full', ],
+                'ln': ['Name', ],
+            }
+        }
+        test_realm = do_create_realm('test', 'test', False)
+        hamlet = self.example_user('hamlet')
+        hamlet2 = do_create_user(hamlet.email, None, test_realm, hamlet.full_name, hamlet.short_name)
+        expected_call_args = [hamlet2, 'Full Name', None]
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn',
+                                                    'last_name': 'ln'}):
+            with mock.patch('zerver.lib.actions.do_change_full_name') as f:
+                self.perform_ldap_sync(hamlet2)
                 f.assert_called_once_with(*expected_call_args)
 
 class TestZulipAuthMixin(ZulipTestCase):

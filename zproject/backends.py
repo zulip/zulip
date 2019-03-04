@@ -380,7 +380,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def get_or_build_user(self, username: str,
                           ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
-        (user, built) = super().get_or_build_user(username, ldap_user)
+        assert self._realm is not None
+        built = False
+        user = get_user_by_delivery_email(username, self._realm)
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user, ldap_user)
@@ -485,12 +487,16 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
+    def __init__(self, realm: Optional[Realm]=None) -> None:
+        super().__init__()
+        self._realm = realm
+
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
 
 def sync_user_from_ldap(user_profile: UserProfile) -> bool:
-    backend = ZulipLDAPUserPopulator()
+    backend = ZulipLDAPUserPopulator(user_profile.realm)
     updated_user = backend.populate_user(backend.django_to_ldap_username(user_profile.email))
     if not updated_user:
         if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS:
