@@ -1386,6 +1386,9 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
                 event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
                 event['invite_only'] = True
+            if message['stream'].first_message_id is None:
+                message['stream'].first_message_id = message['message'].id
+                message['stream'].save(update_fields=["first_message_id"])
         if message['local_id'] is not None:
             event['local_id'] = message['local_id']
         if message['sender_queue_id'] is not None:
@@ -2653,6 +2656,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     rendered_description=stream.rendered_description,
                     pin_to_top=subscription.pin_to_top,
                     is_old_stream=is_old_stream(stream.date_created),
+                    first_message_id=stream.first_message_id,
                     stream_weekly_traffic=get_average_weekly_stream_traffic(
                         stream.id, stream.date_created, recent_traffic),
                     subscribers=stream_user_ids(stream),
@@ -4524,6 +4528,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
          'description': stream.description,
          'rendered_description': stream.rendered_description,
          'is_old_stream': is_old_stream(stream.date_created),
+         'first_message_id': stream.first_message_id,
          'stream_weekly_traffic': get_average_weekly_stream_traffic(stream.id,
                                                                     stream.date_created,
                                                                     {}),
@@ -4561,7 +4566,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
                         "email_token", "description", "rendered_description", "date_created",
-                        "history_public_to_subscribers")
+                        "history_public_to_subscribers", "first_message_id")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -4624,6 +4629,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'email_notifications': sub["email_notifications"],
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
+                       'first_message_id': stream["first_message_id"],
                        'description': stream["description"],
                        'rendered_description': stream["rendered_description"],
                        'is_old_stream': is_old_stream(stream["date_created"]),
@@ -4654,6 +4660,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                            'invite_only': stream['invite_only'],
                            'is_announcement_only': stream['is_announcement_only'],
                            'stream_id': stream['id'],
+                           'first_message_id': stream["first_message_id"],
                            'is_old_stream': is_old_stream(stream["date_created"]),
                            'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
                                                                                       stream["date_created"],

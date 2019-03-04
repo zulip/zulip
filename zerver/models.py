@@ -1161,6 +1161,11 @@ class Stream(models.Model):
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream)  # type: str
 
+    # The very first message ID in the stream.  Used to help clients
+    # determine whether they might need to display "more topics" for a
+    # stream based on what messages they have cached.
+    first_message_id = models.IntegerField(null=True, db_index=True)  # type: Optional[int]
+
     def __str__(self) -> str:
         return "<Stream: %s>" % (self.name,)
 
@@ -1186,7 +1191,8 @@ class Stream(models.Model):
             rendered_description=self.rendered_description,
             invite_only=self.invite_only,
             is_announcement_only=self.is_announcement_only,
-            history_public_to_subscribers=self.history_public_to_subscribers
+            history_public_to_subscribers=self.history_public_to_subscribers,
+            first_message_id=self.first_message_id,
         )
 
 post_save.connect(flush_stream, sender=Stream)

@@ -970,6 +970,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int=1) -> Realm
 
         user_profile.save(update_fields=["pointer"])
 
+    # Similarly, we need to recalculate the first_message_id for stream objects.
+    for stream in Stream.objects.filter(realm=realm):
+        first_message = Message.objects.filter(
+            recipient__type_id=stream.id,
+            recipient__type=2).first()
+        if first_message is None:
+            stream.first_message_id = None
+        else:
+            stream.first_message_id = first_message.id
+        stream.save(update_fields=["first_message_id"])
+
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
     fn = os.path.join(import_dir, "attachment.json")
