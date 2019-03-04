@@ -1,3 +1,8 @@
+const _page_params = {};
+
+set_global('page_params', _page_params);
+set_global('i18n', global.stub_i18n);
+
 set_global('$', global.make_zjquery());
 
 set_global('narrow_state', {});
@@ -96,6 +101,7 @@ run_test('build_private_messages_list', () => {
                 fraction_present: false,
                 is_group: true,
                 user_circle_status: '',
+                title_hover: 'Alice, Bob',
             },
         ],
         zoom_class: 'zoomed-out',

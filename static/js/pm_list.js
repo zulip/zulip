@@ -93,6 +93,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
         var recipients_string = people.get_recipients(user_ids_string);
+        var title_hover = buddy_data.user_title(user_ids_string.split(',')[0]);
 
         var num_unread = unread.num_unread_for_person(user_ids_string);
 
@@ -109,12 +110,14 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 
         var user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
 
-        var fraction_present;
+        var fraction_present = false;
         if (is_group) {
             user_circle_class.circle_color = 'user_circle_fraction';
             user_circle_class.user_circle_status = '';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
+            title_hover = recipients_string;
         }
+
         var display_message = {
             recipients: recipients_string,
             user_ids_string: user_ids_string,
@@ -126,6 +129,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             fraction_present: fraction_present,
             is_group: is_group,
             user_circle_status: user_circle_class.user_circle_status,
+            title_hover: title_hover,
         };
 
         display_messages.push(display_message);
