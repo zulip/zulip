@@ -73,7 +73,7 @@ exports.options = function (config) {
         send_status.append('<div class="progress active">' +
                            '<div class="bar" id="' + upload_bar + '-' + file.lastModified + '" style="width: 0"></div>' +
                            '</div>');
-        compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea);
+        compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea, true);
     };
 
     var progressUpdated = function (i, file, progress) {

@@ -42,7 +42,7 @@ run_test('upload_started', () => {
         return 0;
     };
     document.execCommand = function (command, show_default, value) {
-        assert.equal(value, "[Uploading some-file…]() ");
+        assert.equal(value, "[Uploading some-file…]()\n\n");
     };
 
     upload_opts.drop();

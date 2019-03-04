@@ -134,6 +134,61 @@ run_test('smart_insert', () => {
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
+
+    // Tests for block_format option
+    textbox = make_textbox('');
+
+    // Case 1: "|"
+    textbox.val('');
+    textbox.caret(0);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), '[Uploading random_file…]()\n\n');
+
+    // Case 2: "|random text"
+    textbox.val('random text');
+    textbox.caret(0);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), '[Uploading random_file…]()\n\nrandom text');
+
+    // Case 3: "random text|"
+    textbox.val('random text');
+    textbox.caret(11);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), 'random text\n\n[Uploading random_file…]()\n\n');
+
+    // Case 4: "random| text"
+    textbox.val('random text');
+    textbox.caret(6);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), 'random\n\n[Uploading random_file…]()\n\n text');
+
+    // Case 5: "random|
+    //          text"
+    textbox.val('random\ntext');
+    textbox.caret(6);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), 'random\n\n[Uploading random_file…]()\n\ntext');
+
+    // Case 6: "|
+    //          random text"
+    textbox.val('\nrandom text');
+    textbox.caret(0);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), '[Uploading random_file…]()\n\nrandom text');
+
+    // Case 7: "random text
+    //          |"
+    textbox.val('random text\n');
+    textbox.caret(12);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), 'random text\n\n[Uploading random_file…]()\n\n');
+
+    // Case 8: "
+    //          |"
+    textbox.val('\n');
+    textbox.caret(1);
+    compose_ui.smart_insert(textbox, '[Uploading random_file…]()', true);
+    assert.equal(textbox.val(), '\n[Uploading random_file…]()\n\n');
 });
 
 run_test('replace_syntax', () => {
