@@ -38,6 +38,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_default_stream_group,
     do_add_default_stream,
+    do_create_realm,
 )
 from zerver.lib.send_email import send_email, send_future_email, FromAddress
 from zerver.lib.initial_password import initial_password
@@ -2685,6 +2686,49 @@ class UserSignUpTest(InviteUserBase):
                                                                            field=phone_number_field)
             self.assertEqual(birthday_field_value.value, '1990-12-19')
             self.assertEqual(phone_number_field_value.value, 'a-new-number')
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_ldap_registration_multiple_realms(self) -> None:
+        password = "testing"
+        email = "newuser@zulip.com"
+
+        ldap_user_attr_map = {
+            'full_name': 'fn',
+            'short_name': 'sn',
+        }
+        full_name = 'New LDAP fullname'
+        mock_directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': ['testing', ],
+                'fn': [full_name],
+                'sn': ['shortname'],
+            }
+        }
+        init_fakeldap(mock_directory)
+        do_create_realm('test', 'test', False)
+
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            subdomain = "zulip"
+            self.login_with_return(email, password,
+                                   HTTP_HOST=subdomain + ".testserver")
+
+            user_profile = UserProfile.objects.get(email=email, realm=get_realm('zulip'))
+            self.assertEqual(user_profile.email, email)
+            self.logout()
+
+            # Test registration in another realm works.
+            subdomain = "test"
+            self.login_with_return(email, password,
+                                   HTTP_HOST=subdomain + ".testserver")
+
+            user_profile = UserProfile.objects.get(email=email, realm=get_realm('test'))
+            self.assertEqual(user_profile.email, email)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
                                                 'zproject.backends.ZulipDummyBackend'))

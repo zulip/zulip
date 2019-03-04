@@ -2548,19 +2548,23 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertIs(user_profile, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_login_failure_due_to_wrong_subdomain(self) -> None:
+    def test_login_success_with_different_subdomain(self) -> None:
         self.mock_ldap.directory = {
             'uid=hamlet,ou=users,dc=zulip,dc=com': {
-                'userPassword': ['testing', ]
+                'fn': ['King Hamlet', ],
+                'sn': ['Hamlet', ],
+                'userPassword': ['testing', ],
             }
         }
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
         with self.settings(
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            user_profile = self.backend.authenticate(self.example_email("hamlet"), 'testing',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            user_profile = self.backend.authenticate(self.example_email('hamlet'), 'testing',
                                                      realm=get_realm('zephyr'))
-            self.assertIs(user_profile, None)
+            self.assertEqual(user_profile.email, self.example_email('hamlet'))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_invalid_subdomain(self) -> None:
