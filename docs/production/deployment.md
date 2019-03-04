@@ -137,7 +137,7 @@ server {
                 proxy_http_version      1.1;
                 proxy_buffering         off;
                 proxy_read_timeout      20m;
-                proxy_pass              https://zulip-upstream-host;
+                proxy_pass              http://zulip-upstream-host-ip;
         }
 }
 ```
