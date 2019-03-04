@@ -1,4 +1,5 @@
 
+import logging
 import os
 import shutil
 import subprocess
@@ -207,15 +208,10 @@ def try_to_copy_venv(venv_path, new_packages):
             # all of our recent virtualenvs.
             run_as_root(cmd)
         except subprocess.CalledProcessError:
-            # Virtualenv-clone is not installed. Install it and try running
-            # the command again.
-            try:
-                run([os.path.join(source_venv_path, "bin", "pip"), "install",
-                     "--no-deps", "virtualenv-clone"])
-                run_as_root(cmd)
-            except Exception:
-                # virtualenv-clone isn't working, so just make a new venv
-                return False
+            # Virtualenv-clone is either not installed or threw an
+            # error.  Just return False: making a new venv is safe.
+            logging.warning("Error cloning virtualenv %s" % (source_venv_path,))
+            return False
 
         # virtualenv-clone, unfortunately, copies the success stamp,
         # which means if the upcoming `pip install` phase were to
