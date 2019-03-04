@@ -5,6 +5,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template.defaultfilters import slugify, pluralize
 from django.urls import reverse
 from django.utils import translation
+from django.utils.timesince import timesince
 from jinja2 import Environment
 from two_factor.templatetags.two_factor import device_action
 
@@ -27,5 +28,6 @@ def environment(**options: Any) -> Environment:
     env.filters['pluralize'] = pluralize
     env.filters['display_list'] = display_list
     env.filters['device_action'] = device_action
+    env.filters['timesince'] = timesince
 
     return env
