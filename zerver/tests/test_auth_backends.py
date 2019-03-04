@@ -378,7 +378,7 @@ class AuthBackendTest(ZulipTestCase):
             return result
 
         for backend_name in backends_to_test:
-            httpretty.enable()
+            httpretty.enable(allow_net_connect=False)
             urls = backends_to_test[backend_name]['urls']   # type: List[Dict[str, Any]]
             for details in urls:
                 httpretty.register_uri(
@@ -499,7 +499,7 @@ class SocialAuthBase(ZulipTestCase):
 
         # We register callbacks for the key URLs on Identity Provider that
         # auth completion url will call
-        httpretty.enable()
+        httpretty.enable(allow_net_connect=False)
         httpretty.register_uri(
             httpretty.POST,
             self.ACCESS_TOKEN_URL,
