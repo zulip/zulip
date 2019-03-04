@@ -1504,8 +1504,8 @@ def get_link_re() -> str:
 def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter to liberally match all occurences of the filter,
     along with the preceeding and proceeding characters for further analysis in
-    the realm filter pattern and saves what was matched as "name". """
-    return r"""(?P<total>.?(?P<wrap>(?P<name>""" + source + r')).?)'
+    the realm filter pattern and saves what was matched as "wrap". """
+    return r"""(?P<total>.?(?P<wrap>""" + source + r').?)'
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
@@ -1550,7 +1550,7 @@ class RealmFilterPattern(markdown.inlinepatterns.InlineProcessor):
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
-                        m.group("name")), m.start('name'), m.end('name')
+                        m.group("wrap")), m.start('wrap'), m.end('wrap')
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
