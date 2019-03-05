@@ -2,6 +2,7 @@
 from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
+from django.urls import reverse
 
 from zerver.models import UserProfile, get_realm, Realm
 from zproject.backends import (
@@ -10,6 +11,7 @@ from zproject.backends import (
     require_email_format_usernames,
     auth_enabled_helper,
     AUTH_BACKEND_NAME_MAP,
+    SOCIAL_AUTH_BACKENDS,
 )
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.send_email import FromAddress
@@ -147,4 +149,17 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         name_lower = auth_backend_name.lower()
         key = "%s_auth_enabled" % (name_lower,)
         context[key] = auth_enabled_helper([auth_backend_name], realm)
+
+    social_backends = []
+    for backend in SOCIAL_AUTH_BACKENDS:
+        if not auth_enabled_helper([backend.auth_backend_name], realm):
+            continue
+        social_backends.append({
+            'name': backend.name,
+            'display_name': backend.auth_backend_name,
+            'login_url': reverse('login-social', args=(backend.name,)),
+            'sort_order': backend.sort_order,
+        })
+    context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'])
+
     return context

@@ -143,27 +143,16 @@
                             </div>
                             {% endif %}
 
-                            {% if github_auth_enabled %}
+                            {% for backend in social_backends %}
                             <div class="login-social">
-                                <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
+                                <form id='social_login_form' class="form-inline {{ backend.name }}-wrapper" action="{{ backend.login_url }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
                                     <button class="login-social-button">
-                                        {{ _('Log in with %(identity_provider)s', identity_provider="GitHub") }}
+                                        {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                                     </button>
                                 </form>
                             </div>
-                            {% endif %}
-
-                            {% if azuread_auth_enabled %}
-                            <div class="login-social">
-                                <form id='azure_login_form' class="form-inline azure-wrapper" action="{{ url('login-social', args=('azuread-oauth2',)) }}" method="get">
-                                    <input type="hidden" name="next" value="{{ next }}">
-                                    <button class="login-social-button">
-                                        {{ _('Log in with %(identity_provider)s', identity_provider="Azure AD") }}
-                                    </button>
-                                </form>
-                            </div>
-                            {% endif %}
+                            {% endfor %}
 
                             <div class="actions">
                                 {% if email_auth_enabled %}

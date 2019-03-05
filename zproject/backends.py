@@ -650,6 +650,8 @@ def social_auth_finish(backend: Any,
 
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
+    # Used to determine how to order buttons on login form
+    sort_order = 0
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """This is a small wrapper around the core `auth_complete` method of
@@ -676,6 +678,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
+    sort_order = 50
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         access_token = kwargs["response"]["access_token"]
@@ -727,6 +730,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         raise AssertionError("Invalid configuration")
 
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
+    sort_order = 100
     auth_backend_name = "AzureAD"
 
 AUTH_BACKEND_NAME_MAP = {
@@ -737,9 +741,11 @@ AUTH_BACKEND_NAME_MAP = {
     'RemoteUser': ZulipRemoteUserBackend,
 }  # type: Dict[str, Any]
 OAUTH_BACKEND_NAMES = ["Google"]  # type: List[str]
+SOCIAL_AUTH_BACKENDS = []  # type: List[BaseOAuth2]
 
 # Authomatically add all of our social auth backends to relevant data structures.
 for social_auth_subclass in SocialAuthMixin.__subclasses__():
     AUTH_BACKEND_NAME_MAP[social_auth_subclass.auth_backend_name] = social_auth_subclass
     if issubclass(social_auth_subclass, BaseOAuth2):
         OAUTH_BACKEND_NAMES.append(social_auth_subclass.auth_backend_name)
+        SOCIAL_AUTH_BACKENDS.append(social_auth_subclass)
