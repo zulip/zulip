@@ -7,6 +7,19 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.1 -- 2019-03-04
+
+- Fixed handling of uploaded file routing on Ubuntu Trusty.
+- Fixed buggy behavior of branding logos in night theme.
+- Fixed handling of deployment directories being owned by root.
+- The styling of "unavailable" status icons is now less prominent.
+- The "deactivated realm" error page now auto-refreshes, to handle
+  realm reactivation.
+- Updated documentation to avoid recommending realm deactivation as
+  a preferred approach to prepare for backups.
+- Added support for using multiple organizations with same LDAP
+  backend configuration.
+
 ### 2.0.0 -- 2019-03-01
 
 **Highlights:**
