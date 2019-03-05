@@ -1485,6 +1485,10 @@ input[type=checkbox].inline-block {
         color: hsl(0, 0%, 67%);
     }
 
+    .custom-profile-field-form .custom_user_field .datepicker {
+        background-color: transparent;
+    }
+
     #show_my_user_profile_modal {
         width: 150px;
         margin-top: 20px;

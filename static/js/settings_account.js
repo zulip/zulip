@@ -122,6 +122,18 @@ exports.initialize_custom_date_type_fields = function (element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altInput: true,
         altFormat: "F j, Y"});
+
+    $(element_id).find(".custom_user_field .datepicker").mouseenter(function () {
+        if (!$(element_id).find(".custom_user_field .datepicker").val()) {
+            $(element_id).find(".remove_date").hide();
+        } else {
+            $(element_id).find(".remove_date").show();
+        }
+    });
+
+    $(element_id).find(".remove_date").click(function () {
+        $(element_id).find(".custom_user_field .datepicker").flatpickr();
+    });
 };
 
 exports.intialize_custom_user_type_fields = function (element_id, user_id, is_editable,
