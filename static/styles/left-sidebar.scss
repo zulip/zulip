@@ -2,17 +2,15 @@
     display: none;
 }
 
-.hashtag:empty::after,
-.stream-privacy {
-    font-weight: 800;
-}
-
 .hashtag:empty::after {
     font-size: 18px;
+    font-weight: 800;
 }
 
 .stream-privacy {
     font-size: 15px;
+    font-weight: 800;
+    min-width: 17px;
 }
 
 #stream_filters,
@@ -368,10 +366,6 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block.stream-with-count {
     margin-right: 15px;
-}
-
-.stream-privacy {
-    min-width: 17px;
 }
 
 ul.topic-list {
