@@ -184,6 +184,16 @@ function populate_group_from_message_container(group, message_container) {
     render_group_display_date(group, message_container);
 }
 
+function update_message_container_vars(message_container) {
+    message_container.show_name_on_top_line = message_container.include_sender &&
+                                              !message_container.status_message;
+    message_container.show_edited_on_top_line = message_container.last_edit_timestr &&
+                                                message_container.include_sender &&
+                                                !message_container.status_message;
+    message_container.show_edited_at_end = message_container.last_edit_timestr &&
+                                           !message_container.include_sender;
+}
+
 MessageListView.prototype = {
     // Number of messages to render at a time
     _RENDER_WINDOW_SIZE: 400,
@@ -584,6 +594,7 @@ MessageListView.prototype = {
     _get_message_template: function (message_container) {
         var msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
+        update_message_container_vars(message_container);
         var msg_to_render = _.extend(message_container, {
             table_name: this.table_name,
         });
@@ -597,13 +608,7 @@ MessageListView.prototype = {
 
         _.each(message_groups, function (message_group) {
             _.each(message_group.message_containers, function (mc) {
-                mc.show_name_on_top_line = mc.include_sender && !mc.status_message;
-                mc.show_edited_on_top_line = mc.last_edit_timestr &&
-                                             mc.include_sender &&
-                                             !mc.status_message;
-                mc.show_edited_at_end = mc.last_edit_timestr &&
-                                        !mc.include_sender;
-
+                update_message_container_vars(mc);
             });
         });
 
