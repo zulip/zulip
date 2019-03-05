@@ -87,16 +87,16 @@ $(function () {
                         </div>
                         {% endif %}
 
-                        {% if github_auth_enabled %}
+                        {% for backend in social_backends %}
                         <div class="login-social">
-                            <form class="form-inline github-wrapper" action="{{ url('signup-social', args=('github',)) }}" method="get">
+                            <form class="form-inline {{ backend.name }}-wrapper" action="{{ backend.signup_url }}" method="get">
                                 <input type='hidden' name='multiuse_object_key' value='{{ multiuse_object_key }}' />
                                 <button class="login-social-button full-width">
-                                    {{ _('Sign up with %(identity_provider)s', identity_provider="GitHub") }}
+                                    {{ _('Sign up with %(identity_provider)s', identity_provider=backend.display_name) }}
                                 </button>
                             </form>
                         </div>
-                        {% endif %}
+                        {% endfor %}
                     {% endif %}
                 </div>
             </div>
