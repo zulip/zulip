@@ -347,7 +347,13 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             if not attr.startswith('custom_profile_field__'):
                 continue
             var_name = attr.split('custom_profile_field__')[1]
-            value = ldap_user.attrs[ldap_attr][0]
+            try:
+                value = ldap_user.attrs[ldap_attr][0]
+            except KeyError:
+                # If this user doesn't have this field set then ignore this
+                # field and continue syncing other fields. `django-auth-ldap`
+                # automatically logs error about missing field.
+                continue
             values_by_var_name[var_name] = value
 
         fields_by_var_name = {}   # type: Dict[str, CustomProfileField]
