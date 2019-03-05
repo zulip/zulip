@@ -183,6 +183,9 @@ if vendor in ["Ubuntu", "Debian"]:
             pkg.format(POSTGRES_VERSION) for pkg in [
                 "postgresql-{0}",
                 "postgresql-server-dev-{0}",
+                # Needed to build pgroonga from source
+                "libgroonga-dev",
+                "libmsgpack-dev",
             ]
         ]
     else:
@@ -209,6 +212,9 @@ elif vendor == "Fedora":
             "postgresql{0}-server",
             "postgresql{0}",
             "postgresql{0}-devel",
+            # Needed to build pgroonga from source
+            "groonga-devel",
+            "msgpack-devel",
         ]
     ] + FEDORA_VENV_DEPENDENCIES
     BUILD_TSEARCH_FROM_SOURCE = True
