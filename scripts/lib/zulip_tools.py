@@ -81,11 +81,9 @@ def parse_cache_script_args(description):
     return args
 
 def get_deploy_root() -> str:
-    # This calls realpath twice to handle both symlinks and users
-    # running our scripts with relative paths from a current working
-    # directory of `scripts/`.
-    return os.path.realpath(os.path.dirname(os.path.dirname(
-        os.path.dirname(os.path.realpath(__file__)))))
+    return os.path.realpath(
+        os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    )
 
 def get_deployment_version(extract_path):
     # type: (str) -> str
