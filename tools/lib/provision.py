@@ -14,7 +14,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, run_as_root, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated, \
+    overwrite_symlink
 from scripts.lib.setup_venv import (
     VENV_DEPENDENCIES, REDHAT_VENV_DEPENDENCIES,
     THUMBOR_VENV_DEPENDENCIES, YUM_THUMBOR_VENV_DEPENDENCIES,
@@ -337,6 +338,12 @@ def install_yum_deps(deps_to_install, retry=False):
     # Use vendored pg_hba.conf, which enables password authentication.
     run_as_root(["cp", "-a", "puppet/zulip/files/postgresql/centos_pg_hba.conf", pg_hba_conf])
     # Later steps will ensure postgres is started
+
+    # Link in tsearch data files
+    overwrite_symlink("/usr/share/myspell/en_US.dic", "/usr/pgsql-%s/share/tsearch_data/en_us.dict"
+                      % (POSTGRES_VERSION,))
+    overwrite_symlink("/usr/share/myspell/en_US.aff", "/usr/pgsql-%s/share/tsearch_data/en_us.affix"
+                      % (POSTGRES_VERSION,))
 
 def main(options):
     # type: (Any) -> int
