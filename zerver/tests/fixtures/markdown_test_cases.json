@@ -543,6 +543,11 @@
       "text_content": "Emojis like :man-girl-girl: which have ZWJ are banned for now."
     },
     {
+      "name": "valid_emoji_preceded_by_invalid_emoji",
+      "input": "This is :invalidemoji: which should not prevent rendering :smile:",
+      "expected_output": "<p>This is :invalidemoji: which should not prevent rendering <span aria-label=\"smile\" class=\"emoji emoji-263a\" role=\"img\" title=\"smile\">:smile:</span></p>"
+    },
+    {
       "name": "safe_html",
       "input": "<h1>stay normal</h1> thanks",
       "expected_output": "<p>&lt;h1&gt;stay normal&lt;/h1&gt; thanks</p>",
