@@ -10,7 +10,7 @@ from typing import Set
 # chdir without having problems accessing it.  Unfortunately, this
 # means we need a duplicate definition of DEPLOY_ROOT with the one in
 # settings.py.
-DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
+DEPLOY_ROOT = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, 'var/uploads')
 
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
