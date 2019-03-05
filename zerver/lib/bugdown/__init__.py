@@ -1179,7 +1179,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         elif name in name_to_codepoint:
             return make_emoji(name_to_codepoint[name], orig_syntax)
         else:
-            return None
+            return orig_syntax
 
 def content_has_emoji_syntax(content: str) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
