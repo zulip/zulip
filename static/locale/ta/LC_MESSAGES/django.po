@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-01 17:24+0000\n"
+"POT-Creation-Date: 2019-03-05 01:24+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -599,7 +599,8 @@ msgstr ""
 #: templates/zerver/app/home.html:138
 msgid ""
 "\n"
-"            Learn more about mentions <a href=\"/help/at-mention-a-user\">\n"
+"            Learn more about mentions <a href=\"/help/mention-a-user-or-group"
+"\">\n"
 "            here</a>.\n"
 "            "
 msgstr ""
@@ -1420,11 +1421,11 @@ msgstr ""
 msgid "Create organization"
 msgstr ""
 
-#: templates/zerver/deactivated.html:9
+#: templates/zerver/deactivated.html:15
 msgid "Deactivated organization"
 msgstr ""
 
-#: templates/zerver/deactivated.html:14
+#: templates/zerver/deactivated.html:20
 #, python-format
 msgid ""
 "\n"
@@ -3273,7 +3274,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:742
+#: zerver/lib/events.py:745
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -3875,7 +3876,7 @@ msgstr ""
 msgid "This user is not registered; do so from a browser."
 msgstr ""
 
-#: zerver/views/auth.py:798 zerver/views/auth.py:889
+#: zerver/views/auth.py:798 zerver/views/auth.py:887
 msgid "Your username or password is incorrect."
 msgstr ""
 
@@ -3887,7 +3888,7 @@ msgstr ""
 msgid "Subdomain required"
 msgstr ""
 
-#: zerver/views/auth.py:897
+#: zerver/views/auth.py:895
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr ""
 
