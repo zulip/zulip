@@ -171,14 +171,27 @@ COMMON_YUM_DEPENDENCIES = COMMON_DEPENDENCIES + [
     "libstdc++"
 ] + YUM_THUMBOR_VENV_DEPENDENCIES
 
+BUILD_TSEARCH_FROM_SOURCE = False
+BUILD_PGROONGA_FROM_SOURCE = False
 if vendor in ["Ubuntu", "Debian"]:
-    SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
-        pkg.format(POSTGRES_VERSION) for pkg in [
-            "postgresql-{0}",
-            "postgresql-{0}-tsearch-extras",
-            "postgresql-{0}-pgroonga",
+    if codename == "cosmic":
+        # For platforms not supported by pgroonga, we build it frmo source.
+        BUILD_PGROONGA_FROM_SOURCE = True
+        BUILD_TSEARCH_FROM_SOURCE = True
+        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+            pkg.format(POSTGRES_VERSION) for pkg in [
+                "postgresql-{0}",
+                "postgresql-server-dev-{0}",
+            ]
         ]
-    ]
+    else:
+        SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
+            pkg.format(POSTGRES_VERSION) for pkg in [
+                "postgresql-{0}",
+                "postgresql-{0}-tsearch-extras",
+                "postgresql-{0}-pgroonga",
+            ]
+        ]
 elif vendor in ["CentOS", "RedHat"]:
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -188,6 +201,7 @@ elif vendor in ["CentOS", "RedHat"]:
             "postgresql{0}-pgroonga",
         ]
     ] + REDHAT_VENV_DEPENDENCIES
+    BUILD_TSEARCH_FROM_SOURCE = True
 elif vendor == "Fedora":
     SYSTEM_DEPENDENCIES = COMMON_YUM_DEPENDENCIES + [
         pkg.format(POSTGRES_VERSION) for pkg in [
@@ -196,6 +210,8 @@ elif vendor == "Fedora":
             "postgresql{0}-devel",
         ]
     ] + FEDORA_VENV_DEPENDENCIES
+    BUILD_TSEARCH_FROM_SOURCE = True
+    BUILD_PGROONGA_FROM_SOURCE = True
 
 if family == 'redhat':
     TSEARCH_STOPWORDS_PATH = "/usr/pgsql-%s/share/tsearch_data/" % (POSTGRES_VERSION,)
@@ -240,13 +256,17 @@ def install_system_deps(retry=False):
 
     if family == 'redhat':
         install_yum_deps(deps_to_install, retry=retry)
-        return
-
-    if vendor in ["Debian", "Ubuntu"]:
+    elif vendor in ["Debian", "Ubuntu"]:
         install_apt_deps(deps_to_install, retry=retry)
-        return
+    else:
+        raise AssertionError("Invalid vendor")
 
-    raise AssertionError("Invalid vendor")
+    # For some platforms, there aren't published pgroonga or
+    # tsearch-extra packages available, so we build them from source.
+    if BUILD_PGROONGA_FROM_SOURCE:
+        run_as_root(["./scripts/lib/build-pgroonga"])
+    if BUILD_TSEARCH_FROM_SOURCE:
+        run_as_root(["./scripts/lib/build-tsearch-extras"])
 
 def install_apt_deps(deps_to_install, retry=False):
     # type: (List[str], bool) -> None
@@ -300,13 +320,6 @@ def install_yum_deps(deps_to_install, retry=False):
         # making our tooling auto-detect, but this is simpler.
         run_as_root(["ln", "-nsf", "/usr/%s/bin/%s" % (postgres_dir, cmd),
                      "/usr/bin/%s" % (cmd,)])
-    # Compile tsearch-extras from scratch, since we maintain the
-    # package and haven't built an RPM package for it.
-    run_as_root(["./scripts/lib/build-tsearch-extras"])
-    if vendor == "Fedora":
-        # Compile PGroonga from scratch, since pgroonga upstream
-        # doesn't provide Fedora packages.
-        run_as_root(["./scripts/lib/build-pgroonga"])
 
     # From here, we do the first-time setup/initialization for the postgres database.
     pg_datadir = "/var/lib/pgsql/%s/data" % (POSTGRES_VERSION,)
