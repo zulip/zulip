@@ -2881,6 +2881,23 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 self.perform_ldap_sync(self.example_user('hamlet'))
                 f.assert_called_once_with(*expected_call_args)
 
+    def test_update_custom_profile_field_not_present_in_ldap(self) -> None:
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'cn': ['King Hamlet', ],
+            }
+        }
+        hamlet = self.example_user('hamlet')
+        no_op_field = CustomProfileField.objects.get(realm=hamlet.realm, name='Birthday')
+        expected_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP={'full_name': 'cn',
+                                                    'custom_profile_field__birthday': 'birthDate'}):
+            self.perform_ldap_sync(self.example_user('hamlet'))
+
+        actual_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=no_op_field).value
+        self.assertEqual(actual_value, expected_value)
+
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self) -> None:
         backend = ZulipAuthMixin()
