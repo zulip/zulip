@@ -238,28 +238,11 @@ exports.register_stream_handlers = function () {
         hashchange.go_to_location(stream_edit_hash);
     });
 
-    // Narrow to stream
-    $('body').on('click', '.narrow_to_stream', function (e) {
-        var sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
-        narrow.by('stream', sub.name, {trigger: 'sidebar popover'}
-        );
-        e.stopPropagation();
-    });
-
     // Pin/unpin
     $('body').on('click', '.pin_to_top', function (e) {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
         subs.toggle_pin_to_top_stream(sub);
-        e.stopPropagation();
-    });
-
-    // Compose a message to stream
-    $('body').on('click', '.compose_to_stream', function (e) {
-        var sub = stream_popover_sub(e);
-        exports.hide_stream_popover();
-        compose_actions.start('stream', {stream: sub.name, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 
