@@ -212,3 +212,6 @@ yamole==2.1.6
 
 # Needed for string matching in AlertWordProcessor
 pyahocorasick==1.4.0
+
+# Needed for PGP email features.
+python-gnupg==0.4.4

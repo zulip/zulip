@@ -13,6 +13,7 @@ from zerver.lib.actions import decode_email_address, get_email_gateway_message_s
     internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
+from zerver.lib.email_helpers import get_message_part_by_type
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
@@ -208,17 +209,6 @@ def valid_stream(stream_name: str, token: str) -> bool:
         return stream.name.lower() == stream_name.lower()
     except Stream.DoesNotExist:
         return False
-
-def get_message_part_by_type(message: message.Message, content_type: str) -> Optional[str]:
-    charsets = message.get_charsets()
-
-    for idx, part in enumerate(message.walk()):
-        if part.get_content_type() == content_type:
-            content = part.get_payload(decode=True)
-            assert isinstance(content, bytes)
-            if charsets[idx]:
-                return content.decode(charsets[idx], errors="ignore")
-    return None
 
 talon_initialized = False
 def extract_body(message: message.Message) -> str:

@@ -141,6 +141,7 @@ pysocks==1.6.8            # via twilio
 python-dateutil==2.7.5
 python-digitalocean==1.14.0
 python-gcm==0.4
+python-gnupg==0.4.4
 python-jose==2.0.2        # via moto
 python-ldap==3.1.0        # via django-auth-ldap, pyldap
 python-twitter==3.5

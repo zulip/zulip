@@ -30,7 +30,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
     RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
-    UserGroupMembership, BotStorageData, BotConfigData
+    UserGroupMembership, BotStorageData, BotConfigData, UserPGP
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Union
@@ -118,6 +118,7 @@ ALL_ZULIP_TABLES = {
     'zerver_usergroupmembership',
     'zerver_userhotspot',
     'zerver_usermessage',
+    'zerver_userpgp',
     'zerver_userpresence',
     'zerver_userprofile',
     'zerver_userprofile_groups',
@@ -679,6 +680,13 @@ def get_realm_config() -> Config:
         model=BotConfigData,
         normal_parent=user_profile_config,
         parent_key='bot_profile__in',
+    )
+
+    Config(
+        table='zerver_userpgp',
+        model=UserPGP,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in'
     )
 
     # Some of these tables are intermediate "tables" that we
