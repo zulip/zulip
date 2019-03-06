@@ -24,7 +24,7 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.7.0.1
 beautifulsoup4==4.7.1
 boto==2.49.0
-cachetools==3.1.0         # via google-auth
+cachetools==3.1.0         # via google-auth, premailer
 cchardet==2.1.4
 certifi==2018.11.29
 cffi==1.12.2
@@ -83,7 +83,7 @@ pickleshare==0.7.5        # via ipython
 pika==0.13.0
 pillow==5.4.1
 polib==1.1.0
-premailer==3.2.0
+premailer==3.3.0
 prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.7
 ptyprocess==0.6.0         # via pexpect
