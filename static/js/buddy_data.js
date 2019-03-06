@@ -112,7 +112,7 @@ function filter_user_ids(filter_text, user_ids) {
 
     user_ids = _.reject(user_ids, people.is_my_user_id);
 
-    var search_terms = filter_text.toLowerCase().split(",");
+    var search_terms = filter_text.toLowerCase().split(/[|,]+/);
     search_terms = _.map(search_terms, function (s) {
         return s.trim();
     });

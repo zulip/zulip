@@ -592,6 +592,10 @@ run_test('filter_user_ids', () => {
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
+    user_filter.val('fr|al'); // test | as OR-operator
+    user_ids = get_user_ids();
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+
     presence.presence_info[alice.user_id] = { status: activity.IDLE };
     user_filter.val('fr,al'); // match fred and alice partials and idle user
     user_ids = get_user_ids();
