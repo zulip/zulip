@@ -157,7 +157,7 @@ requests[security]==2.21.0  # via aws-xray-sdk, docker, hypchat, matrix-client, 
 responses==0.10.5         # via moto
 rsa==4.0
 s3transfer==0.2.0         # via boto3
-scrapy==1.5.2
+scrapy==1.6.0
 service-identity==18.1.0  # via scrapy
 sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
