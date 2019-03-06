@@ -140,6 +140,10 @@ exports.activate = function (raw_operators, opts) {
         unread.messages_read_in_narrow = false;
     }
 
+    // Open tooltips are only interesting for current narrow,
+    // so hide them.
+    $('[data-toggle=tooltip]').tooltip("hide");
+
     // IMPORTANT!  At this point we are heavily committed to
     // populating the new narrow, so we update our narrow_state.
     // From here on down, any calls to the narrow_state API will
