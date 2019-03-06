@@ -170,7 +170,7 @@ social-auth-core==3.1.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
 soupsieve==1.8            # via beautifulsoup4
 sourcemap==0.2.1
-sphinx-rtd-theme==0.4.2
+sphinx-rtd-theme==0.4.3
 sphinx==1.8.3
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy==1.2.17
