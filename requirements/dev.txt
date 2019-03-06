@@ -72,7 +72,7 @@ google-auth==1.6.3        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
-httplib2==0.12.0
+httplib2==0.12.1
 httpretty==0.9.6
 hypchat==0.21
 hyper==0.7.0              # via apns2
