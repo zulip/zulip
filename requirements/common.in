@@ -192,7 +192,7 @@ lxml==4.3.2
 
 # Needed for 2-factor authentication
 django-two-factor-auth==1.8.0
-twilio==6.23.1
+twilio==6.25.0
 
 # Needed for processing payments (in corporate)
 stripe==2.21.0
