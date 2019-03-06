@@ -138,7 +138,7 @@ pyoembed==0.1.2
 pyopenssl==19.0.0         # via ndg-httpsclient, requests, scrapy
 pyparsing==2.3.1          # via packaging
 pysocks==1.6.8            # via twilio
-python-dateutil==2.7.5
+python-dateutil==2.8.0
 python-digitalocean==1.14.0
 python-gcm==0.4
 python-jose==2.0.2        # via moto
