@@ -255,9 +255,9 @@ exports.activate = function (raw_operators, opts) {
 
     if (filter.has_operator("is") && filter.operands("is")[0] === "private"
         || filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
-        compose.update_stream_button_for_private();
+        compose.update_closed_compose_buttons_for_private();
     } else {
-        compose.update_stream_button_for_stream();
+        compose.update_closed_compose_buttons_for_stream();
     }
 
     // Put the narrow operators in the search bar.
@@ -651,7 +651,7 @@ function handle_post_narrow_deactivate_processes() {
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
-    compose.update_stream_button_for_stream();
+    compose.update_closed_compose_buttons_for_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
