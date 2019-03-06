@@ -1,3 +1,13 @@
+/* The width of the empty space in the sidebar to separate
+   content from the edge of the window */
+$far_left_gutter_size: 10px;
+/* This represents the space in the sidebar reserved for symbols like
+   the #; labels like the the stream name go to the right of this. */
+$left_col_size: 19px;
+/* The full topic indentation includes 4px of indent in addition to
+   the above (and another 5px of padding not measured here) */
+$topic_indent: $far_left_gutter_size + $left_col_size + 4px;
+
 #left-sidebar #group-pm-list {
     display: none;
 }
@@ -10,7 +20,11 @@
 .stream-privacy {
     font-size: 15px;
     font-weight: 800;
-    min-width: 17px;
+    min-width: $left_col_size;
+}
+
+.pm_left_col {
+    min-width: $left_col_size;
 }
 
 #stream_filters,
@@ -90,7 +104,10 @@ li.show-more-private-messages a {
 }
 
 #stream_filters li ul.topic-list li {
-    padding: 2px 0px 2px 29px;
+    padding-top: 2px;
+    padding-right: 0px;
+    padding-bottom: 2px;
+    padding-left: $topic_indent;
 }
 
 #private-container,
@@ -139,7 +156,7 @@ li.active-sub-filter {
 
 #global_filters .filter-icon {
     display: inline-block;
-    min-width: 17px;
+    min-width: $left_col_size;
     text-align: center;
 }
 
@@ -147,7 +164,7 @@ li.active-sub-filter {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
-    padding-left: 8px;
+    padding-left: $far_left_gutter_size;
     padding-right: 10px;
 }
 
@@ -345,7 +362,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 #stream_filters .subscription_block {
     padding: 0px;
     margin-right: 25px;
-    margin-left: 10px;
+    margin-left: $far_left_gutter_size;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -398,9 +415,7 @@ li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
     padding-top: 1px;
-    padding-right: 0px;
     padding-bottom: 1px;
-    padding-left: 0px;
 }
 
 li.expanded_private_message a {
@@ -408,7 +423,7 @@ li.expanded_private_message a {
 }
 
 li.show-more-private-messages {
-    padding-left: 21px;
+    padding-left: $left_col_size;
 }
 
 .show-all-streams a {
@@ -434,7 +449,6 @@ li.show-more-private-messages {
     margin-top: 0px;
     margin-bottom: 0px;
     margin-left: 2px;
-    margin-right: 9px;
     position: relative;
     top: 0px;
 }
@@ -475,7 +489,7 @@ li.show-more-private-messages {
 
 #streams_header {
     margin-right: 0px;
-    padding-left: 10px;
+    padding-left: $far_left_gutter_size;
     cursor: pointer;
 }
 
