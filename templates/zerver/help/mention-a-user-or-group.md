@@ -25,7 +25,7 @@ messages and alert words.
 
 1. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the right.
 
-1. Select **Reply mentioning user**.
+1. Select **Mention**.
 
 {end_tabs}
 

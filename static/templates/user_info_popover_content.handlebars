@@ -89,7 +89,7 @@
         {{#unless is_me}}
         <li>
             <a href="#" class="{{ private_message_class }}">
-                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">R</span>{{/if}}
+                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">R</span>{{/if}}
             </a>
         </li>
         {{/unless}}
@@ -97,7 +97,7 @@
     {{#unless is_me}}
     <li>
         <a href="#" class="mention_user">
-            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">@</span>{{/if}}
+            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Mention{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">@</span>{{/if}}
         </a>
     </li>
     {{/unless}}
