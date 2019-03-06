@@ -4,15 +4,17 @@
         <li class='{{#if is_zero}}zero-pm-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
             <span class='pm-box'>
 
-                {{#if is_group}}
-                    {{#if fraction_present}}
-                    <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
+                <div class="pm_left_col">
+                    {{#if is_group}}
+                        {{#if fraction_present}}
+                        <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
+                        {{else}}
+                        <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
+                        {{/if}}
                     {{else}}
-                    <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
+                        <span class="{{user_circle_class}} user_circle"></span>
                     {{/if}}
-                {{else}}
-                    <span class="{{user_circle_class}} user_circle"></span>
-                {{/if}}
+                </div>
 
                 <a href='{{url}}' class="conversation-partners" title="{{ recipients }}">
                     {{recipients}}
