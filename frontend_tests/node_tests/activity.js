@@ -501,6 +501,22 @@ run_test('handlers', () => {
         filter_key_handlers.enter_key();
     }());
 
+    (function test_enter_key_with_or() {
+        init();
+        var narrowed;
+
+        narrow.by = (method, emails) => {
+            assert.deepEqual(emails, ['me@zulip.com', 'alice@zulip.com', 'fred@zulip.com']);
+            narrowed = true;
+        };
+
+        $('.user-list-filter').val('alice,fred|me');
+        activity.user_cursor.go_to(alice.user_id);
+
+        filter_key_handlers.enter_key();
+        assert(narrowed);
+    }());
+
     (function test_click_handler() {
         init();
         // We wire up the click handler in click_handlers.js,

@@ -416,13 +416,34 @@ exports.narrow_for_user_id = function (opts) {
     exports.user_filter.clear_and_hide_search();
 };
 
+exports.narrow_for_user_ids = function (opts) {
+    var emails = _.map(opts.user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        return person.email;
+    });
+
+    narrow.by('pm-with', emails, {trigger: 'sidebar'});
+    exports.user_filter.clear_and_hide_search();
+};
+
 function keydown_enter_key() {
-    var user_id = exports.user_cursor.get_key();
-    if (user_id === undefined) {
-        return;
+    var filter_text = exports.get_filter_text();
+
+    // If someone searched for multiple users, try to start a
+    // group PM. Else, start a PM with the highlighted user
+    if (/[|,]+/.test(filter_text)) {
+        var user_ids = buddy_list.keys;
+        exports.narrow_for_user_ids({user_ids: user_ids});
+    } else {
+        var user_id = exports.user_cursor.get_key();
+
+        if (user_id === undefined) {
+            return;
+        }
+
+        exports.narrow_for_user_id({user_id: user_id});
     }
 
-    exports.narrow_for_user_id({user_id: user_id});
     popovers.hide_all();
 }
 
