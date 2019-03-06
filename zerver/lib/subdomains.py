@@ -22,7 +22,9 @@ def get_subdomain(request: HttpRequest) -> str:
     # compatibility with older versions of Zulip, so that's a start.
 
     host = request.get_host().lower()
+    return get_subdomain_from_hostname(host)
 
+def get_subdomain_from_hostname(host: str) -> str:
     m = re.search(r'\.%s(:\d+)?$' % (settings.EXTERNAL_HOST,),
                   host)
     if m:
