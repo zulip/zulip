@@ -786,27 +786,39 @@ class BugdownTest(ZulipTestCase):
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
-        def was_converted(content: str) -> bool:
+        def assert_conversion(content: str, convert: bool=True) -> None:
             converted = bugdown.convert(content, message_realm=realm, message=msg)
-            return 'trac.zulip.net' in converted
-
-        self.assertTrue(was_converted('Hello #123 World'))
-        self.assertTrue(not was_converted('Hello #123World'))
-        self.assertTrue(not was_converted('Hello#123 World'))
-        self.assertTrue(not was_converted('Hello#123World'))
+            converted_topic = bugdown.topic_links(realm.id, content)
+            if convert:
+                self.assertTrue('trac.zulip.net' in converted)
+                self.assertEqual(len(converted_topic), 1)
+                self.assertTrue('trac.zulip.net' in converted_topic[0])
+            else:
+                self.assertTrue('trac.zulip.net' not in converted)
+                self.assertEqual(len(converted_topic), 0)
+        assert_conversion('Hello #123 World')
+        assert_conversion('Hello #123World', False)
+        assert_conversion('Hello#123 World', False)
+        assert_conversion('Hello#123World', False)
         # Ideally, these should be converted, but bugdown doesn't
         # handle word boundary detection in languages that don't use
         # whitespace for that correctly yet.
-        self.assertTrue(not was_converted('チケットは#123です'))
-        self.assertTrue(not was_converted('チケットは #123です'))
-        self.assertTrue(not was_converted('チケットは#123 です'))
-        self.assertTrue(was_converted('チケットは #123 です'))
-        self.assertTrue(was_converted('(#123)'))
-        self.assertTrue(was_converted('#123>'))
-        self.assertTrue(was_converted('"#123"'))
-        self.assertTrue(was_converted('#123@'))
-        self.assertTrue(not was_converted(')#123('))
-        self.assertTrue(not was_converted('##123'))
+        assert_conversion('チケットは#123です', False)
+        assert_conversion('チケットは #123です', False)
+        assert_conversion('チケットは#123 です', False)
+        assert_conversion('チケットは #123 です')
+        assert_conversion('(#123)')
+        assert_conversion('#123>')
+        assert_conversion('"#123"')
+        assert_conversion('#123@')
+        assert_conversion(')#123(', False)
+        assert_conversion('##123', False)
+
+        # test nested realm patterns should avoid double matching
+        RealmFilter(realm=realm, pattern=r'hello#(?P<id>[0-9]+)',
+                    url_format_string=r'https://trac.zulip.net/hello/%(id)s').save()
+        converted_topic = bugdown.topic_links(realm.id, 'hello#123 #234')
+        self.assertEqual(converted_topic, ['https://trac.zulip.net/ticket/234', 'https://trac.zulip.net/hello/123'])
 
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm('zulip')
