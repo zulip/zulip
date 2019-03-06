@@ -225,15 +225,35 @@ function test_submit_settings_form(submit_form) {
         success_callback = req.success;
     };
 
-    ev.currentTarget = '#org-submit-other-permissions';
-    let stubs = createSaveButtons('other-permissions');
+    let subsection = 'other-permissions';
+    ev.currentTarget = `#org-submit-${subsection}`;
+    let stubs = createSaveButtons(subsection);
     let save_button = stubs.save_button;
-    save_button.attr('id', 'org-submit-other-permissions');
+    save_button.attr('id', `org-submit-${subsection}`);
+    save_button.replace = () => {
+        return `${subsection}`;
+    };
     $("#id_realm_create_stream_permission").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
     $("#id_realm_message_retention_days").val("15");
-    $("#id_realm_bot_creation_policy").val("1");
-    $("#id_realm_email_address_visibility").val("1");
+    const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
+    bot_creation_policy_elem.val("1");
+    bot_creation_policy_elem.attr('id', 'id_realm_bot_creation_policy');
+    bot_creation_policy_elem.data = () => {
+        return "integer";
+    };
+    const email_address_visibility_elem = $("#id_realm_email_address_visibility");
+    email_address_visibility_elem.val("1");
+    email_address_visibility_elem.attr('id', 'id_realm_email_address_visibility');
+    email_address_visibility_elem.data = () => {
+        return "integer";
+    };
+
+    let subsection_elem = $(`#org-${subsection}`);
+    subsection_elem.set_find_results('.setting-widget', [
+        bot_creation_policy_elem,
+        email_address_visibility_elem,
+    ]);
 
     patched = false;
     submit_form(ev);
@@ -250,13 +270,30 @@ function test_submit_settings_form(submit_form) {
     assert.deepEqual(data, expected_value);
 
 
-    ev.currentTarget = '#org-submit-user-defaults';
-    stubs = createSaveButtons('user-defaults');
+    subsection = 'user-defaults';
+    ev.currentTarget = `#org-submit-${subsection}`;
+    stubs = createSaveButtons(subsection);
     save_button = stubs.save_button;
-    save_button.attr('id', 'org-submit-user-defaults');
+    save_button.attr('id', `org-submit-${subsection}`);
 
-    $("#id_realm_default_language").val("en");
-    $("#id_realm_default_twenty_four_hour_time").prop("checked", true);
+    const realm_default_language_elem = $("#id_realm_default_language");
+    realm_default_language_elem.val("en");
+    realm_default_language_elem.attr('id', 'id_realm_default_language');
+    realm_default_language_elem.data = () => {
+        return "text";
+    };
+    const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
+    realm_default_twenty_four_hour_time_elem.prop("checked", true);
+    realm_default_twenty_four_hour_time_elem.attr('id', 'id_realm_default_twenty_four_hour_time');
+    realm_default_twenty_four_hour_time_elem.data = () => {
+        return "bool";
+    };
+
+    subsection_elem = $(`#org-${subsection}`);
+    subsection_elem.set_find_results('.setting-widget', [
+        realm_default_language_elem,
+        realm_default_twenty_four_hour_time_elem,
+    ]);
 
     submit_form(ev);
     assert(patched);

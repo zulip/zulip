@@ -78,7 +78,7 @@
 
                 <div class="input-group">
                     <label for="realm_bot_creation_policy">{{t "Who can add bots" }}</label>
-                    <select name="realm_bot_creation_policy" id="id_realm_bot_creation_policy">
+                    <select name="realm_bot_creation_policy" class="setting-widget" id="id_realm_bot_creation_policy" data-setting-widget-type="integer">
                         {{#each bot_creation_policy_values}}
                         <option value='{{this.code}}'>{{this.description}}</option>
                         {{/each}}
@@ -95,7 +95,7 @@
 
                 <div class="input-group" {{#if development}}{{else}}style="display: none"{{/if}}>
                     <label for="realm_email_address_visibility">{{t "Who can see users email addresses" }}</label>
-                    <select name="realm_email_address_visibility" id="id_realm_email_address_visibility">
+                    <select name="realm_email_address_visibility" class="setting-widget" id="id_realm_email_address_visibility" data-setting-widget-type="integer">
                         {{#each email_address_visibility_values}}
                         <option value='{{this.code}}'>{{this.description}}</option>
                         {{/each}}
