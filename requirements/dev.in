@@ -23,7 +23,7 @@ fakeldap==0.6.1
 httpretty==0.9.6
 
 # For sorting imports
-isort==4.3.10
+isort==4.3.11
 
 # for pep8 linter
 pycodestyle==2.5.0
