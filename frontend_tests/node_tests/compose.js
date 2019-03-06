@@ -1690,9 +1690,11 @@ run_test('nonexistent_stream_reply_error', () => {
 run_test('narrow_button_titles', () => {
     util.is_mobile = () => { return false; };
 
-    compose.update_stream_button_for_private();
+    compose.update_closed_compose_buttons_for_private();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New conversation"));
 
-    compose.update_stream_button_for_stream();
+    compose.update_closed_compose_buttons_for_stream();
     assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
 });
