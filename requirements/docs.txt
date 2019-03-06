@@ -16,7 +16,7 @@ docutils==0.14
 idna==2.8                 # via requests
 imagesize==1.1.0
 jinja2==2.10              # via sphinx
-markupsafe==1.1.0         # via jinja2
+markupsafe==1.1.1         # via jinja2
 packaging==19.0           # via sphinx
 pygments==2.3.1           # via sphinx
 pyparsing==2.3.1          # via packaging

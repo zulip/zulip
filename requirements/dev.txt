@@ -20,7 +20,7 @@ apns2==0.4.1
 argon2-cffi==19.1.0
 arrow==0.10.0             # via gitlint
 asn1crypto==0.24.0        # via cryptography
-attrs==18.2.0             # via automat, service-identity, twisted
+attrs==19.1.0             # via automat, service-identity, twisted
 automat==0.7.0            # via twisted
 aws-xray-sdk==0.95        # via moto
 babel==2.5.3
@@ -28,9 +28,9 @@ backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.7.0.1
 beautifulsoup4==4.7.1
-boto3==1.9.86             # via moto
+boto3==1.9.108            # via moto
 boto==2.49.0
-botocore==1.12.86         # via boto3, moto, s3transfer
+botocore==1.12.108        # via boto3, moto, s3transfer
 cachetools==3.1.0         # via google-auth
 cchardet==2.1.4
 certifi==2018.11.29
@@ -48,7 +48,7 @@ defusedxml==0.5.0
 disposable-email-domains==0.0.43
 django-auth-ldap==1.7.0
 django-formtools==2.1     # via django-two-factor-auth
-django-otp==0.5.1         # via django-two-factor-auth
+django-otp==0.5.2         # via django-two-factor-auth
 django-phonenumber-field==1.3.0  # via django-two-factor-auth
 django-pipeline==1.6.14
 django-pylibmc==0.6.1
@@ -68,7 +68,7 @@ gitdb==0.6.4
 gitlint==0.10.0
 google-api-python-client==1.7.4
 google-auth-httplib2==0.0.3  # via google-api-python-client
-google-auth==1.6.2        # via google-api-python-client, google-auth-httplib2
+google-auth==1.6.3        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
@@ -85,9 +85,9 @@ incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
 isort==4.3.4
-jedi==0.13.2              # via ipython
+jedi==0.13.3              # via ipython
 jinja2==2.10
-jmespath==0.9.3           # via boto3, botocore
+jmespath==0.9.4           # via boto3, botocore
 jsondiff==1.1.1           # via moto
 jsonpickle==1.1           # via aws-xray-sdk, python-digitalocean
 line_profiler==2.1.2
@@ -105,10 +105,10 @@ oauth2client==4.1.3
 oauthlib==3.0.1
 packaging==19.0           # via sphinx
 parsel==1.5.1             # via scrapy
-parso==0.3.2              # via jedi
-pbr==5.1.1                # via mock
+parso==0.3.4              # via jedi
+pbr==5.1.3                # via mock
 pexpect==4.6.0            # via ipython
-phonenumberslite==8.10.4  # via django-phonenumber-field
+phonenumberslite==8.10.6  # via django-phonenumber-field
 pickleshare==0.7.5        # via ipython
 pika==0.13.0
 pillow==5.4.1
@@ -151,12 +151,12 @@ qrcode==6.1               # via django-two-factor-auth
 queuelib==1.5.0           # via scrapy
 recommonmark==0.4.0
 redis==2.10.6
-regex==2019.1.24
+regex==2019.2.21
 requests-oauthlib==1.0.0
 requests[security]==2.21.0  # via aws-xray-sdk, docker, hypchat, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.10.5         # via moto
 rsa==4.0
-s3transfer==0.1.13        # via boto3
+s3transfer==0.2.0         # via boto3
 scrapy==1.5.2
 service-identity==18.1.0  # via scrapy
 sh==1.11                  # via gitlint
@@ -166,9 +166,9 @@ smmap==0.9.0
 snakeviz==1.0.0
 snowballstemmer==1.2.1
 social-auth-app-django==3.1.0
-social-auth-core==3.0.0   # via social-auth-app-django
+social-auth-core==3.1.0   # via social-auth-app-django
 sockjs-tornado==1.0.6
-soupsieve==1.7.3          # via beautifulsoup4
+soupsieve==1.8            # via beautifulsoup4
 sourcemap==0.2.1
 sphinx-rtd-theme==0.4.2
 sphinx==1.8.3
@@ -190,9 +190,9 @@ urllib3==1.24.1           # via botocore, requests, transifex-client
 virtualenv-clone==0.5.1
 w3lib==1.20.0             # via parsel, scrapy
 wcwidth==0.1.7            # via prompt-toolkit
-websocket-client==0.54.0  # via docker
+websocket-client==0.55.0  # via docker
 werkzeug==0.14.1          # via moto
 wrapt==1.11.1             # via aws-xray-sdk
-xmltodict==0.11.0         # via moto
+xmltodict==0.12.0         # via moto
 yamole==2.1.6
 zope.interface==4.6.0     # via twisted
