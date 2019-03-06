@@ -68,6 +68,10 @@ exports.activate = function (raw_operators, opts) {
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
 
+    // Open tooltips are only interesting for current narrow,
+    // so hide them when activating a new one.
+    $(".tooltip").hide();
+
     if (raw_operators.length === 0) {
         return exports.deactivate();
     }
