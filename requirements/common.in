@@ -195,7 +195,7 @@ django-two-factor-auth==1.8.0
 twilio==6.23.1
 
 # Needed for processing payments (in corporate)
-stripe==2.20.0
+stripe==2.21.0
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
 django-sendfile==0.3.11
