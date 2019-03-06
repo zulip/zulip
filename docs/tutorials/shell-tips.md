@@ -339,7 +339,7 @@ At first it seems like magic, but once you get the basic concepts you find it
 extremely useful and even easy to use (at least the 99% of the time).
 
 To learn more about how to use it, read
-[our docs](../git/index.html) on Git and
+[our docs](../git/index.md) on Git and
 Github.
 
 [This cheatsheet][git-cheat-detailed]
@@ -347,4 +347,4 @@ will be useful in your journey, as well.
 
 ![Git - XKCD 1597](https://imgs.xkcd.com/comics/git.png)
 
-[git-cheat-detailed]: ../git/cheat-sheet.html#detailed-cheat-sheet
+[git-cheat-detailed]: ../git/cheat-sheet.md#detailed-cheat-sheet

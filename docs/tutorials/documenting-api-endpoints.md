@@ -10,7 +10,7 @@ file in `templates/zerver/help/include/rest-endpoints.md` , so that it appears
 in the index in the left sidebar on the `/api` page.
 
 The markdown framework is the same one used by the
-[user docs](../subsystems/user-docs.html), which supports macros and
+[user docs](../subsystems/user-docs.md), which supports macros and
 various other features, though we don't use them heavily here.
 
 If you look at the documentation for existing endpoints (see a live

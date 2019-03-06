@@ -61,4 +61,4 @@ Display changes you've committed so far since creating a branch from upstream/ma
 $ git diff upstream/master...HEAD
 ```
 
-[zulip-rtd-review]: ../contributing/code-reviewing.html
+[zulip-rtd-review]: ../contributing/code-reviewing.md

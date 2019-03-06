@@ -6,8 +6,8 @@ supervisorctl](#using-supervisorctl), to learn how to use the
 Supervisor client to monitor and manage services.
 
 If you haven't already, now might be a good time to read Zulip's [architectural
-overview](../overview/architecture-overview.html), particularly the
-[Components](../overview/architecture-overview.html#components) section. This will help you
+overview](../overview/architecture-overview.md), particularly the
+[Components](../overview/architecture-overview.md#components) section. This will help you
 understand the many services Zulip uses.
 
 If you encounter issues while running Zulip, take a look at Zulip's logs, which

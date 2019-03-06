@@ -18,14 +18,14 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 ```
 
 and then
-[continue the normal installation instructions](../production/install.html#step-2-install-zulip).
-You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository).
+[continue the normal installation instructions](../production/install.md#step-2-install-zulip).
+You can also [upgrade Zulip from Git](../production/maintain-secure-upgrade.md#upgrading-from-a-git-repository).
 
 ## Zulip in Docker
 
 Zulip has an officially supported, experimental
 [docker image](https://github.com/zulip/docker-zulip).  Please note
-that Zulip's [normal installer](../production/install.html) has been
+that Zulip's [normal installer](../production/install.md) has been
 extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
@@ -67,7 +67,7 @@ of managing chat.zulip.org and zulipchat.com.
 Unfortunately, you cannot use most third-party database-as-a-service
 provides like Amazon RDS as the database provider with Zulip without a
 degraded experience.  Zulip let you choose one of two
-[full-text search postgres extensions](../subsystems/full-text-search.html).
+[full-text search postgres extensions](../subsystems/full-text-search.md).
 Neither is available in Amazon RDS.  As a result, if you use one of
 those providers, Zulip's full-text search will be unavailable.
 

@@ -24,7 +24,7 @@ environment,** check
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors). If
 that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 real-time help, send a note to the
 [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
 or [file an issue](https://github.com/zulip/zulip/issues).
@@ -285,8 +285,8 @@ projects and to instead follow these instructions exactly.)
 2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
    **run as an Administrator**).
 3. In Terminal/Git BASH,
-   [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
-   [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+   [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
+   [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
 ```
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -340,7 +340,7 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
   database.  We call this process "provisioning", and it is documented
-  in some detail in our [dependencies documentation](../subsystems/dependencies.html).
+  in some detail in our [dependencies documentation](../subsystems/dependencies.md).
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
@@ -352,7 +352,7 @@ documented in the
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
@@ -489,7 +489,7 @@ It's good to have the terminal running `run-dev.py` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](../subsystems/logging.html) for further details on the run-dev.py console
+See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
 output.
 
 #### Committing and pushing changes with git
@@ -518,7 +518,7 @@ After provisioning, you'll want to
 
 If you run into any trouble, the
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.html) for
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for
 is a great place to ask for help.
 
 #### Rebuilding the development environment
@@ -615,7 +615,7 @@ If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
 * Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](../contributing/chat-zulip-org.html),
+  in the [Zulip development community server](../contributing/chat-zulip-org.md),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or
 * [File an issue](https://github.com/zulip/zulip/issues).
@@ -883,7 +883,7 @@ Likely causes are:
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
 gigabytes of RAM, which is the minimum Zulip
-[requires](../development/setup-vagrant.html#requirements). If
+[requires](../development/setup-vagrant.md#requirements). If
 not, go to your VM settings and increase the RAM, then restart
 the VM.
 
@@ -967,7 +967,7 @@ Users who are unable to do "vagrant up" due to a VT-X unavailability error need 
 
 #### Permissions errors when running the test suite in LXC
 
-See ["Possible testing issues"](../testing/testing.html#possible-testing-issues).
+See ["Possible testing issues"](../testing/testing.md#possible-testing-issues).
 
 #### Mounting NFS fails on macOS Mojave
 
@@ -1099,13 +1099,13 @@ for the IP address that means any IP address can connect to your development ser
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
 [vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
-[install-advanced]: ../development/setup-advanced.html
+[install-advanced]: ../development/setup-advanced.md
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
-[rtd-git-guide]: ../git/index.html
-[rtd-testing]: ../testing/testing.html
-[rtd-using-dev-env]: using.html
-[rtd-dev-remote]: remote.html
+[rtd-git-guide]: ../git/index.md
+[rtd-testing]: ../testing/testing.md
+[rtd-using-dev-env]: using.md
+[rtd-dev-remote]: remote.md
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
-[set-up-git]: ../git/setup.html
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[set-up-git]: ../git/setup.md
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork

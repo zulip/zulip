@@ -45,7 +45,7 @@ CI. Make sure that you have uploaded your SSH keys to GitHub: CircleCI
 uses those SSH keys for authentication.
 
 [docker-hub]: https://hub.docker.com/
-[circleci-setup]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[circleci-setup]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
 [circleci-ssh]: https://circleci.com/docs/2.0/ssh-access-jobs/
 
 ### Suites
@@ -177,7 +177,7 @@ our configuration, you'll want to look at these closely.
   that every remote branch you push will be tested, which can be
   helpful when debugging something complicated.
 
-[travis-fork]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[travis-fork]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
 
 ### Performance optimizations
 

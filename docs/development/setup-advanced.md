@@ -21,9 +21,9 @@ that's running one of:
 You can just run the Zulip provision script on your machine.
 
 **Note**: you should not use the `root` user to run the installation.
-If you are using a [remote server](../development/remote.html), see
+If you are using a [remote server](../development/remote.md), see
 the
-[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+[section on creating appropriate user accounts](../development/remote.md#setting-up-user-accounts).
 
 **Warning**: there is no supported uninstallation process with this
 method.  If you want that, use the Vagrant environment, where you can
@@ -50,7 +50,7 @@ source /srv/zulip-py3-venv/bin/activate
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
-environment](../development/setup-vagrant.html#step-4-developing),
+environment](../development/setup-vagrant.md#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing manually on Unix
@@ -310,7 +310,7 @@ docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
 ```
 
 You'll want to
-[read the guide for Zulip development](../development/setup-vagrant.html#step-4-developing)
+[read the guide for Zulip development](../development/setup-vagrant.md#step-4-developing)
 to understand how to use the Zulip development.  Note that
 `start-dockers` automatically runs `tools/run-dev.py` inside the
 container; you can then visit http://localhost:9991 to connect to your
@@ -363,6 +363,6 @@ Currently, the Docker workflow is substantially less convenient than
 the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
 
-[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
-[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
-[port-forward-setup]: ../development/remote.html#running-the-development-server
+[zulip-rtd-git-cloning]: ../git/cloning.md#step-1b-clone-to-your-machine
+[zulip-rtd-git-connect]: ../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream
+[port-forward-setup]: ../development/remote.md#running-the-development-server

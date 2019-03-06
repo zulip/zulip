@@ -29,7 +29,7 @@ impossible or unlikely, the extra complexity required for renumbering
 makes them structurally more risky than the direct postgres backup
 process.
 
-[backups]: ../production/maintain-secure-upgrade.html#backups
+[backups]: ../production/maintain-secure-upgrade.md#backups
 
 ## Preventing changes during the export
 
@@ -83,7 +83,7 @@ formats are consistent.  For exports from zulipchat.com, usually this
 means you need to upgrade your Zulip server to the latest `master`
 branch, using [upgrade-zulip-from-git][upgrade-zulip-from-git].
 
-First [install a new Zulip server](../production/install.html),
+First [install a new Zulip server](../production/install.md),
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
@@ -110,7 +110,7 @@ cd /home/zulip/deployments/current
 This could take several minutes to run, depending on how much data you're
 importing.
 
-[upgrade-zulip-from-git]: ../production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: ../production/maintain-secure-upgrade.md#upgrading-from-a-git-repository
 
 **Import options**
 

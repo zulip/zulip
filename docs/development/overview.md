@@ -82,14 +82,14 @@ And if you've setup the Zulip development environment on a remote
 machine, take a look at our tips for
 [developing remotely][dev-remote].
 
-[dev-remote]: remote.html
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-docker]: ../development/setup-advanced.html#using-docker-experimental
-[install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
-[install-vagrant]: ../development/setup-vagrant.html
+[dev-remote]: remote.md
+[install-direct]: ../development/setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
+[install-docker]: ../development/setup-advanced.md#using-docker-experimental
+[install-generic]: ../development/setup-advanced.md#installing-manually-on-linux
+[install-vagrant]: ../development/setup-vagrant.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
-[configure-proxy]: ../development/setup-vagrant.html#specifying-a-proxy
-[using-dev-env]: using.html
-[testing]: ../testing/testing.html
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[configure-proxy]: ../development/setup-vagrant.md#specifying-a-proxy
+[using-dev-env]: using.md
+[testing]: ../testing/testing.md
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork

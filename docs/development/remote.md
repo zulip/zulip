@@ -129,7 +129,7 @@ don't have a favorite, here are some suggestions:
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 * [sublime](https://www.sublimetext.com/)
 
-Next, follow our [Git and GitHub Guide](../git/index.html) to clone and configure
+Next, follow our [Git and GitHub Guide](../git/index.md) to clone and configure
 your fork of zulip on your local computer.
 
 Once you have cloned your code locally, you can get to work.
@@ -214,11 +214,12 @@ Next, read the following to learn more about developing for Zulip:
 * [Using the Development Environment][rtd-using-dev-env]
 * [Testing][rtd-testing]
 
-[install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-vagrant]: ../development/setup-vagrant.html
-[rtd-git-guide]: ../git/index.html
-[rtd-using-dev-env]: using.html
-[rtd-testing]: ../testing/testing.html
+[install-direct]: ../development/setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
+[install-generic]: ../development/setup-advanced.md#installing-manually-on-linux
+[install-vagrant]: ../development/setup-vagrant.md
+[rtd-git-guide]: ../git/index.md
+[rtd-using-dev-env]: using.md
+[rtd-testing]: ../testing/testing.md
 [git-bash]: https://git-for-windows.github.io/
 [codeanywhere]: https://codeanywhere.com/
 [img-ca-settings]: ../images/codeanywhere-settings.png
@@ -236,7 +237,7 @@ that the user is `zulipdev`; edit accordingly if the situation is
 different.
 
 1. First, get an SSL certificate; you can use
-    [our certbot wrapper script used for production](../production/ssl-certificates.html#certbot-recommended)
+    [our certbot wrapper script used for production](../production/ssl-certificates.md#certbot-recommended)
     by running the following commands as root:
     ```
     # apt install -y crudini
