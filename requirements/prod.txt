@@ -68,7 +68,7 @@ line_profiler==2.1.2
 lxml==4.3.2
 markdown-include==0.5.1
 markdown==3.0.1
-markupsafe==1.1.0
+markupsafe==1.1.1
 matrix-client==0.3.2
 mock==2.0.0
 mypy_extensions==0.4.1
