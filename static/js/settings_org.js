@@ -10,86 +10,6 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-var org_profile = {
-    name: {
-        type: 'text',
-    },
-    description: {
-        type: 'text',
-    },
-};
-
-var org_settings = {
-    msg_editing: {
-        allow_edit_history: {
-            type: 'bool',
-        },
-        allow_community_topic_editing: {
-            type: 'bool',
-        },
-    },
-    other_settings: {
-        inline_image_preview: {
-            type: 'bool',
-        },
-        inline_url_embed_preview: {
-            type: 'bool',
-        },
-        mandatory_topics: {
-            type: 'bool',
-        },
-        video_chat_provider: {
-            type: 'text',
-        },
-        google_hangouts_domain: {
-            type: 'text',
-        },
-        zoom_user_id: {
-            type: 'text',
-        },
-        zoom_api_key: {
-            type: 'text',
-        },
-        zoom_api_secret: {
-            type: 'text',
-        },
-        message_content_allowed_in_email_notifications: {
-            type: 'bool',
-        },
-    },
-    user_defaults: {
-        default_language: {
-            type: 'text',
-        },
-        default_twenty_four_hour_time: {
-            type: 'bool',
-        },
-    },
-    notifications: {
-        send_welcome_emails: {
-            type: 'bool',
-        },
-    },
-};
-
-var org_permissions = {
-    user_identity: {
-        name_changes_disabled: {
-            type: 'bool',
-        },
-        email_changes_disabled: {
-            type: 'bool',
-        },
-    },
-    other_permissions: {
-        bot_creation_policy: {
-            type: 'integer',
-        },
-        email_address_visibility: {
-            type: 'integer',
-        },
-    },
-};
 
 exports.maybe_disable_widgets = function () {
     if (page_params.is_admin) {
@@ -130,17 +50,6 @@ exports.email_address_visibility_values = {
         description: i18n.t("Admins only"),
     },
 };
-
-function get_subsection_property_types(subsection) {
-    if (_.has(org_settings, subsection)) {
-        return org_settings[subsection];
-    } else if (_.has(org_permissions, subsection)) {
-        return org_permissions[subsection];
-    } else if (subsection === 'org_profile') {
-        return org_profile;
-    }
-    return;
-}
 
 exports.get_realm_time_limits_in_minutes = function (property) {
     var val = (page_params[property] / 60).toFixed(1);
@@ -603,19 +512,24 @@ exports.build_page = function () {
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
 
-    function populate_data_for_request(data, changing_property_types) {
-        _.each(changing_property_types, function (v, k) {
-            var field = changing_property_types[k];
-            if (field.type === 'bool') {
-                data[k] = JSON.stringify($('#id_realm_' + k).prop('checked'));
+    function populate_data_for_request(subsection) {
+        var data = {};
+        var subsection_elem = $('#org-' + subsection);
+        var input_elems = subsection_elem.find('.setting-widget');
+        _.each(input_elems, function (input_elem) {
+            input_elem = $(input_elem);
+            var input_type = input_elem.data("setting-widget-type");
+            var property_name = input_elem.attr('id').replace("id_realm_", "");
+            if (input_type === 'bool') {
+                data[property_name] = JSON.stringify(input_elem.prop('checked'));
                 return;
             }
-            if (field.type === 'text') {
-                data[k] = JSON.stringify($('#id_realm_' + k).val().trim());
+            if (input_type === 'text') {
+                data[property_name] = JSON.stringify(input_elem.val().trim());
                 return;
             }
-            if (field.type === 'integer') {
-                data[k] = JSON.stringify(parseInt($("#id_realm_" + k).val().trim(), 10));
+            if (input_type === 'integer') {
+                data[property_name] = JSON.stringify(parseInt(input_elem.val().trim(), 10));
             }
         });
         return data;
@@ -813,7 +727,7 @@ exports.build_page = function () {
         var subsection_id = save_button.attr('id').replace("org-submit-", "");
         var subsection = subsection_id.split('-').join('_');
 
-        var data = populate_data_for_request({}, get_subsection_property_types(subsection));
+        var data = populate_data_for_request(subsection_id);
         var opts = get_complete_data_for_subsection(subsection);
         data = _.extend(data, opts.data);
         var success_continuation = opts.success_continuation;
