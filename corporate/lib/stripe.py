@@ -450,6 +450,12 @@ def invoice_plans_as_needed(event_time: datetime) -> None:
 def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
     Customer.objects.update_or_create(realm=realm, defaults={'default_discount': discount})
 
+def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
+    customer = Customer.objects.filter(realm=realm).first()
+    if customer is not None:
+        return customer.default_discount
+    return None
+
 def process_downgrade(user: UserProfile) -> None:  # nocoverage
     pass
 

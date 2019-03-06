@@ -30,7 +30,7 @@ from corporate.lib.stripe import catch_stripe_errors, attach_discount_to_realm, 
     compute_plan_parameters, update_or_create_stripe_customer, \
     process_initial_upgrade, add_plan_renewal_to_license_ledger_if_needed, \
     update_license_ledger_if_needed, update_license_ledger_for_automanaged_plan, \
-    invoice_plan, invoice_plans_as_needed
+    invoice_plan, invoice_plans_as_needed, get_discount_for_realm
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 
 CallableT = TypeVar('CallableT', bound=Callable[..., Any])
@@ -806,6 +806,13 @@ class StripeTest(StripeTestCase):
         self.assertEqual([6000 * self.seat_count, -6000 * self.seat_count],
                          [item.amount for item in stripe_invoice.lines])
         plan = CustomerPlan.objects.get(price_per_license=6000, discount=Decimal(25))
+
+    def test_get_discount_for_realm(self) -> None:
+        user = self.example_user('hamlet')
+        self.assertEqual(get_discount_for_realm(user.realm), None)
+
+        attach_discount_to_realm(user.realm, Decimal(85))
+        self.assertEqual(get_discount_for_realm(user.realm), 85)
 
     @mock_stripe()
     def test_replace_payment_source(self, *mocks: Mock) -> None:
