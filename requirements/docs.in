@@ -12,15 +12,12 @@ sphinx==1.8.3
 sphinx-rtd-theme==0.4.2
 
 # Needed to build markdown docs
-recommonmark==0.4.0
+recommonmark==0.5.0
 
 # Dependencies of Sphinx
 alabaster==0.7.12
 babel==2.5.3
-# Upgrading to the latest version of CommonMark breaks the
-# compatibility with recommonmark.  See
-# https://github.com/rtfd/recommonmark/issues/24
-CommonMark==0.5.4
+CommonMark==0.8.1
 docutils==0.14
 imagesize==1.1.0
 snowballstemmer==1.2.1
