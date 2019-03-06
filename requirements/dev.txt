@@ -91,7 +91,7 @@ jmespath==0.9.4           # via boto3, botocore
 jsondiff==1.1.1           # via moto
 jsonpickle==1.1           # via aws-xray-sdk, python-digitalocean
 line_profiler==2.1.2
-lxml==4.3.0
+lxml==4.3.2
 markdown-include==0.5.1
 markdown==3.0.1
 markupsafe==1.1.0
