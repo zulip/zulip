@@ -7,10 +7,6 @@
             {{/unless}}
         {{/if}}
 
-        {{#if status_message}}
-        {{partial "me_message"}}
-        {{/if}}
-
         {{#if include_sender}}
             {{#unless status_message}}
                 <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
@@ -20,6 +16,12 @@
             {{/unless}}
         {{/if}}
     </span>
+
+    {{#if status_message}}
+    <span class="message_sender no-select">
+        {{partial "me_message"}}
+    </span>
+    {{/if}}
 
     <span class="alert-msg pull-right"></span>
 
