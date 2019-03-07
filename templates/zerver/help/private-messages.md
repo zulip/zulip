@@ -14,7 +14,7 @@ streams. PMs and group PMs do not have
 [topics](/help/about-streams-and-topics), and do not appear in your list of
 streams.
 
-### Send a (group) private message
+### Send a PM or group PM
 
 {start_tabs}
 
@@ -28,7 +28,7 @@ streams.
 
 {end_tabs}
 
-### Access a (group) private message
+### Access a PM or group PM
 
 There are several ways to access an existing PM or group PM.
 
