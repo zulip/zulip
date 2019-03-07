@@ -2,7 +2,9 @@
     <span class="message_sender no-select">
 
         {{#if include_sender}}
-        {{partial "message_avatar"}}
+            {{#unless status_message}}
+            {{partial "message_avatar"}}
+            {{/unless}}
         {{/if}}
 
         {{#if status_message}}
