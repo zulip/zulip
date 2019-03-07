@@ -7,7 +7,9 @@ message.
 Organization administrators can
 [disable message edit history](/help/disable-message-edit-history).
 
-## View a message's edit history
+### View a message's edit history
+
+{start_tabs}
 
 {!message-actions-menu.md!}
 
@@ -16,3 +18,5 @@ Organization administrators can
 !!! warn ""
     You will only see **View edit history** in the dropdown menu if
     the message has been edited and message edit history is on.
+
+{end_tabs}

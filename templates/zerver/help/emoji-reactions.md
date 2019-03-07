@@ -5,19 +5,23 @@ emoji can be used as a reaction, including
 [custom emoji](/help/add-custom-emoji). Reactions appear in little boxes
 underneath the message.
 
-## Add an emoji reaction
+## Add a reaction
+
+{start_tabs}
 
 {!message-actions.md!}
 
 1. Click the smiley face (<i class="fa fa-smile-o"></i>) icon.
 
-    !!! tip ""
-        For messages that you sent, click the down chevron
+    !!! warn ""
+        For messages that you've sent, click the down chevron
         (<i class="fa fa-chevron-down"></i>) and then
         **Add emoji reaction**.
 
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji
    with your mouse.
+
+{end_tabs}
 
 If someone has already added a reaction, you can just click or tap on it to
 second the reaction.

@@ -15,8 +15,8 @@ There are two situations in which messages automatically get marked as read.
 You can move the blue box either with the keyboard (arrow keys, `End`, etc.)
 or by scrolling the feed with your mouse.
 
-You can also manually mark all messages as read, or mark all messages in a
-stream or topic as read.
+You can also manually **mark all messages as read**, or **mark all messages in a
+stream or topic as read**.
 
 {start_tabs}
 
