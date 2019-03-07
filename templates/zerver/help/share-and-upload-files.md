@@ -28,4 +28,4 @@ This limit can be changed by the server administrator.
 ## Related articles
 
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
-* [View an image at full size](/help/viewing-images)
+* [View and browse images](/help/view-and-browse-images)
