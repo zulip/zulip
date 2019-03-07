@@ -90,6 +90,13 @@ exports.collapse = function (row) {
 };
 
 exports.toggle_collapse = function (message) {
+    if (message.is_me_message) {
+        // Disabled temporarily because /me messages don't have a
+        // styling for collapsing /me messages (they only recently
+        // added multi-line support).  See also popovers.js.
+        return;
+    }
+
     var row = current_msg_list.get_row(message.id);
     if (!row) {
         return;
