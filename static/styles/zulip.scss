@@ -1146,14 +1146,14 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.message_sender i.zulip-icon.bot,
+.message_top_line i.zulip-icon.bot,
 .popover_info i.zulip-icon.bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
 }
 
-.message_sender i.zulip-icon.bot {
+.message_top_line i.zulip-icon.bot {
     font-size: 12px;
 }
 
