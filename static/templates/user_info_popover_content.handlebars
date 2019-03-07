@@ -90,13 +90,6 @@
         </li>
         {{/unless}}
     {{/if}}
-    {{#if is_me}}
-    <li>
-        <a href="/#settings/your-account">
-            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
-        </a>
-    </li>
-    {{/if}}
     {{#unless is_me}}
     <li>
         <a href="#" class="mention_user">
@@ -104,6 +97,13 @@
         </a>
     </li>
     {{/unless}}
+    {{#if is_me}}
+    <li>
+        <a href="/#settings/your-account">
+            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
+        </a>
+    </li>
+    {{/if}}
     <hr />
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
