@@ -248,7 +248,7 @@ function timer_text(seconds_left) {
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
-    var content_top = row.find('.message_content')[0]
+    var content_top = row.find('.message_top_line')[0]
         .getBoundingClientRect().top;
 
     var message = current_msg_list.get(rows.id(row));
@@ -394,8 +394,8 @@ function edit_message(row, raw_content) {
 
     // Scroll to keep the message content in the same place
     var edit_top = message_edit_content[0].getBoundingClientRect().top;
-    /* adjust for border and padding */
-    var scroll_by = edit_top - content_top + 5;
+    /* adjust for border and padding and 1 line height*/
+    var scroll_by = edit_top - content_top + 5 - 14;
     edit_obj.scrolled_by = scroll_by;
     message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
