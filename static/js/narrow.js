@@ -754,8 +754,9 @@ exports.restore_home_state = function () {
 };
 
 function show_search_query() {
-    // Don't need to handle "search:" filter because search_query does not contain it.
-    var search_query = narrow_state.search_string();
+    // when search bar contains multiple filters, only show search queries
+    var current_filter = narrow_state.filter();
+    var search_query = current_filter.operands("search")[0];
     var query_words = search_query.split(" ");
 
     var search_string_display = $("#empty_search_stop_words_string");
@@ -763,6 +764,22 @@ function show_search_query() {
 
     // Also removes previous search_string if any
     search_string_display.text(i18n.t("You searched for:"));
+
+    // Add in stream:foo and topic:bar if present
+    if (current_filter.has_operator("stream") || current_filter.has_operator("topic")) {
+        var stream_topic_string = "";
+        var stream = current_filter.operands('stream')[0];
+        var topic = current_filter.operands('topic')[0];
+        if (stream) {
+            stream_topic_string = "stream: " + stream;
+        }
+        if (topic) {
+            stream_topic_string = stream_topic_string + " topic: " + topic;
+        }
+
+        search_string_display.append(' ');
+        search_string_display.append($('<span>').text(stream_topic_string));
+    }
 
     _.each(query_words, function (query_word) {
         search_string_display.append(' ');
@@ -799,7 +816,12 @@ function pick_empty_narrow_banner() {
     var num_operators = current_filter.operators().length;
 
     if (num_operators !== 1) {
-        // For multi-operator narrows, we just use the default banner
+        // For empty searches within multi-operator narrows, we display the stop words
+        if (current_filter.operators("search")) {
+            show_search_query();
+            return $("#empty_search_narrow_message");
+        }
+        // For other multi-operator narrows, we just use the default banner
         return default_banner;
     } else if (first_operator === "is") {
         if (first_operand === "starred") {
