@@ -217,6 +217,32 @@ run_test('show_search_stopwords', () => {
     assert.equal(items[3], '<span>grail');
 });
 
+run_test('show_invalid_narrow_message', () => {
+    narrow_state.reset_current_filter();
+    var display = $("#empty_search_stop_words_string");
+
+    stream_data.add_sub('streamA', {name: 'streamA', stream_id: 88});
+    stream_data.add_sub('streamB', {name: 'streamB', stream_id: 77});
+
+    set_filter([['stream', 'streamA'], ['stream', 'streamB']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+    assert.equal(display.text(), 'translated: You are searching for messages that belong to more than one stream, which is not possible.');
+
+    set_filter([['topic', 'topicA'], ['topic', 'topicB']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+    assert.equal(display.text(), 'translated: You are searching for messages that belong to more than one topic, which is not possible.');
+
+    people.add_in_realm(ray);
+    people.add_in_realm(alice);
+
+    set_filter([['sender', 'alice@example.com'], ['sender', 'ray@example.com']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+    assert.equal(display.text(), 'translated: You are searching for messages that are sent by more than one person, which is not possible.');
+});
+
 run_test('narrow_to_compose_target', () => {
     set_global('compose_state', {});
     set_global('topic_data', {});

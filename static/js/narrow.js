@@ -753,6 +753,11 @@ exports.restore_home_state = function () {
     navigate.maybe_scroll_to_selected();
 };
 
+function set_invalid_narrow_message(invalid_narrow_message) {
+    var search_string_display = $("#empty_search_stop_words_string");
+    search_string_display.text(invalid_narrow_message);
+}
+
 function show_search_query() {
     // when search bar contains multiple filters, only show search queries
     var current_filter = narrow_state.filter();
@@ -816,7 +821,28 @@ function pick_empty_narrow_banner() {
     var num_operators = current_filter.operators().length;
 
     if (num_operators !== 1) {
-        // For empty searches within multi-operator narrows, we display the stop words
+        // For invalid-multi-operator narrows, we display an invalid narrow message
+        var streams = current_filter.operands("stream");
+
+        var invalid_narrow_message = "";
+        // No message can have multiple streams
+        if (streams.length > 1) {
+            invalid_narrow_message = i18n.t("You are searching for messages that belong to more than one stream, which is not possible.");
+        }
+        // No message can have multiple topics
+        if (current_filter.operands("topic").length > 1) {
+            invalid_narrow_message = i18n.t("You are searching for messages that belong to more than one topic, which is not possible.");
+        }
+        // No message can have multiple senders
+        if (current_filter.operands("sender").length > 1) {
+            invalid_narrow_message = i18n.t("You are searching for messages that are sent by more than one person, which is not possible.");
+        }
+        if (invalid_narrow_message !== "") {
+            set_invalid_narrow_message(invalid_narrow_message);
+            return $("#empty_search_narrow_message");
+        }
+
+        // For empty stream searches within other narrows, we display the stop words
         if (current_filter.operators("search")) {
             show_search_query();
             return $("#empty_search_narrow_message");
