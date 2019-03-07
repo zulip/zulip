@@ -3027,6 +3027,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     opacity: 0.75;
 }
 
+.actions_popover .hotkey-hint {
+    color: hsl(0, 0%, 30%);
+    float: right;
+    margin-left: 25px;
+    text-align: center;
+    min-width: 12px;
+}
+
 // Hide the up and down arrows in the Flatpickr datepicker year
 .flatpickr-months .numInputWrapper span {
     display: none;
