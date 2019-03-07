@@ -629,17 +629,27 @@ exports.user_info_popover_handle_keyboard = function (key) {
     popover_items_handle_keyboard(key, items);
 };
 
-exports.show_sender_info = function () {
-    var $message = $(".selected_message");
-    var $sender = $message.find(".sender_info_hover");
-    var $prev_message = $message.prev();
-    while (!$sender[0]) {
-        $prev_message = $prev_message.prev();
-        if (!$prev_message) {
-            break;
+exports.prev_with_avatar = function (row) {
+    var prev_row;
+
+    while (row.find('.inline_profile_picture').length === 0) {
+        prev_row = row.prev();
+
+        if (prev_row.length === 0) {
+            blueslip.error('Could not find row with profile picture');
+            return row;
         }
-        $sender = $prev_message.find(".sender_info_hover");
+
+        row = prev_row;
     }
+
+    return row;
+};
+
+exports.show_sender_info = function () {
+    var $message = exports.prev_with_avatar($(".selected_message"));
+    var $sender = $message.find(".inline_profile_picture");
+
     var message = current_msg_list.get(rows.id($message));
     var user = people.get_person_from_user_id(message.sender_id);
     show_user_info_popover($sender[0], user, message);
