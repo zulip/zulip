@@ -60,6 +60,11 @@ function should_resize() {
         if ($('.user-list-filter').is(':focus')) {
             return false;
         }
+        // Don't resize when the user is filtering the streams due to the
+        // reasons mentioned in the previous comment.
+        if ($('.stream-list-filter').is(':focus')) {
+            return false;
+        }
     }
     // resize in all other cases.
     return true;
