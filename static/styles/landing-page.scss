@@ -2097,6 +2097,10 @@ nav ul li.active::after {
     z-index: 1;
 }
 
+.portico-landing.apps .hero .image img {
+    border-radius: 4px 4px 0px 0px;
+}
+
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0px 0px 60px rgba(0, 0, 0, 0.3);
     max-width: 600px;
