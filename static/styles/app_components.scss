@@ -268,27 +268,25 @@
     pointer-events: none;
     opacity: 0;
 
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease-in;
     overflow: hidden;
 }
 
 .overlay.show {
     opacity: 1;
     pointer-events: all;
+    transition-timing-function: ease-out;
 }
 
 .overlay .overlay-content {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-
+    transform: translateY(20px);
+    transition: transform 0.2s ease-in;
     z-index: 102;
-
-    transition: transform 0.3s ease;
 }
 
 .overlay.show .overlay-content {
-    -webkit-transform: scale(1);
-    transform: scale(1);
+    transform: translateY(0px);
+    transition-timing-function: ease-out;
 }
 
 .input-append {
