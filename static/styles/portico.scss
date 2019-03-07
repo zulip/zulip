@@ -806,13 +806,14 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover {
-    background: linear-gradient(to bottom, hsl(163, 92%, 39%), hsl(200, 100%, 35%));
+    background-color: hsl(190, 10%, 90%);
     transition: none;
 }
 
 .portico-header .dropdown ul li a {
     display: block;
     margin: 2px 0px;
+    padding: 0px;
 
     transition: none;
     font-size: 0.9em;
@@ -823,7 +824,6 @@ input.text-error {
 
 .portico-header .dropdown ul li:hover a {
     background-color: transparent;
-    color: hsl(0, 0%, 100%);
 }
 
 .portico-header .dropdown ul li a i {
