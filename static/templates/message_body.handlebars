@@ -38,7 +38,9 @@
 
 </div>
 
-<div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+{{#unless status_message}}
+<div class="message_content">{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}</div>
+{{/unless}}
 
 {{#if last_edit_timestr}}
     {{#unless include_sender}}
