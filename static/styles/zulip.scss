@@ -1141,8 +1141,8 @@ td.pointer {
     font-weight: 700;
 }
 
-.sender_name_hovered .sender_name,
-.sender_name_hovered .sender_name-in-status {
+.sender_name:hover,
+.sender_name-in-status:hover {
     color: hsl(200, 100%, 40%);
 }
 
