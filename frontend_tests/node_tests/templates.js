@@ -63,7 +63,7 @@ run_test('actions_popover_content', () => {
     html += render('actions_popover_content', args);
     html += "</div>";
     var link = $(html).find("a.respond_button");
-    assert.equal(link.text().trim(), 'translated: Quote and reply');
+    assert.equal(link.text().replace(/\s+/g, ' ').trim(), 'translated: Quote and reply >');
 
     var deletedArgs = {
         should_display_edit_and_view_source: false,
