@@ -169,6 +169,7 @@ function createSaveButtons(subsection) {
     const stub_save_button_header = $('.subsection-header');
     const save_btn_controls = $('.save-btn-controls');
     const stub_save_button = $(`#org-submit-${subsection}`);
+    const stub_discard_button = $(`#org-submit-${subsection}`);
     const stub_save_button_text = $('.icon-button-text');
     stub_save_button_header.set_find_results(
         '.subsection-failed-status p', $('<failed status element>')
@@ -186,6 +187,9 @@ function createSaveButtons(subsection) {
     stub_save_button_header.set_find_results(
         '.subsection-changes-discard .button', $(`#org-discard-${subsection}`)
     );
+    save_btn_controls.set_find_results(
+        '.discard-button', stub_discard_button
+    );
     const props  = {};
     props.hidden = false;
     save_btn_controls.fadeIn = () => {
@@ -197,6 +201,7 @@ function createSaveButtons(subsection) {
     return {
         props: props,
         save_button: stub_save_button,
+        discard_button: stub_discard_button,
         save_button_header: stub_save_button_header,
         save_button_controls: save_btn_controls,
         save_button_text: stub_save_button_text,
@@ -275,12 +280,14 @@ function test_change_save_button_state() {
     var $save_btn_controls = stubs.save_button_controls;
     var $save_btn_text = stubs.save_button_text;
     var $save_btn = stubs.save_button;
+    var $discard_btn = stubs.discard_button;
     $save_btn.attr("id", "org-submit-msg-editing");
     var props = stubs.props;
     settings_org.change_save_button_state($save_btn_controls, "unsaved");
     assert.equal($save_btn_text.text(), 'translated: Save changes');
     assert.equal(props.hidden, false);
     assert.equal($save_btn.attr("data-status"), "unsaved");
+    assert.equal($discard_btn.visible(), true);
     settings_org.change_save_button_state($save_btn_controls, "saved");
     assert.equal($save_btn_text.text(), 'translated: Save changes');
     assert.equal(props.hidden, true);
@@ -289,9 +296,9 @@ function test_change_save_button_state() {
     assert.equal($save_btn_text.text(), 'translated: Saving');
     assert.equal($save_btn.attr("data-status"), "saving");
     assert.equal($save_btn.hasClass('saving'), true);
+    assert.equal($discard_btn.visible(), false);
     settings_org.change_save_button_state($save_btn_controls, "discarded");
     assert.equal(props.hidden, true);
-    assert.equal($save_btn.hasClass('saving'), false);
     settings_org.change_save_button_state($save_btn_controls, "succeeded");
     assert.equal(props.hidden, true);
     assert.equal($save_btn.attr("data-status"), "saved");

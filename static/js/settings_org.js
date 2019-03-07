@@ -535,20 +535,31 @@ exports.sync_realm_settings = function (property) {
         discard_property_element_changes(element);
     }
 };
-function show_hide_element($element, show) {
-    if (show) {
-        $element.removeClass('hide').addClass('.show').fadeIn(300);
-        return;
-    }
-    $element.fadeOut(300);
-}
+
 
 exports.change_save_button_state = function ($element, state) {
+    function show_hide_element($element, show, fadeout_delay) {
+        if (show) {
+            $element.removeClass('hide').addClass('.show').fadeIn(300);
+            return;
+        }
+        setTimeout(function () {
+            $element.fadeOut(300);
+        }, fadeout_delay);
+    }
+
     var $saveBtn = $element.find('.save-button');
     var $textEl = $saveBtn.find('.icon-button-text');
+
     if (state !== "saving") {
         $saveBtn.removeClass('saving');
     }
+
+    if (state === "discarded") {
+        show_hide_element($element, false);
+        return;
+    }
+
     var button_text;
     var data_status;
     var is_show;
@@ -556,17 +567,18 @@ exports.change_save_button_state = function ($element, state) {
         button_text = i18n.t("Save changes");
         data_status = "unsaved";
         is_show = true;
+
+        $element.find('.discard-button').show();
     } else if (state === "saved") {
         button_text = i18n.t("Save changes");
         data_status = "";
-        is_show = false;
-    } else if (state === "discarded") {
-        $element.removeClass('saving');
         is_show = false;
     } else if (state === "saving") {
         button_text = i18n.t("Saving");
         data_status = "saving";
         is_show = true;
+
+        $element.find('.discard-button').hide();
         $saveBtn.addClass('saving');
     } else if (state === "failed") {
         button_text = i18n.t("Save changes");
@@ -578,13 +590,9 @@ exports.change_save_button_state = function ($element, state) {
         is_show = false;
     }
 
-    if (button_text) {
-        $textEl.text(button_text);
-    }
-    if (data_status) {
-        $saveBtn.attr("data-status", data_status);
-    }
-    show_hide_element($element, is_show);
+    $textEl.text(button_text);
+    $saveBtn.attr("data-status", data_status);
+    show_hide_element($element, is_show, 800);
 };
 
 exports.set_up = function () {
@@ -704,9 +712,7 @@ exports.build_page = function () {
             data: data,
             success: function (response_data) {
                 failed_alert_elem.hide();
-                setTimeout(function () {
-                    exports.change_save_button_state(save_btn_container, "succeeded");
-                }, 500);
+                exports.change_save_button_state(save_btn_container, "succeeded");
                 if (success_continuation !== undefined) {
                     success_continuation(response_data);
                 }
