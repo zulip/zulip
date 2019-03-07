@@ -1,21 +1,17 @@
 <div class="message_top_line">
-    <span class="message_sender no-select">
-
+    {{#unless status_message}}
         {{#if include_sender}}
-            {{#unless status_message}}
+        <span class="message_sender no-select">
             {{partial "message_avatar"}}
-            {{/unless}}
-        {{/if}}
 
-        {{#if include_sender}}
-            {{#unless status_message}}
-                <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-                {{#if sender_is_bot}}
-                <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-                {{/if}}
-            {{/unless}}
+            <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+
+            {{#if sender_is_bot}}
+            <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+            {{/if}}
+        </span>
         {{/if}}
-    </span>
+    {{/unless}}
 
     {{#if status_message}}
     <span class="message_sender no-select">
