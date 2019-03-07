@@ -10,7 +10,6 @@ import logging
 import traceback
 import urllib
 import re
-import regex
 import os
 import html
 import time
@@ -1485,14 +1484,14 @@ def get_link_re() -> str:
     return normal_compile(LINK_RE)
 
 def prepare_realm_pattern(source: str) -> str:
-    """ Augment a realm filter to liberally match all occurences of the filter,
-    along with the preceeding and proceeding characters for further analysis in
-    the realm filter pattern and saves what was matched as "name". """
-    return r"""(?P<total>.?(?P<wrap>(?P<name>""" + source + r')).?)'
+    """ Augment a realm filter so it only matches after start-of-string,
+    whitespace, or opening delimiters, won't match if there are word
+    characters directly after, and saves what was matched as "name". """
+    return r"""(?<![^\s'"\(,:<])(?P<name>""" + source + r')(?!\w)'
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
-class RealmFilterPattern(markdown.inlinepatterns.InlineProcessor):
+class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
 
     def __init__(self, source_pattern: str,
@@ -1500,40 +1499,13 @@ class RealmFilterPattern(markdown.inlinepatterns.InlineProcessor):
                  markdown_instance: Optional[markdown.Markdown]=None) -> None:
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
-        # To properly convert realm patterns in languages that do not use spaces
-        # as separators, we have to apply a somewhat convulated approach. The third
-        # party module `regex` has better unicode support than `re`. Also, we need
-        # to keep two regular expressions because of how word boundaries are computed.
-        #
-        # For example, consider the message:                'hello#123world'
-        # For pattern '#123', computed word boundaries are: 'hello{\b}#123world'
-        # and our pattern's beginning matches even when it
-        # shouldn't. A simple hack is to convert the pattern
-        # to 'a#123a' ('a' is a valid 'word' character).
-        # Now, we get no word boundaries as follows:        'helloa#123world'
-        # and we can safely reject this message.
-        # Conversely, in languages like Japanese that do
-        # not use spaces, a similar message would become:   'チケットは{\b}a#123a{\b}です'
-        # and we can convert this message.
+        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
-        # Regex: - (should have nothing but listed symbols before)
-        #        - (should have word boundary on left with 'a')
-        #        - (should have word boundary on right with the second 'a')
-        word_boundary_pattern = r"""(?<![^\w\s'"\(,:<])(\b)a{}a(\b)""".format(source_pattern)
-        flags = regex.WORD | regex.DOTALL | regex.UNICODE
-        self.word_boundary_pattern = regex.compile(word_boundary_pattern, flags=flags)
-        super().__init__(self.pattern, markdown_instance)
-
-    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[Element, str, None],
-                                                             Union[int, None],
-                                                             Union[int, None]]:
-        string_new = m.group('total').replace(m.group('wrap'), 'a' + m.group('wrap') + 'a')
-        if not self.word_boundary_pattern.search(string_new):
-            return None, None, None
+    def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data,
                         self.format_string % m.groupdict(),
-                        m.group("name")), m.start('name'), m.end('name')
+                        m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
