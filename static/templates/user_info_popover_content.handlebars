@@ -74,17 +74,6 @@
     {{/if}}
 
     <hr />
-    {{#if show_user_profile}}
-    <li>
-        <a href="#" class="view_user_profile">
-            {{#if is_me}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
-            {{else}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View full profile{{/tr}}
-            {{/if}}
-        </a>
-    </li>
-    {{/if}}
     {{#if is_active}}
         {{#unless is_me}}
         <li>
@@ -102,13 +91,29 @@
     </li>
     {{/unless}}
     {{#if is_me}}
-    <li>
-        <a href="/#settings/your-account">
-            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
-        </a>
-    </li>
+        {{#if show_user_profile}}
+        <li>
+            <a href="#" class="view_user_profile">
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        <li>
+            <a href="/#settings/your-account">
+                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
+            </a>
+        </li>
     {{/if}}
     <hr />
+    {{#unless is_me}}
+        {{#if show_user_profile}}
+        <li>
+            <a href="#" class="view_user_profile">
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View full profile{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+    {{/unless}}
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
             <i class="fa fa-lock" aria-hidden="true"></i>
