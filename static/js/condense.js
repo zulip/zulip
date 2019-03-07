@@ -90,6 +90,10 @@ exports.collapse = function (row) {
 };
 
 exports.toggle_collapse = function (message) {
+    if (message.is_me_message) {
+        return;
+    }
+
     var row = current_msg_list.get_row(message.id);
     if (!row) {
         return;

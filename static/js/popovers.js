@@ -402,8 +402,12 @@ exports.toggle_actions_popover = function (element, id) {
             return entry.prev_content !== undefined;
         }) && page_params.realm_allow_edit_history;
 
-        var should_display_collapse = !message.locally_echoed && !message.collapsed;
-        var should_display_uncollapse = !message.locally_echoed && message.collapsed;
+        var should_display_collapse = !message.locally_echoed &&
+                                      !message.is_me_message &&
+                                      !message.collapsed;
+        var should_display_uncollapse = !message.locally_echoed &&
+                                        !message.is_me_message &&
+                                        message.collapsed;
 
         var should_display_edit_and_view_source =
                 message.content !== '<p>(deleted)</p>' ||
