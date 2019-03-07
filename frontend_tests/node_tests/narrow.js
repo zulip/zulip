@@ -171,8 +171,14 @@ run_test('show_empty_narrow_message', () => {
     assert.equal(items.length, 2);
     assert.equal(items[0], ' ');
     assert.equal(items[1].text(), 'grail');
+});
 
-    items = [];
+run_test('show_search_stopwords', () => {
+    narrow_state.reset_current_filter();
+    var items = [];
+
+    var display = $("#empty_search_stop_words_string");
+
     display.append = (html) => {
         if (html.text) {
             items.push(html.selector + html.text());
@@ -187,6 +193,28 @@ run_test('show_empty_narrow_message', () => {
     assert.equal(items[0], '<del>what');
     assert.equal(items[1], '<del>about');
     assert.equal(items[2], '<span>grail');
+
+    items = [];
+    set_filter([['stream', 'streamA'], ['search', 'what about grail']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+
+    assert.equal(items.length, 4);
+    assert.equal(items[0], '<span>stream: streamA');
+    assert.equal(items[1], '<del>what');
+    assert.equal(items[2], '<del>about');
+    assert.equal(items[3], '<span>grail');
+
+    items = [];
+    set_filter([['stream', 'streamA'], ['topic', 'topicA'], ['search', 'what about grail']]);
+    narrow.show_empty_narrow_message();
+    assert($('#empty_search_narrow_message').visible());
+
+    assert.equal(items.length, 4);
+    assert.equal(items[0], '<span>stream: streamA topic: topicA');
+    assert.equal(items[1], '<del>what');
+    assert.equal(items[2], '<del>about');
+    assert.equal(items[3], '<span>grail');
 });
 
 run_test('narrow_to_compose_target', () => {
