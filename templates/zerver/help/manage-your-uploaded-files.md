@@ -12,4 +12,4 @@ and more.
 
 ## Related articles
 
-* [Browse all images in a narrow](/help/viewing-images#see-all-images-in-a-narrow)
+* [View and browse images](/help/view-and-browse-images)
