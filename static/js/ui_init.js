@@ -48,6 +48,23 @@ function message_hover(message_row) {
     }
 }
 
+function should_resize() {
+    // If we are in the mobile browser then we need to handle resize event
+    // more carefully because virtual keyboard causes resize event to
+    // trigger and this leads the input elements to loose focus.
+    if (util.is_mobile()) {
+        // If user is trying to search other users in right sidebar
+        // then don't resize due to opening of virtual keyboard in
+        // mobile browser because this leads the search bar to loose
+        // focus and it becomes impossible to type in the input field.
+        if ($('.user-list-filter').is(':focus')) {
+            return false;
+        }
+    }
+    // resize in all other cases.
+    return true;
+}
+
 exports.initialize_kitchen_sink_stuff = function () {
     // TODO:
     //      This function is a historical dumping ground
@@ -83,7 +100,11 @@ exports.initialize_kitchen_sink_stuff = function () {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).resize(_.throttle(resize.handler, 50));
+    $(window).resize(_.throttle(function () {
+        if (should_resize() === true) {
+            resize.handler();
+        }
+    }, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
