@@ -3,6 +3,14 @@ body.night-mode {
     color: hsl(236, 33%, 90%);
     -webkit-font-smoothing: antialiased;
 
+    a:hover {
+        color: hsl(200, 79%, 66%);
+    }
+
+    ul.filters a:hover {
+        color: inherit;
+    }
+
     .app-main,
     .header-main,
     #tab_bar_underpadding,
