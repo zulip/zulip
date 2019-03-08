@@ -95,7 +95,8 @@ function make_image_stubber() {
 run_test('sender_hover', () => {
     popovers.register_click_handlers();
 
-    var handler = $('#main_div').get_on_handler('click', '.sender_info_hover');
+    var selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
+    var handler = $('#main_div').get_on_handler('click', selection);
     var e = {
         stopPropagation: noop,
     };
