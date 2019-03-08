@@ -37,6 +37,7 @@ from zerver.lib.send_email import FromAddress
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr
 
 import ujson
 import mock
@@ -259,6 +260,17 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(message.content, "From: %s\n%s" % (self.example_email('hamlet'),
                                                             "TestStreamEmailMessages Body"))
+        self.assertEqual(get_display_recipient(message.recipient), stream.name)
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
+
+        # make sure From: <sender> line isn't included if the sender name is 'Hide sender'
+        address_tuple = ('Hide sender', self.example_email('hamlet'))
+        del incoming_valid_message['From']
+        incoming_valid_message['From'] = formataddr(address_tuple)
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "TestStreamEmailMessages Body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 

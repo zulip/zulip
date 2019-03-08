@@ -4,7 +4,7 @@ import logging
 import re
 
 from email.header import decode_header, make_header
-from email.utils import getaddresses
+from email.utils import getaddresses, parseaddr
 import email.message as message
 
 from django.conf import settings
@@ -144,8 +144,9 @@ def construct_zulip_body(message: message.Message, realm: Realm,
     if not body:
         body = '(No email body)'
 
-    if show_sender:
-        sender = message.get("From")
+    sender = message.get("From")
+    assert isinstance(sender, str)
+    if show_sender and parseaddr(sender)[0].lower() != 'hide sender':
         body = "From: %s\n%s" % (sender, body)
 
     return body
