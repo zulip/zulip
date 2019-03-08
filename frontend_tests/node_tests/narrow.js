@@ -111,6 +111,7 @@ run_test('show_empty_narrow_message', () => {
 
     // for non sub public stream
     stream_data.add_sub('ROME', {name: 'ROME', stream_id: 99});
+    stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([['stream', 'Rome']]);
     narrow.show_empty_narrow_message();
     assert($('#nonsubbed_stream_narrow_message').visible());
