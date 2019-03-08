@@ -166,12 +166,12 @@ exports.initialize_kitchen_sink_stuff = function () {
         message_unhover();
     });
 
-    $("#main_div").on("mouseover", ".message_sender", function () {
+    $("#main_div").on("mouseover", ".sender_info_hover", function () {
         var row = $(this).closest(".message_row");
         row.addClass("sender_name_hovered");
     });
 
-    $("#main_div").on("mouseout", ".message_sender", function () {
+    $("#main_div").on("mouseout", ".sender_info_hover", function () {
         var row = $(this).closest(".message_row");
         row.removeClass("sender_name_hovered");
     });
