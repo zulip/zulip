@@ -1,3 +1,4 @@
+# Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 
 from zerver.lib.logging_util import log_to_file
 from collections import defaultdict
@@ -95,6 +96,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
       subscribed/unsubscribed.
 
     * Create the UserMessage rows.
+
+    For further documentation, see:
+
+      https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 
     """
     assert user_profile.last_active_message_id is not None

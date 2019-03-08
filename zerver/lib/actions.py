@@ -1488,6 +1488,9 @@ def create_user_messages(message: Message,
     #   case the notifications code will call `access_message` on the
     #   message to re-verify permissions, and for private streams,
     #   will get an error if the UserMessage row doesn't exist yet.
+    #
+    # See https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
+    # for details on this system.
     user_messages = []
     for um in ums_to_create:
         if (um.user_profile_id in long_term_idle_user_ids and
