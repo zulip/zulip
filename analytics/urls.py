@@ -7,6 +7,8 @@ i18n_urlpatterns = [
     # Server admin (user_profile.is_staff) visible stats pages
     url(r'^activity$', analytics.views.get_activity,
         name='analytics.views.get_activity'),
+    url(r'^activity/support$', analytics.views.support,
+        name='analytics.views.support'),
     url(r'^realm_activity/(?P<realm_str>[\S]+)/$', analytics.views.get_realm_activity,
         name='analytics.views.get_realm_activity'),
     url(r'^user_activity/(?P<email>[\S]+)/$', analytics.views.get_user_activity,

@@ -1,0 +1,115 @@
+{% extends "zerver/base.html" %}
+
+{# User Activity. #}
+
+{% block title %}
+<title>Info</title>
+{% endblock %}
+
+
+{% block customhead %}
+{{ super() }}
+{{ render_bundle('activity') }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <br>
+    <form>
+        <center>
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="{{ _('email, string_id, organization url combination separated by comma') }}" value="{{ request.GET.get('q', '') }}">
+            <button type="submit" class="btn support-search-button">Search</button>
+        </center>
+    </form>
+
+    {% if plan_type_msg %}
+    <div class="alert alert-success">
+        <center>
+            {{ plan_type_msg }}
+        </center>
+    </div>
+    {% endif %}
+
+    {% if discount_msg %}
+    <div class="alert alert-success">
+        <center>
+            {{ discount_msg }}
+        </center>
+    </div>
+    {% endif %}
+
+    <div id="query-results">
+        {% for user in users %}
+        <div class="support-query-result">
+            <span class="label">user</span>
+            <h3>{{ user.full_name }}</h3>
+            <b>Email</b>: {{ user.email }}<br>
+            <b>Date joined</b>: {{ user.date_joined|timesince }} before<br>
+            <b>Is active</b>: {{ user.is_active }}<br>
+            <b>Is admin</b>: {{ user.is_realm_admin }}<br>
+            <br>
+            <div>
+                <span class="label">realm</span>
+                <h3><img src="{{ user.realm.realm_icon_url }}" class="support-realm-icon"> {{ user.realm.name }}</h3>
+                <b>URL</b>: <a target="_blank" href="{{ user.realm.uri }}">{{ user.realm.uri }}</a><br>
+                <b>Date created</b>: {{ user.realm.date_created|timesince }} before<br>
+                <b>Is active</b>: {{ not user.realm.deactivated }}<br>
+                <b>Admins</b>: {% for admin in user.realm.admins %}{{ admin.email }} {% endfor %}<br>
+                <form method="POST">
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
+                    <b>Plan type</b>:<br>
+                    <select name="plan_type">
+                        <option value="1" {% if user.realm.plan_type == 1 %}selected{% endif %}>Self Hosted</option>
+                        <option value="2" {% if user.realm.plan_type == 2 %}selected{% endif %}>Limited</option>
+                        <option value="3" {% if user.realm.plan_type == 3 %}selected{% endif %}>Standard</option>
+                        <option value="4" {% if user.realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
+                    </select>
+                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                </form>
+                <form method="POST" class="support-discount-form">
+                    <b>Discount</b>:<br>
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ user.realm.id }}" />
+                    <input type="number" name="discount" value="{{user.realm.default_discount}}" required>
+                    <button type="submit" class="btn btn-small support-submit-button">Update</button>
+                </form>
+            </div>
+            <hr>
+        </div>
+        {% endfor %}
+
+        {% for realm in realms %}
+        <div class="support-query-result">
+            <span class="label">realm</span>
+            <h3><img src="{{ realm.realm_icon_url }}" class="support-realm-icon"> {{ realm.name }}</h3>
+            <b>URL</b>: <a target="_blank" href="{{ realm.uri }}">{{ realm.uri }}</a><br>
+            <b>Date created</b>: {{ realm.date_created|timesince }} before<br>
+            <b>Is active</b>: {{ not realm.deactivated }}<br>
+            <b>Admins</b>: {% for admin in realm.admins %}{{ admin.email }} {% endfor %}<br>
+            <b>Plan type</b>:
+            <form method="POST">
+                {{ csrf_input }}
+                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                <select name="plan_type">
+                    <option value="1" {% if realm.plan_type == 1 %}selected{% endif %}>Self Hosted</option>
+                    <option value="2" {% if realm.plan_type == 2 %}selected{% endif %}>Limited</option>
+                    <option value="3" {% if realm.plan_type == 3 %}selected{% endif %}>Standard</option>
+                    <option value="4" {% if realm.plan_type == 4 %}selected{% endif %}>Standard Free</option>
+                </select>
+                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+            </form>
+            <form method="POST" class="support-discount-form">
+                <b>Discount</b>:<br>
+                {{ csrf_input }}
+                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                <input type="number" name="discount" value="{{ realm.default_discount}}" required>
+                <button type="submit" class="btn btn-small support-submit-button">Update</button>
+            </form>
+            <hr>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

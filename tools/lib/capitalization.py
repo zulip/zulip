@@ -104,6 +104,7 @@ IGNORED_PHRASES = [
     r"an unknown operating system",
     r"Go to Settings",
     r"Like Organization logo",
+    r"email, string_id, organization url combination separated by comma",
 
     # SPECIAL CASES
     # Enter is usually capitalized
