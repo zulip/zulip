@@ -357,7 +357,6 @@ exports.initialize_everything = function () {
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();
-    night_mode.initialize();
     panels.initialize();
     typing.initialize();
     starred_messages.initialize();
