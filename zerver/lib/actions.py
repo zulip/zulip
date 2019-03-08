@@ -719,6 +719,14 @@ def do_deactivate_user(user_profile: UserProfile,
     if not user_profile.is_active:
         return
 
+    if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
+        # For zephyr mirror users, we need to make them a mirror dummy
+        # again; otherwise, other users won't get the correct behavior
+        # when trying to send messages to this person inside Zulip.
+        #
+        # Ideally, we need to also ensure their zephyr mirroring bot
+        # isn't running, but that's a separate issue.
+        user_profile.is_mirror_dummy = True
     user_profile.is_active = False
     user_profile.save(update_fields=["is_active"])
 
