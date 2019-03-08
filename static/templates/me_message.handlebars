@@ -1,14 +1,18 @@
-<span class="sender-status">
-    <span class="sender_name-in-status auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
-    {{#if sender_is_bot}}
-    <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
-    {{/if}}
+<span class="message_sender no-select">
+    {{partial "message_avatar"}}
 
-    <span class="status-message auto-select">
-        {{{ status_message }}}
+    <span class="sender-status">
+        <span class="sender_name-in-status auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
+        {{#if sender_is_bot}}
+        <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+        {{/if}}
+
+        <span class="status-message auto-select">
+            {{{ status_message }}}
+        </span>
+
+        {{#if_and last_edit_timestr include_sender}}
+        {{partial "edited_notice"}}
+        {{/if_and}}
     </span>
-
-    {{#if_and last_edit_timestr include_sender}}
-    {{partial "edited_notice"}}
-    {{/if_and}}
 </span>
