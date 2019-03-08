@@ -773,13 +773,14 @@ exports.initialize = function () {
             if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
                 $("#compose-textarea").focus();
-            } else if (!$(e.target).closest(".overlay").length &&
-                       !window.getSelection().toString() &&
-                       !$(e.target).closest('.popover-content').length &&
-                       // The "full user profile" modal doesn't use
-                       // either the full popover system or the
-                       // overlays system, so it needs semi-duplicate
-                       // checks here.
+                return;
+            } else if (!window.getSelection().toString() &&
+                       // Clicks inside an overlay, popover, custom
+                       // modal, or backdrop of one of the above
+                       // should not have any effect on the compose
+                       // state.
+                       !$(e.target).closest(".overlay").length &&
+                       !$(e.target).closest('.popover').length &&
                        !$(e.target).closest(".modal").length &&
                        !$(e.target).closest(".modal-backdrop").length &&
                        $(e.target).closest('body').length) {
