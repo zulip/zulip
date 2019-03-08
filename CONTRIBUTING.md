@@ -92,10 +92,12 @@ on.
   [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile),
   [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop), or
   [#integration](https://chat.zulip.org/#narrow/stream/127-integrations).
-* For the main server and web repository, start by looking through issues
-  with the label
-  [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue").
-  These are smaller projects particularly suitable for a first contribution.
+* For the main server and web repository, we recommend browsing
+  recently opened issues to look for issues you are confident you can
+  fix correctly in a way that clearly communicates why your changes
+  are the correct fix.  Our GitHub workflow bot, zulipbot, limits
+  users who have 0 commits merged to claiming a single issue labeled
+  with "good first issue" or "help wanted".
 * We also partition all of our issues in the main repo into areas like
   admin, compose, emoji, hotkeys, i18n, onboarding, search, etc. Look
   through our [list of labels](https://github.com/zulip/zulip/labels), and
@@ -119,11 +121,17 @@ Other notes:
 * For a first pull request, it's better to aim for a smaller contribution
   than a bigger one. Many first contributions have fewer than 10 lines of
   changes (not counting changes to tests).
-* The full list of issues looking for a contributor can be found with the
+* The full list of issues explicitly looking for a contributor can be
+  found with the
   [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
   and
   [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-  labels.
+  labels.  Avoid issues with the "difficult" label unless you
+  understand why it is difficult and are confident you can resolve the
+  issue correctly and completely.  Issues without one of these labels
+  are fair game if Tim has written a clear technical design proposal
+  in the issue, or it is a bug that you can reproduce and you are
+  confident you can fix the issue correctly.
 * For most new contributors, there's a lot to learn while making your first
   pull request. It's OK if it takes you a while; that's normal! You'll be
   able to work a lot faster as you build experience.
