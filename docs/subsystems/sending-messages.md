@@ -83,7 +83,10 @@ number of purposes:
    * Store one `UserMessage` row in the database for each user who is
      a recipient of the message (including the sender), with
      appropriate `flags` for whether the user was mentioned, an alert
-     word appears, etc.
+     word appears, etc.  See
+     [the section on soft deactivation](#soft-deactivation) for
+     a clever optimization we use here that is important for large
+     open organizations.
    * Do all the database queries to fetch relevant data for and then
      send a `message` event to the
      [events system](../subsystems/events-system.html) containing the
@@ -278,3 +281,142 @@ updated message `rendered_content`.
 * We reuse the `update_message` framework (used for
 Zulip's message editing feature) in order to avoid needing custom code
 to implement the notification-and-rerender part of this implementation.
+
+## Soft deactivation
+
+This section details a somewhat subtle issue: How Zulip uses a
+user-invisible technique called "soft deactivation" to handle
+scalability to communities with many thousands of inactive users.
+
+For background, Zulip’s threading model requires tracking which
+individual messages each user has received and read (in other chat
+products, the system either doesn’t track what the user has read at
+all, or just needs to store a pointer for “how far the user has read”
+in each room, channel, or stream).
+
+We track these data in the backend in the `UserMessage` table, storing
+rows `(message_id, user_id, flags)`, where `flags` is 32 bits of space
+for boolean data like whether the user has read or starred the
+message.  All the key queries needed for accessing message history,
+full-text search, and other key features can be done efficiently with
+the database indexes on this table (with joins to the `Message` table
+containing the actual message content where required).
+
+The downside of this design is that when a new message is sent to a
+stream with `N` recipients, we need to write `N` rows to the
+`UserMessage` table to record those users receiving those messages.
+Each row is just 3 integers in size, but even with modern databases
+and SSDs, writing thousands of rows to a database starts to take a few
+seconds.
+
+This isn’t a problem for most Zulip servers, but is a major problem
+for communities like chat.zulip.org, where might be 10,000s of
+inactive users who only stopped by briefly to check out the product or
+ask a single question, but are subscribed to whatever the default
+streams in the organization are.
+
+The total amount of work being done here was acceptable (a few seconds
+of total CPU work per message to large public streams), but the
+latency was unacceptable: The server backend was introducing a latency
+of about 1 second per 2000 users subscribed to receive the message.
+While these delays may not be immediately obvious to users (Zulip,
+like many other chat applications,
+[local echoes](../subsystems/markdown.html) messages that a user sends
+as soon as the user hits “send”), latency beyond a second or two
+significantly impacts the feeling of interactivity in a chat
+experience (i.e. it feels like everyone takes a long time to reply to
+even simple questions).
+
+A key insight for addressing this problem is that there isn’t much of
+a use case for long chat discussions among 1000s of users who are all
+continuously online and actively participating.  Streams with a very
+large number of active users are likely to only be used for occasional
+announcements, where some latency before everyone sees the message is
+fine.  Even in giant organizations, almost all messages are sent to
+smaller streams with dozens or hundreds of active users, representing
+some organizational unit within the community or company.
+
+However, large, active streams are common in open source projects,
+standards bodies, professional development groups, and other large
+communities with the rough structure of the Zulip development
+community.  These communities usually have thousands of user accounts
+subscribed to all the default streams, even if they only have dozens
+or hundreds of those users active in any given month. Many of the
+other accounts may be from people who signed up just to check the
+community out, or who signed up to ask a few questions and may never
+be seen again.
+
+The key technical insight is that if we can make the latency scale
+with the number of users who actually participate in the community,
+not the total size of the community, then our database write limited
+send latency of 1 second per 2000 users is totally fine.  But we need
+to do this in a way that doesn’t create problems if any of the
+thousands of “inactive” users come back (or one of the active users
+sends a private message to one of the inactive users), since it’s
+impossible for the software to know which users are eventually coming
+back or will eventually be interacted with by an existing user.
+
+We solved this problem with a solution we call “soft deactivation”;
+users that are soft-deactivated consume less resources from Zulip in a
+way that is designed to be invisible both to other users and to the
+user themself.  If a user hasn’t logged into a given Zulip
+organization for a few weeks, they are tagged as soft-deactivated.
+
+The way this works internally is:
+
+* We (usually) skip creating UserMessage rows for soft-deactivated
+users when a message is sent to a stream where they are subscribed.
+
+* If/when the user ever returns to Zulip, we can at that time
+reconstruct the UserMessage rows that they missed, and create the rows
+at that time (or, to avoid a latency spike if/when the user returns to
+Zulip, this work can be done in a nightly cron job).  We can construct
+those rows later because we already have the data for when the user
+might have been subscribed or unsubscribed from streams by other
+users, and, importantly, we also know that the user didn’t interact
+with the UI since the message was sent (and thus we can safely assume
+that the messages has not been marked a read by the user).  This is
+done in the `add_missing_messages` function, which is the core of the
+soft-deactivation implementation.
+
+* The “usually” above is because there are a few flags that result
+from content in the message (e.g., a message that mentions a user
+results in a “mentioned” flag in the UserMessage row), that we need to
+keep track of.  Since parsing a message can be expensive (>10ms of
+work, depending on message content), it would be too inefficient to
+need to re-parse every message when a soft-deactivated user comes back
+to Zulip.  Conveniently, those messages are rare, and so we can just
+create UserMessage rows which would have “interesting” flags at the
+time they were sent without any material performance impact.  And then
+`add_missing_messages` skips any messages that already have a
+`UserMessage` row for that user when doing its backfill.
+
+The end result is the best of both worlds:
+
+* Nobody's view of the world is different because the user was
+soft-deactivated (resulting in no visible user-experience impact), at
+least if one is running the cron job.  If one does not run the cron
+job, then users returning after being away for a very long time will
+potentially have a (very) slow loading experience as potentially
+100,000s of UserMessage rows might need to be reconstructed at once.
+* On the latency-sensitive message sending and fanout code path, the
+server only needs to do work for users who are currently interacting
+with Zulip.
+
+Empirically, we've found this technique completely resolved the "send
+latency" scaling problem.  The latency of sending a message to a stream
+now scales only with the number of active subscribers, so one can send
+a message to a stream with 5K subscribers of which 500 are active, and
+it’ll arrive in the couple hundred milliseconds one would expect if
+the extra 4500 inactive subscribers didn’t exist.
+
+There are a few details that require special care with this system:
+* Email and mobile push notifications.  We need to make sure these are
+  still correctly delivered to soft-deactivated users; making this
+  work required careful work for those code paths that assumed a
+  `UserMessage` row would always exist for a message that triggers a
+  notification to a given user.
+* Digest emails, which use the `UserMessage` table extensively to
+  determine what has happened in streams the user can see.  We can use
+  the user's subscriptions to construct what messages they should have
+  access to for this feature.
