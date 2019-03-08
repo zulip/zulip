@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import mock
 from django.utils.timezone import utc
+from django.http import HttpResponse
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -326,6 +327,94 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get('/json/analytics/chart_data/installation',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
+
+class TestSupportEndpoint(ZulipTestCase):
+    def test_search(self) -> None:
+        def check_hamlet_user_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<span class="label">user</span>\n', '<h3>King Hamlet</h3>',
+                                             '<b>Email</b>: hamlet@zulip.com', '<b>Is active</b>: True<br>',
+                                             '<b>Admins</b>: iago@zulip.com <br>'], result)
+
+        def check_zulip_realm_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<input type="hidden" name="realm_id" value="1"', 'Zulip Dev</h3>',
+                                             '<option value="1" selected>Self Hosted</option>',
+                                             '<option value="2" >Limited</option>',
+                                             'input type="number" name="discount" value="None"'], result)
+
+        def check_lear_realm_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(['<input type="hidden" name="realm_id" value="3"', 'Lear &amp; Co.</h3>',
+                                             '<option value="1" selected>Self Hosted</option>',
+                                             '<option value="2" >Limited</option>',
+                                             'input type="number" name="discount" value="None"'], result)
+
+        cordelia_email = self.example_email("cordelia")
+        self.login(cordelia_email)
+
+        result = self.client_get("/activity/support")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago_email = self.example_email("iago")
+        self.login(iago_email)
+
+        result = self.client_get("/activity/support")
+        self.assert_in_success_response(['<input type="text" name="q" class="input-xxlarge search-query"'], result)
+
+        result = self.client_get("/activity/support", {"q": "hamlet@zulip.com"})
+        check_hamlet_user_result(result)
+        check_zulip_realm_result(result)
+
+        result = self.client_get("/activity/support", {"q": "lear"})
+        check_lear_realm_result(result)
+
+        result = self.client_get("/activity/support", {"q": "http://lear.testserver"})
+        check_lear_realm_result(result)
+
+        with self.settings(REALM_HOSTS={'zulip': 'localhost'}):
+            result = self.client_get("/activity/support", {"q": "http://localhost"})
+            check_zulip_realm_result(result)
+
+        result = self.client_get("/activity/support", {"q": "hamlet@zulip.com, lear"})
+        check_hamlet_user_result(result)
+        check_zulip_realm_result(result)
+        check_lear_realm_result(result)
+
+        result = self.client_get("/activity/support", {"q": "lear, Hamlet <hamlet@zulip.com>"})
+        check_hamlet_user_result(result)
+        check_zulip_realm_result(result)
+        check_lear_realm_result(result)
+
+    def test_change_plan_type(self) -> None:
+        cordelia_email = self.example_email("cordelia")
+        self.login(cordelia_email)
+
+        result = self.client_post("/activity/support", {"realm_id": "1", "plan_type": "2"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago_email = self.example_email("iago")
+        self.login(iago_email)
+
+        with mock.patch("analytics.views.do_change_plan_type") as m:
+            result = self.client_post("/activity/support", {"realm_id": "1", "plan_type": "2"})
+            m.assert_called_once_with(get_realm("zulip"), 2)
+            self.assert_in_success_response(["Plan type of Zulip Dev changed to limited from self hosted"], result)
+
+    def test_attach_discount(self) -> None:
+        cordelia_email = self.example_email("cordelia")
+        self.login(cordelia_email)
+
+        result = self.client_post("/activity/support", {"realm_id": "3", "discount": "25"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago_email = self.example_email("iago")
+        self.login(iago_email)
+
+        with mock.patch("analytics.views.attach_discount_to_realm") as m:
+            result = self.client_post("/activity/support", {"realm_id": "3", "discount": "25"})
+            m.assert_called_once_with(get_realm("lear"), 25)
+            self.assert_in_success_response(["Discount of Lear &amp; Co. changed to 25 from None"], result)
 
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is

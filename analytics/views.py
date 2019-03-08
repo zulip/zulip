@@ -3,8 +3,11 @@ import itertools
 import logging
 import re
 import time
+import urllib
 from collections import defaultdict
 from datetime import datetime, timedelta
+from decimal import Decimal
+
 from typing import Any, Callable, Dict, List, \
     Optional, Set, Tuple, Type, Union, cast
 
@@ -18,6 +21,8 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
 from django.utils.translation import ugettext as _
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from jinja2 import Markup as mark_safe
 
 from analytics.lib.counts import COUNT_STATS, CountStat
@@ -31,6 +36,14 @@ from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC, timestamp_to_datetime
+from zerver.lib.realm_icon import realm_icon_url
+from zerver.views.invite import get_invitee_emails_set
+from zerver.lib.subdomains import get_subdomain_from_hostname
+from zerver.lib.actions import do_change_plan_type
+
+if settings.BILLING_ENABLED:
+    from corporate.lib.stripe import attach_discount_to_realm, get_discount_for_realm
+
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
@@ -1012,6 +1025,66 @@ def get_activity(request: HttpRequest) -> HttpResponse:
         'analytics/activity.html',
         context=dict(data=data, title=title, is_home=True),
     )
+
+@require_server_admin
+def support(request: HttpRequest) -> HttpResponse:
+    context = {}  # type: Dict[str, Any]
+    if settings.BILLING_ENABLED and request.method == "POST":
+        realm_id = request.POST.get("realm_id", None)
+        realm = Realm.objects.get(id=realm_id)
+
+        new_plan_type = request.POST.get("plan_type", None)
+        if new_plan_type is not None:
+            new_plan_type = int(new_plan_type)
+            current_plan_type = realm.plan_type
+            do_change_plan_type(realm, new_plan_type)
+            msg = "Plan type of {} changed to {} from {} ".format(realm.name, get_plan_name(new_plan_type),
+                                                                  get_plan_name(current_plan_type))
+            context["plan_type_msg"] = msg
+
+        new_discount = request.POST.get("discount", None)
+        if new_discount is not None:
+            new_discount = Decimal(new_discount)
+            current_discount = get_discount_for_realm(realm)
+            attach_discount_to_realm(realm, new_discount)
+            msg = "Discount of {} changed to {} from {} ".format(realm.name, new_discount, current_discount)
+            context["discount_msg"] = msg
+
+    query = request.GET.get("q", None)
+    if query:
+        key_words = get_invitee_emails_set(query)
+
+        users = UserProfile.objects.filter(email__in=key_words)
+        if users:
+            for user in users:
+                user.realm.realm_icon_url = realm_icon_url(user.realm)
+                user.realm.admins = UserProfile.objects.filter(realm=user.realm, is_realm_admin=True)
+                user.realm.default_discount = get_discount_for_realm(user.realm)
+            context["users"] = users
+
+        realms = set(Realm.objects.filter(string_id__in=key_words))
+
+        for key_word in key_words:
+            try:
+                URLValidator()(key_word)
+                parse_result = urllib.parse.urlparse(key_word)
+                hostname = parse_result.hostname
+                if parse_result.port:
+                    hostname = "{}:{}".format(hostname, parse_result.port)
+                subdomain = get_subdomain_from_hostname(hostname)
+                realm = get_realm(subdomain)
+                if realm is not None:
+                    realms.add(realm)
+            except ValidationError:
+                pass
+
+        if realms:
+            for realm in realms:
+                realm.realm_icon_url = realm_icon_url(realm)
+                realm.admins = UserProfile.objects.filter(realm=realm, is_realm_admin=True)
+                realm.default_discount = get_discount_for_realm(realm)
+            context["realms"] = realms
+    return render(request, 'analytics/support.html', context=context)
 
 def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
     fields = [

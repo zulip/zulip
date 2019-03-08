@@ -48,3 +48,36 @@ tr.admin td:first-child {
     font-weight: bold;
     color: hsl(0, 100%, 39%);
 }
+
+.support-query-result {
+    background-color: hsl(210, 100%, 97%);
+    padding-left: 15px;
+    padding-top: 14px;
+    border-radius: 7px;
+    -webkit-box-shadow: 0 10px 7px -6px hsl(0, 2%, 45%);
+    -moz-box-shadow: 0 10px 7px -6px hsl(0, 2%, 45%);
+    box-shadow: 0 10px 7px -6px hsl(0, 2%, 45%);
+}
+
+.support-realm-icon {
+    max-width: 25px;
+    position: relative;
+    top: -2px;
+}
+
+.support-discount-form {
+    position: relative;
+    top: -25px;
+}
+
+.support-submit-button {
+    position: relative;
+    top: -5px;
+    border-color: hsl(0, 0%, 83%);
+    border-radius: 2px;
+}
+
+.support-search-button {
+    border-color: hsl(0, 0%, 83%);
+    border-radius: 2px;
+}
