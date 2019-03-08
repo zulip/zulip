@@ -442,6 +442,9 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
 
     return result
 
+def get_plan_name(plan_type: int) -> str:
+    return ['', 'self hosted', 'limited', 'standard', 'open source'][plan_type]
+
 def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     now = timezone_now()
 
@@ -564,8 +567,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
-        row['plan_type_string'] = [
-            '', 'self hosted', 'limited', 'standard', 'open source'][row['plan_type']]
+        row['plan_type_string'] = get_plan_name(row['plan_type'])
         row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
