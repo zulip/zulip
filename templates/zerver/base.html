@@ -40,7 +40,7 @@
         {% endblock %}
     </head>
 
-    <body>
+    <body {% if night_mode %}class="night-mode"{% endif %}>
         {% block content %}
         {% endblock %}
     </body>

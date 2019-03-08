@@ -2,12 +2,6 @@ var night_mode = (function () {
 
 var exports = {};
 
-exports.initialize = function () {
-    if (page_params.night_mode) {
-        exports.enable();
-    }
-};
-
 exports.enable = function () {
     $("body").addClass("night-mode");
 };
