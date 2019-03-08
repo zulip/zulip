@@ -343,6 +343,11 @@ exports.launch = function () {
     exports.remove_old_drafts();
     var drafts = format_drafts(draft_model.get());
     render_widgets(drafts);
+
+    // We need to force a style calculation on the newly created
+    // element in order for the CSS transition to take effect.
+    $('#draft_overlay').css('opacity');
+
     exports.open_modal();
     exports.set_initial_element(drafts);
     setup_event_handlers();
