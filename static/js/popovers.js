@@ -656,7 +656,12 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
         var user = people.get_person_from_user_id(message.sender_id);
-        show_user_info_popover(this, user, message);
+
+        // For /me says hi, the avatar and sender-name have individual
+        // sender_info_hover spans, and we the last one.
+        var elt = row.find('.sender_info_hover').last()[0];
+
+        show_user_info_popover(elt, user, message);
     });
 
     $("#main_div").on("click", ".user-mention", function (e) {
