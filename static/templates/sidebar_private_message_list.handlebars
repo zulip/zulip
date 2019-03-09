@@ -3,24 +3,27 @@
         {{#each messages}}
         <li class='{{#if is_zero}}zero-pm-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-user-ids-string='{{user_ids_string}}'>
             <span class='pm-box'>
+                {{#if is_group}}
+                    {{#if fraction_present}}
+                    <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
 
-                <div class="pm_left_col">
-                    {{#if is_group}}
-                        {{#if fraction_present}}
-                        <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
-                        {{else}}
-                        <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
-                        {{/if}}
+                    <a href='{{url}}' class="conversation-partners show_group_pm" data-user-ids="{{user_ids_string}}">
+                        {{recipients}}
+                    </a>
                     {{else}}
-                        <span class="{{user_circle_class}} user_circle"></span>
+                    <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
+
+                    <a href='{{url}}' class="conversation-partners show_group_pm" data-user-ids="{{user_ids_string}}">
+                        {{recipients}}
+                    </a>
                     {{/if}}
                 {{else}}
-                    <span class="{{user_circle_class}} user_circle" title={{user_circle_status}}></span>
-                {{/if}}
+                    <span class="{{user_circle_class}} user_circle user_circle_individual_pm" data-user-id="{{user_id}}"></span>
 
-                <a href='{{url}}' class="conversation-partners" title="{{title_hover}}">
-                    {{recipients}}
-                </a>
+                    <a href='{{url}}' class="conversation-partners show_individual_pm" data-user-id="{{user_id}}">
+                        {{recipients}}
+                    </a>
+                {{/if}}
                 <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
                     <div class="value">{{unread}}</div>
                 </div>

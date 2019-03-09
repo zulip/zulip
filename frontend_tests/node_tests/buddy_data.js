@@ -25,12 +25,6 @@ const me = {
     email: 'self@example.com',
 };
 
-const long_name_user = {
-    user_id: 9998,
-    full_name: 'Long Name User, The Longest Name Of them All',
-    email: 'long_name_user@example.com',
-};
-
 const old_user = {
     user_id: 9999,
     full_name: 'Old User',
@@ -57,7 +51,6 @@ function make_people() {
     people.add_in_realm(bot);
     people.add_in_realm(selma);
     people.add_in_realm(me);
-    people.add_in_realm(long_name_user);
     people.add_in_realm(old_user);
 
     people.initialize_current_user(me.user_id);
@@ -75,7 +68,6 @@ function activate_people() {
     // Make 400 of the users active
     presence.set_info_for_user(selma.user_id, info, server_time);
     presence.set_info_for_user(me.user_id, info, server_time);
-    presence.set_info_for_user(long_name_user.user_id, info, server_time);
 
     _.each(_.range(1000, 1400), (user_id) => {
         presence.set_info_for_user(user_id, info, server_time);
@@ -123,18 +115,14 @@ run_test('buddy_status', () => {
 run_test('user_title', () => {
     // Users without a Status Message
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\ntranslated: Online now');
+                 'Human Myself<br />translated: Online now');
     // Show "Last Online: Today" is user is unavailable.
     user_status.set_away(me.user_id);
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\nLast online: Today');
+                 'Human Myself<br />Last online: Today');
     user_status.revoke_away(me.user_id);
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\ntranslated: Online now');
-
-    // User with a very long Name.
-    assert.equal(buddy_data.user_title(long_name_user.user_id),
-                 'Long Name User, The Longest Na\nme Of them All\ntranslated: Online now');
+                 'Human Myself<br />translated: Online now');
 
     // User with a Status Message set.
     user_status.set_status_text({
@@ -142,27 +130,20 @@ run_test('user_title', () => {
         status_text: 'out to lunch',
     });
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\nout to lunch\ntranslated: Online now');
+                 'Human Myself<br />out to lunch<br />translated: Online now');
+
     // Show "Last Online: Today" is user(with status message) is unavailable.
     user_status.set_away(me.user_id);
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\nout to lunch\nLast online: Today');
+                 'Human Myself<br />out to lunch<br />Last online: Today');
     user_status.revoke_away(me.user_id);
     assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\nout to lunch\ntranslated: Online now');
-
-    // User with a very long Status Message.
-    user_status.set_status_text({
-        user_id: me.user_id,
-        status_text: 'Status Messages over 30 Characters are broken up',
-    });
-    assert.equal(buddy_data.user_title(me.user_id),
-                 'Human Myself\nStatus Messages over 30 Charac\nters are broken up\ntranslated: Online now');
+                 'Human Myself<br />out to lunch<br />translated: Online now');
 
     // User currently not active.
     page_params.realm_is_zephyr_mirror_realm = false;
     assert.equal(buddy_data.user_title(old_user.user_id),
-                 'Old User\nLast online: translated: More than 2 weeks ago');
+                 'Old User<br />Last online: translated: More than 2 weeks ago');
 
     // User currently not active with Status Message set.
     user_status.set_status_text({
@@ -170,9 +151,7 @@ run_test('user_title', () => {
         status_text: 'out to lunch',
     });
     assert.equal(buddy_data.user_title(old_user.user_id),
-                 'Old User\nout to lunch\nLast online: translated: More than 2 weeks ago');
-
-
+                 'Old User<br />out to lunch<br />Last online: translated: More than 2 weeks ago');
 });
 
 run_test('simple search', () => {
@@ -187,10 +166,10 @@ run_test('bulk_data_hacks', () => {
     // Even though we have 1000 users, we only get the 400 active
     // users.  This is a consequence of buddy_data.maybe_shrink_list.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(user_ids.length, 401);
+    assert.equal(user_ids.length, 400);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
-    assert.equal(user_ids.length, 401);
+    assert.equal(user_ids.length, 400);
 
     // We don't match on "so", because it's not at the start of a
     // word in the name/email.
@@ -212,7 +191,7 @@ run_test('bulk_data_hacks', () => {
     buddy_data.max_size_before_shrinking = 50000;
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
-    assert.equal(user_ids.length, 701);
+    assert.equal(user_ids.length, 700);
 });
 
 run_test('level', () => {

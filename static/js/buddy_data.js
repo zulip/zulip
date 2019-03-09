@@ -179,41 +179,31 @@ exports.user_title = function (user_id) {
     var name = person.full_name;
     var title;
 
-    // Wrap Names longer than 30 characters
-    if (name.length > 30) {
-        name = name.slice(0, 30) + '\n' + name.slice(30);
-    }
-
     if (status_text) {
-        // Wrap Status texts longer than 30 characters
-        if (status_text.length > 30) {
-            status_text = status_text.slice(0, 30) + '\n' + status_text.slice(30);
-        }
-
         if (user_status.is_away(user_id)) {
             // Show "Last Online: Today" is user is unavailable.
-            title = name + '\n' + status_text + '\n' + 'Last online: Today';
+            title = name + '<br />' + status_text + '<br />' + 'Last online: Today';
         } else {
             // example: "Cordelia Lear
             //           Out to Lunch
             //           Last Online: 57 minutes ago"
             if (last_seen.indexOf("Online now") !== -1) {
-                title = name + '\n' + status_text + '\n' + last_seen;
+                title = name + '<br />' + status_text + '<br />' + last_seen;
             } else {
-                title = name + '\n' + status_text + '\n' + 'Last online: ' + last_seen;
+                title = name + '<br />' + status_text + '<br />' + 'Last online: ' + last_seen;
             }
         }
     } else {
         if (user_status.is_away(user_id)) {
             // Show "Last Online: Today" is user is unavailable.
-            title = name + '\n' + 'Last online: Today';
+            title = name + '<br />' + 'Last online: Today';
         } else {
             // example: "Cordelia Lear
             //           Last Online: 57 minutes ago"
             if (last_seen.indexOf("Online now") !== -1) {
-                title = name + '\n' + last_seen;
+                title = name + '<br />' + last_seen;
             } else {
-                title = name + '\n' + 'Last online: ' + last_seen;
+                title = name + '<br />' + 'Last online: ' + last_seen;
             }
         }
     }
@@ -225,7 +215,6 @@ exports.info_for = function (user_id) {
     var user_circle_class = exports.get_user_circle_class(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
-    var title = exports.user_title(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -235,8 +224,6 @@ exports.info_for = function (user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class: user_circle_class.circle_color,
-        title: title,
-        user_circle_status: user_circle_class.user_circle_status,
     };
 };
 
