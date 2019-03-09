@@ -402,7 +402,7 @@ Do these tasks as Cordelia.
 
 - Your account
     - Change full name (Hamlet should see the name change)
-    - Customize avatar
+    - Customize profile picture
     - Deactivate account (and then log in as Iago to re-activate Cordelia)
 - Display settings
     - Right now, these unfortunately require reloads to take effect.

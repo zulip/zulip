@@ -280,7 +280,7 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # "file:///" as a hyperlink (useful if you have e.g. an NFS share).
 ENABLE_FILE_LINKS = False
 
-# By default, files uploaded by users and user avatars are stored
+# By default, files uploaded by users and profile pictures are stored
 # directly on the Zulip server.  You can configure files being instead
 # stored in Amazon S3 or another scalable data store here.  See docs at:
 #
@@ -476,7 +476,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # "first_name": "fn",
     # "last_name": "ln",
 
-    # User avatars can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
+    # Profile pictures can be pulled from the LDAP "thumbnailPhoto"/"jpegPhoto" field.
     # "avatar": "thumbnailPhoto",
 
     # This line is for having Zulip to automatically deactivate users

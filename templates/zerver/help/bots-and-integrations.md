@@ -20,9 +20,9 @@ integration with an existing product, see our
 ## Anatomy of a bot
 
 You can think of a bot as a special kind of user, with limited permissions.
-Each bot has a **name**, **avatar**, **email**, **bot type** and **API key**.
+Each bot has a **name**, **profile picture**, **email**, **bot type** and **API key**.
 
-* The **name** and **avatar** play the same role they do for human users. They
+* The **name** and **profile picture** play the same role they do for human users. They
 are the most visible attributes of a bot.
 
 * The **email** is not used for anything, and will likely be removed in a

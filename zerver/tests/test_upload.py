@@ -1055,7 +1055,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_avatar(self) -> None:
         """
-        A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
+        A DELETE request to /json/users/me/avatar should delete the profile picture and return gravatar URL
         """
         self.login(self.example_email("hamlet"))
         hamlet = self.example_user('hamlet')
