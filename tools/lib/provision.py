@@ -35,6 +35,7 @@ SUPPORTED_PLATFORMS = {
         "trusty",
         "xenial",
         "bionic",
+        "cosmic",
     ],
     "Debian": [
         "stretch",
@@ -130,6 +131,7 @@ POSTGRES_VERSION_MAP = {
     "trusty": "9.3",
     "xenial": "9.5",
     "bionic": "10",
+    "cosmic": "10",
     "centos7": "10",
     "fedora29": "10",
     "rhel7": "10",
@@ -176,16 +178,13 @@ BUILD_TSEARCH_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor in ["Ubuntu", "Debian"]:
     if codename == "cosmic":
-        # For platforms not supported by pgroonga, we build it frmo source.
-        BUILD_PGROONGA_FROM_SOURCE = True
+        # For platforms not supported by tsearch, we build it from source.
         BUILD_TSEARCH_FROM_SOURCE = True
         SYSTEM_DEPENDENCIES = UBUNTU_COMMON_APT_DEPENDENCIES + [
             pkg.format(POSTGRES_VERSION) for pkg in [
                 "postgresql-{0}",
                 "postgresql-server-dev-{0}",
-                # Needed to build pgroonga from source
-                "libgroonga-dev",
-                "libmsgpack-dev",
+                "postgresql-{0}-pgroonga",
             ]
         ]
     else:
