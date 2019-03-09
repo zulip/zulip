@@ -89,7 +89,7 @@ run_test('topic_list_build_widget', () => {
 
     widget.build();
 
-    assert(widget.is_for_stream(devel.stream_id));
+    assert(widget.get_stream_id(), devel.stream_id);
     assert.equal(widget.get_parent(), parent_elem);
 
     assert(checked_mutes);

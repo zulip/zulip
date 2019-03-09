@@ -2,8 +2,15 @@ var topic_list = (function () {
 
 var exports = {};
 
-// We can only ever have one active widget.
-var active_widget;
+/*
+    Track all active widgets with a Dict.
+
+    (We have at max one for now, but we may
+    eventually allow multiple streams to be
+    expanded.)
+*/
+
+var active_widgets = new Dict();
 
 // We know whether we're zoomed or not.
 var zoomed = false;
@@ -11,10 +18,11 @@ var zoomed = false;
 exports.remove_expanded_topics = function () {
     stream_popover.hide_topic_popover();
 
-    if (active_widget) {
-        active_widget.remove();
-        active_widget = undefined;
-    }
+    _.each(active_widgets.values(), function (widget) {
+        widget.remove();
+    });
+
+    active_widgets.clear();
 };
 
 exports.close = function () {
@@ -24,7 +32,19 @@ exports.close = function () {
 
 exports.zoom_out = function () {
     zoomed = false;
-    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_id());
+
+    var stream_ids = active_widgets.keys();
+
+    if (stream_ids.length !== 1) {
+        blueslip.error('Unexpected number of topic lists to zoom out.');
+        return;
+    }
+
+    var stream_id = stream_ids[0];
+    var widget = active_widgets.get(stream_id);
+    var parent_widget = widget.get_parent();
+
+    exports.rebuild(parent_widget, stream_id);
 };
 
 function update_unread_count(unread_count_elem, count) {
@@ -51,9 +71,13 @@ function update_unread_count(unread_count_elem, count) {
 }
 
 exports.set_count = function (stream_id, topic, count) {
-    if (active_widget && active_widget.is_for_stream(stream_id)) {
-        active_widget.set_count(topic, count);
+    var widget = active_widgets.get(stream_id);
+
+    if (widget === undefined) {
+        return;
     }
+
+    widget.set_count(topic, count);
 };
 
 exports.widget = function (parent_elem, my_stream_id) {
@@ -105,10 +129,6 @@ exports.widget = function (parent_elem, my_stream_id) {
 
     self.get_parent = function () {
         return parent_elem;
-    };
-
-    self.is_for_stream = function (stream_id) {
-        return stream_id === my_stream_id;
     };
 
     self.get_stream_id = function () {
@@ -188,19 +208,23 @@ exports.widget = function (parent_elem, my_stream_id) {
 };
 
 exports.active_stream_id = function () {
-    if (!active_widget) {
+    var stream_ids = active_widgets.keys();
+
+    if (stream_ids.length !== 1) {
         return;
     }
 
-    return active_widget.get_stream_id();
+    return stream_ids[0];
 };
 
 exports.get_stream_li = function () {
-    if (!active_widget) {
+    var widgets = active_widgets.values();
+
+    if (widgets.length !== 1) {
         return;
     }
 
-    var stream_li = active_widget.get_parent();
+    var stream_li = widgets[0].get_parent();
     return stream_li;
 };
 
@@ -213,11 +237,13 @@ exports.need_to_show_no_more_topics = function (stream_id) {
         return false;
     }
 
-    if (stream_id !== active_widget.get_stream_id()) {
-        return false;
+    if (!active_widgets.has(stream_id)) {
+        return;
     }
 
-    return active_widget.no_more_topics;
+    var widget = active_widgets.get(stream_id);
+
+    return widget.no_more_topics;
 };
 
 exports.rebuild = function (stream_li, stream_id) {
@@ -225,8 +251,10 @@ exports.rebuild = function (stream_li, stream_id) {
     var no_more_topics = exports.need_to_show_no_more_topics(stream_id);
 
     exports.remove_expanded_topics();
-    active_widget = exports.widget(stream_li, stream_id);
-    active_widget.build(active_topic, no_more_topics);
+    var widget = exports.widget(stream_li, stream_id);
+    widget.build(active_topic, no_more_topics);
+
+    active_widgets.set(stream_id, widget);
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
@@ -234,16 +262,18 @@ exports.rebuild = function (stream_li, stream_id) {
 exports.zoom_in = function () {
     zoomed = true;
 
-    if (!active_widget) {
+    var stream_id = exports.active_stream_id();
+    if (!stream_id) {
         blueslip.error('Cannot find widget for topic history zooming.');
         return;
     }
 
-    var stream_id = active_widget.get_stream_id();
+    var active_widget = active_widgets.get(stream_id);
+
     var before_count = active_widget.num_items();
 
     function on_success() {
-        if (!active_widget || stream_id !== active_widget.get_stream_id()) {
+        if (!active_widgets.has(stream_id)) {
             blueslip.warn('User re-narrowed before topic history was returned.');
             return;
         }
@@ -257,12 +287,14 @@ exports.zoom_in = function () {
             return;
         }
 
-        exports.rebuild(active_widget.get_parent(), stream_id);
+        var widget = active_widgets.get(stream_id);
 
-        var after_count = active_widget.num_items();
+        exports.rebuild(widget.get_parent(), stream_id);
+
+        var after_count = widget.num_items();
 
         if (after_count === before_count) {
-            active_widget.show_no_more_topics();
+            widget.show_no_more_topics();
         }
 
         ui.update_scrollbar($("#stream-filters-container"));
