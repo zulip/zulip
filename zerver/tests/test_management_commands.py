@@ -18,6 +18,7 @@ from zerver.lib.test_helpers import stdout_suppressed
 from zerver.lib.test_runner import slow
 from zerver.models import Recipient, get_user_profile_by_email, get_stream
 
+from zerver.management.commands.send_webhook_fixture_message import Command
 from zerver.lib.test_helpers import most_recent_message
 from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
@@ -212,6 +213,29 @@ class TestSendWebhookFixtureMessage(TestCase):
         self.assertTrue(open_mock.called)
         client.post.assert_called_once_with(self.url, {}, content_type="application/json",
                                             HTTP_HOST="zulip.testserver")
+
+    @patch('zerver.management.commands.send_webhook_fixture_message.Command._get_fixture_as_json')
+    @patch('zerver.management.commands.send_webhook_fixture_message.Command._does_fixture_path_exist')
+    @patch('zerver.management.commands.send_webhook_fixture_message.Command.parse_headers')
+    def test_check_post_request_with_improper_custom_header(self,
+                                                            parse_headers_mock: MagicMock,
+                                                            does_fixture_path_exist_mock: MagicMock,
+                                                            get_fixture_as_json_mock: MagicMock) -> None:
+        does_fixture_path_exist_mock.return_value = True
+        get_fixture_as_json_mock.return_value = "{}"
+
+        improper_headers = '{"X-Custom - Headers": "some_val"}'
+        with self.assertRaises(SystemExit):
+            call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url, custom_headers=improper_headers)
+
+        parse_headers_mock.assert_called_once_with(improper_headers)
+
+    def test_parse_headers_method(self) -> None:
+        command = Command()
+        self.assertEqual(command.parse_headers(None), None)
+        self.assertEqual(command.parse_headers('{"X-Custom-Header": "value"}'), {"HTTP_X_CUSTOM_HEADER": "value"})
+        with self.assertRaises(SystemExit):
+            command.parse_headers('{"X-Custom - Headers": "some_val"}')
 
 class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
