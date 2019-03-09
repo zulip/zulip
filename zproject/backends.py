@@ -592,22 +592,25 @@ def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     return True
 
 # Quick tool to test whether you're correctly authenticating to LDAP
-def query_ldap(**options: str) -> None:
-    email = options['email']
-    for backend in get_backends():
-        if isinstance(backend, LDAPBackend):
-            ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
-            if ldap_attrs is None:
-                print("No such user found")
-            else:
-                for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-                    value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
-                    if django_field == "avatar":
-                        if isinstance(value, bytes):
-                            value = "(An avatar image file)"
-                    print("%s: %s" % (django_field, value))
-                if settings.LDAP_EMAIL_ATTR is not None:
-                    print("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR]))
+def query_ldap(email: str) -> List[str]:
+    values = []
+    backend = next((backend for backend in get_backends() if isinstance(backend, LDAPBackend)), None)
+    if backend is not None:
+        ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+        if ldap_attrs is None:
+            values.append("No such user found")
+        else:
+            for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
+                value = ldap_attrs.get(ldap_field, ["LDAP field not present", ])[0]
+                if django_field == "avatar":
+                    if isinstance(value, bytes):
+                        value = "(An avatar image file)"
+                values.append("%s: %s" % (django_field, value))
+            if settings.LDAP_EMAIL_ATTR is not None:
+                values.append("%s: %s" % ('email', ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
+    else:
+        values.append("LDAP backend not configured on this server.")
+    return values
 
 class DevAuthBackend(ZulipAuthMixin):
     """Allow logging in as any user without a password.  This is used for
