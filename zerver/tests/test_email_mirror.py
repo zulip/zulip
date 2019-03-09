@@ -30,8 +30,10 @@ from zerver.lib.email_mirror import (
     create_missed_message_address,
     get_missed_message_token_from_address,
     strip_from_subject,
+    is_forwarded,
 )
 
+from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
 
 from email.mime.text import MIMEText
@@ -445,6 +447,17 @@ class TestEmptyGatewaySetting(ZulipTestCase):
             self.assertEqual(test_address, '')
 
 class TestReplyExtraction(ZulipTestCase):
+    def test_is_forwarded(self) -> None:
+        self.assertTrue(is_forwarded("FWD: hey"))
+        self.assertTrue(is_forwarded("fwd: hi"))
+        self.assertTrue(is_forwarded("[fwd] subject"))
+
+        self.assertTrue(is_forwarded("FWD: RE:"))
+        self.assertTrue(is_forwarded("Fwd: RE: fwd: re: subject"))
+
+        self.assertFalse(is_forwarded("subject"))
+        self.assertFalse(is_forwarded("RE: FWD: hi"))
+
     def test_reply_is_extracted_from_plain(self) -> None:
 
         # build dummy messages for stream
@@ -475,6 +488,13 @@ class TestReplyExtraction(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "Reply")
+
+        # Don't extract if Subject indicates the email has been forwarded into the mirror:
+        del incoming_valid_message['Subject']
+        incoming_valid_message['Subject'] = 'FWD: TestStreamEmailMessages Subject'
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, text)
 
     def test_reply_is_extracted_from_html(self) -> None:
 
@@ -520,6 +540,12 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertEqual(message.content, 'Reply')
 
+        # Don't extract if Subject indicates the email has been forwarded into the mirror:
+        del incoming_valid_message['Subject']
+        incoming_valid_message['Subject'] = 'FWD: TestStreamEmailMessages Subject'
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, convert_html_to_markdown(html))
 
 class TestScriptMTA(ZulipTestCase):
 

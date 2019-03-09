@@ -133,9 +133,9 @@ def mark_missed_message_address_as_used(address: str) -> None:
         redis_client.delete(key)
         raise ZulipEmailForwardError('Missed message address has already been used')
 
-def construct_zulip_body(message: message.Message, realm: Realm,
-                         show_sender: bool=False) -> str:
-    body = extract_body(message)
+def construct_zulip_body(message: message.Message, realm: Realm, show_sender: bool=False,
+                         remove_quotations: bool=True) -> str:
+    body = extract_body(message, remove_quotations)
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
     body = filter_footer(body)
@@ -227,7 +227,7 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
     return None
 
 talon_initialized = False
-def extract_body(message: message.Message) -> str:
+def extract_body(message: message.Message, remove_quotations: bool=True) -> str:
     import talon
     global talon_initialized
     if not talon_initialized:
@@ -238,12 +238,18 @@ def extract_body(message: message.Message) -> str:
     # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
     if plaintext_content:
-        return talon.quotations.extract_from_plain(plaintext_content)
+        if remove_quotations:
+            return talon.quotations.extract_from_plain(plaintext_content)
+        else:
+            return plaintext_content
 
     # If we only have an HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
-        return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
+        if remove_quotations:
+            return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
+        else:
+            return convert_html_to_markdown(html_content)
 
     if plaintext_content is not None or html_content is not None:
         raise ZulipEmailForwardUserError("Email has no nonempty body sections; ignoring.")
@@ -253,7 +259,7 @@ def extract_body(message: message.Message) -> str:
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
-    possible_footers = [line for line in text.split("\n") if line.strip().startswith("--")]
+    possible_footers = [line for line in text.split("\n") if line.strip() == "--"]
     if len(possible_footers) != 1:
         # Be conservative and don't try to scrub content if there
         # isn't a trivial footer structure.
@@ -326,13 +332,21 @@ def strip_from_subject(subject: str) -> str:
     stripped = re.sub(reg, "", subject, flags = re.IGNORECASE | re.MULTILINE)
     return stripped.strip()
 
+def is_forwarded(subject: str) -> bool:
+    # regex taken from strip_from_subject, we use it to detect various forms
+    # of FWD at the beginning of the subject.
+    reg = r"([\[\(] *)?\b(FWD?) *([-:;)\]][ :;\])-]*|$)|\]+ *$"
+    return bool(re.match(reg, subject, flags=re.IGNORECASE))
+
 def process_stream_message(to: str, message: message.Message,
                            debug_info: Dict[str, Any]) -> None:
     subject_header = str(make_header(decode_header(message.get("Subject", ""))))
     subject = strip_from_subject(subject_header) or "(no topic)"
 
     stream, show_sender = extract_and_validate(to)
-    body = construct_zulip_body(message, stream.realm, show_sender)
+    # Don't remove quotations if message is forwarded:
+    remove_quotations = not is_forwarded(subject_header)
+    body = construct_zulip_body(message, stream.realm, show_sender, remove_quotations)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logger.info("Successfully processed email to %s (%s)" % (
