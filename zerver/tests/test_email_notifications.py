@@ -845,7 +845,7 @@ class TestMissedMessages(ZulipTestCase):
             '/user_uploads/2/1f/some_random_value</a>'
         self.assertEqual(actual_output, expected_output)
 
-        # A user avatar like syntax, but not actually in an HTML tag
+        # A profile picture like syntax, but not actually in an HTML tag
         test_data = '<p>Set src="/avatar/username@example.com?s=30"</p>'
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<p>Set src="/avatar/username@example.com?s=30"</p>'

@@ -1022,7 +1022,7 @@ exports.build_page = function () {
         var error_field = $("#realm_icon_file_input_error");
         error_field.hide();
         var spinner = $("#upload_icon_spinner").expectOne();
-        loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
+        loading.make_indicator(spinner, {text: i18n.t("Uploading profile picture.")});
         $("#upload_icon_button_text").expectOne().hide();
 
         channel.post({

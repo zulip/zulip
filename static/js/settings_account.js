@@ -533,7 +533,7 @@ exports.set_up = function () {
         $("#user-avatar-source").hide();
 
         var spinner = $("#upload_avatar_spinner").expectOne();
-        loading.make_indicator(spinner, {text: 'Uploading avatar.'});
+        loading.make_indicator(spinner, {text: 'Uploading profile picture.'});
 
         channel.post({
             url: '/json/users/me/avatar',

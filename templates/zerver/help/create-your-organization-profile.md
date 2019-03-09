@@ -19,7 +19,7 @@ including bold/italic, links, lists, and
 
 {settings_tab|organization-profile}
 
-1. Edit your organization **name**, **description**, and **avatar**.
+1. Edit your organization **name**, **description**, and **profile picture**.
 1. Click **Save changes**.
 
 {end_tabs}

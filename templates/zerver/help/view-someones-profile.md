@@ -8,7 +8,7 @@ were last active, and any
 
 ### Via the message list
 
-1. Click on a user's avatar.
+1. Click on a user's profile picture.
 
 1. Click **View full profile**.
 
