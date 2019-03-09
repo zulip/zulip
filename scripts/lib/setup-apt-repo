@@ -41,6 +41,14 @@ deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 EOF
+elif [ "$release" = "cosmic" ]; then
+    # This case will eventually merge with the above, if/when we add
+    # tsearch_extras packages to the Zulip PPA.
+    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
+    cat >$SOURCES_FILE <<EOF
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
+EOF
 elif [ "$release" = "stretch" ]; then
     apt-get install -y debian-archive-keyring
     apt-key add "$SCRIPTS_PATH"/setup/packagecloud.asc

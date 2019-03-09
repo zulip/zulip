@@ -110,7 +110,7 @@ For a step-by-step explanation, read on.
 
 ##### 1. Install Vagrant
 
-For Ubuntu 18.04 Bionic, you can just install from `apt`:
+For Ubuntu 18.04 Bionic or newer, you can just install from `apt`:
 
 ```
 sudo apt install vagrant
