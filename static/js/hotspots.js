@@ -196,7 +196,6 @@ function insert_hotspot_into_DOM(hotspot) {
         description: hotspot.description,
         img: WHALE,
     });
-    
     var hotspot_icon_HTML;
     
     if (hotspot.name !== 'intro_compose') {
