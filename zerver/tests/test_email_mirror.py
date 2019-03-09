@@ -145,7 +145,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -169,7 +169,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = ''
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -194,7 +194,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -220,7 +220,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_addresses = ["A.N. Other <another@example.org>",
                                "Denmark <{}>".format(encode_email_address(stream))]
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -276,7 +276,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         headers['Reply-To'] = self.example_email('othello')
 
         # empty body
-        incoming_valid_message = MIMEText('')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -289,8 +289,8 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # process_message eats the exception & logs an error which can't be parsed here
         # so calling process_stream_message directly
         try:
-            process_stream_message(incoming_valid_message['To'],
-                                   incoming_valid_message['Subject'],
+            process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
+                                   str(incoming_valid_message['Subject']),
                                    incoming_valid_message,
                                    debug_info)
         except ZulipEmailForwardError as e:
@@ -309,7 +309,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         headers['Reply-To'] = self.example_email('othello')
 
         # No textual body
-        incoming_valid_message = MIMEMultipart()  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEMultipart()
         with open(os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), 'rb') as f:
             incoming_valid_message.attach(MIMEImage(f.read()))
 
@@ -325,8 +325,8 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # so calling process_stream_message directly
         try:
             with mock.patch('logging.warning'):
-                process_stream_message(incoming_valid_message['To'],
-                                       incoming_valid_message['Subject'],
+                process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
+                                       str(incoming_valid_message['Subject']),
                                        incoming_valid_message,
                                        debug_info)
         except ZulipEmailForwardError as e:
@@ -355,7 +355,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('othello')
@@ -396,7 +396,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body')
 
         incoming_valid_message['Subject'] = 'TestMissedHuddleMessageEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('cordelia')
@@ -463,7 +463,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         Quote"""
 
-        incoming_valid_message = MIMEText(text)  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText(text)
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
@@ -507,7 +507,7 @@ class TestReplyExtraction(ZulipTestCase):
         </html>
         """
 
-        incoming_valid_message = MIMEText(html, 'html')  # type: Any # https://github.com/python/typeshed/issues/275
+        incoming_valid_message = MIMEText(html, 'html')
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = self.example_email('hamlet')
