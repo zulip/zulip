@@ -117,12 +117,13 @@ def home_real(request: HttpRequest) -> HttpResponse:
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
         try:
+            # TODO: We should support stream IDs and PMs here as well.
             narrow_stream_name = request.GET.get("stream")
             (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
                 user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
-            logging.exception("Narrow parsing exception", extra=dict(request=request))
+            logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
         if narrow_stream is not None and narrow_topic is not None:
             narrow.append(["topic", narrow_topic])
 
