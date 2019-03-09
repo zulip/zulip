@@ -197,7 +197,6 @@ function insert_hotspot_into_DOM(hotspot) {
         img: WHALE,
     });
     var hotspot_icon_HTML;
-    
     if (hotspot.name !== 'intro_compose') {
         hotspot_icon_HTML =
             '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
