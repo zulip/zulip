@@ -327,8 +327,11 @@ def strip_from_subject(subject: str) -> str:
     stripped = re.sub(reg, "", subject, flags = re.IGNORECASE | re.MULTILINE)
     return stripped.strip()
 
-def process_stream_message(to: str, subject: str, message: message.Message,
+def process_stream_message(to: str, message: message.Message,
                            debug_info: Dict[str, Any]) -> None:
+    subject_header = str(make_header(decode_header(message.get("Subject", ""))))
+    subject = strip_from_subject(subject_header) or "(no topic)"
+
     stream, show_sender = extract_and_validate(to)
     body = construct_zulip_body(message, stream.realm, show_sender)
     debug_info["stream"] = stream
@@ -342,9 +345,6 @@ def process_missed_message(to: str, message: message.Message, pre_checked: bool)
     send_to_missed_message_address(to, message)
 
 def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_checked: bool=False) -> None:
-    subject_header = make_header(decode_header(message.get("Subject", "")))
-    subject = strip_from_subject(str(subject_header)) or "(no topic)"
-
     debug_info = {}
 
     try:
@@ -357,7 +357,7 @@ def process_message(message: message.Message, rcpt_to: Optional[str]=None, pre_c
         if is_missed_message_address(to):
             process_missed_message(to, message, pre_checked)
         else:
-            process_stream_message(to, subject, message, debug_info)
+            process_stream_message(to, message, debug_info)
     except ZulipEmailForwardError as e:
         if isinstance(e, ZulipEmailForwardUserError):
             # TODO: notify sender of error, retry if appropriate.
