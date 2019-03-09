@@ -29,6 +29,7 @@ from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
     create_missed_message_address,
     get_missed_message_token_from_address,
+    strip_from_subject,
 )
 
 from zerver.lib.send_email import FromAddress
@@ -649,27 +650,31 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 
 
 class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
-    def test_email_subject_stripping(self) -> None:
+    def test_process_message_strips_subject(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message['Subject'] = "Re: Fwd: Re: Test"
+        incoming_valid_message['From'] = self.example_email('hamlet')
+        incoming_valid_message['To'] = stream_to_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual("Test", message.topic_name())
+
+        # If after stripping we get an empty subject, it should get set to (no topic)
+        del incoming_valid_message['Subject']
+        incoming_valid_message['Subject'] = "Re: Fwd: Re: "
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual("(no topic)", message.topic_name())
+
+    def test_strip_from_subject(self) -> None:
         subject_list = ujson.loads(self.fixture_data('subjects.json', type='email'))
-
         for subject in subject_list:
-            user_profile = self.example_user('hamlet')
-            self.login(user_profile.email)
-            self.subscribe(user_profile, "Denmark")
-            stream = get_stream("Denmark", user_profile.realm)
-            stream_to_address = encode_email_address(stream)
-            incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
-            incoming_valid_message['Subject'] = subject['original_subject']
-            incoming_valid_message['From'] = self.example_email('hamlet')
-            incoming_valid_message['To'] = stream_to_address
-            incoming_valid_message['Reply-to'] = self.example_email('othello')
-
-            process_message(incoming_valid_message)
-            message = most_recent_message(user_profile)
-
-            if subject['stripped_subject'] != "":
-                expected_topic = subject['stripped_subject']
-            else:
-                expected_topic = "(no topic)"
-
-            self.assertEqual(expected_topic, message.topic_name())
+            stripped = strip_from_subject(subject['original_subject'])
+            self.assertEqual(stripped, subject['stripped_subject'])
