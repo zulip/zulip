@@ -83,7 +83,7 @@ Jump to:
    a version with a
    [buggy NFS implementation](#importerror-no-module-named-on-macos-during-vagrant-provisioning).
    Versions 10.13.2 and above have the bug fixed.
-1. Install [Vagrant][vagrant-dl-macos] (2.0.2).
+1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [VirtualBox][vbox-dl] (latest).
 
 (For a non-free option, but better performance, you can also use [VMWare
@@ -99,7 +99,7 @@ after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
+wget https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
 vagrant plugin install vagrant-lxc && \
@@ -128,11 +128,11 @@ christie@ubuntu-desktop:~
 $ sudo apt-get purge vagrant
 ```
 
-Now download and install the .deb package for [Vagrant 2.0.2][vagrant-dl-deb]:
+Now download and install the .deb package for [Vagrant][vagrant-dl].  E.g.:
 
 ```
 christie@ubuntu-desktop:~
-$ wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
+$ wget https://releases.hashicorp.com/vagrant/2.2.4/vagrant_2.2.4_x86_64.deb
 
 christie@ubuntu-desktop:~
 $ sudo dpkg -i vagrant*.deb
@@ -205,7 +205,7 @@ finishing those steps, you will be ready for
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (latest).
-3. Install [Vagrant][vagrant-dl-win] (version 2.0.2 is best tested).
+3. Install [Vagrant][vagrant-dl] (latest).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
@@ -1058,9 +1058,6 @@ for the IP address that means any IP address can connect to your development ser
 
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
-[vagrant-dl-win]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.msi
-[vagrant-dl-macos]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.dmg
-[vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
