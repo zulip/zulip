@@ -3,6 +3,8 @@ class zulip::nginx {
   $web_packages = [
     # Needed to run nginx with the modules we use
     $zulip::common::nginx,
+    'openssl',
+    'ca-certificates',
   ]
   package { $web_packages: ensure => 'installed' }
 
@@ -58,9 +60,15 @@ class zulip::nginx {
     source  => $uploads_route,
   }
 
+  exec { 'dhparam':
+    command => 'openssl dhparam -out /etc/nginx/dhparam.pem 2048',
+    creates => '/etc/nginx/dhparam.pem',
+    require => Package[$zulip::common::nginx, 'openssl'],
+  }
+
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
-    require => Package[$zulip::common::nginx],
+    require => Package[$zulip::common::nginx, 'ca-certificates'],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
