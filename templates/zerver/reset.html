@@ -2,6 +2,9 @@
 {% block portico_content %}
 
 
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="reset-password"></div>
 <div class="flex new-style app portico-page">
     <div class="inline-block">
         <div class="lead">
@@ -39,8 +42,5 @@
     </div>
 </div>
 
-<script>
-    common.autofocus('#id_email');
-</script>
 
 {% endblock %}
