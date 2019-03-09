@@ -140,8 +140,18 @@ class GithubWebhookTest(WebhookTestCase):
         self.send_and_test_stream_message('issue', expected_topic, expected_message, HTTP_X_GITHUB_EVENT='issues')
 
     def test_membership_msg(self) -> None:
-        expected_message = u"baxterthehacker added [kdaigle](https://github.com/kdaigle) to Contractors team"
-        self.send_and_test_stream_message('membership', self.EXPECTED_TOPIC_ORGANIZATION_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='membership')
+        expected_message = u"baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team"
+        self.send_and_test_stream_message('membership',
+                                          self.EXPECTED_TOPIC_ORGANIZATION_EVENTS,
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='membership')
+
+    def test_membership_removal_msg(self) -> None:
+        expected_message = u"baxterthehacker removed [kdaigle](https://github.com/kdaigle) from the Contractors team"
+        self.send_and_test_stream_message('membership_removal',
+                                          self.EXPECTED_TOPIC_ORGANIZATION_EVENTS,
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='membership')
 
     def test_member_msg(self) -> None:
         expected_message = u"baxterthehacker added [octocat](https://github.com/octocat) to [public-repo](https://github.com/baxterthehacker/public-repo)"
