@@ -75,6 +75,12 @@ $(function () {
 
     // Code in this block will be executed when the user visits
     // /accounts/password/reset i.e. reset.html is rendered.
+    if ($("[data-page-id='reset-password-confirm']").length > 0) {
+        common.autofocus('#id_new_password1');
+    }
+
+    // Code in this block will be executed when the user visits
+    // /accounts/password/reset i.e. reset.html is rendered.
     if ($("[data-page-id='reset-password']").length > 0) {
         common.autofocus('#id_email');
     }
