@@ -217,6 +217,16 @@ Using either method will create a message in Zulip:
 
 <img class="screenshot" src="/static/images/api/helloworld-webhook.png" />
 
+Some webhooks require custom HTTP headers, which can be passed using
+`./manage.py send_webhook_fixture_message --custom-headers`.  For
+example:
+
+    --custom-headers='{"X-Custom-Header": "value"}'
+
+The format is a JSON dictionary, so make sure that the header names do
+not contain any spaces in them and that you use the precise quoting
+approach shown above.
+
 ## Step 4: Create tests
 
 Every webhook integration should have a corresponding test file:
