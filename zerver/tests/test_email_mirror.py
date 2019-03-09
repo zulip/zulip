@@ -291,7 +291,6 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # so calling process_stream_message directly
         try:
             process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
-                                   str(incoming_valid_message['Subject']),
                                    incoming_valid_message,
                                    debug_info)
         except ZulipEmailForwardError as e:
@@ -327,7 +326,6 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         try:
             with mock.patch('logging.warning'):
                 process_stream_message(str(incoming_valid_message['To']),  # need to insert str() or mypy throws type error
-                                       str(incoming_valid_message['Subject']),
                                        incoming_valid_message,
                                        debug_info)
         except ZulipEmailForwardError as e:
