@@ -93,7 +93,7 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
-ALWAYS_SEND_ALL_HOTSPOTS = True  # type: bool
+ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
