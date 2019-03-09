@@ -481,6 +481,22 @@ exports.initialize = function () {
         compose_actions.start('private');
     });
 
+    $('#stream_message_recipient_topic').focus(function () {
+        var overlay_name = 'hotspot_' + 'intro_compose' + '_overlay';
+
+        overlays.open_overlay({
+            name: overlay_name,
+            overlay: $('#' + overlay_name),
+            on_close: function () {
+                // close popover
+                $(this).css({ display: 'inline' });
+                $(this).animate({ opacity: 1 }, {
+                    duration: 300,
+                });
+            }.bind(this),
+        });
+    });
+
     $('body').on('click', '.compose_mobile_stream_button', function () {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('stream', {trigger: 'new topic button'});

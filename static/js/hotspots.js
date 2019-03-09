@@ -36,7 +36,7 @@ var HOTSPOT_LOCATIONS = {
         popover: LEFT_BOTTOM,
     },
     intro_compose: {
-        element: '#left_bar_compose_stream_button_big',
+        element: '#stream_message_recipient_topic',
         offset_x: 0,
         offset_y: 0,
     },
@@ -196,14 +196,15 @@ function insert_hotspot_into_DOM(hotspot) {
         description: hotspot.description,
         img: WHALE,
     });
-
-    var hotspot_icon_HTML =
-        '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
-            '<span class="dot"></span>' +
-            '<span class="pulse"></span>' +
-            '<div class="bounce"><span class="bounce-icon">?</span></div>' +
-        '</div>';
-
+    if(hotspot.name != 'intro_compose') {
+        var hotspot_icon_HTML =
+            '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
+                '<span class="dot"></span>' +
+                '<span class="pulse"></span>' +
+                '<div class="bounce"><span class="bounce-icon">?</span></div>' +
+            '</div>';
+    }
+    
     setTimeout(function () {
         $('body').prepend(hotspot_icon_HTML);
         $('body').prepend(hotspot_overlay_HTML);
