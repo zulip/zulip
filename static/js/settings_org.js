@@ -535,45 +535,56 @@ exports.sync_realm_settings = function (property) {
         discard_property_element_changes(element);
     }
 };
+function show_hide_element($element, show) {
+    if (show) {
+        $element.removeClass('hide').addClass('.show').fadeIn(300);
+        return;
+    }
+    $element.fadeOut(300);
+}
 
 exports.change_save_button_state = function ($element, state) {
-    var show_hide_element = function (state) {
-        if (state === 'show') {
-            $element.removeClass('hide').addClass('.show').fadeIn(300);
-        } else {
-            $element.fadeOut(300);
-        }
-    };
     var $saveBtn = $element.find('.save-button');
     var $textEl = $saveBtn.find('.icon-button-text');
     if (state !== "saving") {
         $saveBtn.removeClass('saving');
     }
+    var button_text;
+    var data_status;
+    var is_show;
     if (state === "unsaved") {
-        $textEl.text(i18n.t("Save changes"));
-        $saveBtn.attr("data-status", "unsaved");
-        show_hide_element('show');
+        button_text = i18n.t("Save changes");
+        data_status = "unsaved";
+        is_show = true;
     } else if (state === "saved") {
-        $textEl.text(i18n.t("Save changes"));
-        $saveBtn.attr("data-status", "");
-        show_hide_element('hide');
+        button_text = i18n.t("Save changes");
+        data_status = "";
+        is_show = false;
     } else if (state === "discarded") {
         $element.removeClass('saving');
-        show_hide_element('hide');
+        is_show = false;
     } else if (state === "saving") {
+        button_text = i18n.t("Saving");
+        data_status = "saving";
+        is_show = true;
         $saveBtn.addClass('saving');
-        $textEl.text(i18n.t("Saving"));
-        $saveBtn.attr("data-status", "saving");
-        show_hide_element('show');
     } else if (state === "failed") {
-        show_hide_element('show');
-        $textEl.text(i18n.t("Save changes"));
-        $saveBtn.attr("data-status", "failed");
+        button_text = i18n.t("Save changes");
+        data_status = "failed";
+        is_show = true;
     } else if (state === 'succeeded') {
-        show_hide_element('hide');
-        $textEl.text(i18n.t("Saved"));
-        $saveBtn.attr("data-status", "saved");
+        button_text = i18n.t("Saved");
+        data_status = "saved";
+        is_show = false;
     }
+
+    if (button_text) {
+        $textEl.text(button_text);
+    }
+    if (data_status) {
+        $saveBtn.attr("data-status", data_status);
+    }
+    show_hide_element($element, is_show);
 };
 
 exports.set_up = function () {
