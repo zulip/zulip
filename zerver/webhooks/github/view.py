@@ -75,16 +75,15 @@ def get_closed_pull_request_body(payload: Dict[str, Any],
 def get_membership_body(payload: Dict[str, Any]) -> str:
     action = payload['action']
     member = payload['member']
-    scope = payload['scope']
-    scope_object = payload[scope]
+    team_name = payload['team']['name']
 
-    return u"{} {} [{}]({}) to {} {}".format(
-        get_sender_name(payload),
-        action,
-        member['login'],
-        member['html_url'],
-        scope_object['name'],
-        scope
+    return u"{sender} {action} [{username}]({html_url}) {preposition} the {team_name} team".format(
+        sender=get_sender_name(payload),
+        action=action,
+        username=member['login'],
+        html_url=member['html_url'],
+        preposition='from' if action == 'removed' else 'to',
+        team_name=team_name
     )
 
 def get_member_body(payload: Dict[str, Any]) -> str:
