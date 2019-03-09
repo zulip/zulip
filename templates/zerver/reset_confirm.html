@@ -6,6 +6,9 @@
 
 {% block portico_content %}
 
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="reset-password-confirm"></div>
 <div class="password-container flex full-page new-style">
 
     <!-- wrapper for flex content -->
@@ -65,9 +68,6 @@
                 </div>
             </form>
 
-            <script>
-                common.autofocus('#id_new_password1');
-            </script>
             {% else %}
             <p>{{ _('Sorry, the link you provided is invalid or has already been used.') }}</p>
             {% endif %}
