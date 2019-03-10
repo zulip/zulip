@@ -32,13 +32,14 @@ from social_core.backends.oauth import BaseOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
-    do_update_user_custom_profile_data
+    do_update_user_custom_profile_data, validate_email_for_realm
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
-from zerver.models import CustomProfileField, PreregistrationUser, UserProfile, Realm, \
-    custom_profile_fields_for_realm, get_default_stream_groups, get_user_profile_by_id, \
-    remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
+from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
+    EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
+    email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
+    email_to_username, get_realm, get_user_by_delivery_email
 
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
@@ -549,6 +550,18 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # This happens if no account exists, but the realm is
             # deactivated, so we shouldn't create a new user account
             raise ZulipLDAPException("Realm has been deactivated")
+
+        # Makes sure that email domain hasn't be restricted for this
+        # realm.  The main thing here is email_allowed_for_realm; but
+        # we also call validate_email_for_realm just for consistency,
+        # even though its checks were already done above.
+        try:
+            email_allowed_for_realm(username, self._realm)
+            validate_email_for_realm(self._realm, username)
+        except DomainNotAllowedForRealmError:
+            raise ZulipLDAPException("This email domain isn't allowed in this organization.")
+        except (DisposableEmailError, EmailContainsPlusError):
+            raise ZulipLDAPException("Email validation failed.")
 
         # We have valid LDAP credentials; time to create an account.
         full_name, short_name = self.get_mapped_name(ldap_user)
