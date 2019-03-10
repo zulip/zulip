@@ -43,7 +43,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.models import \
     get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
-    UserProfile, PreregistrationUser, Realm, get_user, MultiuseInvite
+    UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite
 from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -2539,6 +2539,34 @@ class TestLDAP(ZulipLDAPTestCase):
                 backend.get_or_build_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_build_user_email(self) -> None:
+        class _LDAPUser:
+            attrs = {'fn': ['Test User']}
+
+        ldap_user_attr_map = {'full_name': 'fn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            realm = self.backend._realm
+            realm.emails_restricted_to_domains = False
+            realm.disallow_disposable_email_addresses = True
+            realm.save()
+
+            email = 'spam@mailnator.com'
+            with self.assertRaisesRegex(ZulipLDAPException, 'Email validation failed.'):
+                self.backend.get_or_build_user(email, _LDAPUser())
+
+            realm.emails_restricted_to_domains = True
+            realm.save(update_fields=['emails_restricted_to_domains'])
+
+            email = 'spam+spam@mailnator.com'
+            with self.assertRaisesRegex(ZulipLDAPException, 'Email validation failed.'):
+                self.backend.get_or_build_user(email, _LDAPUser())
+
+            email = 'spam@acme.com'
+            with self.assertRaisesRegex(ZulipLDAPException, "This email domain isn't allowed in this organization."):
+                self.backend.get_or_build_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_build_user_when_ldap_has_no_full_name_mapping(self) -> None:
         class _LDAPUser:
             attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
@@ -2573,13 +2601,15 @@ class TestLDAP(ZulipLDAPTestCase):
             }
         }
         ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        Realm.objects.create(string_id='acme')
         with self.settings(
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             user_profile = self.backend.authenticate(self.example_email('hamlet'), 'testing',
-                                                     realm=get_realm('zephyr'))
+                                                     realm=get_realm('acme'))
             self.assertEqual(user_profile.email, self.example_email('hamlet'))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -2635,8 +2665,8 @@ class TestLDAP(ZulipLDAPTestCase):
         "full_name": "cn",
         "avatar": "thumbnailPhoto",
     })
-    def test_login_success_when_user_does_not_exist_with_valid_subdomain(
-            self) -> None:
+    def test_login_success_when_user_does_not_exist_with_valid_subdomain(self) -> None:
+        RealmDomain.objects.create(realm=self.backend._realm, domain='acme.com')
         self.mock_ldap.directory = {
             'uid=nonexisting,ou=users,dc=acme,dc=com': {
                 'cn': ['NonExisting', ],
@@ -2663,21 +2693,21 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_when_user_does_not_exist_with_split_full_name_mapping(self) -> None:
         self.mock_ldap.directory = {
-            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+            'uid=nonexisting,ou=users,dc=zulip,dc=com': {
                 'fn': ['Non', ],
                 'ln': ['Existing', ],
                 'userPassword': ['testing', ],
             }
         }
         with self.settings(
-                LDAP_APPEND_DOMAIN='acme.com',
+                LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
-                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com',
                 AUTH_LDAP_USER_ATTR_MAP={'first_name': 'fn', 'last_name': 'ln'}):
-            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+            user_profile = self.backend.authenticate('nonexisting@zulip.com', 'testing',
                                                      realm=get_realm('zulip'))
             assert(user_profile is not None)
-            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.email, 'nonexisting@zulip.com')
             self.assertEqual(user_profile.full_name, 'Non Existing')
             self.assertEqual(user_profile.realm.string_id, 'zulip')
 
