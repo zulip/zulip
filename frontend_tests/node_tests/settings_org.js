@@ -167,7 +167,7 @@ function test_realms_domain_modal(add_realm_domain) {
 
 function createSaveButtons(subsection) {
     const stub_save_button_header = $('.subsection-header');
-    const save_btn_controls = $('.save-btn-controls');
+    const save_button_controls = $('.save-btn-controls');
     const stub_save_button = $(`#org-submit-${subsection}`);
     const stub_discard_button = $(`#org-submit-${subsection}`);
     const stub_save_button_text = $('.icon-button-text');
@@ -175,27 +175,27 @@ function createSaveButtons(subsection) {
         '.subsection-failed-status p', $('<failed status element>')
     );
     stub_save_button.closest = () => stub_save_button_header;
-    save_btn_controls.set_find_results(
+    save_button_controls.set_find_results(
         '.save-button', stub_save_button
     );
     stub_save_button.set_find_results(
         '.icon-button-text', stub_save_button_text
     );
     stub_save_button_header.set_find_results(
-        '.save-button-controls', save_btn_controls
+        '.save-button-controls', save_button_controls
     );
     stub_save_button_header.set_find_results(
         '.subsection-changes-discard .button', $(`#org-discard-${subsection}`)
     );
-    save_btn_controls.set_find_results(
+    save_button_controls.set_find_results(
         '.discard-button', stub_discard_button
     );
     const props  = {};
     props.hidden = false;
-    save_btn_controls.fadeIn = () => {
+    save_button_controls.fadeIn = () => {
         props.hidden = false;
     };
-    save_btn_controls.fadeOut = () => {
+    save_button_controls.fadeOut = () => {
         props.hidden = true;
     };
     return {
@@ -203,7 +203,7 @@ function createSaveButtons(subsection) {
         save_button: stub_save_button,
         discard_button: stub_discard_button,
         save_button_header: stub_save_button_header,
-        save_button_controls: save_btn_controls,
+        save_button_controls: save_button_controls,
         save_button_text: stub_save_button_text,
     };
 }
@@ -276,37 +276,51 @@ function test_submit_settings_form(submit_form) {
 }
 
 function test_change_save_button_state() {
-    var stubs = createSaveButtons('msg-editing');
-    var $save_btn_controls = stubs.save_button_controls;
-    var $save_btn_text = stubs.save_button_text;
-    var $save_btn = stubs.save_button;
-    var $discard_btn = stubs.discard_button;
-    $save_btn.attr("id", "org-submit-msg-editing");
-    var props = stubs.props;
-    settings_org.change_save_button_state($save_btn_controls, "unsaved");
-    assert.equal($save_btn_text.text(), 'translated: Save changes');
-    assert.equal(props.hidden, false);
-    assert.equal($save_btn.attr("data-status"), "unsaved");
-    assert.equal($discard_btn.visible(), true);
-    settings_org.change_save_button_state($save_btn_controls, "saved");
-    assert.equal($save_btn_text.text(), 'translated: Save changes');
-    assert.equal(props.hidden, true);
-    assert.equal($save_btn.attr("data-status"), "");
-    settings_org.change_save_button_state($save_btn_controls, "saving");
-    assert.equal($save_btn_text.text(), 'translated: Saving');
-    assert.equal($save_btn.attr("data-status"), "saving");
-    assert.equal($save_btn.hasClass('saving'), true);
-    assert.equal($discard_btn.visible(), false);
-    settings_org.change_save_button_state($save_btn_controls, "discarded");
-    assert.equal(props.hidden, true);
-    settings_org.change_save_button_state($save_btn_controls, "succeeded");
-    assert.equal(props.hidden, true);
-    assert.equal($save_btn.attr("data-status"), "saved");
-    assert.equal($save_btn_text.text(), 'translated: Saved');
-    settings_org.change_save_button_state($save_btn_controls, "failed");
-    assert.equal(props.hidden, false);
-    assert.equal($save_btn.attr("data-status"), "failed");
-    assert.equal($save_btn_text.text(), 'translated: Save changes');
+    var {
+        save_button_controls,
+        save_button_text,
+        save_button,
+        discard_button,
+        props,
+    } = createSaveButtons('msg-editing');
+    save_button.attr("id", "org-submit-msg-editing");
+
+    {
+        settings_org.change_save_button_state(save_button_controls, "unsaved");
+        assert.equal(save_button_text.text(), 'translated: Save changes');
+        assert.equal(props.hidden, false);
+        assert.equal(save_button.attr("data-status"), "unsaved");
+        assert.equal(discard_button.visible(), true);
+    }
+    {
+        settings_org.change_save_button_state(save_button_controls, "saved");
+        assert.equal(save_button_text.text(), 'translated: Save changes');
+        assert.equal(props.hidden, true);
+        assert.equal(save_button.attr("data-status"), "");
+    }
+    {
+        settings_org.change_save_button_state(save_button_controls, "saving");
+        assert.equal(save_button_text.text(), 'translated: Saving');
+        assert.equal(save_button.attr("data-status"), "saving");
+        assert.equal(save_button.hasClass('saving'), true);
+        assert.equal(discard_button.visible(), false);
+    }
+    {
+        settings_org.change_save_button_state(save_button_controls, "discarded");
+        assert.equal(props.hidden, true);
+    }
+    {
+        settings_org.change_save_button_state(save_button_controls, "succeeded");
+        assert.equal(props.hidden, true);
+        assert.equal(save_button.attr("data-status"), "saved");
+        assert.equal(save_button_text.text(), 'translated: Saved');
+    }
+    {
+        settings_org.change_save_button_state(save_button_controls, "failed");
+        assert.equal(props.hidden, false);
+        assert.equal(save_button.attr("data-status"), "failed");
+        assert.equal(save_button_text.text(), 'translated: Save changes');
+    }
 }
 
 function test_upload_realm_icon(upload_realm_icon) {
@@ -626,7 +640,7 @@ function test_discard_changes_button(discard_changes) {
     $('#org-discard-msg-editing').closest = () => discard_button_parent;
 
     const stubbed_function = settings_org.change_save_button_state;
-    settings_org.change_save_button_state = (save_btn_controls, state) => {
+    settings_org.change_save_button_state = (save_button_controls, state) => {
         assert.equal(state, "discarded");
     };
 
