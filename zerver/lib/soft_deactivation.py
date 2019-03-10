@@ -105,7 +105,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     assert user_profile.last_active_message_id is not None
     all_stream_subs = list(Subscription.objects.filter(
         user_profile=user_profile,
-        recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
+        recipient__type=Recipient.STREAM).values('recipient_id', 'recipient__type_id'))
 
     # For Stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
@@ -131,7 +131,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 # We are going to short circuit this iteration as its no use
                 # iterating since user unsubscribed before soft-deactivation
                 continue
-        recipient_ids.append(sub['recipient'])
+        recipient_ids.append(sub['recipient_id'])
 
     all_stream_msgs = list(Message.objects.filter(
         recipient__id__in=recipient_ids,
