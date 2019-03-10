@@ -3,7 +3,7 @@
 Contents:
 
 * [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-* [Installing manually on Linux](#installing-manually-on-linux)
+* [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
 
@@ -53,190 +53,37 @@ on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing manually on Linux
+## Installing manually on Unix
 
-We recommend one of the other installation methods, since we test
-those continuously.  But if you know what you're doing and really want
-to install everything manually, these instructions should work.
+We recommend one of the other installation methods, since they are
+extremely well-tested and generally Just Work.  But if you know what
+you're doing, these instructions can help you install a Zulip
+development environment on other Linux/UNIX platforms.
 
-* [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
-* [Fedora 22 (experimental)](#on-fedora-22-experimental)
-* [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
+* [Newer versions of supported distributions](#newer-versions-of-supported-distributions)
 * [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-* [Fedora/CentOS common steps](#common-to-fedora-centos-instructions)
-* [Steps for all systems](#all-systems)
+* [Common steps](#common-steps)
 
-### On Debian or Ubuntu systems:
+Because copy-pasting the steps documented here can be error-prone, we
+prefer to extend `tools/provision` to support additional platforms
+over adding new platforms to this documentation (and likely will
+eventually eliminate this documentation section altogether).
 
-#### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
+### Newer versions of supported distributions
 
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+You can use
+[our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+to setup the Zulip development environment on current versions of
+these platforms reliably and easily, so we no long maintain manual
+installation instructions for these platforms.
 
-```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
-    memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python3-dev \
-    python-dev python-virtualenv hunspell-en-us git \
-    yui-compressor puppet gettext postgresql \
-    libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev \
-    libcurl4-openssl-dev
-
-# If using Ubuntu, install PGroonga from its PPA
-sudo add-apt-repository -ys ppa:groonga/ppa
-sudo apt-get update
-# On 14.04
-sudo apt-get install postgresql-9.3-pgroonga
-# On 16.04
-sudo apt-get install postgresql-9.5-pgroonga
-# On 17.04 or 17.10
-sudo apt-get install postgresql-9.6-pgroonga
-# On 18.04
-sudo apt-get install postgresql-10-pgroonga
-
-# If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
-
-# Next, install Zulip's tsearch-extras postgresql extension
-# If on Ubuntu LTS, you can use the Zulip PPA for tsearch-extras:
-cd zulip
-sudo apt-add-repository -ys ppa:tabbott/zulip
-sudo apt-get update
-# On 14.04
-sudo apt-get install postgresql-9.3-tsearch-extras
-# On 16.04
-sudo apt-get install postgresql-9.5-tsearch-extras
-# On 18.04
-sudo apt-get install postgresql-10-tsearch-extras
-
-
-# For Debian, you can download a .deb from packagecloud:
-
-# If on Stretch
-wget --content-disposition \
-  https://packagecloud.io/zulip/server/packages/debian/stretch/postgresql-9.6-tsearch-extras_0.4_amd64.deb/download.deb
-sudo dpkg -i postgresql-9.6-tsearch-extras_0.4_amd64.deb
-```
-
-Alternatively, you can always build the package from [tsearch-extras
-git](https://github.com/zulip/tsearch_extras).
-
-Now continue with the [All Systems](#all-systems) instructions below.
-
-#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty, 16.04 Xenial, or 18.04 Bionic):
-
-[zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-sudo add-apt-repository ppa:tabbott/zulip
-sudo apt-get update
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
-    memcached rabbitmq-server libldap2-dev redis-server \
-    postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
-    hunspell-en-us git yui-compressor \
-    puppet gettext tsearch-extras
-```
-
-Now continue with the [All Systems](#all-systems) instructions below.
-
-### On Fedora 22 (experimental):
-
-These instructions are both experimental (in terms of stability) and
-deprecated by the new support for doing this with `tools/provision`
-above, and are soon to be removed.
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-sudo dnf install libffi-devel memcached rabbitmq-server \
-    openldap-devel python-devel redis postgresql-server \
-    postgresql-devel postgresql libmemcached-devel freetype-devel \
-    yuicompressor closure-compiler gettext
-```
-
-Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
-
-### On CentOS 7 Core (experimental):
-
-These instructions are both experimental (in terms of stability) and
-deprecated by the new support for doing this with `tools/provision`
-above, and are soon to be removed.
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-# Add user zulip to the system (not necessary if you configured zulip
-# as the administrator user during the install process of CentOS 7).
-useradd zulip
-
-# Create a password for zulip user
-passwd zulip
-
-# Allow zulip to sudo
-visudo
-# Add this line after line `root    ALL=(ALL)       ALL`
-zulip   ALL=(ALL)       ALL
-
-# Switch to zulip user
-su zulip
-
-# Enable EPEL 7 repo so we can install rabbitmq-server, redis and
-# other dependencies
-sudo yum install epel-release
-
-# Install dependencies
-sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
-    python-devel redis postgresql-server postgresql-devel postgresql \
-    libmemcached-devel wget python-pip openssl-devel freetype-devel \
-    libjpeg-turbo-devel zlib-devel yuicompressor \
-    closure-compiler gettext
-
-# We need these packages to compile tsearch-extras
-sudo yum groupinstall "Development Tools"
-
-# clone Zulip's git repo and cd into it
-cd && git clone --config pull.rebase https://github.com/zulip/zulip && cd zulip/
-
-## NEEDS TESTING: The next few DB setup items may not be required at all.
-# Initialize the postgres db
-sudo postgresql-setup initdb
-
-# Edit the postgres settings:
-sudo vi /var/lib/pgsql/data/pg_hba.conf
-
-# Change these lines:
-host    all             all             127.0.0.1/32            ident
-host    all             all             ::1/128                 ident
-# to this:
-host    all             all             127.0.0.1/32            md5
-host    all             all             ::1/128                 md5
-```
-
-Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
+If `tools/provision` doesn't yet support a newer release of Debian or
+Ubuntu that you're using, we'd love to add support for it.  It's
+likely only a few lines of changes to `tools/lib/provision.py` and
+`scripts/lib/setup-apt-repo` if you'd like to do it yourself and
+submit a pull request, or you can ask for help in
+[#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
+on chat.zulip.org, and a core team member can help add support for you.
 
 ### On OpenBSD 5.8 (experimental):
 
@@ -278,58 +125,13 @@ sudo touch /usr/local/share/postgresql/tsearch_data/en_us.dict
 sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
 ```
 
-Finally continue with the [All Systems](#all-systems) instructions below.
+Finally continue with the [Common steps](#common-steps) instructions below.
 
-### Common to Fedora/CentOS instructions
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-# Build and install postgres tsearch-extras module
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/tsearch-extras_0.1.3.tar.gz
-tar xvzf tsearch-extras_0.1.3.tar.gz
-cd ts2
-make
-sudo make install
-
-# Hack around missing dictionary files -- need to fix this to get the
-# proper dictionaries from what in debian is the hunspell-en-us
-# package.
-sudo touch /usr/share/pgsql/tsearch_data/english.stop
-sudo touch /usr/share/pgsql/tsearch_data/en_us.dict
-sudo touch /usr/share/pgsql/tsearch_data/en_us.affix
-
-# Edit the postgres settings:
-sudo vi /var/lib/pgsql/data/pg_hba.conf
-
-# Add this line before the first uncommented line to enable password
-# auth:
-host    all             all             127.0.0.1/32            md5
-
-# Start the services
-sudo systemctl start redis memcached rabbitmq-server postgresql
-
-# Enable automatic service startup after the system startup
-sudo systemctl enable redis rabbitmq-server memcached postgresql
-```
-
-Finally continue with the [All Systems](#all-systems) instructions below.
-
-### All Systems:
+### Common steps
 
 Make sure you have followed the steps specific for your platform:
 
-* [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
-* [Fedora 22 (experimental)](#on-fedora-22-experimental)
-* [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
 * [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-* [Fedora/CentOS](#common-to-fedora-centos-instructions)
 
 For managing Zulip's python dependencies, we recommend using
 [virtualenvs](https://virtualenv.pypa.io/en/stable/).

@@ -31,7 +31,7 @@ development environment:
 * On **Ubuntu** 18.04 Bionic, 16.04 Xenial and 14.04 Trusty and **Debian** 9
   Stretch, you can easily
   **[install without using Vagrant][install-direct]**.
-* On **other Linux** distributions, you'll need to follow slightly different
+* On **other Linux/UNIX** distributions, you'll need to follow slightly different
   instructions to **[install manually][install-generic]**.
 * On **macOS and Linux** (Ubuntu recommended), you can install **[using
   Docker][install-docker]**, though support for this remains experimental.
@@ -85,7 +85,7 @@ machine, take a look at our tips for
 [dev-remote]: remote.html
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
 [install-docker]: ../development/setup-advanced.html#using-docker-experimental
-[install-generic]: ../development/setup-advanced.html#installing-manually-on-linux
+[install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
 [install-vagrant]: ../development/setup-vagrant.html
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
