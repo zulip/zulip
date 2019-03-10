@@ -493,6 +493,12 @@ exports.initialize = function () {
         $(this).tooltip('destroy');
     });
 
+    $("body").on('mouseenter', '.tooltip-inner', function (e) {
+        e.stopPropagation();
+        $(this).remove();
+        $(".tooltip-arrow").remove();
+    });
+
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var user_ids_string = $(e.target).parents('li').attr('data-user-ids');
         var emails = people.user_ids_string_to_emails_string(user_ids_string);
