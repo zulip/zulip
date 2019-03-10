@@ -103,7 +103,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     """
     assert user_profile.last_active_message_id is not None
-    all_stream_subs = list(Subscription.objects.select_related('recipient').filter(
+    all_stream_subs = list(Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
 
@@ -133,13 +133,11 @@ def add_missing_messages(user_profile: UserProfile) -> None:
                 continue
         recipient_ids.append(sub['recipient'])
 
-    all_stream_msgs = list(Message.objects.select_related(
-        'recipient').filter(
+    all_stream_msgs = list(Message.objects.filter(
         recipient__id__in=recipient_ids,
         id__gt=user_profile.last_active_message_id).order_by('id').values(
         'id', 'recipient__type_id'))
-    already_created_um_objs = list(UserMessage.objects.select_related(
-        'message').filter(
+    already_created_um_objs = list(UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient__type=Recipient.STREAM,
         message__id__gt=user_profile.last_active_message_id).values(
