@@ -69,7 +69,10 @@ https://help.ubuntu.com/community/Repositories/Ubuntu
   locally rather than on S3 you will likely need more, depending how
   often your users upload large files.  You'll eventually need 100GB
   or more if you have thousands of active users or millions of total
-  messages sent.
+  messages sent.  We recommend using an SSD and avoiding cloud storage
+  backends that limit the IOPS per second, since the disk is primarily
+  used for the database (assuming you're using the
+  [S3 file uploads backend](../production/upload-backends.html)).
 
 #### Network and Security Specifications
 
