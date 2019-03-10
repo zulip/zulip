@@ -137,12 +137,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         recipient__id__in=recipient_ids,
         id__gt=user_profile.last_active_message_id).order_by('id').values(
         'id', 'recipient__type_id'))
-    already_created_um_objs = list(UserMessage.objects.filter(
+    already_created_ums = set(UserMessage.objects.filter(
         user_profile=user_profile,
         message__recipient__type=Recipient.STREAM,
-        message__id__gt=user_profile.last_active_message_id).values(
-        'message__id'))
-    already_created_ums = set([obj['message__id'] for obj in already_created_um_objs])
+        message__id__gt=user_profile.last_active_message_id).values_list('message__id', flat=True))
 
     # Filter those messages for which UserMessage rows have been already created
     all_stream_msgs = [msg for msg in all_stream_msgs
