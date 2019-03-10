@@ -8,6 +8,7 @@ from typing import List
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
+from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.actions import create_stream_if_needed, do_create_user
 from zerver.lib.digest import gather_new_streams, handle_digest_email, enqueue_emails, \
     exclude_subscription_modified_streams
@@ -37,10 +38,16 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.simulate_stream_conversation('Verona', senders)
 
         flush_per_request_caches()
+        # When this test is run in isolation, one additional query is run which
+        # is equivalent to
+        # ContentType.objects.get(app_label='zerver', model='userprofile')
+        # This code is run when we call `confirmation.models.create_confirmation_link`.
+        # To trigger this, we call the one_click_unsubscribe_link function below.
+        one_click_unsubscribe_link(othello, 'digest')
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(6 <= len(queries) <= 7)
+        self.assert_length(queries, 6)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -90,10 +97,16 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = time.mktime(one_hour_ago.timetuple())
 
         flush_per_request_caches()
+        # When this test is run in isolation, one additional query is run which
+        # is equivalent to
+        # ContentType.objects.get(app_label='zerver', model='userprofile')
+        # This code is run when we call `confirmation.models.create_confirmation_link`.
+        # To trigger this, we call the one_click_unsubscribe_link function below.
+        one_click_unsubscribe_link(othello, 'digest')
         with queries_captured() as queries:
             handle_digest_email(othello.id, cutoff)
 
-        self.assertTrue(9 <= len(queries) <= 10)
+        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
