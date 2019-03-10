@@ -1,3 +1,17 @@
+# Documentation for Zulip's authentication backends is split across a few places:
+#
+# * https://zulip.readthedocs.io/en/latest/production/authentication-methods.html and
+#   zproject/prod_settings_template.py have user-level configuration documentation.
+# * https://zulip.readthedocs.io/en/latest/subsystems/auth.html has developer-level
+#   documentation, especially on testing authentication backends in the Zulip
+#   development environment.
+#
+# Django upstream's documentation for authentication backends is also
+# helpful background.  The most important detail to understand for
+# reading this file is that the Django authenticate() function will
+# call the authenticate methods of all backends registered in
+# settings.AUTHENTICATION_BACKENDS that have a function signature
+# matching the args/kwargs passed in the authenticate() call.
 import logging
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
@@ -25,6 +39,12 @@ from zerver.models import CustomProfileField, PreregistrationUser, UserProfile, 
     custom_profile_fields_for_realm, get_default_stream_groups, get_user_profile_by_id, \
     remote_user_to_email, email_to_username, get_realm, get_user_by_delivery_email
 
+# This first batch of methods is used by other code in Zulip to check
+# whether a given authentication backend is enabled for a given realm.
+# In each case, we both needs to check at the server level (via
+# `settings.AUTHENTICATION_BACKENDS`, queried via
+# `django.contrib.auth.get_backends`) and at the realm level (via the
+# `Realm.authentication_methods` BitField).
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
@@ -79,6 +99,11 @@ def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
 
 def common_get_active_user(email: str, realm: Realm,
                            return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+    """This is the core common function used by essentially all
+    authentication backends to check if there's an active user account
+    with a given email address in the organization, handling both
+    user-level and realm-level deactivation correctly.
+    """
     try:
         user_profile = get_user_by_delivery_email(email, realm)
     except UserProfile.DoesNotExist:
@@ -105,18 +130,26 @@ def common_get_active_user(email: str, realm: Realm,
     return user_profile
 
 class ZulipAuthMixin:
+    """This common mixin is used to override Django's default behavior for
+    looking up a logged-in user by ID to use a version that fetches
+    from memcached before checking the database (avoiding a database
+    query in most cases).
+    """
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
-        """ Get a UserProfile object from the user_profile_id. """
+        """Override the Django method for getting a UserProfile object from
+        the user_profile_id,."""
         try:
             return get_user_profile_by_id(user_profile_id)
         except UserProfile.DoesNotExist:
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
-    """
-    Used when we want to log you in without checking any
+    """Used when we want to log you in without checking any
     authentication (i.e. new user registration or when otherwise
     authentication has already been checked earlier in the process).
+
+    We ensure that this backend only ever successfully authenticates
+    when explicitly requested by including the use_dummy_backend kwarg.
     """
 
     def authenticate(self, username: Optional[str]=None, realm: Optional[Realm]=None,
@@ -131,10 +164,9 @@ class ZulipDummyBackend(ZulipAuthMixin):
 
 class EmailAuthBackend(ZulipAuthMixin):
     """
-    Email Authentication Backend
+    Email+Password Authentication Backend (the default).
 
-    Allows a user to sign in using an email/password pair rather than
-    a username/password pair.
+    Allows a user to sign in using an email/password pair.
     """
 
     def authenticate(self, username: Optional[str]=None, password: Optional[str]=None,
@@ -206,6 +238,14 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         return common_get_active_user(token_payload["email"], realm, return_data)
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
+    """Authentication backend that reads the Apache REMOTE_USER variable.
+    Used primarily in enterprise environments with an SSO solution
+    that has an Apache REMOTE_USER integration.  For manual testing, see
+
+      https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
+
+    See also remote_user_sso in zerver/views/auth.py.
+    """
     create_unknown_user = False
 
     def authenticate(self, remote_user: Optional[str], realm: Optional[Realm]=None,
@@ -227,6 +267,13 @@ def is_valid_email(email: str) -> bool:
     return True
 
 def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
+    """Used to make determinations on whether a user's email address is
+    managed by LDAP.  For environments using both LDAP and
+    Email+Password authentication, we do not allow EmailAuthBackend
+    authentication for email addresses managed by LDAP (to avoid a
+    security issue where one create separate credentials for an LDAP
+    user), and this function is used to enforce that rule.
+    """
     if not ldap_auth_enabled(realm):
         return False
 
@@ -253,27 +300,34 @@ class ZulipLDAPConfigurationError(Exception):
 LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK = 2
 
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
+    """Common code between LDAP authentication (ZulipLDAPAuthBackend) and
+    using LDAP just to sync user data (ZulipLDAPUserPopulator).
+
+    To fully understand our LDAP backend, you may want to skim
+    django_auth_ldap/backend.py from the upstream django-auth-ldap
+    library.  It's not a lot of code, and searching around in that
+    file makes the flow for LDAP authentication clear.
+    """
     def __init__(self) -> None:
+        # Used to initialize a fake LDAP directly for both manual
+        # and automated testing in a development environment where
+        # there is no actual LDAP server.
         if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage
             init_fakeldap()
 
-    # Don't use Django LDAP's permissions functions
+    # Disable django-auth-ldap's permissions functions -- we don't use
+    # the standard Django user/group permissions system because they
+    # are prone to performance issues.
     def has_perm(self, user: Optional[UserProfile], perm: Any, obj: Any=None) -> bool:
-        # Using Any type is safe because we are not doing anything with
-        # the arguments.
         return False
 
     def has_module_perms(self, user: Optional[UserProfile], app_label: Optional[str]) -> bool:
         return False
 
     def get_all_permissions(self, user: Optional[UserProfile], obj: Any=None) -> Set[Any]:
-        # Using Any type is safe because we are not doing anything with
-        # the arguments and always return empty set.
         return set()
 
     def get_group_permissions(self, user: Optional[UserProfile], obj: Any=None) -> Set[Any]:
-        # Using Any type is safe because we are not doing anything with
-        # the arguments and always return empty set.
         return set()
 
     def django_to_ldap_username(self, username: str) -> str:
@@ -306,12 +360,17 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER)
 
     def is_account_control_disabled_user(self, ldap_user: _LDAPUser) -> bool:
+        """Implements the userAccountControl check for whether a user has been
+        disabled in an Active Directory server being integrated with
+        Zulip via LDAP."""
         account_control_value = ldap_user.attrs[settings.AUTH_LDAP_USER_ATTR_MAP['userAccountControl']][0]
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
     @classmethod
     def get_mapped_name(cls, ldap_user: _LDAPUser) -> Tuple[str, str]:
+        """Constructs the user's Zulip full_name and short_name fields from
+        the LDAP data"""
         if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             short_name = full_name = ldap_user.attrs[full_name_attr][0]
@@ -386,6 +445,10 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
     def get_or_build_user(self, username: str,
                           ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        """This is used only in non-authentication contexts such as:
+             ./manage.py sync_ldap_user_data
+           In authentication contexts, this is overriden in ZulipLDAPAuthBackend.
+        """
         (user, built) = super().get_or_build_user(username, ldap_user)
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
@@ -423,12 +486,31 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 return_data['outside_ldap_domain'] = True
             return None
 
+        # Call into (ultimately) the django-auth-ldap authenticate
+        # function.  This will check the username/password pair
+        # against the LDAP database, and assuming those are correct,
+        # end up calling `self.get_or_build_user` with the
+        # authenticated user's data from LDAP.
         return ZulipLDAPAuthBackendBase.authenticate(self,
                                                      request=None,
                                                      username=username,
                                                      password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        """The main function of our authentication backend extension of
+        django-auth-ldap.  When this is called (from `authenticate`),
+        django-auth-ldap will already have verified that the provided
+        username and password match those in the LDAP database.
+
+        This function's responsibility is to check (1) whether the
+        email address for this user obtained from LDAP has an active
+        account in this Zulip realm.  If so, it will log them in.
+
+        Otherwise, to provide a seamless Single Sign-On experience
+        with LDAP, this function can automatically create a new Zulip
+        user account in the realm (assuming the realm is configured to
+        allow that email address to sign up).
+        """
         return_data = {}  # type: Dict[str, Any]
 
         if settings.LDAP_EMAIL_ATTR is not None:
@@ -488,8 +570,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user_profile, True
 
-# Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
+    """Just like ZulipLDAPAuthBackend, but doesn't let you log in.  Used
+    for syncing data like names, avatars, and custom profile fields
+    from LDAP in `manage.py sync_ldap_user_data` as well as in
+    registration for organizations that use a different SSO solution
+    for managing login (often via RemoteUserBackend).
+    """
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> None:
         return None
@@ -504,8 +591,8 @@ def sync_user_from_ldap(user_profile: UserProfile) -> bool:
     return True
 
 class DevAuthBackend(ZulipAuthMixin):
-    # Allow logging in as any user without a password.
-    # This is used for convenience when developing Zulip.
+    """Allow logging in as any user without a password.  This is used for
+    convenience when developing Zulip, and is disabled in production."""
     def authenticate(self, dev_auth_username: Optional[str]=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         assert dev_auth_username is not None
@@ -520,6 +607,8 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     """Responsible for doing the Zulip-account lookup and validation parts
     of the Zulip Social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
+
+    Returns a UserProfile object for successful authentication, and None otherwise.
     """
     subdomain = backend.strategy.session_get('subdomain')
     realm = get_realm(subdomain)
@@ -536,8 +625,12 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
         return None
     elif hasattr(backend, 'get_verified_emails'):
-        # Some social backends, like GitHubAuthBackend, don't guarantee that
-        # the `details` data is validated.
+        # Some social backends, like GitHubAuthBackend, don't
+        # guarantee that the `details` data is validated (i.e., it's
+        # possible users can put any string they want in the "email"
+        # field of the `details` object).  For those backends, we have
+        # custom per-backend code to properly fetch only verified
+        # email addresses from the appropriate third-party API.
         verified_emails = backend.get_verified_emails(*args, **kwargs)
         if len(verified_emails) == 0:
             # TODO: Provide a nice error message screen to the user
@@ -581,6 +674,12 @@ def social_auth_associate_user(
         backend: BaseAuth,
         *args: Any,
         **kwargs: Any) -> Dict[str, Any]:
+    """A simple wrapper function to reformat the return data from
+    social_associate_user_helper as a dictionary.  The
+    python-social-auth infrastructure will then pass those values into
+    later stages of settings.SOCIAL_AUTH_PIPELINE, such as
+    social_auth_finish, as kwargs.
+    """
     return_data = {}  # type: Dict[str, Any]
     user_profile = social_associate_user_helper(
         backend, return_data, *args, **kwargs)
@@ -593,6 +692,13 @@ def social_auth_finish(backend: Any,
                        response: HttpResponse,
                        *args: Any,
                        **kwargs: Any) -> Optional[UserProfile]:
+    """Given the determination in social_auth_associate_user for whether
+    the user should be authenticated, this takes care of actually
+    logging in the user (if appropriate) and redirecting the browser
+    to the appropriate next page depending on the situation.  Read the
+    comments below as well as login_or_register_remote_user in
+    `zerver/views/auth.py` for the details on how that dispatch works.
+    """
     from zerver.views.auth import (login_or_register_remote_user,
                                    redirect_and_log_into_subdomain)
 
@@ -642,13 +748,41 @@ def social_auth_finish(backend: Any,
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get('multiuse_object_key', '')
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
+
+    # At this point, we have now confirmed that the user has
+    # demonstrated control over the target email address.
+    #
+    # The next step is to call login_or_register_remote_user, but
+    # there are two code paths here because of an optimization to save
+    # a redirect on mobile.
+
     if mobile_flow_otp is not None:
+        # For mobile app authentication, login_or_register_remote_user
+        # will redirect to a special zulip:// URL that is handled by
+        # the app after a successful authentication; so we can
+        # redirect directly from here, saving a round trip over what
+        # we need to do to create session cookies on the right domain
+        # in the web login flow (below).
         return login_or_register_remote_user(strategy.request, email_address,
                                              user_profile, full_name,
                                              invalid_subdomain=bool(invalid_subdomain),
                                              mobile_flow_otp=mobile_flow_otp,
                                              is_signup=is_signup,
                                              redirect_to=redirect_to)
+
+    # If this authentication code were executing on
+    # subdomain.zulip.example.com, we would just call
+    # login_or_register_remote_user as in the mobile code path.
+    # However, because third-party SSO providers generally don't allow
+    # wildcard addresses in their redirect URLs, for multi-realm
+    # servers, we will have just completed authentication on e.g.
+    # auth.zulip.example.com (depending on
+    # settings.SOCIAL_AUTH_SUBDOMAIN), which cannot store cookies on
+    # the subdomain.zulip.example.com domain.  So instead we serve a
+    # redirect (encoding the authentication result data in a
+    # cryptographically signed token) to a route on
+    # subdomain.zulip.example.com that will verify the signature and
+    # then call login_or_register_remote_user.
     return redirect_and_log_into_subdomain(realm, full_name, email_address,
                                            is_signup=is_signup,
                                            redirect_to=redirect_to,

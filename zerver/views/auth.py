@@ -71,6 +71,13 @@ def create_preregistration_user(email: str, request: HttpRequest, realm_creation
 def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
                                is_signup: bool=False, password_required: bool=True,
                                multiuse_object_key: str='') -> HttpResponse:
+    """Given a successful authentication for an email address (i.e. we've
+    confirmed the user controls the email address) that does not
+    currently have a Zulip account in the target realm, send them to
+    the registration flow or the "continue to registration" flow,
+    depending on is_signup, whether the email address can join the
+    organization (checked in HomepageForm), and similar details.
+    """
     realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
     multiuse_obj = None
@@ -85,8 +92,11 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
     if form.is_valid():
-        # Construct a PreregistrationUser object and send the user over to
-        # the confirmation view.
+        # If the email address is allowed to sign up for an account in
+        # this organization, construct a PreregistrationUser and
+        # Confirmation objects, and then send the user to account
+        # creation or confirm-continue-registration depending on
+        # is_signup.
         prereg_user = None
         if settings.ONLY_SSO:
             try:
@@ -117,14 +127,15 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
         return render(request,
                       'zerver/confirm_continue_registration.html',
                       context=context)
-    else:
-        url = reverse('register')
-        return render(request,
-                      'zerver/accounts_home.html',
-                      context={'form': form, 'current_url': lambda: url,
-                               'from_multiuse_invite': from_multiuse_invite,
-                               'multiuse_object_key': multiuse_object_key},
-                      )
+
+    # This email address it not allowed to join this organization, so
+    # just send the user back to the registration page.
+    url = reverse('register')
+    return render(request,
+                  'zerver/accounts_home.html',
+                  context={'form': form, 'current_url': lambda: url,
+                           'from_multiuse_invite': from_multiuse_invite,
+                           'multiuse_object_key': multiuse_object_key})
 
 def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
@@ -139,6 +150,24 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False, redirect_to: str='',
                                   multiuse_object_key: str='') -> HttpResponse:
+    """Given a successful authentication showing the user controls given
+    email address (remote_username) and potentially a UserProfile
+    object (if the user already has a Zulip account), redirect the
+    browser to the appropriate place:
+
+    * The logged-in app if the user already has a Zulip account and is
+      trying to login, potentially to an initial narrow or page that had been
+      saved in the `redirect_to` parameter.
+    * The registration form if is_signup was set (i.e. the user is
+      trying to create a Zulip account)
+    * A special `confirm_continue_registration.html` "do you want to
+      register or try another account" if the user doesn't have a
+      Zulip account but is_signup is False (i.e. the user tried to login
+      and then did social authentication selecting an email address that does
+      not have a Zulip account in this organization).
+    * A zulip:// URL to send control back to the mobile apps if they
+      are doing authentication using the mobile_flow_otp flow.
+    """
     email = remote_user_to_email(remote_username)
     if user_profile is None or user_profile.is_mirror_dummy:
         # We have verified the user controls an email address, but
@@ -162,11 +191,15 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
         # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
         response = HttpResponse(status=302)
         response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
-        # Maybe sending 'user_logged_in' signal is the better approach:
+
+        # Since we are returning an API key instead of going through
+        # the Django login() function (which creates a browser
+        # session, etc.), the "new login" signal handler (which
+        # triggers an email notification new logins) will not run
+        # automatically.  So we call it manually here.
+        #
+        # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
         #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
-        # Not doing this only because over here we don't add the user information
-        # in the session. If the signal receiver assumes that we do then that
-        # would cause problems.
         email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
 
         # Mark this request as having a logged-in user for our server logs.
@@ -456,6 +489,12 @@ _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
 
 @log_view_func
 def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
+    """Given a valid signed authentication token (generated by
+    redirect_and_log_into_subdomain called on auth.zulip.example.com),
+    call login_or_register_remote_user, passing all the authentication
+    result data that had been encoded in the signed token.
+    """
+
     try:
         data = signing.loads(token, salt=_subdomain_token_salt, max_age=15)
     except signing.SignatureExpired as e:
@@ -480,19 +519,36 @@ def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     else:
         multiuse_object_key = ''
 
+    # We cannot pass the actual authenticated user_profile object that
+    # was fetched by the original authentication backend and passed
+    # into redirect_and_log_into_subdomain through a signed URL token,
+    # so we need to re-fetch it from the database.
     if is_signup:
-        # If we are signing up, user_profile should be None. In case
-        # email_address already exists, user will get an error message.
+        # If we are creating a new user account, user_profile will
+        # always have been None, so we set that here.  In the event
+        # that a user account with this email was somehow created in a
+        # race, the eventual registration code will catch that and
+        # throw an error, so we don't need to check for that here.
         user_profile = None
         return_data = {}  # type: Dict[str, Any]
     else:
-        # We can be reasonably confident that this subdomain actually
-        # has a corresponding realm, since it was referenced in a
-        # signed cookie.  But we probably should add some error
-        # handling for the case where the realm disappeared in the
-        # meantime.
+        # We're just trying to login.  We can be reasonably confident
+        # that this subdomain actually has a corresponding active
+        # realm, since the signed cookie proves there was one very
+        # recently.  But as part of fetching the UserProfile object
+        # for the target user, we use DummyAuthBackend, which
+        # conveniently re-validates that the realm and user account
+        # were not deactivated in the meantime.
+
+        # Note: Ideally, we'd have a nice user-facing error message
+        # for the case where this auth fails (because e.g. the realm
+        # or user was deactivated since the signed cookie was
+        # generated < 15 seconds ago), but the authentication result
+        # is correct in those cases and such a race would be very
+        # rare, so a nice error message is low priority.
         realm = get_realm(subdomain)
         user_profile, return_data = authenticate_remote_user(realm, email_address)
+
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
