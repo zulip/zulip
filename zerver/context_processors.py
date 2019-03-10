@@ -162,6 +162,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
             'signup_url': reverse('signup-social', args=(backend.name,)),
             'sort_order': backend.sort_order,
         })
-    context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'])
+    context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'], reverse=True)
 
     return context

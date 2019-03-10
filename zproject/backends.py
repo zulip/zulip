@@ -825,7 +825,8 @@ def social_auth_finish(backend: Any,
 
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = "undeclared"
-    # Used to determine how to order buttons on login form
+    # Used to determine how to order buttons on login form, backend with
+    # higher sort order are displayed first.
     sort_order = 0
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
@@ -853,7 +854,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
-    sort_order = 50
+    sort_order = 100
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         access_token = kwargs["response"]["access_token"]
@@ -905,7 +906,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         raise AssertionError("Invalid configuration")
 
 class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
-    sort_order = 100
+    sort_order = 50
     auth_backend_name = "AzureAD"
 
 AUTH_BACKEND_NAME_MAP = {
