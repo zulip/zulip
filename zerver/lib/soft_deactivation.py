@@ -14,6 +14,7 @@ from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
+BULK_CREATE_BATCH_SIZE = 10000
 
 def filter_by_subscription_history(user_profile: UserProfile,
                                    all_stream_messages: DefaultDict[int, List[Message]],
@@ -158,8 +159,13 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         user_profile, stream_messages, all_stream_subscription_logs)
 
     # Doing a bulk create for all the UserMessage objects stored for creation.
-    if len(user_messages_to_insert) > 0:
-        UserMessage.objects.bulk_create(user_messages_to_insert)
+    while len(user_messages_to_insert) > 0:
+        messages, user_messages_to_insert = (
+            user_messages_to_insert[0:BULK_CREATE_BATCH_SIZE],
+            user_messages_to_insert[BULK_CREATE_BATCH_SIZE:])
+        UserMessage.objects.bulk_create(messages)
+        user_profile.last_active_message_id = messages[-1].message_id
+        user_profile.save(update_fields=['last_active_message_id'])
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     try:

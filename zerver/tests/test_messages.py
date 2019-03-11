@@ -3660,20 +3660,22 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         do_soft_deactivate_users([long_term_idle_user])
 
         message = 'Test Message 1'
-        self.send_stream_message(sender, stream_name,
-                                 message, topic_name)
+        message_id = self.send_stream_message(sender, stream_name,
+                                              message, topic_name)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
         with queries_captured() as queries:
             maybe_catch_up_soft_deactivated_user(long_term_idle_user)
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 8)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(last_realm_audit_log_entry(
             RealmAuditLog.USER_SOFT_ACTIVATED).modified_user, long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1].content, message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, message_id)
 
     def test_add_missing_messages(self) -> None:
         recipient_list  = [self.example_user("hamlet"), self.example_user("iago")]
@@ -3710,10 +3712,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1], sent_message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message.id)
 
         # Test that add_missing_messages() only adds messages that aren't
         # already present in the UserMessage table. This test works on the
@@ -3725,10 +3729,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 1)
         self.assertEqual(idle_user_msg_list[-1], sent_message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message.id)
 
         # Test UserMessage rows are created correctly in case of stream
         # Subscription was altered by admin while user was away.
@@ -3748,11 +3754,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message_list[0].id)
 
         # Test consecutive subscribe/unsubscribe in a public stream
         sent_message_list = []
@@ -3778,11 +3786,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message_list[0].id)
 
         # Test for when user unsubscribes before soft deactivation
         # (must reactivate them in order to do this).
@@ -3831,11 +3841,41 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
         with queries_captured() as queries:
             add_missing_messages(long_term_idle_user)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message_list[0].id)
+
+    @mock.patch('zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE', 2)
+    def test_add_missing_messages_pagination(self) -> None:
+        recipient_list  = [self.example_user("hamlet"), self.example_user("iago")]
+        stream_name = 'Denmark'
+        for user_profile in recipient_list:
+            self.subscribe(user_profile, stream_name)
+
+        sender = self.example_user('iago')
+        long_term_idle_user = self.example_user('hamlet')
+        self.send_stream_message(long_term_idle_user.email, stream_name)
+        do_soft_deactivate_users([long_term_idle_user])
+
+        num_new_messages = 5
+        message_ids = []
+        for _ in range(num_new_messages):
+            message_id = self.send_stream_message(sender.email, stream_name)
+            message_ids.append(message_id)
+
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        self.assert_length(queries, 10)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + num_new_messages)
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, message_ids[-1])
 
     def test_user_message_filter(self) -> None:
         # In this test we are basically testing out the logic used out in
