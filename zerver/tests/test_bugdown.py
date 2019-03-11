@@ -1385,6 +1385,25 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
         self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
 
+    def test_user_group_mention_silent(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test('support')
+
+        content = "@**King Hamlet** @_*support*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" '
+                         'data-user-id="%s">'
+                         '@King Hamlet</span> '
+                         '<span class="user-group-mention silent" '
+                         'data-user-group-id="%s">'
+                         'support</span></p>' % (user_id,
+                                                 user_group.id))
+        self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
+        self.assertEqual(msg.mentions_user_group_ids, set())
+
     def test_possible_user_group_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_user_group_mentions(content), names)
@@ -1424,6 +1443,45 @@ class BugdownTest(ZulipTestCase):
                          '</p>' % (support.id, backend.id))
 
         self.assertEqual(msg.mentions_user_group_ids, set([support.id, backend.id]))
+
+    def test_group_mention_in_quotes(self) -> None:
+        sender_user_profile = self.example_user('othello')
+        support = self.create_user_group_for_test('support')
+        backend = self.create_user_group_for_test('backend')
+        frontend = self.create_user_group_for_test('frontend')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "> @*support* and @*backend*, check this out\n\n @*support* and @*frontend*"
+        self.assertEqual(render_markdown(msg, content),
+                         '<blockquote>\n<p>'
+                         '<span class="user-group-mention silent" data-user-group-id="%s">support</span>'
+                         ' and '
+                         '<span class="user-group-mention silent" data-user-group-id="%s">backend</span>, '
+                         'check this out'
+                         '</p>\n</blockquote>\n'
+                         '<p>'
+                         '<span class="user-group-mention" data-user-group-id="%s">@support</span>'
+                         ' and '
+                         '<span class="user-group-mention" data-user-group-id="%s">@frontend</span>'
+                         '</p>' % (support.id, backend.id, support.id, frontend.id))
+        self.assertEqual(msg.mentions_user_group_ids, set([support.id, frontend.id]))
+
+        # Both fenced quote and > quote should be identical for both silent and regular syntax.
+        expected = ('<blockquote>\n<p>'
+                    '<span class="user-group-mention silent" data-user-group-id="%s">support</span>'
+                    '</p>\n</blockquote>' % (support.id,))
+        content = "```quote\n@*support*\n```"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "> @*support*"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "```quote\n@_*support*\n```"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
+        content = "> @_*support*"
+        self.assertEqual(render_markdown(msg, content), expected)
+        self.assertEqual(msg.mentions_user_ids, set())
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user('othello')

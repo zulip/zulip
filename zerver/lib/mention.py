@@ -6,7 +6,7 @@ import re
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 find_mentions = r'(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)'
-user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
+user_group_mentions = r'(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*[^\*]+\*)'
 
 wildcards = ['all', 'everyone', 'stream']
 
@@ -33,8 +33,9 @@ def possible_mentions(content: str) -> Set[str]:
     texts = {text for text in texts_with_none if text}
     return texts
 
-def extract_user_group(matched_text: str) -> str:
-    return matched_text[1:-1]
+def extract_user_group(m: Tuple[str, str]) -> str:
+    s = m[1]
+    return s[1:-1]
 
 def possible_user_group_mentions(content: str) -> Set[str]:
     matches = re.findall(user_group_mentions, content)

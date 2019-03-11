@@ -36,7 +36,7 @@ var backend_only_markdown_re = [
     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
 ];
 
-// Helper function to update a mentioned user's name.
+// Helper function to update a mentioned user's name or group's name.
 exports.set_name_in_mention_element = function (element, name) {
     if ($(element).hasClass('silent')) {
         $(element).text(name);
@@ -102,15 +102,19 @@ exports.apply_markdown = function (message) {
             }
             return;
         },
-        groupMentionHandler: function (name) {
+        groupMentionHandler: function (name, silently) {
             var group = user_groups.get_user_group_from_name(name);
             if (group !== undefined) {
-                if (user_groups.is_member_of(group.id, people.my_current_user_id())) {
+                if (user_groups.is_member_of(group.id, people.my_current_user_id()) && !silently) {
                     message.mentioned = true;
                 }
-                return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
-                       '@' + escape(group.name, true) +
-                       '</span>';
+                var str = '';
+                if (silently) {
+                    str += '<span class="user-group-mention silent" data-user-group-id="' + group.id + '">';
+                } else {
+                    str += '<span class="user-group-mention" data-user-group-id="' + group.id + '">@';
+                }
+                return str + escape(group.name, true) + '</span>';
             }
             return;
         },
@@ -122,6 +126,14 @@ exports.apply_markdown = function (message) {
                 match = match.replace(/>@/g, '>');
                 return match;
             });
+
+            var group_mention_re = /<span.*user-group-mention.*data-user-group-id="(\d+|\*)"[^>]*>@/gm;
+            quote = quote.replace(group_mention_re, function (match) {
+                match = match.replace(/"user-group-mention"/g, '"user-group-mention silent"');
+                match = match.replace(/>@/g, '>');
+                return match;
+            });
+
             // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the

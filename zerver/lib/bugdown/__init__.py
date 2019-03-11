@@ -32,7 +32,7 @@ from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
-    possible_user_group_mentions, extract_user_group
+    possible_user_group_mentions
 from zerver.lib.url_encoding import encode_stream
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import timeout, TimeoutExpired
@@ -1389,10 +1389,12 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     RE = re.compile(r'(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))'
                     r'[ ]{0,3}>[ ]?(.*)')
     mention_re = re.compile(mention.find_mentions)
+    group_mention_re = re.compile(mention.user_group_mentions)
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
         line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group('match')), line)
+        line = re.sub(self.group_mention_re, lambda m: "@_{}".format(m.group('match')), line)
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
@@ -1605,14 +1607,16 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        match = m.group(2)
+        match = m.group('match')
+        silent = m.group('silent') == '_'
 
         db_data = self.markdown.zulip_db_data
         if self.markdown.zulip_message and db_data is not None:
-            name = extract_user_group(match)
+            name = match[1:-1]
             user_group = db_data['mention_data'].get_user_group(name)
             if user_group:
-                self.markdown.zulip_message.mentions_user_group_ids.add(user_group.id)
+                if not silent:
+                    self.markdown.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1621,9 +1625,13 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
                 return None
 
             el = markdown.util.etree.Element("span")
-            el.set('class', 'user-group-mention')
             el.set('data-user-group-id', user_group_id)
-            el.text = "@%s" % (name,)
+            if silent:
+                el.set('class', 'user-group-mention silent')
+                el.text = "%s" % (name,)
+            else:
+                el.set('class', 'user-group-mention')
+                el.text = "@%s" % (name,)
             return el
         return None
 
