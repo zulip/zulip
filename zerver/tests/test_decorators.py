@@ -772,7 +772,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_float('x', x), 'x is not a float')
 
     def test_check_color(self) -> None:
-        x = ['#000099', '#80ffaa', '#80FFAA', '#abcd12']  # valid
+        x = ['#000099', '#80ffaa', '#80FFAA', '#abcd12', '#ffff00', '#ff0', '#f00']  # valid
         y = ['000099', '#80f_aa', '#80fraa', '#abcd1234', 'blue']  # invalid
         z = 5  # invalid
 

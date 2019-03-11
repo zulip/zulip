@@ -105,7 +105,7 @@ def check_bool(var_name: str, val: object) -> Optional[str]:
 def check_color(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
-    valid_color_pattern = re.compile(r'^#(?:[a-fA-F0-9]{6})$')
+    valid_color_pattern = re.compile(r'^#([a-fA-F0-9]{3,6})$')
     matched_results = valid_color_pattern.match(val)
     if not matched_results:
         return _('%s is not a valid hex color code') % (var_name,)
