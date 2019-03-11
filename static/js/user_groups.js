@@ -39,6 +39,18 @@ exports.get_user_group_from_id = function (group_id, suppress_errors) {
     return user_group_by_id_dict.get(group_id);
 };
 
+exports.get_mention_syntax = function (name, silent) {
+    var mention = '';
+    if (silent) {
+        mention += '@_*';
+    } else {
+        mention += '@*';
+    }
+    mention += name;
+    mention += '*';
+    return mention;
+};
+
 exports.update = function (event) {
     var group = exports.get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {

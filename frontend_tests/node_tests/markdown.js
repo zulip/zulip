@@ -347,6 +347,10 @@ run_test('marked', () => {
          expected: '<p>T<br>\n<span class="user-group-mention" data-user-group-id="2">@Backend</span></p>'},
         {input: '@*notagroup*',
          expected: '<p>@*notagroup*</p>'},
+        {input: 'Silent group mention: @_*hamletcharacters*',
+         expected: '<p>Silent group mention: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>'},
+        {input: '> Mention group in quote: @*hamletcharacters*\n\nMention group outside quote: @*hamletcharacters*',
+         expected: '<blockquote>\n<p>Mention group in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>\n<p>Mention group outside quote: <span class="user-group-mention" data-user-group-id="1">@hamletcharacters</span></p>'},
         {input: 'This is a realm filter `hello` with text after it',
          expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
         // Test the emoticon conversion

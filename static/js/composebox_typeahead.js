@@ -355,7 +355,6 @@ exports.tokenize_compose_str = function (s) {
 
 function get_mention_candidates_data(is_silent) {
     var all_items = [];
-    var groups = [];
 
     if (!is_silent) {
         all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
@@ -369,9 +368,9 @@ function get_mention_candidates_data(is_silent) {
                 full_name: mention,
             };
         });
-        groups = user_groups.get_realm_user_groups();
     }
 
+    var groups = user_groups.get_realm_user_groups();
     var persons = people.get_realm_persons();
     return [].concat(persons, all_items, groups);
 }
@@ -561,11 +560,13 @@ exports.content_typeahead_selected = function (item) {
         } else if (beginning.endsWith('@')) {
             beginning = beginning.substring(0, beginning.length - 1);
         }
+        var mention_text = '';
         if (user_groups.is_user_group(item)) {
-            beginning += '@*' + item.name + '* ';
-            $(document).trigger('usermention_completed.zulip', {user_group: item});
+            mention_text = user_groups.get_mention_syntax(item.name, is_silent);
+            beginning += mention_text + ' ';
+            $(document).trigger('usermention_completed.zulip', {user_group: item, is_silent: is_silent});
         } else {
-            var mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
+            mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
             beginning += mention_text + ' ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item, is_silent: is_silent});
         }
