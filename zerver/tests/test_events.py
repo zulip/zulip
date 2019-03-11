@@ -524,6 +524,7 @@ class EventsRegisterTest(ZulipTestCase):
             if before != after:
                 raise AssertionError('Test is invalid--state actually does change here.')
 
+        self.user_profile.realm.refresh_from_db()
         normal_state = fetch_initial_state_data(
             self.user_profile, event_types, "",
             client_gravatar=True,
