@@ -55,7 +55,7 @@ def build_userprofile(timestamp: Any, domain_name: str,
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. avatar_list, which is list to map avatars to zulip avatard records.json
+    2. avatar_list, which is list to map avatars to zulip avatars records.json
     3. added_users, which is a dictionary to map from gitter user id to zulip id
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
