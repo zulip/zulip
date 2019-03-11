@@ -2,19 +2,29 @@
 var realm_logo = (function () {
     var exports = {};
 
-    function build_realm_logo_widget(args) {
+    exports.build_realm_logo_widget = function (upload_function, is_night) {
+        var selector_prefix = '#realm_';
+        if (is_night) {
+            selector_prefix = '#realm_night_';
+        }
+
+        var delete_button_elem = $(selector_prefix + "logo_delete_button");
+        var file_input_elem = $(selector_prefix + "logo_file_input");
+        var file_input_error_elem = $(selector_prefix + "logo_file_input_error");
+        var upload_button_elem = $(selector_prefix + "logo_upload_button");
+
         var get_file_input = function () {
-            return args.file_input_elem.expectOne();
+            return file_input_elem.expectOne();
         };
 
         if (page_params.realm_logo_source === 'D') {
-            args.delete_button_elem.hide();
+            delete_button_elem.hide();
         } else {
-            args.delete_button_elem.show();
+            delete_button_elem.show();
         }
 
-        var data = {night: JSON.stringify(args.is_night_mode)};
-        args.delete_button_elem.on('click', function (e) {
+        var data = {night: JSON.stringify(is_night)};
+        delete_button_elem.on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             channel.del({
@@ -25,35 +35,11 @@ var realm_logo = (function () {
 
         return upload_widget.build_direct_upload_widget(
             get_file_input,
-            args.file_input_error_elem.expectOne(),
-            args.upload_button_elem.expectOne(),
-            args.upload_function,
+            file_input_error_elem.expectOne(),
+            upload_button_elem.expectOne(),
+            upload_function,
             page_params.max_logo_file_size
         );
-    }
-
-    exports.build_realm_day_mode_logo_widget = function (upload_function) {
-        var args = {
-            delete_button_elem: $("#realm_logo_delete_button"),
-            file_input_elem: $('#realm_logo_file_input'),
-            file_input_error_elem: $("#realm_logo_file_input_error"),
-            is_night_mode: false,
-            upload_button_elem: $("#realm_logo_upload_button"),
-            upload_function: upload_function,
-        };
-        return build_realm_logo_widget(args);
-    };
-
-    exports.build_realm_night_mode_logo_widget = function (upload_function) {
-        var args = {
-            delete_button_elem: $("#realm_night_logo_delete_button"),
-            file_input_elem: $('#realm_night_logo_file_input'),
-            file_input_error_elem: $("#realm_night_logo_file_input_error"),
-            is_night_mode: true,
-            upload_button_elem: $("#realm_night_logo_upload_button"),
-            upload_function: upload_function,
-        };
-        return build_realm_logo_widget(args);
     };
 
     exports.rerender = function () {
