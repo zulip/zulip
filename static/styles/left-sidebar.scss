@@ -157,7 +157,6 @@ li.active-sub-filter {
 #global_filters .filter-icon {
     display: inline-block;
     min-width: $left_col_size;
-    text-align: center;
 }
 
 #global_filters .global-filter {
@@ -274,7 +273,6 @@ a.conversation-partners:hover {
     text-decoration: underline;
 }
 
-.filter-icon i,
 .all-messages-arrow i,
 .stream-sidebar-arrow i,
 .starred-messages-sidebar-arrow i,
@@ -448,7 +446,6 @@ li.show-more-private-messages {
     height: 8px;
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-left: 2px;
     position: relative;
     top: 0px;
 }
