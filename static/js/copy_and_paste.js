@@ -74,6 +74,29 @@ function construct_copy_div(div, start_id, end_id) {
 }
 
 function copy_handler() {
+    // This is the main handler for copying message content via
+    // `ctrl+C` in Zulip (note that this is totally independent of the
+    // "select region" copy behavior on Linux; that is handled
+    // entirely by the browser, our HTML layout, and our use of the
+    // no-select/auto-select CSS classes).  We put considerable effort
+    // into producing a nice result that pastes well into other tools.
+    // Our user-facing specification is the following:
+    //
+    // * If the selection is contained within a single message, we
+    //   want to just copy the portion that was selected, which we
+    //   implement by letting the browser handle the ctrl+C event.
+    //
+    // * Otherwise, we want to copy the bodies of all messages that
+    //   were partially covered by the selection.
+    //
+    // Firefox and Chrome handle selection of multiple messages
+    // differently. Firefox typically creates multiple ranges for the
+    // selection, whereas Chrome typically creates just one.
+    //
+    // Our goal in the below loop is to compute and be prepared to
+    // analyze the combined range of the selections, and copy their
+    // full content.
+
     var selection = window.getSelection();
     var i;
     var range;
@@ -85,8 +108,12 @@ function copy_handler() {
     var end_id;
     var start_data;
     var end_data;
+    // skip_same_td_check is true whenever we know for a fact that the
+    // selection covers multiple messages (and thus we should no
+    // longer consider letting the browser handle the copy event).
     var skip_same_td_check = false;
     var div = $('<div>');
+
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -96,17 +123,25 @@ function copy_handler() {
             return row.next();
         });
         if (start_data === undefined) {
-            return;
+            // Skip any selection sections that don't intersect a message.
+            continue;
         }
-        start_id = start_data[0];
+        if (start_id === undefined) {
+            // start_id is the Zulip message ID of the first message
+            // touched by the selection.
+            start_id = start_data[0];
+        }
 
         endc = $(range.endContainer);
-        // If the selection ends in the bottom whitespace, we should act as
-        // though the selection ends on the final message
-        // Chrome seems to like selecting the compose_close button
-        // when you go off the end of the last message
+        // If the selection ends in the bottom whitespace, we should
+        // act as though the selection ends on the final message.
+        // This handles the issue that Chrome seems to like selecting
+        // the compose_close button when you go off the end of the
+        // last message
         if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
             initial_end_tr = $(".message_row:last");
+            // The selection goes off the end of the message feed, so
+            // this is a multi-message selection.
             skip_same_td_check = true;
         } else {
             initial_end_tr = $(endc.parents('.selectable_row')[0]);
@@ -114,25 +149,46 @@ function copy_handler() {
         end_data = find_boundary_tr(initial_end_tr, function (row) {
             return row.prev();
         });
+
         if (end_data === undefined) {
-            return;
+            // Skip any selection sections that don't intersect a message.
+            continue;
         }
-        end_id = end_data[0];
+        if (end_data[0] !== undefined) {
+            end_id = end_data[0];
+        }
 
         if (start_data[1] || end_data[1]) {
+            // If the find_boundary_tr call for either the first or
+            // the last message covered by the selection
             skip_same_td_check = true;
         }
-
-        // we should let the browser handle the copy-paste entirely on its own
-        // (In this case, there is no need for our special copy code)
-        if (!skip_same_td_check &&
-            startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
-            return;
-        }
-
-        // Construct a div for what we want to copy (div)
-        construct_copy_div(div, start_id, end_id);
     }
+
+    if (start_id === undefined || end_id === undefined) {
+        // In this case either the starting message or the ending
+        // message is not defined, so this is definitely not a
+        // multi-message selection and we can let the browser handle
+        // the copy.
+        return;
+    }
+
+    if (!skip_same_td_check && start_id === end_id) {
+        // Check whether the selection both starts and ends in the
+        // same message.  If so, Let the browser handle this.
+        return;
+    }
+
+    // We've now decided to handle the copy event ourselves.
+    //
+    // We construct a temporary div for what we want the copy to pick up.
+    // We construct the div only once, rather than for each range as we can
+    // determine the starting and ending point with more confidence for the
+    // whole selection. When constructing for each `Range`, there is a high
+    // chance for overlaps between same message ids, avoiding which is much
+    // more difficult since we can get a range (start_id and end_id) for
+    // each selection `Range`.
+    construct_copy_div(div, start_id, end_id);
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
