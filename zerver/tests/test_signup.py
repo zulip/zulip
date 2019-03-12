@@ -320,9 +320,9 @@ class PasswordResetTest(ZulipTestCase):
             subdomain="invalid")
 
         # check the redirect link telling you to check mail for password reset link
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
-                                        result)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("There is no Zulip organization hosted at this subdomain.",
+                                result)
 
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
@@ -440,7 +440,7 @@ class LoginTest(ZulipTestCase):
     def test_login_invalid_subdomain(self) -> None:
         result = self.login_with_return(self.example_email("hamlet"), "xxx",
                                         subdomain="invalid")
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         self.assert_in_response("There is no Zulip organization hosted at this subdomain.", result)
         self.assertIsNone(get_session_dict_user(self.client.session))
 

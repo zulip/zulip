@@ -355,7 +355,8 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response(["Sign up now"], result)
         # Test non-existant domain
         result = self.client_get("/plans/", subdomain="moo")
-        self.assert_in_success_response(["does not exist"], result)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("does not exist", result)
         # Test valid domain, no login
         realm = get_realm("zulip")
         realm.plan_type = Realm.STANDARD_FREE

@@ -592,8 +592,9 @@ class SocialAuthBase(ZulipTestCase):
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         result = self.social_auth_test(account_data_dict,
                                        subdomain='nonexistent')
-        self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
-                                        result)
+        self.assert_in_response("There is no Zulip organization hosted at this subdomain.",
+                                result)
+        self.assertEqual(result.status_code, 404)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
@@ -1261,8 +1262,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response,
                                          subdomain='nonexistent')
-        self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
-                                        result)
+        self.assert_in_response("There is no Zulip organization hosted at this subdomain.",
+                                result)
+        self.assertEqual(result.status_code, 404)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
