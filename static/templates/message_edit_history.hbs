@@ -5,7 +5,7 @@
     <div class="date_row"><span>{{ display_date }}</span></div>
     {{/if}}
     <div class="messagebox-content">
-        <div class="message_top_line"><span class="message_time">{{ timestamp }}</span></div>
+        <div class="message_time">{{ timestamp }}</div>
         {{#if topic_edited}}
         <div class="message_content message_edit_history_content"><p>Topic: <span class="highlight_text_inserted">{{ new_topic }}</span> <span class="highlight_text_deleted">{{ prev_topic }}</span></p></div>
         {{/if}}
