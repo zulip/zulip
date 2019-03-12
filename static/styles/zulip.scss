@@ -435,16 +435,8 @@ code {
     /* 12/14 em, so bootstrap's default 12 px,
        when body is the default 14 px */
     font-size: 0.857em;
-}
-
-code::before {
-    /* Add a left-to-right embedding character before each code block */
-    content: '\202a';
-}
-
-code::after {
-    /* And add a pop directional formatting character after each code block */
-    content: '\202c';
+    unicode-bidi: embed;
+    direction: ltr;
 }
 
 .message_content code {
