@@ -390,115 +390,6 @@ exports.initialize = function () {
         popovers.hide_all();
     });
 
-    // BUDDY LIST HOVERS
-
-    $('#user_presences').on('mouseenter', '.user_circle', function (e) {
-        e.stopPropagation();
-        var elem = $(this);
-        var user_id = elem.attr('data-user-id');
-        var user_circle_class = buddy_data.get_user_circle_class(user_id);
-        var hover_text = user_circle_class.user_circle_status;
-        elem.tooltip({
-            title: hover_text,
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-    });
-
-    $('#user_presences').on('mouseleave click mousedown mouseup', '.user_circle', function (e) {
-        e.stopPropagation();
-        $(this).tooltip('destroy');
-    });
-
-    $('#user_presences').on('mouseenter', '.user-presence-link', function (e) {
-        e.stopPropagation();
-        var elem = $(this);
-        var user_id = elem.attr('data-user-id');
-        var hover_text = buddy_data.user_title(user_id);
-        elem.tooltip({
-            title: hover_text,
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-    });
-
-    $('#user_presences').on('mouseleave click mousedown mouseup', '.user-presence-link', function (e) {
-        e.stopPropagation();
-        $(this).tooltip('destroy');
-    });
-
-    // PM LIST HOVERS
-
-    $("body").on('mouseenter', '.user_circle_individual_pm', function (e) {
-        e.stopPropagation();
-        var elem = $(this);
-        var user_id = elem.attr('data-user-id');
-        var user_circle_class = buddy_data.get_user_circle_class(user_id);
-        var hover_text = user_circle_class.user_circle_status;
-        elem.tooltip({
-            title: hover_text,
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-    });
-
-    $("body").on('mouseleave click mousedown mouseup', '.user_circle_individual_pm', function (e) {
-        e.stopPropagation();
-        $(this).tooltip('destroy');
-    });
-
-    $("body").on('mouseenter', '.show_individual_pm', function (e) {
-        e.stopPropagation();
-        var elem = $(this);
-        var user_id = elem.attr('data-user-id');
-        var hover_text = buddy_data.user_title(user_id);
-        elem.tooltip({
-            title: hover_text,
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-    });
-
-    $("body").on('mouseleave click mousedown mouseup', '.show_individual_pm', function (e) {
-        e.stopPropagation();
-        $(this).tooltip('destroy');
-    });
-
-    // GROUP PM HOVERS
-
-    $("body").on('mouseenter', '.show_group_pm', function (e) {
-        e.stopPropagation();
-        var elem = $(this);
-        var user_ids_string = elem.attr('data-user-ids');
-        var hover_text = people.get_recipients(user_ids_string);
-        elem.tooltip({
-            title: hover_text,
-            trigger: 'hover',
-            placement: 'bottom',
-            animation: false,
-        });
-        elem.tooltip('show');
-    });
-
-    $("body").on('mouseleave click mousedown mouseup', '.show_group_pm', function (e) {
-        e.stopPropagation();
-        $(this).tooltip('destroy');
-    });
-
-    $("body").on('mouseenter', '.tooltip-inner', function (e) {
-        e.stopPropagation();
-        $(this).remove();
-        $(".tooltip-arrow").remove();
-    });
-
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
         var user_ids_string = $(e.target).parents('li').attr('data-user-ids');
         var emails = people.user_ids_string_to_emails_string(user_ids_string);
@@ -512,6 +403,66 @@ exports.initialize = function () {
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
             subs.close();
         }
+    });
+
+    // BUDDY LIST HOVERS
+
+    $('#user_presences').on('mouseenter', '.user_circle', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        components.register_tooltip(elem, content, 'bottom');
+    });
+
+    $('#user_presences').on('mouseleave', '.user_circle', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    $('#user_presences').on('mouseenter', '.user-presence-link', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        components.register_tooltip(elem, content, 'bottom');
+    });
+
+    $('#user_presences').on('mouseleave', '.user-presence-link', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    // PM LIST HOVERS
+
+    $("body").on('mouseenter', '.user_circle_individual_pm', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        components.register_tooltip(elem, content, 'bottom');
+    });
+
+    $("body").on('mouseleave', '.user_circle_individual_pm', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    $("body").on('mouseenter', '.show_pm_partner', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        components.register_tooltip(elem, content, 'bottom');
+    });
+
+    $("body").on('mouseleave', '.show_pm_partner', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    // DESTROY PERSISTING TOOLTIPS ON HOVER
+
+    $("body").on('mouseenter', '.tooltip-inner', function (e) {
+        e.stopPropagation();
+        $(this).remove();
+        $(".tooltip-arrow").remove();
     });
 
     // HOME

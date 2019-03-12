@@ -6,24 +6,15 @@
                 {{#if is_group}}
                     {{#if fraction_present}}
                     <span class="{{user_circle_class}} user_circle" style="background:rgba(68,194,29,{{fraction_present}});"></span>
-
-                    <a href='{{url}}' class="conversation-partners show_group_pm" data-user-ids="{{user_ids_string}}">
-                        {{recipients}}
-                    </a>
                     {{else}}
                     <span class="{{user_circle_class}} user_circle" style="background:none; border-color:rgb(127,127,127);"></span>
-
-                    <a href='{{url}}' class="conversation-partners show_group_pm" data-user-ids="{{user_ids_string}}">
-                        {{recipients}}
-                    </a>
                     {{/if}}
                 {{else}}
-                    <span class="{{user_circle_class}} user_circle user_circle_individual_pm" data-user-id="{{user_id}}"></span>
-
-                    <a href='{{url}}' class="conversation-partners show_individual_pm" data-user-id="{{user_id}}">
-                        {{recipients}}
-                    </a>
+                    <span class="{{user_circle_class}} user_circle user_circle_individual_pm" data-hover="{{user_circle_status}}"></span>
                 {{/if}}
+                <a href='{{url}}' class="conversation-partners show_pm_partner" data-hover="{{title}}">
+                    {{recipients}}
+                </a>
                 <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
                     <div class="value">{{unread}}</div>
                 </div>

@@ -264,6 +264,7 @@ exports.update_huddles = function () {
             href: hash_util.huddle_with_uri(huddle),
             fraction_present: buddy_data.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
+            title: people.get_recipients(huddle),
         };
     });
 

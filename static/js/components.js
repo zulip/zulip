@@ -125,6 +125,16 @@ exports.toggle = function (opts) {
     return prototype;
 };
 
+exports.register_tooltip = function (elem, content, placement) {
+    elem.tooltip({
+        title: content,
+        trigger: 'hover',
+        placement: placement,
+        animation: false,
+    });
+    elem.tooltip('show');
+};
+
 return exports;
 }());
 

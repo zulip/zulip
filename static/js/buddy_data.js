@@ -215,6 +215,7 @@ exports.info_for = function (user_id) {
     var user_circle_class = exports.get_user_circle_class(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
+    var title = exports.user_title(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -224,6 +225,8 @@ exports.info_for = function (user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class: user_circle_class.circle_color,
+        user_circle_status: user_circle_class.user_circle_status,
+        title: title,
     };
 };
 
