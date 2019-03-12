@@ -124,9 +124,10 @@ li.show-more-private-messages a {
 }
 
 .top_left_row:hover,
-#stream_filters li:hover,
+.bottom_left_row:hover,
 #stream_filters li.highlighted_stream {
     background-color: hsl(93, 18%, 82%);
+    border-radius: 4px;
 }
 
 #stream_filters li.active-sub-filter:hover {
@@ -152,6 +153,7 @@ li.active-sub-filter {
     font-weight: 600 !important;
     background-color: hsl(202, 56%, 91%);
     position: relative;
+    border-radius: 4px;
 }
 
 #global_filters .filter-icon {
@@ -179,7 +181,8 @@ li.show-more-private-messages {
 }
 
 .top_left_row,
-.narrows_panel li {
+.bottom_left_row,
+.top_left_private_messages {
     border-radius: 4px;
 }
 
