@@ -65,6 +65,12 @@ function should_skip_mobile_resize() {
         if ($('.stream-list-filter').is(':focus')) {
             return true;
         }
+        // Don't resize in mobile browser when the user is trying to add
+        // emoji to the message or trying to react on other message due
+        // to the reasons mentioned above.
+        if ($('.emoji-popover-filter').is(':focus')) {
+            return true;
+        }
     }
     // resize in all other cases.
     return false;
