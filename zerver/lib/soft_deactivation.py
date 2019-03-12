@@ -7,10 +7,10 @@ from django.db import transaction
 from django.db.models import Max
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from typing import DefaultDict, List, Union, Any
+from typing import DefaultDict, Dict, List, Optional, Union, Any
 
 from zerver.models import UserProfile, UserMessage, RealmAuditLog, \
-    Subscription, Message, Recipient, UserActivity
+    Subscription, Message, Recipient, UserActivity, Realm
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -209,6 +209,23 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
                      (len(user_batch), len(users)))
 
     return users_soft_deactivated
+
+def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Optional[Realm]) -> List[UserProfile]:
+    filter_kwargs = {}  # type: Dict[str, Realm]
+    if realm is not None:
+        filter_kwargs = dict(user_profile__realm=realm)
+    users_to_deactivate = get_users_for_soft_deactivation(inactive_for_days, filter_kwargs)
+    users_deactivated = do_soft_deactivate_users(users_to_deactivate)
+
+    if not settings.AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS:
+        logging.info('Not catching up users since AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS if off')
+        return users_deactivated
+
+    if realm is not None:
+        filter_kwargs = dict(realm=realm)
+    users_to_catch_up = get_soft_deactivated_users_for_catch_up(filter_kwargs)
+    do_catch_up_soft_deactivated_users(users_to_catch_up)
+    return users_deactivated
 
 def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[UserProfile, None]:
     if user_profile.long_term_idle:

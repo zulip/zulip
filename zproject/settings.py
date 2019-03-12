@@ -454,6 +454,12 @@ DEFAULT_SETTINGS.update({
     # Enables billing pages and plan-based feature gates. If False, all features
     # are available to all realms.
     'BILLING_ENABLED': False,
+
+    # Automatically catch-up soft deactivated users when running the
+    # `soft-deactivate-users` cron. Turn this off if the server has 10Ks of
+    # users, and you would like to save some disk space. Soft-deactivated
+    # returning users would still be caught-up normally.
+    'AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS': True,
 })
 
 
