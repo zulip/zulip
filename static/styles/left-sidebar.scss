@@ -164,8 +164,8 @@ li.active-sub-filter {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
-    padding-left: $far_left_gutter_size;
-    padding-right: 10px;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 .narrows_panel li {
@@ -464,6 +464,14 @@ li.show-more-private-messages {
 
 #global_filters {
     margin-bottom: 16px;
+}
+
+#global_filters li {
+    padding-left: 20px;
+}
+
+#global_filters li > a {
+    padding-left: 16px;
 }
 
 #global_filters i {
