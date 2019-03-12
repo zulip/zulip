@@ -1584,14 +1584,14 @@ blockquote p {
             .hash {
                 font-size: 1.2rem;
             }
-            .hash,
             i {
                 margin-right: 3px;
             }
-        }
-
-        li.private_message a {
-            color: hsl(0, 0%, 100%);
+            .hash,
+            .fa.fa-lock,
+            .fa.fa-home {
+                margin: 0px 5px 0px 5px;
+            }
         }
 
         a {
@@ -1621,7 +1621,6 @@ blockquote p {
             border-bottom-color: hsla(0, 0%, 0%, 0.0);
             background-color: hsl(0, 0%, 27%);
             border-left-color: hsl(0, 0%, 27%);
-            color: hsl(0, 0%, 100%);
             border-width: 0px;
         }
 
@@ -1990,7 +1989,6 @@ nav a .no-style {
     width: 100%;
     height: 40px;
     border-left: 1px solid hsl(0, 0%, 88%);
-
     .navbar-search {
         position: absolute;
         right: 0;
@@ -2009,6 +2007,7 @@ nav a .no-style {
         border-left: 1px solid hsl(0, 0%, 87.8%);
         .search_button {
             display: inline;
+            margin-right: 5px;
         }
         @media (max-width: 1025px) {
             width: calc(100% - 85px);

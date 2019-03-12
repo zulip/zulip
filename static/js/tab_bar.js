@@ -138,6 +138,103 @@ exports.colorize_tab_bar = function () {
     }
 };
 
+function hide_stream_details() {
+    $(".stream_description").hide();
+    $(".number_of_users").hide();
+}
+
+function empty_nav_bar() {
+    $("#tab_list").addClass("hidden");
+    hide_stream_details();
+    $(".hash").hide();
+    $(".navbar-lock").hide();
+    $(".navbar-search").removeClass("expanded");
+}
+
+function render_stream_details(stream_term) {
+    $("#tab_list").removeClass("hidden");
+    var stream_name = stream_term.operand;
+    var stream  = stream_data.get_sub_by_name(stream_name);
+    if (stream === undefined) {
+        return;
+    }
+    $(".stream_description").text(stream.description);
+    $(".nav_bar_user_count").append("<i class=\"fa fa-user-o\"></i> ");
+    $(".nav_bar_user_count").append(stream.subscriber_count);
+    $(".stream_description").show();
+    $(".number_of_users").show();
+    if (stream.invite_only) {
+        $(".navbar-lock").show();
+    } else {
+        $(".hash").show();
+    }
+}
+
+function close_search_bar() {
+    $("#tab_list").removeClass("hidden");
+    $(".navbar-search").removeClass("expanded");
+}
+
+function open_search_bar() {
+    $("#tab_list").addClass("hidden");
+    $(".navbar-search").addClass("expanded");
+}
+
+function display_navbar_elements() {
+    empty_nav_bar();
+    // Handle initializing and home narrow
+    var filter = narrow_state.filter();
+    if (filter === undefined) {
+        close_search_bar();
+        return;
+    }
+
+    var operator_terms = narrow_state.operators();
+
+    var stream_term = _.find(operator_terms, function (term) { return term.operator === "stream";});
+    // Handle stream narrow
+    if (stream_term) {
+        render_stream_details(stream_term);
+        // Does not return in order to handle stream + search or stream + topic + search
+    }
+
+    // Handle search narrow and ANY multi-filter narrows
+    var search_term = _.find(operator_terms, function (term) { return term.operator === "search";});
+    if (search_term ||
+        operator_terms.length > 1 &&
+        // NOT stream > topic
+        !(operator_terms.length === 2 && stream_term && _.find(operator_terms, function (term) { return term.operator === "topic";}))) {
+        open_search_bar();
+        return; // Stream + search or stream + topic + search would return at this point
+    }
+
+    $("#tab_list").removeClass("hidden");
+
+    var operator_term = operator_terms[0];
+
+    if (operator_term.operator === "is") {
+        // Keep navbar open for is:unread or is:alerted
+        if (operator_term.operand === "unread" || operator_term.operand === "alerted") {
+            open_search_bar();
+        }
+
+        // TODO: show mention and star with custom icons instead of lock icon
+        // hide hash and lock for is:mention and is:starred narrows (displayed without any icons)
+        // if (operator_term.operand === "mentioned" || operator_term.operand === "starred") {
+        // }
+    }
+    // TODO: show PMs with mail icon instead of lock icon
+    // hide hash for private messages (private messages displayed with lock icons)
+    if (operator_term.operator === "pm-with" ||
+    operator_term.operator === "group-pm-with" ||
+    operator_term.operator === "is" && operator_term.operand === "private") {
+        $(".navbar-lock").show();
+    }
+    // hide hash and lock for "sent by X" (displayed without any icons)
+    // if (operator_term.operator === "sender") {
+    // }
+}
+
 function build_tab_bar() {
     var tabs = make_tab_data();
 
@@ -149,6 +246,7 @@ function build_tab_bar() {
 
     tab_bar.append(rendered);
     exports.colorize_tab_bar();
+    display_navbar_elements();
     tab_bar.removeClass('notdisplayed');
 }
 

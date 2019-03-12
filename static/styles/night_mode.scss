@@ -81,7 +81,7 @@ body.night-mode {
 on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
     #tab_list li.stream:not(.dark_background) {
-        color: hsl(212, 28%, 18%) !important;
+        color: hsl(212, 28%, 18%);
     }
 
     /* these are converting grey things to "new grey" */
