@@ -373,7 +373,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
             if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
                 realm = get_realm(subdomain)
                 if (realm is None):
-                    return render(request, "zerver/invalid_realm.html")
+                    return render(request, "zerver/invalid_realm.html", status=404)
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie or delete
