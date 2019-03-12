@@ -13,6 +13,7 @@ from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     SOCIAL_AUTH_BACKENDS,
 )
+from zerver.decorator import get_client_name
 from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
@@ -96,10 +97,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
-    if hasattr(request, "client") and request.client.name == "ZulipElectron":
-        platform = "ZulipElectron"  # nocoverage
-    else:
-        platform = "ZulipWeb"
+    # We can't use request.client here because we might not be using
+    # an auth decorator that sets it, but we can call its helper to
+    # get the same result.
+    platform = get_client_name(request, True)
 
     context = {
         'root_domain_landing_page': settings.ROOT_DOMAIN_LANDING_PAGE,
