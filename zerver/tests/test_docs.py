@@ -184,6 +184,14 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
         self.assertEqual(result.status_code, 404)
 
+    def test_electron_detection(self) -> None:
+        result = self.client_get("/accounts/password/reset/")
+        self.assertTrue('data-platform="website"' in result.content.decode("utf-8"))
+
+        result = self.client_get("/accounts/password/reset/",
+                                 HTTP_USER_AGENT="ZulipElectron/1.0.0")
+        self.assertTrue('data-platform="ZulipElectron"' in result.content.decode("utf-8"))
+
 class HelpTest(ZulipTestCase):
     def test_help_settings_links(self) -> None:
         result = self.client_get('/help/change-the-time-format')
