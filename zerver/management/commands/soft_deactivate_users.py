@@ -7,7 +7,7 @@ from django.core.management.base import CommandError
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import do_soft_activate_users, \
-    do_soft_deactivate_users, get_users_for_soft_deactivation, logger
+    do_soft_deactivate_users, do_auto_soft_deactivate_users, logger
 from zerver.models import Realm, UserProfile
 
 def get_users_from_emails(emails: Any,
@@ -73,15 +73,12 @@ class Command(ZulipBaseCommand):
             if user_emails:
                 users_to_deactivate = get_users_from_emails(user_emails, filter_kwargs)
                 print('Soft deactivating forcefully...')
-            else:
-                if realm is not None:
-                    filter_kwargs = dict(user_profile__realm=realm)
-                users_to_deactivate = get_users_for_soft_deactivation(int(options['inactive_for']),
-                                                                      filter_kwargs)
-
-            if users_to_deactivate:
                 users_deactivated = do_soft_deactivate_users(users_to_deactivate)
-                logger.info('Soft Deactivated %d user(s)' % (len(users_deactivated)))
+            else:
+                users_deactivated = do_auto_soft_deactivate_users(int(options['inactive_for']),
+                                                                  realm)
+            logger.info('Soft Deactivated %d user(s)' % (len(users_deactivated)))
+
         else:
             self.print_help("./manage.py", "soft_deactivate_users")
             sys.exit(1)

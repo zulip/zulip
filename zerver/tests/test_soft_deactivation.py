@@ -10,7 +10,8 @@ from zerver.lib.soft_deactivation import (
     get_users_for_soft_deactivation,
     do_soft_activate_users,
     get_soft_deactivated_users_for_catch_up,
-    do_catch_up_soft_deactivated_users
+    do_catch_up_soft_deactivated_users,
+    do_auto_soft_deactivate_users
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
@@ -149,3 +150,70 @@ class UserSoftDeactivationTests(ZulipTestCase):
             user.refresh_from_db()
             self.assertTrue(user.long_term_idle)
             self.assertEqual(user.last_active_message_id, message_id)
+
+    def test_do_auto_soft_deactivate_users(self) -> None:
+        users = [
+            self.example_user('iago'),
+            self.example_user('cordelia'),
+            self.example_user('ZOE'),
+            self.example_user('othello'),
+            self.example_user('prospero'),
+            self.example_user('aaron'),
+            self.example_user('polonius'),
+        ]
+        sender = self.example_user('hamlet')
+        realm = get_realm('zulip')
+        stream_name = 'announce'
+        for user in users + [sender]:
+            self.subscribe(user, stream_name)
+
+        client, _ = Client.objects.get_or_create(name='website')
+        query = '/json/users/me/pointer'
+        last_visit = timezone_now()
+        count = 150
+        for user_profile in users:
+            UserActivity.objects.get_or_create(
+                user_profile=user_profile,
+                client=client,
+                query=query,
+                count=count,
+                last_visit=last_visit
+            )
+
+        with mock.patch('logging.info'):
+            users_deactivated = do_auto_soft_deactivate_users(-1, realm)
+        self.assert_length(users_deactivated, len(users))
+        for user in users:
+            self.assertTrue(user in users_deactivated)
+
+        # Verify that deactivated users are caught up automatically
+
+        message_id = self.send_stream_message(sender.email, stream_name)
+        received_count = UserMessage.objects.filter(user_profile__in=users,
+                                                    message_id=message_id).count()
+        self.assertEqual(0, received_count)
+
+        with mock.patch('logging.info'):
+            users_deactivated = do_auto_soft_deactivate_users(-1, realm)
+
+        self.assert_length(users_deactivated, 0)   # all users are already deactivated
+        received_count = UserMessage.objects.filter(user_profile__in=users,
+                                                    message_id=message_id).count()
+        self.assertEqual(len(users), received_count)
+
+        # Verify that deactivated users are NOT caught up if
+        # AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS is off
+
+        message_id = self.send_stream_message(sender.email, stream_name)
+        received_count = UserMessage.objects.filter(user_profile__in=users,
+                                                    message_id=message_id).count()
+        self.assertEqual(0, received_count)
+
+        with self.settings(AUTO_CATCH_UP_SOFT_DEACTIVATED_USERS=False):
+            with mock.patch('logging.info'):
+                users_deactivated = do_auto_soft_deactivate_users(-1, realm)
+
+        self.assert_length(users_deactivated, 0)   # all users are already deactivated
+        received_count = UserMessage.objects.filter(user_profile__in=users,
+                                                    message_id=message_id).count()
+        self.assertEqual(0, received_count)
