@@ -305,7 +305,7 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(199, 33%, 46%, 0.2);
     }
 
-    #global_filters li:hover,
+    .top_left_row:hover,
     #stream_filters li:hover,
     #stream_filters li.highlighted_stream,
     #group-pms li:hover,
