@@ -1,5 +1,13 @@
 @import './reuseable_components.scss';
 
+// Width of the message box left and right columns
+// These should be in sync with ones in media.scss
+$message_left_column_width: 46px;
+// For right column the calculations are as follows:
+// 47px (timestamp) + 5px (space between right-col and message) + rest for message controls = 105px
+$message_right_column_width: 105px;
+$message_middle_column_width: calc(100% - #{$message_left_column_width} - #{$message_right_column_width});
+
 body,
 html {
     width: 100%;
@@ -557,35 +565,26 @@ td.pointer {
 .message_edit_notice {
     font-size: 10px;
     opacity: 0.5;
-    line-height: 0px;
-    text-align: right;
-    width: 45px;
-    position: absolute;
-    left: 0px;
-    top: 16px;
+    line-height: 23px;
     @include prefixed-user-select(none);
 }
 
 .include-sender .message_time {
-    top: -4px;
+    line-height: 1;
 }
 
 .message_time {
     display: block;
     font-size: 12px;
     opacity: 0.4;
-    vertical-align: middle;
     padding: 1px;
     font-weight: 400;
-    position: absolute;
-    right: -105px;
     line-height: 20px;
-    text-align: right;
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 }
 
 #message-edit-history .message_time {
-    position: static;
+    text-align: right;
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -593,13 +592,12 @@ td.pointer {
    but it works. */
 .alert-msg {
     position: absolute;
-    right: -110px;
     font-size: 14px;
     color: hsl(170, 48%, 54%);
     background-color: hsl(0, 0%, 100%);
     z-index: 999;
-    padding-left: 20px;
-    padding-right: 40px;
+    width: 100%;
+    text-align: center;
     font-weight: 400;
     display: none;
 }
@@ -612,16 +610,13 @@ td.pointer {
     top: -3px;
 }
 
-.status-time {
-    top: 8px !important;
+.include-sender .message_controls {
+    line-height: 1;
 }
 
 .message_controls {
-    display: inline-block;
-    position: absolute;
-    top: 1px;
-    right: -56px;
-    z-index: 1;
+    line-height: 22px;
+    margin-left: 5px;
 
     > div {
         opacity: 0;
@@ -696,10 +691,6 @@ td.pointer {
         opacity: 1;
         pointer-events: all;
     }
-}
-
-.include-sender .message_controls {
-    top: -3px;
 }
 
 .message_header {
@@ -1022,10 +1013,6 @@ td.pointer {
     background-color: hsl(8, 94%, 94%);
 }
 
-.messagebox .message_top_line {
-    position: relative;
-}
-
 .recipient_row .message_row:first-child .unread_marker {
     top: 0px;
 }
@@ -1077,24 +1064,17 @@ td.pointer {
         1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
-.message_sender {
-    height: 0px;
-    vertical-align: top;
-    position: relative;
-}
-
 .sender_name {
     display: inline-block;
     font-weight: 700;
     vertical-align: top;
     line-height: 12px;
     font-size: 14px;
-    margin-left: -3px;
 }
 
 .sender-status {
     display: inline-block;
-    margin: 8px 0px 8px -3px;
+    margin: 8px 0px 8px;
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
@@ -1114,14 +1094,14 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.message_sender i.zulip-icon.bot,
+.sender_info_hover i.zulip-icon.bot,
 .popover_info i.zulip-icon.bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
 }
 
-.message_sender i.zulip-icon.bot {
+.sender_info_hover i.zulip-icon.bot {
     font-size: 12px;
 }
 
@@ -1190,14 +1170,6 @@ a.dark_background:hover,
     color: hsl(200, 99%, 60%);
 }
 
-.message_top_line {
-    position: relative;
-}
-
-.include-sender .message_top_line {
-    margin-top: 6px;
-}
-
 .small {
     font-size: 80%;
 }
@@ -1245,14 +1217,13 @@ div.focused_table {
 }
 
 .include-sender .message_content:not(:empty) {
-    margin-top: -18px;
+    margin-top: -3px;
 }
 
 .message_content {
     line-height: 1.214;
     min-height: 17px;
     font-size: 14px;
-    margin-left: 46px;
     display: block;
     position: relative;
 }
@@ -1355,11 +1326,6 @@ div.focused_table {
     display: none;
     text-align: center;
     color: hsl(200, 100%, 40%);
-
-    /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
-    /* to make message-uncollapse easier */
     margin-top: 10px;
 }
 
@@ -1376,7 +1342,42 @@ div.focused_table {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 4px 10px 1px;
+}
+
+.draft-row .messagebox-content {
+    padding-right: 0;
+}
+
+#message-history .messagebox-content {
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.include-sender .messagebox-content {
+    padding-top: 10px;
+}
+
+.messagebox-content .left-col {
+    width: $message_left_column_width;
+}
+
+.messagebox-content .right-col {
+    min-width: $message_right_column_width;
+    position: relative;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.messagebox-content .middle-col {
+    max-width: $message_middle_column_width;
+    flex: 1;
 }
 
 #message-edit-history .messagebox-content {
@@ -2400,14 +2401,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: -50%;
 }
 
-.include-sender .message_edit {
-    margin-top: -14px;
-}
-
 .message_edit {
     display: none;
     margin-top: 5px;
-    margin-left: 47px;
     position: relative;
 }
 

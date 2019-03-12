@@ -261,7 +261,7 @@ function timer_text(seconds_left) {
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
-    var content_top = row.find('.message_top_line')[0]
+    var content_top = row.find('.left-col')[0]
         .getBoundingClientRect().top;
 
     var message = current_msg_list.get(rows.id(row));

@@ -1,3 +1,6 @@
+$draft_controls_div_width: 115px;
+$draft_message_box_width: calc(100% - #{$draft_controls_div_width});
+
 .drafts-container {
     position: relative;
     height: 95%;
@@ -100,14 +103,14 @@
     padding-top: 10px;
     padding-bottom: 10px;
     margin-left: 0px;
+    width: $draft_message_box_width;
 }
 
 .draft-row .draft-info-box .draft_controls {
-    display: inline-block;
-    position: absolute;
-    top: 9px;
-    right: -80px;
     font-size: 0.9em;
+    width: $draft_controls_div_width;
+    text-align: center;
+    padding-top: 9px;
 }
 
 .draft_controls .restore-draft {

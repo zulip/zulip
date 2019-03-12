@@ -669,7 +669,7 @@ exports.user_info_popover_handle_keyboard = function (key) {
 
 exports.show_sender_info = function () {
     var $message = $(".selected_message");
-    var $sender = $message.find('.sender_info_hover');
+    var $sender = $message.find('.left-col');
 
     var message = current_msg_list.get(rows.id($message));
     var user = people.get_person_from_user_id(message.sender_id);

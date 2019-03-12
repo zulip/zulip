@@ -265,39 +265,47 @@
         top: 30px;
     }
 
-    .messagebox-content {
-        padding-right: 15px;
+    /* Message controls overlap over the message content
+    We currently have no better way to express the controls
+    in mobile view (and you don't have a mouse so hovering
+    isn't the correct UI mechanism anyway).
+    The following code makes the controls position absolute
+    until the overlap bug is resolved. */
+
+    // These dimentions should be in sync with the actual dimensions
+    $message_left_column_width: 46px;
+    $message_right_column_width: 47px + 5px; // 5px for space between message content and time
+    $message_middle_column_width: calc(100% - #{$message_left_column_width} - #{$message_right_column_width});
+
+    .messagebox-content .left-col {
+        width: $message_left_column_width;
     }
 
-    .message_time {
-        right: auto;
-        left: -3px;
+    .messagebox-content .right-col {
+        min-width: $message_right_column_width;
+    }
+
+    .messagebox-content .middle-col {
+        max-width: $message_middle_column_width;
     }
 
     .message_controls {
+        position: absolute;
         width: 56px;
-        right: -10px;
-        top: 0px;
+        z-index: 1;
+        display: inline-block;
+        top: 0;
+        right: 47px;
     }
 
     .include-sender .message_controls {
         background: none !important;
         padding: none !important;
         border: none !important;
-        top: -3px;
-    }
-
-    .message_time {
-        left: auto;
-        right: -5px;
-    }
-
-    .message_controls {
-        right: 40px;
     }
 
     .sender_name {
-        max-width: 250px;
+        max-width: 100%;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -315,10 +323,6 @@
 
     #floating_recipient_bar {
         top: 40px;
-    }
-
-    .message_content {
-        padding-right: 50px;
     }
 }
 

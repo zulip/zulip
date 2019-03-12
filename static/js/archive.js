@@ -85,12 +85,12 @@ exports.initialize = function () {
     $('.recipient_row').each(function () {
         if (prev_sender !== undefined) {
             var first_group_msg = $(this).find('.message_row').first();
-            var message_sender = first_group_msg.find('.message_sender');
+            var message_sender = first_group_msg.find('.sender_info_hover');
             if (!message_sender.find('.inline_profile_picture').length) {
                 message_sender.replaceWith(prev_sender.clone());
             }
         }
-        var all_senders = $(this).find('.message_sender').has('.inline_profile_picture');
+        var all_senders = $(this).find('.sender_info_hover').has('.inline_profile_picture');
         prev_sender = all_senders.last();
     });
 

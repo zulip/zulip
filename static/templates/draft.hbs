@@ -30,13 +30,11 @@
         <div class="message_row{{^is_stream}} private-message{{/is_stream}}" role="listitem">
             <div class="messagebox">
                 <div class="messagebox-content">
-                    <div class="message_top_line">
-                        <div class="draft_controls">
-                            <i class="fa fa-pencil fa-lg restore-draft" aria-hidden="true" data-toggle="tooltip" title="{{t 'Restore draft' }}"></i>
-                            <i class="fa fa-trash-o fa-lg delete-draft" aria-hidden="true" data-toggle="tooltip" title="{{t 'Delete draft' }} (Backspace)"></i>
-                        </div>
-                    </div>
                     <div class="message_content rendered_markdown restore-draft" data-toggle="tooltip" title="{{t 'Restore draft' }}">{{{content}}}</div>
+                    <div class="draft_controls">
+                        <i class="fa fa-pencil fa-lg restore-draft" aria-hidden="true" data-toggle="tooltip" title="{{t 'Restore draft' }}"></i>
+                        <i class="fa fa-trash-o fa-lg delete-draft" aria-hidden="true" data-toggle="tooltip" title="{{t 'Delete draft' }} (Backspace)"></i>
+                    </div>
                 </div>
             </div>
         </div>
