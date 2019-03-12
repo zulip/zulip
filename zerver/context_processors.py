@@ -96,7 +96,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
-    if hasattr(request, "client") and request.client.name == "ZulipElectron":
+    if hasattr(request, 'META') and ('HTTP_USER_AGENT' in request.META) and ('Electron' in request.META['HTTP_USER_AGENT']):
         platform = "ZulipElectron"  # nocoverage
     else:
         platform = "ZulipWeb"
