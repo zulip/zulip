@@ -119,10 +119,10 @@ def update_messages_for_topic_edit(message: Message,
                                    orig_topic_name: str,
                                    topic_name: str) -> List[Message]:
     propagate_query = Q(recipient = message.recipient, subject = orig_topic_name)
-    # We only change messages up to 2 days in the past, to avoid hammering our
+    # We only change messages up to 7 days in the past, to avoid hammering our
     # DB by changing an unbounded amount of messages
     if propagate_mode == 'change_all':
-        before_bound = timezone_now() - datetime.timedelta(days=2)
+        before_bound = timezone_now() - datetime.timedelta(days=7)
 
         propagate_query = (propagate_query & ~Q(id = message.id) &
                            Q(date_sent__range=(before_bound, timezone_now())))
