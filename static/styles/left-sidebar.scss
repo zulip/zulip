@@ -160,14 +160,25 @@ li.active-sub-filter {
     text-align: center;
 }
 
-#global_filters .global-filter {
+li.top_left_all_messages,
+.private_messages_header,
+li.top_left_mentions,
+li.top_left_starred_messages {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
+}
+
+.top_left_row {
     padding-left: $far_left_gutter_size;
     padding-right: 10px;
 }
 
+li.show-more-private-messages {
+    padding-left: $far_left_gutter_size + $left_col_size;
+}
+
+.top_left_row,
 .narrows_panel li {
     border-radius: 4px;
 }
@@ -413,10 +424,6 @@ li.expanded_private_message {
 
 li.expanded_private_message a {
     margin: 1px 0px;
-}
-
-li.show-more-private-messages {
-    padding-left: $left_col_size;
 }
 
 .show-all-streams a {

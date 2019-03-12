@@ -2,7 +2,7 @@
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
             {# Special-case this link so we don't actually go to page top. #}
-            <li class="top_left_all_messages global-filter active-filter" title="{{ _('All messages') }} (Esc)">
+            <li class="top_left_all_messages top_left_row active-filter" title="{{ _('All messages') }} (Esc)">
                 <a href="#">
                     <span class="filter-icon">
                         <i class="fa fa-home" aria-hidden="true"></i>
@@ -15,19 +15,21 @@
                 </a>
                 <span class="arrow all-messages-arrow"><i class="fa fa-chevron-down" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_private_messages global-filter">
-                <a href="#narrow/is/private">
-                    <span class="filter-icon">
-                        <i class="fa fa-envelope" aria-hidden="true"></i>
-                    </span>
-                    {#- squash whitespace -#}
-                    <span title="{{ _('Private messages') }} (P)">{{ _('Private messages') }}</span>
-                    <span class="count">
-                        <span class="value"></span>
-                    </span>
-                </a>
+            <li class="top_left_private_messages">
+                <div class="private_messages_header top_left_row">
+                    <a href="#narrow/is/private">
+                        <span class="filter-icon">
+                            <i class="fa fa-envelope" aria-hidden="true"></i>
+                        </span>
+                        {#- squash whitespace -#}
+                        <span title="{{ _('Private messages') }} (P)">{{ _('Private messages') }}</span>
+                        <span class="count">
+                            <span class="value"></span>
+                        </span>
+                    </a>
+                </div>
             </li>
-            <li class="top_left_mentions global-filter">
+            <li class="top_left_mentions top_left_row">
                 <a href="#narrow/is/mentioned">
                     <span class="filter-icon">
                         <i class="fa fa-at" aria-hidden="true"></i>
@@ -39,7 +41,7 @@
                     </span>
                 </a>
             </li>
-            <li class="top_left_starred_messages global-filter">
+            <li class="top_left_starred_messages top_left_row">
                 <a href="#narrow/is/starred">
                     <span class="filter-icon">
                         <i class="fa fa-star" aria-hidden="true"></i>
