@@ -190,10 +190,6 @@ li.show-more-private-messages {
     line-height: 1.25;
 }
 
-a.conversation-partners:hover {
-    text-decoration: underline;
-}
-
 .top_left_all_messages i.fa-home {
     position: relative;
     top: 1px;
@@ -275,10 +271,6 @@ a.conversation-partners:hover {
 .topic-name {
     /* TODO: We should figure out how to remove this without changing the spacing */
     line-height: 1.1;
-}
-
-.narrows_panel li a.topic-name:hover {
-    text-decoration: underline;
 }
 
 .filter-icon i,
