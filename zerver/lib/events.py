@@ -26,7 +26,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
 from zerver.lib.push_notifications import push_notifications_enabled
-from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
+from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.request import JsonableError
@@ -768,7 +768,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
         event_types_set = None
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned
-    maybe_catch_up_soft_deactivated_user(user_profile)
+    reactivate_user_if_soft_deactivated(user_profile)
 
     ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
                                    client_gravatar=client_gravatar,

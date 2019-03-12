@@ -210,7 +210,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
 
     return users_soft_deactivated
 
-def maybe_catch_up_soft_deactivated_user(user_profile: UserProfile) -> Union[UserProfile, None]:
+def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[UserProfile, None]:
     if user_profile.long_term_idle:
         add_missing_messages(user_profile)
         user_profile.long_term_idle = False
@@ -245,7 +245,7 @@ def get_users_for_soft_deactivation(inactive_for_days: int, filter_kwargs: Any) 
 def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
-        user_activated = maybe_catch_up_soft_deactivated_user(user_profile)
+        user_activated = reactivate_user_if_soft_deactivated(user_profile)
         if user_activated:
             users_soft_activated.append(user_activated)
     return users_soft_activated

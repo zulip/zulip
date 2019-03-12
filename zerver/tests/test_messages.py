@@ -76,7 +76,7 @@ from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_soft_activate_users,
     do_soft_deactivate_users,
-    maybe_catch_up_soft_deactivated_user,
+    reactivate_user_if_soft_deactivated,
 )
 
 from zerver.models import (
@@ -3639,7 +3639,7 @@ class DeleteMessageTest(ZulipTestCase):
 
 class SoftDeactivationMessageTest(ZulipTestCase):
 
-    def test_maybe_catch_up_soft_deactivated_user(self) -> None:
+    def test_reactivate_user_if_soft_deactivated(self) -> None:
         recipient_list  = [self.example_user("hamlet"), self.example_user("iago")]
         for user_profile in recipient_list:
             self.subscribe(user_profile, "Denmark")
@@ -3666,7 +3666,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
         with queries_captured() as queries:
-            maybe_catch_up_soft_deactivated_user(long_term_idle_user)
+            reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assert_length(queries, 8)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(last_realm_audit_log_entry(
