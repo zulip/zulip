@@ -252,19 +252,25 @@ run_test('last_seen_status_from_date', () => {
                 i18n.t("Yesterday"));
 
     assert_same(function (d) { return d.addDays(-2); },
-                i18n.t("On Feb 28"));
+                i18n.t("2 days ago"));
 
     assert_same(function (d) { return d.addDays(-61); },
-                i18n.t("On Dec 31"));
+                i18n.t("61 days ago"));
 
     assert_same(function (d) { return d.addDays(-300); },
-                i18n.t("On May 06"));
+                i18n.t("May 06,\xa02015"));
 
     assert_same(function (d) { return d.addDays(-366); },
-                i18n.t("On Mar 01, 2015"));
+                i18n.t("Mar 01,\xa02015"));
 
     assert_same(function (d) { return d.addYears(-3); },
-                i18n.t("On Mar 01, 2013"));
+                i18n.t("Mar 01,\xa02013"));
+
+    // Set base_dateto to May 1 2016 12.30 AM (months are zero based)
+    base_date = new XDate(2016, 4, 1, 0, 30);
+
+    assert_same(function (d) { return d.addDays(-91); },
+                i18n.t("Jan\xa031"));
 
 });
 

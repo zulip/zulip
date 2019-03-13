@@ -88,12 +88,17 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     if (days === 1) {
         return [i18n.t("Yesterday")];
     }
-    if (days < 365) {
-        return i18n.t("On __last_active__",
-                      {last_active: last_active_date.toString("MMM\xa0dd")});
-    }
 
-    return i18n.t("On __last_active_date__",
+    if (days < 90) {
+        return i18n.t("__days__ days ago", {days: days});
+    } else if (days > 90 && days < 365) {
+        if (current_date.getFullYear() === last_active_date.getFullYear()) {
+            // Online more than 90 days ago, in the same year
+            return i18n.t("__last_active_date__",
+                          {last_active_date: last_active_date.toString("MMM\xa0dd")});
+        }
+    }
+    return i18n.t("__last_active_date__",
                   {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
 };
 
