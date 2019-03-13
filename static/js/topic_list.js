@@ -116,9 +116,16 @@ exports.widget = function (parent_elem, my_stream_id) {
             ul.append(li);
         });
 
+        // Now, we decide whether we need to show the "more topics"
+        // widget.  We need it if there are at least 5 topics in the
+        // frontend's cache, or if we (possibly) don't have all
+        // historical topics in the browser's cache.
         var show_more = self.build_more_topics_section();
-        ul.append(show_more);
+        var sub = stream_data.get_sub_by_id(my_stream_id);
 
+        if (topic_names.length > max_topics || !stream_data.all_topics_in_cache(sub)) {
+            ul.append(show_more);
+        }
         return ul;
     };
 

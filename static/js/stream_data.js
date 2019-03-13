@@ -356,6 +356,43 @@ exports.get_announcement_only = function (stream_name) {
     return sub.is_announcement_only;
 };
 
+exports.all_topics_in_cache = function (sub) {
+    // Checks whether this browser's cache in message_list.all has all
+    // messages from a given stream, and thus all historical topics
+    // for it.
+
+    // If the cache isn't initialized, it's a clear false.
+    if (message_list.all === undefined || message_list.all.empty()) {
+        return false;
+    }
+
+    // If the cache doesn't have the latest messages, we can't be sure
+    // we have all topics.
+    if (!message_list.all.fetch_status.has_found_newest()) {
+        return false;
+    }
+
+    // This happens before message_list.all is initialized; just
+    // return false since the cache is empty.
+    var first_cached_message = message_list.all.first();
+    if (first_cached_message === undefined) {
+        return false;
+    }
+
+    if (sub.first_message_id === null) {
+        // If the stream has no message history, we have it all
+        // vacuously.  This should be a very rare condition, since
+        // stream creation sends a message.
+        return true;
+    }
+
+    // Now, we can just compare the first cached message to the first
+    // message ID in the stream; if it's older, we're good, otherwise,
+    // we might be missing the oldest topics in this stream in our
+    // cache.
+    return first_cached_message.id <= sub.first_message_id;
+};
+
 var default_stream_ids = new Dict();
 
 exports.set_realm_default_streams = function (realm_default_streams) {
@@ -516,6 +553,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         email_notifications: page_params.enable_stream_email_notifications,
         description: '',
         rendered_description: '',
+        first_message_id: attrs.first_message_id,
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);

@@ -426,7 +426,6 @@ exports.MessageList.prototype = {
     get_last_message_sent_by_me: function () {
         return this.data.get_last_message_sent_by_me();
     },
-
 };
 
 exports.all = new exports.MessageList({
