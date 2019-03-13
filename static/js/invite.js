@@ -70,14 +70,35 @@ function submit_invitation_form() {
                 // Some users were not invited.
                 var invitee_emails_errored = [];
                 var error_list = [];
+                var is_invitee_deactivated = false;
+
                 arr.errors.forEach(function (value) {
                     error_list.push(value.join(': '));
+                    if (value[1] === "Account has been deactivated.") {
+                        is_invitee_deactivated = true;
+                    }
                     invitee_emails_errored.push(value[0]);
                 });
+
+                // The non_admin_error is the error which has to be sent when a non_admin
+                // is trying to invite a deactivated user. admin_error is the error which
+                // has to be sent when a admin is trying to invite a deactivated user.
+                // is_invitee_deactivated is used to check if the invitee is deactivated
+                // or not. check_if_admin is used to check if the user is a admin or not.
+                var non_admin_error = i18n.t('Organization administrators can reactivate deactivated users.');
+                var admin_error = i18n.t('You can reactivate deactivated users from <a href="#organization/deactivated-users-admin"> organization settings.</a>');
+                var check_if_admin = false;
+                if (page_params.is_admin) {
+                    check_if_admin = true;
+                }
 
                 var error_response = templates.render("invitation_failed_error", {
                     error_message: arr.msg,
                     error_list: error_list,
+                    admin_error: admin_error,
+                    non_admin_error: non_admin_error,
+                    check_if_admin: check_if_admin,
+                    is_invitee_deactivated: is_invitee_deactivated,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass('warning');

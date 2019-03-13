@@ -4,3 +4,10 @@
     <li>{{this}}</li>
     {{/each}}
 </ul>
+{{#if is_invitee_deactivated}}
+    {{#if check_if_admin}}
+    <p>{{{admin_error}}}</p>
+    {{else}}
+    <p>{{non_admin_error}}</p>
+    {{/if}}
+{{/if}}
