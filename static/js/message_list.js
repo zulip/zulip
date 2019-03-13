@@ -427,6 +427,18 @@ exports.MessageList.prototype = {
         return this.data.get_last_message_sent_by_me();
     },
 
+    get_stream_first_message_id: function (stream_id) {
+        var msgs = [];
+        _.each(this.data, function (message) {
+            _.each(message, function (msg) {
+                if (msg !== undefined && stream_id === msg.stream_id) {
+                    msgs.push(msg);
+                }
+            });
+        });
+        return msgs;
+    },
+
 };
 
 exports.all = new exports.MessageList({

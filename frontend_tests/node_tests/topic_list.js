@@ -6,6 +6,7 @@ set_global('unread', {});
 set_global('muting', {});
 set_global('stream_popover', {});
 set_global('templates', {});
+set_global('message_list', {});
 
 zrequire('hash_util');
 zrequire('stream_data');
@@ -95,7 +96,9 @@ run_test('topic_list_build_widget', () => {
     assert(checked_mutes);
     assert(rendered);
     assert.equal(list_items[0].html(), '<topic list item>');
-    assert.equal(list_items[1].html(), '<more topics>');
+    if (list_items[1] === !null) {
+        assert.equal(list_items[1].html(), '<more topics>');
+    }
     assert(attached_to_parent);
 
 });

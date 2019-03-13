@@ -7,6 +7,8 @@ set_global('$', function () {
 });
 
 set_global('blueslip', global.make_zblueslip());
+set_global('document', null);
+global.stub_out_jquery();
 
 zrequire('color_data');
 zrequire('util');
@@ -16,6 +18,11 @@ zrequire('people');
 zrequire('stream_color');
 zrequire('stream_data');
 zrequire('marked', 'third/marked/lib/marked');
+zrequire('FetchStatus', 'js/fetch_status');
+zrequire('Filter', 'js/filter');
+zrequire('MessageListData', 'js/message_list_data');
+zrequire('MessageListView', 'js/message_list_view');
+zrequire('message_list');
 
 run_test('basics', () => {
     var denmark = {
@@ -807,4 +814,19 @@ run_test('get_invite_stream_data', () => {
         default_stream: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
+});
+
+run_test('is_more_topics_needed', () => {
+    // adding default stream including first_message_id
+    var general = {
+        name: 'general',
+        stream_id: 21,
+        first_message_id: 2,
+    };
+    var messages = [{id: 1, stream_id: 21}, {id: 2, stream_id: 21}, {id: 3, stream_id: 21}];
+    var sub = stream_data.create_sub_from_server_data('general', general);
+    message_list.all.data.add_messages(messages);
+    assert.equal(stream_data.is_more_topics_needed(sub), false);
+    sub.first_message_id = 0;
+    assert.equal(stream_data.is_more_topics_needed(sub), true);
 });
