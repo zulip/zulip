@@ -45,6 +45,13 @@ urls = [
 
     # Listing of useful URLs and various tools for development
     url(r'^devtools/$', TemplateView.as_view(template_name='zerver/dev_tools.html')),
+    # Register New User and Realm
+    url(r'^devtools/register_user/$',
+        zerver.views.development.registration.register_development_user,
+        name='zerver.views.development.registration.register_development_user'),
+    url(r'^devtools/register_realm/$',
+        zerver.views.development.registration.register_development_realm,
+        name='zerver.views.development.registration.register_development_realm'),
 
     # Have easy access for error pages
     url(r'^errors/404/$', TemplateView.as_view(template_name='404.html')),

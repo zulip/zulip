@@ -1739,6 +1739,16 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
             self.assert_in_response('New organization creation disabled', result)
 
+    @override_settings(TERMS_OF_SERVICE=False)
+    def test_create_dev_realm(self) -> None:
+        count = UserProfile.objects.count()
+        string_id = "realm-%d" % (count,)
+        result = self.client_post('/devtools/register_realm/')
+        realm = Realm.objects.get(string_id=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].startswith('http://{}.testserver'.format(string_id)))
+        self.assertEqual(realm.string_id, string_id)
+
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
         password = "test"
@@ -3117,6 +3127,17 @@ class UserSignUpTest(InviteUserBase):
 
         with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
             self.client_post('/register/', {'email': email}, subdomain="zephyr")
+
+    @override_settings(TERMS_OF_SERVICE=False)
+    def test_dev_user_registration(self) -> None:
+        count = UserProfile.objects.count()
+        email = "user-%d@zulip.com" % (count,)
+        result = self.client_post('/devtools/register_user/')
+        profile = UserProfile.objects.get(email=email)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(profile.email, email)
+        response = self.client_get('/login/')
+        self.assertEqual(response["Location"], "http://zulip.testserver")
 
 class DeactivateUserTest(ZulipTestCase):
 
