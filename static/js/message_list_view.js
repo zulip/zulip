@@ -191,6 +191,15 @@ MessageListView.prototype = {
     // trigger a re-render
     _RENDER_THRESHOLD: 50,
 
+    _get_msg_timestring: function (message_container) {
+        if (message_container.msg.last_edit_timestamp !== undefined) {
+            var last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
+            var today = new XDate();
+            return timerender.render_date(last_edit_time, undefined, today)[0].textContent +
+                " at " + timerender.stringify_time(last_edit_time);
+        }
+    },
+
     _add_msg_timestring: function (message_container) {
         if (message_container.msg.last_edit_timestamp !== undefined) {
             // Add or update the last_edit_timestr
