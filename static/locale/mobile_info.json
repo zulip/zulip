@@ -1,46 +1,46 @@
 {
   "bg": {
-    "not_translated": 24,
-    "total": 162
-  },
-  "ca": {
-    "not_translated": 83,
-    "total": 162
-  },
-  "cs": {
-    "not_translated": 0,
-    "total": 162
-  },
-  "de": {
-    "not_translated": 0,
-    "total": 162
-  },
-  "es": {
-    "not_translated": 23,
-    "total": 162
-  },
-  "fi": {
-    "not_translated": 32,
-    "total": 162
-  },
-  "fr": {
-    "not_translated": 3,
-    "total": 162
-  },
-  "gl": {
-    "not_translated": 33,
-    "total": 162
-  },
-  "hi": {
-    "not_translated": 2,
-    "total": 162
-  },
-  "hu": {
     "not_translated": 25,
     "total": 162
   },
-  "id_ID": {
+  "ca": {
+    "not_translated": 85,
+    "total": 162
+  },
+  "cs": {
+    "not_translated": 1,
+    "total": 162
+  },
+  "de": {
+    "not_translated": 1,
+    "total": 162
+  },
+  "es": {
+    "not_translated": 24,
+    "total": 162
+  },
+  "fi": {
     "not_translated": 33,
+    "total": 162
+  },
+  "fr": {
+    "not_translated": 4,
+    "total": 162
+  },
+  "gl": {
+    "not_translated": 35,
+    "total": 162
+  },
+  "hi": {
+    "not_translated": 4,
+    "total": 162
+  },
+  "hu": {
+    "not_translated": 26,
+    "total": 162
+  },
+  "id_ID": {
+    "not_translated": 34,
     "total": 162
   },
   "it": {
@@ -48,11 +48,11 @@
     "total": 162
   },
   "ja": {
-    "not_translated": 55,
+    "not_translated": 56,
     "total": 162
   },
   "ko": {
-    "not_translated": 23,
+    "not_translated": 24,
     "total": 162
   },
   "ml": {
@@ -60,27 +60,27 @@
     "total": 162
   },
   "nl": {
-    "not_translated": 26,
+    "not_translated": 27,
     "total": 162
   },
   "pl": {
-    "not_translated": 23,
-    "total": 162
-  },
-  "pt": {
-    "not_translated": 0,
-    "total": 162
-  },
-  "ru": {
     "not_translated": 24,
     "total": 162
   },
+  "pt": {
+    "not_translated": 1,
+    "total": 162
+  },
+  "ru": {
+    "not_translated": 25,
+    "total": 162
+  },
   "sr": {
-    "not_translated": 144,
+    "not_translated": 143,
     "total": 162
   },
   "ta": {
-    "not_translated": 98,
+    "not_translated": 99,
     "total": 162
   },
   "tr": {
@@ -88,15 +88,15 @@
     "total": 162
   },
   "uk": {
-    "not_translated": 28,
+    "not_translated": 29,
     "total": 162
   },
   "zh_Hans": {
-    "not_translated": 23,
+    "not_translated": 24,
     "total": 162
   },
   "zh_Hant": {
-    "not_translated": 133,
+    "not_translated": 134,
     "total": 162
   }
 }
