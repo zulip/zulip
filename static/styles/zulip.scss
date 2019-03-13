@@ -1560,6 +1560,9 @@ blockquote p {
         border: none;
         white-space: nowrap;
         width: 100%;
+        .hidden {
+            display: none;
+        }
 
         li {
             white-space: nowrap;
@@ -1937,7 +1940,7 @@ nav a .no-style {
         visibility: hidden;
     }
 
-    a.search_icon {
+    .search_icon {
         display: table;
         height: 100%;
         color: hsl(0, 0%, 80%);
@@ -1954,7 +1957,7 @@ nav a .no-style {
         }
     }
 
-    a.search_icon:hover {
+    .search_icon:hover {
         color: hsl(0, 0%, 0%);
         text-decoration: none;
     }
@@ -2072,7 +2075,7 @@ nav a .no-style {
         visibility: hidden;
     }
 
-    a.search_icon {
+    .search_icon {
         color: hsl(0, 0%, 80%);
         text-decoration: none;
         display: block;
@@ -2080,7 +2083,7 @@ nav a .no-style {
         height: 1px;
     }
 
-    a.search_icon:hover {
+    .search_icon:hover {
         color: hsl(0, 0%, 0%);
         text-decoration: none;
     }
