@@ -6,5 +6,9 @@
         <li>{{t "The email will be forwarded to this stream" }}</li>
         <li>{{#tr this}}The email subject will become the Zulip topic{{/tr}}</li>
         <li>{{#tr this}}The email body will become the Zulip message{{/tr}}</li>
+        <li>
+            {{#tr this}}The message will begin with "From: &lt;Your email address&gt;" <br />
+            as long as you include the +show-sender part of the address{{/tr}}
+        </li>
     </ul>
 </div>
