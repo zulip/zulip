@@ -3,4 +3,5 @@
 set -e
 set -x
 
+./manage.py makemessages --locale=en
 tx push -s -r zulip.djangopo,zulip.translationsjson
