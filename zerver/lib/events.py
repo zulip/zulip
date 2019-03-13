@@ -375,11 +375,11 @@ def apply_event(state: Dict[str, Any],
         if event['message']['type'] != "stream":
             return
 
-        for sub_dict in state['subscriptions']:
+        for sub_dict in state.get('subscriptions', []):
             if event['message']['stream_id'] == sub_dict['stream_id']:
                 if sub_dict['first_message_id'] is None:
                     sub_dict['first_message_id'] = event['message']['id']
-        for stream_dict in state['streams']:
+        for stream_dict in state.get('streams', []):
             if event['message']['stream_id'] == stream_dict['stream_id']:
                 if stream_dict['first_message_id'] is None:
                     stream_dict['first_message_id'] = event['message']['id']
