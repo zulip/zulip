@@ -2234,6 +2234,13 @@ input.new-organization-button {
     text-align: right;
 }
 
+#devtools-registration {
+    float: left;
+    form {
+        display: inline;
+    }
+}
+
 #devtools-page {
     max-width: 800px;
     margin: 0 auto;

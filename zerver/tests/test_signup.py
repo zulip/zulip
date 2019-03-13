@@ -3118,6 +3118,37 @@ class UserSignUpTest(InviteUserBase):
         with self.assertRaisesRegex(AssertionError, "Mirror dummy user is already active!"):
             self.client_post('/register/', {'email': email}, subdomain="zephyr")
 
+    @override_settings(TERMS_OF_SERVICE=False)
+    def test_dev_user_registration(self) -> None:
+        """Verify that /devtools/register_user creates a new user, logs them
+        in, and redirects to the logged-in app."""
+        count = UserProfile.objects.count()
+        email = "user-%d@zulip.com" % (count,)
+
+        result = self.client_post('/devtools/register_user/')
+        user_profile = UserProfile.objects.all().order_by("id").last()
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(user_profile.email, email)
+        self.assertEqual(result['Location'], "http://zulip.testserver/")
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    @override_settings(TERMS_OF_SERVICE=False)
+    def test_dev_user_registration_create_realm(self) -> None:
+        count = UserProfile.objects.count()
+        string_id = "realm-%d" % (count,)
+
+        result = self.client_post('/devtools/register_realm/')
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].startswith(
+            'http://{}.testserver/accounts/login/subdomain'.format(string_id)))
+        result = self.client_get(result["Location"], subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], 'http://{}.testserver'.format(string_id))
+
+        user_profile = UserProfile.objects.all().order_by("id").last()
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
 class DeactivateUserTest(ZulipTestCase):
 
     def test_deactivate_user(self) -> None:
