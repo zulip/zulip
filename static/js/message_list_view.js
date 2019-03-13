@@ -200,7 +200,7 @@ MessageListView.prototype = {
         }
     },
 
-    _add_msg_timestring: function (message_container) {
+    _add_msg_edited_vars: function (message_container) {
         var last_edit_timestr = this._get_msg_timestring(message_container);
         if (last_edit_timestr !== undefined) {
             message_container.last_edit_timestr = last_edit_timestr;
@@ -321,7 +321,7 @@ MessageListView.prototype = {
             message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
             message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
 
-            self._add_msg_timestring(message_container);
+            self._add_msg_edited_vars(message_container);
 
             message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
             if (message_container.msg.stream !== undefined) {
@@ -1153,7 +1153,7 @@ MessageListView.prototype = {
         var was_selected = this.list.selected_message() === message_container.msg;
 
         // Re-render just this one message
-        this._add_msg_timestring(message_container);
+        this._add_msg_edited_vars(message_container);
         this._maybe_format_me_message(message_container);
 
         // Make sure the right thing happens if the message was edited to mention us.
