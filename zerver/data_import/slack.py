@@ -732,7 +732,7 @@ def process_message_files(message: ZerverFieldsT,
     markdown_links = []
 
     for fileinfo in files:
-        if fileinfo['mode'] == 'tombstone':
+        if fileinfo.get('mode', '') == 'tombstone':
             # Slack sometimes includes tombstone mode files with no
             # real data on the actual file (presumably in cases where
             # the file was deleted).
