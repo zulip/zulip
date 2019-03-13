@@ -2650,7 +2650,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     invite_only=stream.invite_only,
                     is_announcement_only=stream.is_announcement_only,
                     color=subscription.color,
-                    email_address=encode_email_address(stream),
+                    email_address=encode_email_address(stream, show_sender=True),
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
                     push_notifications=subscription.push_notifications,
@@ -3480,7 +3480,7 @@ def do_rename_stream(stream: Stream,
     # date field in all cases.
     cache_delete_many(
         to_dict_cache_key_id(message.id) for message in messages)
-    new_email = encode_email_address(stream)
+    new_email = encode_email_address(stream, show_sender=True)
 
     # We will tell our users to essentially
     # update stream.name = new_name where name = old_name
@@ -4598,6 +4598,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if not sub["active"] and user_profile.is_guest:
             subscribers = None
 
+        email_address = encode_email_address_helper(stream["name"], stream["email_token"],
+                                                    show_sender=True)
         stream_dict = {'name': stream["name"],
                        'in_home_view': sub["in_home_view"],
                        'invite_only': stream["invite_only"],
@@ -4616,7 +4618,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
                                                                                   stream["date_created"],
                                                                                   recent_traffic),
-                       'email_address': encode_email_address_helper(stream["name"], stream["email_token"]),
+                       'email_address': email_address,
                        'history_public_to_subscribers': stream['history_public_to_subscribers']}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers

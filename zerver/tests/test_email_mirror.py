@@ -63,9 +63,9 @@ class TestEncodeDecode(ZulipTestCase):
         self.assertFalse(show_sender)
         self.assertEqual(token, stream.email_token)
 
-        parts = email_address.split('@')
-        parts[0] += "+show-sender"
-        email_address_show = '@'.join(parts)
+        email_address_show = encode_email_address(stream, show_sender=True)
+        self.assertTrue(email_address_show.split('@')[0].endswith('+show-sender'))
+
         token, show_sender = decode_email_address(email_address_show)
         self.assertTrue(show_sender)
         self.assertEqual(token, stream.email_token)
@@ -117,6 +117,12 @@ class TestEncodeDecode(ZulipTestCase):
         # Correctly decode the resulting address that doesn't have the stream name:
         token, show_sender = decode_email_address(email_address)
         self.assertFalse(show_sender)
+        self.assertEqual(token, stream.email_token)
+
+        # Make sure show_sender works:
+        email_address = encode_email_address(stream, show_sender=True)
+        token, show_sender = decode_email_address(email_address)
+        self.assertTrue(show_sender)
         self.assertEqual(token, stream.email_token)
 
         asciiable_stream_name = "ąężć"
