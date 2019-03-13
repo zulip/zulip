@@ -225,8 +225,9 @@ class TestSendWebhookFixtureMessage(TestCase):
         get_fixture_as_json_mock.return_value = "{}"
 
         improper_headers = '{"X-Custom - Headers": "some_val"}'
-        with self.assertRaises(SystemExit) as se:
-            call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url, custom_headers=improper_headers)
+        with self.assertRaises(SystemExit):
+            call_command(self.COMMAND_NAME, fixture=self.fixture_path, url=self.url,
+                         custom_headers=improper_headers)
 
         parse_headers_mock.assert_called_once_with(improper_headers)
 
