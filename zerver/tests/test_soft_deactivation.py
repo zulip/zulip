@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import mock
+
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.soft_deactivation import (
@@ -21,7 +23,8 @@ class UserSoftDeactivationTests(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertFalse(user.long_term_idle)
 
-        do_soft_deactivate_user(user)
+        with mock.patch('logging.info'):
+            do_soft_deactivate_user(user)
 
         user.refresh_from_db()
         self.assertTrue(user.long_term_idle)
@@ -39,7 +42,9 @@ class UserSoftDeactivationTests(ZulipTestCase):
         # one UserMessage row.
         self.send_huddle_message(users[0].email,
                                  [user.email for user in users])
-        do_soft_deactivate_users(users)
+
+        with mock.patch('logging.info'):
+            do_soft_deactivate_users(users)
 
         for user in users:
             user.refresh_from_db()
@@ -83,11 +88,13 @@ class UserSoftDeactivationTests(ZulipTestCase):
         ]
         self.send_huddle_message(users[0].email,
                                  [user.email for user in users])
-        do_soft_deactivate_users(users)
+        with mock.patch('logging.info'):
+            do_soft_deactivate_users(users)
         for user in users:
             self.assertTrue(user.long_term_idle)
 
-        do_soft_activate_users(users)
+        with mock.patch('logging.info'):
+            do_soft_activate_users(users)
 
         for user in users:
             user.refresh_from_db()
@@ -126,13 +133,15 @@ class UserSoftDeactivationTests(ZulipTestCase):
         for user in all_users:
             self.subscribe(user, stream)
 
-        do_soft_deactivate_users(users)
+        with mock.patch('logging.info'):
+            do_soft_deactivate_users(users)
         for user in users:
             self.assertTrue(user.long_term_idle)
 
         message_id = self.send_stream_message(hamlet.email, stream, 'Hello world!')
         already_received = UserMessage.objects.filter(message_id=message_id).count()
-        do_catch_up_soft_deactivated_users(users)
+        with mock.patch('logging.info'):
+            do_catch_up_soft_deactivated_users(users)
         catch_up_received = UserMessage.objects.filter(message_id=message_id).count()
         self.assertEqual(already_received + len(users), catch_up_received)
 
