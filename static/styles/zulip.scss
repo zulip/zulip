@@ -1577,7 +1577,7 @@ blockquote p {
             margin: 0 -4px 0 0;
             text-overflow: ellipsis;
             padding: 12px 5px;
-            background: 0 !important; // Hack to override bg color that's set inline via js
+            background: 0;
             @media (max-width: 500px) {
                 padding: 8px 5px;
             }
@@ -1608,7 +1608,6 @@ blockquote p {
         }
 
         li.active {
-            background-color: hsl(0, 0%, 88%);
             max-width: 150px;
             white-space: nowrap;
             overflow: hidden;
@@ -1616,11 +1615,6 @@ blockquote p {
         }
 
         li.private_message {
-            border-top-color: hsla(0, 0%, 0%, 0.0);
-            border-right-color: hsla(0, 0%, 0%, 0.0);
-            border-bottom-color: hsla(0, 0%, 0%, 0.0);
-            background-color: hsl(0, 0%, 27%);
-            border-left-color: hsl(0, 0%, 27%);
             border-width: 0px;
         }
 
@@ -1672,8 +1666,6 @@ blockquote p {
         }
 
         .root {
-            border-color: hsl(0, 0%, 88%);
-            background-color: hsl(0, 0%, 88%);
             margin: 0px;
             a {
                 color: hsl(0, 0%, 52%);

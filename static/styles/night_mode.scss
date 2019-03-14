@@ -79,8 +79,7 @@ body.night-mode {
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
-    #tab_list li.stream:not(.dark_background) {
+    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
         color: hsl(212, 28%, 18%);
     }
 
