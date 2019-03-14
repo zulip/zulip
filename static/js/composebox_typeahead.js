@@ -129,6 +129,13 @@ function query_matches_emoji(query, emoji) {
     return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
 
+function is_cursor_after_fence() {
+    var compose_box_elem = $("#compose-textarea");
+    var cursor_splits = exports.split_at_cursor(compose_box_elem.val(), compose_box_elem);
+    var before_cursor_str = cursor_splits[0];
+    return before_cursor_str.endsWith("\n```") || before_cursor_str.endsWith("\n~~~");
+}
+
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
@@ -143,7 +150,7 @@ exports.should_enter_send = function (e) {
         // With the enter_sends setting, we should send
         // the message unless the user was holding a
         // modifier key.
-        this_enter_sends = !has_modifier_key;
+        this_enter_sends = has_modifier_key ? false : !is_cursor_after_fence();
     } else {
         // If enter_sends is not enabled, just hitting
         // enter should add a newline, but with a
