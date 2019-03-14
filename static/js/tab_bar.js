@@ -55,29 +55,25 @@ function make_tab_data() {
         if (filter.has_operator("stream")) {
             stream = filter.operands("stream")[0];
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
-        } else if (filter.has_operator("pm-with") ||
-                   filter.has_operand("is", "private")) {
-
+        } else if (filter.has_operand("is", "private")) {
             tabs.push(make_tab("Private Messages", '#narrow/is/private',
                                undefined, 'private_message '));
 
-            if (filter.has_operator("pm-with")) {
-                var emails = filter.operands("pm-with")[0].split(',');
-                var names = _.map(emails, function (email) {
-                    if (!people.get_by_email(email)) {
-                        return email;
-                    }
-                    return people.get_by_email(email).full_name;
-                });
+        } else if (filter.has_operator("pm-with")) {
+            // We show PMs tabs as just the name(s) of the participant(s)
+            var emails = filter.operands("pm-with")[0].split(',');
+            var names = _.map(emails, function (email) {
+                if (!people.get_by_email(email)) {
+                    return email;
+                }
+                return people.get_by_email(email).full_name;
+            });
 
-                tabs.push(make_tab(names.join(', '), hashed));
-            }
+            tabs.push(make_tab(names.join(', '), hashed));
 
         } else if (filter.has_operator("group-pm-with")) {
-
             tabs.push(make_tab("Group Private", '#narrow/group-pm-with',
                                undefined, 'private_message '));
-
 
         } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab("Starred", hashed));
