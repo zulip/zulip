@@ -133,9 +133,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         message_id = self.send_stream_message(hamlet.email, stream, 'Hello world!')
         already_received = UserMessage.objects.filter(message_id=message_id).count()
         do_catch_up_soft_deactivated_users(users)
+        catch_up_received = UserMessage.objects.filter(message_id=message_id).count()
+        self.assertEqual(already_received + len(users), catch_up_received)
 
         for user in users:
             user.refresh_from_db()
             self.assertTrue(user.long_term_idle)
-            catch_up_received = UserMessage.objects.filter(message_id=message_id).count()
-            self.assertEqual(already_received + len(users), catch_up_received)
+            self.assertEqual(user.last_active_message_id, message_id)
