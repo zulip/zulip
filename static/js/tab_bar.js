@@ -98,15 +98,6 @@ function make_tab_data() {
             // a search narrow
             tabs.push(make_tab("Search results", false));
         }
-
-        // Third breadcrumb item for stream-topic naarrows
-        if (filter.has_operator("stream") &&
-            filter.has_operator("topic")) {
-            var topic = filter.operands("topic")[0];
-            hashed = hash_util.operators_to_hash(ops.slice(0, 2));
-
-            tabs.push(make_tab(topic, hashed, null));
-        }
     }
 
     if (tabs.length === 0) {
