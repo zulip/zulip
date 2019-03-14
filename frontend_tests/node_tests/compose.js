@@ -868,6 +868,13 @@ run_test('initialize', () => {
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
 
+    (function create_stream_dropdown() {
+        global.templates.render = function (template_name, streams) {
+            assert(template_name, 'compose_stream_dropdown');
+            assert.equal(streams.hasOwnProperty('streams'), true);
+        };
+    }());
+
     var resize_watch_manual_resize_checked = false;
     resize.watch_manual_resize = function (elem) {
         assert.equal('#compose-textarea', elem);

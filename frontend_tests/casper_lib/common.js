@@ -89,6 +89,25 @@ exports.initialize_casper = function () {
         return this;
     };
 
+    // This allows us to take a select drop-down list and iterate through,
+    // searching for a specified value
+    casper.selectOptionByValue = function (selector, valueToMatch) {
+        this.evaluate(function (selector, valueToMatch) {
+            var select = document.querySelector(selector);
+            var found = false;
+            _.each(select.children, function (opt, i) {
+                if (!found && opt.value.indexOf(valueToMatch) !== -1) {
+                    select.selectedIndex = i;
+                    found = true;
+                }
+            });
+            // dispatch change event in case there is some kind of validation
+            var evt = document.createEvent("UIEvents"); // or "HTMLEvents"
+            evt.initUIEvent("change", true, true);
+            select.dispatchEvent(evt);
+        }, selector, valueToMatch);
+    };
+
     casper.evaluate(function () {
         window.localStorage.clear();
     });
@@ -231,6 +250,9 @@ exports.then_send_message = function (type, params) {
     casper.then(function () {
         if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
+            // Change the drop-box option to the specified stream
+            casper.selectOptionByValue('#stream_message_recipient_stream', params.stream);
+            delete params.stream;
         } else if (type === "private") {
             casper.page.sendEvent('keypress', "x");
         } else {
@@ -239,11 +261,6 @@ exports.then_send_message = function (type, params) {
 
         exports.pm_recipient.set(params.recipient);
         delete params.recipient;
-
-        if (params.stream) {
-            params.stream_message_recipient_stream = params.stream;
-            delete params.stream;
-        }
 
         if (params.subject) {
             params.stream_message_recipient_topic = params.subject;

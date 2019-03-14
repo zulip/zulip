@@ -580,6 +580,11 @@ on a dark background, and don't change the dark labels dark either. */
     }
 }
 
+body.night-mode #compose select {
+    background-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0%, 0%, 0%, 0.5);
+}
+
 @-moz-document url-prefix() {
     body.night-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);

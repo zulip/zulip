@@ -770,6 +770,17 @@ exports.render_and_show_preview = function (preview_spinner, preview_content_box
     }
 };
 
+exports.render_stream_dropdown = function () {
+    var subscribed_streams = stream_data.subscribed_streams();
+    // Sort the streams as they appear in the left sidebar
+    subscribed_streams.sort(function (a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+
+    var rendered_foo = templates.render("compose_stream_dropdown", {streams: subscribed_streams});
+    $("#compose_stream_dropdown").html(rendered_foo);
+};
+
 exports.initialize = function () {
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('keyup', update_fade);
     $('#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient').on('change', update_fade);
@@ -788,6 +799,8 @@ exports.initialize = function () {
     resize.watch_manual_resize("#compose-textarea");
 
     upload.feature_check($("#compose #attach_files"));
+
+    exports.render_stream_dropdown();
 
     // Show a warning if a user @-mentions someone who will not receive this message
     $(document).on('usermention_completed.zulip', function (event, data) {
@@ -1050,6 +1063,38 @@ exports.initialize = function () {
             mode: 'compose',
         })
     );
+
+    $("#stream_message_recipient_stream").on('focus', function () {
+        var streams = stream_data.subscribed_streams();
+        var $select = $("#stream_message_recipient_stream");
+        var $options = $("#stream_message_recipient_stream>option");
+
+        streams.sort(function (a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        });
+
+        // In the event of new streams being added or removed we should acknowledge the event
+        // without refreshing the window
+        if ($options.length !== streams.length) {
+            $select.html('');
+            _.each(streams, function (stream) {
+                $select.append('<option value="' + stream + '">' + stream + '</option>');
+            });
+        }
+
+        // TODO: This is pretty hacky and will pollute the dropdown with a
+        // bunch of empty valued options, but this might not even be the
+        // correct approach, UI-wise, in regard to handling a streamless view
+        if ($("#stream_message_recipient_stream :selected").text() === '') {
+            $select.append('<option value="">Select stream...</option>');
+            $("#stream_message_recipient_stream>option:last-child").prop('selected', true);
+        }
+    });
+
+    $("#stream_message_recipient_stream").on('change', function () {
+        compose_actions.start('stream', {stream: this.value});
+        $("#stream_message_recipient_topic").focus();
+    });
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {

@@ -1,0 +1,10 @@
+{{! Content of the stream drop-down }}
+<select name="streams" class="compose_stream_dropdown recipient_box" id="stream_message_recipient_stream">
+    {{#unless streams}}
+    <option></option>
+    {{/unless}}
+
+    {{#each streams}}
+    <option value="{{ this }}">{{ this }}</option>
+    {{/each}}
+</select>

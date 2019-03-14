@@ -47,9 +47,9 @@ casper.then(function () {
     casper.test.info('Creating Stream Message Draft');
     casper.click('body');
     casper.page.sendEvent('keypress', "c");
+    casper.selectOptionByValue('#stream_message_recipient_stream', 'all');
     casper.waitUntilVisible('#stream-message', function () {
         casper.fill('form#send_message_form', {
-            stream_message_recipient_stream: 'all',
             stream_message_recipient_topic: 'tests',
             content: 'Test Stream Message',
         }, false);
@@ -90,7 +90,6 @@ casper.then(function () {
     waitUntilDraftsVisible(function () {
         casper.test.assertElementCount('.draft-row', 2, 'Drafts loaded');
 
-        casper.test.assertSelectorHasText('.draft-row .message_header_stream .stream_label', 'all');
         casper.test.assertSelectorHasText('.draft-row .message_header_stream .stream_topic', 'tests');
         casper.test.assertTextExists('Test Stream Message', 'Stream draft contains message content');
 
@@ -103,11 +102,11 @@ casper.then(function () {
 casper.then(function () {
     casper.test.info('Restoring Stream Message Draft');
     casper.click("#drafts_table .message_row:not(.private-message) .restore-draft");
+    casper.selectOptionByValue('#stream_message_recipient_stream', 'all');
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#stream-message', 'Stream Message Box Restored');
         casper.test.assertNotVisible('#preview_message_area', 'Preview Was Hidden');
         common.check_form('form#send_message_form', {
-            stream_message_recipient_stream: 'all',
             stream_message_recipient_topic: 'tests',
             content: 'Test Stream Message',
         }, "Stream message box filled with draft content");
@@ -117,8 +116,8 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.info('Editing Stream Message Draft');
+    casper.selectOptionByValue('#stream_message_recipient_stream', 'all');
     casper.fill('form#send_message_form', {
-        stream_message_recipient_stream: 'all',
         stream_message_recipient_topic: 'tests',
         content: 'Updated Stream Message',
     }, false);
@@ -133,7 +132,6 @@ casper.then(function () {
 
 casper.then(function () {
     waitUntilDraftsVisible(function () {
-        casper.test.assertSelectorHasText('.draft-row .message_header_stream .stream_label', 'all');
         casper.test.assertSelectorHasText('.draft-row .message_header_stream .stream_topic', 'tests');
         casper.test.assertTextExists('Updated Stream Message', 'Stream draft contains message content');
     });

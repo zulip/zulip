@@ -44,7 +44,6 @@ function check_compose_is_cleared() {
     common.check_form(
         '#send_message_form',
         {
-            stream_message_recipient_stream: '',
             stream_message_recipient_topic: '',
         },
         "Stream empty on new compose"
@@ -88,7 +87,6 @@ casper.then(function () {
         common.check_form(
             '#send_message_form',
             {
-                stream_message_recipient_stream: "Verona",
                 stream_message_recipient_topic: "Reply test",
             },
             "Stream populated after reply by click"
@@ -114,7 +112,6 @@ casper.then(function () {
         common.check_form(
             '#send_message_form',
             {
-                stream_message_recipient_stream: "Verona",
                 stream_message_recipient_topic: "Reply test",
             },
             "Stream populated after reply with `r`"

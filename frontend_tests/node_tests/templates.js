@@ -1700,3 +1700,17 @@ run_test('archive_message_group', () => {
     assert.equal(last_message_text, 'This is message two.');
 
 });
+
+run_test('render_stream_dropdown', () => {
+    var args = [
+        'Denmark',
+        'Verona',
+    ];
+
+    var html = '<div>';
+    html += render('compose_stream_dropdown', {streams: args});
+    html += '</div>';
+
+    var first_option = $(html).find("#stream_message_recipient_stream>option:first-child").val();
+    assert.equal(first_option, 'Denmark');
+});
