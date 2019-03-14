@@ -185,7 +185,7 @@ def block_internet():
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
     httplib2.Http.request = internet_guard_httplib2
 
-if __name__ == "__main__":
+def main() -> None:
     block_internet()
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
@@ -272,8 +272,10 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
     args = options.args
+    parallel = options.processes
+    include_webhooks = options.coverage or options.include_webhooks
 
-    if options.processes < 1:
+    if parallel < 1:
         raise argparse.ArgumentError(
             "option processes: Only positive integers are allowed.")
 
@@ -285,58 +287,58 @@ if __name__ == "__main__":
     # --nonfatal-errors, so that we don't end up removing tests from
     # the list that weren't run.
     if options.rerun:
-        options.processes = 1
+        parallel = 1
         options.fatal_errors = False
         failed_tests = get_failed_tests()
         if failed_tests:
             args = failed_tests
     if len(args) > 0:
         # If we passed a specific set of tests, run in serial mode.
-        options.processes = 1
+        parallel = 1
 
-    # to transform forward slashes '/' present in the argument into dots '.'
-    for suite in args:
-        args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
+        # to transform forward slashes '/' present in the argument into dots '.'
+        for i, suite in enumerate(args):
+            args[i] = suite.rstrip('/').replace("/", ".")
 
-    def rewrite_arguments(search_key):
-        # type: (str) -> None
-        for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
-            for file_name in files_names:
-                # Check for files starting with alphanumeric characters and ending with '.py'
-                # Ignore backup files if any
-                if not file_name[0].isalnum() or not file_name.endswith(".py"):
-                    continue
-                filepath = os.path.join(root, file_name)
-                for line in open(filepath):
-                    if search_key not in line:
-                        continue
-                    new_suite = filepath.replace(".py", ".") + suite
-                    args[args.index(suite)] = new_suite
-                    return
-
-    for suite in args:
-        if suite[0].isupper() and "test_" in suite:
-            classname = suite.rsplit('.', 1)[0]
-            rewrite_arguments(classname)
-        elif suite[0].isupper():
-            rewrite_arguments('class %s(' % (suite,))
-
-    for suite in args:
-        if suite.startswith('test'):
-            for root, dirs, files_names in os.walk(zerver_test_dir):
+        def rewrite_arguments(search_key):
+            # type: (str) -> None
+            for root, dirs, files_names in os.walk(zerver_test_dir, topdown=False):
                 for file_name in files_names:
-                    if file_name == suite or file_name == suite + ".py":
-                        new_suite = os.path.join(root, file_name)
-                        args[args.index(suite)] = new_suite
-                        break
+                    # Check for files starting with alphanumeric characters and ending with '.py'
+                    # Ignore backup files if any
+                    if not file_name[0].isalnum() or not file_name.endswith(".py"):
+                        continue
+                    filepath = os.path.join(root, file_name)
+                    for line in open(filepath):
+                        if search_key not in line:
+                            continue
+                        new_suite = filepath.replace(".py", ".") + suite
+                        args[i] = new_suite
+                        return
 
-    for suite in args:
-        args[args.index(suite)] = suite.replace(".py", "")
+        for suite in args:
+            if suite[0].isupper() and "test_" in suite:
+                classname = suite.rsplit('.', 1)[0]
+                rewrite_arguments(classname)
+            elif suite[0].isupper():
+                rewrite_arguments('class %s(' % (suite,))
 
-    # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
-    # taking care of any forward slashes that might be present
-    for suite in args:
-        args[args.index(suite)] = suite.replace("/", ".")
+        for i, suite in enumerate(args):
+            if suite.startswith('test'):
+                for root, dirs, files_names in os.walk(zerver_test_dir):
+                    for file_name in files_names:
+                        if file_name == suite or file_name == suite + ".py":
+                            new_suite = os.path.join(root, file_name)
+                            args[i] = new_suite
+                            break
+
+        for i, suite in enumerate(args):
+            args[i] = suite.replace(".py", "")
+
+        # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
+        # taking care of any forward slashes that might be present
+        for i, suite in enumerate(args):
+            args[i] = suite.replace("/", ".")
 
     full_suite = len(args) == 0
 
@@ -348,8 +350,6 @@ if __name__ == "__main__":
         ]
     else:
         suites = args
-
-    include_webhooks = options.coverage or options.include_webhooks
 
     if full_suite and include_webhooks:
         suites.append("zerver.webhooks")
@@ -384,7 +384,6 @@ if __name__ == "__main__":
     subprocess.check_call(['tools/webpack', '--test'])
 
     TestRunner = get_runner(settings)
-    parallel = options.processes
 
     if parallel > 1:
         print("-- Running tests in parallel mode with {} "
@@ -396,7 +395,7 @@ if __name__ == "__main__":
                              parallel=parallel, reverse=options.reverse,
                              keepdb=True)
     failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite,
-                                                   include_webhooks=options.include_webhooks)
+                                                   include_webhooks=include_webhooks)
     write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
@@ -467,3 +466,6 @@ if __name__ == "__main__":
 
     # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))
+
+if __name__ == "__main__":
+    main()
