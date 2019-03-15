@@ -52,7 +52,7 @@ author = 'The Zulip Team'
 # The short X.Y version.
 version = '2.0+git'
 # The full version, including alpha/beta/rc tags.
-release = '2.0.0+git'
+release = '2.0.2+git'
 
 # This allows us to insert a warning that appears only on an unreleased
 # version, e.g. to say that something is likely to have changed.
