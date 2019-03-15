@@ -11,7 +11,7 @@ from email.utils import formataddr
 from mock import patch, MagicMock
 from typing import List, Optional
 
-from zerver.lib.notifications import fix_emojis, handle_missedmessage_emails, \
+from zerver.lib.email_notifications import fix_emojis, handle_missedmessage_emails, \
     enqueue_welcome_emails, relative_to_full_url
 from zerver.lib.actions import do_change_notification_settings
 from zerver.lib.test_classes import ZulipTestCase

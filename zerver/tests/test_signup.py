@@ -50,7 +50,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
-from zerver.lib.notifications import enqueue_welcome_emails, \
+from zerver.lib.email_notifications import enqueue_welcome_emails, \
     followup_day2_email_delay
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user

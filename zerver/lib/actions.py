@@ -138,7 +138,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.i18n import get_language_name
 from zerver.lib.alert_words import add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \

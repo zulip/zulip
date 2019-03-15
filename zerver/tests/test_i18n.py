@@ -16,7 +16,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.management.commands import makemessages
-from zerver.lib.notifications import enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails
 
 class EmailTranslationTestCase(ZulipTestCase):
     def test_email_translation(self) -> None:

@@ -33,7 +33,7 @@ from zerver.lib.email_mirror import (
     is_forwarded,
 )
 
-from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
 
 from email.mime.text import MIMEText

@@ -13,7 +13,7 @@ from zerver.lib.actions import decode_email_address, get_email_gateway_message_s
     internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
-from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_file

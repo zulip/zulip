@@ -65,7 +65,7 @@ not_yet_fully_covered = {path for target in [
     'zerver/lib/cache.py',
     'zerver/lib/cache_helpers.py',
     'zerver/lib/i18n.py',
-    'zerver/lib/notifications.py',
+    'zerver/lib/email_notifications.py',
     'zerver/lib/send_email.py',
     'zerver/lib/webhooks/common.py',
     'zerver/lib/url_preview/preview.py',

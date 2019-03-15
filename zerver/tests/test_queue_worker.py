@@ -165,7 +165,7 @@ class WorkerTest(ZulipTestCase):
         )
 
         send_mock = patch(
-            'zerver.lib.notifications.do_send_missedmessage_events_reply_in_zulip'
+            'zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip'
         )
         mmw.BATCH_DURATION = 0
 

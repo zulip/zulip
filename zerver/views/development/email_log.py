@@ -6,7 +6,7 @@ from django.views.decorators.http import require_GET
 from zerver.models import (
     get_realm, get_user_by_delivery_email, get_realm_stream, Realm,
 )
-from zerver.lib.notifications import enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
 from zerver.lib.actions import do_change_user_delivery_email, \
     do_send_realm_reactivation_email
