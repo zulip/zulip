@@ -46,7 +46,7 @@ EMOJI_NAME_MAPS = {
     '1f913': {'canonical_name': 'nerd', 'aliases': ['geek']},
     # several sites suggested this was used for "cool", but cool is taken by
     # Symbols/137
-    '1f60e': {'canonical_name': 'sunglasses', 'aliases': []},
+    '1f60e': {'canonical_name': 'sunglasses', 'aliases': ['awesome']},
     '1f921': {'canonical_name': 'clown', 'aliases': []},
     '1f920': {'canonical_name': 'cowboy', 'aliases': []},
     # https://emojipedia.org/smirking-face/
@@ -125,7 +125,7 @@ EMOJI_NAME_MAPS = {
     # flu from http://mashable.com/2015/10/23/ios-9-1-emoji-guide, sick from
     # https://emojipedia.org/face-with-thermometer/, face_with_thermometer so
     # it shows up in typeahead (thermometer taken by Objects/82)
-    '1f912': {'canonical_name': 'sick', 'aliases': ['flu', 'face_with_thermometer']},
+    '1f912': {'canonical_name': 'sick', 'aliases': ['flu', 'face_with_thermometer', 'ill', 'fever']},
     # hurt and injured from https://beebom.com/emoji-meanings/. Chose hurt as
     # primary since I think it can cover a wider set of things (e.g. emotional
     # hurt)
@@ -174,7 +174,7 @@ EMOJI_NAME_MAPS = {
     '1f64f': {'canonical_name': 'pray', 'aliases': ['welcome', 'thank_you', 'namaste']},
     # done_deal seems like a natural addition
     '1f91d': {'canonical_name': 'handshake', 'aliases': ['done_deal']},
-    '1f44d': {'canonical_name': '+1', 'aliases': ['thumbs_up']},
+    '1f44d': {'canonical_name': '+1', 'aliases': ['thumbs_up', 'like']},
     '1f44e': {'canonical_name': '-1', 'aliases': ['thumbs_down']},
     # fist_bump from https://beebom.com/emoji-meanings/
     '1f44a': {'canonical_name': 'fist_bump', 'aliases': ['punch']},
