@@ -495,40 +495,6 @@ function sorted_names_from(subs) {
 run_test('initialize', () => {
     var expected_value;
 
-    var stream_typeahead_called = false;
-    $('#stream_message_recipient_stream').typeahead = function (options) {
-        // options.source()
-        //
-        var actual_value = options.source();
-        assert.deepEqual(actual_value.sort(), ['Denmark', 'Sweden']);
-
-        // options.highlighter()
-        options.query = 'De';
-        actual_value = options.highlighter('Denmark');
-        expected_value = '<strong>Denmark</strong>';
-        assert.equal(actual_value, expected_value);
-
-        options.query = 'the n';
-        actual_value = options.highlighter('The Netherlands');
-        expected_value = '<strong>The Netherlands</strong>';
-        assert.equal(actual_value, expected_value);
-
-        // options.matcher()
-        options.query = 'de';
-        assert.equal(options.matcher('Denmark'), true);
-        assert.equal(options.matcher('Sweden'), false);
-
-        options.query = 'De';
-        assert.equal(options.matcher('Denmark'), true);
-        assert.equal(options.matcher('Sweden'), false);
-
-        options.query = 'the ';
-        assert.equal(options.matcher('The Netherlands'), true);
-        assert.equal(options.matcher('Sweden'), false);
-
-        stream_typeahead_called = true;
-    };
-
     var subject_typeahead_called = false;
     $('#stream_message_recipient_topic').typeahead = function (options) {
         var topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
@@ -1091,7 +1057,6 @@ run_test('initialize', () => {
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
-    assert(stream_typeahead_called);
     assert(subject_typeahead_called);
     assert(pm_recipient_typeahead_called);
     assert(pm_recipient_blur_called);

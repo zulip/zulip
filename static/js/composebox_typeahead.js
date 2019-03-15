@@ -206,12 +206,11 @@ function handle_keydown(e) {
             target_sel = '#' + e.target.id;
         }
 
-        var on_stream = target_sel === "#stream_message_recipient_stream";
         var on_topic = target_sel  === "#stream_message_recipient_topic";
         var on_pm = target_sel === "#private_message_recipient";
         var on_compose = target_sel === '#compose-textarea';
 
-        if (on_stream || on_topic || on_pm) {
+        if (on_topic || on_pm) {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();
@@ -222,9 +221,7 @@ function handle_keydown(e) {
             e.preventDefault();
         }
 
-        if (on_stream) {
-            nextFocus = "#stream_message_recipient_topic";
-        } else if (on_topic) {
+        if (on_topic) {
             if (code === 13) {
                 e.preventDefault();
             }
@@ -243,7 +240,6 @@ function handle_keydown(e) {
 
         // If no typeaheads are shown...
         if (!($("#stream_message_recipient_topic").data().typeahead.shown ||
-              $("#stream_message_recipient_stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
               $("#compose-textarea").data().typeahead.shown)) {
 
@@ -690,24 +686,6 @@ exports.initialize = function () {
     if (page_params.enter_sends) {
         $("#compose-send-button").hide();
     }
-
-    // limit number of items so the list doesn't fall off the screen
-    $("#stream_message_recipient_stream").typeahead({
-        source: function () {
-            return stream_data.subscribed_streams();
-        },
-        items: 3,
-        fixed: true,
-        highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
-        },
-        matcher: function (item) {
-            // The matcher for "stream" is strictly prefix-based,
-            // because we want to avoid mixing up streams.
-            var q = this.query.trim().toLowerCase();
-            return item.toLowerCase().indexOf(q) === 0;
-        },
-    });
 
     $("#stream_message_recipient_topic").typeahead({
         source: function () {
