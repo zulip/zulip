@@ -201,9 +201,21 @@ MessageListView.prototype = {
     },
 
     _add_msg_edited_vars: function (message_container) {
+        // This adds variables to message_container object which calculate bools for
+        // checking position of "(EDITED)" label as well as the edited timestring
+        // The bools can be defined only when the message is edited
+        // (or when the `last_edit_timestr` is defined). The bools are:
+        //   * `edited_in_left_col`      -- when label appears in left column.
+        //   * `edited_alongside_sender` -- when label appears alongside sender info.
+        //   * `edited_status_msg`       -- when label appears for a "/me" message.
         var last_edit_timestr = this._get_msg_timestring(message_container);
+        var include_sender = message_container.include_sender;
+        var status_message = Boolean(message_container.status_message);
         if (last_edit_timestr !== undefined) {
             message_container.last_edit_timestr = last_edit_timestr;
+            message_container.edited_in_left_col = !include_sender;
+            message_container.edited_alongside_sender = include_sender && !status_message;
+            message_container.edited_status_msg = include_sender && status_message;
         }
     },
 
@@ -321,8 +333,6 @@ MessageListView.prototype = {
             message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
             message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
 
-            self._add_msg_edited_vars(message_container);
-
             message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
             if (message_container.msg.stream !== undefined) {
                 message_container.background_color =
@@ -331,6 +341,8 @@ MessageListView.prototype = {
 
             message_container.contains_mention = message_container.msg.mentioned;
             self._maybe_format_me_message(message_container);
+            // Once all other variables are updated
+            self._add_msg_edited_vars(message_container);
 
             prev = message_container;
         });
@@ -1153,8 +1165,8 @@ MessageListView.prototype = {
         var was_selected = this.list.selected_message() === message_container.msg;
 
         // Re-render just this one message
-        this._add_msg_edited_vars(message_container);
         this._maybe_format_me_message(message_container);
+        this._add_msg_edited_vars(message_container);
 
         // Make sure the right thing happens if the message was edited to mention us.
         message_container.contains_mention = message_container.msg.mentioned;
