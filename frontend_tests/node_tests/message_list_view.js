@@ -46,6 +46,81 @@ set_global('rows', {
     },
 });
 
+run_test('msg_edited_vars', () => {
+    // This is a test to verify that only one of the three bools,
+    // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
+    // is not false; Tests for three different kinds of messages:
+    //   * "/me" message
+    //   * message that includes sender
+    //   * message without sender
+
+    function build_message_context(message, message_context) {
+        if (message_context === undefined) {
+            message_context = {};
+        }
+        if (message === undefined) {
+            message = {};
+        }
+        message_context = _.defaults(message_context, {
+            include_sender: true,
+        });
+        message_context.msg = _.defaults(message, {
+            is_me_message: false,
+            last_edit_timestamp: _.uniqueId(),
+        });
+        return message_context;
+    }
+
+    function build_message_group(messages) {
+        return { message_containers: messages };
+    }
+
+    function build_list(message_groups) {
+        var list = new MessageListView(undefined, undefined, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    function assert_left_col(message_container) {
+        assert.equal(message_container.edited_in_left_col, true);
+        assert.equal(message_container.edited_alongside_sender, false);
+        assert.equal(message_container.edited_status_msg, false);
+    }
+
+    function assert_alongside_sender(message_container) {
+        assert.equal(message_container.edited_in_left_col, false);
+        assert.equal(message_container.edited_alongside_sender, true);
+        assert.equal(message_container.edited_status_msg, false);
+    }
+
+    function assert_status_msg(message_container) {
+        assert.equal(message_container.edited_in_left_col, false);
+        assert.equal(message_container.edited_alongside_sender, false);
+        assert.equal(message_container.edited_status_msg, true);
+    }
+
+    (function test_msg_edited_vars() {
+        var messages = [
+            build_message_context(),
+            build_message_context({}, { include_sender: false }),
+            build_message_context({ is_me_message: true, content: "<p>/me test</p>" }),
+        ];
+        var message_group = build_message_group(messages);
+        var list = build_list([message_group]);
+
+        _.each(messages, function (message_container) {
+            list._maybe_format_me_message(message_container);
+            list._add_msg_edited_vars(message_container);
+        });
+
+        var result = list._message_groups[0].message_containers;
+
+        assert_alongside_sender(result[0]);
+        assert_left_col(result[1]);
+        assert_status_msg(result[2]);
+    }());
+});
+
 run_test('merge_message_groups', () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
