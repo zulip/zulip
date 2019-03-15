@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 from confirmation.models import one_click_unsubscribe_link
 from django.conf import settings
@@ -15,7 +15,6 @@ from zerver.lib.url_encoding import personal_narrow_url, huddle_narrow_url, \
     stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
-    ScheduledEmail,
     UserMessage,
     Stream,
     get_display_recipient,
@@ -456,22 +455,6 @@ def handle_missedmessage_emails(user_profile_id: int,
             list(unique_messages.values()),
             message_count_by_bucket[bucket_tup],
         )
-
-def clear_scheduled_invitation_emails(email: str) -> None:
-    """Unlike most scheduled emails, invitation emails don't have an
-    existing user object to key off of, so we filter by address here."""
-    items = ScheduledEmail.objects.filter(address__iexact=email,
-                                          type=ScheduledEmail.INVITATION_REMINDER)
-    items.delete()
-
-def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) -> None:
-    items = ScheduledEmail.objects.filter(users__in=user_ids).distinct()
-    if email_type is not None:
-        items = items.filter(type=email_type)
-    for item in items:
-        item.users.remove(*user_ids)
-        if item.users.all().count() == 0:
-            item.delete()
 
 def log_digest_event(msg: str) -> None:
     import logging

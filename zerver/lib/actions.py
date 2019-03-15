@@ -47,7 +47,8 @@ from zerver.lib.message import (
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins
+from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins, \
+    clear_scheduled_emails, clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
@@ -137,8 +138,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.i18n import get_language_name
 from zerver.lib.alert_words import add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_scheduled_emails, \
-    clear_scheduled_invitation_emails, enqueue_welcome_emails
+from zerver.lib.notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \

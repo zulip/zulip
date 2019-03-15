@@ -4,7 +4,8 @@ from typing import Callable
 
 from confirmation.models import Confirmation, get_object_from_key, \
     ConfirmationKeyException
-from zerver.lib.actions import do_change_notification_settings, clear_scheduled_emails
+from zerver.lib.actions import do_change_notification_settings
+from zerver.lib.send_email import clear_scheduled_emails
 from zerver.models import UserProfile, ScheduledEmail
 from zerver.context_processors import common_context
 

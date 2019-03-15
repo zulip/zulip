@@ -21,8 +21,7 @@ from zerver.models import UserProfile, Recipient, \
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import send_future_email
-from zerver.lib.notifications import clear_scheduled_emails
+from zerver.lib.send_email import send_future_email, clear_scheduled_emails
 from zerver.lib.actions import (
     get_emails_from_user_ids,
     get_recipient_info,

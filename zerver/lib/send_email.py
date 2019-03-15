@@ -166,6 +166,22 @@ def send_email_to_admins(template_prefix: str, realm: Realm, from_name: Optional
     send_email(template_prefix, to_user_ids=admin_user_ids, from_name=from_name,
                from_address=from_address, context=context)
 
+def clear_scheduled_invitation_emails(email: str) -> None:
+    """Unlike most scheduled emails, invitation emails don't have an
+    existing user object to key off of, so we filter by address here."""
+    items = ScheduledEmail.objects.filter(address__iexact=email,
+                                          type=ScheduledEmail.INVITATION_REMINDER)
+    items.delete()
+
+def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int]=None) -> None:
+    items = ScheduledEmail.objects.filter(users__in=user_ids).distinct()
+    if email_type is not None:
+        items = items.filter(type=email_type)
+    for item in items:
+        item.users.remove(*user_ids)
+        if item.users.all().count() == 0:
+            item.delete()
+
 def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
     # Reformat any jobs that used the old to_email
     # and to_user_ids argument formats.
