@@ -27,11 +27,9 @@
         {{timestr}}
     </span>
 
-    {{#if_and last_edit_timestr include_sender}}
-        {{#unless status_message}}
-        {{partial "edited_notice"}}
-        {{/unless}}
-    {{/if_and}}
+    {{#if edited_alongside_sender}}
+    {{partial "edited_notice"}}
+    {{/if}}
 
     {{partial "message_controls"}}
 
@@ -41,10 +39,8 @@
 <div class="message_content">{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}</div>
 {{/unless}}
 
-{{#if last_edit_timestr}}
-    {{#unless include_sender}}
-    {{partial "edited_notice"}}
-    {{/unless}}
+{{#if edited_in_left_col}}
+{{partial "edited_notice"}}
 {{/if}}
 
 <div class="message_edit">
