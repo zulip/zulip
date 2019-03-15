@@ -256,8 +256,6 @@ run_test('update_dom_with_unread_counts', () => {
         assert.equal(count, 10);
     };
 
-    unread_ui.animate_private_message_changes = function () {};
-
     pm_list.update_dom_with_unread_counts(counts);
 
     assert(toggle_button_set);
