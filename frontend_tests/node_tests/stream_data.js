@@ -842,4 +842,11 @@ run_test('all_topics_in_cache', () => {
 
     sub.first_message_id = 2;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
+
+    // Test code that is possibly unreachable--I am not sure how
+    // you would get an undefined message from `first()` without
+    // exiting early for the `empty()` check.
+
+    message_list.all.first = () => undefined;
+    assert.equal(stream_data.all_topics_in_cache(sub), false);
 });
