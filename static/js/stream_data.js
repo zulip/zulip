@@ -372,13 +372,6 @@ exports.all_topics_in_cache = function (sub) {
         return false;
     }
 
-    // This happens before message_list.all is initialized; just
-    // return false since the cache is empty.
-    var first_cached_message = message_list.all.first();
-    if (first_cached_message === undefined) {
-        return false;
-    }
-
     if (sub.first_message_id === null) {
         // If the stream has no message history, we have it all
         // vacuously.  This should be a very rare condition, since
@@ -390,6 +383,7 @@ exports.all_topics_in_cache = function (sub) {
     // message ID in the stream; if it's older, we're good, otherwise,
     // we might be missing the oldest topics in this stream in our
     // cache.
+    var first_cached_message = message_list.all.first();
     return first_cached_message.id <= sub.first_message_id;
 };
 
