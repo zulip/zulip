@@ -270,6 +270,10 @@ winsymlinks:native
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
+(Note: **Do not use GitHub Desktop client** for cloning or any such future operations
+on the zulip code since it disables the symlinks and ignores the above configuration
+resulting into raising errors in the zulip development environment.)
+
 ### Step 2: Get Zulip Code
 
 1. In your browser, visit <https://github.com/zulip/zulip>
