@@ -151,9 +151,16 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background-color: hsl(202, 56%, 91%);
     position: relative;
     border-radius: 4px;
+}
+
+li.active-filter {
+    background-color: hsl(202, 56%, 95%);
+}
+
+li.active-sub-filter {
+    background-color: hsl(202, 56%, 91%);
 }
 
 #global_filters .filter-icon {
