@@ -270,6 +270,13 @@ winsymlinks:native
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
+(Note: The **GitHub Desktop client** for Windows has a bug where it
+will automatically set `git config core.symlink false` on a repository
+if you use it to clone a repository, which will break the Zulip
+development environment, because we use symbolic links.  For that
+reason, we recommend avoiding using GitHub Desktop client to clone
+projects and to instead follow these instructions exactly.)
+
 ### Step 2: Get Zulip Code
 
 1. In your browser, visit <https://github.com/zulip/zulip>
