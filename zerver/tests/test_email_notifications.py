@@ -615,12 +615,14 @@ class TestMissedMessages(ZulipTestCase):
     def test_realm_emoji_in_missed_message(self, mock_random_token: MagicMock) -> None:
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
+        realm = get_realm("zulip")
 
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Extremely personal message with a realm emoji :green_tick:!')
-        realm_emoji_id = get_realm('zulip').get_active_emoji()['green_tick']['id']
-        realm_emoji_url = "http://zulip.testserver/user_avatars/1/emoji/images/%s.png" % (realm_emoji_id,)
+        realm_emoji_id = realm.get_active_emoji()['green_tick']['id']
+        realm_emoji_url = "http://zulip.testserver/user_avatars/%s/emoji/images/%s.png" % (
+            realm.id, realm_emoji_id,)
         body = '<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)
         email_subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, email_subject, send_as_user=False, verify_html_body=True)
