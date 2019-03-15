@@ -357,9 +357,11 @@ exports.get_announcement_only = function (stream_name) {
 };
 
 exports.all_topics_in_cache = function (sub) {
-    // Checks whether this browser's cache in message_list.all has all
+    // Checks whether this browser's cache of contiguous messages
+    // (used to locally render narrows) in message_list.all has all
     // messages from a given stream, and thus all historical topics
-    // for it.
+    // for it.  Because message_list.all is a range, we just need to
+    // compare it to the range of history on the stream.
 
     // If the cache isn't initialized, it's a clear false.
     if (message_list.all === undefined || message_list.all.empty()) {
