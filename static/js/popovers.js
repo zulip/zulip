@@ -644,6 +644,12 @@ exports.show_sender_info = function () {
     }
 };
 
+var suppress_scroll_hide = false;
+
+exports.set_suppress_scroll_hide = function () {
+    suppress_scroll_hide = true;
+};
+
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
@@ -1002,6 +1008,11 @@ exports.register_click_handlers = function () {
         var last_scroll = 0;
 
         $('.app').on('scroll', function () {
+            if (suppress_scroll_hide) {
+                suppress_scroll_hide = false;
+                return;
+            }
+
             var date = new Date().getTime();
 
             // only run `popovers.hide_all()` if the last scroll was more
