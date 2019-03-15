@@ -644,6 +644,17 @@ exports.show_sender_info = function () {
     }
 };
 
+// On mobile web, opening the keyboard can trigger a resize event
+// (which in turn can trigger a scroll event).  This will have the
+// side effect of closing popovers, which we don't want.  So we
+// suppress the first hide from scrolling after a resize using this
+// variable.
+var suppress_scroll_hide = false;
+
+exports.set_suppress_scroll_hide = function () {
+    suppress_scroll_hide = true;
+};
+
 exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
@@ -1002,6 +1013,11 @@ exports.register_click_handlers = function () {
         var last_scroll = 0;
 
         $('.app').on('scroll', function () {
+            if (suppress_scroll_hide) {
+                suppress_scroll_hide = false;
+                return;
+            }
+
             var date = new Date().getTime();
 
             // only run `popovers.hide_all()` if the last scroll was more

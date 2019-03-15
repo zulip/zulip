@@ -260,7 +260,13 @@ exports.handler = function () {
         condense.clear_message_content_height_cache();
     }
 
-    popovers.hide_all();
+    // On mobile web, we want to avoid hiding a popover here,
+    // especially if this resize was triggered by a virtual keyboard
+    // popping up when the user opened that very popover.
+    var mobile = util.is_mobile();
+    if (!mobile) {
+        popovers.hide_all();
+    }
     exports.resize_page_components();
 
     // Re-compute and display/remove [More] links to messages
@@ -270,6 +276,10 @@ exports.handler = function () {
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
     if (current_msg_list.selected_id() !== -1) {
+        if (mobile) {
+            popovers.set_suppress_scroll_hide();
+        }
+
         navigate.scroll_to_selected();
     }
 };
