@@ -119,18 +119,10 @@ var apps_events = function () {
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 
-        if (version_info.show_instructions) {
-            $download_instructions.show();
-        } else {
-            $download_instructions.hide();
-        }
-
-        if (version === "mac" || version === "windows" || version === "linux") {
-            $third_party_apps.show();
-        } else {
-            $third_party_apps.hide();
-        }
-
+        $download_instructions.toggle(version_info.show_instructions);
+        $third_party_apps.toggle(version === "mac" ||
+                                 version === "windows" ||
+                                 version === "linux");
         $download_android_apk.toggle(version === "android");
     };
 
