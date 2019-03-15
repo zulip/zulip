@@ -583,6 +583,18 @@ class LoginTest(ZulipTestCase):
             do_two_factor_login(request, user_profile)
             mock_login.assert_called_once()
 
+    def test_zulip_default_context_does_not_load_inline_previews(self) -> None:
+        realm = get_realm("zulip")
+        description = "https://www.google.com/images/srpr/logo4w.png"
+        realm.description = description
+        realm.save(update_fields=["description"])
+        response = self.client_get("/login/")
+        expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png" \
+target="_blank" title="https://www.google.com/images/srpr/logo4w.png">\
+https://www.google.com/images/srpr/logo4w.png</a></p>"""
+        self.assertEqual(response.context_data["realm_description"], expected_response)
+        self.assertEqual(response.status_code, 200)
+
 class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients: List[str],
                           custom_from_name: Optional[str]=None) -> None:

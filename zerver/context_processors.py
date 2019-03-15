@@ -64,7 +64,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
         realm_description_raw = realm.description or "The coolest place in the universe."
-        realm_description = bugdown_convert(realm_description_raw, message_realm=realm)
+        realm_description = bugdown_convert(realm_description_raw, message_realm=realm,
+                                            no_previews=True)
         realm_invite_required = realm.invite_required
         realm_plan_type = realm.plan_type
 
