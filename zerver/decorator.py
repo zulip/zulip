@@ -793,7 +793,7 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
 
     try:
         incr_ratelimit(entity)
-    except RateLimiterLockingException:  # nocoverage # Should add on next rate limit pass
+    except RateLimiterLockingException:
         logging.warning("Deadlock trying to incr_ratelimit for %s on %s" % (
             user.id, request.path))
         # rate-limit users who are hitting the API so hard we can't update our stats.

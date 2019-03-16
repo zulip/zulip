@@ -10,6 +10,7 @@ from zerver.lib.rate_limiter import (
     clear_history,
     remove_ratelimit_rule,
     RateLimitedUser,
+    RateLimiterLockingException,
 )
 from zerver.lib.zephyr import compute_mit_user_fullname
 
@@ -107,3 +108,13 @@ class RateLimitTests(ZulipTestCase):
             result = self.send_api_message(email, "Good message")
 
             self.assert_json_success(result)
+
+    def test_hit_ratelimiterlockingexception(self) -> None:
+        user = self.example_user('cordelia')
+        email = user.email
+        clear_history(RateLimitedUser(user))
+
+        with mock.patch('zerver.decorator.incr_ratelimit',
+                        side_effect=RateLimiterLockingException):
+            result = self.send_api_message(email, "some stuff")
+            self.assertEqual(result.status_code, 429)
