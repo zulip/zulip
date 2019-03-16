@@ -40,7 +40,8 @@ from zerver.lib.actions import (
     do_add_default_stream,
     do_create_realm,
 )
-from zerver.lib.send_email import send_email, send_future_email, FromAddress
+from zerver.lib.send_email import send_future_email, FromAddress, \
+    deliver_email
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -1214,11 +1215,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
-            send_email(**ujson.loads(job.data))
+            deliver_email(job)
         self.assertEqual(len(outbox), email_count + 1)
         self.assertIn(FromAddress.NOREPLY, outbox[-1].from_email)
 
         # Now verify that signing up clears invite_reminder emails
+        with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
+            email = data["email"]
+            send_future_email(
+                "zerver/emails/invitation_reminder", referrer.realm, to_emails=[email],
+                from_address=FromAddress.NOREPLY, context=context)
+
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER)
         self.assertEqual(len(email_jobs_to_deliver), 1)

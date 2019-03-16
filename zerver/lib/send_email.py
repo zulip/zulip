@@ -128,9 +128,8 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
                       from_address: Optional[str]=None, language: Optional[str]=None,
                       context: Dict[str, Any]={}, delay: datetime.timedelta=datetime.timedelta(0)) -> None:
     template_name = template_prefix.split('/')[-1]
-    email_fields = {'template_prefix': template_prefix, 'to_user_ids': to_user_ids, 'to_emails': to_emails,
-                    'from_name': from_name, 'from_address': from_address, 'language': language,
-                    'context': context}
+    email_fields = {'template_prefix': template_prefix, 'from_name': from_name, 'from_address': from_address,
+                    'language': language, 'context': context}
 
     if settings.DEVELOPMENT_LOG_EMAILS:
         send_email(template_prefix, to_user_ids=to_user_ids, to_emails=to_emails, from_name=from_name,
@@ -144,9 +143,9 @@ def send_future_email(template_prefix: str, realm: Realm, to_user_ids: Optional[
         realm=realm,
         data=ujson.dumps(email_fields))
 
-    # In order to ensure the efficiency of clear_scheduled_emails, we
-    # need to duplicate the recipient data in the ScheduledEmail model
-    # itself.
+    # We store the recipients in the ScheduledEmail object itself,
+    # rather than the JSON data object, so that we can find and clear
+    # them using clear_scheduled_emails.
     try:
         if to_user_ids is not None:
             email.users.add(*to_user_ids)
@@ -193,3 +192,13 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         if job['to_user_id'] is not None:
             job['to_user_ids'] = [job['to_user_id']]
         del job['to_user_id']
+
+def deliver_email(email: ScheduledEmail) -> None:
+    data = ujson.loads(email.data)
+    if email.users.exists():
+        data['to_user_ids'] = [user.id for user in email.users.all()]
+    if email.address is not None:
+        data['to_emails'] = [email.address]
+    handle_send_email_format_changes(data)
+    send_email(**data)
+    email.delete()

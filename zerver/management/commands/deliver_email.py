@@ -16,12 +16,10 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
-from ujson import loads
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
-from zerver.lib.send_email import EmailNotDeliveredException, send_email, \
-    handle_send_email_format_changes
+from zerver.lib.send_email import EmailNotDeliveredException, deliver_email
 from zerver.models import ScheduledEmail
 
 ## Setup ##
@@ -47,11 +45,8 @@ Usage: ./manage.py deliver_email
                 scheduled_timestamp__lte=timezone_now())
             if email_jobs_to_deliver:
                 for job in email_jobs_to_deliver:
-                    data = loads(job.data)
-                    handle_send_email_format_changes(data)
                     try:
-                        send_email(**data)
-                        job.delete()
+                        deliver_email(job)
                     except EmailNotDeliveredException:
                         logger.warning("%r not delivered" % (job,))
                 time.sleep(10)
