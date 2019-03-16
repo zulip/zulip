@@ -73,6 +73,14 @@ $(function () {
         $("#timezone").val(moment.tz.guess());
     }
 
+    // Code in this block will be executed when the /accounts/send_confirm
+    // endpoint is visited i.e. accounts_send_confirm.html is rendered.
+    if ($("[data-page-id='accounts-send-confirm']").length > 0) {
+        $("#resend_email_link").click(function () {
+            $('.resend_confirm').submit();
+        });
+    }
+
     // Code in this block will be executed when the user visits
     // /accounts/password/reset i.e. reset.html is rendered.
     if ($("[data-page-id='reset-password-confirm']").length > 0) {
