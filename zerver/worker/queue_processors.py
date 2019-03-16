@@ -33,7 +33,8 @@ from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
     FromAddress, EmailNotDeliveredException, handle_send_email_format_changes
-from zerver.lib.email_mirror import process_message as mirror_email
+from zerver.lib.email_mirror import process_message as mirror_email, rate_limit_mirror_by_realm, \
+    is_missed_message_address, extract_and_validate
 from zerver.lib.streams import access_stream_by_id
 from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
@@ -44,6 +45,7 @@ from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_servi
 from zerver.models import get_bot_services
 from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
+from zerver.lib.exceptions import RateLimited
 
 import os
 import sys
@@ -480,8 +482,22 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 @assign_queue('email_mirror')
 class MirrorWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
+        rcpt_to = event['rcpt_to']
+        if not is_missed_message_address(rcpt_to):
+            # Missed message addresses are one-time use, so we don't need
+            # to worry about emails to them resulting in message spam.
+            recipient_realm = extract_and_validate(rcpt_to)[0].realm
+            try:
+                rate_limit_mirror_by_realm(recipient_realm)
+            except RateLimited:
+                msg = email.message_from_string(event["message"])
+                logger.warning("MirrorWorker: Rejecting an email from: %s "
+                               "to realm: %s - rate limited."
+                               % (msg['From'], recipient_realm.name))
+                return
+
         mirror_email(email.message_from_string(event["message"]),
-                     rcpt_to=event["rcpt_to"], pre_checked=True)
+                     rcpt_to=rcpt_to, pre_checked=True)
 
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):
