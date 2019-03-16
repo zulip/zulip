@@ -117,6 +117,12 @@ var emoji_list = _.map(emojis_by_name, function (emoji_dict) {
         emoji_code: emoji_dict.emoji_code,
     };
 });
+
+const me_slash = {
+    name: "me",
+    text: "translated: /me is excited (Display action text)",
+};
+
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -395,6 +401,12 @@ run_test('content_typeahead_selected', () => {
     fake_this.token = 'back';
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = '/m';
+    fake_this.completing = 'slash';
+    actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
+    expected_value = '/me ';
     assert.equal(actual_value, expected_value);
 
     // stream
@@ -1086,6 +1098,7 @@ run_test('begins_typeahead', () => {
         emoji: true,
         mention: true,
         silent_mention: true,
+        slash: true,
         stream: true,
         syntax: true,
     }}};
@@ -1223,6 +1236,20 @@ run_test('begins_typeahead', () => {
     assert_stream_list("test #D");
     assert_stream_list("test #**v");
 
+    assert_typeahead_equals("/", composebox_typeahead.slash_commands);
+    assert_typeahead_equals("/m", composebox_typeahead.slash_commands);
+    assert_typeahead_equals(" /m", false);
+    assert_typeahead_equals("abc/me", false);
+    assert_typeahead_equals("hello /me", false);
+    assert_typeahead_equals("\n/m", false);
+    assert_typeahead_equals("/poll", composebox_typeahead.slash_commands);
+    assert_typeahead_equals(" /pol", false);
+    assert_typeahead_equals("abc/po", false);
+    assert_typeahead_equals("hello /poll", false);
+    assert_typeahead_equals("\n/pol", false);
+
+
+    assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
     assert_typeahead_equals(" ```", false);
@@ -1264,6 +1291,8 @@ run_test('begins_typeahead', () => {
 });
 
 run_test('tokenizing', () => {
+    assert.equal(ct.tokenize_compose_str("/m"), "/m");
+    assert.equal(ct.tokenize_compose_str("1/3"), "");
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
     assert.equal(ct.tokenize_compose_str("foo#@:bar"), "");
     assert.equal(ct.tokenize_compose_str("foo bar [#alic"), "#alic");
@@ -1309,6 +1338,20 @@ run_test('content_highlighter', () => {
     };
     ct.content_highlighter.call(fake_this, backend);
 
+    // We don't have any fancy rendering for slash commands yet.
+    fake_this = { completing: 'slash' };
+    let th_render_slash_command_called = false;
+    const me_slash = {
+        text: "/me is excited (Display action text)",
+    };
+    typeahead_helper.render_typeahead_item = function (item) {
+        assert.deepEqual(item, {
+            primary: "/me is excited (Display action text)",
+        });
+        th_render_slash_command_called = true;
+    };
+    ct.content_highlighter.call(fake_this, me_slash);
+
     fake_this = { completing: 'stream' };
     var th_render_stream_called = false;
     typeahead_helper.render_stream = function (stream) {
@@ -1334,6 +1377,7 @@ run_test('content_highlighter', () => {
     assert(th_render_user_group_called);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
+    assert(th_render_slash_command_called);
 });
 
 run_test('typeahead_results', () => {
@@ -1376,6 +1420,10 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
+    function assert_slash_matches(input, expected) {
+        var returned = compose_typeahead_results('slash', composebox_typeahead.slash_commands, input);
+        assert.deepEqual(returned, expected);
+    }
     assert_emoji_matches('da', [{emoji_name: "tada", emoji_code: "1f389"},
                                 {emoji_name: "panda_face", emoji_code: "1f43c"}]);
     assert_emoji_matches('da_', []);
@@ -1402,6 +1450,10 @@ run_test('typeahead_results', () => {
     assert_mentions_matches('characters o ', []);
     assert_mentions_matches('haracters of hamlet', []);
     assert_mentions_matches('of hamlet', []);
+
+    // Autocomplete by slash commands.
+    assert_slash_matches('me', [me_slash]);
+
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches('den', [denmark_stream, sweden_stream]);
     assert_stream_matches('denmark', [denmark_stream]);

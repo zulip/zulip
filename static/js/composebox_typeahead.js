@@ -121,6 +121,11 @@ function query_matches_person_or_user_group(query, item) {
     return query_matches_person(query, item);
 }
 
+function query_matches_slash_commmand(query, item) {
+    query = query.toLowerCase();
+    return query_matches_source_attrs(query, item, ["name"], " ");
+}
+
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
@@ -328,6 +333,11 @@ exports.tokenize_compose_str = function (s) {
                 return s.slice(i - 2);
             }
             break;
+        case '/':
+            if (i === 0) {
+                return s;
+            }
+            break;
         case '#':
         case '@':
         case ':':
@@ -382,6 +392,17 @@ function filter_mention_name(current_token) {
     }
     return current_token;
 }
+
+exports.slash_commands = [
+    {
+        text: i18n.t("/me is excited (Display action text)"),
+        name: "me",
+    },
+    {
+        text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
+        name: "poll",
+    },
+];
 
 exports.compose_content_begins_typeahead = function (query) {
     var split = exports.split_at_cursor(query, this.$element);
@@ -463,6 +484,19 @@ exports.compose_content_begins_typeahead = function (query) {
         return get_mention_candidates_data(is_silent);
     }
 
+    function get_slash_commands_data() {
+        var commands = exports.slash_commands;
+        return commands;
+    }
+
+    if (this.options.completions.slash && current_token[0] === '/') {
+        current_token = current_token.substring(1);
+
+        this.completing = 'slash';
+        this.token = current_token;
+        return get_slash_commands_data();
+    }
+
     if (this.options.completions.stream && current_token[0] === '#') {
         if (current_token.length === 1) {
             return false;
@@ -490,6 +524,10 @@ exports.content_highlighter = function (item) {
         return typeahead_helper.render_emoji(item);
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.render_person_or_user_group(item);
+    } else if (this.completing === 'slash') {
+        return typeahead_helper.render_typeahead_item({
+            primary: item.text,
+        });
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === 'syntax') {
@@ -531,6 +569,8 @@ exports.content_typeahead_selected = function (item) {
             beginning += mention_text + ' ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item, is_silent: is_silent});
         }
+    } else if (this.completing === 'slash') {
+        beginning = beginning.substring(0, beginning.length - this.token.length - 1) + "/" + item.name + " ";
     } else if (this.completing === 'stream') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
         if (beginning.endsWith('#*')) {
@@ -570,6 +610,8 @@ exports.compose_content_matcher = function (item) {
         return query_matches_emoji(this.token, item);
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return query_matches_person_or_user_group(this.token, item);
+    } else if (this.completing === 'slash') {
+        return query_matches_slash_commmand(this.token, item);
     } else if (this.completing === 'stream') {
         return query_matches_user_group_or_stream(this.token, item);
     } else if (this.completing === 'syntax') {
@@ -582,6 +624,8 @@ exports.compose_matches_sorter = function (matches) {
         return typeahead_helper.sort_emojis(matches, this.token);
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.sort_people_and_user_groups(this.token, matches);
+    } else if (this.completing === 'slash') {
+        return matches;
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {
@@ -594,6 +638,7 @@ exports.initialize_compose_typeahead = function (selector) {
         mention: true,
         emoji: true,
         silent_mention: true,
+        slash: true,
         stream: true,
         syntax: true,
     };
