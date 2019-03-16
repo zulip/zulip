@@ -15,20 +15,29 @@ Use this as a checklist to get your organization off to a great start.
 
 Most messages in Zulip are sent to streams. Streams are similar to chat
 rooms, email lists, and IRC/Slack channels, in that they determine who
-receives a message. A few important notes:
+receives a message. A few suggestions:
 
 * It's often better to start with fewer streams, and let the number of
   streams grow organically. For small teams, you can start with the default
   streams and iterate from there.
 
-* For very large organizations, we recommend using a consistent naming
+* For large organizations, we recommend using a consistent naming
   scheme, like `#marketing/<name>` or `#mk/<name>` for all streams
   pertaining to the marketing team, `#help/<team name>` for
   `<team name>`'s internal support stream, etc.
 
-* Add clear descriptions to your streams.
+* A `#zulip help` stream can be useful for providing internal Zulip support
+  and answering questions about Zulip.
 
-Some relevant help articles are
+* For open source projects or other volunteer organizations, consider
+  adding default streams like `#announce` for announcements, `#new
+  members` for new members to introduce themselves and be welcomed,
+  and `#help` so that there's a clear place users stopping by with
+  just a single question can post.
+
+* Add clear descriptions to your streams (especially public streams).
+
+A few relevant help center articles:
 
 * [Create a stream](/help/create-a-stream)
 
