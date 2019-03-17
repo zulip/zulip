@@ -43,7 +43,8 @@ from zerver.lib.test_classes import (
 )
 from zerver.models import \
     get_realm, email_to_username, CustomProfileField, CustomProfileFieldValue, \
-    UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite
+    UserProfile, PreregistrationUser, Realm, RealmDomain, get_user, MultiuseInvite, \
+    clear_supported_auth_backends_cache
 from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, create_confirmation_link
@@ -78,7 +79,7 @@ class AuthBackendTest(ZulipTestCase):
         return username
 
     def verify_backend(self, backend: Any, good_kwargs: Optional[Dict[str, Any]]=None, bad_kwargs: Optional[Dict[str, Any]]=None) -> None:
-
+        clear_supported_auth_backends_cache()
         user_profile = self.example_user('hamlet')
 
         assert good_kwargs is not None
@@ -116,7 +117,9 @@ class AuthBackendTest(ZulipTestCase):
 
         # Verify auth fails if the auth backend is disabled on server
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',)):
+            clear_supported_auth_backends_cache()
             self.assertIsNone(backend.authenticate(**good_kwargs))
+        clear_supported_auth_backends_cache()
 
         # Verify auth fails if the auth backend is disabled for the realm
         for backend_name in AUTH_BACKEND_NAME_MAP.keys():

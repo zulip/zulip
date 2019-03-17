@@ -133,6 +133,22 @@ def get_realm_emoji_cache_key(realm: 'Realm') -> str:
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'active_realm_emoji:%s' % (realm.id,)
 
+# This simple call-once caching saves ~500us in auth_enabled_helper,
+# which is a significant optimization for common_context.  Note that
+# these values cannot change in a running production system, but do
+# regularly change within unit tests; we address the latter by calling
+# clear_supported_auth_backends_cache in our standard tearDown code.
+supported_backends = None  # type: Optional[Set[type]]
+def supported_auth_backends() -> Set[type]:
+    global supported_backends
+    if supported_backends is None:
+        supported_backends = django.contrib.auth.get_backends()
+    return supported_backends
+
+def clear_supported_auth_backends_cache() -> None:
+    global supported_backends
+    supported_backends = None
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -339,7 +355,7 @@ class Realm(models.Model):
         from zproject.backends import AUTH_BACKEND_NAME_MAP
 
         ret = {}  # type: Dict[str, bool]
-        supported_backends = {backend.__class__ for backend in django.contrib.auth.get_backends()}
+        supported_backends = [backend.__class__ for backend in supported_auth_backends()]
         for k, v in self.authentication_methods.iteritems():
             backend = AUTH_BACKEND_NAME_MAP[k]
             if backend in supported_backends:
