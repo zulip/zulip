@@ -8,6 +8,7 @@ import django.db.utils
 from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
+from django.utils.text import slugify
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
@@ -4455,14 +4456,22 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
 
     # Given the fact that we have almost no restrictions on stream names and
     # that what characters are allowed in e-mail addresses is complicated and
-    # dependent on context in the address, we opt for a very simple scheme:
-    #
-    # Only encode the stream name (leave the + and token alone). Encode
-    # everything that isn't alphanumeric plus _ as the percent-prefixed integer
-    # ordinal of that character, padded with zeroes to the maximum number of
-    # bytes of a UTF-8 encoded Unicode character.
-    encoded_name = re.sub(r"\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
-    encoded_token = "%s+%s" % (encoded_name, email_token)
+    # dependent on context in the address, we opt for a simple scheme:
+    # 1. Replace all substrings of non-alphanumeric characters with a single hyphen.
+    # 2. Use Django's slugify to convert the resulting name to ascii.
+    # 3. If the resulting name is shorter than the name we got in step 1,
+    # it means some letters can't be reasonably turned to ascii and have to be dropped,
+    # which would mangle the name, so we just skip the name part of the address.
+    name = re.sub(r"\W+", '-', name)
+    slug_name = slugify(name)
+    encoded_name = slug_name if len(slug_name) == len(name) else ''
+
+    # If encoded_name ends up empty, we just skip this part of the address:
+    if encoded_name:
+        encoded_token = "%s+%s" % (encoded_name, email_token)
+    else:
+        encoded_token = email_token
+
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 def get_email_gateway_message_string_from_address(address: str) -> Optional[str]:
@@ -4493,12 +4502,14 @@ def decode_email_address(email: str) -> Optional[Tuple[str, bool]]:
     else:
         show_sender = False
 
-    if '.' in msg_string:
-        # Workaround for Google Groups and other programs that don't accept emails
-        # that have + signs in them (see Trac #2102)
-        encoded_stream_name, token = msg_string.split('.')
-    else:
-        encoded_stream_name, token = msg_string.split('+')
+    # Workaround for Google Groups and other programs that don't accept emails
+    # that have + signs in them (see Trac #2102)
+    splitting_char = '.' if '.' in msg_string else '+'
+
+    parts = msg_string.split(splitting_char)
+    # msg_string may have one or two parts:
+    # [stream_name, email_token] or just [email_token]
+    token = parts[1] if len(parts) == 2 else parts[0]
 
     return token, show_sender
 
