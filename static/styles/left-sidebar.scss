@@ -78,7 +78,7 @@ li.show-more-private-messages a {
     overflow: visible;
     /* The -1px here prevents the scrollbar from going above the top of the container */
     margin-top: -1px;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
     padding: 0;
     font-weight: normal;
 }
@@ -132,6 +132,15 @@ li.show-more-private-messages a {
 
 #stream_filters li.active-sub-filter:hover {
     background-color: hsl(120, 11%, 82%);
+}
+
+#add-stream-link {
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+#add-stream-link i {
+    margin-right: 5px;
 }
 
 ul.filters {

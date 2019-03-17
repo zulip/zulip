@@ -541,7 +541,7 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").click(function (e) {
         e.stopPropagation();
-        hashchange.go_to_location('streams/all');
+        hashchange.go_to_location('streams/subcribed');
     });
 
     $("#streams_filter_icon").click(function (e) {

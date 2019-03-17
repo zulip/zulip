@@ -246,12 +246,14 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     statsd.incr('views.home')
     show_invites = True
+    show_add_streams = True
 
     # Some realms only allow admins to invite users
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
     if user_profile.is_guest:
         show_invites = False
+        show_add_streams = False
 
     show_billing = False
     show_plans = False
@@ -292,6 +294,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'pipeline': settings.PIPELINE_ENABLED,
                                'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
+                               'show_add_streams': show_add_streams,
                                'show_billing': show_billing,
                                'show_plans': show_plans,
                                'is_admin': user_profile.is_realm_admin,

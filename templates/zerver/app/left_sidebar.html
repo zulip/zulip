@@ -71,6 +71,9 @@
             </div>
             <div id="stream-filters-container" class="scrolling_list">
                 <ul id="stream_filters" class="filters"></ul>
+                {% if show_add_streams %}
+                <a id="add-stream-link" href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Add streams') }}</a>
+                {% endif %}
             </div>
         </div>
     </div>
