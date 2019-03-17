@@ -16,7 +16,6 @@ import logging
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-import django.contrib.auth
 from django.contrib.auth import get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
@@ -39,7 +38,7 @@ from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import CustomProfileField, DisposableEmailError, DomainNotAllowedForRealmError, \
     EmailContainsPlusError, PreregistrationUser, UserProfile, Realm, custom_profile_fields_for_realm, \
     email_allowed_for_realm, get_default_stream_groups, get_user_profile_by_id, remote_user_to_email, \
-    email_to_username, get_realm, get_user_by_delivery_email
+    email_to_username, get_realm, get_user_by_delivery_email, supported_auth_backends
 
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
@@ -63,7 +62,7 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
     else:
         enabled_method_dict = dict((method, True) for method in Realm.AUTHENTICATION_FLAGS)
         pad_method_dict(enabled_method_dict)
-    for supported_backend in django.contrib.auth.get_backends():
+    for supported_backend in supported_auth_backends():
         for backend_name in backends_to_check:
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
             if enabled_method_dict[backend_name] and isinstance(supported_backend, backend):
