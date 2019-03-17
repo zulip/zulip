@@ -1890,8 +1890,8 @@ class Bugdown(markdown.Markdown):
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 75)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 70)
         reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 65)
-        reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
         reg.register(GithubLink(get_compiled_github_link_regex(), self), 'github_link', 60)
+        reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
