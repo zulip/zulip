@@ -1638,6 +1638,41 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+    def test_github_link(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        msg = "https://github.com/zulip/zulip"
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="https://github.com/zulip/zulip" target="_blank" title="https://github.com/zulip/zulip">zulip/zulip</a></p>'
+        )
+
+        msg = "https://github.com/zulip/zulip/issues/11895"
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="https://github.com/zulip/zulip/issues/11895" target="_blank" title="https://github.com/zulip/zulip/issues/11895">zulip/zulip#11895</a></p>'
+        )
+
+        msg = "https://github.com/zulip/zulip/pull/11922"
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="https://github.com/zulip/zulip/pull/11922" target="_blank" title="https://github.com/zulip/zulip/pull/11922">zulip/zulip#11922</a></p>'
+        )
+
+        msg = "https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef"
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef" target="_blank" title="https://github.com/zulip/zulip/commit/a47edd4fc8a1b115e979bef6fc372ddf360cdcef">zulip/zulip@a47edd4</a></p>'
+        )
+
+        msg = "https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3"
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3" target="_blank" title="https://github.com/zulip/zulip/pull/11922/commits/623ee15beef4bd8745e9f4746fcc11093909dcc3">zulip/zulip@623ee15</a></p>'
+        )
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'

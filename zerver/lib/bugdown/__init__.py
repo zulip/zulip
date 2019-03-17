@@ -181,13 +181,13 @@ def get_compiled_github_link_regex() -> str:
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             https://github\.com/        # Domain
-            (?P<organization>[\w.-]+)/  # Organization name
-            (?P<repository>[\w.-]+)   # Name of repository
+            (?P<organization>[\w-]+)/  # Organization name
+            (?P<repository>[\w-]+)   # Name of repository
             (
-                (/[\w.-]+)*/
-                (?P<artifact>[\w.-]+)/  # Last artifact in the URL such as pull request, issue, commit
-                (?P<id>[\w.-]+)         # Identifier for artifiact
-                (\#[\w.-]*)?
+                (/[\w-]+)*/
+                (?P<artifact>[\w-]+)/  # Last artifact in the URL such as pull request, issue, commit
+                (?P<id>[\w-]+)         # Identifier for artifiact
+                (\#[\w-]*)?
             )?
         )/?
 
@@ -1380,12 +1380,12 @@ class GithubLink(CompiledPattern):
 
         if artifact is None or artifact_id is None:
             return url_to_a(db_data, url, shortened_repo_url)
-        elif artifact == 'commits':
+        elif artifact == 'commit' or artifact == 'commits':
             return url_to_a(db_data, url, '{0}@{1}'.format(shortened_repo_url, artifact_id[0:7]))
-        elif artifact == 'pulls' or artifact == 'issues':
+        elif artifact == 'pull' or artifact == 'issues':
             return url_to_a(db_data, url, '{0}#{1}'.format(shortened_repo_url, artifact_id))
         else:
-            return url_to_a(db_data, url, shortened_repo_url)
+            return url_to_a(db_data, url, url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
