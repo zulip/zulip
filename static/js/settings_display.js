@@ -28,11 +28,28 @@ exports.set_night_mode = function (bool) {
     change_display_setting(data, '#display-settings-status');
 };
 
+exports.demote_inactive_streams_values = {
+    automatic: {
+        code: 1,
+        description: i18n.t("Automatic"),
+    },
+    always: {
+        code: 2,
+        description: i18n.t("Always"),
+    },
+    never: {
+        code: 3,
+        description: i18n.t("Never"),
+    },
+};
+
 exports.set_up = function () {
     meta.loaded = true;
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
+
+    $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
     $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
 
@@ -82,6 +99,11 @@ exports.set_up = function () {
         var starred_message_counts = this.checked;
         var data = {};
         data.starred_message_counts = JSON.stringify(starred_message_counts);
+        change_display_setting(data, '#display-settings-status');
+    });
+
+    $('#demote_inactive_streams').change(function () {
+        var data = {demote_inactive_streams: this.value};
         change_display_setting(data, '#display-settings-status');
     });
 

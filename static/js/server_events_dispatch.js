@@ -372,6 +372,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'twenty_four_hour_time',
             'translate_emoticons',
             'starred_message_counts',
+            'demote_inactive_streams',
         ];
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
@@ -409,6 +410,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'starred_message_counts') {
             starred_messages.rerender_ui();
+        }
+        if (event.setting_name === 'demote_inactive_streams') {
+            stream_list.update_streams_sidebar();
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather

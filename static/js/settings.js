@@ -132,6 +132,7 @@ exports.build_page = function () {
         timezones: moment.tz.names(),
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: settings.settings_label,
+        demote_inactive_streams_values: settings_display.demote_inactive_streams_values,
     });
 
     $(".settings-box").html(rendered_settings_tab);

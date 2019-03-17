@@ -18,7 +18,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string
+from zerver.lib.validator import check_bool, check_string, check_int
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, name_changes_disabled
@@ -123,6 +123,7 @@ def update_display_settings_backend(
         default_language: Optional[bool]=REQ(validator=check_string, default=None),
         left_side_userlist: Optional[bool]=REQ(validator=check_bool, default=None),
         emojiset: Optional[str]=REQ(validator=check_string, default=None),
+        demote_inactive_streams: Optional[int]=REQ(validator=check_int, default=None),
         timezone: Optional[str]=REQ(validator=check_string, default=None)) -> HttpResponse:
 
     if (default_language is not None and
@@ -136,6 +137,10 @@ def update_display_settings_backend(
     if (emojiset is not None and
             emojiset not in UserProfile.emojiset_choices()):
         raise JsonableError(_("Invalid emojiset '%s'") % (emojiset,))
+
+    if (demote_inactive_streams is not None and
+            demote_inactive_streams not in UserProfile.DEMOTE_STREAMS_CHOICES):
+        raise JsonableError(_("Invalid setting value '%s'") % (demote_inactive_streams,))
 
     request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
     result = {}  # type: Dict[str, Any]

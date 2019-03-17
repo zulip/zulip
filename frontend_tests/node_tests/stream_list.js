@@ -32,10 +32,15 @@ set_global('keydown_util', {
     handle: noop,
 });
 
+set_global('page_params', {
+    is_admin: false,
+    realm_users: [],
+});
+
 run_test('create_sidebar_row', () => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
-
+    page_params.demote_inactive_streams = 1;
     var devel = {
         name: 'devel',
         stream_id: 100,

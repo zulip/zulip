@@ -839,6 +839,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     dense_mode = models.BooleanField(default=True)  # type: bool
     starred_message_counts = models.BooleanField(default=False)  # type: bool
 
+    AUTOMATIC = 1
+    ALWAYS = 2
+    NEVER = 3
+    DEMOTE_STREAMS_CHOICES = [
+        AUTOMATIC,
+        ALWAYS,
+        NEVER
+    ]
+    demote_inactive_streams = models.PositiveSmallIntegerField(default=AUTOMATIC)
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
@@ -897,6 +906,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         night_mode=bool,
         translate_emoticons=bool,
         starred_message_counts=bool,
+        demote_inactive_streams=int,
     )
 
     notification_setting_types = dict(
