@@ -1159,7 +1159,7 @@ class Stream(models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=generate_email_token_for_stream)  # type: str
+        max_length=32, default=generate_email_token_for_stream, unique=True)  # type: str
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "more topics" for a
