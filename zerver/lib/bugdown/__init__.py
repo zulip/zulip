@@ -89,7 +89,6 @@ ElementStringNone = Union[Element, Optional[str]]
 AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
-GITHUB_REGEX = r'https://github\.com/(?P<organization>[^/\s]+)/(?P<repository>[^/\s]+?(/))?((/[^/\s]+)*/(?P<artifact>[^/\s]+)/(?P<id>[^/\s]+)?(#[^\s]*))?(\s)'
 
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
@@ -1047,7 +1046,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
-            
+
             youtube = self.youtube_image(url)
             if youtube is not None:
                 yt_id = self.youtube_id(url)
