@@ -38,8 +38,14 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
-    subdomain = get_subdomain(request)
-    return get_realm(subdomain)
+    if not hasattr(request, "realm"):
+        # We cache the realm object from this function on the request,
+        # so that functions that call get_realm_from_request don't
+        # need to do duplicate queries on the same realm while
+        # processing a single request.
+        subdomain = get_subdomain(request)
+        request.realm = get_realm(subdomain)
+    return request.realm
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
