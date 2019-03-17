@@ -681,8 +681,6 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if dev_auth_enabled():
         if 'new_realm' in request.POST:
             realm = get_realm(request.POST['new_realm'])
-        else:
-            realm = get_realm_from_request(request)
 
         add_dev_login_context(realm, extra_context)
         if realm and 'new_realm' in request.POST:
