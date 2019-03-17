@@ -57,9 +57,8 @@ class TestEncodeDecode(ZulipTestCase):
         self.assertTrue(email_address.endswith('@testserver'))
         tup = decode_email_address(email_address)
         assert tup is not None
-        (decoded_stream_name, token, show_sender) = tup
+        token, show_sender = tup
         self.assertFalse(show_sender)
-        self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
         parts = email_address.split('@')
@@ -67,25 +66,22 @@ class TestEncodeDecode(ZulipTestCase):
         email_address_show = '@'.join(parts)
         tup = decode_email_address(email_address_show)
         assert tup is not None
-        (decoded_stream_name, token, show_sender) = tup
+        token, show_sender = tup
         self.assertTrue(show_sender)
-        self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots = email_address.replace('+', '.')
         tup = decode_email_address(email_address_dots)
         assert tup is not None
-        (decoded_stream_name, token, show_sender) = tup
+        token, show_sender = tup
         self.assertFalse(show_sender)
-        self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
         email_address_dots_show = email_address_show.replace('+', '.')
         tup = decode_email_address(email_address_dots_show)
         assert tup is not None
-        (decoded_stream_name, token, show_sender) = tup
+        token, show_sender = tup
         self.assertTrue(show_sender)
-        self.assertEqual(decoded_stream_name, stream_name)
         self.assertEqual(token, stream.email_token)
 
         email_address = email_address.replace('@testserver', '@zulip.org')
@@ -96,19 +92,28 @@ class TestEncodeDecode(ZulipTestCase):
         with self.settings(EMAIL_GATEWAY_EXTRA_PATTERN_HACK='@zulip.org'):
             tup = decode_email_address(email_address)
             assert tup is not None
-            (decoded_stream_name, token, show_sender) = tup
+            token, show_sender = tup
             self.assertFalse(show_sender)
-            self.assertEqual(decoded_stream_name, stream_name)
             self.assertEqual(token, stream.email_token)
 
             tup = decode_email_address(email_address_show)
             assert tup is not None
-            (decoded_stream_name, token, show_sender) = tup
+            token, show_sender = tup
             self.assertTrue(show_sender)
-            self.assertEqual(decoded_stream_name, stream_name)
             self.assertEqual(token, stream.email_token)
 
         self.assertEqual(decode_email_address('bogus'), None)
+
+    def test_decode_ignores_stream_name(self) -> None:
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        stream_to_address = stream_to_address.replace("Denmark", "Some_name")
+
+        # get the email_token:
+        tup = decode_email_address(stream_to_address)
+        assert tup is not None
+        token = tup[0]
+        self.assertEqual(token, stream.email_token)
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
@@ -643,13 +648,25 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
     def test_error_to_stream_with_wrong_address(self) -> None:
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
-        stream_to_address = stream_to_address.replace("Denmark", "Wrong_stream")
+        # get the email_token:
+        tup = decode_email_address(stream_to_address)
+        assert tup is not None
+        token = tup[0]
+        stream_to_address = stream_to_address.replace(token, "Wrong_token")
 
         result = self.send_offline_message(stream_to_address, self.example_email('hamlet'))
         self.assert_json_error(
             result,
             "5.1.1 Bad destination mailbox address: "
             "Please use the address specified in your Streams page.")
+
+    def test_success_to_stream_with_good_token_wrong_stream_name(self) -> None:
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        stream_to_address = stream_to_address.replace("Denmark", "Wrong_name")
+
+        result = self.send_offline_message(stream_to_address, self.example_email('hamlet'))
+        self.assert_json_success(result)
 
     def test_success_to_private(self) -> None:
         mm_address = self.send_private_message()

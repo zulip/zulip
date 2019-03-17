@@ -4480,9 +4480,9 @@ def get_email_gateway_message_string_from_address(address: str) -> Optional[str]
 
     return msg_string
 
-def decode_email_address(email: str) -> Optional[Tuple[str, str, bool]]:
+def decode_email_address(email: str) -> Optional[Tuple[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
-    # (streamname, email_token, show_sender)
+    # (email_token, show_sender)
     msg_string = get_email_gateway_message_string_from_address(email)
     if msg_string is None:
         return None
@@ -4500,8 +4500,7 @@ def decode_email_address(email: str) -> Optional[Tuple[str, str, bool]]:
     else:
         encoded_stream_name, token = msg_string.split('+')
 
-    stream_name = re.sub(r"%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
-    return stream_name, token, show_sender
+    return token, show_sender
 
 SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
 
