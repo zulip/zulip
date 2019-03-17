@@ -153,6 +153,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True
+    social_backends = []
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
         key = "%s_auth_enabled" % (name_lower,)
@@ -161,9 +162,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         if is_enabled:
             no_auth_enabled = False
 
-    social_backends = []
-    for backend in SOCIAL_AUTH_BACKENDS:
-        if not auth_enabled_helper([backend.auth_backend_name], realm):
+        # Now add the enabled social backends to the social_backends
+        # list used to generate buttons for login/register pages.
+        backend = AUTH_BACKEND_NAME_MAP[auth_backend_name]
+        if not is_enabled or backend not in SOCIAL_AUTH_BACKENDS:
             continue
         social_backends.append({
             'name': backend.name,
