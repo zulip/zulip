@@ -89,6 +89,7 @@ ElementStringNone = Union[Element, Optional[str]]
 AVATAR_REGEX = r'!avatar\((?P<email>[^)]*)\)'
 GRAVATAR_REGEX = r'!gravatar\((?P<email>[^)]*)\)'
 EMOJI_REGEX = r'(?P<syntax>:[\w\-\+]+:)'
+GITHUB_REGEX = r'https://github\.com/(?P<organization>[^/\s]+)/(?P<repository>[^/\s]+?(/))?((/[^/\s]+)*/(?P<artifact>[^/\s]+)/(?P<id>[^/\s]+)?(#[^\s]*))?(\s)'
 
 def verbose_compile(pattern: str) -> Any:
     return re.compile(
@@ -173,6 +174,29 @@ def get_web_link_regex() -> str:
         """ % (tlds, nested_paren_chunk, file_links)
     LINK_REGEX = verbose_compile(REGEX)
     return LINK_REGEX
+
+def get_compiled_github_link_regex() -> str:
+    regex = r"""
+        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+                             # (Double-negative lookbehind to allow start-of-string)
+        (?P<url>             # Main group
+            https://github\.com/        # Domain
+            (?P<organization>[\w.-]+)/  # Organization name
+            (?P<repository>[\w.-]+)   # Name of repository
+            (
+                (/[\w.-]+)*/
+                (?P<artifact>[\w.-]+)/  # Last artifact in the URL such as pull request, issue, commit
+                (?P<id>[\w.-]+)         # Identifier for artifiact
+                (\#[\w.-]*)?
+            )?
+        )/?
+
+        (?=                            # Github URL must be followed by (not included in group)
+            [!:;\?\),\.\'\"\>]*        # Optional punctuation characters
+            (?:\Z|\s)                  # followed by whitespace or end of string
+        )
+        """
+    return verbose_compile(regex)
 
 def clear_state_for_testing() -> None:
     # The link regex never changes in production, but our tests
@@ -1023,6 +1047,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
+            
             youtube = self.youtube_image(url)
             if youtube is not None:
                 yt_id = self.youtube_id(url)
@@ -1341,6 +1366,26 @@ class AutoLink(CompiledPattern):
         url = match.group('url')
         db_data = self.markdown.zulip_db_data
         return url_to_a(db_data, url)
+
+class GithubLink(CompiledPattern):
+    def handleMatch(self, match: Match[str]) -> ElementStringNone:
+        db_data = self.markdown.zulip_db_data
+        url = match.group('url')
+        organization = match.group('organization')
+        repo = match.group('repository')
+        shortened_repo_url = '{0}/{1}'.format(organization, repo)
+
+        artifact = match.group('artifact')
+        artifact_id = match.group('id')
+
+        if artifact is None or artifact_id is None:
+            return url_to_a(db_data, url, shortened_repo_url)
+        elif artifact == 'commits':
+            return url_to_a(db_data, url, '{0}@{1}'.format(shortened_repo_url, artifact_id[0:7]))
+        elif artifact == 'pulls' or artifact == 'issues':
+            return url_to_a(db_data, url, '{0}#{1}'.format(shortened_repo_url, artifact_id))
+        else:
+            return url_to_a(db_data, url, shortened_repo_url)
 
 class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
@@ -1835,18 +1880,19 @@ class Bugdown(markdown.Markdown):
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
-        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 105)
-        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 100)
-        reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 95)
-        reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 90)
-        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
-        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
-        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 75)
+        reg.register(BacktickPattern(BACKTICK_RE), 'backtick', 110)
+        reg.register(markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, 'strong,em'), 'strong_em', 105)
+        reg.register(UserMentionPattern(mention.find_mentions, self), 'usermention', 100)
+        reg.register(Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'), 'tex', 95)
+        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 90)
+        reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 85)
+        reg.register(ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'), 'modal_link', 80)
         # Note that !gravatar syntax should be deprecated long term.
-        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
-        reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
-        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 60)
+        reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 75)
+        reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 70)
+        reg.register(AtomicLinkPattern(get_link_re(), self), 'link', 65)
         reg.register(AutoLink(get_web_link_regex(), self), 'autolink', 55)
+        reg.register(GithubLink(get_compiled_github_link_regex(), self), 'github_link', 60)
         # Reserve priority 45-54 for Realm Filters
         reg = self.register_realm_filters(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), 'entity', 40)
