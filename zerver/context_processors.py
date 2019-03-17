@@ -132,7 +132,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'password_auth_enabled': password_auth_enabled(realm),
         'require_email_format_usernames': require_email_format_usernames(realm),
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
-        'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': FromAddress.SUPPORT,
         'find_team_link_disabled': find_team_link_disabled,
@@ -153,10 +152,14 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     }
 
     # Add the keys for our standard authentication backends.
+    no_auth_enabled = True
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
         key = "%s_auth_enabled" % (name_lower,)
-        context[key] = auth_enabled_helper([auth_backend_name], realm)
+        is_enabled = auth_enabled_helper([auth_backend_name], realm)
+        context[key] = is_enabled
+        if is_enabled:
+            no_auth_enabled = False
 
     social_backends = []
     for backend in SOCIAL_AUTH_BACKENDS:
@@ -170,5 +173,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
             'sort_order': backend.sort_order,
         })
     context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'], reverse=True)
+    context["no_auth_enabled"] = no_auth_enabled
 
     return context
