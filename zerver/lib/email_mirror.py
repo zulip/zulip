@@ -208,13 +208,6 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
         truncate_body(content),
         email_gateway=True)
 
-def valid_stream(stream_name: str, token: str) -> bool:
-    try:
-        stream = Stream.objects.get(email_token=token)
-        return stream.name.lower() == stream_name.lower()
-    except Stream.DoesNotExist:
-        return False
-
 def get_message_part_by_type(message: message.Message, content_type: str) -> Optional[str]:
     charsets = message.get_charsets()
 
@@ -298,12 +291,14 @@ def extract_and_validate(email: str) -> Tuple[Stream, bool]:
     temp = decode_email_address(email)
     if temp is None:
         raise ZulipEmailForwardError("Malformed email recipient " + email)
-    stream_name, token, show_sender = temp
+    token, show_sender = temp
 
-    if not valid_stream(stream_name, token):
+    try:
+        stream = Stream.objects.get(email_token=token)
+    except Stream.DoesNotExist:
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return Stream.objects.get(email_token=token), show_sender
+    return stream, show_sender
 
 def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
