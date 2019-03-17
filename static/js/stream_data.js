@@ -20,8 +20,16 @@ exports.clear_subscriptions = function () {
 
 exports.clear_subscriptions();
 
-exports.set_filter_out_inactives = function (want_filter) {
-    filter_out_inactives = want_filter || false;
+exports.set_filter_out_inactives = function () {
+    if (page_params.demote_inactive_streams ===
+            settings_display.demote_inactive_streams_values.automatic.code) {
+        filter_out_inactives = exports.subscribed_subs().length >= 30;
+    } else if (page_params.demote_inactive_streams ===
+            settings_display.demote_inactive_streams_values.always.code) {
+        filter_out_inactives = true;
+    } else {
+        filter_out_inactives = false;
+    }
 };
 
 // for testing:
@@ -30,7 +38,8 @@ exports.is_filtering_inactives = function () {
 };
 
 exports.is_active = function (sub) {
-    if (!filter_out_inactives) {
+    exports.set_filter_out_inactives();
+    if (!filter_out_inactives || sub.pin_to_top) {
         // If users don't want to filter inactive streams
         // to the bottom, we respect that setting and don't
         // treat any streams as dormant.
@@ -730,8 +739,7 @@ exports.initialize = function () {
         page_params.notifications_stream = "";
     }
 
-    var has_many_streams = exports.subscribed_subs().length >= 30;
-    exports.set_filter_out_inactives(has_many_streams);
+    exports.set_filter_out_inactives();
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subscriptions;

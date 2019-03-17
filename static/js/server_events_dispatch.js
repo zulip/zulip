@@ -376,6 +376,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'update_display_settings':
         var user_display_settings = [
             'default_language',
+            'demote_inactive_streams',
             'dense_mode',
             'emojiset',
             'high_contrast_mode',
@@ -403,6 +404,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'high_contrast_mode') {
             $("body").toggleClass("high-contrast");
+        }
+        if (event.setting_name === 'demote_inactive_streams') {
+            stream_list.update_streams_sidebar();
         }
         if (event.setting_name === 'dense_mode') {
             $("body").toggleClass("less_dense_mode");

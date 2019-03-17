@@ -121,6 +121,7 @@ zrequire('starred_messages');
 zrequire('user_status');
 zrequire('user_status_ui');
 zrequire('ui_init');
+zrequire('settings_display');
 
 set_global('$', global.make_zjquery());
 

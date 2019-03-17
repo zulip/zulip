@@ -4,7 +4,7 @@ import ujson
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import patch
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -259,6 +259,7 @@ class ChangeSettingsTest(ZulipTestCase):
             default_language = 'de',
             emojiset = 'google',
             timezone = 'US/Mountain',
+            demote_inactive_streams = 2,
         )  # type: Dict[str, Any]
 
         email = self.example_email('hamlet')
@@ -267,9 +268,13 @@ class ChangeSettingsTest(ZulipTestCase):
         # Error if a setting in UserProfile.property_types does not have test values
         if test_value is None:
             raise AssertionError('No test created for %s' % (setting_name,))
-        invalid_value = 'invalid_' + setting_name
 
+        if setting_name == 'demote_inactive_streams':
+            invalid_value = 4  # type: Union[int, str]
+        else:
+            invalid_value = 'invalid_' + setting_name
         data = {setting_name: ujson.dumps(test_value)}
+
         result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
         user_profile = self.example_user('hamlet')
@@ -278,11 +283,16 @@ class ChangeSettingsTest(ZulipTestCase):
         # Test to make sure invalid settings are not accepted
         # and saved in the db.
         data = {setting_name: ujson.dumps(invalid_value)}
+
         result = self.client_patch("/json/settings/display", data)
         # the json error for multiple word setting names (ex: default_language)
         # displays as 'Invalid language'. Using setting_name.split('_') to format.
-        self.assert_json_error(result, "Invalid %s '%s'" % (setting_name.split('_')[-1],
-                                                            invalid_value))
+        if setting_name == 'demote_inactive_streams':
+            self.assert_json_error(result, "Invalid setting value '%s'" % (invalid_value,))
+        else:
+            self.assert_json_error(result, "Invalid %s '%s'" % (setting_name.split('_')[-1],
+                                                                invalid_value))
+
         user_profile = self.example_user('hamlet')
         self.assertNotEqual(getattr(user_profile, setting_name), invalid_value)
 

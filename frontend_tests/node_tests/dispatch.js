@@ -607,6 +607,12 @@ var event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__demote_inactive_streams: {
+        type: 'update_display_settings',
+        setting_name: 'demote_inactive_streams',
+        setting: 2,
+    },
+
     update_display_settings__translate_emoticons: {
         type: 'update_display_settings',
         setting_name: 'translate_emoticons',
@@ -1389,6 +1395,14 @@ with_overrides(function (override) {
     page_params.fluid_layout_width = false;
     dispatch(event);
     assert_same(page_params.fluid_layout_width, true);
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__demote_inactive_streams;
+        override('stream_list.update_streams_sidebar', stub.f);
+        page_params.demote_inactive_streams = 1;
+        dispatch(event);
+        assert_same(page_params.demote_inactive_streams, 2);
+    });
 });
 
 with_overrides(function (override) {

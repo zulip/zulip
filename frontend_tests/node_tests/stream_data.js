@@ -9,6 +9,7 @@ set_global('$', function () {
 
 set_global('blueslip', global.make_zblueslip());
 set_global('document', null);
+set_global('i18n', global.stub_i18n);
 global.stub_out_jquery();
 
 zrequire('color_data');
@@ -24,6 +25,7 @@ zrequire('Filter', 'js/filter');
 zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
+zrequire('settings_display', 'js/settings_display');
 
 run_test('basics', () => {
     var denmark = {
@@ -291,14 +293,44 @@ run_test('is_active', () => {
 
     var sub;
 
+    page_params.demote_inactive_streams =
+        settings_display.demote_inactive_streams_values.automatic.code;
+
     sub = {name: 'pets', subscribed: false, stream_id: 111};
     stream_data.add_sub('pets', sub);
 
     assert(stream_data.is_active(sub));
 
-    stream_data.set_filter_out_inactives(true);
+    stream_data.subscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    sub.pin_to_top = true;
+    assert(stream_data.is_active(sub));
+    sub.pin_to_top = false;
+
+    var opts = {
+        stream_id: 222,
+        message_id: 108,
+        topic_name: 'topic2',
+    };
+    topic_data.add_message(opts);
+
+    assert(stream_data.is_active(sub));
+
+    page_params.demote_inactive_streams =
+        settings_display.demote_inactive_streams_values.always.code;
+
+    sub = {name: 'pets', subscribed: false, stream_id: 111};
+    stream_data.add_sub('pets', sub);
 
     assert(!stream_data.is_active(sub));
+
+    sub.pin_to_top = true;
+    assert(stream_data.is_active(sub));
+    sub.pin_to_top = false;
 
     stream_data.subscribe_myself(sub);
     assert(stream_data.is_active(sub));
@@ -309,13 +341,29 @@ run_test('is_active', () => {
     sub = {name: 'lunch', subscribed: false, stream_id: 222};
     stream_data.add_sub('lunch', sub);
 
-    assert(!stream_data.is_active(sub));
+    assert(stream_data.is_active(sub));
 
-    var opts = {
-        stream_id: 222,
-        message_id: 108,
-        topic_name: 'topic2',
-    };
+    topic_data.add_message(opts);
+
+    assert(stream_data.is_active(sub));
+
+    page_params.demote_inactive_streams =
+        settings_display.demote_inactive_streams_values.never.code;
+
+    sub = {name: 'pets', subscribed: false, stream_id: 111};
+    stream_data.add_sub('pets', sub);
+
+    assert(stream_data.is_active(sub));
+
+    stream_data.subscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    sub.pin_to_top = true;
+    assert(stream_data.is_active(sub));
+
     topic_data.add_message(opts);
 
     assert(stream_data.is_active(sub));
@@ -695,6 +743,7 @@ run_test('initialize', () => {
     }
 
     initialize();
+    page_params.demote_inactive_streams = 1;
     page_params.realm_notifications_stream_id = -1;
     stream_data.initialize();
     assert(!stream_data.is_filtering_inactives());

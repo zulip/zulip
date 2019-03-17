@@ -55,6 +55,8 @@ const denmark_stream = {
 // to make our tests more self-containted.
 
 zrequire('stream_data');
+set_global('i18n', global.stub_i18n);
+zrequire('settings_display');
 
 run_test('stream_data', () => {
     assert.equal(stream_data.get_sub_by_name('Denmark'), undefined);

@@ -875,6 +875,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     starred_message_counts = models.BooleanField(default=False)  # type: bool
     fluid_layout_width = models.BooleanField(default=False)  # type: bool
 
+    # UI setting controlling Zulip's behavior of demoting in the sort
+    # order and graying out streams with no recent traffic.  The
+    # default behavior, automatic, enables this behavior once a user
+    # is subscribed to 30+ streams in the webapp.
+    DEMOTE_STREAMS_AUTOMATIC = 1
+    DEMOTE_STREAMS_ALWAYS = 2
+    DEMOTE_STREAMS_NEVER = 3
+    DEMOTE_STREAMS_CHOICES = [
+        DEMOTE_STREAMS_AUTOMATIC,
+        DEMOTE_STREAMS_ALWAYS,
+        DEMOTE_STREAMS_NEVER
+    ]
+    demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
+
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
@@ -924,6 +938,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Define the types of the various automatically managed properties
     property_types = dict(
         default_language=str,
+        demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
         left_side_userlist=bool,
