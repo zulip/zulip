@@ -4271,8 +4271,8 @@ msgstr "新建社群被禁用"
 
 #: zerver/views/streams.py:50
 #, python-brace-format
-msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "用户无权使用“{principal}”执行查询"
+msgid "Unable to find user '{principal}'"
+msgstr "无法找到用户“{principal}”"
 
 #: zerver/views/streams.py:98
 msgid "You must pass \"new_description\" or \"new_group_name\"."

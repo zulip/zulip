@@ -1014,7 +1014,7 @@ class StreamAdminTest(ZulipTestCase):
                                      "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
             result,
-            "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
+            "Unable to find user 'baduser@zulip.com'",
             status_code=403)
 
 class DefaultStreamTest(ZulipTestCase):
@@ -2558,7 +2558,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_deactivate_user(target_profile)
         result = self.common_subscribe_to_streams(self.test_email, "Denmark",
                                                   {"principals": ujson.dumps([target_profile.email])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of 'cordelia@zulip.com'",
+        self.assert_json_error(result, "Unable to find user 'cordelia@zulip.com'",
                                status_code=403)
 
     def test_subscriptions_add_for_principal_invite_only(self) -> None:
@@ -2591,7 +2591,7 @@ class SubscriptionAPITest(ZulipTestCase):
             get_user(invalid_principal, invalid_principal_realm)
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
+        self.assert_json_error(result, "Unable to find user '%s'"
                                % (invalid_principal,), status_code=403)
 
     def test_subscription_add_principal_other_realm(self) -> None:
@@ -2605,7 +2605,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIsInstance(profile, UserProfile)
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
                                                   {"principals": ujson.dumps([principal])})
-        self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
+        self.assert_json_error(result, "Unable to find user '%s'"
                                % (principal,), status_code=403)
 
     def helper_check_subs_before_and_after_remove(self, subscriptions: List[str],

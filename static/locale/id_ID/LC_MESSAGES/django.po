@@ -4268,8 +4268,8 @@ msgstr ""
 
 #: zerver/views/streams.py:50
 #, python-brace-format
-msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili '{principal}'"
+msgid "Unable to find user '{principal}'"
+msgstr "Tidak dapat menemukan pengguna '{principal}'"
 
 #: zerver/views/streams.py:98
 msgid "You must pass \"new_description\" or \"new_group_name\"."

@@ -47,7 +47,7 @@ class PrincipalError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("User not authorized to execute queries on behalf of '{principal}'")
+        return _("Unable to find user '{principal}'")
 
 def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile:
     try:

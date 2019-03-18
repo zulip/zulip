@@ -294,7 +294,7 @@ form#add_new_subscription {
 
 .subscriber-list tbody:empty::after,
 .subscriber-list:empty::after {
-    content: "No subscribers to this stream.";
+    content: "No matching subscribers.";
     display: block;
 
     text-align: center;

@@ -4269,8 +4269,8 @@ msgstr "Criação de nova organização desabilitada"
 
 #: zerver/views/streams.py:50
 #, python-brace-format
-msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Usuário não autorizado a executar consultas em nome de '{principal}'"
+msgid "Unable to find user '{principal}'"
+msgstr "Não é possível encontrar o usuário '{principal}'"
 
 #: zerver/views/streams.py:98
 msgid "You must pass \"new_description\" or \"new_group_name\"."
