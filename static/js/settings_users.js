@@ -16,6 +16,7 @@ function get_user_info_row(user_id) {
 
 function update_view_on_deactivate(row) {
     var button = row.find("button.deactivate");
+    button.prop("disabled", false);
     row.find('button.open-user-form').hide();
     button.addClass("btn-warning");
     button.removeClass("btn-danger");
@@ -256,19 +257,7 @@ exports.on_load_success = function (realm_people_data) {
         meta.current_deactivate_user_modal_row = row;
     });
 
-    function update_button_on_success() {
-        var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
-        button.prop("disabled", false);
-        button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
-        button.text(i18n.t("Reactivate"));
-        meta.current_deactivate_user_modal_row.addClass("deactivated_user");
-        meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
-    }
 
-    function update_button_on_failure() {
-        var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
-        button.text(i18n.t("Deactivate"));
-    }
 
     $("#do_deactivate_user_button").expectOne().click(function () {
         var email = meta.current_deactivate_user_modal_row.attr("data-email");
@@ -280,16 +269,19 @@ exports.on_load_success = function (realm_people_data) {
                               $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");
-        meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text(i18n.t("Working…"));
-        var data = {
-        };
+        var row_deactivate_button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+        row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
         var opts = {
-            success_continuation: update_button_on_success,
-            error_continuation: update_button_on_failure,
+            success_continuation: function () {
+                update_view_on_deactivate(meta.current_deactivate_user_modal_row);
+            },
+            error_continuation: function () {
+                row_deactivate_button.text(i18n.t("Deactivate"));
+            },
         };
         var status = get_status_field();
         var url = '/json/users/' + encodeURIComponent(user_id);
-        settings_ui.do_settings_change(channel.del, url, data, status, opts);
+        settings_ui.do_settings_change(channel.del, url, {}, status, opts);
 
     });
 
