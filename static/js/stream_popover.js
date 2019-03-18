@@ -228,7 +228,8 @@ function build_starred_messages_popover(e) {
     popovers.hide_all();
 
     var content = templates.render(
-        'starred_messages_sidebar_actions'
+        'starred_messages_sidebar_actions',
+        {starred_message_counts: page_params.starred_message_counts}
     );
 
     $(elt).popover({
@@ -327,6 +328,19 @@ exports.register_stream_handlers = function () {
         e.stopPropagation();
     });
 
+    // Toggle displaying starred message count
+    $('body').on('click', '#toggle_display_starred_msg_count', function (e) {
+        exports.hide_starred_messages_popover();
+        e.preventDefault();
+        e.stopPropagation();
+        var starred_msg_counts = page_params.starred_message_counts;
+        var data = {};
+        data.starred_message_counts = JSON.stringify(!starred_msg_counts);
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+        });
+    });
     // Mute/unmute
     $('body').on('click', '.toggle_home', function (e) {
         var sub = stream_popover_sub(e);
