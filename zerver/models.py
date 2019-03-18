@@ -141,8 +141,9 @@ def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
 supported_backends = None  # type: Optional[Set[type]]
 def supported_auth_backends() -> Set[type]:
     global supported_backends
-    if supported_backends is None:
-        supported_backends = django.contrib.auth.get_backends()
+    # Caching temporarily disabled for debugging
+    supported_backends = django.contrib.auth.get_backends()
+    assert supported_backends is not None
     return supported_backends
 
 def clear_supported_auth_backends_cache() -> None:
