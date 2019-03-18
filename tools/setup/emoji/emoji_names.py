@@ -46,7 +46,7 @@ EMOJI_NAME_MAPS = {
     '1f913': {'canonical_name': 'nerd', 'aliases': ['geek']},
     # several sites suggested this was used for "cool", but cool is taken by
     # Symbols/137
-    '1f60e': {'canonical_name': 'sunglasses', 'aliases': ['awesome']},
+    '1f60e': {'canonical_name': 'sunglasses', 'aliases': ['awesome', 'cool']},
     '1f921': {'canonical_name': 'clown', 'aliases': []},
     '1f920': {'canonical_name': 'cowboy', 'aliases': []},
     # https://emojipedia.org/smirking-face/
@@ -1378,7 +1378,7 @@ EMOJI_NAME_MAPS = {
     '1f197': {'canonical_name': 'squared_ok', 'aliases': []},
     # from unicode, and to parallel Symbols/135. Saving up for Symbols/171
     '1f199': {'canonical_name': 'squared_up', 'aliases': []},
-    '1f192': {'canonical_name': 'cool', 'aliases': []},
+    '1f192': {'canonical_name': 'squared_cool', 'aliases': []},
     '1f195': {'canonical_name': 'new', 'aliases': []},
     '1f193': {'canonical_name': 'free', 'aliases': []},
     '0030-20e3': {'canonical_name': 'zero', 'aliases': []},
