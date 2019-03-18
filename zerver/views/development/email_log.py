@@ -100,7 +100,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert logged_in
 
     # New user invite and reminder emails
-    stream = get_realm_stream("Denmark", get_realm("zulip"))
+    stream = get_realm_stream("Denmark", user.realm.id)
     result = client.post("/json/invites",
                          {"invitee_emails": unregistered_email_2,
                           "stream_ids": ujson.dumps([stream.id])},
