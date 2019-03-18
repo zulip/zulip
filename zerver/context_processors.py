@@ -14,10 +14,10 @@ from zproject.backends import (
     SOCIAL_AUTH_BACKENDS,
 )
 from zerver.decorator import get_client_name
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.realm_description import get_realm_rendered_description
 
 from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, \
     LATEST_RELEASE_ANNOUNCEMENT, LATEST_MAJOR_VERSION
@@ -69,9 +69,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_description_raw = realm.description or "The coolest place in the universe."
-        realm_description = bugdown_convert(realm_description_raw, message_realm=realm,
-                                            no_previews=True)
+        realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
         realm_plan_type = realm.plan_type
 
