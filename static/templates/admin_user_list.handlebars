@@ -34,7 +34,7 @@
     <td>
         <span class="user-status-settings">
             {{#if is_active}}
-            <button class="button rounded small deactivate btn-danger">
+            <button class="button rounded small deactivate btn-danger" {{#if ../is_current_user}}disabled="disabled"{{/if}}>
                 {{t "Deactivate" }}
             </button>
             {{else}}
