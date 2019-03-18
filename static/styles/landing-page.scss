@@ -2653,6 +2653,9 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-categories-dropdown {
     margin: 30px auto;
     display: none;
+    .heading {
+        font-weight: 600;
+    }
 }
 
 .portico-landing.integrations .integration-lozenges {

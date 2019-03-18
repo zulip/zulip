@@ -59,6 +59,16 @@
                             </h4>
                         </a>
                         {% endfor %}
+                        <h4 class="heading">{% trans %}Custom integrations{% endtrans %}</h4>
+                        <a href="/api/incoming-webhooks-overview">
+                            <h4>{% trans %}Incoming webhooks{% endtrans %}</h4>
+                        </a>
+                        <a href="/api/writing-bots">
+                            <h4>{% trans %}Interactive bots{% endtrans %}</h4>
+                        </a>
+                        <a href="/api/rest">
+                            <h4>{% trans %}REST API{% endtrans %}</h4>
+                        </a>
                     </div>
                 </div>
 
@@ -75,7 +85,19 @@
                             </h4>
                         </a>
                         {% endfor %}
+                        <hr/>
+                        <h3>{% trans %}Custom integrations{% endtrans %}</h3>
+                        <a href="/api/incoming-webhooks-overview">
+                            <h4>{% trans %}Incoming webhooks{% endtrans %}</h4>
+                        </a>
+                        <a href="/api/writing-bots">
+                            <h4>{% trans %}Interactive bots{% endtrans %}</h4>
+                        </a>
+                        <a href="/api/rest">
+                            <h4>{% trans %}REST API{% endtrans %}</h4>
+                        </a>
                     </div>
+
 
                     <div class="integration-lozenges">
                         {% for integration in integrations_dict.values() %}
