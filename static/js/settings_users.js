@@ -25,8 +25,7 @@ function update_view_on_deactivate(row) {
     row.addClass("deactivated_user");
 }
 
-function update_view_on_reactivate() {
-    var row = meta.current_bot_element.closest(".user_row");
+function update_view_on_reactivate(row) {
     var button = row.find("button.reactivate");
     row.find("button.open-user-form").show();
     button.addClass("btn-danger");
@@ -35,11 +34,6 @@ function update_view_on_reactivate() {
     button.removeClass("reactivate");
     button.text(i18n.t("Deactivate"));
     row.removeClass("deactivated_user");
-}
-
-function update_view_on_deactivate_reactivate_failure(xhr) {
-    ui_report.generic_row_button_error(xhr, meta.current_bot_element);
-
 }
 
 function get_status_field() {
@@ -303,15 +297,18 @@ exports.on_load_success = function (realm_people_data) {
         e.preventDefault();
         e.stopPropagation();
 
-        var row = $(e.target).closest(".user_row");
-        meta.current_bot_element = $(e.target);
+        var button_elem = $(e.target);
+        var row = button_elem.closest(".user_row");
         var bot_id = row.attr("data-user-id");
         var url = '/json/bots/' + encodeURIComponent(bot_id);
+
         var opts = {
             success_continuation: function () {
                 update_view_on_deactivate(row);
             },
-            error_continuation: update_view_on_deactivate_reactivate_failure,
+            error_continuation: function (xhr) {
+                ui_report.generic_row_button_error(xhr, button_elem);
+            },
         };
         var status = get_status_field();
         settings_ui.do_settings_change(channel.del, url, {}, status, opts);
@@ -321,18 +318,23 @@ exports.on_load_success = function (realm_people_data) {
     $(".admin_user_table, .admin_bot_table").on("click", ".reactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        meta.current_bot_element = $(e.target);
         // Go up the tree until we find the user row, then grab the email element
-        var row = $(e.target).closest(".user_row");
+        var button_elem = $(e.target);
+        var row = button_elem.closest(".user_row");
         var user_id = row.attr("data-user-id");
         var url = '/json/users/' + encodeURIComponent(user_id) + "/reactivate";
         var data = {};
         var status = get_status_field();
 
         var opts = {
-            success_continuation: update_view_on_reactivate,
-            error_continuation: update_view_on_deactivate_reactivate_failure,
+            success_continuation: function () {
+                update_view_on_reactivate(row);
+            },
+            error_continuation: function (xhr) {
+                ui_report.generic_row_button_error(xhr, button_elem);
+            },
         };
+
         settings_ui.do_settings_change(channel.post, url, data, status, opts);
     });
 
