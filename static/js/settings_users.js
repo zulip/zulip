@@ -78,10 +78,10 @@ exports.update_user_data = function (user_id, new_data) {
 
     if (new_data.is_active !== undefined) {
         if (new_data.is_active === false) {
-            // Deactivate the bot in the table
+            // Deactivate the user/bot in the table
             update_view_on_deactivate(user_row);
         } else {
-            // Reactivate the bot in the table
+            // Reactivate the user/bot in the table
             update_view_on_reactivate(user_row);
         }
     }
