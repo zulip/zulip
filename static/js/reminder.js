@@ -74,8 +74,10 @@ exports.schedule_message = function (request) {
     );
 
     var success = function (data) {
+        var deliver_at = moment(data.deliver_at, "YYYY-MM-DD k:mm");
+        deliver_at = deliver_at.format("MMM D, YYYY ") + "at " + deliver_at.format("h:mm a");
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
-            notifications.notify_above_composebox('Scheduled your Message to be delivered at: ' + data.deliver_at);
+            notifications.notify_above_composebox('Message scheduled for ' + deliver_at);
         }
         $("#compose-textarea").attr('disabled', false);
         compose.clear_compose_box();

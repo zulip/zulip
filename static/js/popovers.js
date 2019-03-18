@@ -8,6 +8,7 @@ var current_actions_popover_elem;
 var current_flatpickr_instance;
 var current_message_info_popover_elem;
 var current_mobile_message_buttons_popover_elem;
+var send_later_popover_elem;
 var userlist_placement = "right";
 
 var list_of_popovers = [];
@@ -594,6 +595,17 @@ exports.hide_message_info_popover = function () {
     }
 };
 
+exports.send_later_popped = function () {
+    return send_later_popover_elem !== undefined;
+};
+
+exports.hide_send_later_popover = function () {
+    if (exports.send_later_popped()) {
+        send_later_popover_elem.popover("destroy");
+        send_later_popover_elem = undefined;
+    }
+};
+
 exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
 };
@@ -666,6 +678,122 @@ var suppress_scroll_hide = false;
 
 exports.set_suppress_scroll_hide = function () {
     suppress_scroll_hide = true;
+};
+
+var send_later_hours = {
+    in_one_hour: {
+        text: i18n.t("1 hour"),
+        hours: 1,
+    },
+    in_two_hours: {
+        text: i18n.t("2 hours"),
+        hours: 2,
+    },
+    in_four_hours: {
+        text: i18n.t("4 hours"),
+        hours: 4,
+    },
+};
+
+var send_later_tomorrow = {
+    tomorrow_nine_am: {
+        text: i18n.t("Tomorrow 9:00 AM"),
+        time: "9:00 am",
+    },
+    tomorrow_two_pm: {
+        text: i18n.t("Tomorrow 2:00 PM "),
+        time: "2:00 pm",
+    },
+};
+
+var send_later_days_and_weeks = {
+    in_one_day: {
+        text: i18n.t("1 day"),
+        days: 1,
+    },
+    in_two_days: {
+        text: i18n.t("2 days"),
+        days: 2,
+    },
+    in_one_week: {
+        text: i18n.t("1 week"),
+        days: 7,
+    },
+    in_two_weeks: {
+        text: i18n.t("2 weeks"),
+        days: 14,
+    },
+    in_one_month: {
+        text: i18n.t("1 month"),
+        days: 30,
+    },
+};
+
+var send_later_custom = {
+    text: i18n.t("Custom "),
+};
+
+exports.send_later_hours = send_later_hours;
+exports.send_later_tomorrow = send_later_tomorrow;
+exports.send_later_days_and_weeks = send_later_days_and_weeks;
+
+exports.render_send_later_popover = function (elt) {
+    var APPROX_HEIGHT = 375;
+    var APPROX_WIDTH = 255;
+    var placement = popovers.compute_placement(elt, APPROX_HEIGHT, APPROX_WIDTH, true);
+    if (placement === 'viewport_center') {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center`, but bootstrap doesn't actually
+        // support that.
+        placement = 'left';
+    }
+
+    var content = templates.render(
+        'send_later_popover',
+        {
+            send_later_hours: send_later_hours,
+            send_later_tomorrow: send_later_tomorrow,
+            send_later_days_and_weeks: send_later_days_and_weeks,
+            send_later_custom: send_later_custom,
+        }
+    );
+
+
+    elt.popover({
+        // temporary patch for handling popover placement of `viewport_center`
+        placement: placement,
+        fix_positions: true,
+        title: "",
+        content: content,
+        trigger: "manual",
+    });
+    elt.popover("show");
+
+    current_flatpickr_instance = $('#send-later-custom-input').flatpickr({
+        enableTime: true,
+        clickOpens: false,
+        defaultDate: moment().format(),
+        minDate: 'today',
+        plugins: [new confirmDatePlugin({})], // eslint-disable-line new-cap, no-undef
+    });
+
+    send_later_popover_elem = elt;
+
+};
+
+exports.toggle_send_later_popover = function (element) {
+    var last_popover_elem = send_later_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined) {
+        send_later_popover_elem = undefined;
+        $(element).popover("hide");
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    var elt = $(element);
+    popovers.render_send_later_popover(elt);
 };
 
 exports.register_click_handlers = function () {
@@ -926,8 +1054,28 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.flatpickr-confirm', function (e) {
-        var datestr = $(".remind.custom")[0].value;
-        reminder_click_handler(datestr, e);
+        var datestr;
+        if (send_later_popover_elem !== undefined) {
+            var instance = $(current_flatpickr_instance);
+            var date = instance.prop("selectedDates");
+            datestr = flatpickr.formatDate(date[0], "M d, Y at h:i ") + flatpickr.formatDate(date[0], "K");
+            var message_content = compose_state.message_content();
+
+            var command = "/schedule " + datestr + "\n";
+
+            if (reminder.is_deferred_delivery(message_content)) {
+                var raw_message = message_content.split('\n');
+                message_content = raw_message.slice(1).join('\n');
+            }
+            message_content = command + message_content;
+            compose_state.message_content(message_content);
+            popovers.hide_send_later_popover();
+        } else {
+            datestr = $(".remind.custom")[0].value;
+            reminder_click_handler(datestr, e);
+        }
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $('body').on('click', '.respond_personal_button, .compose_private_message', function (e) {
@@ -1050,6 +1198,80 @@ exports.register_click_handlers = function () {
             last_scroll = date;
         });
     }());
+
+    $("body").on("click", "#send_later", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        popovers.toggle_send_later_popover(this);
+    });
+
+    $("body").on("click", ".send_later_hours", function (e) {
+        var send_later_in = $(e.currentTarget).attr('id');
+        var send_at_time = moment().add(send_later_hours[send_later_in].hours, 'h');
+        var message_content = compose_state.message_content();
+        var command = "/schedule " + send_at_time.format("MMM D YYYY h:mm a") + "\n";
+
+        if (reminder.is_deferred_delivery(message_content)) {
+            var raw_message = message_content.split('\n');
+            message_content = raw_message.slice(1).join('\n');
+        }
+
+        message_content = command + message_content;
+        compose_state.message_content(message_content);
+        popovers.hide_send_later_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".send_later_tomorrow", function (e) {
+        var send_later_at = $(e.currentTarget).attr('id');
+        var send_time = send_later_tomorrow[send_later_at].time;
+        var date = new Date();
+        var scheduled_date = date.setDate(date.getDate() + 1);
+        var send_at_time = moment(scheduled_date).format("MMM D YYYY ") + send_time;
+        var message_content = compose_state.message_content();
+        var command = "/schedule " + send_at_time + "\n";
+
+        if (reminder.is_deferred_delivery(message_content)) {
+            var raw_message = message_content.split('\n');
+            message_content = raw_message.slice(1).join('\n');
+        }
+
+        message_content = command + message_content;
+        compose_state.message_content(message_content);
+        popovers.hide_send_later_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".send_later_days_and_weeks", function (e) {
+        var send_later_in = $(e.currentTarget).attr('id');
+        var send_at_time = moment().add(send_later_days_and_weeks[send_later_in].days, 'd');
+        var message_content = compose_state.message_content();
+        var command = "/schedule " + send_at_time.format("MMM D YYYY h:mm a") + "\n";
+
+        if (reminder.is_deferred_delivery(message_content)) {
+            var raw_message = message_content.split('\n');
+            message_content = raw_message.slice(1).join('\n');
+        }
+
+        message_content = command + message_content;
+        compose_state.message_content(message_content);
+        popovers.hide_send_later_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", "#send-later-custom-input", function (e) {
+        $(e.currentTarget)[0]._flatpickr.toggle();
+        $('.flatpickr-calendar').addClass('send-later-flatpickr');
+        $('.flatpickr-calendar').css('left', '31%');
+        $('.flatpickr-calendar').css('top', "52.8%");
+        $('.flatpickr-calendar').removeClass('arrowBottom');
+        e.stopPropagation();
+        e.preventDefault();
+    });
 };
 
 exports.any_active = function () {
@@ -1077,6 +1299,7 @@ exports.hide_all_except_userlist_sidebar = function () {
     popovers.hide_mobile_message_buttons_popover();
     stream_popover.restore_stream_list_size();
     popovers.hide_user_profile();
+    popovers.hide_send_later_popover();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(function ($o) {

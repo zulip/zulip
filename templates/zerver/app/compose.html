@@ -103,6 +103,9 @@
                                     {% if jitsi_server_url %}
                                     <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" title="{{ _('Add video call') }}"></a>
                                     {% endif %}
+                                    {% if development_environment %}
+                                    <a class="message-control-button fa fa-clock-o" aria-hidden="true" id="send_later" href="#" title="{{ _('Send later') }}"></a>
+                                    {% endif %}
                                     <a id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{ _('Write') }}"></a>
                                     <a id="markdown_preview" class="message-control-button fa fa-eye" aria-hidden="true" title="{{ _('Preview') }}"></a>
                                     <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>

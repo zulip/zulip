@@ -489,6 +489,11 @@ a#undo_markdown_preview {
     margin-right: 4px;
 }
 
+.send-later-custom {
+    margin-left: 50%;
+    font-size: 0.8em;
+}
+
 @media (max-width: 550px) {
     #compose_buttons .compose_stream_button,
     #compose_buttons .compose_private_button {
