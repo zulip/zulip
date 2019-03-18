@@ -169,8 +169,11 @@ function populate_users(realm_people_data) {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
 
-            var $row = $(templates.render("admin_user_list", {user: item, can_modify: page_params.is_admin}));
-
+            var $row = $(templates.render("admin_user_list", {
+                user: item,
+                can_modify: page_params.is_admin,
+                is_current_user: people.is_my_user_id(item.user_id),
+            }));
             $row.find(".last_active").append(activity_rendered);
 
             return $row;
