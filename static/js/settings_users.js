@@ -25,6 +25,20 @@ function update_view_on_deactivate() {
     button.text(i18n.t("Reactivate"));
     row.addClass("deactivated_user");
 }
+
+function update_view_on_reactivate() {
+    var row = meta.current_bot_element.closest(".user_row");
+    row.find(".user-admin-settings").show();
+    var button = row.find("button.reactivate");
+    row.find("button.open-user-form").show();
+    button.addClass("btn-danger");
+    button.removeClass("btn-warning");
+    button.addClass("deactivate");
+    button.removeClass("reactivate");
+    button.text(i18n.t("Deactivate"));
+    row.removeClass("deactivated_user");
+}
+
 function update_view_on_deactivate_reactivate_failure(xhr) {
     ui_report.generic_row_button_error(xhr, meta.current_bot_element);
 
@@ -44,18 +58,6 @@ function get_status_field() {
     }
 }
 
-function update_view_on_reactivate() {
-    var row = meta.current_bot_element.closest(".user_row");
-    row.find(".user-admin-settings").show();
-    var button = row.find("button.reactivate");
-    row.find("button.open-user-form").show();
-    button.addClass("btn-danger");
-    button.removeClass("btn-warning");
-    button.addClass("deactivate");
-    button.removeClass("reactivate");
-    button.text(i18n.t("Deactivate"));
-    row.removeClass("deactivated_user");
-}
 
 exports.update_user_data = function (user_id, new_data) {
     if (!meta.loaded) {
