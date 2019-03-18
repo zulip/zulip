@@ -9,11 +9,12 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
+from zerver.lib.actions import encode_email_address
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
-    get_system_bot
+    get_system_bot, get_stream, get_realm
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -212,33 +213,27 @@ class WorkerTest(ZulipTestCase):
             {'where art thou, othello?'}
         )
 
-    def test_mirror_worker(self) -> None:
+    @patch('zerver.worker.queue_processors.mirror_email')
+    def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = self.FakeClient()
+        stream = get_stream('Denmark', get_realm('zulip'))
+        stream_to_address = encode_email_address(stream)
         data = [
             dict(
                 message=u'\xf3test',
                 time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-            dict(
-                message='\xf3test',
-                time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-            dict(
-                message='test',
-                time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-        ]
+                rcpt_to=stream_to_address
+            )
+        ] * 3
         for element in data:
             fake_client.queue.append(('email_mirror', element))
 
-        with patch('zerver.worker.queue_processors.mirror_email'):
-            with simulated_queue_client(lambda: fake_client):
-                worker = queue_processors.MirrorWorker()
-                worker.setup()
-                worker.start()
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.MirrorWorker()
+            worker.setup()
+            worker.start()
+
+        self.assertEqual(mock_mirror_email.call_count, 3)
 
     def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
