@@ -27,7 +27,6 @@ function update_view_on_deactivate(row) {
 
 function update_view_on_reactivate() {
     var row = meta.current_bot_element.closest(".user_row");
-    row.find(".user-admin-settings").show();
     var button = row.find("button.reactivate");
     row.find("button.open-user-form").show();
     button.addClass("btn-danger");
@@ -270,8 +269,8 @@ exports.on_load_success = function (realm_people_data) {
         button.text(i18n.t("Reactivate"));
         meta.current_deactivate_user_modal_row.addClass("deactivated_user");
         meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
-        meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
     }
+
     function update_button_on_failure() {
         var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
         button.text(i18n.t("Deactivate"));
