@@ -14,8 +14,7 @@ function get_user_info_row(user_id) {
     return $("tr.user_row[data-user-id='" + user_id + "']");
 }
 
-function update_view_on_deactivate() {
-    var row = meta.current_deactivate_bot_modal_row;
+function update_view_on_deactivate(row) {
     var button = row.find("button.deactivate");
     row.find('button.open-user-form').hide();
     button.addClass("btn-warning");
@@ -306,18 +305,17 @@ exports.on_load_success = function (realm_people_data) {
         e.stopPropagation();
 
         var row = $(e.target).closest(".user_row");
-        meta.current_deactivate_bot_modal_row = row;
         meta.current_bot_element = $(e.target);
         var bot_id = row.attr("data-user-id");
         var url = '/json/bots/' + encodeURIComponent(bot_id);
-        var data = {
-        };
         var opts = {
-            success_continuation: update_view_on_deactivate,
+            success_continuation: function () {
+                update_view_on_deactivate(row);
+            },
             error_continuation: update_view_on_deactivate_reactivate_failure,
         };
         var status = get_status_field();
-        settings_ui.do_settings_change(channel.del, url, data, status, opts);
+        settings_ui.do_settings_change(channel.del, url, {}, status, opts);
 
     });
 
