@@ -122,6 +122,11 @@ const me_slash = {
     text: "translated: /me is excited (Display action text)",
 };
 
+const my_slash = {
+    name: "my",
+    text: "translated: /my (Test)",
+};
+
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -820,6 +825,11 @@ run_test('initialize', () => {
         actual_value = options.sorter.call(fake_this, [make_emoji(emoji_headphones),
                                                        make_emoji(emoji_heart)]);
         expected_value = [make_emoji(emoji_heart), make_emoji(emoji_headphones)];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'slash', token: 'm' };
+        actual_value = options.sorter.call(fake_this, [my_slash, me_slash]);
+        expected_value = [me_slash, my_slash];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };

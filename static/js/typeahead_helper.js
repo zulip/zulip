@@ -331,6 +331,22 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
     return result.concat(rest_sorted);
 };
 
+function slash_command_comparator(slash_command_a, slash_command_b) {
+    if (slash_command_a.name < slash_command_b.name) {
+        return -1;
+    } else if (slash_command_a.name > slash_command_b.name) {
+        return 1;
+    }
+}
+exports.sort_slash_commands = function (matches, query) {
+    // We will likely want to in the future make this sort the
+    // just-`/` commands by something approximating usefulness.
+    var results = util.prefix_sort(query, matches, function (x) { return x.name; });
+    results.matches = results.matches.sort(slash_command_comparator);
+    results.rest = results.rest.sort(slash_command_comparator);
+    return results.matches.concat(results.rest);
+};
+
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
     var results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
