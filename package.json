@@ -44,7 +44,7 @@
     "style-loader": "0.21.0",
     "to-markdown": "3.1.0",
     "ts-loader": "5.3.3",
-    "ts-node": "8.0.2",
+    "ts-node": "7.0.1",
     "typescript": "3.3.1",
     "underscore": "1.9.0",
     "webfonts-generator": "0.4.0",
