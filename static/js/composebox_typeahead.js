@@ -323,7 +323,7 @@ exports.tokenize_compose_str = function (s) {
         case '~':
             // Code block must start on a new line
             if (i === 2) {
-                return s.slice(0);
+                return s;
             } else if (i > 2 && s[i - 3] === "\n") {
                 return s.slice(i - 2);
             }
@@ -333,7 +333,7 @@ exports.tokenize_compose_str = function (s) {
         case ':':
         case '_':
             if (i === 0) {
-                return s.slice(i);
+                return s;
             } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
                 return s.slice(i);
             }
