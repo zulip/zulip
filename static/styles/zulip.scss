@@ -718,9 +718,11 @@ td.pointer {
     }
 
     .message_failed {
-        display: inline-block;
+        display: inline-flex;
+        justify-content: space-between;
+        /* error icon width is 11px, gap between icons equals 28px - 2*11px = 6px */
+        width: 30px;
         cursor: pointer;
-        font-size: 13px;
         font-weight: bold;
         color: hsl(0, 100%, 50%);
         position: relative;
