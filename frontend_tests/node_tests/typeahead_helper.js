@@ -544,6 +544,25 @@ run_test('render_emoji', () => {
     assert(rendered);
 });
 
+run_test('sort_slash_commands', () => {
+    var slash_commands = [
+        { name: 'my' },
+        { name: 'poll' },
+        { name: 'me' },
+        { name: 'mine' },
+        { name: 'test' },
+        { name: 'ping' },
+    ];
+    assert.deepEqual(th.sort_slash_commands(slash_commands, 'm'), [
+        { name: 'me' },
+        { name: 'mine' },
+        { name: 'my' },
+        { name: 'ping' },
+        { name: 'poll' },
+        { name: 'test' },
+    ]);
+});
+
 run_test('sort_emojis', () => {
     var emoji_list = [
         { emoji_name: '+1' },

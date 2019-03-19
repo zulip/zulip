@@ -329,6 +329,20 @@ exports.sort_recipients = function (users, query, current_stream, current_topic,
     return result.concat(rest_sorted);
 };
 
+function slash_function_comaparator(slash_command_a, slash_command_b) {
+    if (slash_command_a.name < slash_command_b.name) {
+        return -1;
+    } else if (slash_command_a.name > slash_command_b.name) {
+        return 1;
+    }
+}
+exports.sort_slash_commands = function (matches, query) {
+    var results = util.prefix_sort(query, matches, function (x) { return x.name; });
+    results.matches = results.matches.sort(slash_function_comaparator);
+    results.rest = results.rest.sort(slash_function_comaparator);
+    return results.matches.concat(results.rest);
+};
+
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
     var results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });

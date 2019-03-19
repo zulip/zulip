@@ -625,7 +625,7 @@ exports.compose_matches_sorter = function (matches) {
     } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
         return typeahead_helper.sort_people_and_user_groups(this.token, matches);
     } else if (this.completing === 'slash') {
-        return matches;
+        return typeahead_helper.sort_slash_commands(matches, this.token);
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {
