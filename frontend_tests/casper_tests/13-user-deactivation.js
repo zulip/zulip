@@ -23,7 +23,7 @@ casper.then(function () {
         casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
-        casper.click('#do_deactivate_user_button');
+        casper.click('#deactivation_user_modal .do_deactivate_button');
     });
 });
 
@@ -47,7 +47,7 @@ casper.then(function () {
         casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
-        casper.click('#do_deactivate_user_button');
+        casper.click('#deactivation_user_modal .do_deactivate_button');
     });
 });
 
