@@ -696,26 +696,85 @@ td.pointer {
     top: 2px;
     right: -56px;
     z-index: 1;
+
+    > div {
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.2s ease;
+        padding: 0px 1px;
+    }
+
+    > .reaction_button {
+        display: inline-block;
+        position: relative;
+        color: hsl(0, 0%, 73%);
+        &:hover {
+            color: hsl(200, 100%, 40%);
+        }
+    }
+
+    &.sender-status-controls {
+        top: 10px;
+    }
 }
 
-.message_controls > div {
-    opacity: 0;
-    pointer-events: none;
+.star {
+    display: inline-block;
+    font-size: 14px;
 
-    transition: all 0.2s ease;
+    &:hover {
+        cursor: pointer;
+        color: hsl(153, 80%, 25%);
+    }
+
+    &:not(.empty-star) {
+        opacity: 1 !important;
+        pointer-events: all !important;
+        color: hsl(106, 77%, 29%);
+    }
 }
 
-.messagebox:hover .message_controls > div {
-    opacity: 1;
-    pointer-events: all;
-}
+.messagebox:hover .message_controls {
+    .empty-star {
+        opacity: 0.4;
+    }
 
-.message_controls > div {
-    padding: 0px 1px;
+    .empty-star:hover {
+        cursor: pointer;
+        opacity: 1;
+    }
+
+    > div {
+        opacity: 1;
+        pointer-events: all;
+    }
 }
 
 .include-sender .message_controls {
     top: -3px;
+}
+
+.message_failed,
+.message_local {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.message_failed {
+    font-weight: bold;
+    color: hsl(0, 100%, 50%);
+    position: relative;
+
+    .rotating {
+        display: inline-block;
+
+        -webkit-animation: rotate 1s infinite linear;
+        -moz-animation: rotate 1s infinite linear;
+        -ms-animation: rotate 1s infinite linear;
+        -o-animation: rotate 1s infinite linear;
+        animation: rotate 1s infinite linear;
+    }
 }
 
 .message_header {
@@ -882,16 +941,6 @@ td.pointer {
 */
 .floating_recipient .messages-collapse {
     display: none;
-}
-
-.message_failed .rotating {
-    display: inline-block;
-
-    -webkit-animation: rotate 1s infinite linear;
-    -moz-animation: rotate 1s infinite linear;
-    -ms-animation: rotate 1s infinite linear;
-    -o-animation: rotate 1s infinite linear;
-    animation: rotate 1s infinite linear;
 }
 
 @-webkit-keyframes rotate {
@@ -1124,10 +1173,6 @@ td.pointer {
     max-width: calc(100% - 50px);
 }
 
-.message_controls.sender-status-controls {
-    top: 10px;
-}
-
 .sender_name-in-status {
     margin-right: 3px;
     font-weight: 700;
@@ -1155,19 +1200,6 @@ td.pointer {
 
 .actions_hover:hover {
     color: hsl(200, 100%, 40%);
-}
-
-.message_failed,
-.message_local {
-    display: inline-block;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.message_failed {
-    font-weight: bold;
-    color: hsl(0, 100%, 50%);
-    position: relative;
 }
 
 a.message_label_clickable:hover {
@@ -1208,16 +1240,6 @@ a.message_label_clickable:hover {
 
 .edit_content:hover {
     cursor: pointer;
-    color: hsl(200, 100%, 40%);
-}
-
-.message_controls > .reaction_button {
-    display: inline-block;
-    position: relative;
-    color: hsl(0, 0%, 73%);
-}
-
-.message_controls > .reaction_button:hover {
     color: hsl(200, 100%, 40%);
 }
 
@@ -2580,31 +2602,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     width: 48px;
     height: 48px;
     margin-right: .75em;
-}
-
-.star {
-    display: inline-block;
-    font-size: 14px;
-}
-
-.star:not(.empty-star) {
-    opacity: 1 !important;
-    pointer-events: all !important;
-    color: hsl(106, 77%, 29%);
-}
-
-.messagebox:hover .message_controls .empty-star {
-    opacity: 0.4;
-}
-
-.messagebox:hover .message_controls .empty-star:hover {
-    cursor: pointer;
-    opacity: 1;
-}
-
-.star:hover {
-    cursor: pointer;
-    color: hsl(153, 80%, 25%);
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
