@@ -4,6 +4,7 @@ import glob
 import os
 import re
 from datetime import timedelta
+from email import message_from_binary_file
 from email.utils import parseaddr
 from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
@@ -374,6 +375,18 @@ class TestSendToEmailMirror(ZulipTestCase):
         stream_id = get_stream("Denmark2", message.sender.realm).id
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.type_id, stream_id)
+
+    def test_show_sender(self) -> None:
+        fixture_path = "zerver/tests/fixtures/email/1.txt"
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        self.subscribe(user_profile, "Denmark")
+
+        call_command(self.COMMAND_NAME, "--fixture={}".format(fixture_path), "--show-sender")
+        message = most_recent_message(user_profile)
+
+        file = open(fixture_path, "rb")
+        self.assertIn(message_from_binary_file(file)['From'], message.content)
 
 class TestConvertMattermostData(ZulipTestCase):
     COMMAND_NAME = 'convert_mattermost_data'

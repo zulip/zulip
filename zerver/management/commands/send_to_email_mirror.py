@@ -51,6 +51,10 @@ Example:
                             type=str,
                             help='The name of the stream to which you\'d like to send '
                             'the message. Default: Denmark')
+        parser.add_argument('-S', '--show-sender',
+                            dest='show_sender',
+                            action='store_true',
+                            help='Set this flag to send this email with show_sender=True.')
 
         self.add_realm_args(parser, help="Specify which realm to connect to; default is zulip")
 
@@ -68,11 +72,12 @@ Example:
         if realm is None:
             realm = get_realm("zulip")
 
+        show_sender = bool(options['show_sender'])
         full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options['fixture'])
 
         # parse the input email into Message type and prepare to process_message() it
         message = self._parse_email_fixture(full_fixture_path)
-        self._prepare_message(message, realm, stream)
+        self._prepare_message(message, realm, stream, show_sender)
 
         data = {}  # type: Dict[str, str]
         data['recipient'] = str(message['To'])  # Need str() here to avoid mypy throwing an error
@@ -104,7 +109,8 @@ Example:
 
         return message
 
-    def _prepare_message(self, message: Message, realm: Realm, stream_name: str) -> None:
+    def _prepare_message(self, message: Message, realm: Realm,
+                         stream_name: str, show_sender: bool=False) -> None:
         stream = get_stream(stream_name, realm)
 
         recipient_headers = ["X-Gm-Original-To", "Delivered-To",
@@ -112,7 +118,7 @@ Example:
         for header in recipient_headers:
             if header in message:
                 del message[header]
-                message[header] = encode_email_address(stream)
+                message[header] = encode_email_address(stream, show_sender)
                 return
 
-        message['To'] = encode_email_address(stream)
+        message['To'] = encode_email_address(stream, show_sender)
