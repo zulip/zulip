@@ -32,7 +32,9 @@ function resend_message(message, row) {
 
     function on_error(response) {
         exports.message_send_error(local_id, response);
-        retry_spinner.toggleClass('rotating', false);
+        setTimeout(function () {
+            retry_spinner.toggleClass('rotating', false);
+        }, 300);
         blueslip.log("Manual resend of message failed");
     }
 
