@@ -754,14 +754,10 @@ td.pointer {
     top: -3px;
 }
 
-.message_failed,
-.message_local {
+.message_failed {
     display: inline-block;
     cursor: pointer;
     font-size: 13px;
-}
-
-.message_failed {
     font-weight: bold;
     color: hsl(0, 100%, 50%);
     position: relative;
