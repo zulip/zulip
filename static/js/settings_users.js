@@ -252,12 +252,13 @@ exports.on_load_success = function (realm_people_data) {
         modal_elem.find(".email").text(user.email);
         modal_elem.find(".user_name").text(user.full_name);
         modal_elem.modal("show");
-        meta.current_deactivate_user_modal_row = row;
+        modal_elem.data('user-id', user_id);
     });
 
     modal_elem.find('.do_deactivate_button').click(function () {
-        var email = meta.current_deactivate_user_modal_row.attr("data-email");
-        var user_id = meta.current_deactivate_user_modal_row.attr("data-user-id");
+        var user_id = modal_elem.data('user-id');
+        var row = get_user_info_row(user_id);
+        var email = row.attr("data-email");
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
@@ -265,11 +266,11 @@ exports.on_load_success = function (realm_people_data) {
                               $("#home-error"), 'alert-error');
         }
         modal_elem.modal("hide");
-        var row_deactivate_button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+        var row_deactivate_button = row.find("button.deactivate");
         row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
         var opts = {
             success_continuation: function () {
-                update_view_on_deactivate(meta.current_deactivate_user_modal_row);
+                update_view_on_deactivate(row);
             },
             error_continuation: function () {
                 row_deactivate_button.text(i18n.t("Deactivate"));
