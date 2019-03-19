@@ -36,6 +36,7 @@
     ],
     "portico": [
         "./static/js/portico/header.js",
+        "./static/js/portico/find_account.js",
         "./static/styles/portico-styles.scss"
     ],
     "error-styles": [

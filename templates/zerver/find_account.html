@@ -1,5 +1,10 @@
 {% extends "zerver/portico.html" %}
 
+{% block customhead %}
+{{ super() }}
+{{ render_bundle('portico') }}
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="app find-account-page flex full-page">
@@ -37,10 +42,10 @@
                     {{ csrf_input }}
                     <div class="input-box moving-label horizontal">
                         <div class="inline-block relative">
-                            <input type="text" autofocus id="emails" name="emails" required />
+                            <input type="text" autofocus id="emails" required />
                             <label for="id_username">{{ _('Email addresses') }}</label>
                         </div>
-                        <button type="submit">{{ _('Find accounts') }}</button>
+                        <button id = "submit_button" type="submit" class="inactive">{{ _('Find accounts') }}</button>
                     </div>
                     <div><i>{{ form.emails.help_text }}</i></div>
                 </form>

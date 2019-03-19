@@ -1076,3 +1076,8 @@ button.login-google-button {
         color: hsl(165, 100.0%, 14.7%);
     }
 }
+
+#submit_button.inactive {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
