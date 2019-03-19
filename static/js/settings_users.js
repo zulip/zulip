@@ -238,7 +238,8 @@ exports.on_load_success = function (realm_people_data) {
 
     populate_users(realm_people_data);
 
-    // Setup click handlers
+    var modal_elem = $("#deactivation_user_modal").expectOne();
+
     $(".admin_user_table").on("click", ".deactivate", function (e) {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
@@ -246,20 +247,15 @@ exports.on_load_success = function (realm_people_data) {
         e.stopPropagation();
 
         var row = $(e.target).closest(".user_row");
-
-        var user_name = row.find('.user_name').text();
-        var email = row.attr("data-email");
-
-        $("#deactivation_user_modal .email").text(email);
-        $("#deactivation_user_modal .user_name").text(user_name);
-        $("#deactivation_user_modal").modal("show");
-
+        var user_id = row.data('user-id');
+        var user = people.get_person_from_user_id(user_id);
+        modal_elem.find(".email").text(user.email);
+        modal_elem.find(".user_name").text(user.full_name);
+        modal_elem.modal("show");
         meta.current_deactivate_user_modal_row = row;
     });
 
-
-
-    $("#do_deactivate_user_button").expectOne().click(function () {
+    modal_elem.find('.do_deactivate_button').click(function () {
         var email = meta.current_deactivate_user_modal_row.attr("data-email");
         var user_id = meta.current_deactivate_user_modal_row.attr("data-user-id");
 
@@ -268,7 +264,7 @@ exports.on_load_success = function (realm_people_data) {
             ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
                               $("#home-error"), 'alert-error');
         }
-        $("#deactivation_user_modal").modal("hide");
+        modal_elem.modal("hide");
         var row_deactivate_button = meta.current_deactivate_user_modal_row.find("button.deactivate");
         row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
         var opts = {
