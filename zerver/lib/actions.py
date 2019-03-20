@@ -4251,6 +4251,17 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
                       propagate_mode: str, content: Optional[str],
                       rendered_content: Optional[str], prior_mention_user_ids: Set[int],
                       mention_user_ids: Set[int]) -> int:
+    """
+    The main function for message editing.  A message edit event can
+    modify:
+    * the message's content (in which case the caller will have
+      set both content and rendered_content),
+    * the topic, in which case the caller will have set topic_name
+    * or both
+
+    With topic edits, propagate_mode determines whether other message
+    also have their topics edited.
+    """
     event = {'type': 'update_message',
              # TODO: We probably want to remove the 'sender' field
              # after confirming it isn't used by any consumers.
