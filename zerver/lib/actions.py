@@ -4269,6 +4269,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     ums = UserMessage.objects.filter(message=message.id)
 
     if content is not None:
+        assert rendered_content is not None
         update_user_message_flags(message, ums)
 
         # One could imagine checking realm.allow_edit_history here and
