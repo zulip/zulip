@@ -50,7 +50,7 @@
 * [View a message's edit history](/help/view-a-messages-edit-history)
 
 ## People
-* [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
+* [Status and availability](/help/status-and-availability)
 * [View someone's profile](/help/view-someones-profile)
 * [Private messages](/help/private-messages)
 
