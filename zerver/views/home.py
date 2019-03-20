@@ -252,6 +252,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
         show_invites = False
     if user_profile.is_guest:
         show_invites = False
+    # If no invitation is required to join organization.
+    if not user_profile.realm.invite_required:
+        show_invites = False
 
     show_billing = False
     show_plans = False
