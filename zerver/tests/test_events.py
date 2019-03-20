@@ -2464,6 +2464,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('sender', check_string),
+            ('sender_id', check_int),
             ('message_type', equals("stream")),
             ('stream_id', check_int),
             ('topic', check_string),
@@ -2482,8 +2483,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('sender', check_string),
+            ('sender_id', check_int),
             ('message_type', equals("private")),
-            ('recipient_user_ids', check_int),
+            ('recipient_id', check_int),
         ])
         msg_id = self.send_personal_message(
             self.example_email("cordelia"),

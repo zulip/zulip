@@ -4379,14 +4379,15 @@ def do_delete_messages(user_profile: UserProfile, messages: Iterable[Message]) -
 
         event = {
             'type': 'delete_message',
-            'sender': user_profile.email,
+            'sender': message.sender.email,
+            'sender_id': message.sender_id,
             'message_id': message.id,
             'message_type': message_type, }  # type: Dict[str, Any]
         if message_type == "stream":
             event['stream_id'] = message.recipient.type_id
             event['topic'] = message.topic_name()
         else:
-            event['recipient_user_ids'] = message.recipient.type_id
+            event['recipient_id'] = message.recipient_id
 
         # TODO: Each part of the following should be changed to bulk
         # queries, since right now if you delete 1000 messages, you'll
