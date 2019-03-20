@@ -19,8 +19,8 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.realm_description import get_realm_rendered_description
 
-from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, \
-    LATEST_RELEASE_ANNOUNCEMENT, LATEST_MAJOR_VERSION
+from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, LATEST_MAJOR_VERSION, \
+    LATEST_RELEASE_ANNOUNCEMENT
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
     """Common context used for things like outgoing emails that don't
@@ -62,16 +62,10 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
-        realm_description = None
-        realm_invite_required = False
-        realm_plan_type = 0
     else:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_description = get_realm_rendered_description(realm)
-        realm_invite_required = realm.invite_required
-        realm_plan_type = realm.plan_type
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
@@ -118,29 +112,19 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'only_sso': settings.ONLY_SSO,
         'external_host': settings.EXTERNAL_HOST,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'realm_invite_required': realm_invite_required,
         'realm_uri': realm_uri,
         'realm_name': realm_name,
         'realm_icon': realm_icon,
-        'realm_description': realm_description,
-        'realm_plan_type': realm_plan_type,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
-        'password_auth_enabled': password_auth_enabled(realm),
-        'require_email_format_usernames': require_email_format_usernames(realm),
-        'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': FromAddress.SUPPORT,
         'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_guesses': settings.PASSWORD_MIN_GUESSES,
         'jitsi_server_url': settings.JITSI_SERVER_URL,
-        'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
         'zulip_version': ZULIP_VERSION,
-        'latest_release_version': LATEST_RELEASE_VERSION,
-        'latest_major_version': LATEST_MAJOR_VERSION,
-        'latest_release_announcement': LATEST_RELEASE_ANNOUNCEMENT,
         'user_is_authenticated': user_is_authenticated,
         'settings_path': settings_path,
         'secrets_path': secrets_path,
@@ -148,6 +132,27 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'platform': platform,
         'allow_search_engine_indexing': allow_search_engine_indexing,
     }
+
+    return context
+
+def login_context(request: HttpRequest) -> Dict[str, Any]:
+    realm = get_realm_from_request(request)
+
+    if realm is None:
+        realm_description = None
+        realm_invite_required = False
+    else:
+        realm_description = get_realm_rendered_description(realm)
+        realm_invite_required = realm.invite_required
+
+    context = {
+        'realm_invite_required': realm_invite_required,
+        'realm_description': realm_description,
+        'require_email_format_usernames': require_email_format_usernames(realm),
+        'password_auth_enabled': password_auth_enabled(realm),
+        'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
+        'two_factor_authentication_enabled': settings.TWO_FACTOR_AUTHENTICATION_ENABLED,
+    }  # type: Dict[str, Any]
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True
@@ -173,6 +178,14 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
             'sort_order': backend.sort_order,
         })
     context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'], reverse=True)
-    context["no_auth_enabled"] = no_auth_enabled
+    context['no_auth_enabled'] = no_auth_enabled
 
+    return context
+
+def latest_info_context() -> Dict[str, str]:
+    context = {
+        'latest_release_version': LATEST_RELEASE_VERSION,
+        'latest_major_version': LATEST_MAJOR_VERSION,
+        'latest_release_announcement': LATEST_RELEASE_ANNOUNCEMENT,
+    }
     return context
