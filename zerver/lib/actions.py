@@ -2326,8 +2326,10 @@ def _internal_prep_message(realm: Realm,
     # eventually, moving that responsibility to the caller).  If
     # addressee.stream_name() is None (i.e. we're sending to a stream
     # by ID), we skip this, as the stream object must already exist.
-    if addressee.is_stream() and addressee.stream_name() is not None:
-        ensure_stream(realm, addressee.stream_name())
+    if addressee.is_stream():
+        stream_name = addressee.stream_name()
+        if stream_name is not None:
+            ensure_stream(realm, stream_name)
 
     try:
         return check_message(sender, get_client("Internal"), addressee,
