@@ -2733,7 +2733,7 @@ def get_last_message_id() -> int:
 SubT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_add_subscriptions(streams: Iterable[Stream],
                            users: Iterable[UserProfile],
-                           color_map: Optional[Dict[str, str]]={},
+                           color_map: Optional[Dict[str, str]]=None,
                            from_stream_creation: bool=False,
                            acting_user: Optional[UserProfile]=None) -> SubT:
     users = list(users)
@@ -2773,7 +2773,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     subs_to_add = []  # type: List[Tuple[Subscription, Stream]]
     for (user_profile, recipient_id, stream) in new_subs:
-        if stream.name in color_map:
+        if color_map is not None and stream.name in color_map:
             color = color_map[stream.name]
         else:
             color = pick_color(user_profile, subs_by_user[user_profile.id])
