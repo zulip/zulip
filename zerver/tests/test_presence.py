@@ -59,21 +59,21 @@ class ActivityTest(ZulipTestCase):
             result = self.client_get('/activity')
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 14)
 
         flush_per_request_caches()
         with queries_captured() as queries:
             result = self.client_get('/realm_activity/zulip/')
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 9)
+        self.assert_length(queries, 8)
 
         flush_per_request_caches()
         with queries_captured() as queries:
             result = self.client_get('/user_activity/iago@zulip.com/')
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 4)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self) -> None:

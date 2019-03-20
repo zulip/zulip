@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.core.exceptions import ValidationError
 from django.core import validators
-from zerver.context_processors import get_realm_from_request
+from zerver.context_processors import get_realm_from_request, login_context
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_user_by_delivery_email, get_default_stream_groups, DisposableEmailError, \
@@ -455,12 +455,11 @@ def accounts_home(request: HttpRequest, multiuse_object_key: Optional[str]="",
             return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
-    return render(request,
-                  'zerver/accounts_home.html',
-                  context={'form': form, 'current_url': request.get_full_path,
-                           'multiuse_object_key': multiuse_object_key,
-                           'from_multiuse_invite': from_multiuse_invite},
-                  )
+    context = login_context(request)
+    context.update({'form': form, 'current_url': request.get_full_path,
+                    'multiuse_object_key': multiuse_object_key,
+                    'from_multiuse_invite': from_multiuse_invite})
+    return render(request, 'zerver/accounts_home.html', context=context)
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     multiuse_object = None
