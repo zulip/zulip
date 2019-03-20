@@ -1062,6 +1062,16 @@ def remote_user_to_email(remote_user: str) -> str:
 post_save.connect(flush_user_profile, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
+    # Data on a partially created user, before the completion of
+    # registration.  This is used in at least three major code paths:
+    # * Realm creation, in which case realm is None.
+    #
+    # * Invitations, in which case referred_by will always be set.
+    #
+    # * Social authentication signup, where it's used to store data
+    #   from the authentication step and pass it to the registration
+    #   form.
+
     email = models.EmailField()  # type: str
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
@@ -1075,6 +1085,8 @@ class PreregistrationUser(models.Model):
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0)  # type: int
 
+    # The realm should only ever be None for PreregistrationUser
+    # objects created as part of realm creation.
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
     # Changes to INVITED_AS should also be reflected in
