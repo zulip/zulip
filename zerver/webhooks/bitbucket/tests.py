@@ -20,6 +20,14 @@ class BitbucketHookTests(WebhookTestCase):
         self.api_stream_message(self.TEST_USER_EMAIL, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
                                 expected_message)
 
+    def test_bitbucket_on_push_event_without_user_info(self) -> None:
+        fixture_name = 'push_without_user_info'
+        self.url = self.build_webhook_url(payload=self.get_body(fixture_name))
+        commit_info = u'* c ([25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12))'
+        expected_message = u"Someone pushed 1 commit to branch master. Commits by eeshangarg (1).\n\n{}".format(commit_info)
+        self.api_stream_message(self.TEST_USER_EMAIL, fixture_name, self.EXPECTED_TOPIC_BRANCH_EVENTS,
+                                expected_message)
+
     def test_bitbucket_on_push_event_filtered_by_branches(self) -> None:
         fixture_name = 'push'
         self.url = self.build_webhook_url(payload=self.get_body(fixture_name),

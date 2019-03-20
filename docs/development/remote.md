@@ -243,7 +243,7 @@ different.
     mkdir -p /var/lib/zulip/certbot-webroot/
     # if nginx running this will fail and you need to run `service nginx stop`
     /home/zulipdev/zulip/scripts/setup/setup-certbot \
-      --hostname=hostname.example.com --no-zulip-conf \
+      hostname.example.com --no-zulip-conf \
       --email=username@example.com --method=standalone
     ```
 

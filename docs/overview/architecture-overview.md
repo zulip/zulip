@@ -210,9 +210,26 @@ persistence:
     # Zulip-specific configuration: disable saving to disk.
     save ""
 
-memcached was used first and then we added Redis specifically to
-implement rate limiting. [We're discussing switching everything over to
-Redis.](https://github.com/zulip/zulip/issues/16)
+People often wonder if we could replace memcached with redis (or
+replace RabbitMQ with redis, with some loss of functionality).
+
+The answer is likely yes, but it wouldn't improve Zulip.
+Operationally, our current setup is likely easier to develop and run
+in production than a pure redis system would be.  Meanwhile, the
+perceived benefit for using redis is usually to reduce memory
+consumption by running fewer services, and no such benefit would
+materialize:
+
+* Our cache uses significant memory, but that memory usage would be
+  essentially the same with redis as it is with memcached.
+* All of these services have low minimum memory requirements, and in
+  fact our applications for redis and RabbitMQ do not use significant
+  memory even at scale.
+* We would likely need to run multiple redis services (with different
+  configurations) in order to ensure the pure LRU use case (memcached)
+  doesn't push out data that we want to persist until expiry
+  (redis-based rate limiting) or until consumed (RabbitMQ-based
+  queuing of deferred work).
 
 ### RabbitMQ
 

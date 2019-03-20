@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message

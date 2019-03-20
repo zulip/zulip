@@ -10,10 +10,12 @@ from django.conf import settings
 from django.core.management.base import CommandParser
 
 from zerver.lib.actions import encode_email_address
-from zerver.lib.email_mirror import process_message
+from zerver.lib.email_mirror import mirror_email_message
 from zerver.lib.management import ZulipBaseCommand
 
 from zerver.models import Realm, get_stream, get_realm
+
+from typing import Dict
 
 # This command loads an email from a specified file and sends it
 # to the email mirror. Simple emails can be passed in a JSON file,
@@ -72,7 +74,10 @@ Example:
         message = self._parse_email_fixture(full_fixture_path)
         self._prepare_message(message, realm, stream)
 
-        process_message(message)
+        data = {}  # type: Dict[str, str]
+        data['recipient'] = str(message['To'])  # Need str() here to avoid mypy throwing an error
+        data['msg_text'] = message.as_string()
+        mirror_email_message(data)
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)

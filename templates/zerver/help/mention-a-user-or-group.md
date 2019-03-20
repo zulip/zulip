@@ -29,7 +29,7 @@ messages and alert words.
 
 {end_tabs}
 
-Alternatively, click on the avatar of any user in the main message feed.
+Alternatively, click on the profile picture of any user in the main message feed.
 
 ## Silently mention a user
 

@@ -687,6 +687,13 @@ CACHES = {
 RATE_LIMITING_RULES = [
     (60, 200),  # 200 requests max every minute
 ]
+
+RATE_LIMITING_MIRROR_REALM_RULES = [
+    (60, 50),  # 50 emails per minute
+    (300, 120),  # 120 emails per 5 minutes
+    (3600, 600),  # 600 emails per hour
+]
+
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret('redis_password')
 

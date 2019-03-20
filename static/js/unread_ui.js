@@ -2,7 +2,6 @@ var unread_ui = (function () {
 
 var exports = {};
 
-var last_private_message_count = 0;
 var last_mention_count = 0;
 
 function do_new_messages_animation(li) {
@@ -17,13 +16,6 @@ function do_new_messages_animation(li) {
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
 }
-
-exports.animate_private_message_changes = function (li, new_private_message_count) {
-    if (new_private_message_count > last_private_message_count) {
-        do_new_messages_animation(li);
-    }
-    last_private_message_count = new_private_message_count;
-};
 
 exports.animate_mention_changes = function (li, new_mention_count) {
     if (new_mention_count > last_mention_count) {

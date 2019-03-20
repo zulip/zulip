@@ -14,10 +14,10 @@ from zproject.backends import (
     SOCIAL_AUTH_BACKENDS,
 )
 from zerver.decorator import get_client_name
-from zerver.lib.bugdown import convert as bugdown_convert
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.realm_description import get_realm_rendered_description
 
 from version import ZULIP_VERSION, LATEST_RELEASE_VERSION, \
     LATEST_RELEASE_ANNOUNCEMENT, LATEST_MAJOR_VERSION
@@ -38,8 +38,14 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         return request.user.realm
-    subdomain = get_subdomain(request)
-    return get_realm(subdomain)
+    if not hasattr(request, "realm"):
+        # We cache the realm object from this function on the request,
+        # so that functions that call get_realm_from_request don't
+        # need to do duplicate queries on the same realm while
+        # processing a single request.
+        subdomain = get_subdomain(request)
+        request.realm = get_realm(subdomain)
+    return request.realm
 
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
@@ -63,8 +69,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_description_raw = realm.description or "The coolest place in the universe."
-        realm_description = bugdown_convert(realm_description_raw, message_realm=realm)
+        realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
         realm_plan_type = realm.plan_type
 
@@ -125,7 +130,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'password_auth_enabled': password_auth_enabled(realm),
         'require_email_format_usernames': require_email_format_usernames(realm),
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
-        'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': FromAddress.SUPPORT,
         'find_team_link_disabled': find_team_link_disabled,
@@ -146,14 +150,20 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     }
 
     # Add the keys for our standard authentication backends.
+    no_auth_enabled = True
+    social_backends = []
     for auth_backend_name in AUTH_BACKEND_NAME_MAP:
         name_lower = auth_backend_name.lower()
         key = "%s_auth_enabled" % (name_lower,)
-        context[key] = auth_enabled_helper([auth_backend_name], realm)
+        is_enabled = auth_enabled_helper([auth_backend_name], realm)
+        context[key] = is_enabled
+        if is_enabled:
+            no_auth_enabled = False
 
-    social_backends = []
-    for backend in SOCIAL_AUTH_BACKENDS:
-        if not auth_enabled_helper([backend.auth_backend_name], realm):
+        # Now add the enabled social backends to the social_backends
+        # list used to generate buttons for login/register pages.
+        backend = AUTH_BACKEND_NAME_MAP[auth_backend_name]
+        if not is_enabled or backend not in SOCIAL_AUTH_BACKENDS:
             continue
         social_backends.append({
             'name': backend.name,
@@ -163,5 +173,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
             'sort_order': backend.sort_order,
         })
     context['social_backends'] = sorted(social_backends, key=lambda x: x['sort_order'], reverse=True)
+    context["no_auth_enabled"] = no_auth_enabled
 
     return context

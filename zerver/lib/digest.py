@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.notifications import build_message_list
+from zerver.lib.email_notifications import build_message_list
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.url_encoding import encode_stream
 from zerver.models import UserProfile, UserMessage, Recipient, \

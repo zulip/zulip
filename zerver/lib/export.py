@@ -107,6 +107,7 @@ ALL_ZULIP_TABLES = {
     'zerver_realmfilter',
     'zerver_recipient',
     'zerver_scheduledemail',
+    'zerver_scheduledemail_users',
     'zerver_scheduledmessage',
     'zerver_service',
     'zerver_stream',

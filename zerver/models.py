@@ -133,6 +133,23 @@ def get_realm_emoji_cache_key(realm: 'Realm') -> str:
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'active_realm_emoji:%s' % (realm.id,)
 
+# This simple call-once caching saves ~500us in auth_enabled_helper,
+# which is a significant optimization for common_context.  Note that
+# these values cannot change in a running production system, but do
+# regularly change within unit tests; we address the latter by calling
+# clear_supported_auth_backends_cache in our standard tearDown code.
+supported_backends = None  # type: Optional[Set[type]]
+def supported_auth_backends() -> Set[type]:
+    global supported_backends
+    # Caching temporarily disabled for debugging
+    supported_backends = django.contrib.auth.get_backends()
+    assert supported_backends is not None
+    return supported_backends
+
+def clear_supported_auth_backends_cache() -> None:
+    global supported_backends
+    supported_backends = None
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -339,7 +356,7 @@ class Realm(models.Model):
         from zproject.backends import AUTH_BACKEND_NAME_MAP
 
         ret = {}  # type: Dict[str, bool]
-        supported_backends = {backend.__class__ for backend in django.contrib.auth.get_backends()}
+        supported_backends = [backend.__class__ for backend in supported_auth_backends()]
         for k, v in self.authentication_methods.iteritems():
             backend = AUTH_BACKEND_NAME_MAP[k]
             if backend in supported_backends:
@@ -1159,7 +1176,7 @@ class Stream(models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=generate_email_token_for_stream)  # type: str
+        max_length=32, default=generate_email_token_for_stream, unique=True)  # type: str
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "more topics" for a
@@ -2250,9 +2267,12 @@ class AbstractScheduledJob(models.Model):
         abstract = True
 
 class ScheduledEmail(AbstractScheduledJob):
-    # Exactly one of user or address should be set. These are used to
-    # filter the set of ScheduledEmails.
-    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
+    # Exactly one of users or address should be set. These are
+    # duplicate values, used to efficiently filter the set of
+    # ScheduledEmails for use in clear_scheduled_emails; the
+    # recipients used for actually sending messages are stored in the
+    # data field of AbstractScheduledJob.
+    users = models.ManyToManyField(UserProfile)  # type: Manager
     # Just the address part of a full "name <address>" email address
     address = models.EmailField(null=True, db_index=True)  # type: Optional[str]
 
@@ -2263,7 +2283,8 @@ class ScheduledEmail(AbstractScheduledJob):
     type = models.PositiveSmallIntegerField()  # type: int
 
     def __str__(self) -> str:
-        return "<ScheduledEmail: %s %s %s>" % (self.type, self.user or self.address,
+        return "<ScheduledEmail: %s %s %s>" % (self.type,
+                                               self.address or list(self.users.all()),
                                                self.scheduled_timestamp)
 
 class ScheduledMessage(models.Model):

@@ -75,6 +75,7 @@ a:hover {
     text-decoration: none;
 }
 
+span a:hover,
 p a:hover,
 ul a:hover,
 ol a:hover {
@@ -2126,7 +2127,6 @@ nav ul li.active::after {
 
 .portico-landing.apps .hero .info button {
     padding: 10px 20px;
-    margin-top: 50px;
 
     font-size: 1em;
     font-weight: 600;
@@ -2631,6 +2631,7 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-categories-sidebar h3 {
     font-weight: 400;
     font-size: 1.1em;
+    margin: 0px;
 }
 
 .portico-landing.integrations .integration-categories-sidebar h4 {
@@ -2653,6 +2654,9 @@ nav ul li.active::after {
 .portico-landing.integrations .integration-categories-dropdown {
     margin: 30px auto;
     display: none;
+    .heading {
+        font-weight: 600;
+    }
 }
 
 .portico-landing.integrations .integration-lozenges {
@@ -4250,4 +4254,11 @@ nav ul li.active::after {
     .portico-landing .testimonials .carousel-inner {
         left: -7%;
     }
+}
+
+#download-android-apk a {
+    display: inline-block;
+    color: hsl(0, 0%, 100%);
+    font-size: 13px;
+    padding-left: 10px;
 }

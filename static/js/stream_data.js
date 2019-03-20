@@ -357,9 +357,11 @@ exports.get_announcement_only = function (stream_name) {
 };
 
 exports.all_topics_in_cache = function (sub) {
-    // Checks whether this browser's cache in message_list.all has all
+    // Checks whether this browser's cache of contiguous messages
+    // (used to locally render narrows) in message_list.all has all
     // messages from a given stream, and thus all historical topics
-    // for it.
+    // for it.  Because message_list.all is a range, we just need to
+    // compare it to the range of history on the stream.
 
     // If the cache isn't initialized, it's a clear false.
     if (message_list.all === undefined || message_list.all.empty()) {
@@ -369,13 +371,6 @@ exports.all_topics_in_cache = function (sub) {
     // If the cache doesn't have the latest messages, we can't be sure
     // we have all topics.
     if (!message_list.all.fetch_status.has_found_newest()) {
-        return false;
-    }
-
-    // This happens before message_list.all is initialized; just
-    // return false since the cache is empty.
-    var first_cached_message = message_list.all.first();
-    if (first_cached_message === undefined) {
         return false;
     }
 
@@ -390,6 +385,7 @@ exports.all_topics_in_cache = function (sub) {
     // message ID in the stream; if it's older, we're good, otherwise,
     // we might be missing the oldest topics in this stream in our
     // cache.
+    var first_cached_message = message_list.all.first();
     return first_cached_message.id <= sub.first_message_id;
 };
 

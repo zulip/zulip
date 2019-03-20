@@ -8,6 +8,7 @@ import django.db.utils
 from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
+from django.utils.text import slugify
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
@@ -47,7 +48,8 @@ from zerver.lib.message import (
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.retention import move_messages_to_archive
-from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins
+from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins, \
+    clear_scheduled_emails, clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_active_subscriptions_for_stream_ids,
@@ -137,8 +139,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.i18n import get_language_name
 from zerver.lib.alert_words import add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.notifications import clear_scheduled_emails, \
-    clear_scheduled_invitation_emails, enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
@@ -731,7 +732,7 @@ def do_deactivate_user(user_profile: UserProfile,
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
-    clear_scheduled_emails(user_profile.id)
+    clear_scheduled_emails([user_profile.id])
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
@@ -3585,7 +3586,7 @@ def do_change_notification_settings(user_profile: UserProfile, name: str, value:
 
     # Disabling digest emails should clear a user's email queue
     if name == 'enable_digest_emails' and not value:
-        clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
+        clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
 
     user_profile.save(update_fields=[name])
     event = {'type': 'update_global_notifications',
@@ -4378,14 +4379,15 @@ def do_delete_messages(user_profile: UserProfile, messages: Iterable[Message]) -
 
         event = {
             'type': 'delete_message',
-            'sender': user_profile.email,
+            'sender': message.sender.email,
+            'sender_id': message.sender_id,
             'message_id': message.id,
             'message_type': message_type, }  # type: Dict[str, Any]
         if message_type == "stream":
             event['stream_id'] = message.recipient.type_id
             event['topic'] = message.topic_name()
         else:
-            event['recipient_user_ids'] = message.recipient.type_id
+            event['recipient_id'] = message.recipient_id
 
         # TODO: Each part of the following should be changed to bulk
         # queries, since right now if you delete 1000 messages, you'll
@@ -4455,14 +4457,22 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
 
     # Given the fact that we have almost no restrictions on stream names and
     # that what characters are allowed in e-mail addresses is complicated and
-    # dependent on context in the address, we opt for a very simple scheme:
-    #
-    # Only encode the stream name (leave the + and token alone). Encode
-    # everything that isn't alphanumeric plus _ as the percent-prefixed integer
-    # ordinal of that character, padded with zeroes to the maximum number of
-    # bytes of a UTF-8 encoded Unicode character.
-    encoded_name = re.sub(r"\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
-    encoded_token = "%s+%s" % (encoded_name, email_token)
+    # dependent on context in the address, we opt for a simple scheme:
+    # 1. Replace all substrings of non-alphanumeric characters with a single hyphen.
+    # 2. Use Django's slugify to convert the resulting name to ascii.
+    # 3. If the resulting name is shorter than the name we got in step 1,
+    # it means some letters can't be reasonably turned to ascii and have to be dropped,
+    # which would mangle the name, so we just skip the name part of the address.
+    name = re.sub(r"\W+", '-', name)
+    slug_name = slugify(name)
+    encoded_name = slug_name if len(slug_name) == len(name) else ''
+
+    # If encoded_name ends up empty, we just skip this part of the address:
+    if encoded_name:
+        encoded_token = "%s+%s" % (encoded_name, email_token)
+    else:
+        encoded_token = email_token
+
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 def get_email_gateway_message_string_from_address(address: str) -> Optional[str]:
@@ -4480,9 +4490,9 @@ def get_email_gateway_message_string_from_address(address: str) -> Optional[str]
 
     return msg_string
 
-def decode_email_address(email: str) -> Optional[Tuple[str, str, bool]]:
+def decode_email_address(email: str) -> Optional[Tuple[str, bool]]:
     # Perform the reverse of encode_email_address. Returns a tuple of
-    # (streamname, email_token, show_sender)
+    # (email_token, show_sender)
     msg_string = get_email_gateway_message_string_from_address(email)
     if msg_string is None:
         return None
@@ -4493,15 +4503,19 @@ def decode_email_address(email: str) -> Optional[Tuple[str, str, bool]]:
     else:
         show_sender = False
 
-    if '.' in msg_string:
-        # Workaround for Google Groups and other programs that don't accept emails
-        # that have + signs in them (see Trac #2102)
-        encoded_stream_name, token = msg_string.split('.')
-    else:
-        encoded_stream_name, token = msg_string.split('+')
+    # Workaround for Google Groups and other programs that don't accept emails
+    # that have + signs in them (see Trac #2102)
+    splitting_char = '.' if '.' in msg_string else '+'
 
-    stream_name = re.sub(r"%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
-    return stream_name, token, show_sender
+    parts = msg_string.split(splitting_char)
+    # msg_string may have one or two parts:
+    # [stream_name, email_token] or just [email_token]
+    if len(parts) == 1:
+        token = parts[0]
+    else:
+        token = parts[1]
+
+    return token, show_sender
 
 SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
 

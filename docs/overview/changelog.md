@@ -7,6 +7,30 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 2.0.2 -- 2019-03-15
+
+- Fixed a regression in the puppet configuration for S3 upload backend
+  introduced in 2.0.1.
+- Fixed a too-fast fade for "Saved" in organization settings.
+- Fixed a white flash when loading a browser in night mode.
+- Fixed a few bugs in new LDAP synchronization features.
+- Fixed a buggy validator for custom stream colors.
+- Fixed a confusing "Subscribe" button appearing for guest users.
+- Updated translations, including a new Italian translation.
+
+### 2.0.1 -- 2019-03-04
+
+- Fixed handling of uploaded file routing on Ubuntu Trusty.
+- Fixed buggy behavior of branding logos in night theme.
+- Fixed handling of deployment directories being owned by root.
+- The styling of "unavailable" status icons is now less prominent.
+- The "deactivated realm" error page now auto-refreshes, to handle
+  realm reactivation.
+- Updated documentation to avoid recommending realm deactivation as
+  a preferred approach to prepare for backups.
+- Added support for using multiple organizations with same LDAP
+  backend configuration.
+
 ### 2.0.0 -- 2019-03-01
 
 **Highlights:**

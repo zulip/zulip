@@ -216,9 +216,6 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     unread_ui.set_count_toggle_button($("#userlist-toggle-unreadcount"),
                                       counts.private_message_count);
-
-    unread_ui.animate_private_message_changes(get_filter_li(),
-                                              counts.private_message_count);
 };
 
 

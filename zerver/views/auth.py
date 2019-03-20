@@ -678,11 +678,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         return redirect_to_deactivation_notice()
 
     extra_context = kwargs.pop('extra_context', {})
-    if dev_auth_enabled():
+    if dev_auth_enabled() and kwargs.get("template_name") == "zerver/dev_login.html":
         if 'new_realm' in request.POST:
             realm = get_realm(request.POST['new_realm'])
-        else:
-            realm = get_realm_from_request(request)
 
         add_dev_login_context(realm, extra_context)
         if realm and 'new_realm' in request.POST:

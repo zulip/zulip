@@ -100,7 +100,7 @@ def bounce_key_prefix_for_testing(test_name: str) -> None:
     KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
     # We are taking the hash of the KEY_PREFIX to decrease the size of the key.
     # Memcached keys should have a length of less than 256.
-    KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest()
+    KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest() + ":"
 
 def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     if cache_name is None:
@@ -435,12 +435,16 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(realm_alert_words_cache_key(realm))
         cache_delete(realm_alert_words_automaton_cache_key(realm))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
+        cache_delete(realm_rendered_description_cache_key(realm))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
 
 def realm_alert_words_automaton_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words_automaton:%s" % (realm.string_id,)
+
+def realm_rendered_description_cache_key(realm: 'Realm') -> str:
+    return "realm_rendered_description:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.

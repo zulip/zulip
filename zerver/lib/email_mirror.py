@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 import logging
 import re
@@ -13,12 +13,15 @@ from zerver.lib.actions import decode_email_address, get_email_gateway_message_s
     internal_send_message, internal_send_private_message, \
     internal_send_stream_message, internal_send_huddle_message, \
     truncate_body, truncate_topic
-from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_file
-from zerver.lib.utils import generate_random_token
+from zerver.lib.utils import generate_random_token, statsd
 from zerver.lib.send_email import FromAddress
+from zerver.lib.rate_limiter import RateLimitedObject, RateLimiterLockingException, \
+    is_ratelimited, incr_ratelimit
+from zerver.lib.exceptions import RateLimited
 from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, get_stream_by_id_in_realm
@@ -208,13 +211,6 @@ def send_zulip(sender: str, stream: Stream, topic: str, content: str) -> None:
         truncate_body(content),
         email_gateway=True)
 
-def valid_stream(stream_name: str, token: str) -> bool:
-    try:
-        stream = Stream.objects.get(email_token=token)
-        return stream.name.lower() == stream_name.lower()
-    except Stream.DoesNotExist:
-        return False
-
 def get_message_part_by_type(message: message.Message, content_type: str) -> Optional[str]:
     charsets = message.get_charsets()
 
@@ -298,12 +294,14 @@ def extract_and_validate(email: str) -> Tuple[Stream, bool]:
     temp = decode_email_address(email)
     if temp is None:
         raise ZulipEmailForwardError("Malformed email recipient " + email)
-    stream_name, token, show_sender = temp
+    token, show_sender = temp
 
-    if not valid_stream(stream_name, token):
+    try:
+        stream = Stream.objects.get(email_token=token)
+    except Stream.DoesNotExist:
         raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
-    return Stream.objects.get(email_token=token), show_sender
+    return stream, show_sender
 
 def find_emailgateway_recipient(message: message.Message) -> str:
     # We can't use Delivered-To; if there is a X-Gm-Original-To
@@ -406,3 +404,33 @@ def mirror_email_message(data: Dict[str, str]) -> Dict[str, str]:
         }
     )
     return {"status": "success"}
+
+# Email mirror rate limiter code:
+
+class RateLimitedRealmMirror(RateLimitedObject):
+    def __init__(self, realm: Realm) -> None:
+        self.realm = realm
+
+    def key_fragment(self) -> str:
+        return "emailmirror:{}:{}".format(type(self.realm), self.realm.id)
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return settings.RATE_LIMITING_MIRROR_REALM_RULES
+
+
+def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
+    # Code based on the rate_limit_user function:
+    entity = RateLimitedRealmMirror(recipient_realm)
+    ratelimited, time = is_ratelimited(entity)
+
+    if ratelimited:
+        statsd.incr("ratelimiter.limited.%s.%s" % (type(recipient_realm),
+                                                   recipient_realm.id))
+        raise RateLimited()
+
+    try:
+        incr_ratelimit(entity)
+    except RateLimiterLockingException:
+        logger.warning("Email mirror rate limiter: Deadlock trying to "
+                       "incr_ratelimit for realm %s" % (recipient_realm.name,))
+        raise RateLimited()

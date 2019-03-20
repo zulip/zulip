@@ -9,11 +9,14 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
+from zerver.lib.actions import encode_email_address
+from zerver.lib.email_mirror import RateLimitedRealmMirror
+from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, UserActivity, PreregistrationUser, \
-    get_system_bot
+    get_system_bot, get_stream, get_realm
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
     get_active_worker_queues,
@@ -165,7 +168,7 @@ class WorkerTest(ZulipTestCase):
         )
 
         send_mock = patch(
-            'zerver.lib.notifications.do_send_missedmessage_events_reply_in_zulip'
+            'zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip'
         )
         mmw.BATCH_DURATION = 0
 
@@ -212,33 +215,85 @@ class WorkerTest(ZulipTestCase):
             {'where art thou, othello?'}
         )
 
-    def test_mirror_worker(self) -> None:
+    @patch('zerver.worker.queue_processors.mirror_email')
+    def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
         fake_client = self.FakeClient()
+        stream = get_stream('Denmark', get_realm('zulip'))
+        stream_to_address = encode_email_address(stream)
         data = [
             dict(
                 message=u'\xf3test',
                 time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-            dict(
-                message='\xf3test',
-                time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-            dict(
-                message='test',
-                time=time.time(),
-                rcpt_to=self.example_email('hamlet'),
-            ),
-        ]
+                rcpt_to=stream_to_address
+            )
+        ] * 3
         for element in data:
             fake_client.queue.append(('email_mirror', element))
 
-        with patch('zerver.worker.queue_processors.mirror_email'):
-            with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(lambda: fake_client):
+            worker = queue_processors.MirrorWorker()
+            worker.setup()
+            worker.start()
+
+        self.assertEqual(mock_mirror_email.call_count, 3)
+
+    @patch('zerver.worker.queue_processors.mirror_email')
+    @override_settings(RATE_LIMITING_MIRROR_REALM_RULES=[(10, 2)])
+    def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock) -> None:
+        fake_client = self.FakeClient()
+        realm = get_realm('zulip')
+        clear_history(RateLimitedRealmMirror(realm))
+        stream = get_stream('Denmark', realm)
+        stream_to_address = encode_email_address(stream)
+        data = [
+            dict(
+                message=u'\xf3test',
+                time=time.time(),
+                rcpt_to=stream_to_address
+            )
+        ] * 5
+        for element in data:
+            fake_client.queue.append(('email_mirror', element))
+
+        with simulated_queue_client(lambda: fake_client):
+            start_time = time.time()
+            with patch('time.time', return_value=start_time):
                 worker = queue_processors.MirrorWorker()
                 worker.setup()
                 worker.start()
+                # Of the first 5 messages, only 2 should be processed
+                # (the rest being rate-limited):
+                self.assertEqual(mock_mirror_email.call_count, 2)
+
+                # If a new message is sent into the stream mirror, it will get rejected:
+                fake_client.queue.append(('email_mirror', data[0]))
+                worker.start()
+                self.assertEqual(mock_mirror_email.call_count, 2)
+
+                # However, missed message emails don't get rate limited:
+                with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
+                    address = 'mm' + ('x' * 32) + '@example.com'
+                    event = dict(
+                        message=u'\xf3test',
+                        time=time.time(),
+                        rcpt_to=address
+                    )
+                    fake_client.queue.append(('email_mirror', event))
+                    worker.start()
+                    self.assertEqual(mock_mirror_email.call_count, 3)
+
+            # After some times passes, emails get accepted again:
+            with patch('time.time', return_value=(start_time + 11.0)):
+                fake_client.queue.append(('email_mirror', data[0]))
+                worker.start()
+                self.assertEqual(mock_mirror_email.call_count, 4)
+
+                # If RateLimiterLockingException is thrown, we rate-limit the new message:
+                with patch('zerver.lib.email_mirror.incr_ratelimit',
+                           side_effect=RateLimiterLockingException):
+                    fake_client.queue.append(('email_mirror', data[0]))
+                    worker.start()
+                    self.assertEqual(mock_mirror_email.call_count, 4)
 
     def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
