@@ -745,11 +745,12 @@ exports.initialize = function () {
             .replace('hotspot_', '')
             .replace('_overlay', '');
 
-        // Comment below to disable marking hotspots as read in production
-        hotspots.post_hotspot_as_read(hotspot_name);
-
+        if (hotspot_name !== 'intro_compose') {
+            // Comment below to disable marking hotspots as read in production
+            hotspots.post_hotspot_as_read(hotspot_name);
+            $('#hotspot_' + hotspot_name + '_icon').remove();
+        }
         overlays.close_overlay(overlay_name);
-        $('#hotspot_' + hotspot_name + '_icon').remove();
     });
 
     $('body').on('click', '.hotspot-button', function (e) {

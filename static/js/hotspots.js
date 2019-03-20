@@ -2,6 +2,10 @@ var hotspots = (function () {
 
 var exports = {};
 
+// flag variable for hotspot_intro_compose to prevent
+// opening its overlay before it is closed
+var initialized_intro_compose = false;
+
 // popover orientations
 var TOP = 'top';
 var LEFT = 'left';
@@ -36,7 +40,7 @@ var HOTSPOT_LOCATIONS = {
         popover: LEFT_BOTTOM,
     },
     intro_compose: {
-        element: '#left_bar_compose_stream_button_big',
+        element: '#stream_message_recipient_topic',
         offset_x: 0,
         offset_y: 0,
     },
@@ -185,6 +189,23 @@ function place_popover(hotspot) {
 }
 
 function insert_hotspot_into_DOM(hotspot) {
+    if (!initialized_intro_compose) {
+        initialized_intro_compose = true;
+        $('#stream_message_recipient_topic').one('focus', function () {
+            var overlay_name = 'hotspot_' + 'intro_compose' + '_overlay';
+            overlays.open_overlay({
+                name: overlay_name,
+                overlay: $('#' + overlay_name),
+                on_close: function () {
+                    // close popover
+                    $('#stream_message_recipient_topic').css({ display: 'inline' });
+                    $('#stream_message_recipient_topic').animate({ opacity: 1 }, {
+                        duration: 300,
+                    });
+                }.bind('#stream_message_recipient_topic'),
+            });
+        });
+    }
     if (hotspot.name === "intro_reply") {
         $('#bottom_whitespace').append(templates.render('intro_reply_hotspot', {}));
         return;
@@ -196,13 +217,15 @@ function insert_hotspot_into_DOM(hotspot) {
         description: hotspot.description,
         img: WHALE,
     });
-
-    var hotspot_icon_HTML =
-        '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
-            '<span class="dot"></span>' +
-            '<span class="pulse"></span>' +
-            '<div class="bounce"><span class="bounce-icon">?</span></div>' +
-        '</div>';
+    var hotspot_icon_HTML;
+    if (hotspot.name !== 'intro_compose') {
+        hotspot_icon_HTML =
+            '<div class="hotspot-icon" id="hotspot_' + hotspot.name + '_icon">' +
+                '<span class="dot"></span>' +
+                '<span class="pulse"></span>' +
+                '<div class="bounce"><span class="bounce-icon">?</span></div>' +
+            '</div>';
+    }
 
     setTimeout(function () {
         $('body').prepend(hotspot_icon_HTML);
