@@ -7,10 +7,11 @@ from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
 
 from itertools import zip_longest
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict
 
 import os
 import ujson
+import logging
 
 def with_language(string: str, language: str) -> str:
     """
@@ -67,11 +68,13 @@ def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dic
 
     return formatted_list
 
-def get_language_name(code: str) -> Optional[str]:
+def get_language_name(code: str) -> str:
     for lang in get_language_list():
         if code in (lang['code'], lang['locale']):
             return lang['name']
-    return None
+    # Log problem, but still return a name
+    logging.error("Unknown language code '%s'" % (code,))
+    return "Unknown"
 
 def get_available_language_codes() -> List[str]:
     language_list = get_language_list()
