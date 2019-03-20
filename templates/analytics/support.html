@@ -17,7 +17,7 @@
     <br>
     <form>
         <center>
-            <input type="text" name="q" class="input-xxlarge search-query" placeholder="emails, string_ids, organization urls separated by commas" value="{{ request.GET.get('q', '') }}">
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="emails, string_ids, organization urls separated by commas" value="{{ request.GET.get('q', '') }}" autofocus>
             <button type="submit" class="btn support-search-button">Search</button>
         </center>
     </form>
