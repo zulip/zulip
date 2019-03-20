@@ -38,11 +38,11 @@ from zerver.data_import.import_util import (
     create_converted_data_files,
     make_subscriber_map,
     write_avatar_png,
+    SubscriberHandler
 )
 
 from zerver.data_import.hipchat_attachment import AttachmentHandler
 from zerver.data_import.hipchat_user import UserHandler
-from zerver.data_import.hipchat_subscriber import SubscriberHandler
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 
 # stubs
