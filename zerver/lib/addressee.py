@@ -42,8 +42,6 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
     return user_profiles
 
 def validate_topic(topic: str) -> str:
-    if topic is None:
-        raise JsonableError(_("Missing topic"))
     topic = topic.strip()
     if topic == "":
         raise JsonableError(_("Topic can't be empty"))
@@ -69,6 +67,8 @@ class Addressee:
                  stream_id: Optional[int]=None,
                  topic: Optional[str]=None) -> None:
         assert(msg_type in ['stream', 'private'])
+        if msg_type == 'stream' and topic is None:
+            raise JsonableError(_("Missing topic"))
         self._msg_type = msg_type
         self._user_profiles = user_profiles
         self._stream = stream
@@ -107,7 +107,7 @@ class Addressee:
     def legacy_build(sender: UserProfile,
                      message_type_name: str,
                      message_to: Union[Sequence[int], Sequence[str]],
-                     topic_name: str,
+                     topic_name: Optional[str],
                      realm: Optional[Realm]=None) -> 'Addressee':
 
         # For legacy reason message_to used to be either a list of
@@ -131,6 +131,9 @@ class Addressee:
                     stream_name_or_id = sender.default_sending_stream.id
                 else:
                     raise JsonableError(_('Missing stream'))
+
+            if topic_name is None:
+                raise JsonableError(_("Missing topic"))
 
             if isinstance(stream_name_or_id, int):
                 stream_id = cast(int, stream_name_or_id)
