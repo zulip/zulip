@@ -35,6 +35,7 @@ import zerver.views.muting
 import zerver.views.streams
 import zerver.views.realm
 import zerver.views.digest
+from zerver.context_processors import latest_info_context
 
 from zerver.lib.rest import rest_dispatch
 
@@ -521,7 +522,9 @@ i18n_urls = [
     url(r'^plans/$', zerver.views.home.plans_view, name='plans'),
 
     # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
+    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html',
+                                          get_context_data=latest_info_context),
+        name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
     url(r'^why-zulip/$', TemplateView.as_view(template_name='zerver/why-zulip.html')),

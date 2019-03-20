@@ -228,7 +228,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page(stream='Denmark')
 
         self.assert_length(queries, 43)
-        self.assert_length(cache_mock.call_args_list, 8)
+        self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
 
@@ -292,7 +292,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
-                self.assert_length(cache_mock.call_args_list, 7)
+                self.assert_length(cache_mock.call_args_list, 6)
             self.assert_length(queries, 40)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")

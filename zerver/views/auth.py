@@ -17,10 +17,11 @@ from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 from django.core import signing
 import urllib
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Mapping
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.context_processors import zulip_default_context, get_realm_from_request
+from zerver.context_processors import zulip_default_context, get_realm_from_request, \
+    login_context
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm, AuthenticationTokenForm
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
@@ -131,11 +132,12 @@ def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str=
     # This email address it not allowed to join this organization, so
     # just send the user back to the registration page.
     url = reverse('register')
-    return render(request,
-                  'zerver/accounts_home.html',
-                  context={'form': form, 'current_url': lambda: url,
-                           'from_multiuse_invite': from_multiuse_invite,
-                           'multiuse_object_key': multiuse_object_key})
+    context = login_context(request)
+    extra_context = {'form': form, 'current_url': lambda: url,
+                     'from_multiuse_invite': from_multiuse_invite,
+                     'multiuse_object_key': multiuse_object_key}  # type: Mapping[str, Any]
+    context.update(extra_context)
+    return render(request, 'zerver/accounts_home.html', context=context)
 
 def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
     login_url = reverse('django.contrib.auth.views.login')
@@ -696,6 +698,7 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                                      **kwargs)
 
     try:
+        extra_context.update(login_context(request))
         template_response = django_login_page(
             request, authentication_form=OurAuthenticationForm,
             extra_context=extra_context, **kwargs)
@@ -914,6 +917,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         is_incompatible=check_server_incompatibility(request),
     )
     context = zulip_default_context(request)
+    context.update(login_context(request))
     # IMPORTANT NOTE:
     # realm_name, realm_icon, etc. are not guaranteed to appear in the response.
     # * If they do, that means the server URL has only one realm on it

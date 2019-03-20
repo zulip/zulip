@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
 
-from zerver.context_processors import get_realm_from_request
+from zerver.context_processors import get_realm_from_request, latest_info_context
 from zerver.decorator import zulip_login_required, \
     redirect_to_login
 from zerver.forms import ToSForm
@@ -96,7 +96,7 @@ def home(request: HttpRequest) -> HttpResponse:
     if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
         return home_real(request)
 
-    return render(request, 'zerver/hello.html')
+    return render(request, 'zerver/hello.html', latest_info_context())
 
 @zulip_login_required
 def home_real(request: HttpRequest) -> HttpResponse:
@@ -317,9 +317,11 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
 
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
+    realm_plan_type = 0
     if realm is not None:
+        realm_plan_type = realm.plan_type
         if realm.plan_type == Realm.SELF_HOSTED:
             return HttpResponseRedirect('https://zulipchat.com/plans')
         if not request.user.is_authenticated():
             return redirect_to_login(next="plans")
-    return render(request, "zerver/plans.html")
+    return render(request, "zerver/plans.html", context={"realm_plan_type": realm_plan_type})
