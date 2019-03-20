@@ -106,7 +106,7 @@ const user_search = function (opts) {
     }
 
     $('#clear_search_people_button').on('click', self.clear_search);
-    $('#userlist-header').on('click', self.toggle_filter_displayed);
+    $('#users_click_target').on('click', self.toggle_filter_displayed);
 
     $input.on('input', opts.update_list);
     $input.on('focus', on_focus);

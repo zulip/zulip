@@ -444,10 +444,10 @@ run_test('handlers', () => {
         handler(e);
     }());
 
-    (function test_click_header_filter() {
+    (function test_click_target_filter() {
         init();
         const e = {};
-        const handler = $('#userlist-header').get_on_handler('click');
+        const handler = $('#users_click_target').get_on_handler('click');
 
         simulate_right_column_buddy_list();
 

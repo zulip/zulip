@@ -2,11 +2,13 @@
     <div class="right-sidebar-items">
         <div id="user-list">
             <div id="userlist-header">
-                <h4 class='sidebar-title' id='userlist-title' data-toggle="tooltip" title="{{ _('Filter users') }}">{{ _('USERS') }}</h4>
-                <i id="user_filter_icon" class='fa fa-search' aria-hidden="true" aria-label="{{ _('Filter users') }}" data-toggle="tooltip" title="{{ _('Filter users') }} (w)"></i>
+                <div id="users_click_target" title="{{ _('Search users') }} (w)">
+                    <h4 class='sidebar-title' id='userlist-title'>{{ _('USERS') }}</h4>
+                    <i id="user_filter_icon" class='fa fa-search' aria-hidden="true" aria-label="{{ _('Search users') }}"></i>
+                </div>
             </div>
             <div class="input-append notdisplayed" id="user_search_section">
-                <input class="user-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search people') }}" />
+                <input class="user-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search users') }}" />
                 <button type="button" class="btn clear_search_button" id="clear_search_people_button">
                     <i class="fa fa-remove" aria-hidden="true"></i>
                 </button>

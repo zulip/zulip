@@ -501,7 +501,7 @@ exports.set_event_handlers = function () {
 
     $('#clear_search_stream_button').on('click', exports.clear_search);
 
-    $("#streams_header").expectOne().click(function (e) {
+    $("#streams_click_target").expectOne().click(function (e) {
         exports.toggle_filter_displayed(e);
     });
 

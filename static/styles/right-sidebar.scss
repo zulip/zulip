@@ -206,11 +206,15 @@
     margin-right: 10px;
 }
 
+#users_click_target:hover .sidebar-title {
+    color: hsl(0, 0%, 0%);
+}
+
 .right-sidebar-items:first-of-type #userlist-header {
     border-top: none;
 }
 
-#userlist-header {
+#users_click_target {
     cursor: pointer;
     display: flex;
     flex-direction: row;
@@ -222,10 +226,20 @@
     }
 
     #user_filter_icon {
-        font-size: 13px;
+        font-size: 15px;
         opacity: 0.50;
-        margin-right: 5px;
     }
+}
+
+#users_click_target:hover #user_filter_icon {
+    opacity: 1;
+}
+
+#feedback_section {
+    text-align: left;
+    padding-bottom: 15px;
+    border-bottom: 1px solid hsl(0, 0%, 88%);
+    margin-right: 10px;
 }
 
 #keyboard-icon {

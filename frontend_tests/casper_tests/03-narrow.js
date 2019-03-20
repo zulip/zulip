@@ -333,7 +333,7 @@ un_narrow();
 casper.then(function () {
     casper.test.info('Search streams using left sidebar');
     casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible initially');
-    casper.click('#streams_header .sidebar-title');
+    casper.click('#streams_click_target');
 });
 
 casper.waitWhileSelector('#streams_list .input-append.notdisplayed', function () {
@@ -448,7 +448,7 @@ casper.then(function () {
 });
 
 
-casper.thenClick('#streams_header .sidebar-title');
+casper.thenClick('#streams_click_target');
 
 casper.waitForSelector('.input-append.notdisplayed', function () {
     casper.test.assertExists('.input-append.notdisplayed',
