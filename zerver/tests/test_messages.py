@@ -47,6 +47,7 @@ from zerver.lib.message import (
     bulk_access_messages,
     get_first_visible_message_id,
     get_raw_unread_data,
+    get_recent_private_conversations,
     maybe_update_first_visible_message_id,
     messages_for_ids,
     sew_messages_and_reactions,
@@ -1154,6 +1155,13 @@ class StreamMessagesTest(ZulipTestCase):
         # only these two messages are present in msg_data
         self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
 
+        recent_conversations = get_recent_private_conversations(users[1])
+        self.assertEqual(len(recent_conversations), 1)
+        recent_conversation = list(recent_conversations.values())[0]
+        self.assertEqual(set(recent_conversation['user_ids']), set(user.id for user in users if
+                                                                   user != users[1]))
+        self.assertEqual(recent_conversation['max_message_id'], message2_id)
+
 class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self) -> None:
@@ -1509,12 +1517,42 @@ class MessagePOSTTest(ZulipTestCase):
         """
         Sending a personal message to a valid username is successful.
         """
-        self.login(self.example_email("hamlet"))
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": self.example_email("othello")})
         self.assert_json_success(result)
+        message_id = ujson.loads(result.content.decode())['id']
+
+        recent_conversations = get_recent_private_conversations(user_profile)
+        self.assertEqual(len(recent_conversations), 1)
+        recent_conversation = list(recent_conversations.values())[0]
+        recipient_id = list(recent_conversations.keys())[0]
+        self.assertEqual(set(recent_conversation['user_ids']), set([self.example_user("othello").id]))
+        self.assertEqual(recent_conversation['max_message_id'], message_id)
+
+        # Now send a message to yourself and see how that interacts with the data structure
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "content": "Test message",
+                                                     "client": "test suite",
+                                                     "to": self.example_email("hamlet")})
+        self.assert_json_success(result)
+        self_message_id = ujson.loads(result.content.decode())['id']
+
+        recent_conversations = get_recent_private_conversations(user_profile)
+        self.assertEqual(len(recent_conversations), 2)
+        recent_conversation = recent_conversations[recipient_id]
+        self.assertEqual(set(recent_conversation['user_ids']), set([self.example_user("othello").id]))
+        self.assertEqual(recent_conversation['max_message_id'], message_id)
+
+        # Now verify we have the appropriate self-pm data structure
+        del recent_conversations[recipient_id]
+        recent_conversation = list(recent_conversations.values())[0]
+        recipient_id = list(recent_conversations.keys())[0]
+        self.assertEqual(set(recent_conversation['user_ids']), set([]))
+        self.assertEqual(recent_conversation['max_message_id'], self_message_id)
 
     def test_personal_message_by_id(self) -> None:
         """
