@@ -6,6 +6,7 @@ import ahocorasick
 
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now as timezone_now
+from django.db import connection
 from django.db.models import Sum
 
 from analytics.lib.counts import COUNT_STATS, RealmCount
@@ -974,3 +975,123 @@ def update_first_visible_message_id(realm: Realm) -> None:
             first_visible_message_id = 0
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
+
+
+def get_recent_conversations_recipient_id(user_profile: UserProfile,
+                                          recipient_id: int,
+                                          sender_id: int) -> int:
+    """Helper for doing lookups of the recipient_id that
+    get_recent_private_conversations would have used to record that
+    message in its data structure.
+    """
+    my_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL,
+                                            type_id=user_profile.id).id
+    if recipient_id == my_recipient_id:
+        return Recipient.objects.get(type=Recipient.PERSONAL,
+                                     type_id=sender_id).id
+    return recipient_id
+
+def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
+    """This function uses some carefully optimized SQL queries, designed
+    to use the UserMessage index on private_messages.  It is
+    significantly complicated by the fact that for 1:1 private
+    messages, we store the message against a recipient_id of whichever
+    user was the recipient, and thus for 1:1 private messages sent
+    directly to us, we need to look up the other user from the
+    sender_id on those messages.  You'll see that pattern repeated
+    both here and also in zerver/lib/events.py.
+
+    Ideally, we would write these queries using Django, but even
+    without the UNION ALL, that seems to not be possible, because the
+    equivalent Django syntax (for the first part of this query):
+
+        message_data = UserMessage.objects.select_related("message__recipient_id").filter(
+            user_profile=user_profile,
+        ).extra(
+            where=[UserMessage.where_private()]
+        ).order_by("-message_id")[:1000].values(
+            "message__recipient_id").annotate(last_message_id=Max("message_id"))
+
+    does not properly nest the GROUP BY (from .annotate) with the slicing.
+
+    We return a dictionary structure for convenient modification
+    below; this structure is converted into its final form by
+    post_process.
+
+    """
+    RECENT_CONVERSATIONS_LIMIT = 1000
+
+    recipient_map = {}
+    my_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL,
+                                            type_id=user_profile.id).id
+
+    query = '''
+    SELECT
+        subquery.recipient_id, MAX(subquery.message_id)
+    FROM (
+        (SELECT
+            um.message_id AS message_id,
+            m.recipient_id AS recipient_id
+        FROM
+            zerver_usermessage um
+        JOIN
+            zerver_message m
+        ON
+            um.message_id = m.id
+        WHERE
+            um.user_profile_id=%(user_profile_id)d AND
+            um.flags & 2048 <> 0 AND
+            m.recipient_id <> %(my_recipient_id)d
+        ORDER BY message_id DESC
+        LIMIT %(conversation_limit)d)
+        UNION ALL
+        (SELECT
+            um.message_id AS message_id,
+            r.id AS recipient_id
+        FROM
+            zerver_usermessage um
+        JOIN
+            zerver_message m
+        ON
+            um.message_id = m.id
+        JOIN
+            zerver_recipient r
+        ON
+            r.type = 1 AND
+            r.type_id = m.sender_id
+        WHERE
+            um.user_profile_id=%(user_profile_id)d AND
+            um.flags & 2048 <> 0 AND
+            m.recipient_id=%(my_recipient_id)d
+        ORDER BY message_id DESC
+        LIMIT %(conversation_limit)d)
+    ) AS subquery
+    GROUP BY subquery.recipient_id
+    ''' % dict(
+        user_profile_id=user_profile.id,
+        conversation_limit=RECENT_CONVERSATIONS_LIMIT,
+        my_recipient_id=my_recipient_id,
+    )
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    cursor.close()
+
+    # The resulting rows will be (recipient_id, max_message_id)
+    # objects for all parties we've had recent (group?) private
+    # message conversations with, including PMs with yourself (those
+    # will generate an empty list of user_ids).
+    for recipient_id, max_message_id in rows:
+        recipient_map[recipient_id] = dict(
+            max_message_id=max_message_id,
+            user_ids=list(),
+        )
+
+    # Now we need to map all the recipient_id objects to lists of user IDs
+    for (recipient_id, user_profile_id) in Subscription.objects.filter(
+            recipient_id__in=recipient_map.keys()).exclude(
+                user_profile_id=user_profile.id).values_list(
+                    "recipient_id", "user_profile_id"):
+        recipient_map[recipient_id]['user_ids'].append(user_profile_id)
+    return recipient_map

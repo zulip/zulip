@@ -22,6 +22,8 @@ from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
     get_raw_unread_data,
+    get_recent_conversations_recipient_id,
+    get_recent_private_conversations,
     get_starred_message_ids,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
@@ -122,6 +124,10 @@ def always_want(msg_type: str) -> bool:
     info for every event type.  Defining this at module
     level makes it easier to mock.
     '''
+    if settings.PRODUCTION and msg_type == "recent_private_conversations":  # nocoverage
+        # Temporary: Don't include recent_private_conversations in production
+        # by default while the feature is still experimental.
+        return False
     return True
 
 # Fetch initial data.  When event_types is not specified, clients want
@@ -273,6 +279,21 @@ def fetch_initial_state_data(user_profile: UserProfile,
                                         'config': load_bot_config_template(bot.name)})
         state['realm_embedded_bots'] = realm_embedded_bots
 
+    if want('recent_private_conversations'):
+        # A data structure containing records of this form:
+        #
+        #   [{'max_message_id': 700175, 'user_ids': [801]}]
+        #
+        # for all recent private message conversations, ordered by the
+        # highest message ID in the conversation.  The user_ids list
+        # is the list of users other than the current user in the
+        # private message conversation (so it is [] for PMs to self).
+        # Note that raw_recent_private_conversations is an
+        # intermediate form as a dictionary keyed by recipient_id,
+        # which is more efficient to update, and is rewritten to the
+        # final format in post_process_state.
+        state['raw_recent_private_conversations'] = get_recent_private_conversations(user_profile)
+
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
             user_profile, include_subscribers=include_subscribers)
@@ -371,10 +392,24 @@ def apply_event(state: Dict[str, Any],
                 event['flags'],
             )
 
-        # Below, we handle maintaining first_message_id.
         if event['message']['type'] != "stream":
+            if 'raw_recent_private_conversations' in state:
+                # Handle maintaining the recent_private_conversations data structure.
+                conversations = state['raw_recent_private_conversations']
+                recipient_id = get_recent_conversations_recipient_id(
+                    user_profile, event['message']['recipient_id'],
+                    event['message']["sender_id"])
+
+                if recipient_id not in conversations:
+                    conversations[recipient_id] = dict(
+                        user_ids=[user_dict['id'] for user_dict in
+                                  event['message']['display_recipient'] if
+                                  user_dict['id'] != user_profile.id]
+                    )
+                conversations[recipient_id]['max_message_id'] = event['message']['id']
             return
 
+        # Below, we handle maintaining first_message_id.
         for sub_dict in state.get('subscriptions', []):
             if event['message']['stream_id'] == sub_dict['stream_id']:
                 if sub_dict['first_message_id'] is None:
@@ -636,6 +671,31 @@ def apply_event(state: Dict[str, Any],
 
         remove_id = event['message_id']
         remove_message_id_from_unread_mgs(state, remove_id)
+
+        # The remainder of this block is about maintaining recent_private_conversations
+        if 'raw_recent_private_conversations' not in state or event['message_type'] != 'private':
+            return
+
+        recipient_id = get_recent_conversations_recipient_id(user_profile, event['recipient_id'],
+                                                             event['sender_id'])
+
+        # Ideally, we'd have test coverage for these two blocks.  To
+        # do that, we'll need a test where we delete not-the-latest
+        # messages or delete a private message not in
+        # recent_private_conversations.
+        if recipient_id not in state['raw_recent_private_conversations']:  # nocoverage
+            return
+
+        old_max_message_id = state['raw_recent_private_conversations'][recipient_id]['max_message_id']
+        if old_max_message_id != event['message_id']:  # nocoverage
+            return
+
+        # OK, we just deleted what had been the max_message_id for
+        # this recent conversation; we need to recompute that value
+        # from scratch.  Definitely don't need to re-query everything,
+        # but this case is likely rare enough that it's reasonable to do so.
+        state['raw_recent_private_conversations'] = \
+            get_recent_private_conversations(user_profile)
     elif event['type'] == "reaction":
         # The client will get the message with the reactions directly
         pass
@@ -807,7 +867,7 @@ def post_process_state(ret: Dict[str, Any]) -> None:
     '''
     See the note above; the same technique applies below.
     '''
-    if 'raw_users'in ret:
+    if 'raw_users' in ret:
         user_dicts = list(ret['raw_users'].values())
 
         ret['realm_users'] = [d for d in user_dicts if d['is_active']]
@@ -827,3 +887,12 @@ def post_process_state(ret: Dict[str, Any]) -> None:
             d.pop('is_active')
 
         del ret['raw_users']
+
+    if 'raw_recent_private_conversations' in ret:
+        # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
+        ret['recent_private_conversations'] = sorted([
+            dict(
+                **value
+            ) for (recipient_id, value) in ret['raw_recent_private_conversations'].items()
+        ], key = lambda x: -x["max_message_id"])
+        del ret['raw_recent_private_conversations']
