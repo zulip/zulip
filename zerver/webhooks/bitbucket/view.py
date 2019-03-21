@@ -36,7 +36,7 @@ def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
         # a useful message :/
         subject = repository['name']
         content = (u"%s [force pushed](%s)"
-                   % (payload['user'],
+                   % (payload.get('user', 'Someone'),
                       payload['canon_url'] + repository['absolute_url']))
     else:
         branch = payload['commits'][-1]['branch']
