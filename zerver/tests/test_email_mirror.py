@@ -28,6 +28,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
     strip_from_subject,
     is_forwarded,
+    filter_footer,
     ZulipEmailForwardError,
 )
 
@@ -159,6 +160,24 @@ class TestEmailMirrorLibrary(ZulipTestCase):
         address = 'alice@not-the-domain-we-were-expecting.com'
         with self.assertRaises(ZulipEmailForwardError):
             get_token(address)
+
+class TestFilterFooter(ZulipTestCase):
+    def test_filter_footer(self) -> None:
+        text = """Test message
+        --
+        Footer"""
+        result = filter_footer(text)
+        self.assertEqual(result, "Test message")
+
+    def test_filter_footer_many_parts(self) -> None:
+        text = """Test message
+        --
+        Part1
+        --
+        Part2"""
+        result = filter_footer(text)
+        # Multiple possible footers, don't strip
+        self.assertEqual(result, text)
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self) -> None:
