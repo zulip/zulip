@@ -23,7 +23,7 @@ from zerver.models import (
 from zerver.lib.actions import ensure_stream
 
 from zerver.lib.email_mirror import (
-    process_message, process_stream_message,
+    process_message, process_stream_message, process_missed_message,
     create_missed_message_address,
     get_missed_message_token_from_address,
     strip_from_subject,
@@ -381,6 +381,41 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "(No email body)")
+
+class TestMissedMessageEmailMessageTokenMissingData(ZulipTestCase):
+    # Test for the case "if not all(val is not None for val in result):"
+    # on result returned by redis_client.hmget in send_to_missed_message_address:
+    def test_receive_missed_message_email_token_missing_data(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "content": "test_receive_missed_message_email_token_missing_data",
+                                                     "client": "test suite",
+                                                     "to": self.example_email('othello')})
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('othello')
+        usermessage = most_recent_usermessage(user_profile)
+
+        mm_address = create_missed_message_address(user_profile, usermessage.message)
+
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+
+        incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('othello')
+        incoming_valid_message['To'] = mm_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        # We need to force redis_client.hmget to return some None values:
+        with mock.patch('zerver.lib.email_mirror.redis_client.hmget',
+                        return_value=[None, None, None]):
+            exception_message = ''
+            try:
+                process_missed_message(mm_address, incoming_valid_message, False)
+            except ZulipEmailForwardError as e:
+                exception_message = str(e)
+
+            self.assertEqual(exception_message, 'Missing missed message address data')
 
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
