@@ -5,9 +5,12 @@ from django.utils.text import slugify
 
 from zerver.models import Stream
 
-from typing import Optional, Tuple
+from typing import Tuple
 
-def get_email_gateway_message_string_from_address(address: str) -> Optional[str]:
+class ZulipEmailForwardError(Exception):
+    pass
+
+def get_email_gateway_message_string_from_address(address: str) -> str:
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
@@ -16,8 +19,7 @@ def get_email_gateway_message_string_from_address(address: str) -> Optional[str]
     match = match_email_re.match(address)
 
     if not match:
-        return None
-
+        raise ZulipEmailForwardError('Address not recognized by gateway.')
     msg_string = match.group(1)
 
     return msg_string
@@ -50,12 +52,10 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
 
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
-def decode_email_address(email: str) -> Optional[Tuple[str, bool]]:
+def decode_email_address(email: str) -> Tuple[str, bool]:
     # Perform the reverse of encode_email_address. Returns a tuple of
     # (email_token, show_sender)
     msg_string = get_email_gateway_message_string_from_address(email)
-    if msg_string is None:
-        return None
 
     if msg_string.endswith(('+show-sender', '.show-sender')):
         show_sender = True
