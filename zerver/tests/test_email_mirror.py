@@ -20,18 +20,20 @@ from zerver.models import (
     Recipient,
 )
 
-from zerver.lib.actions import (
-    encode_email_address,
-    ensure_stream,
-    decode_email_address,
-    get_email_gateway_message_string_from_address,
-)
+from zerver.lib.actions import ensure_stream
+
 from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
     create_missed_message_address,
     get_missed_message_token_from_address,
     strip_from_subject,
     is_forwarded,
+)
+
+from zerver.lib.email_mirror_helpers import (
+    decode_email_address,
+    encode_email_address,
+    get_email_gateway_message_string_from_address,
 )
 
 from zerver.lib.email_notifications import convert_html_to_markdown

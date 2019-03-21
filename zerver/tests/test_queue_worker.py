@@ -9,8 +9,8 @@ from django.test import override_settings
 from mock import patch, MagicMock
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
-from zerver.lib.actions import encode_email_address
 from zerver.lib.email_mirror import RateLimitedRealmMirror
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.rate_limiter import RateLimiterLockingException, clear_history
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_helpers import simulated_queue_client
