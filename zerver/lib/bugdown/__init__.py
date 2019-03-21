@@ -747,6 +747,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(2)
 
+    def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
+        title = extracted_data.get("title")
+        if title is not None:
+            return "YouTube - {}".format(title)
+        return None
+
     def youtube_image(self, url: str) -> Optional[str]:
         yt_id = self.youtube_id(url)
 
@@ -1099,7 +1105,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url, None, None,
                       "youtube-video message_inline_image",
                       yt_id, already_thumbnailed=True)
-                continue
+                # NOTE: We don't `continue` here, to allow replacing the URL with
+                # the title, if INLINE_URL_EMBED_PREVIEW feature is enabled.
+                # The entire preview would ideally be shown only if the feature
+                # is enabled, but URL previews are a beta feature and YouTube
+                # previews are pretty stable.
 
             db_data = self.markdown.zulip_db_data
             if db_data and db_data['sent_by_bot']:
@@ -1113,7 +1123,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             except NotFoundInCache:
                 self.markdown.zulip_message.links_for_preview.add(url)
                 continue
+
             if extracted_data:
+                if youtube is not None:
+                    title = self.youtube_title(extracted_data)
+                    if title is not None:
+                        found_url.family.child.text = title
+                    continue
                 add_embed(root, url, extracted_data)
                 if self.vimeo_id(url):
                     title = self.vimeo_title(extracted_data)

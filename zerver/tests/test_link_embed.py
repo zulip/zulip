@@ -619,3 +619,31 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(data, mocked_data)
         msg.refresh_from_db()
         self.assertIn('a data-id="{}"'.format(escape(mocked_data['html'])), msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_youtube_url_title_replaces_url(self) -> None:
+        url = 'https://www.youtube.com/watch?v=eSJTXC7Ixgg'
+        with mock.patch('zerver.lib.actions.queue_json_publish'):
+            msg_id = self.send_personal_message(
+                self.example_email('hamlet'),
+                self.example_email('cordelia'),
+                content=url,
+            )
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        event = {
+            'message_id': msg_id,
+            'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
+            'message_content': url}
+
+        mocked_data = {'title': 'Clearer Code at Scale - Static Types at Zulip and Dropbox'}
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                with mock.patch('zerver.lib.bugdown.link_preview.link_embed_data_from_cache',
+                                lambda *args, **kwargs: mocked_data):
+                    FetchLinksEmbedData().consume(event)
+
+        msg.refresh_from_db()
+        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg" target="_blank" title="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        self.assertEqual(expected_content, msg.rendered_content)
