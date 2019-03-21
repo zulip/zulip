@@ -504,6 +504,47 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
+class TestMissedStreamMessageEmailMessages(ZulipTestCase):
+    def test_receive_missed_stream_message_email_messages(self) -> None:
+        # build dummy messages for missed messages email reply
+        # have Hamlet send a message to stream Denmark, that Othello
+        # will receive a missed message email about.
+        # Othello will reply via email.
+        # Hamlet will see the message in the stream.
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        self.subscribe(self.example_user("othello"), "Denmark")
+        email = self.example_email('hamlet')
+        self.login(email)
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "topic": "test topic",
+                                                     "content": "test_receive_missed_stream_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": "Denmark"})
+        self.assert_json_success(result)
+
+        user_profile = self.example_user('othello')
+        usermessage = most_recent_usermessage(user_profile)
+
+        mm_address = create_missed_message_address(user_profile, usermessage.message)
+
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+
+        incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
+        incoming_valid_message['From'] = self.example_email('othello')
+        incoming_valid_message['To'] = mm_address
+        incoming_valid_message['Reply-to'] = self.example_email('othello')
+
+        process_message(incoming_valid_message)
+
+        # confirm that Hamlet got the message
+        user_profile = self.example_user('hamlet')
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
+        self.assertEqual(message.sender, self.example_user('othello'))
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
+
 class TestEmptyGatewaySetting(ZulipTestCase):
     def test_missed_message(self) -> None:
         email = self.example_email('othello')
