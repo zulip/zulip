@@ -109,7 +109,9 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
     except PreregistrationUser.DoesNotExist:
         raise JsonableError(_("No such invitation"))
 
-    if (prereg_user.referred_by.realm != user_profile.realm):
+    # Structurally, any invitation the user can actually access should
+    # have a referred_by set for the user who created it.
+    if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
     timestamp = do_resend_user_invite_email(prereg_user)
