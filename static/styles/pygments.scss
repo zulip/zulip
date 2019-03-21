@@ -212,178 +212,182 @@
 } /* Literal.Number.Integer.Long */
 
 
-body.night-mode .codehilite code,
-body.night-mode .codehilite pre {
-    color: hsl(212, 100%, 82%);
-    background-color: hsl(212, 25%, 15%);
-}
+/* Syntx Highlighting for night-mode */
+body.night-mode {
 
-body.night-mode .codehilite .hll {
-    background-color: hsl(0, 0%, 13%);
-}
+    .codehilite code,
+    .codehilite pre {
+        color: hsl(212, 100%, 82%);
+        background-color: hsl(212, 25%, 15%);
+    }
 
-body.night-mode .codehilite .err {
-    color: hsl(1, 67%, 66%);
-    background-color: hsl(0, 7%, 22%);
-}
+    .codehilite .hll {
+        background-color: hsl(0, 0%, 13%);
+    }
 
-body.night-mode .codehilite .k {
-    color: hsl(31, 85%, 59%);
-}
+    .codehilite .err {
+        color: hsl(1, 67%, 66%);
+        background-color: hsl(0, 7%, 22%);
+    }
 
-body.night-mode .codehilite .p {
-    color: hsl(179, 27%, 35%);
-}
+    .codehilite .k {
+        color: hsl(31, 85%, 59%);
+    }
 
-body.night-mode .codehilite .cs {
-    color: hsl(0, 100%, 40%);
-    font-weight: 700;
-}
+    .codehilite .p {
+        color: hsl(179, 27%, 35%);
+    }
 
-body.night-mode .codehilite .gd {
-    color: hsl(0, 100%, 40%);
-}
+    .codehilite .cs {
+        color: hsl(0, 100%, 40%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .ge {
-    color: hsl(0, 0%, 80%);
-    font-style: italic;
-}
+    .codehilite .gd {
+        color: hsl(0, 100%, 40%);
+    }
 
-body.night-mode .codehilite .gr {
-    color: hsl(0, 100%, 50%);
-}
+    .codehilite .ge {
+        color: hsl(0, 0%, 80%);
+        font-style: italic;
+    }
 
-body.night-mode .codehilite .go {
-    color: hsl(0, 0%, 50%);
-}
+    .codehilite .gr {
+        color: hsl(0, 100%, 50%);
+    }
 
-body.night-mode .codehilite .gs {
-    color: hsl(0, 0%, 80%);
-    font-weight: 700;
-}
+    .codehilite .go {
+        color: hsl(0, 0%, 50%);
+    }
 
-body.night-mode .codehilite .gu {
-    color: hsl(300, 100%, 25%);
-    font-weight: 700;
-}
+    .codehilite .gs {
+        color: hsl(0, 0%, 80%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .gt {
-    color: hsl(222, 100%, 41%);
-}
+    .codehilite .gu {
+        color: hsl(300, 100%, 25%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .kc {
-    color: hsl(0, 45%, 75%);
-}
+    .codehilite .gt {
+        color: hsl(222, 100%, 41%);
+    }
 
-body.night-mode .codehilite .kd {
-    color: hsl(60, 100%, 76%);
-}
+    .codehilite .kc {
+        color: hsl(0, 45%, 75%);
+    }
 
-body.night-mode .codehilite .kn {
-    color: hsl(24, 56%, 72%);
-    font-weight: 700;
-}
+    .codehilite .kd {
+        color: hsl(60, 100%, 76%);
+    }
 
-body.night-mode .codehilite .kp {
-    color: hsl(62, 36%, 71%);
-}
+    .codehilite .kn {
+        color: hsl(24, 56%, 72%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .kr {
-    color: hsl(359, 58%, 56%);
-}
+    .codehilite .kp {
+        color: hsl(62, 36%, 71%);
+    }
 
-body.night-mode .codehilite .ni {
-    color: hsl(359, 35%, 63%);
-}
+    .codehilite .kr {
+        color: hsl(359, 58%, 56%);
+    }
 
-body.night-mode .codehilite .ne {
-    color: hsl(53, 23%, 69%);
-    font-weight: 700;
-}
+    .codehilite .ni {
+        color: hsl(359, 35%, 63%);
+    }
 
-body.night-mode .codehilite .nn {
-    color: hsl(204, 54%, 72%);
-}
+    .codehilite .ne {
+        color: hsl(53, 23%, 69%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .vi {
-    color: hsl(60, 100%, 89%);
-}
+    .codehilite .nn {
+        color: hsl(204, 54%, 72%);
+    }
 
-body.night-mode .codehilite .c,
-body.night-mode .codehilite .g,
-body.night-mode .codehilite .cm,
-body.night-mode .codehilite .cp,
-body.night-mode .codehilite .c1 {
-    color: hsl(209, 15%, 55%);
-}
+    .codehilite .vi {
+        color: hsl(60, 100%, 89%);
+    }
 
-body.night-mode .codehilite .l,
-body.night-mode .codehilite .x,
-body.night-mode .codehilite .no,
-body.night-mode .codehilite .nd,
-body.night-mode .codehilite .nl,
-body.night-mode .codehilite .nx,
-body.night-mode .codehilite .py,
-body.night-mode .codehilite .w {
-    color: hsl(0, 0%, 80%);
-}
+    .codehilite .c,
+    .codehilite .g,
+    .codehilite .cm,
+    .codehilite .cp,
+    .codehilite .c1 {
+        color: hsl(209, 15%, 55%);
+    }
 
-body.night-mode .codehilite .n,
-body.night-mode .codehilite .nv,
-body.night-mode .codehilite .vg {
-    color: hsl(60, 19%, 83%);
-}
+    .codehilite .l,
+    .codehilite .x,
+    .codehilite .no,
+    .codehilite .nd,
+    .codehilite .nl,
+    .codehilite .nx,
+    .codehilite .py,
+    .codehilite .w {
+        color: hsl(0, 0%, 80%);
+    }
 
-body.night-mode .codehilite .o,
-body.night-mode .codehilite .ow {
-    color: hsl(58, 52%, 88%);
-}
+    .codehilite .n,
+    .codehilite .nv,
+    .codehilite .vg {
+        color: hsl(60, 19%, 83%);
+    }
 
-body.night-mode .codehilite .gh,
-body.night-mode .codehilite .gp {
-    color: hsl(60, 19%, 83%);
-    font-weight: 700;
-}
+    .codehilite .o,
+    .codehilite .ow {
+        color: hsl(58, 52%, 88%);
+    }
 
-body.night-mode .codehilite .gi,
-body.night-mode .codehilite .kt {
-    color: hsl(120, 100%, 40%);
-}
+    .codehilite .gh,
+    .codehilite .gp {
+        color: hsl(60, 19%, 83%);
+        font-weight: 700;
+    }
 
-body.night-mode .codehilite .ld,
-body.night-mode .codehilite .s,
-body.night-mode .codehilite .sb,
-body.night-mode .codehilite .sc,
-body.night-mode .codehilite .sd,
-body.night-mode .codehilite .s2,
-body.night-mode .codehilite .se,
-body.night-mode .codehilite .sh,
-body.night-mode .codehilite .si,
-body.night-mode .codehilite .sx,
-body.night-mode .codehilite .sr,
-body.night-mode .codehilite .s1,
-body.night-mode .codehilite .ss {
-    color: hsl(0, 36%, 69%);
-}
+    .codehilite .gi,
+    .codehilite .kt {
+        color: hsl(120, 100%, 40%);
+    }
 
-body.night-mode .codehilite .m,
-body.night-mode .codehilite .mf,
-body.night-mode .codehilite .mh,
-body.night-mode .codehilite .mi,
-body.night-mode .codehilite .mo,
-body.night-mode .codehilite .il {
-    color: hsl(183, 45%, 69%);
-}
+    .codehilite .ld,
+    .codehilite .s,
+    .codehilite .sb,
+    .codehilite .sc,
+    .codehilite .sd,
+    .codehilite .s2,
+    .codehilite .se,
+    .codehilite .sh,
+    .codehilite .si,
+    .codehilite .sx,
+    .codehilite .sr,
+    .codehilite .s1,
+    .codehilite .ss {
+        color: hsl(0, 36%, 69%);
+    }
 
-body.night-mode .codehilite .na,
-body.night-mode .codehilite .nt {
-    color: hsl(127, 25%, 68%);
-}
+    .codehilite .m,
+    .codehilite .mf,
+    .codehilite .mh,
+    .codehilite .mi,
+    .codehilite .mo,
+    .codehilite .il {
+        color: hsl(183, 45%, 69%);
+    }
 
-body.night-mode .codehilite .nb,
-body.night-mode .codehilite .nc,
-body.night-mode .codehilite .nf,
-body.night-mode .codehilite .bp,
-body.night-mode .codehilite .vc {
-    color: hsl(60, 75%, 75%);
+    .codehilite .na,
+    .codehilite .nt {
+        color: hsl(127, 25%, 68%);
+    }
+
+    .codehilite .nb,
+    .codehilite .nc,
+    .codehilite .nf,
+    .codehilite .bp,
+    .codehilite .vc {
+        color: hsl(60, 75%, 75%);
+    }
 }
